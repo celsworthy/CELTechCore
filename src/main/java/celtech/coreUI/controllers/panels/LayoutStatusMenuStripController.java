@@ -15,10 +15,10 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
-import celtech.coreUI.components.ProjectTab;
+import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.model.Head;
@@ -58,7 +58,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         LayoutStatusMenuStripController.class.getName());
-    private SettingsScreenState settingsScreenState = null;
+    private PrinterSettings printerSettings = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private final FileChooser modelFileChooser = new FileChooser();
@@ -142,7 +142,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
-    private ProjectTab activeProjectTab;
+    private Project activeProject;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -163,33 +163,31 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void printPressed(ActionEvent event)
     {
-        Printer printer = settingsScreenState.getSelectedPrinter();
+        Printer printer = printerSettings.getSelectedPrinter();
 
-        Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
+        Project currentProject = Lookup.getActiveProjectProperty().get();
 
-        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
+        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject);
 
         if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
         {
-            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject,
-                                                                        settingsScreenState.
-                                                                        getFilament0(),
-                                                                        settingsScreenState.
-                                                                        getPrintQuality(),
-                                                                        settingsScreenState.
-                                                                        getSettings(), printer);
+            displayManager.getPurgeInsetPanelController().purgeAndPrint(
+                currentProject,
+                printerSettings.getFilament0(),
+                printerSettings.getPrintQuality(),
+                printerSettings.getSettings(), printer);
         } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
         {
-            currentPrinter.resetPurgeTemperature();
-            printer.printProject(currentProject, settingsScreenState.getFilament0(),
-                                 settingsScreenState.getPrintQuality(),
-                                 settingsScreenState.getSettings());
+            currentPrinter.resetPurgeTemperature(printerSettings);
+            printer.printProject(currentProject, printerSettings.getFilament0(),
+                                 printerSettings.getPrintQuality(),
+                                 printerSettings.getSettings());
             applicationStatus.setMode(ApplicationMode.STATUS);
         } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
         {
-            printer.printProject(currentProject, settingsScreenState.getFilament0(),
-                                 settingsScreenState.getPrintQuality(),
-                                 settingsScreenState.getSettings());
+            printer.printProject(currentProject, printerSettings.getFilament0(),
+                                 printerSettings.getPrintQuality(),
+                                 printerSettings.getSettings());
             applicationStatus.setMode(ApplicationMode.STATUS);
         }
     }
@@ -564,16 +562,24 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
-        settingsScreenState = SettingsScreenState.getInstance();
         printerUtils = PrinterUtils.getInstance();
 
         statusButtonHBox.setVisible(false);
 
         createMainSelectedPrinterListener();
 
-        createSettingsScreenStateListener();
+        printButton.installTag();
+
+        printButton.disableProperty().bind(canPrintProject.not());
 
         setupButtonVisibility();
+
+        Lookup.getActiveProjectProperty().addListener(
+            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+            {
+                System.out.println("XXX Project has changed to " + newValue);
+                whenProjectChanges(newValue);
+            });
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
     }
@@ -632,32 +638,32 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             ApplicationMode.STATUS)));
     }
 
+    ChangeListener<Printer> printerSettingsListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+    {
+        if (newValue != null)
+        {
+            whenSettingsPrinterChanges(newValue);
+            currentSettingsPrinter = newValue;
+        }
+    };
+
+    private void removeSettingsScreenStateListener()
+    {
+        if (printerSettings != null)
+        {
+            printerSettings.selectedPrinterProperty().removeListener(printerSettingsListener);
+        }
+    }
+
     /**
      * Create the bindings for when tied to the SettingsScreen.
      */
-    private void createSettingsScreenStateListener()
+    private void createSettingsScreenStateListener(PrinterSettings printerSettings)
     {
-        printButton.installTag();
-
-        printButton.disableProperty().bind(canPrintProject.not());
-
-        if (settingsScreenState.selectedPrinterProperty().get() != null)
+        if (printerSettings != null)
         {
-            Printer printer = settingsScreenState.selectedPrinterProperty().get();
-            whenSettingsPrinterChanges(printer);
-            currentSettingsPrinter = printer;
-
+            printerSettings.selectedPrinterProperty().addListener(printerSettingsListener);
         }
-
-        settingsScreenState.selectedPrinterProperty().addListener(
-            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-            {
-                if (newValue != null)
-                {
-                    whenSettingsPrinterChanges(newValue);
-                    currentSettingsPrinter = newValue;
-                }
-            });
     }
 
     /**
@@ -665,15 +671,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void whenSettingsPrinterChanges(Printer printer)
     {
-        updateCanPrintProjectBindings(printer, activeProjectTab);
-        updatePrintButtonConditionalText(printer, activeProjectTab.getProject());
+        updateCanPrintProjectBindings(printer, activeProject);
+        updatePrintButtonConditionalText(printer, activeProject);
     }
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
         printButton.getTag().removeAllConditionalText();
         printButton.getTag().addConditionalText(
-            "dialogs.cantPrintNoFilamentSelectedMessage", settingsScreenState.
+            "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
             filament0Property().isNull());
         printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
                                                 printer.getPrinterAncillarySystems().
@@ -752,14 +758,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      *
      * @param projectTab
      */
-    public void whenProjectChanges(ProjectTab projectTab)
+    public void whenProjectChanges(Project project)
     {
-        activeProjectTab = projectTab;
-        bindSelectedModels(projectTab);
+        removeSettingsScreenStateListener();
+        printerSettings = project.getPrinterSettings();
+        createSettingsScreenStateListener(printerSettings);
+        bindSelectedModels(project);
+
         if (currentSettingsPrinter != null)
         {
-            updateCanPrintProjectBindings(currentSettingsPrinter, activeProjectTab);
-            updatePrintButtonConditionalText(currentSettingsPrinter, activeProjectTab.getProject());
+            updateCanPrintProjectBindings(currentSettingsPrinter, activeProject);
+            updatePrintButtonConditionalText(currentSettingsPrinter, activeProject);
         }
     }
 
@@ -767,16 +776,16 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      * This should be called whenever the printer or project changes and updates the bindings for
      * the canPrintProject property.
      */
-    private void updateCanPrintProjectBindings(Printer printer, ProjectTab projectTab)
+    private void updateCanPrintProjectBindings(Printer printer, Project project)
     {
-        if (activeProjectTab == null || printer == null)
+        if (activeProject == null || printer == null)
         {
             return;
         }
         printButton.disableProperty().unbind();
         canPrintProject.bind(
             printer.canPrintProperty()
-            .and(settingsScreenState.filament0Property().isNotNull())
+            .and(printerSettings.filament0Property().isNotNull())
             .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
             .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
         );
@@ -787,10 +796,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      * Binds button disabled properties to the selection container This disables and enables buttons
      * depending on whether a model is selected.
      */
-    private void bindSelectedModels(ProjectTab projectTab)
+    private void bindSelectedModels(Project project)
     {
-        SelectedModelContainers selectionModel = projectTab.getSelectionModel();
-        ThreeDViewManager viewManager = projectTab.getThreeDViewManager();
+        ProjectGUIState projectGUIState = Lookup.getProjectGUIState(project);
+        SelectedModelContainers selectionModel = projectGUIState.getSelectedModelContainers();
+        ThreeDViewManager viewManager = projectGUIState.getThreeDViewManager();
 
         addModelButton.disableProperty().unbind();
         deleteModelButton.disableProperty().unbind();

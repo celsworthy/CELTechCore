@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
@@ -22,8 +22,6 @@ import javafx.scene.control.Label;
  */
 public class AboutPanelController implements Initializable, PrinterListChangesListener
 {
-
-    private SettingsScreenState settingsScreenState = null;
 
     @FXML
     private Label roboxSerialNumber;
@@ -49,7 +47,6 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        settingsScreenState = SettingsScreenState.getInstance();
         Lookup.getPrinterListChangesNotifier().addListener(this);
         version.setText(ApplicationConfiguration.getApplicationVersion());
     }

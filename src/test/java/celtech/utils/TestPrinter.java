@@ -10,6 +10,7 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.MacroType;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -719,7 +720,7 @@ class TestPrinter implements Printer
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
+//    @Override
     public void resetPurgeTemperature()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -829,6 +830,12 @@ class TestPrinter implements Printer
 
     @Override
     public ReadOnlyObjectProperty busyStatusProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void resetPurgeTemperature(PrinterSettings printerSettings)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

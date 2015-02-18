@@ -252,4 +252,12 @@ public class Lookup
         }
         return projectGUIStates.get(activeProject.get());
     }
+    
+    public static ProjectGUIState getProjectGUIState(Project project) {
+        if (! projectGUIStates.containsKey(project)) {
+            ProjectGUIState projectGUIState = new ProjectGUIState();
+            projectGUIStates.put(project, projectGUIState);
+        }
+        return projectGUIStates.get(project);
+    }    
 }

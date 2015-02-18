@@ -12,7 +12,7 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.MacroType;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
@@ -534,10 +534,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     protected final FloatProperty purgeTemperatureProperty = new SimpleFloatProperty(0);
 
     @Override
-    public void resetPurgeTemperature()
+    public void resetPurgeTemperature(PrinterSettings printerSettings)
     {
         //TODO modify for multiple reels
-        Filament settingsFilament = SettingsScreenState.getInstance().getFilament0();
+        Filament settingsFilament = printerSettings.getFilament0();
         float reelNozzleTemperature = 0;
 
         if (settingsFilament != null)
@@ -589,41 +589,41 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      */
     private HeadEEPROMDataResponse headDataPrePurge = null;
 
-    protected boolean doPrepareToPurgeHeadActivity(Cancellable cancellable)
-    {
-        boolean success = false;
-
-        try
-        {
-            headDataPrePurge = readHeadEEPROM();
-
-            float nozzleTemperature = 0;
-
-            // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
-            SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
-
-            Filament settingsFilament = settingsScreenState.getFilament0();
-
-            if (settingsFilament != null)
-            {
-                nozzleTemperature = settingsFilament.getNozzleTemperature();
-            } else
-            {
-                //TODO Update for multiple reels
-                nozzleTemperature = reels.get(0).nozzleTemperature.floatValue();
-            }
-
-            float temperatureDifference = nozzleTemperature
-                - headDataPrePurge.getLastFilamentTemperature();
-            setPurgeTemperature(nozzleTemperature);
-
-            success = true;
-        } catch (RoboxCommsException ex)
-        {
-            // Success is already false..
-        }
-        return success;
-    }
+//    protected boolean doPrepareToPurgeHeadActivity(Cancellable cancellable)
+//    {
+//        boolean success = false;
+//
+//        try
+//        {
+//            headDataPrePurge = readHeadEEPROM();
+//
+//            float nozzleTemperature = 0;
+//
+//            // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
+//            PrinterSettings settingsScreenState = PrinterSettings.getInstance();
+//
+//            Filament settingsFilament = settingsScreenState.getFilament0();
+//
+//            if (settingsFilament != null)
+//            {
+//                nozzleTemperature = settingsFilament.getNozzleTemperature();
+//            } else
+//            {
+//                //TODO Update for multiple reels
+//                nozzleTemperature = reels.get(0).nozzleTemperature.floatValue();
+//            }
+//
+//            float temperatureDifference = nozzleTemperature
+//                - headDataPrePurge.getLastFilamentTemperature();
+//            setPurgeTemperature(nozzleTemperature);
+//
+//            success = true;
+//        } catch (RoboxCommsException ex)
+//        {
+//            // Success is already false..
+//        }
+//        return success;
+//    }
 
     @Override
     public void setPurgeTemperature(float purgeTemperature)

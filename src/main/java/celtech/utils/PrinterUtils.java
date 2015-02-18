@@ -6,19 +6,18 @@
 package celtech.utils;
 
 import celtech.Lookup;
+import celtech.appManager.Project;
 import celtech.appManager.PurgeResponse;
 import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.BusyStatus;
 import celtech.configuration.Filament;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.Printer;
 import celtech.utils.tasks.Cancellable;
-import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.concurrent.Task;
@@ -263,12 +262,12 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public boolean isPurgeNecessary(Printer printer)
+    public boolean isPurgeNecessary(Printer printer, Project project)
     {
         boolean purgeIsNecessary = false;
         float targetNozzleTemperature = 0;
-        SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
-        Filament settingsFilament = settingsScreenState.getFilament0();
+        PrinterSettings printerSettings = project.getPrinterSettings();
+        Filament settingsFilament = printerSettings.getFilament0();
 
         if (settingsFilament != null)
         {
@@ -296,10 +295,10 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public PurgeResponse offerPurgeIfNecessary(Printer printer)
+    public PurgeResponse offerPurgeIfNecessary(Printer printer, Project project)
     {
         PurgeResponse purgeConsent = PurgeResponse.NOT_NECESSARY;
-        if (isPurgeNecessary(printer) && purgeDialogVisible == false)
+        if (isPurgeNecessary(printer, project) && purgeDialogVisible == false)
         {
             purgeDialogVisible = true;
 

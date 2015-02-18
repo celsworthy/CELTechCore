@@ -271,13 +271,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             }
 
             projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
+            Project project = projectTab.getProject();
             ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).
-                bindLoadedModels(
-                    projectTab.getProject());
+                bindLoadedModels(project);
             ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).
-                bindLoadedModels(
-                    projectTab.getThreeDViewManager());
-            layoutStatusMenuStripController.whenProjectChanges(projectTab);
+                bindLoadedModels(project);
             projectTab.setMode(newMode);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
@@ -382,7 +380,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         addTopMenuStripController();
 
         mainHolder.getChildren().add(rhPanel);
-        
+
         // Configure the main display tab pane - just the printer status page to start with
         tabDisplay = new TabPane();
         tabDisplay.setPickOnBounds(false);
@@ -455,12 +453,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         {
                             ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
                             getSelectedItem();
-                            ((LayoutSidePanelController) (sidePanelControllers.get(
-                                ApplicationMode.LAYOUT))).bindLoadedModels(
-                                projectTab.getThreeDViewManager());
-                            layoutStatusMenuStripController.whenProjectChanges(projectTab);
-                            ((SettingsSidePanelController) sidePanelControllers.get(
-                                ApplicationMode.SETTINGS)).projectChanged(projectTab.getProject());
+                            Project project = projectTab.getProject();
+                            fireProjectChanged(project);
                         }
                     } else
                     {
@@ -581,6 +575,16 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         root.layout();
     }
 
+    private void fireProjectChanged(Project project)
+    {
+        System.out.println("XXX Change active project to " + project);
+        Lookup.setActiveProject(project);
+        ((LayoutSidePanelController) (sidePanelControllers.get(
+            ApplicationMode.LAYOUT))).bindLoadedModels(project);
+//        ((SettingsSidePanelController) sidePanelControllers.get(
+//            ApplicationMode.SETTINGS)).projectChanged(project);
+    }
+
     private void setupPanelsForMode(ApplicationMode mode)
     {
         try
@@ -589,7 +593,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             if (fxmlFileName != null)
             {
                 steno.debug("About to load inset panel fxml: " + fxmlFileName);
-                FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
+                FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName,
+                                                             Lookup.getLanguageBundle());
                 Pane insetPanel = (Pane) insetPanelLoader.load();
                 Initializable insetPanelController = insetPanelLoader.getController();
                 insetPanel.setId(mode.name());
@@ -654,7 +659,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
                 steno.debug("About to load slideout fxml: "
                     + fxmlSlideOutFileName);
-                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName, Lookup.getLanguageBundle());
+                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName,
+                                                           Lookup.getLanguageBundle());
                 slideOut = (HBox) slideOutLoader.load();
                 slideOutController = slideOutLoader.getController();
                 sidePanelControllers.get(mode).configure(slideOutController);

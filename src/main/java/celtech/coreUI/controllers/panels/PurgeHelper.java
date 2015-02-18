@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.TaskController;
 import celtech.configuration.Filament;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -53,12 +53,21 @@ public class PurgeHelper
     {
         setState(state.getNextState());
     };
+    
+    /**
+     * The filament that will be used during the purge, either the filament on the current reel
+     * or a custom filament loaded on the SettingsScreen that will be used for a print that
+     * has been requested.
+     */
+    private final Filament purgeFilament;
 
-    PurgeHelper(Printer printer)
+    PurgeHelper(Printer printer, Filament purgeFilament)
     {
         this.printerToUse = printer;
+        this.purgeFilament = purgeFilament;
         printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();
+        
     }
 
     public void cancelPurgeAction()
@@ -132,13 +141,10 @@ public class PurgeHelper
                     // The nozzle should be heated to a temperature halfway between the last
                     //temperature stored on the head and the current required temperature stored
                     // on the reel
-                    SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
 
-                    Filament settingsFilament = settingsScreenState.getFilament0();
-
-                    if (settingsFilament != null)
+                    if (purgeFilament != null)
                     {
-                        reelNozzleTemperature = settingsFilament.getNozzleTemperature();
+                        reelNozzleTemperature = purgeFilament.getNozzleTemperature();
                     } else
                     {
                         //TODO modify for multiple reels
@@ -163,7 +169,6 @@ public class PurgeHelper
                 {
                     setState(PurgeState.FAILED);
                 }
-                ;
                 break;
 
             case RUNNING_PURGE:

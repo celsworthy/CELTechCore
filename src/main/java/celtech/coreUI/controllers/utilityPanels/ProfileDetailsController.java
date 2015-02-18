@@ -2,13 +2,11 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.CoreTest;
 import celtech.Lookup;
-import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.CustomSlicerType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerMappingData;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
@@ -16,13 +14,9 @@ import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
-import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -50,7 +44,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -63,9 +56,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(ProfileDetailsController.class.getName());
-    private SettingsScreenState settingsScreenState = null;
-    private ApplicationStatus applicationStatus = null;
-    private DisplayManager displayManager = null;
     private int lastNozzleSelected = 0;
     private BooleanProperty nameEditable = new SimpleBooleanProperty(false);
 
@@ -430,10 +420,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         slicerMappings = Lookup.getSlicerMappings();
         nameEditable.set(false);
         isMutable.set(true);
-
-        applicationStatus = ApplicationStatus.getInstance();
-        displayManager = DisplayManager.getInstance();
-        settingsScreenState = SettingsScreenState.getInstance();
 
         editingOptions.visibleProperty().bind(isDirty.and(showButtons).and(isMutable));
         notEditingOptions.visibleProperty().bind(isDirty.not().and(showButtons).and(isMutable));

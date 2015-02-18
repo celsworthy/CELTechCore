@@ -6,6 +6,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -38,20 +39,19 @@ public class Project implements Serializable
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
     private PrintQualityEnumeration printQuality = null;
-    private SlicerParametersFile customSettings = null;
     private String customProfileName = "";
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
     private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<Filament>();
+    private PrinterSettings printerSettings;
 
     /**
      *
      */
     public Project()
     {
-        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(
-            ApplicationConfiguration.customSettingsProfileName);
         initialiseExtruderFilaments();
+        this.printerSettings = new PrinterSettings();
     }
 
     /**
@@ -66,8 +66,7 @@ public class Project implements Serializable
         projectHeader.setProjectUUID(preloadedProjectUUID);
         setProjectName(projectName);
         this.loadedModels = loadedModels;
-        this.customSettings = SlicerParametersContainer.getSettingsByProfileName(
-            ApplicationConfiguration.customSettingsProfileName);
+        this.printerSettings = new PrinterSettings();
     }
 
     /**
@@ -146,8 +145,6 @@ public class Project implements Serializable
         out.writeUTF(gcodeFileName);
         out.writeUTF(lastPrintJobID);
 
-        out.writeObject(customSettings);
-
         //Introduced in version 1.00.06
         out.writeUTF(customProfileName);
         out.writeObject(printQuality);
@@ -172,23 +169,31 @@ public class Project implements Serializable
     /**
      * Return true if all objects are on the same extruder, else return false.
      */
-    public boolean allModelsOnSameExtruder() {
-        if (loadedModels.size() == 0 || loadedModels.size() == 1) {
+    public boolean allModelsOnSameExtruder()
+    {
+        if (loadedModels.size() == 0 || loadedModels.size() == 1)
+        {
             return true;
         }
         int firstExtruderNumber = loadedModels.get(0).getAssociateWithExtruderNumber();
         for (ModelContainer loadedModel : loadedModels)
         {
-            if (loadedModel.getAssociateWithExtruderNumber() != firstExtruderNumber) {
+            if (loadedModel.getAssociateWithExtruderNumber() != firstExtruderNumber)
+            {
                 return false;
             }
         }
         return true;
     }
-    
+
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
+        
+        printerSettings = new PrinterSettings();
+        extruder0Filament = new SimpleObjectProperty<Filament>();
+        extruder1Filament = new SimpleObjectProperty<Filament>();
+        
         steno = StenographerFactory.getStenographer(Project.class.getName());
 
         projectHeader = (ProjectHeader) in.readObject();
@@ -208,7 +213,7 @@ public class Project implements Serializable
 
         try
         {
-            customSettings = (SlicerParametersFile) in.readObject();
+//            SlicerParametersFile settings = (SlicerParametersFile) in.readObject();
             //Introduced in version 1.00.06
             if (in.available() > 0)
             {
@@ -242,8 +247,7 @@ public class Project implements Serializable
             }
         } catch (IOException ex)
         {
-            steno.warning("Unable to deserialise settings");
-            customSettings = null;
+            steno.warning("Unable to deserialise settings " + ex);
             customProfileName = "";
             printQuality = null;
         }
@@ -405,25 +409,33 @@ public class Project implements Serializable
     }
 
     /**
-     * For new projects this should be called to initialise the extruder filaments according
-     * to the currently selected printer.
+     * For new projects this should be called to initialise the extruder filaments according to the
+     * currently selected printer.
      */
     private void initialiseExtruderFilaments()
     {
-      // defaults in case of no printer or reel
-      extruder0Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));  
-      extruder1Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));  
-        
-      Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
-      if (printer != null) {
-          if (printer.reelsProperty().containsKey(0)) {
-              String filamentID = printer.reelsProperty().get(0).filamentIDProperty().get();
-              extruder0Filament.set(FilamentContainer.getFilamentByID(filamentID));
-          }
-          if (printer.reelsProperty().containsKey(1)) {
-              String filamentID = printer.reelsProperty().get(1).filamentIDProperty().get();
-              extruder1Filament.set(FilamentContainer.getFilamentByID(filamentID));
-          }
-      }
+        // defaults in case of no printer or reel
+        extruder0Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));
+        extruder1Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));
+
+        Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
+        if (printer != null)
+        {
+            if (printer.reelsProperty().containsKey(0))
+            {
+                String filamentID = printer.reelsProperty().get(0).filamentIDProperty().get();
+                extruder0Filament.set(FilamentContainer.getFilamentByID(filamentID));
+            }
+            if (printer.reelsProperty().containsKey(1))
+            {
+                String filamentID = printer.reelsProperty().get(1).filamentIDProperty().get();
+                extruder1Filament.set(FilamentContainer.getFilamentByID(filamentID));
+            }
+        }
+    }
+
+    public PrinterSettings getPrinterSettings()
+    {
+        return printerSettings;
     }
 }

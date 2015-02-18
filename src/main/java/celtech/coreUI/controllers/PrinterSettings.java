@@ -13,40 +13,23 @@ import javafx.beans.property.SimpleObjectProperty;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsScreenState
+public class PrinterSettings
 {
 
-    private static SettingsScreenState instance = null;
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament0 = new SimpleObjectProperty<>(null);
     private final ObjectProperty<Filament> selectedFilament1 = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<SlicerParametersFile> settings = new SimpleObjectProperty<>(
+    private final ObjectProperty<SlicerParametersFile> settings;
+    private final ObjectProperty<PrintQualityEnumeration> printQuality = 
+                                new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
+
+    public PrinterSettings()
+    {
+        settings = new SimpleObjectProperty<>(
         SlicerParametersContainer.getSettingsByProfileName(
             ApplicationConfiguration.draftSettingsProfileName));
-    private final ObjectProperty<PrintQualityEnumeration> printQuality = new SimpleObjectProperty<>();
-
-    private SettingsScreenState()
-    {
-
     }
 
-    /**
-     *
-     * @return
-     */
-    public static SettingsScreenState getInstance()
-    {
-        if (instance == null)
-        {
-            instance = new SettingsScreenState();
-        }
-        return instance;
-    }
-
-    /**
-     *
-     * @param value
-     */
     public void setSelectedPrinter(Printer value)
     {
         selectedPrinter.set(value);

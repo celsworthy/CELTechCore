@@ -665,15 +665,15 @@ public class LayoutSidePanelController implements Initializable,
      *
      * @param viewManager
      */
-    public void bindLoadedModels(final ThreeDViewManager viewManager)
+    public void bindLoadedModels(final Project project)
     {
-        ObservableList<ModelContainer> loadedModels = viewManager.getLoadedModels();
+        ObservableList<ModelContainer> loadedModels = project.getLoadedModels();
 
         if (selectionModel != null)
         {
             selectionModel.removeListener(tableViewSelectionListener);
         }
-        selectionModel = viewManager.getSelectedModelContainers();
+        selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
 
         modelDataTableView.setItems(loadedModels);
         resetTableViewSelection(selectionModel);
@@ -706,16 +706,10 @@ public class LayoutSidePanelController implements Initializable,
             boundModel.minLayerVisibleProperty().unbind();
         }
 
-        boundProject = displayManager.getCurrentlyVisibleProject();
-//        System.out.println("get filaments from project " + boundProject.getProjectName());
-//        if (boundProject.getExtruder0FilamentProperty().get() != null)
-//        {
-//            System.out.println(boundProject.getExtruder0FilamentProperty().get().getFilamentID());
-//        }
-//        if (boundProject.getExtruder1FilamentProperty().get() != null)
-//        {
-//            System.out.println(boundProject.getExtruder1FilamentProperty().get().getFilamentID());
-//        }
+        boundProject = project;
+        System.out.println("XXX Bound project is " + boundProject + " " + boundProject.getExtruder0FilamentProperty().get());
+        System.out.println("MC0 is " + materialComponent0);
+
         materialComponent0.setSelectedFilamentInComboBox(
             boundProject.getExtruder0FilamentProperty().get());
         materialComponent1.setSelectedFilamentInComboBox(

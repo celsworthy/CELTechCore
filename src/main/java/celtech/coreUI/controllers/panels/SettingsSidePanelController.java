@@ -13,7 +13,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.components.material.MaterialComponent;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
 import celtech.coreUI.controllers.utilityPanels.MaterialDetailsController;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
@@ -58,7 +58,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private final Stenographer steno = StenographerFactory.getStenographer(
         SettingsSidePanelController.class.getName());
     private ObservableList<Printer> printerStatusList = null;
-    private SettingsScreenState settingsScreenState = null;
+    private PrinterSettings printerSettings = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
 
@@ -103,7 +103,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         ApplicationConfiguration.fineSettingsProfileName);
     private SlicerParametersFile customSettings = null;
 
-    private final ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
     private final ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
         observableArrayList();
 
@@ -117,6 +116,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private SettingsSlideOutPanelController slideOutController = null;
 
     private ProfileDetailsController profileDetailsController = null;
+    private Project currentProject;
 
     /**
      * Initialises the controller class.
@@ -129,7 +129,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
-        settingsScreenState = SettingsScreenState.getInstance();
         printerStatusList = Lookup.getConnectedPrinters();
 
         try
@@ -170,14 +169,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 return (double) selectedQuality.getEnumPosition();
             }
         });
-//        // Hack to force slider font, don't know why we need this
-//        String primaryFontFamily = displayManager.getPrimaryFontFamily();
-//        qualityChooser.setStyle("-fx-tick-label-font-family: " + primaryFontFamily + ";");
-
-        settingsScreenState.setPrintQuality(PrintQualityEnumeration.DRAFT);
-        settingsScreenState.setSettings(draftSettings);
-
-        setupQualityOverrideControls(settingsScreenState.getSettings());
 
         printQualityUpdate(PrintQualityEnumeration.DRAFT);
 
@@ -231,17 +222,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                             showCreateProfileDialogue(draftSettings.clone());
                         } else if (newValue != null)
                         {
-                            if (settingsScreenState.getPrintQuality()
+                            if (printerSettings != null && printerSettings.getPrintQuality()
                             == PrintQualityEnumeration.CUSTOM)
                             {
                                 slideOutController.updateProfileData(newValue);
-                                settingsScreenState.setSettings(newValue);
+                                printerSettings.setSettings(newValue);
                                 DisplayManager.getInstance().getCurrentlyVisibleProject().
                                 setCustomProfileName(
                                     newValue.getProfileName());
                             }
                             customSettings = newValue;
-                        } else if (newValue == null && settingsScreenState.getPrintQuality()
+                        } else if (printerSettings != null && newValue == null
+                        && printerSettings.getPrintQuality()
                         == PrintQualityEnumeration.CUSTOM)
                         {
                             slideOutController.updateProfileData(null);
@@ -257,6 +249,130 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 updateProfileList();
             });
 
+        setupPrinterChooser();
+
+        nonCustomProfileVBox.visibleProperty()
+            .bind(qualityChooser.valueProperty().isNotEqualTo(
+                    PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+
+        setupSliders();
+
+        Lookup.getActiveProjectProperty().addListener(
+            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+            {
+                projectChanged(newValue);
+            });
+        Lookup.getPrinterListChangesNotifier().addListener(this);
+
+    }
+
+    private void setupSliders()
+    {
+        supportSlider.setLabelFormatter(new StringConverter<Double>()
+        {
+            @Override
+            public String toString(Double n)
+            {
+                String returnedText = "";
+
+                if (n <= 0)
+                {
+                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
+                } else
+                {
+                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
+                }
+                return returnedText;
+            }
+
+            @Override
+            public Double fromString(String s)
+            {
+                double returnVal = 0;
+
+                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
+                {
+                    returnVal = 0;
+                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
+                {
+                    returnVal = 1;
+                }
+                return returnVal;
+            }
+        }
+        );
+
+        supportSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number lastSupportValue,
+                Number newSupportValue)
+            {
+                if (suppressQualityOverrideTriggers == false)
+                {
+                    if (lastSupportValue != newSupportValue)
+                    {
+                        boolean supportSelected = (newSupportValue.doubleValue() >= 1.0) ? true : false;
+                        DisplayManager.getInstance().getCurrentlyVisibleProject().
+                            projectModified();
+
+                        printerSettings.getSettings().
+                            setGenerateSupportMaterial(supportSelected);
+                    }
+                }
+            }
+        });
+
+        fillDensitySlider.valueProperty()
+            .addListener(new ChangeListener<Number>()
+                {
+                    @Override
+                    public void changed(ObservableValue<? extends Number> observable,
+                        Number oldValue,
+                        Number newValue
+                    )
+                    {
+                        if (suppressQualityOverrideTriggers == false)
+                        {
+                            if (newValue != oldValue)
+                            {
+                                DisplayManager.getInstance().getCurrentlyVisibleProject().
+                                projectModified();
+                            }
+
+                            printerSettings.getSettings().setFillDensity_normalised(
+                                newValue.floatValue() / 100.0f);
+                        }
+                    }
+            }
+            );
+
+        brimSlider.valueProperty()
+            .addListener(new ChangeListener<Number>()
+                {
+                    @Override
+                    public void changed(ObservableValue<? extends Number> observable,
+                        Number oldValue,
+                        Number newValue
+                    )
+                    {
+                        if (suppressQualityOverrideTriggers == false)
+                        {
+                            if (newValue != oldValue)
+                            {
+                                DisplayManager.getInstance().getCurrentlyVisibleProject().
+                                projectModified();
+                            }
+
+                            printerSettings.getSettings().setBrimWidth_mm(newValue.intValue());
+                        }
+                    }
+            }
+            );
+    }
+
+    private void setupPrinterChooser()
+    {
         printerChooser.setCellFactory(
             new Callback<ListView<Printer>, ListCell<Printer>>()
             {
@@ -350,129 +466,22 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             currentPrinter = null;
                         }
-
-                        settingsScreenState.setSelectedPrinter(selectedPrinter);
+                        if (printerSettings != null)
+                        {
+                            printerSettings.setSelectedPrinter(selectedPrinter);
+                        }
                         bindPrinter(selectedPrinter);
                         configureMaterialComponents(selectedPrinter);
 
                     }
             }
             );
-
-        nonCustomProfileVBox.visibleProperty()
-            .bind(qualityChooser.valueProperty().isNotEqualTo(
-                    PrintQualityEnumeration.CUSTOM.getEnumPosition()));
-
-        supportSlider.setLabelFormatter(new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double n)
-            {
-                String returnedText = "";
-
-                if (n <= 0)
-                {
-                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
-                } else
-                {
-                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
-                }
-                return returnedText;
-            }
-
-            @Override
-            public Double fromString(String s)
-            {
-                double returnVal = 0;
-
-                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
-                {
-                    returnVal = 0;
-                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
-                {
-                    returnVal = 1;
-                }
-                return returnVal;
-            }
-        }
-        );
-
-        supportSlider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number lastSupportValue,
-                Number newSupportValue)
-            {
-                if (suppressQualityOverrideTriggers == false)
-                {
-                    if (lastSupportValue != newSupportValue)
-                    {
-                        boolean supportSelected = (newSupportValue.doubleValue() >= 1.0) ? true : false;
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().
-                            projectModified();
-
-                        settingsScreenState.getSettings().
-                            setGenerateSupportMaterial(supportSelected);
-                    }
-                }
-            }
-        });
-
-        fillDensitySlider.valueProperty()
-            .addListener(new ChangeListener<Number>()
-                {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> observable,
-                        Number oldValue,
-                        Number newValue
-                    )
-                    {
-                        if (suppressQualityOverrideTriggers == false)
-                        {
-                            if (newValue != oldValue)
-                            {
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                projectModified();
-                            }
-
-                            settingsScreenState.getSettings().setFillDensity_normalised(
-                                newValue.floatValue() / 100.0f);
-                        }
-                    }
-            }
-            );
-
-        brimSlider.valueProperty()
-            .addListener(new ChangeListener<Number>()
-                {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> observable,
-                        Number oldValue,
-                        Number newValue
-                    )
-                    {
-                        if (suppressQualityOverrideTriggers == false)
-                        {
-                            if (newValue != oldValue)
-                            {
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                projectModified();
-                            }
-
-                            settingsScreenState.getSettings().setBrimWidth_mm(newValue.intValue());
-                        }
-                    }
-            }
-            );
-
-        Lookup.getPrinterListChangesNotifier().addListener(this);
-
     }
 
     /**
      * Show the correct number of MaterialComponents according to the number of extruders, and
-     * configure them to the printer and extruder number. Listen to changes on the chosen
-     * filament and update the settingsScreenState accordingly.
+     * configure them to the printer and extruder number. Listen to changes on the chosen filament
+     * and update the settingsScreenState accordingly.
      */
     private void configureMaterialComponents(Printer printer)
     {
@@ -491,21 +500,33 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     materialComponent.getSelectedFilamentProperty().addListener(
                         (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                         {
-                            settingsScreenState.setFilament0(newValue);
+                            if (printerSettings != null)
+                            {
+                                printerSettings.setFilament0(newValue);
+                            }
                         });
-                } else {
-                     materialComponent.getSelectedFilamentProperty().addListener(
+                } else
+                {
+                    materialComponent.getSelectedFilamentProperty().addListener(
                         (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                         {
-                            settingsScreenState.setFilament1(newValue);
+                            if (printerSettings != null)
+                            {
+                                printerSettings.setFilament1(newValue);
+                            }
                         });
                 }
-                
-                if (materialComponent.getSelectedFilamentProperty().get() != null) {
-                    if (extruderNumber == 0) {
-                        settingsScreenState.setFilament0(materialComponent.getSelectedFilamentProperty().get());
-                    } else {
-                        settingsScreenState.setFilament1(materialComponent.getSelectedFilamentProperty().get());
+
+                if (materialComponent.getSelectedFilamentProperty().get() != null)
+                {
+                    if (extruderNumber == 0)
+                    {
+                        printerSettings.setFilament0(
+                            materialComponent.getSelectedFilamentProperty().get());
+                    } else
+                    {
+                        printerSettings.setFilament1(
+                            materialComponent.getSelectedFilamentProperty().get());
                     }
                 }
 
@@ -617,7 +638,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         } else if (source instanceof ProfileDetailsController)
         {
-            SlicerParametersFile settings = settingsScreenState.getSettings().clone();
+            SlicerParametersFile settings = printerSettings.getSettings().clone();
             String originalProfileName = settings.getProfileName();
             String filename = SystemUtils.getIncrementalFilenameOnly(
                 ApplicationConfiguration.getUserPrintProfileDirectory(), originalProfileName,
@@ -643,7 +664,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             selectPrintProfileByName(profiletoSave.getProfileName());
             if (displayManager != null)
             {
-                projectChanged(displayManager.getCurrentlyVisibleProject());
+                projectChanged(Lookup.getActiveProjectProperty().get());
             }
         }
     }
@@ -697,13 +718,18 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     public void projectChanged(Project project)
     {
+        currentProject = project;
+        printerSettings = project.getPrinterSettings();
+        System.out.println("XXX project and settings are " + currentPrinter + " " + printerSettings);
         if (project.getPrintQuality() != null)
         {
-            if (project.getPrintQuality() != settingsScreenState.getPrintQuality())
+            if (project.getPrintQuality() != printerSettings.getPrintQuality())
             {
                 qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
             }
         }
+
+        setupQualityOverrideControls(printerSettings.getSettings());
 
         if (project.getCustomProfileName() != null)
         {
@@ -717,20 +743,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             }
         }
 
+        if (printerSettings.getSelectedPrinter() == null && printerChooser.getValue() != null)
+        {
+            printerSettings.setSelectedPrinter(printerChooser.getValue());
+        }
     }
 
     private void printQualityUpdate(PrintQualityEnumeration quality)
     {
-        DisplayManager displayManager = DisplayManager.getInstance();
-        Project currentlyVisibleProject = null;
-
-        if (displayManager != null)
-        {
-            currentlyVisibleProject = displayManager.getCurrentlyVisibleProject();
-        }
-
-        settingsScreenState.setPrintQuality(quality);
-
         SlicerParametersFile settings = null;
 
         switch (quality)
@@ -767,11 +787,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             suppressQualityOverrideTriggers = true;
             setupQualityOverrideControls(settings);
             suppressQualityOverrideTriggers = false;
-
-            if (currentlyVisibleProject != null)
-            {
-                currentlyVisibleProject.setPrintQuality(quality);
-            }
         }
 
         if (slideOutController != null)
@@ -780,12 +795,16 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             slideOutController.showProfileTab();
         }
 
-        if (currentlyVisibleProject != null)
+        if (currentProject != null)
         {
-            currentlyVisibleProject.projectModified();
+            currentProject.projectModified();
         }
 
-        settingsScreenState.setSettings(settings);
+        if (printerSettings != null)
+        {
+            printerSettings.setPrintQuality(quality);
+            printerSettings.setSettings(settings);
+        }
     }
 
     @Override

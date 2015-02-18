@@ -6,6 +6,7 @@ import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.MacroType;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -87,7 +88,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
-    public void resetPurgeTemperature();
+    public void resetPurgeTemperature(PrinterSettings printerSettings);
 
     /**
      * Calibrate head

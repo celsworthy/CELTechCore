@@ -4,6 +4,7 @@
 package celtech.coreUI;
 
 import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.ThreeDViewManager;
 
 /**
  * The ProjectGUIState class contains GUI information for a project such as the selected models. It
@@ -11,5 +12,25 @@ import celtech.coreUI.visualisation.SelectedModelContainers;
  */
 public class ProjectGUIState
 {
-    private final SelectedModelContainers selectedModelContainers = new SelectedModelContainers();
+    private SelectedModelContainers selectedModelContainers;
+    
+    private ThreeDViewManager threeDViewManager;
+    
+    public SelectedModelContainers getSelectedModelContainers() {
+        return selectedModelContainers;
+    }
+
+    public ThreeDViewManager getThreeDViewManager()
+    {
+        return threeDViewManager;
+    }
+    
+    public void setThreeDViewManager(ThreeDViewManager threeDViewManager) {
+        this.threeDViewManager = threeDViewManager;
+    }
+
+    public void setSelectedModelContainers(SelectedModelContainers selectedModelContainers)
+    {
+        this.selectedModelContainers = selectedModelContainers;
+    }
 }
