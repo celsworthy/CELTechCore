@@ -28,6 +28,8 @@ import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.util.Collection;
 import java.util.ResourceBundle;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -104,7 +106,10 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private final ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
         observableArrayList();
 
-    private Printer currentPrinter = null;
+    private Printer currentPrinter;
+    private Project currentProject;
+    private ObjectProperty<Filament> filament0 = new SimpleObjectProperty<>(null);
+    private ObjectProperty<Filament> filament1 = new SimpleObjectProperty<>(null);
 
     private VBox createProfilePage = null;
     private ModalDialog createProfileDialogue = null;
@@ -114,7 +119,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private SettingsSlideOutPanelController slideOutController = null;
 
     private ProfileDetailsController profileDetailsController = null;
-    private Project currentProject;
 
     /**
      * Initialises the controller class.
@@ -255,6 +259,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         setupSliders();
 
+        setupFilamentListeners();
+
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
             {
@@ -262,6 +268,27 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             });
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
+    }
+
+    private void setupFilamentListeners()
+    {
+        filament0.addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+        {
+            if (printerSettings != null)
+            {
+                printerSettings.setFilament0(newValue);
+            }
+        });
+
+        filament1.addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+        {
+            if (printerSettings != null)
+            {
+                printerSettings.setFilament1(newValue);
+            }
+        });
     }
 
     private void setupSliders()
@@ -498,20 +525,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     materialComponent.getSelectedFilamentProperty().addListener(
                         (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                         {
-                            if (printerSettings != null)
-                            {
-                                printerSettings.setFilament0(newValue);
-                            }
+                            filament0.set(newValue);
                         });
                 } else
                 {
                     materialComponent.getSelectedFilamentProperty().addListener(
                         (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                         {
-                            if (printerSettings != null)
-                            {
-                                printerSettings.setFilament1(newValue);
-                            }
+                            filament1.set(newValue);
                         });
                 }
 
@@ -739,6 +760,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             printerSettings.setSelectedPrinter(printerChooser.getValue());
         }
+        if (filament0.get() != null) {
+            printerSettings.setFilament0(filament0.get());
+        }
+        if (filament1.get() != null) {
+            printerSettings.setFilament0(filament0.get());
+        }        
     }
 
     private void printQualityUpdate(PrintQualityEnumeration quality)

@@ -646,7 +646,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     };
 
-    private void removeSettingsScreenStateListener()
+    private void removePrinterSettingsListener()
     {
         if (printerSettings != null)
         {
@@ -657,7 +657,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     /**
      * Create the bindings for when tied to the SettingsScreen.
      */
-    private void createSettingsScreenStateListener(PrinterSettings printerSettings)
+    private void createPrinterSettingsListener(PrinterSettings printerSettings)
     {
         if (printerSettings != null)
         {
@@ -760,9 +760,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     public void whenProjectChanges(Project project)
     {
         selectedProject = project;
-        removeSettingsScreenStateListener();
+        removePrinterSettingsListener();
         printerSettings = project.getPrinterSettings();
-        createSettingsScreenStateListener(printerSettings);
+        currentSettingsPrinter = printerSettings.getSelectedPrinter();
+        createPrinterSettingsListener(printerSettings);
         bindSelectedModels(project);
 
         if (currentSettingsPrinter != null)
