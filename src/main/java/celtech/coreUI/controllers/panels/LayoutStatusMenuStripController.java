@@ -69,7 +69,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
     private final IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
-    
+
     private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
 
     @FXML
@@ -678,15 +678,56 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
         printButton.getTag().removeAllConditionalText();
-        printButton.getTag().addConditionalText(
-            "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
-            filament0Property().isNull());
+
         printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
                                                 printer.getPrinterAncillarySystems().
                                                 lidOpenProperty().not().not());
-        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                                printer.extrudersProperty().get(0).
-                                                filamentLoadedProperty().not());
+
+        if (printer.extrudersProperty().size() == 1) // only one extruder
+        {
+            printButton.getTag().addConditionalText(
+                "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
+                filament0Property().isNull());
+            printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                                    printer.extrudersProperty().get(0).
+                                                    filamentLoadedProperty().not());
+        } else // this printer has two extruders
+        {
+            if (project.allModelsOnSameExtruder())
+            {
+                // only one extruder required, which one is it?
+                int extruderNumber = project.getUsedExtruders().iterator().next();
+                ObjectProperty<Filament> requiredFilamentProperty = null;
+                if (extruderNumber == 0)
+                {
+                    requiredFilamentProperty = printerSettings.filament0Property();
+                } else
+                {
+                    requiredFilamentProperty = printerSettings.filament1Property();
+                }
+
+                printButton.getTag().addConditionalText(
+                    "dialogs.cantPrintNoFilamentSelectedMessage", requiredFilamentProperty.isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                                        printer.extrudersProperty().get(extruderNumber).
+                                                        filamentLoadedProperty().not());
+            } else // both extruders are required
+            {
+                printButton.getTag().addConditionalText(
+                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
+                    filament0Property().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                                        printer.extrudersProperty().get(0).
+                                                        filamentLoadedProperty().not());
+                printButton.getTag().addConditionalText(
+                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.
+                    filament1Property().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                                        printer.extrudersProperty().get(1).
+                                                        filamentLoadedProperty().not());                
+
+            }
+        }
     }
 
     /**
