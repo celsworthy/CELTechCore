@@ -4,9 +4,8 @@
  */
 package celtech.coreUI.visualisation.importers.gcode;
 
-import celtech.coreUI.components.ProjectTab;
+import celtech.appManager.Project;
 import celtech.coreUI.visualisation.ApplicationMaterials;
-import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
@@ -15,7 +14,6 @@ import celtech.services.modelLoader.ModelLoaderTask;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,13 +24,10 @@ import javafx.beans.property.DoubleProperty;
 import javafx.scene.CacheHint;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.CullFace;
-import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.StrokeType;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -51,15 +46,7 @@ public class GCodeImporterTest
     private final int FACE_INDICES_PER_VERTEX = 2;
     private final int FACE_INDICES_PER_TRIANGLE = FACE_INDICES_PER_VERTEX * POINTS_PER_VERTEX;
 
-    /**
-     *
-     * @param parentTask
-     * @param modelFileToLoad
-     * @param targetProjectTab
-     * @param percentProgressProperty
-     * @return
-     */
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, Project targetProject, DoubleProperty percentProgressProperty)
     {
 //        G result = new Node();
 //        Node currentLayer = 
@@ -131,7 +118,7 @@ public class GCodeImporterTest
 
         GCodeMeshData gcodeData = new GCodeMeshData(outputMeshes, referencedElements, referencedLayers);
         ModelContainer container = new ModelContainer(modelFileToLoad, gcodeData, fileLines);
-        return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProjectTab, container);
+        return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, container);
 
     }
 

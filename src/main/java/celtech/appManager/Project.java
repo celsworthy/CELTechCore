@@ -6,6 +6,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.File;
@@ -494,4 +495,42 @@ public class Project implements Serializable
 
         void whenModelRemoved(ModelContainer modelContainer);
     }
+
+    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
+    {
+        steno.debug("I am loading " + fullFilename);
+        if (getProjectMode() == ProjectMode.NONE)
+        {
+            switch (modelContainer.getModelContentsType())
+            {
+                case GCODE:
+                    setProjectMode(ProjectMode.GCODE);
+                    setProjectName(modelContainer.getModelName());
+                    setGCodeFilename(fullFilename);
+//                    viewManager.activateGCodeVisualisationMode();
+                    break;
+                case MESH:
+                    setProjectMode(ProjectMode.MESH);
+//                    projectManager.projectOpened(project);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if ((getProjectMode() == ProjectMode.GCODE
+            && modelContainer.getModelContentsType()
+            == ModelContentsEnumeration.GCODE)
+            || (getProjectMode() == ProjectMode.MESH
+            && modelContainer.getModelContentsType()
+            == ModelContentsEnumeration.MESH))
+        {
+            addModel(modelContainer);
+        } else
+        {
+            steno.warning("Discarded load of " + modelContainer.getModelName()
+                + " due to conflict with project type");
+        }
+    }
+
 }

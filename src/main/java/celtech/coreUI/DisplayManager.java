@@ -6,7 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
@@ -16,24 +15,17 @@ import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LayoutSidePanelController;
 import celtech.coreUI.controllers.panels.LayoutSlideOutPanelController;
-import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
-import celtech.coreUI.controllers.panels.SettingsSidePanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
-import celtech.services.modelLoader.ModelLoadResults;
-import celtech.services.modelLoader.ModelLoaderService;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -41,7 +33,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -91,7 +82,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
 
     private static TabPane tabDisplay = null;
-    private LayoutStatusMenuStripController layoutStatusMenuStripController = null;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel = null;
     private static Tab printerStatusTab = null;
     private static Tab addPageTab = null;
@@ -106,11 +96,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      * Project loading
      */
     private ProjectLoader projectLoader = null;
-    /*
-     * Mesh Model loading
-     */
-    private final ModelLoaderService modelLoaderService = new ModelLoaderService();
-    private ProgressDialog modelLoadDialog = null;
 
     /*
      * GCode-related
@@ -143,58 +128,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
         steno.debug("Starting AutoMaker - machine type is " + ApplicationConfiguration.
             getMachineType());
-
-        modelLoadDialog = new ProgressDialog(modelLoaderService);
-
-        modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
-        {
-            whenModelLoadSucceeded();
-        });
     }
 
-    private void whenModelLoadSucceeded()
-    {
-        ModelLoadResults loadResults = modelLoaderService.getValue();
-        if (loadResults.getResults().isEmpty())
-        {
-            return;
-        }
-        ModelLoadResult firstResult = loadResults.getResults().get(0);
-        boolean projectIsEmpty = firstResult.getTargetProjectTab().getLoadedModels().isEmpty();
-        for (ModelLoadResult loadResult : loadResults.getResults())
-        {
-            if (loadResult != null)
-            {
-                if (loadResult.isModelTooLarge())
-                {
-                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
-                        showModelTooBigDialog(loadResult.getModelFilename());
-
-                    if (shrinkModel)
-                    {
-                        ModelContainer modelContainer = loadResult.getModelContainer();
-                        modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProjectTab().addModelContainer(
-                            loadResult.getFullFilename(), modelContainer);
-                    }
-                } else
-                {
-                    ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(),
-                                                                       modelContainer);
-                }
-            } else
-            {
-                steno.error("Error whilst attempting to load model");
-            }
-        }
-        if (loadResults.isRelayout() && projectIsEmpty && loadResults.getResults().size() > 1)
-        {
-            autoLayout();
-        }
-
-    }
-
+    
     private void loadProjectsAtStartup()
     {
         // Load up any projects that were open last time we shut down....
@@ -477,7 +413,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 + "LayoutStatusMenuStrip.fxml");
             FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, Lookup.getLanguageBundle());
             VBox menuStripControls = (VBox) menuStripLoader.load();
-            layoutStatusMenuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(slideoutAndProjectHolder.widthProperty());
             slideoutAndProjectHolder.populateProjectDisplay(menuStripControls);
         } catch (IOException ex)
@@ -705,68 +640,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         layersInGCode.set(value);
     }
 
-    /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. ,
-     *
-     * @param modelsToLoad
-     */
-    public void loadExternalModels(List<File> modelsToLoad)
-    {
-        loadExternalModels(modelsToLoad, false);
-    }
-
-    /**
-     * Load each model in modelsToLoad and then optionally lay them out on the bed.
-     *
-     * @param modelsToLoad
-     * @param relayout
-     */
-    public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
-    {
-        loadExternalModels(modelsToLoad, false, relayout);
-    }
-
-    /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already
-     * models loaded in the project then do not relayout even if relayout=true;
-     *
-     * @param modelsToLoad
-     * @param newTab
-     * @param relayout
-     */
-    public void loadExternalModels(List<File> modelsToLoad, boolean newTab, boolean relayout)
-    {
-        ProjectTab tabToUse = null;
-
-        if (!modelsToLoad.isEmpty())
-        {
-            if (newTab)
-            {
-                tabToUse = createAndAddNewProjectTab();
-            } else if (!modelLoaderService.isRunning()
-                && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
-            {
-                tabToUse = (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get());
-            }
-
-            if (tabToUse != null)
-            {
-                modelLoaderService.reset();
-                modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
-                modelLoaderService.setTargetTab(tabToUse);
-                modelLoaderService.start();
-            }
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ReadOnlyBooleanProperty modelLoadingProperty()
-    {
-        return modelLoaderService.runningProperty();
-    }
 
     /**
      *

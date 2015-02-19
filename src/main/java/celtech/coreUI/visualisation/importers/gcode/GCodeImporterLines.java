@@ -4,7 +4,7 @@
  */
 package celtech.coreUI.visualisation.importers.gcode;
 
-import celtech.coreUI.components.ProjectTab;
+import celtech.appManager.Project;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
@@ -55,7 +55,7 @@ public class GCodeImporterLines
      * @param percentProgressProperty
      * @return
      */
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, Project targetProject, DoubleProperty percentProgressProperty)
     {
 //        G result = new Node();
 //        Node currentLayer = 
@@ -222,7 +222,7 @@ public class GCodeImporterLines
 
         GCodeMeshData gcodeData = new GCodeMeshData(outputMeshes, referencedElements, referencedLayers);
         ModelContainer container = new ModelContainer(modelFileToLoad, gcodeData, fileLines);
-        return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProjectTab, container);
+        return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, container);
 
     }
 

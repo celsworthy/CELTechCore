@@ -31,8 +31,8 @@
  */
 package celtech.coreUI.visualisation.importers.obj;
 
+import celtech.appManager.Project;
 import celtech.configuration.PrintBed;
-import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.importers.IntegerArrayList;
 import celtech.coreUI.visualisation.importers.FloatArrayList;
@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.geometry.BoundingBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
@@ -151,7 +150,8 @@ public class ObjImporter
      * @param targetProjectTab
      * @return
      */
-        public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab)
+        public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, 
+            Project targetProject)
     {
         this.parentTask = parentTask;
         this.objFileUrl = modelFileToLoad;
@@ -174,7 +174,7 @@ public class ObjImporter
             ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshes);
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
 
-            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProjectTab, modelContainer);
+            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);
         } catch (IOException ex)
         {
             steno.error("Exception whilst reading obj file " + modelFileToLoad + ":" + ex);

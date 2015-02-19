@@ -20,6 +20,7 @@ import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Head;
@@ -146,6 +147,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private Project selectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
     private SelectedModelContainers modelSelection;
+    private ModelLoader modelLoader = new ModelLoader();
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -226,80 +228,81 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void addModel(ActionEvent event)
     {
-//        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
         Platform.runLater(() ->
         {
-            ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
-
-            while (iterator.hasNext())
-            {
-                iterator.next();
-                iterator.remove();
-            }
-
-            ProjectMode projectMode = ProjectMode.NONE;
-
-            if (selectedProject != null)
-            {
-                projectMode = selectedProject.getProjectMode();
-            }
-
-            String descriptionOfFile = null;
-
-            switch (projectMode)
-            {
-                case NONE:
-                    descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
-                    break;
-                case MESH:
-                    descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
-                    break;
-                case GCODE:
-                    descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
-                    break;
-                default:
-                    break;
-            }
-            modelFileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(descriptionOfFile,
-                                                ApplicationConfiguration.
-                                                getSupportedFileExtensionWildcards(
-                                                    projectMode)));
-
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
-
-            List<File> files;
-            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
-            {
-                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-            } else
-            {
-                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-                files = new ArrayList<>();
-                if (file != null)
-                {
-                    files.add(file);
-                }
-            }
+            List<File> files = selectFiles();
 
             if (files != null && !files.isEmpty())
             {
                 ApplicationConfiguration.setLastDirectory(
                     DirectoryMemoryProperty.MODEL,
                     files.get(0).getParentFile().getAbsolutePath());
-                displayManager.loadExternalModels(files, true);
+                modelLoader.loadExternalModels(selectedProject, files, true);
             }
         });
     }
 
-    @FXML
-    void addCloudModel(ActionEvent event)
+    /**
+     * Allow the user to select the files they want to load.
+     */
+    private List<File> selectFiles()
     {
-        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
+        ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            iterator.remove();
+        }
+        ProjectMode projectMode = ProjectMode.NONE;
+        if (selectedProject != null)
+        {
+            projectMode = selectedProject.getProjectMode();
+        }
+        String descriptionOfFile = null;
+        switch (projectMode)
+        {
+            case NONE:
+                descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
+                break;
+            case MESH:
+                descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
+                break;
+            case GCODE:
+                descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
+                break;
+            default:
+                break;
+        }
+        modelFileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter(descriptionOfFile,
+                ApplicationConfiguration.
+                    getSupportedFileExtensionWildcards(
+                        projectMode)));
+        modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
+                DirectoryMemoryProperty.MODEL)));
+        List<File> files;
+        if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
+        {
+            files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+        } else
+        {
+            File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+            files = new ArrayList<>();
+            if (file != null)
+            {
+                files.add(file);
+            }
+        }
+        return files;
     }
 
     @FXML
+        void addCloudModel(ActionEvent event)
+        {
+            applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
+        }
+        
+        @FXML
     void deleteModel(ActionEvent event)
     {
         for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())

@@ -1,30 +1,27 @@
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
+import celtech.coreUI.visualisation.ModelLoader;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import celtech.web.AllCookiePolicy;
-import celtech.web.CookieContainer;
 import celtech.web.PersistentCookieStore;
-import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
@@ -55,6 +52,7 @@ public class MyMiniFactoryLoaderController implements Initializable
 
     private final String myMiniFactoryURLString = "http://cel-robox.myminifactory.com";
     private boolean forwardsPossible = false;
+    private final ModelLoader modelLoader = new ModelLoader();
 
     @FXML
     private VBox webContentContainer;
@@ -103,6 +101,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         addToProjectButton.disableProperty().bind(Bindings.equal("", fileDownloadLocation));
 
         loadWebData();
+
     }
 
     public void loadWebData()
@@ -176,7 +175,8 @@ public class MyMiniFactoryLoaderController implements Initializable
                 MyMiniFactoryLoadResult result = (MyMiniFactoryLoadResult) event.getSource().getValue();
                 if (result.isSuccess())
                 {
-                    DisplayManager.getInstance().loadExternalModels(result.getFilesToLoad());
+                    modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
+                                                   result.getFilesToLoad());
                 }
                 finishedWithEngines();
                 ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);

@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.visualisation.importers;
 
+import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import celtech.coreUI.components.ProjectTab;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class ModelLoadResult
     private ModelContainer modelContainer = null;
     // GCode and obj create a group
     private Group groupedParts = null;
-    private ProjectTab targetProjectTab = null;
+    private Project targetProject = null;
     // File lines are only used for gcode at present
     private final ArrayList<String> fileLines = new ArrayList<>();
     private String fullFilename = null;
@@ -37,12 +38,12 @@ public class ModelLoadResult
      * @param targetProjectTab
      * @param modelContainer
      */
-    public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, ProjectTab targetProjectTab, ModelContainer modelContainer)
+    public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, Project targetProject, ModelContainer modelContainer)
     {
         this.modelTooLargeForPrintbed = modelIsTooLarge;
         this.fullFilename = fullFilename;
         this.filename = filename;
-        this.targetProjectTab = targetProjectTab;
+        this.targetProject = targetProject;
         this.modelContainer = modelContainer;
     }
 
@@ -115,9 +116,9 @@ public class ModelLoadResult
      *
      * @return
      */
-    public ProjectTab getTargetProjectTab()
+    public Project getTargetProject()
     {
-        return targetProjectTab;
+        return targetProject;
     }
     
     /**

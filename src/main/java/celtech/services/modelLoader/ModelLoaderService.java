@@ -4,9 +4,9 @@
  */
 package celtech.services.modelLoader;
 
+import celtech.appManager.Project;
 import celtech.coreUI.components.ProjectTab;
 import celtech.services.ControllableService;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import java.io.File;
 import java.util.List;
 import javafx.concurrent.Service;
@@ -21,7 +21,7 @@ public class ModelLoaderService extends Service<ModelLoadResults> implements
 {
 
     private List<File> modelFilesToLoad;
-    private ProjectTab targetProjectTab = null;
+    private Project targetProject;
     private boolean relayout;
 
     /**
@@ -37,7 +37,11 @@ public class ModelLoaderService extends Service<ModelLoadResults> implements
     @Override
     protected Task<ModelLoadResults> createTask()
     {
-        return new ModelLoaderTask(modelFilesToLoad, targetProjectTab, relayout);
+        return new ModelLoaderTask(modelFilesToLoad, targetProject, relayout);
+    }
+    
+    public void setProject(Project project) {
+        this.targetProject = project;
     }
 
     /**
@@ -48,15 +52,6 @@ public class ModelLoaderService extends Service<ModelLoadResults> implements
     public boolean cancelRun()
     {
         return cancel();
-    }
-
-    /**
-     *
-     * @param targetProjectTab
-     */
-    public void setTargetTab(ProjectTab targetProjectTab)
-    {
-        this.targetProjectTab = targetProjectTab;
     }
 
 }

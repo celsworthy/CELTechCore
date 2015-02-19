@@ -17,10 +17,10 @@ import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
+import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +34,6 @@ import java.util.Set;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -70,6 +69,7 @@ public class ProjectTab extends Tab
     private DisplayManager displayManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
+    private ModelLoader modelLoader = new ModelLoader();
 
     final Rectangle testRect = new Rectangle(5, 5);
 
@@ -273,7 +273,7 @@ public class ProjectTab extends Tab
                 boolean success = false;
                 if (db.hasFiles())
                 {
-                    displayManager.loadExternalModels(db.getFiles(), true);
+                    modelLoader.loadExternalModels(project, db.getFiles(), true);
                 } else
                 {
                     steno.error("No files in dragboard");
@@ -377,61 +377,6 @@ public class ProjectTab extends Tab
 //        projectManager.projectOpened(project);
 //    }
 
-    /**
-     *
-     * @param fullFilename
-     * @param modelContainer
-     */
-    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
-    {
-        steno.debug("I am loading " + fullFilename);
-        if (project.getProjectMode() == ProjectMode.NONE)
-        {
-            switch (modelContainer.getModelContentsType())
-            {
-                case GCODE:
-                    project.setProjectMode(ProjectMode.GCODE);
-                    project.setProjectName(modelContainer.getModelName());
-                    project.setGCodeFilename(fullFilename);
-//                    viewManager.activateGCodeVisualisationMode();
-                    break;
-                case MESH:
-                    project.setProjectMode(ProjectMode.MESH);
-                    projectManager.projectOpened(project);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if ((project.getProjectMode() == ProjectMode.GCODE
-            && modelContainer.getModelContentsType()
-            == ModelContentsEnumeration.GCODE)
-            || (project.getProjectMode() == ProjectMode.MESH
-            && modelContainer.getModelContentsType()
-            == ModelContentsEnumeration.MESH))
-        {
-//            viewManager.addModel(modelContainer);
-            viewManager.selectModel(modelContainer, false);
-        } else
-        {
-            steno.warning("Discarded load of " + modelContainer.getModelName()
-                + " due to conflict with project type");
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObservableList<ModelContainer> getLoadedModels()
-    {
-        return viewManager.getLoadedModels();
-    }
-
-    /**
-     *
-     */
     public void autoLayout()
     {
         Collections.sort(viewManager.getLoadedModels());
@@ -455,7 +400,7 @@ public class ProjectTab extends Tab
 
         if (project.getProjectMode() == ProjectMode.MESH)
         {
-            if (viewManager.getLoadedModels().size() > 0)
+            if (project.getLoadedModels().size() > 0)
             {
                 try
                 {
