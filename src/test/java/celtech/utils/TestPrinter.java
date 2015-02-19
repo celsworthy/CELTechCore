@@ -56,32 +56,35 @@ import javafx.scene.paint.Color;
  */
 class TestPrinter implements Printer
 {
+
     private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
     private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
-    
+
     void addHead()
     {
         HeadFile headFile = new HeadFile();
         Head head = new Head(headFile);
         headProperty.setValue(head);
     }
-    
-    void removeHead() {
+
+    void removeHead()
+    {
         headProperty.setValue(null);
     }
-    
+
     void addReel(int i)
     {
         Reel reel = new Reel();
         reelsProperty.put(i, reel);
-    }    
-    
+    }
+
     void removeReel(int i)
     {
         reelsProperty.remove(i);
     }
-    
-    void changeReel(int i) {
+
+    void changeReel(int i)
+    {
         ReelEEPROMDataResponse eepromData = new ReelEEPROMDataResponse();
         eepromData.setReelFilamentID("ABC");
         eepromData.setReelAmbientTemperature(100);
@@ -633,8 +636,12 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(int reelNumber, String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature,
-        float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
+    public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
+        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+        float reelFirstLayerBedTemperature,
+        float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+        String friendlyName,
         MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -647,14 +654,17 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double filamentDiameterD, double filamentMultiplierD,
+    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE,
+        double filamentDiameterD, double filamentMultiplierD,
         double feedRateMultiplier) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target, double nozzle1FirstLayerTarget, double nozzle1Target, double bedFirstLayerTarget, double bedTarget,
+    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
+        double nozzle1FirstLayerTarget, double nozzle1Target, double bedFirstLayerTarget,
+        double bedTarget,
         double ambientTarget) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -673,7 +683,8 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest)
+    public void registerErrorConsumer(ErrorConsumer errorConsumer,
+        List<FirmwareError> errorsOfInterest)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -765,9 +776,9 @@ class TestPrinter implements Printer
     @Override
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
     {
-        
+
     }
-    
+
     public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -836,6 +847,10 @@ class TestPrinter implements Printer
 
     @Override
     public void resetPurgeTemperature(PrinterSettings printerSettings)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public boolean doFilamentSlipWhilePrinting(FirmwareError error)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

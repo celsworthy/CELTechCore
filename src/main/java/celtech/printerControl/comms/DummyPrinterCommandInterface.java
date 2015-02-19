@@ -233,7 +233,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 if (attachReelElements.length == 2)
                 {
                     filamentName = attachReelElements[0];
-                    reelNumber = Integer.valueOf(attachReelElements[1]);
+                    int reelNumber = Integer.valueOf(attachReelElements[1]);
                     attachSuccess = attachReel(filamentName, reelNumber);
                 }
 
