@@ -16,6 +16,7 @@ import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.printerControl.model.Printer;
+import java.util.Set;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -804,120 +805,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         project.projectModified();
     }
 
-    /**
-     *
-     * @param width
-     */
-    public void resizeSelectionWidth(double width)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.resizeWidth(width);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param height
-     */
-    public void resizeSelectionHeight(double height)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.resizeHeight(height);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param depth
-     */
-    public void resizeSelectionDepth(double depth)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.resizeDepth(depth);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param newScale
-     */
-    public void scaleSelection(double newScale)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.setScale(newScale);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param rotation
-     */
-    public void rotateSelection(double rotation)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.setRotationY(rotation);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param pickedModel
-     */
     public void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())
         {
             selectedModelContainers.removeModelContainer(pickedModel);
         }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObservableList<ModelContainer> getLoadedModels()
-    {
-        return loadedModels;
     }
 
     public void collideModels()
@@ -1325,6 +1218,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     @Override
     public void whenAutoLaidOut()
+    {
+        collideModels();
+    }
+
+    @Override
+    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         collideModels();
     }

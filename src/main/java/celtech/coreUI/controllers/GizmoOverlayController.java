@@ -16,14 +16,11 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Point3D;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.SVGPath;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -165,7 +162,7 @@ public class GizmoOverlayController implements Initializable
     public void configure(ThreeDViewManager viewManager)
     {
         this.viewManager = viewManager;
-        this.loadedModels = viewManager.getLoadedModels();
+//        this.loadedModels = viewManager.getLoadedModels();
         this.selectionContainer = null; //viewManager.getSelectionContainer();
 
         startRotationLine.setVisible(false);

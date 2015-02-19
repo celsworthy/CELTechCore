@@ -142,7 +142,12 @@ public class SelectedModelContainers implements ProjectChangesListener
     @Override
     public void whenAutoLaidOut()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    } 
+    
+    @Override
+    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    {
+        updateSelectedValues();
     }    
 
     /**

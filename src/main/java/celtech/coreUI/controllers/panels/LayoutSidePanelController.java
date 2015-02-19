@@ -258,7 +258,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().scaleSelection(
+                                boundProject.scaleModels(selectionModel.getSelectedModelsSnapshot(),
                                     scaleTextField.getAsDouble() / 100.0);
                             } catch (ParseException ex)
                             {
@@ -293,7 +293,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().rotateSelection(
+                                boundProject.rotateModels(selectionModel.getSelectedModelsSnapshot(),
                                     rotationTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -328,7 +328,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().resizeSelectionWidth(
+                                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
                                     widthTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -363,7 +363,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().resizeSelectionHeight(
+                                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
                                     heightTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -397,7 +397,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().resizeSelectionDepth(
+                                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
                                     depthTextField.getAsDouble());
                             } catch (ParseException ex)
                             {

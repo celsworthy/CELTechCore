@@ -46,25 +46,16 @@ public class Project implements Serializable
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
     private String customProfileName = "";
     private String lastPrintJobID = "";
-    private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
-    private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<Filament>();
+    private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
+    private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private PrinterSettings printerSettings;
 
-    /**
-     *
-     */
     public Project()
     {
         initialiseExtruderFilaments();
         this.printerSettings = new PrinterSettings();
     }
 
-    /**
-     *
-     * @param preloadedProjectUUID
-     * @param projectName
-     * @param loadedModels
-     */
     public Project(String preloadedProjectUUID, String projectName,
         ObservableList<ModelContainer> loadedModels)
     {
@@ -74,65 +65,37 @@ public class Project implements Serializable
         this.printerSettings = new PrinterSettings();
     }
 
-    /**
-     *
-     * @param value
-     */
     public final void setProjectName(String value)
     {
         projectHeader.setProjectName(value);
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getProjectName()
     {
         return projectHeader.getProjectName();
     }
 
-    /**
-     *
-     * @return
-     */
     public final StringProperty projectNameProperty()
     {
         return projectHeader.projectNameProperty();
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getAbsolutePath()
     {
         return projectHeader.getProjectPath() + File.separator + projectHeader.getProjectName()
             + ApplicationConfiguration.projectFileExtension;
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getUUID()
     {
         return projectHeader.getUUID();
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getGCodeFilename()
     {
         return gcodeFileName;
     }
 
-    /**
-     *
-     * @param gcodeFilename
-     */
     public final void setGCodeFilename(String gcodeFilename)
     {
         this.gcodeFileName = gcodeFilename;
@@ -270,100 +233,57 @@ public class Project implements Serializable
 
     }
 
-    /**
-     *
-     * @return
-     */
     public ProjectHeader getProjectHeader()
     {
         return projectHeader;
     }
 
-    /**
-     *
-     * @return
-     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return loadedModels;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public String toString()
     {
         return projectHeader.getProjectName();
     }
 
-    /**
-     *
-     * @return
-     */
     public ProjectMode getProjectMode()
     {
         return projectMode.get();
     }
 
-    /**
-     *
-     * @param mode
-     */
     public void setProjectMode(ProjectMode mode)
     {
         projectMode.set(mode);
     }
 
-    /**
-     *
-     * @return
-     */
     public ObjectProperty<ProjectMode> projectModeProperty()
     {
         return projectMode;
     }
 
-    /**
-     *
-     * @param printJobID
-     */
     public void addPrintJobID(String printJobID)
     {
         lastPrintJobID = printJobID;
     }
 
-    /**
-     *
-     */
     public void projectModified()
     {
         lastPrintJobID = "";
     }
 
-    /**
-     *
-     * @return
-     */
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
     }
 
-    /**
-     *
-     * @return
-     */
     public PrintQualityEnumeration getPrintQuality()
     {
         return printerSettings.getPrintQuality();
     }
 
-    /**
-     *
-     * @param printQuality
-     */
     public void setPrintQuality(PrintQualityEnumeration printQuality)
     {
         if (printerSettings.getPrintQuality() != printQuality)
@@ -373,19 +293,11 @@ public class Project implements Serializable
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public String getCustomProfileName()
     {
         return customProfileName;
     }
 
-    /**
-     *
-     * @param customProfileName
-     */
     public void setCustomProfileName(String customProfileName)
     {
         if (customProfileName == null)
@@ -424,7 +336,7 @@ public class Project implements Serializable
      */
     private void initialiseExtruderFilaments()
     {
-        // defaults in case of no printer or reel
+        // set defaults in case of no printer or reel
         extruder0Filament.set(DEFAULT_FILAMENT);
         extruder1Filament.set(DEFAULT_FILAMENT);
 
@@ -488,19 +400,34 @@ public class Project implements Serializable
     }
 
     /**
-     * ProjectChangesListener allows other objects to observe when models are added or removed to
+     * ProjectChangesListener allows other objects to observe when models are added or removed etc to
      * the project.
      */
     public interface ProjectChangesListener
     {
-
+        /**
+         * This should be fired when a model is added to the project.
+         */
         void whenModelAdded(ModelContainer modelContainer);
 
+        /**
+         * This should be fired when a model is removed from the project.
+         */
         void whenModelRemoved(ModelContainer modelContainer);
-        
+
+        /**
+         * This should be fired when the project is auto laid out.
+         */
         void whenAutoLaidOut();
+
+        /**
+         * This should be fired when one or more models have been moved, rotated or scaled etc. If
+         * possible try to fire just once for any given group change.
+         */
+        void whenModelsTransformed(Set<ModelContainer> modelContainers);
     }
 
+    //TODO moved from ProjectTab, should be simplified or even eliminated if possible
     public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
         steno.debug("I am loading " + fullFilename);
@@ -537,7 +464,7 @@ public class Project implements Serializable
                 + " due to conflict with project type");
         }
     }
-    
+
     public void autoLayout()
     {
         Collections.sort(loadedModels);
@@ -547,12 +474,86 @@ public class Project implements Serializable
         thing.reference(loadedModels, 10);
         thing.pack();
         thing.relocateBlocks();
-        
+
         projectModified();
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenAutoLaidOut();
         }
-    }    
-
+    }
+    
+    public void scaleModels(Set<ModelContainer> modelContainers, double newScale)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setScale(newScale);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }
+    
+    public void rotateModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setRotationY(rotation);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }   
+    
+    public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.resizeDepth(depth);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }     
+    
+    public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.resizeHeight(height);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }   
+    
+    public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.resizeWidth(width);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }      
 }

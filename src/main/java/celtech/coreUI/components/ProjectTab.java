@@ -297,8 +297,7 @@ public class ProjectTab extends Tab
                                                           Lookup.getLanguageBundle());
             StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
             GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(viewManager.getLoadedModels(),
-                                            project);
+            gcodeEditorController.configure(project.getLoadedModels(), project);
             AnchorPane.setTopAnchor(gcodeEditor, 30.0);
             AnchorPane.setRightAnchor(gcodeEditor, 0.0);
 
