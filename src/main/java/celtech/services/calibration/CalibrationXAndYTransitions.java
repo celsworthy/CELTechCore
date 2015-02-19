@@ -43,7 +43,7 @@ public class CalibrationXAndYTransitions implements Transitions
                          {
                              actions.doFailedAction();
                      },
-                                         CalibrationXAndYState.FAILED));
+                                         CalibrationXAndYState.DONE));
 
         // IDLE
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,

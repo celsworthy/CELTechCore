@@ -270,7 +270,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER).and(macroType.isNull().or(
                         macroType.isNotNull().and(macroIsInterruptible))))
             .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO).and(macroIsInterruptible))
-            .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)));
+            .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
+            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
+            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
+            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING)));
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)
@@ -280,13 +283,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
-            .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER)));
+            .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER))
+            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO)
+                .and(macroType.isEqualTo(MacroType.GCODE_PRINT))));
 
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
 
         canSetFilamentInfo.bind(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER)
-            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING)));
+            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING))
+            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO)));
 
         canRemoveHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
@@ -356,7 +362,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             printEngine.goToPrinting();
                             break;
                         case EXECUTING_MACRO:
-                            registerErrorConsumerAllErrors(this);
                             printEngine.goToExecutingMacro();
                             break;
                         case EJECTING_FILAMENT:
@@ -373,7 +378,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         this.printerStatus.set(printerStatus);
                     }
-                    steno.info("Setting printer status to " + printerStatus);
+                    steno.debug("Setting printer status to " + printerStatus);
             });
     }
 
@@ -878,7 +883,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void executeGCodeFile(String fileName) throws PrinterException
+    public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException
     {
         if (!canRunMacro.get())
         {
@@ -888,6 +893,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         if (mustPurgeHead.get())
         {
             throw new PurgeRequiredException("Cannot execute GCode - purge required");
+        }
+
+        if (monitorForErrors)
+        {
+            registerErrorConsumerAllErrors(this);
         }
 
         macroType.set(MacroType.GCODE_PRINT);
@@ -905,6 +915,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public final void executeMacro(String macroName) throws PrinterException
     {
+        steno.debug("Request to run macro: " + macroName);
+
         if (!canRunMacro.get())
         {
             throw new PrintActionUnavailableException("Run macro not available");
@@ -2336,7 +2348,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             boolean success = doEjectFilamentActivity(extruderNumber, cancellable);
 
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Filament ejected");
-            
 
         }, "Ejecting filament").start();
 
@@ -2619,7 +2630,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public XAndYStateTransitionManager startCalibrateXAndY() throws PrinterException
     {
-        if (!canCalibrateHead.get())
+        if (!canCalibrateXYAlignment.get())
         {
             throw new PrinterException("Calibrate not permitted");
         }
@@ -2634,7 +2645,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException
     {
-        if (!canCalibrateHead.get())
+        if (!canCalibrateNozzleHeight.get())
         {
             throw new PrinterException("Calibrate not permitted");
         }
@@ -2649,7 +2660,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException
     {
-        if (!canCalibrateHead.get())
+        if (!canCalibrateNozzleOpening.get())
         {
             throw new PrinterException("Calibrate not permitted");
         }
@@ -2666,12 +2677,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void registerErrorConsumer(ErrorConsumer errorConsumer,
         List<FirmwareError> errorsOfInterest)
     {
+        steno.debug("Registering printer error consumer - " + errorConsumer.toString()
+            + " on printer " + printerIdentity.printerFriendlyName);
         errorConsumers.put(errorConsumer, errorsOfInterest);
     }
 
     @Override
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer)
     {
+        steno.debug("Registering printer error consumer for all errors - " + errorConsumer.
+            toString() + " on printer " + printerIdentity.printerFriendlyName);
         ArrayList<FirmwareError> errorsOfInterest = new ArrayList<>();
         errorsOfInterest.add(FirmwareError.ALL_ERRORS);
         errorConsumers.put(errorConsumer, errorsOfInterest);
@@ -2680,12 +2695,59 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer)
     {
+        steno.debug("Deregistering printer error consumer for all errors - " + errorConsumer.
+            toString() + " on printer " + printerIdentity.printerFriendlyName);
         errorConsumers.remove(errorConsumer);
+    }
+
+    @Override
+    public boolean doFilamentSlipWhilePrinting(FirmwareError error)
+    {
+        boolean reachedLimit = false;
+
+        float feedrateMultiplier = printerAncillarySystems.feedRateMultiplier.get();
+
+        if (!moderatingFeedrate)
+        {
+            moderatingFeedrate = true;
+            originalFeedrateMultiplier = feedrateMultiplier;
+        }
+
+        if (MathUtils.compareDouble(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER, 1e-2)
+            == MathUtils.MORE_THAN)
+        {
+            feedrateMultiplier -= 0.2f;
+            feedrateMultiplier = Math.max(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER);
+            try
+            {
+                steno.info("Automatically reducing feedrate to " + feedrateMultiplier);
+                changeFeedRateMultiplierDuringPrint(feedrateMultiplier);
+            } catch (PrinterException ex)
+            {
+                steno.warning("Failed to automatically reduce feedrate during print - " + ex.
+                    getMessage());
+            }
+        } else
+        {
+            //Unable to proceed
+            steno.warning("Hit feedrate limit - autopause");
+            try
+            {
+                pause();
+            } catch (PrinterException ex)
+            {
+                steno.warning("Failed to automatically pause during print");
+            }
+            reachedLimit = true;
+        }
+
+        return reachedLimit;
     }
 
     @Override
     public void consumeError(FirmwareError error)
     {
+
         switch (error)
         {
             case E_FILAMENT_SLIP:
@@ -2694,55 +2756,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     || (printerStatus.get() == PrinterStatus.PRINTING && macroType.get().equals(
                         MacroType.GCODE_PRINT)))
                 {
-                    // Close and open the nozzle
-//                    try
-//                    {
-//                        steno.info("Pausing");
-//                        pause();
-//                        float currentBPosition = head.get().BPosition.get();
-//                        steno.info("Closing");
-//                        closeNozzleFully();
-//                        steno.info("Re-opening");
-//                        gotoNozzlePosition(currentBPosition);
-//                        steno.info("Resuming");
-//                        resume();
-//                    } catch (PrinterException ex)
-//                    {
-//                        steno.warning("Failed to cycle nozzle");
-//                    }
+                    boolean reachedLimit = doFilamentSlipWhilePrinting(error);
 
-                    float feedrateMultiplier = printerAncillarySystems.feedRateMultiplier.get();
-
-                    if (!moderatingFeedrate)
+                    if (reachedLimit)
                     {
-                        moderatingFeedrate = true;
-                        originalFeedrateMultiplier = feedrateMultiplier;
-                    }
-
-                    if (MathUtils.compareDouble(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER, 1e-2)
-                        == MathUtils.MORE_THAN)
-                    {
-                        feedrateMultiplier -= 0.2f;
-                        feedrateMultiplier = Math.max(feedrateMultiplier, MIN_FEEDRATE_MULTIPLIER);
-                        try
-                        {
-                            steno.info("Reducing feedrate to " + feedrateMultiplier);
-                            changeFeedRateMultiplierDuringPrint(feedrateMultiplier);
-                        } catch (PrinterException ex)
-                        {
-                            steno.warning("Failed to automatically reduce feedrate during print");
-                        }
-                    } else
-                    {
-                        //Unable to proceed
-                        try
-                        {
-                            pause();
-                        } catch (PrinterException ex)
-                        {
-                            steno.warning("Failed to automatically pause during print");
-                        }
-
                         Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error,
                                                                                             this);
                     }
@@ -2802,6 +2819,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
 
         return debugData;
+
     }
 
     class RoboxEventProcessor implements Runnable
@@ -2830,6 +2848,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
                             getFirmwareErrors());
+                        // Copy the error consumer list to stop concurrent modification exceptions if the consumer deregisters itself
+                        Map<ErrorConsumer, List<FirmwareError>> errorsToIterateThrough = new WeakHashMap<>(
+                            errorConsumers);
 
                         try
                         {
@@ -2848,7 +2869,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 .forEach(foundError ->
                                     {
                                         errorWasConsumed = false;
-                                        errorConsumers.forEach((consumer, errorList) ->
+                                        errorsToIterateThrough.forEach((consumer, errorList) ->
                                             {
                                                 if (errorList.contains(foundError) || errorList.
                                                 contains(FirmwareError.ALL_ERRORS))

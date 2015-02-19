@@ -28,13 +28,13 @@ public class HiddenKey
 
     private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
     {
-        steno.info("Got character " + event.getCharacter());
+        steno.debug("Got character " + event.getCharacter());
 
         if (parameterCaptureInProgress)
         {
             if (event.getCharacter().equals("\r"))
             {
-                steno.info("Got captured parameter " + parameterCaptureBuffer);
+                steno.debug("Got captured parameter " + parameterCaptureBuffer);
                 triggerListeners(hiddenCommandKeyBuffer, parameterCaptureBuffer);
                 hiddenCommandKeyBuffer = "";
                 parameterCaptureBuffer = "";

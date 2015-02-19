@@ -26,41 +26,51 @@ public class CalibrationXAndYActions
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
+    private final CalibrationXYErrorHandler printerErrorHandler;
+
     private final Cancellable cancellable = new Cancellable();
 
     public CalibrationXAndYActions(Printer printer)
     {
         this.printer = printer;
         cancellable.cancelled = false;
+        
+        printerErrorHandler = new CalibrationXYErrorHandler(printer, cancellable);
     }
-    
+
     public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
+        printerErrorHandler.registerForPrinterErrors();
+        
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
-    }    
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+    }
 
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
 //        Thread.sleep(3000);
-        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"));
+        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"), false);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         // keep bed temp up to keep remaining part on the bed
 //        printer.goToTargetBedTemperature();
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException, CalibrationException
     {
         saveSettings();
 //        Thread.sleep(3000);
-        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"));
+        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"), false);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
-    
+
     public void doFinishedAction() throws PrinterException
     {
         saveSettings();
         switchHeatersOffAndRaiseHead();
+        printerErrorHandler.deregisterForPrinterErrors();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -68,6 +78,7 @@ public class CalibrationXAndYActions
     {
         restoreHeadData();
         switchHeatersOffAndRaiseHead();
+        printerErrorHandler.deregisterForPrinterErrors();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 

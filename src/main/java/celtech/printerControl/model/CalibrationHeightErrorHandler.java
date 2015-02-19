@@ -28,6 +28,7 @@ class CalibrationHeightErrorHandler
     private final Stenographer steno = StenographerFactory.getStenographer(
         CalibrationHeightErrorHandler.class.getName());
     private boolean errorOccurred = true;
+    private FirmwareError lastError = null;
     private final Printer printer;
     private Cancellable cancellable;
 
@@ -48,6 +49,7 @@ class CalibrationHeightErrorHandler
     public void registerForPrinterErrors()
     {
         errorOccurred = false;
+        lastError = null;
         List<FirmwareError> errors = new ArrayList<>();
         errors.add(FirmwareError.ALL_ERRORS);
         printer.registerErrorConsumer(errorConsumer, errors);
@@ -61,7 +63,7 @@ class CalibrationHeightErrorHandler
     {
         if (errorOccurred)
         {
-            showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler);
+            showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler, lastError);
         }
 
         return errorOccurred;
@@ -69,15 +71,24 @@ class CalibrationHeightErrorHandler
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->
     {
-        steno.info(error.name() + " occurred during height calibration");
+        // B Position Lost reflects that the printer has detected a non-fatal problem - ignore it
+        if (error == FirmwareError.B_POSITION_LOST)
+        {
+            steno.info("Discarded error " + error.name() + " during calibration");
+        } else
+        {
+            steno.info(error.name() + " occurred during height calibration");
 
-        cancellable.cancelled = true;
-        errorOccurred = true;
+            cancellable.cancelled = true;
+            errorOccurred = true;
+            lastError = error;
+        }
     };
 
     public void deregisterForPrinterErrors()
     {
         errorOccurred = false;
+        lastError = null;
         printer.deregisterErrorConsumer(errorConsumer);
     }
 
@@ -87,15 +98,16 @@ class CalibrationHeightErrorHandler
      * offered to the user. At least one handler must be non-null.
      */
     private void showPrinterErrorOccurred(TaskExecutor.NoArgsVoidFunc continueHandler,
-        TaskExecutor.NoArgsVoidFunc abortHandler, TaskExecutor.NoArgsVoidFunc retryHandler) throws CalibrationException
+        TaskExecutor.NoArgsVoidFunc abortHandler, TaskExecutor.NoArgsVoidFunc retryHandler,
+        FirmwareError error) throws CalibrationException
     {
         try
         {
             Optional<SystemNotificationManager.PrinterErrorChoice> choice = Lookup.
                 getSystemNotificationHandler().showPrinterErrorDialog(
-                    Lookup.i18n("calibrationPanel.title"), Lookup.i18n(
-                        "calibrationPanel.errorInPrinter"),
-                    continueHandler != null, abortHandler != null, retryHandler != null);
+                    error.getLocalisedErrorTitle(),
+                    Lookup.i18n("calibrationPanel.errorInPrinter"),
+                    false, false, false, true);
             if (!choice.isPresent())
             {
                 cancellable.cancelled = true;
@@ -104,15 +116,9 @@ class CalibrationHeightErrorHandler
             }
             switch (choice.get())
             {
-                case CONTINUE:
-                    continueHandler.run();
-                    break;
-                case ABORT:
+                case OK:
                     cancellable.cancelled = true;
                     abortHandler.run();
-                    break;
-                case RETRY:
-                    retryHandler.run();
                     break;
             }
         } catch (Exception ex)
@@ -121,5 +127,4 @@ class CalibrationHeightErrorHandler
             throw new CalibrationException(ex.getMessage());
         }
     }
-
 }

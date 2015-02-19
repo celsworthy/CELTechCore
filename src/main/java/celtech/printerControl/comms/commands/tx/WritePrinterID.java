@@ -109,7 +109,7 @@ public class WritePrinterID extends RoboxTxPacket
 
         payload.append(colourToString(colour));
 
-        steno.info("Outputting string of length " + payload.length());
+        steno.debug("Outputting string of length " + payload.length());
         this.setMessagePayload(payload.toString());
     }
 

@@ -16,7 +16,7 @@ public interface SystemNotificationManager
 {
 
     public enum PrinterErrorChoice {
-        CONTINUE, ABORT, RETRY;
+        CONTINUE, ABORT, RETRY, OK;
     }
     
     void showInformationNotification(String title, String message);
@@ -89,9 +89,16 @@ public interface SystemNotificationManager
      /**
      * Show a dialog to the user asking them to choose between available Continue, Abort or
      * Retry actions when a printer error has occurred.
+     * @param title
+     * @param message
+     * @param showContinueOption
+     * @param showAbortOption
+     * @param showRetryOption
+     * @param showOKOption
+     * @return 
      */
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message, boolean showContinueOption,
-        boolean showAbortOption, boolean showRetryOption);
+        boolean showAbortOption, boolean showRetryOption, boolean showOKOption);
 
     public void showReelNotRecognisedDialog(String printerName);
 

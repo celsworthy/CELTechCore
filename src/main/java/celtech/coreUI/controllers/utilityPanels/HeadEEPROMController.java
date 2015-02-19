@@ -160,7 +160,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             eepromCommsError.show();
         } catch (ParseException ex)
         {
-            steno.info("Parse error getting head data");
+            steno.error("Parse error getting head data");
         }
     }
 

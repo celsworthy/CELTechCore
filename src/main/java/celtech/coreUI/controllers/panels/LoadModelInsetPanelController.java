@@ -201,7 +201,7 @@ public class LoadModelInsetPanelController implements Initializable
 
         public void downloadFile(String fileURL)
         {
-            steno.info("Got download URL of " + fileURL);
+            steno.debug("Got download URL of " + fileURL);
 
             String tempID = SystemUtils.generate16DigitID();
             try
@@ -217,12 +217,12 @@ public class LoadModelInsetPanelController implements Initializable
 
                 if (extension.equalsIgnoreCase("stl"))
                 {
-                    steno.info("Got stl file from My Mini Factory");
+                    steno.debug("Got stl file from My Mini Factory");
                     final String targetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + FileUtils.basename(fileURL);
                     writeStreamToFile(webInputStream, targetname);
                 } else if (extension.equalsIgnoreCase("zip"))
                 {
-                    steno.info("Got zip file from My Mini Factory");
+                    steno.debug("Got zip file from My Mini Factory");
                     writeStreamToFile(webInputStream, tempFilename);
                     ZipFile zipFile = new ZipFile(tempFilename);
                     try
@@ -243,7 +243,7 @@ public class LoadModelInsetPanelController implements Initializable
                     }
                 } else if (extension.equalsIgnoreCase("rar"))
                 {
-                    steno.info("Got rar file from My Mini Factory");
+                    steno.debug("Got rar file from My Mini Factory");
                 }
 
                 webInputStream.close();

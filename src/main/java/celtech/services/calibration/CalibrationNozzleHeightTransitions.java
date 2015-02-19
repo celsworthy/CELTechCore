@@ -42,7 +42,7 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                          {
                              actions.doFailedAction();
                      },
-                                         null));
+                                         NozzleOffsetCalibrationState.DONE));
 
         transitions = new HashSet<>();
 

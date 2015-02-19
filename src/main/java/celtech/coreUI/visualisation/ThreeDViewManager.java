@@ -729,9 +729,9 @@ public class ThreeDViewManager
             collideModels();
         } else
         {
-            steno.info("About to add gcode to model");
+            steno.debug("About to add gcode to model");
             models.getChildren().add(modelContainer);
-            steno.info("Done adding gcode");
+            steno.debug("Done adding gcode");
         }
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1208,13 +1208,13 @@ public class ThreeDViewManager
     {
         Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
 //        Point2D localToSceneToScreen = camera.localToScreen(localToScene);
-        steno.info("screen to local " + screenToLocal);
+        steno.debug("screen to local " + screenToLocal);
 
         Point3D localToScene = camera.localToScene(screenToLocal.getX(), screenToLocal.getY(), 0);
-        steno.info("Local to scene " + localToScene);
+        steno.debug("Local to scene " + localToScene);
 
         Point3D correctedBed = bedTranslateXform.sceneToLocal(localToScene);
-        steno.info("Corrected bed = " + correctedBed);
+        steno.debug("Corrected bed = " + correctedBed);
 
 //        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
     }

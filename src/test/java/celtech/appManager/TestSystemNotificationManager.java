@@ -178,7 +178,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
-        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption)
+        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption, boolean showOKOption)
     {
         return Optional.empty();
     }
