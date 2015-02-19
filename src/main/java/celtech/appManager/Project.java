@@ -497,6 +497,16 @@ public class Project implements Serializable
         }
     }
     
+    public void deleteModels(Set<ModelContainer> modelContainers)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                deleteModel(model);
+            }
+        }
+    }    
+    
     public void rotateModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)

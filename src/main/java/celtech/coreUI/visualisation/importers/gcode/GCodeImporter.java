@@ -144,7 +144,7 @@ public class GCodeImporter
         if (!parentTask.isCancelled())
         {
 //            fxtojmeInterface.sendGCodeModel(fFile.getName(), nodeList);
-            DisplayManager.getInstance().setLayersInGCode(layerNumber);
+//            DisplayManager.getInstance().setLayersInGCode(layerNumber);
 //            currentProject.setGCodeModelLoaded(fFile.getAbsolutePath());
             steno.debug("Loaded gcode " + fFile.getName());
 

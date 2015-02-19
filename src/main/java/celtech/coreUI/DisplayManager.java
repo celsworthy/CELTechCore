@@ -19,16 +19,17 @@ import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
+import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -95,11 +96,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      */
     private ProjectLoader projectLoader = null;
 
-    /*
-     * GCode-related
-     */
-    private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
-
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
     private static final String addDummyPrinterCommand = "AddDummy";
@@ -136,7 +132,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         List<Project> preloadedProjects = pm.getOpenProjects();
         for (Project project : preloadedProjects)
         {
-            ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(),
+            ProjectTab newProjectTab = new ProjectTab(project, tabDisplay.widthProperty(),
                                                       tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
         }
@@ -183,7 +179,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             //Create a tab if one doesn't already exist
             if (tabDisplay.getTabs().size() <= 1)
             {
-                projectTab = new ProjectTab(this, tabDisplay.widthProperty(),
+                projectTab = new ProjectTab(tabDisplay.widthProperty(),
                                             tabDisplay.heightProperty());
                 tabDisplay.getTabs().add(projectTab);
                 tabDisplaySelectionModel.select(projectTab);
@@ -594,7 +590,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private ProjectTab createAndAddNewProjectTab()
     {
-        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
+        ProjectTab projectTab = new ProjectTab(tabDisplay.widthProperty(),
                                                tabDisplay.heightProperty());
         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
         tabDisplaySelectionModel.select(projectTab);
@@ -605,11 +601,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     public static Stage getMainStage()
     {
         return mainStage;
-    }
-
-    public final void setLayersInGCode(int value)
-    {
-        layersInGCode.set(value);
     }
 
     public void shutdown()
@@ -643,16 +634,23 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             if (currentTab instanceof ProjectTab)
             {
                 ProjectTab projectTab = (ProjectTab) currentTab;
+                Project project = projectTab.getProject();
                 switch (event.getCode())
                 {
                     case DELETE:
                     case BACK_SPACE:
-//                        projectTab.deleteSelectedModels();
+                        Set<ModelContainer> selectedModels = 
+                            Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
+                        project.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())
                         {
-                            projectTab.selectAllModels();
+                            SelectedModelContainers selectionModel = 
+                                Lookup.getProjectGUIState(project).getSelectedModelContainers();
+                            for (ModelContainer modelContainer: project.getLoadedModels()) {
+                                selectionModel.addModelContainer(modelContainer);
+                            }
                         }
                     default:
                         break;

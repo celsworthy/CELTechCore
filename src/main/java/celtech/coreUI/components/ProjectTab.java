@@ -12,23 +12,17 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PrintBed;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ModelLoader;
-import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.modelcontrol.ModelContainer;
-import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -66,37 +60,21 @@ public class ProjectTab extends Tab
     private Project project = null;
     private AnchorPane basePane = null;
     private ThreeDViewManager viewManager = null;
-    private DisplayManager displayManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
-    private ModelLoader modelLoader = new ModelLoader();
+    private final ModelLoader modelLoader = new ModelLoader();
 
     final Rectangle testRect = new Rectangle(5, 5);
 
-    /**
-     *
-     * @param dispManagerRef
-     * @param tabDisplayWidthProperty
-     * @param tabDisplayHeightProperty
-     */
-    public ProjectTab(DisplayManager dispManagerRef,
+    public ProjectTab(
         ReadOnlyDoubleProperty tabDisplayWidthProperty,
         ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-        displayManager = dispManagerRef;
         project = new Project();
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
-    /**
-     *
-     * @param dispManagerRef
-     * @param projectName
-     * @param tabDisplayWidthProperty
-     * @param tabDisplayHeightProperty
-     * @throws ProjectNotLoadedException
-     */
-    public ProjectTab(DisplayManager dispManagerRef, String projectName,
+    public ProjectTab(String projectName,
         ReadOnlyDoubleProperty tabDisplayWidthProperty,
         ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
     {
@@ -105,7 +83,6 @@ public class ProjectTab extends Tab
         if (project != null)
         {
             // No need to tell the PM that this is open - since the list came from the PM in the first place
-            displayManager = dispManagerRef;
             initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
         } else
         {
@@ -113,19 +90,11 @@ public class ProjectTab extends Tab
         }
     }
 
-    /**
-     *
-     * @param dispManagerRef
-     * @param inboundProject
-     * @param tabDisplayWidthProperty
-     * @param tabDisplayHeightProperty
-     */
-    public ProjectTab(DisplayManager dispManagerRef, Project inboundProject,
+    public ProjectTab(Project inboundProject,
         ReadOnlyDoubleProperty tabDisplayWidthProperty,
         ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = inboundProject;
-        displayManager = dispManagerRef;
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 
@@ -411,46 +380,15 @@ public class ProjectTab extends Tab
         viewManager.shutdown();
     }
 
-    /**
-     *
-     * @return
-     */
-    public ThreeDViewManager getThreeDViewManager()
-    {
-        return viewManager;
-    }
-
-    /**
-     *
-     * @return
-     */
     public Project getProject()
     {
         return project;
     }
 
-    /**
-     *
-     * @param cameraPositionPreset
-     */
     public void switchToPresetCameraView(
         CameraPositionPreset cameraPositionPreset)
     {
 //        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
-    public void deselectModel(ModelContainer selectedModel)
-    {
-        viewManager.deselectModel(selectedModel);
-    }
-
-    public SelectedModelContainers getSelectionModel()
-    {
-        return viewManager.getSelectedModelContainers();
-    }
-
-    public void selectAllModels()
-    {
-        viewManager.selectAllModels();
-    }
 }
