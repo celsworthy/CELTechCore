@@ -15,6 +15,7 @@ import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
+import celtech.printerControl.model.Printer;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
@@ -494,7 +495,7 @@ public class ThreeDViewManager
                         stopSettingsAnimation();
                         break;
                 }
-                updateFilamentColoursForMode(newMode);
+                updateFilamentColoursForModeAndTargetPrinter();
             }
         }
 
@@ -590,7 +591,18 @@ public class ThreeDViewManager
 
         dragMode.addListener(dragModeListener);
 
+        /**
+         * Set up filament, application mode and printer listeners so that the correct model colours
+         * are displayed.
+         */
         setupFilamentListeners(project);
+        setupPrintSettingsFilamentListeners(project);
+        updateFilamentColoursForModeAndTargetPrinter();
+        project.getPrinterSettings().selectedPrinterProperty().addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+            {
+                updateFilamentColoursForModeAndTargetPrinter();
+            });
     }
 
     private void goToPreset(CameraPositionPreset preset)
@@ -1484,7 +1496,6 @@ public class ThreeDViewManager
      */
     private void setupFilamentListeners(Project project)
     {
-        extruder0Filament = project.getExtruder0FilamentProperty().get();
         project.getExtruder0FilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
@@ -1492,7 +1503,6 @@ public class ThreeDViewManager
                 updateModelColours();
             });
 
-        extruder1Filament = project.getExtruder1FilamentProperty().get();
         project.getExtruder1FilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
@@ -1507,40 +1517,48 @@ public class ThreeDViewManager
      */
     private void setupPrintSettingsFilamentListeners(Project project)
     {
-        extruder0Filament = project.getPrinterSettings().getFilament0();
         project.getPrinterSettings().getFilament0Property().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder0Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
 
-        extruder1Filament = project.getPrinterSettings().getFilament1();
         project.getPrinterSettings().getFilament1Property().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder1Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
         updateModelColours();
     }
+    
+    private boolean targetPrinterHasOneExtruder() {
+        boolean extruder1IsFitted = 
+            project.getPrinterSettings().getSelectedPrinter().extrudersProperty().get(
+                       1).isFittedProperty().get();
+        return ! extruder1IsFitted;
+    }
 
     /**
-     * In LAYOUT mode the filament colours should reflect the project filament colours In SETTINGS
-     * mode the filament colours should reflect the project print settings filament colours.
+     * If the application mode or target printer (project printsettings printer) changes then this
+     * must be called. In LAYOUT mode the filament colours should reflect the project filament
+     * colours In SETTINGS mode the filament colours should reflect the project print settings
+     * filament colours.
      */
-    private void updateFilamentColoursForMode(ApplicationMode newMode)
+    private void updateFilamentColoursForModeAndTargetPrinter()
     {
-        switch (newMode)
+        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
-            case SETTINGS:
-                setupPrintSettingsFilamentListeners(project);
-                break;
-            default:
-                setupFilamentListeners(project);
-                break;
+            extruder0Filament = project.getPrinterSettings().getFilament0();
+            extruder1Filament = project.getPrinterSettings().getFilament1();
+            if (targetPrinterHasOneExtruder())
+            {
+                extruder1Filament = extruder0Filament;
+            }
+        } else
+        {
+            extruder0Filament = project.getExtruder0FilamentProperty().get();
+            extruder1Filament = project.getExtruder1FilamentProperty().get();
         }
         updateModelColours();
     }
-
 }

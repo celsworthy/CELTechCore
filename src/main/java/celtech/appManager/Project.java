@@ -31,6 +31,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class Project implements Serializable
 {
 
+    private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID("RBX-ABS-GR499");
     private transient Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final long serialVersionUID = 1L;
@@ -416,8 +417,8 @@ public class Project implements Serializable
     private void initialiseExtruderFilaments()
     {
         // defaults in case of no printer or reel
-        extruder0Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));
-        extruder1Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));
+        extruder0Filament.set(DEFAULT_FILAMENT);
+        extruder1Filament.set(DEFAULT_FILAMENT);
 
         Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
         if (printer != null)
