@@ -1499,15 +1499,13 @@ public class ThreeDViewManager
         project.getExtruder0FilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder0Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
 
         project.getExtruder1FilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder1Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
         updateModelColours();
     }
@@ -1539,8 +1537,9 @@ public class ThreeDViewManager
     }
 
     /**
-     * If the application mode or target printer (project printsettings printer) changes then this
-     * must be called. In LAYOUT mode the filament colours should reflect the project filament
+     * If the chosen filaments, application mode or target printer (project printsettings printer) 
+     * changes then this must be called.
+     * In LAYOUT mode the filament colours should reflect the project filament
      * colours In SETTINGS mode the filament colours should reflect the project print settings
      * filament colours.
      */
