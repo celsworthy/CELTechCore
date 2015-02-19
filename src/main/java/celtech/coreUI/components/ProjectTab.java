@@ -411,38 +411,13 @@ public class ProjectTab extends Tab
             && modelContainer.getModelContentsType()
             == ModelContentsEnumeration.MESH))
         {
-            viewManager.addModel(modelContainer);
+//            viewManager.addModel(modelContainer);
             viewManager.selectModel(modelContainer, false);
         } else
         {
             steno.warning("Discarded load of " + modelContainer.getModelName()
                 + " due to conflict with project type");
         }
-    }
-
-    /**
-     *
-     * @param modelMesh
-     */
-    public void removeModel(ModelContainer modelMesh)
-    {
-        viewManager.removeModel(modelMesh);
-    }
-
-    /**
-     *
-     */
-    public void deleteSelectedModels()
-    {
-        viewManager.deleteSelectedModels();
-    }
-
-    /**
-     *
-     */
-    public void copySelectedModels()
-    {
-        viewManager.copySelectedModels();
     }
 
     /**

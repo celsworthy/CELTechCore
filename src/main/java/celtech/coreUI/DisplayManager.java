@@ -791,30 +791,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     /**
      *
      */
-    public void deleteSelectedModels()
-    {
-        Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).deleteSelectedModels();
-        }
-    }
-
-    /**
-     *
-     */
-    public void copySelectedModels()
-    {
-        Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).copySelectedModels();
-        }
-    }
-
-    /**
-     *
-     */
     public void autoLayout()
     {
         Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
@@ -903,7 +879,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     case DELETE:
                     case BACK_SPACE:
-                        projectTab.deleteSelectedModels();
+//                        projectTab.deleteSelectedModels();
                         break;
                     case A:
                         if (event.isShortcutDown())

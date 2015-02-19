@@ -21,6 +21,7 @@ import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -64,7 +65,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private final FileChooser modelFileChooser = new FileChooser();
-    private Project boundProject = null;
     private PrinterUtils printerUtils = null;
     private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
@@ -145,6 +145,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private GraphicToggleButtonWithLabel snapToGroundButton;
     private Project selectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
+    private SelectedModelContainers modelSelection;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -296,20 +297,24 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void addCloudModel(ActionEvent event)
     {
         applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
-//            miniFactoryController.loadWebData();
-//            myMiniFactoryLoaderStage.showAndWait();
     }
 
     @FXML
     void deleteModel(ActionEvent event)
     {
-        displayManager.deleteSelectedModels();
+        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
+        {
+            selectedProject.deleteModel(modelContainer);
+        }
     }
 
     @FXML
     void copyModel(ActionEvent event)
     {
-        displayManager.copySelectedModels();
+        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
+        {
+            selectedProject.copyModel(modelContainer);
+        }
     }
 
     @FXML
@@ -722,7 +727,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
 
     /**
-     * Create the bindings for controlling the main selected printer (for eg on Status screen).
+     * Create the bindings to the Status selected printer.
      */
     private void createMainSelectedPrinterListener()
     {
@@ -828,6 +833,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         selectedProject = project;
         printerSettings = project.getPrinterSettings();
         currentSettingsPrinter = printerSettings.getSelectedPrinter();
+        modelSelection = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         bindProject(project);
@@ -919,12 +925,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         duplicateModelButton.disableProperty().bind(notSelectModeOrNoSelectedModels);
         distributeModelsButton.setDisable(true);
 
-        if (boundProject != null)
-        {
-            addModelButton.disableProperty().unbind();
-        }
-
-        boundProject = displayManager.getCurrentlyVisibleProject();
         addModelButton.disableProperty().bind(snapToGround);
 
         distributeModelsButton.disableProperty().bind(notSelectModeOrNoLoadedModels);

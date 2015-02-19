@@ -31,7 +31,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class Project implements Serializable
 {
 
-    private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID("RBX-ABS-GR499");
+    private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
+        "RBX-ABS-GR499");
     private transient Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final long serialVersionUID = 1L;
@@ -172,17 +173,19 @@ public class Project implements Serializable
     {
         return getUsedExtruders().size() < 2;
     }
-    
+
     /**
      * Return which extruders are used by the project, as a set of the extruder numbers
-     * @return 
+     *
+     * @return
      */
-    public Set<Integer> getUsedExtruders() {
+    public Set<Integer> getUsedExtruders()
+    {
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
             int extruderNumber = loadedModel.getAssociateWithExtruderNumber();
-            if (! usedExtruders.contains(extruderNumber))
+            if (!usedExtruders.contains(extruderNumber))
             {
                 usedExtruders.add(extruderNumber);
             }
@@ -193,11 +196,12 @@ public class Project implements Serializable
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
-        
+
         printerSettings = new PrinterSettings();
-        extruder0Filament = new SimpleObjectProperty<Filament>();
-        extruder1Filament = new SimpleObjectProperty<Filament>();
-        
+        extruder0Filament = new SimpleObjectProperty<>();
+        extruder1Filament = new SimpleObjectProperty<>();
+        projectChangesListeners = new HashSet<>();
+
         steno = StenographerFactory.getStenographer(Project.class.getName());
 
         projectHeader = (ProjectHeader) in.readObject();
@@ -439,5 +443,55 @@ public class Project implements Serializable
     public PrinterSettings getPrinterSettings()
     {
         return printerSettings;
+    }
+
+    public void copyModel(ModelContainer modelContainer)
+    {
+        ModelContainer copy = modelContainer.makeCopy();
+        addModel(copy);
+    }
+
+    public void addModel(ModelContainer modelContainer)
+    {
+        loadedModels.add(modelContainer);
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelAdded(modelContainer);
+        }
+    }
+
+    public void deleteModel(ModelContainer modelContainer)
+    {
+        loadedModels.remove(modelContainer);
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelRemoved(modelContainer);
+        }
+    }
+
+    Set<ProjectChangesListener> projectChangesListeners = new HashSet<>();
+
+    public void addProjectChangesListener(ProjectChangesListener projectChangesListener)
+    {
+        projectChangesListeners.add(projectChangesListener);
+    }
+
+    public void removeProjectChangesListener(ProjectChangesListener projectChangesListener)
+    {
+        projectChangesListeners.remove(projectChangesListener);
+    }
+
+    /**
+     * ProjectChangesListener allows other objects to observe when models are added or removed to
+     * the project.
+     */
+    public interface ProjectChangesListener
+    {
+
+        void whenModelAdded(ModelContainer modelContainer);
+
+        void whenModelRemoved(ModelContainer modelContainer);
     }
 }

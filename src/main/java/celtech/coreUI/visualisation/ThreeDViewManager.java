@@ -17,7 +17,6 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.printerControl.model.Printer;
 import javafx.animation.AnimationTimer;
-import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -56,7 +55,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager
+public class ThreeDViewManager implements Project.ProjectChangesListener
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -70,16 +69,12 @@ public class ThreeDViewManager
     private SubScene subScene = null;
     private final SimpleObjectProperty<SubScene> subSceneProperty = new SimpleObjectProperty<>();
 
-//    private final PointLight pointLight1 = new PointLight(Color.WHITE);
-//    private final AmbientLight ambientLight = new AmbientLight(Color.WHITE);
     final Group axisGroup = new Group();
     double DELTA_MULTIPLIER = 200.0;
     double CONTROL_MULTIPLIER = 0.1;
     double SHIFT_MULTIPLIER = 0.1;
     double ALT_MULTIPLIER = 0.5;
 
-    private final SimpleObjectProperty<Timeline> timeline = new SimpleObjectProperty<>();
-    private ObjectProperty<Node> content = new SimpleObjectProperty<>();
     /*
      * Model moving
      */
@@ -113,10 +108,6 @@ public class ThreeDViewManager
     private Group bed;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
-//    private final Rotate rotateCameraAroundXAxis = new Rotate(0, MathUtils.xAxis);
-//    private final Rotate rotateCameraAroundYAxis = new Rotate(0, MathUtils.yAxis);
-//    private final Rotate rotateCameraAroundZAxis = new Rotate(0, MathUtils.zAxis);
-//    private final Translate translateCamera = new Translate();
     private final static double initialCameraDistance = -350;
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
@@ -603,6 +594,11 @@ public class ThreeDViewManager
             {
                 updateFilamentColoursForModeAndTargetPrinter();
             });
+
+        /**
+         * Listen for adding and removing of models from the project
+         */
+        project.addProjectChangesListener(this);
     }
 
     private void goToPreset(CameraPositionPreset preset)
@@ -610,33 +606,6 @@ public class ThreeDViewManager
 //        camera.setCentreOfRotation(preset.getPointToLookAt());
 //        camera.rotateAndElevateCameraTo(preset.getAzimuth(), preset.getElevation());
 //        camera.zoomCameraTo(preset.getDistance());
-    }
-
-    /**
-     *
-     * @param timeline
-     */
-    public void setTimeline(Timeline timeline)
-    {
-        this.timeline.setValue(timeline);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public Timeline getTimeline()
-    {
-        return this.timeline.getValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public SimpleObjectProperty timelineProperty()
-    {
-        return timeline;
     }
 
     private Group buildBed()
@@ -698,94 +667,6 @@ public class ThreeDViewManager
         bed.setMouseTransparent(true);
 
         return bed;
-    }
-
-//    private void buildAxes()
-//    {
-//        final PhongMaterial redMaterial = new PhongMaterial();
-//        redMaterial.setDiffuseColor(Color.DARKRED);
-//        redMaterial.setSpecularColor(Color.RED);
-//
-//        final PhongMaterial greenMaterial = new PhongMaterial();
-//        greenMaterial.setDiffuseColor(Color.DARKGREEN);
-//        greenMaterial.setSpecularColor(Color.GREEN);
-//
-//        final Box xAxis = new Box(40, 1, 1);
-//        xAxis.setTranslateZ(-25);
-//        xAxis.setTranslateX(-20);
-//
-//        final Box zAxis = new Box(1, 1, 40);
-//        zAxis.setTranslateX(-25);
-//        zAxis.setTranslateX(-20);
-//        zAxis.setTranslateZ(-20);
-//
-//        xAxis.setMaterial(redMaterial);
-//        zAxis.setMaterial(greenMaterial);
-//
-//        axisGroup.getChildren().addAll(xAxis, zAxis);
-//        root3D.getChildren().add(axisGroup);
-//
-////        autoScalingGroup.getChildren().addAll(axisGroup);
-//    }
-    /**
-     *
-     * @param modelContainer
-     */
-    public void addModel(ModelContainer modelContainer)
-    {
-        if (modelContainer.getModelContentsType() == ModelContentsEnumeration.MESH)
-        {
-            models.getChildren().add(modelContainer);
-            loadedModels.add(modelContainer);
-            updateModelColour(modelContainer);
-            collideModels();
-        } else
-        {
-            steno.debug("About to add gcode to model");
-            models.getChildren().add(modelContainer);
-            steno.debug("Done adding gcode");
-        }
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     */
-    public void deleteSelectedModels()
-    {
-        for (ModelContainer chosenModel : selectedModelContainers.getSelectedModelsSnapshot())
-        {
-            selectedModelContainers.removeModelContainer(chosenModel);
-            loadedModels.remove(chosenModel);
-            models.getChildren().remove(chosenModel);
-        }
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     */
-    public void copySelectedModels()
-    {
-        for (ModelContainer model : selectedModelContainers.getSelectedModelsSnapshot())
-        {
-            ModelContainer copy = model.makeCopy();
-            addModel(copy);
-            updateModelColour(copy);
-        }
-        collideModels();
-    }
-
-    /**
-     *
-     * @param modelGroup
-     */
-    public void removeModel(ModelContainer modelGroup)
-    {
-        models.getChildren().remove(modelGroup);
-        loadedModels.remove(modelGroup);
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     /**
@@ -1014,21 +895,6 @@ public class ThreeDViewManager
         }
         selectedModelContainers.updateSelectedValues();
 
-        // TODO: multi select rotate should be around the common centre of the multi select
-//            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
-//            selectionContainer.setRotationY(rotation);
-//            recalculateSelectionBounds(false);
-//        } else
-//        {
-//            for (ModelContainer model : loadedModels)
-//            {
-//                if (model.isSelected())
-//                {
-//                    model.deltaRotateAroundY(rotation);
-//                }
-//            }
-//            selectionContainer.setRotationX(0);
-//        }
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1082,23 +948,6 @@ public class ThreeDViewManager
         {
             loadedModels.get(index).setCollision(collidedModels[index]);
         }
-    }
-
-    /**
-     *
-     * @param delta
-     */
-    public void deltaScaleSelection(double delta)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.setScale(delta * model.getScale());
-            }
-        }
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
     /**
@@ -1231,68 +1080,6 @@ public class ThreeDViewManager
 //        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
     }
 
-    /**
-     *
-     * @param translateStartPoint
-     * @param screenCoords
-     */
-    public void translateSelectionFromScreenCoords(Point2D translateStartPoint, Point2D screenCoords)
-    {
-        Point2D screenToLocal = camera.screenToLocal(translateStartPoint);
-        steno.info("Screen to local " + screenToLocal);
-
-//    final PickResultChooser result = new PickResultChooser();
-//    PickRay pickRay = new PickRay(null, null, mouseOldX, mouseOldX)
-//    subScene.getRoot().impl_pickNode(new PickRay(screenToLocal.getX(), screenToLocal.getY()), result);
-//    Node nodeToSendEvent = result.getIntersectedNode();
-//        
-    }
-
-//        public Point3D sceneToLocal3D(Node n, double sceneX, double sceneY) {
-//        Scene scene = n.getScene();
-//        if (scene == null) {
-//            return null;
-//        }
-//
-//        Point2D pt = new Point2D(screenX, screenY);
-//        final SubScene subScene = NodeHelper.getSubScene(n);
-//        if (subScene != null) {
-//            pt = SceneUtils.sceneToSubScenePlane(subScene, pt);
-//            if (pt == null) {
-//                return null;
-//            }
-//        }
-//
-//        // compute pick ray
-//        final Camera cam = subScene != null
-//                ? SubSceneHelper.getEffectiveCamera(subScene)
-//                : SceneHelper.getEffectiveCamera(scene);
-//        
-//        final PickRay pickRay = cam.computePickRay(pt.getX(), pt.getY(), null);
-//
-//        // convert it to node's local pickRay
-//        final Affine3D localToSceneTx = new Affine3D();
-//        n.getLocalToSceneTransform().impl_apply(localToSceneTx);
-//        try {
-//            Vec3d origin = pickRay.getOriginNoClone();
-//            Vec3d direction = pickRay.getDirectionNoClone();
-//            localToSceneTx.inverseTransform(origin, origin);
-//            localToSceneTx.inverseDeltaTransform(direction, direction);
-//        } catch (NoninvertibleTransformException e) {
-//            return null;
-//        }
-//
-//        // compute the intersection
-//        final PickResultChooser result = new PickResultChooser();
-//        impl_computeIntersects(pickRay, result);
-//        if (result.getIntersectedNode() == n) {
-//            return result.getIntersectedPoint();
-//        }
-//
-//        // there is none, use point on projection plane instead
-//        final Point3D ppIntersect = CameraAccess.getCameraAccess().pickProjectPlane(cam, pt.getX(), pt.getY());
-//        return n.sceneToLocal(ppIntersect);
-//    }
     private double preAnimationCameraXAngle = 0;
     private double preAnimationCameraYAngle = 0;
     private boolean needToRevertCameraPosition = false;
@@ -1381,38 +1168,6 @@ public class ThreeDViewManager
         dragMode.set(DragMode.ROTATE);
     }
 
-    /**
-     *
-     * @param event
-     * @return
-     */
-//    public double rotateFromGizmo(MouseEvent event)
-//    {
-//        Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-////        double xPos = currentDragPosition.getX() - selectionContainer.getCentreX();
-////        double yPos = currentDragPosition.getZ() - selectionContainer.getCentreZ();
-//
-//        double rotationAngle = MathUtils.cartesianToAngleDegreesCWFromTop(currentDragPosition.getX(),
-//                                                                          currentDragPosition.getZ());
-//
-//        double outputAngle = gizmoStartingRotationAngle - rotationAngle;
-//
-//        if (!gizmoRotationStarted)
-//        {
-//            gizmoRotationStarted = true;
-//            gizmoStartingRotationAngle = rotationAngle;
-//            gizmoRotationOffset = selectionContainer.getRotationY();
-//            return rotationAngle;
-//        } else
-//        {
-//            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationY());
-//            rotateSelection(outputAngle + gizmoRotationOffset);
-//            return outputAngle;
-//        }
-//    }
-    /**
-     *
-     */
     public void exitRotateFromGizmo()
     {
         dragMode.set(DragMode.IDLE);
@@ -1528,20 +1283,20 @@ public class ThreeDViewManager
             });
         updateModelColours();
     }
-    
-    private boolean targetPrinterHasOneExtruder() {
-        boolean extruder1IsFitted = 
-            project.getPrinterSettings().getSelectedPrinter().extrudersProperty().get(
-                       1).isFittedProperty().get();
-        return ! extruder1IsFitted;
+
+    private boolean targetPrinterHasOneExtruder()
+    {
+        boolean extruder1IsFitted
+            = project.getPrinterSettings().getSelectedPrinter().extrudersProperty().get(
+                1).isFittedProperty().get();
+        return !extruder1IsFitted;
     }
 
     /**
-     * If the chosen filaments, application mode or target printer (project printsettings printer) 
-     * changes then this must be called.
-     * In LAYOUT mode the filament colours should reflect the project filament
-     * colours In SETTINGS mode the filament colours should reflect the project print settings
-     * filament colours.
+     * If the chosen filaments, application mode or target printer (project printsettings printer)
+     * changes then this must be called. In LAYOUT mode the filament colours should reflect the
+     * project filament colours In SETTINGS mode the filament colours should reflect the project
+     * print settings filament colours.
      */
     private void updateFilamentColoursForModeAndTargetPrinter()
     {
@@ -1560,4 +1315,20 @@ public class ThreeDViewManager
         }
         updateModelColours();
     }
+
+    @Override
+    public void whenModelAdded(ModelContainer modelContainer)
+    {
+        models.getChildren().add(modelContainer);
+        updateModelColour(modelContainer);
+        collideModels();
+    }
+
+    @Override
+    public void whenModelRemoved(ModelContainer modelContainer)
+    {
+        models.getChildren().remove(modelContainer);
+        collideModels();
+    }
+
 }
