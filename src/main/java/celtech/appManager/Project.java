@@ -555,5 +555,35 @@ public class Project implements Serializable
         {
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
-    }      
+    }  
+    
+    public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateXTo(x);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    } 
+    
+    public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateZTo(z);
+            }
+        }
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }     
 }

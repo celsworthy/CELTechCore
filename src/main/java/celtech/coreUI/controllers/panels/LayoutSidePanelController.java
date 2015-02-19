@@ -237,11 +237,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                                              t1.doubleValue() * 100));
     }
 
-    private ThreeDViewManager get3DViewManager()
-    {
-        return displayManager.getCurrentlyVisibleViewManager();
-    }
-
     private void setUpKeyPressListeners()
     {
         scaleTextField.setOnKeyPressed(
@@ -427,7 +422,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     case TAB:
                         try
                         {
-                            get3DViewManager().translateSelectionXTo(
+                            boundProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(),
                                 xAxisTextField.getAsDouble());
                         } catch (ParseException ex)
                         {
@@ -460,7 +455,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().translateSelectionZTo(
+                                boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
                                     yAxisTextField.getAsDouble());
                             } catch (ParseException ex)
                             {

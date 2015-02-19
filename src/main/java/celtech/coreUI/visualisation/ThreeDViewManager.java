@@ -680,7 +680,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             models.getChildren().remove(this.gcodeParts);
         }
-        this.gcodeParts = gcodeParts;
+        this.gcodeParts = gCodeParts;
         models.getChildren().add(gCodeParts);
     }
 
@@ -762,42 +762,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             if (model.isSelected())
             {
                 model.translateBy(0, z);
-            }
-        }
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param x
-     */
-    public void translateSelectionXTo(double x)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateXTo(x);
-            }
-        }
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param z
-     */
-    public void translateSelectionZTo(double z)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateZTo(z);
             }
         }
 

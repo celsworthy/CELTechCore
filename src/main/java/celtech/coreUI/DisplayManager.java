@@ -19,7 +19,6 @@ import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
-import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.printerControl.comms.RoboxCommsManager;
 import java.io.IOException;
 import java.net.URL;
@@ -221,10 +220,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public static DisplayManager getInstance()
     {
         if (instance == null)
@@ -254,11 +249,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
-    /**
-     *
-     * @param mainStage
-     * @param applicationName
-     */
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
         this.mainStage = mainStage;
@@ -612,28 +602,16 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return projectTab;
     }
 
-    /**
-     *
-     * @return
-     */
     public static Stage getMainStage()
     {
         return mainStage;
     }
 
-    /**
-     *
-     * @param value
-     */
     public final void setLayersInGCode(int value)
     {
         layersInGCode.set(value);
     }
 
-
-    /**
-     *
-     */
     public void shutdown()
     {
         if (projectManager != null)
@@ -648,22 +626,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     ((ProjectTab) tab).saveProject();
                 });
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ThreeDViewManager getCurrentlyVisibleViewManager()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            return ((ProjectTab) currentTab).getThreeDViewManager();
-        } else
-        {
-            return null;
         }
     }
 
@@ -699,11 +661,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
     }
 
-    /**
-     *
-     * @param mode
-     * @return
-     */
     public VBox getSidePanelSlideOutHandle(ApplicationMode mode)
     {
         HBox slideOut = slideOutPanels.get(mode);
@@ -722,9 +679,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return container;
     }
 
-    /**
-     *
-     */
     public void slideOutAdvancedPanel()
     {
         if (slideoutAndProjectHolder.isSlidIn() && slideoutAndProjectHolder.isSliding() == false)
