@@ -7,7 +7,6 @@ package celtech.coreUI.visualisation.importers;
 
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
-import celtech.coreUI.components.ProjectTab;
 import java.util.ArrayList;
 import javafx.scene.Group;
 

@@ -82,7 +82,8 @@ public class ModelLoader
         }
         if (loadResults.isRelayout() && projectIsEmpty && loadResults.getResults().size() > 1)
         {
-//            autoLayout();
+            Project project = loadResults.getResults().get(0).getTargetProject();
+            project.autoLayout();
         }
 
     }

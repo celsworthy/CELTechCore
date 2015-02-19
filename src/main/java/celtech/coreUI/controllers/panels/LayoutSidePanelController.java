@@ -26,7 +26,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -149,6 +148,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
+        setupProjectSelectedListener();
+    }
+
+    private void setupProjectSelectedListener()
+    {
+        Lookup.getSelectedProjectProperty().addListener(
+            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+        {
+            bindProject(newValue);
+        });
     }
 
     private void setUpModelGeometryListeners()

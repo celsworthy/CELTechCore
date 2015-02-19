@@ -376,7 +376,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                             ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
                             getSelectedItem();
                             Project project = projectTab.getProject();
-                            fireProjectChanged(project);
+                            Lookup.setSelectedProject(project);
                         }
                     } else
                     {
@@ -494,15 +494,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         loadProjectsAtStartup();
 
         root.layout();
-    }
-
-    private void fireProjectChanged(Project project)
-    {
-        Lookup.setSelectedProject(project);
-        ((LayoutSidePanelController) (sidePanelControllers.get(
-            ApplicationMode.LAYOUT))).bindProject(project);
-//        ((SettingsSidePanelController) sidePanelControllers.get(
-//            ApplicationMode.SETTINGS)).projectChanged(project);
     }
 
     private void setupPanelsForMode(ApplicationMode mode)
