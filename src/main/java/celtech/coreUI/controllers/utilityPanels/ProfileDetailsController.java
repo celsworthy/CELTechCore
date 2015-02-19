@@ -789,7 +789,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                     DisplayManager displayManager = DisplayManager.getInstance();
                     if (displayManager != null)
                     {
-                        Project currentProject = displayManager.getCurrentlyVisibleProject();
+                        Project currentProject = Lookup.getSelectedProjectProperty().get();
 
                         if (currentProject != null)
                         {

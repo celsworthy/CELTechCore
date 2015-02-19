@@ -89,9 +89,9 @@ public class LoadModelInsetPanelController implements Initializable
 
             ProjectMode projectMode = ProjectMode.NONE;
 
-            if (displayManager.getCurrentlyVisibleProject() != null)
+            if (Lookup.getSelectedProjectProperty().get() != null)
             {
-                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
+                projectMode = Lookup.getSelectedProjectProperty().get().getProjectMode();
             }
 
             String descriptionOfFile = null;

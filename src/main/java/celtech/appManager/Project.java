@@ -3,18 +3,21 @@ package celtech.appManager;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
+import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
@@ -494,6 +497,8 @@ public class Project implements Serializable
         void whenModelAdded(ModelContainer modelContainer);
 
         void whenModelRemoved(ModelContainer modelContainer);
+        
+        void whenAutoLaidOut();
     }
 
     public void addModelContainer(String fullFilename, ModelContainer modelContainer)
@@ -532,5 +537,22 @@ public class Project implements Serializable
                 + " due to conflict with project type");
         }
     }
+    
+    public void autoLayout()
+    {
+        Collections.sort(loadedModels);
+        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
+                                              (int) PrintBed.maxPrintableZSize);
+
+        thing.reference(loadedModels, 10);
+        thing.pack();
+        thing.relocateBlocks();
+        
+        projectModified();
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenAutoLaidOut();
+        }
+    }    
 
 }

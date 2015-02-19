@@ -341,7 +341,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             modelContainer.setUseExtruder0Filament(false);
             updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
     }
 
@@ -352,7 +352,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             modelContainer.setUseExtruder0Filament(true);
             updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
     }
 
@@ -363,7 +363,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             int faceNumber = pickResult.getIntersectedFace();
             snapToGround(modelContainer, faceNumber);
             collideModels();
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
     }
 
@@ -729,7 +729,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -747,7 +747,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -765,7 +765,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -783,7 +783,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -801,7 +801,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -820,7 +820,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -839,7 +839,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -858,7 +858,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -877,7 +877,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -896,7 +896,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
     /**
@@ -950,21 +950,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    /**
-     *
-     */
-    public void activateSnapToGround()
-    {
-        layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
-    }
-
     private void snapToGround(ModelContainer modelContainer, int faceNumber)
     {
         if (modelContainer != null)
         {
             modelContainer.snapToGround(faceNumber);
             collideModels();
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
         layoutSubmode.set(LayoutSubmode.SELECT);
     }
@@ -1328,6 +1320,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     public void whenModelRemoved(ModelContainer modelContainer)
     {
         models.getChildren().remove(modelContainer);
+        collideModels();
+    }
+
+    @Override
+    public void whenAutoLaidOut()
+    {
         collideModels();
     }
 

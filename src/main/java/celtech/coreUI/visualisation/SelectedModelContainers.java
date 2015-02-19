@@ -138,6 +138,12 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         removeModelContainer(modelContainer);
     }    
+    
+    @Override
+    public void whenAutoLaidOut()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }    
 
     /**
      * Add a listener that will be notified whenever a ModelContainer is selected or deselected.
@@ -154,7 +160,6 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         selectedModelContainersListeners.remove(selectedModelContainersListener);
     }
-
 
     public interface SelectedModelContainersListener
     {

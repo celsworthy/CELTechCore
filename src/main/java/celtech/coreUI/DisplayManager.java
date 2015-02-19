@@ -20,7 +20,6 @@ import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import java.io.IOException;
 import java.net.URL;
@@ -663,43 +662,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     /**
      *
-     */
-    public void autoLayout()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).autoLayout();
-        }
-    }
-
-    /**
-     *
-     */
-    public void activateSnapToGround()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).getThreeDViewManager().activateSnapToGround();
-        }
-    }
-
-    /**
-     *
-     * @param selectedModel
-     */
-    public void deselectModel(ModelContainer selectedModel)
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).deselectModel(selectedModel);
-        }
-    }
-
-    /**
-     *
      * @return
      */
     public ThreeDViewManager getCurrentlyVisibleViewManager()
@@ -712,26 +674,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             return null;
         }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public Project getCurrentlyVisibleProject()
-    {
-        Project projectToReturn = null;
-
-        if (tabDisplaySelectionModel != null)
-        {
-            Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-            if (currentTab instanceof ProjectTab)
-            {
-                projectToReturn = ((ProjectTab) currentTab).getProject();
-            }
-        }
-
-        return projectToReturn;
     }
 
     /**

@@ -323,13 +323,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void autoLayoutModels(ActionEvent event)
     {
-        displayManager.autoLayout();
+        selectedProject.autoLayout();
     }
 
     @FXML
     void snapToGround(ActionEvent event)
     {
-        displayManager.activateSnapToGround();
+        layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
     }
 
     @FXML

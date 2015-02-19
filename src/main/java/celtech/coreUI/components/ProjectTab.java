@@ -377,20 +377,6 @@ public class ProjectTab extends Tab
 //        projectManager.projectOpened(project);
 //    }
 
-    public void autoLayout()
-    {
-        Collections.sort(viewManager.getLoadedModels());
-        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
-                                              (int) PrintBed.maxPrintableZSize);
-
-        thing.reference(viewManager.getLoadedModels(), 10);
-        thing.pack();
-        thing.relocateBlocks();
-
-        viewManager.collideModels();
-
-    }
-
     /**
      *
      */

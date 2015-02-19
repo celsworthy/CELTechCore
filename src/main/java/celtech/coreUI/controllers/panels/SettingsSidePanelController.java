@@ -229,8 +229,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                             {
                                 slideOutController.updateProfileData(newValue);
                                 printerSettings.setSettings(newValue);
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                setCustomProfileName(
+                                currentProject.setCustomProfileName(
                                     newValue.getProfileName());
                             }
                             customSettings = newValue;
@@ -338,8 +337,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                     if (lastSupportValue != newSupportValue)
                     {
                         boolean supportSelected = (newSupportValue.doubleValue() >= 1.0) ? true : false;
-                        DisplayManager.getInstance().getCurrentlyVisibleProject().
-                            projectModified();
+                        currentProject.projectModified();
 
                         printerSettings.getSettings().
                             setGenerateSupportMaterial(supportSelected);
@@ -361,8 +359,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             if (newValue != oldValue)
                             {
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                projectModified();
+                                currentProject.projectModified();
                             }
 
                             printerSettings.getSettings().setFillDensity_normalised(
@@ -385,8 +382,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         {
                             if (newValue != oldValue)
                             {
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                projectModified();
+                                currentProject.projectModified();
                             }
 
                             printerSettings.getSettings().setBrimWidth_mm(newValue.intValue());
