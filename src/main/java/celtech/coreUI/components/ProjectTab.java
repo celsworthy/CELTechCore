@@ -14,7 +14,6 @@ import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.controllers.GCodeEditorPanelController;
-import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import java.io.File;
@@ -41,7 +40,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -64,30 +62,12 @@ public class ProjectTab extends Tab
     private boolean titleBeingEdited = false;
     private final ModelLoader modelLoader = new ModelLoader();
 
-    final Rectangle testRect = new Rectangle(5, 5);
-
     public ProjectTab(
         ReadOnlyDoubleProperty tabDisplayWidthProperty,
         ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = new Project();
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
-    }
-
-    public ProjectTab(String projectName,
-        ReadOnlyDoubleProperty tabDisplayWidthProperty,
-        ReadOnlyDoubleProperty tabDisplayHeightProperty) throws ProjectNotLoadedException
-    {
-        project = ProjectManager.loadProject(projectName);
-
-        if (project != null)
-        {
-            // No need to tell the PM that this is open - since the list came from the PM in the first place
-            initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
-        } else
-        {
-            throw new ProjectNotLoadedException(projectName);
-        }
     }
 
     public ProjectTab(Project inboundProject,
@@ -119,8 +99,6 @@ public class ProjectTab extends Tab
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
         
-//        camera = viewManager.getCamera();
-
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
 
@@ -383,12 +361,6 @@ public class ProjectTab extends Tab
     public Project getProject()
     {
         return project;
-    }
-
-    public void switchToPresetCameraView(
-        CameraPositionPreset cameraPositionPreset)
-    {
-//        viewManager.getCamera().gotoPreset(cameraPositionPreset);
     }
 
 }
