@@ -78,11 +78,6 @@ public class ProjectTab extends Tab
     private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty,
         ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-        nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
-        editableProjectNameField.getStyleClass().add("editableProjectTab");
-        editableProjectNameField.setDirectorySafeName(true);
-        editableProjectNameField.setRestrict(" -_0-9a-zA-Z\\p{L}\\p{M}*+");
-        editableProjectNameField.setMaxLength(25);
 
         setOnCloseRequest((Event t) ->
         {
@@ -95,7 +90,7 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
-        
+
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
 
@@ -103,13 +98,25 @@ public class ProjectTab extends Tab
 
         basePane.getChildren().add(viewManager.getSubScene());
 
+        setupGCodeEditor();
+
+        this.setContent(basePane);
+
+        this.setGraphic(nonEditableProjectNameField);
+
+        setupNameFields();
+
+    }
+
+    private void setupGCodeEditor()
+    {
         try
         {
             URL gcodeEditorURL = getClass().getResource(
                 ApplicationConfiguration.fxmlResourcePath
-                + "GCodeEditorPanel.fxml");
+                    + "GCodeEditorPanel.fxml");
             FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
-                                                          Lookup.getLanguageBundle());
+                Lookup.getLanguageBundle());
             StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
             GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
             gcodeEditorController.configure(project.getLoadedModels(), project);
@@ -121,10 +128,16 @@ public class ProjectTab extends Tab
         {
             steno.error("Failed to load gcode editor:" + ex);
         }
+    }
 
-        this.setContent(basePane);
+    private void setupNameFields()
+    {
+        nonEditableProjectNameField.getStyleClass().add("nonEditableProjectTab");
+        editableProjectNameField.getStyleClass().add("editableProjectTab");
+        editableProjectNameField.setDirectorySafeName(true);
+        editableProjectNameField.setRestrict(" -_0-9a-zA-Z\\p{L}\\p{M}*+");
+        editableProjectNameField.setMaxLength(25);
 
-        this.setGraphic(nonEditableProjectNameField);
         nonEditableProjectNameField.textProperty().bind(
             project.projectNameProperty());
 
@@ -160,7 +173,6 @@ public class ProjectTab extends Tab
         {
             switchToNonEditableTitle();
         });
-
     }
 
     private void setupDragHandlers()
@@ -289,7 +301,7 @@ public class ProjectTab extends Tab
                     steno.error("No files in dragboard");
                 }
                 /* let the source know whether the string was successfully
-                * transferred and used */
+                 * transferred and used */
                 event.setDropCompleted(success);
 
                 event.consume();
@@ -324,13 +336,12 @@ public class ProjectTab extends Tab
 //
 //        projectManager.projectOpened(project);
 //    }
-
     /**
      *
      */
     public void saveProject()
     {
-        
+
         Project.saveProject(project);
 
         viewManager.shutdown();

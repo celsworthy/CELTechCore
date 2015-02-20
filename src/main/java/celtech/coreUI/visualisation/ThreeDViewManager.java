@@ -98,7 +98,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
      * ALT stuff
      */
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
-    private Group bed;
+    private final Group bed;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
     private final static double initialCameraDistance = -350;
