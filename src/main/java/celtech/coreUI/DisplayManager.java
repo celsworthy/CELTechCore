@@ -353,8 +353,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         {
                             ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
                             getSelectedItem();
-                            Project project = projectTab.getProject();
-                            Lookup.setSelectedProject(project);
+                            projectTab.fireProjectSelected();
                         }
                     } else
                     {
@@ -625,8 +624,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
             if (currentTab instanceof ProjectTab)
             {
-                ProjectTab projectTab = (ProjectTab) currentTab;
-                Project project = projectTab.getProject();
+                Project project = Lookup.getSelectedProjectProperty().get();
                 switch (event.getCode())
                 {
                     case DELETE:

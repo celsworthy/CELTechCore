@@ -358,9 +358,9 @@ public class ProjectTab extends Tab
         viewManager.shutdown();
     }
 
-    public Project getProject()
+    public void fireProjectSelected()
     {
-        return project;
+        Lookup.setSelectedProject(project);
     }
 
 }
