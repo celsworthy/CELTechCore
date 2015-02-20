@@ -5,7 +5,6 @@ package celtech.coreUI.visualisation;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
@@ -27,7 +26,7 @@ public class ModelLoader
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        DisplayManager.class.getName());
+        ModelLoader.class.getName());
     /*
      * Mesh Model loading
      */

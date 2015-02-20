@@ -13,8 +13,6 @@ import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
-import celtech.coreUI.controllers.panels.LayoutSidePanelController;
-import celtech.coreUI.controllers.panels.LayoutSlideOutPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
@@ -200,15 +198,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 }
             }
 
-            projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-            Project project = projectTab.getProject();
-            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).
-                bindLoadedModels(project);
-            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindProject(project);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
             rhPanel.getChildren().add(0, slideoutAndProjectHolder);
-            ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
         } else if (newMode == ApplicationMode.STATUS)
         {
             rhPanel.getChildren().add(0, slideoutAndProjectHolder);

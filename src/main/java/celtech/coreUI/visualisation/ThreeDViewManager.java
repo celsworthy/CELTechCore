@@ -8,13 +8,11 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.printerControl.model.Printer;
 import java.util.Set;
 import javafx.animation.AnimationTimer;
@@ -84,7 +82,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
                                                      * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
-//    private GizmoOverlayController gizmoOverlayController = null;
     /*
      * 
      */
@@ -126,12 +123,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private SelectedModelContainers selectedModelContainers = null;
 
-//    private final double settingsAnimationYAngle = 30;
-//    private final double settingsAnimationXAngle = 0;
     private long lastAnimationTrigger = 0;
 
-//    private double gizmoStartingRotationAngle = 0;
-//    private double gizmoRotationOffset = 0;
     private boolean gizmoRotationStarted = false;
 
     private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
@@ -152,12 +145,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final Project project;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
 
-    /**
-     *
-     * @param xangle
-     * @param yangle
-     */
-    public void rotateCameraAroundAxes(double xangle, double yangle)
+    private void rotateCameraAroundAxes(double xangle, double yangle)
     {
         double yAxisRotation = demandedCameraRotationY.get() - yangle;
 
@@ -185,12 +173,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     }
 
-    /**
-     *
-     * @param xangle
-     * @param yangle
-     */
-    public void rotateCameraAroundAxesTo(double xangle, double yangle)
+    private void rotateCameraAroundAxesTo(double xangle, double yangle)
     {
         double yAxisRotation = yangle;
 
@@ -304,34 +287,31 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         setDragMode(DragMode.TRANSLATING);
 
-        if (intersectedNode != null)
+        if (intersectedNode instanceof MeshView)
         {
-            if (intersectedNode instanceof MeshView)
+            Parent parent = intersectedNode.getParent();
+            if (!(parent instanceof ModelContainer))
             {
-                Parent parent = intersectedNode.getParent();
-                if (!(parent instanceof ModelContainer))
-                {
-                    parent = parent.getParent();
-                }
-
-                ModelContainer pickedModel = (ModelContainer) parent;
-
-                if (pickedModel.isSelected() == false)
-                {
-                    boolean multiSelect = event.isShortcutDown();
-                    selectModel(pickedModel, multiSelect);
-                } else
-                {
-                    boolean multiSelect = event.isShortcutDown();
-                    if (multiSelect)
-                    {
-                        deselectModel(pickedModel);
-                    }
-                }
-            } else if (true) //intersectedNode == subScene)
-            {
-                selectedModelContainers.deselectAllModels();
+                parent = parent.getParent();
             }
+
+            ModelContainer pickedModel = (ModelContainer) parent;
+
+            if (pickedModel.isSelected() == false)
+            {
+                boolean multiSelect = event.isShortcutDown();
+                selectModel(pickedModel, multiSelect);
+            } else
+            {
+                boolean multiSelect = event.isShortcutDown();
+                if (multiSelect)
+                {
+                    deselectModel(pickedModel);
+                }
+            }
+        } else if (true) //intersectedNode == subScene)
+        {
+            selectedModelContainers.deselectAllModels();
         }
     }
 
@@ -670,10 +650,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         return bed;
     }
 
-    /**
-     *
-     * @param gCodeParts
-     */
     public void addGCodeParts(Group gCodeParts)
     {
         if (this.gcodeParts != null)
@@ -684,21 +660,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         models.getChildren().add(gCodeParts);
     }
 
-    /**
-     *
-     */
     public void shutdown()
     {
         applicationStatus.modeProperty().removeListener(applicationModeListener);
         dragMode.removeListener(dragModeListener);
     }
 
-    /**
-     *
-     * @param selectedNode
-     * @param multiSelect
-     */
-    public void selectModel(ModelContainer selectedNode, boolean multiSelect)
+    private void selectModel(ModelContainer selectedNode, boolean multiSelect)
     {
         if (selectedNode == null)
         {
@@ -713,12 +681,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    /**
-     *
-     * @param x
-     * @param z
-     */
-    public void translateSelection(double x, double z)
+    private void translateSelection(double x, double z)
     {
         for (ModelContainer model : loadedModels)
         {
@@ -733,43 +696,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         project.projectModified();
     }
 
-    /**
-     *
-     * @param x
-     */
-    public void translateSelectionX(double x)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateBy(x, 0);
-            }
-        }
-
-        collideModels();
-        project.projectModified();
-    }
-
-    /**
-     *
-     * @param z
-     */
-    public void translateSelectionZ(double z)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateBy(0, z);
-            }
-        }
-
-        collideModels();
-        project.projectModified();
-    }
-
-    public void deselectModel(ModelContainer pickedModel)
+    private void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())
         {
@@ -777,7 +704,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    public void collideModels()
+    private void collideModels()
     {
         boolean[] collidedModels = new boolean[loadedModels.size()];
 
@@ -818,103 +745,27 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         layoutSubmode.set(LayoutSubmode.SELECT);
     }
 
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty screenCentreOfSelectionXProperty()
-    {
-        return screenCentreOfSelectionX;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty screenCentreOfSelectionYProperty()
-    {
-        return screenCentreOfSelectionY;
-    }
-
-    /**
-     *
-     * @return
-     */
     public SubScene getSubScene()
     {
         return subScene;
     }
 
-    /**
-     *
-     * @return
-     */
-    public Group getRoot()
-    {
-        return root3D;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty demandedCameraRotationYProperty()
+    private DoubleProperty demandedCameraRotationYProperty()
     {
         return demandedCameraRotationY;
     }
 
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty demandedCameraRotationXProperty()
-    {
-        return demandedCameraRotationX;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setDragMode(DragMode value)
+    private void setDragMode(DragMode value)
     {
         dragMode.set(value);
     }
 
-    /**
-     *
-     * @return
-     */
-    public DragMode getDragMode()
-
-    {
-        return dragMode.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObjectProperty<DragMode> dragModeProperty()
-    {
-        return dragMode;
-    }
-
-    /**
-     *
-     * @param controller
-     */
     public void associateGizmoOverlayController(GizmoOverlayController controller)
     {
 //        this.gizmoOverlayController = controller;
     }
 
-    /**
-     *
-     * @param screenX
-     * @param screenY
-     */
-    public void checkit(double screenX, double screenY)
+    private void checkit(double screenX, double screenY)
     {
         Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
 //        Point2D localToSceneToScreen = camera.localToScreen(localToScene);
@@ -933,10 +784,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private double preAnimationCameraYAngle = 0;
     private boolean needToRevertCameraPosition = false;
 
-    /**
-     *
-     */
-    public void startSettingsAnimation()
+    private void startSettingsAnimation()
     {
         preAnimationCameraXAngle = demandedCameraRotationX.get();
         preAnimationCameraYAngle = demandedCameraRotationY.get();
@@ -945,10 +793,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         settingsScreenAnimationTimer.start();
     }
 
-    /**
-     *
-     */
-    public void stopSettingsAnimation()
+    private void stopSettingsAnimation()
     {
         settingsScreenAnimationTimer.stop();
         if (needToRevertCameraPosition == true)
@@ -958,11 +803,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    /**
-     *
-     * @param requiredDragMode
-     * @param event
-     */
     public void enterDragFromGizmo(DragMode requiredDragMode, MouseEvent event)
     {
         Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
@@ -970,10 +810,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         dragMode.set(requiredDragMode);
     }
 
-    /**
-     *
-     * @param event
-     */
     public void dragFromGizmo(MouseEvent event)
     {
         if (dragMode.get() == DragMode.X_CONSTRAINED_TRANSLATE)
@@ -999,18 +835,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    /**
-     *
-     */
     public void exitDragFromGizmo()
     {
         dragMode.set(DragMode.IDLE);
     }
 
-    /**
-     *
-     * @param event
-     */
     public void enterRotateFromGizmo(MouseEvent event)
     {
         translationDragPlane.setTranslateY(0);
@@ -1023,33 +852,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         gizmoRotationStarted = false;
     }
 
-    /**
-     *
-     * @param loadedModels
-     */
-    public void setLoadedModels(ObservableList<ModelContainer> loadedModels)
-    {
-        this.loadedModels = loadedModels;
-        if (loadedModels.isEmpty() == false)
-        {
-            for (ModelContainer model : loadedModels)
-            {
-                models.getChildren().add(model);
-            }
-        }
-    }
-
-    public void setExtruder0Filament(Filament filament)
-    {
-        extruder0Filament = filament;
-        updateModelColours();
-    }
-
-    public void setExtruder1Filament(Filament filament)
-    {
-        extruder1Filament = filament;
-        updateModelColours();
-    }
 
     private void updateModelColours()
     {
@@ -1074,20 +876,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         model.setColour(colour0, colour1);
     }
 
-    public SelectedModelContainers getSelectedModelContainers()
-    {
-        return selectedModelContainers;
-    }
-
-    public void selectAllModels()
-    {
-        for (ModelContainer modelContainer : loadedModels)
-        {
-            selectedModelContainers.addModelContainer(modelContainer);
-        }
-    }
-
-    public void deselectAllModels()
+    private void deselectAllModels()
     {
         for (ModelContainer modelContainer : loadedModels)
         {
@@ -1142,7 +931,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     /**
-     * If the chosen filaments, application mode or target printer (project printsettings printer)
+     * If either the chosen filaments, application mode or project printsettings printer
      * changes then this must be called. In LAYOUT mode the filament colours should reflect the
      * project filament colours In SETTINGS mode the filament colours should reflect the project
      * print settings filament colours.

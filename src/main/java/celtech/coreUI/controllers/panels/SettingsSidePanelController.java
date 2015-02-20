@@ -731,7 +731,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
-    public void whenProjectChanged(Project project)
+    private void whenProjectChanged(Project project)
     {
         currentProject = project;
         printerSettings = project.getPrinterSettings();

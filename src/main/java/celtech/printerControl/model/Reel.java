@@ -1,12 +1,9 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.coreUI.DisplayManager;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;

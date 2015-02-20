@@ -10,13 +10,11 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
-import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
 import java.text.ParseException;
@@ -90,7 +88,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private SelectedModelContainers selectionModel;
     private SelectedModelContainersListener tableViewSelectionListener = null;
-    private final DisplayManager displayManager = DisplayManager.getInstance();
 
     private ChangeListener<Number> modelScaleChangeListener = null;
     private ChangeListener<Number> modelRotationChangeListener = null;
@@ -641,7 +638,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      *
      * @param viewManager
      */
-    public void bindProject(final Project project)
+    private void bindProject(final Project project)
     {
         if (boundProject != null) {
             unbindProject(boundProject);

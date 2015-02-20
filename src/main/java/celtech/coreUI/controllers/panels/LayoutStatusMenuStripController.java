@@ -147,7 +147,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private Project selectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
     private SelectedModelContainers modelSelection;
-    private ModelLoader modelLoader = new ModelLoader();
+    private final ModelLoader modelLoader = new ModelLoader();
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -672,6 +672,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void whenSettingsPrinterChanges(Printer printer)
     {
+        
         updateCanPrintProjectBindings(printer, selectedProject);
         updatePrintButtonConditionalText(printer, selectedProject);
     }
@@ -684,7 +685,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 printer.getPrinterAncillarySystems().
                                                 lidOpenProperty().not().not());
 
-        if (printer.extrudersProperty().size() == 1) // only one extruder
+        if (! printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
             printButton.getTag().addConditionalText(
                 "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
@@ -715,13 +716,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             } else // both extruders are required
             {
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
-                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                    "dialogs.cantPrintNoFilamentSelectedMessage0", printerSettings.getFilament0Property().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
                                                         printer.extrudersProperty().get(0).
                                                         filamentLoadedProperty().not());
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament1Property().isNull());
-                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                    "dialogs.cantPrintNoFilamentSelectedMessage1", printerSettings.getFilament1Property().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
                                                         printer.extrudersProperty().get(1).
                                                         filamentLoadedProperty().not());
 
@@ -854,7 +855,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             return;
         }
         printButton.disableProperty().unbind();
-        if (printer.extrudersProperty().size() == 1) // only one extruder
+        if (! printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
             canPrintProject.bind(
                 printer.canPrintProperty()

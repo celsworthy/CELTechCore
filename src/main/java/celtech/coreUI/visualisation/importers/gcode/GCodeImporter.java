@@ -8,7 +8,6 @@ import celtech.appManager.Project;
 import celtech.services.gcodeLoader.GCodeLoadState;
 import celtech.services.gcodeLoader.GCodeEventType;
 import celtech.services.gcodeLoader.GCodeParseException;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;

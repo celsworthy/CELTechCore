@@ -11,7 +11,6 @@ import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.SupportPattern;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.popups.PopupCommandReceiver;
@@ -55,7 +54,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class ProfileDetailsController implements Initializable, PopupCommandTransmitter
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(ProfileDetailsController.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(
+        ProfileDetailsController.class.getName());
     private int lastNozzleSelected = 0;
     private BooleanProperty nameEditable = new SimpleBooleanProperty(false);
 
@@ -360,7 +360,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
 
-    private final Image redcrossImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
+    private final Image redcrossImage = new Image(CoreTest.class.getResource(
+        ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
     private final ImageView redcrossHolder = new ImageView(redcrossImage);
 
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
@@ -368,10 +369,13 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     private final BooleanProperty showButtons = new SimpleBooleanProperty(true);
 
     private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.observableArrayList();
-    private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(new String("0.3mm"), new String("0.8mm"));
-    private final ObservableList<FillPattern> fillPatternOptions = FXCollections.observableArrayList(FillPattern.values());
+    private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
+        new String("0.3mm"), new String("0.8mm"));
+    private final ObservableList<FillPattern> fillPatternOptions = FXCollections.observableArrayList(
+        FillPattern.values());
 
-    private final ObservableList<SupportPattern> supportPatternOptions = FXCollections.observableArrayList(SupportPattern.values());
+    private final ObservableList<SupportPattern> supportPatternOptions = FXCollections.observableArrayList(
+        SupportPattern.values());
 
     private ChangeListener<Toggle> nozzleSelectionListener = null;
 
@@ -463,7 +467,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                                      @Override
                                      public void handle(MouseEvent mouseEvent)
                                      {
-                                         if (nozzle1Button.equals(nozzleChoiceGroup.getSelectedToggle()))
+                                         if (nozzle1Button.equals(
+                                             nozzleChoiceGroup.getSelectedToggle()))
                                          {
                                              mouseEvent.consume();
                                          }
@@ -475,7 +480,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                                      @Override
                                      public void handle(MouseEvent mouseEvent)
                                      {
-                                         if (nozzle2Button.equals(nozzleChoiceGroup.getSelectedToggle()))
+                                         if (nozzle2Button.equals(
+                                             nozzleChoiceGroup.getSelectedToggle()))
                                          {
                                              mouseEvent.consume();
                                          }
@@ -486,109 +492,112 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         forceNozzleFirstLayerOptions.addAll(nozzleOptions);
         firstLayerNozzleChoice.setItems(forceNozzleFirstLayerOptions);
-        firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
+            new ChangeListener<Number>()
             {
-                switch (newValue.intValue())
+                @Override
+                public void changed(
+                    ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
                 {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (!inhibitAutoExtrusionWidth)
-                        {
-                            firstLayerExtrusionWidth.floatValueProperty().set(0.3f);
-                        }
-                        firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (!inhibitAutoExtrusionWidth)
-                        {
-                            firstLayerExtrusionWidth.floatValueProperty().set(0.8f);
-                        }
-                        firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
-            }
-        });
+                    switch (newValue.intValue())
+                    {
+                        case 0:
+                            // The point 3 nozzle has been selected
+                            if (!inhibitAutoExtrusionWidth)
+                            {
+                                firstLayerExtrusionWidth.floatValueProperty().set(0.3f);
+                            }
+                            firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            break;
+                        case 1:
+                            // The point 8 nozzle has been selected
+                            if (!inhibitAutoExtrusionWidth)
+                            {
+                                firstLayerExtrusionWidth.floatValueProperty().set(0.8f);
+                            }
+                            firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            break;
+                    }
+                    }
+            });
 
         perimeterNozzleChoice.setItems(nozzleOptions);
-        perimeterNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        perimeterNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
+            new ChangeListener<Number>()
             {
-                switch (newValue.intValue())
+                @Override
+                public void changed(
+                    ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
                 {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (!inhibitAutoExtrusionWidth)
-                        {
-                            perimeterExtrusionWidth.floatValueProperty().set(0.3f);
-                        }
-                        perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (!inhibitAutoExtrusionWidth)
-                        {
-                            perimeterExtrusionWidth.floatValueProperty().set(0.8f);
-                        }
-                        perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
-            }
-        });
+                    switch (newValue.intValue())
+                    {
+                        case 0:
+                            // The point 3 nozzle has been selected
+                            if (!inhibitAutoExtrusionWidth)
+                            {
+                                perimeterExtrusionWidth.floatValueProperty().set(0.3f);
+                            }
+                            perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            break;
+                        case 1:
+                            // The point 8 nozzle has been selected
+                            if (!inhibitAutoExtrusionWidth)
+                            {
+                                perimeterExtrusionWidth.floatValueProperty().set(0.8f);
+                            }
+                            perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            break;
+                    }
+                    }
+            });
 
         fillNozzleChoice.setItems(nozzleOptions);
-        fillNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        fillNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
+            new ChangeListener<Number>()
             {
-                switch (newValue.intValue())
+                @Override
+                public void changed(
+                    ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
                 {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (!inhibitAutoExtrusionWidth)
-                        {
-                            infillExtrusionWidth.floatValueProperty().set(0.3f);
-                            solidInfillExtrusionWidth.floatValueProperty().set(0.3f);
-                            topSolidInfillExtrusionWidth.floatValueProperty().set(0.3f);
-                        }
-                        infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (!inhibitAutoExtrusionWidth)
-                        {
-                            infillExtrusionWidth.floatValueProperty().set(0.8f);
-                            solidInfillExtrusionWidth.floatValueProperty().set(0.8f);
-                            topSolidInfillExtrusionWidth.floatValueProperty().set(0.8f);
-                        }
-                        infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
+                    switch (newValue.intValue())
+                    {
+                        case 0:
+                            // The point 3 nozzle has been selected
+                            if (!inhibitAutoExtrusionWidth)
+                            {
+                                infillExtrusionWidth.floatValueProperty().set(0.3f);
+                                solidInfillExtrusionWidth.floatValueProperty().set(0.3f);
+                                topSolidInfillExtrusionWidth.floatValueProperty().set(0.3f);
+                            }
+                            infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            break;
+                        case 1:
+                            // The point 8 nozzle has been selected
+                            if (!inhibitAutoExtrusionWidth)
+                            {
+                                infillExtrusionWidth.floatValueProperty().set(0.8f);
+                                solidInfillExtrusionWidth.floatValueProperty().set(0.8f);
+                                topSolidInfillExtrusionWidth.floatValueProperty().set(0.8f);
+                            }
+                            infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            break;
+                    }
+                    }
             }
-        }
         );
 
         supportNozzleChoice.setItems(nozzleOptions);
@@ -598,7 +607,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 {
                     @Override
                     public void changed(
-                        ObservableValue<? extends Number> observable, Number oldValue, Number newValue
+                        ObservableValue<? extends Number> observable, Number oldValue,
+                        Number newValue
                     )
                     {
                         switch (newValue.intValue())
@@ -639,7 +649,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         {
             @Override
             public void changed(
-                ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue, CustomSlicerType newValue)
+                ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue,
+                CustomSlicerType newValue)
             {
                 isDirty.set(true);
             }
@@ -717,7 +728,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
                     @Override
                     public void changed(
-                        ObservableValue<? extends FillPattern> observable, FillPattern oldValue, FillPattern newValue)
+                        ObservableValue<? extends FillPattern> observable, FillPattern oldValue,
+                        FillPattern newValue)
                     {
                         isDirty.set(true);
                         }
@@ -774,7 +786,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
                 {
                     @Override
                     public void changed(
-                        ObservableValue<? extends SupportPattern> observable, SupportPattern oldValue, SupportPattern newValue)
+                        ObservableValue<? extends SupportPattern> observable,
+                        SupportPattern oldValue, SupportPattern newValue)
                     {
                         isDirty.set(true);
                         }
@@ -786,15 +799,11 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
             {
                 if (newValue == true)
                 {
-                    DisplayManager displayManager = DisplayManager.getInstance();
-                    if (displayManager != null)
-                    {
-                        Project currentProject = Lookup.getSelectedProjectProperty().get();
+                    Project currentProject = Lookup.getSelectedProjectProperty().get();
 
-                        if (currentProject != null)
-                        {
-                            currentProject.projectModified();
-                        }
+                    if (currentProject != null)
+                    {
+                        currentProject.projectModified();
                     }
                 }
             }
@@ -805,7 +814,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
         {
             @Override
-            public void changed(ObservableValue<? extends CustomSlicerType> ov, CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
+            public void changed(ObservableValue<? extends CustomSlicerType> ov,
+                CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
             {
                 if (lastSlicer != newSlicer)
                 {
@@ -820,9 +830,12 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         boundToNozzle = nozzleNumber;
 
-        nozzleOpenVolume.floatValueProperty().set(newSettings.getNozzleParameters().get(nozzleNumber).getOpenOverVolume());
-        nozzleEjectionVolume.floatValueProperty().set(newSettings.getNozzleParameters().get(nozzleNumber).getEjectionVolume());
-        nozzlePartialOpen.floatValueProperty().set(newSettings.getNozzleParameters().get(nozzleNumber).getPartialBMinimum());
+        nozzleOpenVolume.floatValueProperty().set(
+            newSettings.getNozzleParameters().get(nozzleNumber).getOpenOverVolume());
+        nozzleEjectionVolume.floatValueProperty().set(newSettings.getNozzleParameters().get(
+            nozzleNumber).getEjectionVolume());
+        nozzlePartialOpen.floatValueProperty().set(newSettings.getNozzleParameters().get(
+            nozzleNumber).getPartialBMinimum());
         nozzleOpenVolume.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen.textProperty().addListener(dirtyStringListener);
@@ -832,9 +845,12 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
     {
         if (boundToNozzle != -1)
         {
-            workingProfile.getNozzleParameters().get(boundToNozzle).setOpenOverVolume(nozzleOpenVolume.floatValueProperty().get());
-            workingProfile.getNozzleParameters().get(boundToNozzle).setEjectionVolume(nozzleEjectionVolume.floatValueProperty().get());
-            workingProfile.getNozzleParameters().get(boundToNozzle).setPartialBMinimum(nozzlePartialOpen.floatValueProperty().get());
+            workingProfile.getNozzleParameters().get(boundToNozzle).setOpenOverVolume(
+                nozzleOpenVolume.floatValueProperty().get());
+            workingProfile.getNozzleParameters().get(boundToNozzle).setEjectionVolume(
+                nozzleEjectionVolume.floatValueProperty().get());
+            workingProfile.getNozzleParameters().get(boundToNozzle).setPartialBMinimum(
+                nozzlePartialOpen.floatValueProperty().get());
         }
     }
 
@@ -844,9 +860,12 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         {
             if (lastBoundProfile != null)
             {
-                lastBoundProfile.getNozzleParameters().get(boundToNozzle).setOpenOverVolume(nozzleOpenVolume.floatValueProperty().get());
-                lastBoundProfile.getNozzleParameters().get(boundToNozzle).setEjectionVolume(nozzleEjectionVolume.floatValueProperty().get());
-                lastBoundProfile.getNozzleParameters().get(boundToNozzle).setPartialBMinimum(nozzlePartialOpen.floatValueProperty().get());
+                lastBoundProfile.getNozzleParameters().get(boundToNozzle).setOpenOverVolume(
+                    nozzleOpenVolume.floatValueProperty().get());
+                lastBoundProfile.getNozzleParameters().get(boundToNozzle).setEjectionVolume(
+                    nozzleEjectionVolume.floatValueProperty().get());
+                lastBoundProfile.getNozzleParameters().get(boundToNozzle).setPartialBMinimum(
+                    nozzlePartialOpen.floatValueProperty().get());
             }
             nozzleOpenVolume.textProperty().removeListener(dirtyStringListener);
             nozzleEjectionVolume.textProperty().removeListener(dirtyStringListener);
@@ -867,7 +886,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
         if (newSettings.getSlicerOverride() != null)
         {
-            slicerChooser.setValue(CustomSlicerType.customTypefromSettings(newSettings.getSlicerOverride()));
+            slicerChooser.setValue(CustomSlicerType.customTypefromSettings(
+                newSettings.getSlicerOverride()));
         } else
         {
             slicerChooser.setValue(CustomSlicerType.Default);
@@ -904,25 +924,30 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 //        spiralPrintToggle.selectedProperty().set(newSettings.spiral_vaseProperty().get());
 
         //Nozzle tab
-        firstLayerExtrusionWidth.floatValueProperty().set(newSettings.getFirstLayerExtrusionWidth_mm());
+        firstLayerExtrusionWidth.floatValueProperty().set(
+            newSettings.getFirstLayerExtrusionWidth_mm());
         firstLayerNozzleChoice.getSelectionModel().select(newSettings.getFirstLayerNozzle());
 
         perimeterExtrusionWidth.floatValueProperty().set(newSettings.getPerimeterExtrusionWidth_mm());
         perimeterNozzleChoice.getSelectionModel().select(newSettings.getPerimeterNozzle());
 
         infillExtrusionWidth.floatValueProperty().set(newSettings.getFillExtrusionWidth_mm());
-        solidInfillExtrusionWidth.floatValueProperty().set(newSettings.getSolidFillExtrusionWidth_mm());
+        solidInfillExtrusionWidth.floatValueProperty().set(
+            newSettings.getSolidFillExtrusionWidth_mm());
         fillNozzleChoice.getSelectionModel().select(newSettings.getFillNozzle());
-        topSolidInfillExtrusionWidth.floatValueProperty().set(newSettings.getTopSolidFillExtrusionWidth_mm());
+        topSolidInfillExtrusionWidth.floatValueProperty().set(
+            newSettings.getTopSolidFillExtrusionWidth_mm());
 
         supportExtrusionWidth.floatValueProperty().set(newSettings.getSupportExtrusionWidth_mm());
         supportNozzleChoice.getSelectionModel().select(newSettings.getSupportNozzle());
 
-        supportInterfaceNozzleChoice.getSelectionModel().select(newSettings.getSupportInterfaceNozzle());
+        supportInterfaceNozzleChoice.getSelectionModel().select(
+            newSettings.getSupportInterfaceNozzle());
 
         //Support tab
         supportMaterialEnabled.selectedProperty().set(newSettings.getGenerateSupportMaterial());
-        supportOverhangThreshold.intValueProperty().set(newSettings.getSupportOverhangThreshold_degrees());
+        supportOverhangThreshold.intValueProperty().set(
+            newSettings.getSupportOverhangThreshold_degrees());
         forcedSupportLayers.intValueProperty().set(newSettings.getForcedSupportForFirstNLayers());
         supportPattern.valueProperty().set(newSettings.getSupportPattern());
         supportPatternSpacing.floatValueProperty().set(newSettings.getSupportPatternSpacing_mm());
@@ -932,7 +957,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         firstLayerSpeed.intValueProperty().set(newSettings.getFirstLayerSpeed_mm_per_s());
         perimeterSpeed.intValueProperty().set(newSettings.getPerimeterSpeed_mm_per_s());
         smallPerimeterSpeed.intValueProperty().set(newSettings.getSmallPerimeterSpeed_mm_per_s());
-        externalPerimeterSpeed.intValueProperty().set(newSettings.getExternalPerimeterSpeed_mm_per_s());
+        externalPerimeterSpeed.intValueProperty().set(
+            newSettings.getExternalPerimeterSpeed_mm_per_s());
         infillSpeed.intValueProperty().set(newSettings.getFillSpeed_mm_per_s());
         solidInfillSpeed.intValueProperty().set(newSettings.getSolidFillSpeed_mm_per_s());
         topSolidInfillSpeed.intValueProperty().set(newSettings.getTopSolidFillSpeed_mm_per_s());
@@ -946,8 +972,10 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         maxFanSpeed.intValueProperty().set(newSettings.getMaxFanSpeed_percent());
         bridgesFanSpeed.intValueProperty().set(newSettings.getBridgeFanSpeed_percent());
         disableFanForFirstNLayers.intValueProperty().set(newSettings.getDisableFanFirstNLayers());
-        enableFanIfLayerTimeBelow.intValueProperty().set(newSettings.getCoolIfLayerTimeLessThan_secs());
-        slowFanIfLayerTimeBelow.intValueProperty().set(newSettings.getSlowDownIfLayerTimeLessThan_secs());
+        enableFanIfLayerTimeBelow.intValueProperty().set(
+            newSettings.getCoolIfLayerTimeLessThan_secs());
+        slowFanIfLayerTimeBelow.intValueProperty().set(
+            newSettings.getSlowDownIfLayerTimeLessThan_secs());
         minPrintSpeed.intValueProperty().set(newSettings.getMinPrintSpeed_mm_per_s());
 
         updateFieldDisabledState(newSettings);
@@ -964,10 +992,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         {
             slicerType = settings.getSlicerOverride();
         }
-        
-        
-        
-         layerHeight.setDisable(!slicerMappings.isMapped(slicerType, "layerHeight_mm"));
+
+        layerHeight.setDisable(!slicerMappings.isMapped(slicerType, "layerHeight_mm"));
         fillDensity.setDisable(!slicerMappings.isMapped(slicerType, "fillDensity_normalised"));
         infillEveryN.setDisable(!slicerMappings.isMapped(slicerType, "fillEveryNLayers"));
         solidLayersTop.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtTop"));
@@ -976,28 +1002,42 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         brimWidth.setDisable(!slicerMappings.isMapped(slicerType, "brimWidth_mm"));
 
         //Nozzle tab
-        firstLayerExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerExtrusionWidth_mm"));
-        perimeterExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "perimeterExtrusionWidth_mm"));
-        infillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "fillExtrusionWidth_mm"));
-        solidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "solidFillExtrusionWidth_mm"));
-        topSolidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "topSolidFillExtrusionWidth_mm"));
-        supportExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType, "supportExtrusionWidth_mm"));
+        firstLayerExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                     "firstLayerExtrusionWidth_mm"));
+        perimeterExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                    "perimeterExtrusionWidth_mm"));
+        infillExtrusionWidth.setDisable(
+            !slicerMappings.isMapped(slicerType, "fillExtrusionWidth_mm"));
+        solidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                      "solidFillExtrusionWidth_mm"));
+        topSolidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                         "topSolidFillExtrusionWidth_mm"));
+        supportExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                  "supportExtrusionWidth_mm"));
 
         //Support tab
-        supportOverhangThreshold.setDisable(!slicerMappings.isMapped(slicerType, "supportOverhangThreshold_degrees"));
-        forcedSupportLayers.setDisable(!slicerMappings.isMapped(slicerType, "forcedSupportForFirstNLayers"));
-        supportPatternSpacing.setDisable(!slicerMappings.isMapped(slicerType, "supportPatternSpacing_mm"));
-        supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType, "supportPatternAngle_degrees"));
+        supportOverhangThreshold.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                     "supportOverhangThreshold_degrees"));
+        forcedSupportLayers.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                "forcedSupportForFirstNLayers"));
+        supportPatternSpacing.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                  "supportPatternSpacing_mm"));
+        supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                "supportPatternAngle_degrees"));
 
         //Speed tab
         firstLayerSpeed.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerSpeed_mm_per_s"));
         perimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "perimeterSpeed_mm_per_s"));
-        smallPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "smallPerimeterSpeed_mm_per_s"));
-        externalPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "externalPerimeterSpeed_mm_per_s"));
+        smallPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                "smallPerimeterSpeed_mm_per_s"));
+        externalPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                   "externalPerimeterSpeed_mm_per_s"));
         infillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "fillSpeed_mm_per_s"));
         solidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "solidFillSpeed_mm_per_s"));
-        topSolidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "topSolidFillSpeed_mm_per_s"));
-        supportMaterialSpeed.setDisable(!slicerMappings.isMapped(slicerType, "supportSpeed_mm_per_s"));
+        topSolidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                "topSolidFillSpeed_mm_per_s"));
+        supportMaterialSpeed.setDisable(
+            !slicerMappings.isMapped(slicerType, "supportSpeed_mm_per_s"));
         bridgesSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeSpeed_mm_per_s"));
         gapFillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "gapFillSpeed_mm_per_s"));
 
@@ -1005,10 +1045,13 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         minFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minFanSpeed_percent"));
         maxFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "maxFanSpeed_percent"));
         bridgesFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeFanSpeed_percent"));
-        disableFanForFirstNLayers.setDisable(!slicerMappings.isMapped(slicerType, "disableFanFirstNLayers"));
-        enableFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType, "coolIfLayerTimeLessThan_secs"));
-        slowFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType, "slowDownIfLayerTimeLessThan_secs"));
-        minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));        
+        disableFanForFirstNLayers.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                      "disableFanFirstNLayers"));
+        enableFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                      "coolIfLayerTimeLessThan_secs"));
+        slowFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                    "slowDownIfLayerTimeLessThan_secs"));
+        minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));
     }
 
     private void updateSettingsFromGUI(SlicerParametersFile settingsToUpdate)
@@ -1025,36 +1068,50 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 //        settingsToUpdate.spiral_vaseProperty().set(spiralPrintToggle.selectedProperty().get());
 
         //Nozzle tab
-        settingsToUpdate.setFirstLayerExtrusionWidth_mm(firstLayerExtrusionWidth.floatValueProperty().get());
-        settingsToUpdate.setFirstLayerNozzle(firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
+        settingsToUpdate.setFirstLayerExtrusionWidth_mm(
+            firstLayerExtrusionWidth.floatValueProperty().get());
+        settingsToUpdate.setFirstLayerNozzle(
+            firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
 
-        settingsToUpdate.setPerimeterExtrusionWidth_mm(perimeterExtrusionWidth.floatValueProperty().get());
-        settingsToUpdate.setPerimeterNozzle(perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
+        settingsToUpdate.setPerimeterExtrusionWidth_mm(
+            perimeterExtrusionWidth.floatValueProperty().get());
+        settingsToUpdate.setPerimeterNozzle(
+            perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.setFillExtrusionWidth_mm(infillExtrusionWidth.floatValueProperty().get());
-        settingsToUpdate.setSolidFillExtrusionWidth_mm(solidInfillExtrusionWidth.floatValueProperty().get());
+        settingsToUpdate.setSolidFillExtrusionWidth_mm(
+            solidInfillExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.setFillNozzle(fillNozzleChoice.getSelectionModel().getSelectedIndex());
-        settingsToUpdate.setTopSolidFillExtrusionWidth_mm(topSolidInfillExtrusionWidth.floatValueProperty().get());
+        settingsToUpdate.setTopSolidFillExtrusionWidth_mm(
+            topSolidInfillExtrusionWidth.floatValueProperty().get());
 
-        settingsToUpdate.setSupportExtrusionWidth_mm(supportExtrusionWidth.floatValueProperty().get());
+        settingsToUpdate.setSupportExtrusionWidth_mm(
+            supportExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
 
-        settingsToUpdate.setSupportInterfaceNozzle(supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
+        settingsToUpdate.setSupportInterfaceNozzle(
+            supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
 
         //Support tab
         settingsToUpdate.setGenerateSupportMaterial(supportMaterialEnabled.isSelected());
-        settingsToUpdate.setSupportInterfaceNozzle(supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
-        settingsToUpdate.setSupportOverhangThreshold_degrees(supportOverhangThreshold.intValueProperty().get());
-        settingsToUpdate.setForcedSupportForFirstNLayers(forcedSupportLayers.intValueProperty().get());
+        settingsToUpdate.setSupportInterfaceNozzle(
+            supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
+        settingsToUpdate.setSupportOverhangThreshold_degrees(
+            supportOverhangThreshold.intValueProperty().get());
+        settingsToUpdate.setForcedSupportForFirstNLayers(
+            forcedSupportLayers.intValueProperty().get());
         settingsToUpdate.setSupportPattern(supportPattern.valueProperty().get());
-        settingsToUpdate.setSupportPatternSpacing_mm(supportPatternSpacing.floatValueProperty().get());
+        settingsToUpdate.setSupportPatternSpacing_mm(
+            supportPatternSpacing.floatValueProperty().get());
         settingsToUpdate.setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
 
         //Speed tab
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
         settingsToUpdate.setPerimeterSpeed_mm_per_s(perimeterSpeed.intValueProperty().get());
-        settingsToUpdate.setSmallPerimeterSpeed_mm_per_s(smallPerimeterSpeed.intValueProperty().get());
-        settingsToUpdate.setExternalPerimeterSpeed_mm_per_s(externalPerimeterSpeed.intValueProperty().get());
+        settingsToUpdate.setSmallPerimeterSpeed_mm_per_s(
+            smallPerimeterSpeed.intValueProperty().get());
+        settingsToUpdate.setExternalPerimeterSpeed_mm_per_s(
+            externalPerimeterSpeed.intValueProperty().get());
         settingsToUpdate.setFillSpeed_mm_per_s(infillSpeed.intValueProperty().get());
         settingsToUpdate.setSolidFillSpeed_mm_per_s(solidInfillSpeed.intValueProperty().get());
         settingsToUpdate.setTopSolidFillSpeed_mm_per_s(topSolidInfillSpeed.intValueProperty().get());
@@ -1067,9 +1124,12 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         settingsToUpdate.setMinFanSpeed_percent(minFanSpeed.intValueProperty().get());
         settingsToUpdate.setMaxFanSpeed_percent(maxFanSpeed.intValueProperty().get());
         settingsToUpdate.setBridgeFanSpeed_percent(bridgesFanSpeed.intValueProperty().get());
-        settingsToUpdate.setDisableFanFirstNLayers(disableFanForFirstNLayers.intValueProperty().get());
-        settingsToUpdate.setCoolIfLayerTimeLessThan_secs(enableFanIfLayerTimeBelow.intValueProperty().get());
-        settingsToUpdate.setSlowDownIfLayerTimeLessThan_secs(slowFanIfLayerTimeBelow.intValueProperty().get());
+        settingsToUpdate.setDisableFanFirstNLayers(
+            disableFanForFirstNLayers.intValueProperty().get());
+        settingsToUpdate.setCoolIfLayerTimeLessThan_secs(
+            enableFanIfLayerTimeBelow.intValueProperty().get());
+        settingsToUpdate.setSlowDownIfLayerTimeLessThan_secs(
+            slowFanIfLayerTimeBelow.intValueProperty().get());
         settingsToUpdate.setMinPrintSpeed_mm_per_s(minPrintSpeed.intValueProperty().get());
     }
 
@@ -1090,7 +1150,8 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
             container.setVisible(true);
             bindToNewSettings(workingProfile);
-            boolean settingsAreInApplicationProfileList = SlicerParametersContainer.applicationProfileListContainsProfile(settings.getProfileName());
+            boolean settingsAreInApplicationProfileList = SlicerParametersContainer.applicationProfileListContainsProfile(
+                settings.getProfileName());
             isMutable.set(!settingsAreInApplicationProfileList);
             isDirty.set(false);
         }
