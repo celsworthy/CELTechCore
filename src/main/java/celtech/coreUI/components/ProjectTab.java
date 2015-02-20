@@ -17,10 +17,7 @@ import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
@@ -102,6 +99,72 @@ public class ProjectTab extends Tab
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
 
+        setupDragHandlers();
+
+        basePane.getChildren().add(viewManager.getSubScene());
+
+        try
+        {
+            URL gcodeEditorURL = getClass().getResource(
+                ApplicationConfiguration.fxmlResourcePath
+                + "GCodeEditorPanel.fxml");
+            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
+                                                          Lookup.getLanguageBundle());
+            StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
+            GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
+            gcodeEditorController.configure(project.getLoadedModels(), project);
+            AnchorPane.setTopAnchor(gcodeEditor, 30.0);
+            AnchorPane.setRightAnchor(gcodeEditor, 0.0);
+
+            basePane.getChildren().add(gcodeEditor);
+        } catch (IOException ex)
+        {
+            steno.error("Failed to load gcode editor:" + ex);
+        }
+
+        this.setContent(basePane);
+
+        this.setGraphic(nonEditableProjectNameField);
+        nonEditableProjectNameField.textProperty().bind(
+            project.projectNameProperty());
+
+        nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
+        {
+            if (event.getClickCount() == 2 && project.getProjectMode()
+                != ProjectMode.GCODE)
+            {
+                editableProjectNameField.setText(
+                    nonEditableProjectNameField.getText());
+                setGraphic(editableProjectNameField);
+                editableProjectNameField.selectAll();
+                editableProjectNameField.requestFocus();
+                titleBeingEdited = true;
+            }
+        });
+
+        editableProjectNameField.focusedProperty().addListener(
+            new ChangeListener<Boolean>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> ov,
+                    Boolean t, Boolean t1)
+                {
+                    if (t1.booleanValue() == false)
+                    {
+                        switchToNonEditableTitle();
+                    }
+                }
+            });
+
+        editableProjectNameField.setOnAction((ActionEvent event) ->
+        {
+            switchToNonEditableTitle();
+        });
+
+    }
+
+    private void setupDragHandlers()
+    {
         basePane.setOnDragOver(new EventHandler<DragEvent>()
         {
             @Override
@@ -225,74 +288,13 @@ public class ProjectTab extends Tab
                 {
                     steno.error("No files in dragboard");
                 }
-                /* let the source know whether the string was successfully 
-                 * transferred and used */
+                /* let the source know whether the string was successfully
+                * transferred and used */
                 event.setDropCompleted(success);
 
                 event.consume();
             }
         });
-
-        basePane.getChildren().add(viewManager.getSubScene());
-
-        try
-        {
-            URL gcodeEditorURL = getClass().getResource(
-                ApplicationConfiguration.fxmlResourcePath
-                + "GCodeEditorPanel.fxml");
-            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
-                                                          Lookup.getLanguageBundle());
-            StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
-            GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(project.getLoadedModels(), project);
-            AnchorPane.setTopAnchor(gcodeEditor, 30.0);
-            AnchorPane.setRightAnchor(gcodeEditor, 0.0);
-
-            basePane.getChildren().add(gcodeEditor);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load gcode editor:" + ex);
-        }
-
-        this.setContent(basePane);
-
-        this.setGraphic(nonEditableProjectNameField);
-        nonEditableProjectNameField.textProperty().bind(
-            project.projectNameProperty());
-
-        nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
-        {
-            if (event.getClickCount() == 2 && project.getProjectMode()
-                != ProjectMode.GCODE)
-            {
-                editableProjectNameField.setText(
-                    nonEditableProjectNameField.getText());
-                setGraphic(editableProjectNameField);
-                editableProjectNameField.selectAll();
-                editableProjectNameField.requestFocus();
-                titleBeingEdited = true;
-            }
-        });
-
-        editableProjectNameField.focusedProperty().addListener(
-            new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> ov,
-                    Boolean t, Boolean t1)
-                {
-                    if (t1.booleanValue() == false)
-                    {
-                        switchToNonEditableTitle();
-                    }
-                }
-            });
-
-        editableProjectNameField.setOnAction((ActionEvent event) ->
-        {
-            switchToNonEditableTitle();
-        });
-
     }
 
     private void switchToNonEditableTitle()
@@ -328,32 +330,8 @@ public class ProjectTab extends Tab
      */
     public void saveProject()
     {
-        //Only save if there are some models and we aren't showing a GCODE project ...
-
-        if (project.getProjectMode() == ProjectMode.MESH)
-        {
-            if (project.getLoadedModels().size() > 0)
-            {
-                try
-                {
-                    ObjectOutputStream out = new ObjectOutputStream(
-                        new FileOutputStream(
-                            project.getProjectHeader().getProjectPath()
-                            + File.separator + project.getProjectName()
-                            + ApplicationConfiguration.projectFileExtension));
-                    out.writeObject(project);
-                    out.close();
-                } catch (FileNotFoundException ex)
-                {
-                    steno.error("Failed to save project state");
-                } catch (IOException ex)
-                {
-                    steno.error(
-                        "Couldn't write project state to file for project "
-                        + project.getUUID());
-                }
-            }
-        }
+        
+        Project.saveProject(project);
 
         viewManager.shutdown();
     }

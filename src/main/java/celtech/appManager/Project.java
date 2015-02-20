@@ -12,6 +12,8 @@ import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -34,9 +36,9 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Project implements Serializable
 {
-
     private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
         "RBX-ABS-GR499");
+
     private transient Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final long serialVersionUID = 1L;
@@ -132,6 +134,39 @@ public class Project implements Serializable
             out.writeUTF("NULL");
         }
     }
+    
+    public static void saveProject(Project project)
+    {
+        String path =  project.getProjectHeader().getProjectPath()
+                            + File.separator + project.getProjectName()
+                            + ApplicationConfiguration.projectFileExtension;
+        project.save(path);
+    }
+    
+    private void save(String path) {
+        //Only saveProject if there are some models and we aren't showing a GCODE project ...
+        if (getProjectMode() == ProjectMode.MESH)
+        {
+            if (getLoadedModels().size() > 0)
+            {
+                try
+                {
+                    ObjectOutputStream out = new ObjectOutputStream(
+                        new FileOutputStream(path));
+                    out.writeObject(this);
+                    out.close();
+                } catch (FileNotFoundException ex)
+                {
+                    steno.error("Failed to save project state");
+                } catch (IOException ex)
+                {
+                    steno.error(
+                        "Couldn't write project state to file for project "
+                        + getUUID());
+                }
+            }
+        }
+    }    
 
     /**
      * Return true if all objects are on the same extruder, else return false.
@@ -371,6 +406,11 @@ public class Project implements Serializable
     {
         loadedModels.add(modelContainer);
         projectModified();
+        fireWhenModelAdded(modelContainer);
+    }
+
+    private void fireWhenModelAdded(ModelContainer modelContainer)
+    {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenModelAdded(modelContainer);
@@ -381,6 +421,11 @@ public class Project implements Serializable
     {
         loadedModels.remove(modelContainer);
         projectModified();
+        fireWhenModelRemoved(modelContainer);
+    }
+
+    private void fireWhenModelRemoved(ModelContainer modelContainer)
+    {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenModelRemoved(modelContainer);
@@ -476,6 +521,11 @@ public class Project implements Serializable
         thing.relocateBlocks();
 
         projectModified();
+        fireWhenAutoLaidOut();
+    }
+
+    private void fireWhenAutoLaidOut()
+    {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenAutoLaidOut();
@@ -491,10 +541,7 @@ public class Project implements Serializable
             }
         }
         projectModified();
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
+        fireWhenModelsTransformed(modelContainers);
     }
     
     public void deleteModels(Set<ModelContainer> modelContainers)
@@ -516,10 +563,7 @@ public class Project implements Serializable
             }
         }
         projectModified();
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
+        fireWhenModelsTransformed(modelContainers);
     }   
     
     public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
@@ -531,10 +575,7 @@ public class Project implements Serializable
             }
         }
         projectModified();
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
+        fireWhenModelsTransformed(modelContainers);
     }     
     
     public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
@@ -546,10 +587,7 @@ public class Project implements Serializable
             }
         }
         projectModified();
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
+        fireWhenModelsTransformed(modelContainers);
     }   
     
     public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
@@ -561,6 +599,11 @@ public class Project implements Serializable
             }
         }
         projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }  
+
+    private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
+    {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenModelsTransformed(modelContainers);
@@ -576,10 +619,7 @@ public class Project implements Serializable
             }
         }
         projectModified();
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
+        fireWhenModelsTransformed(modelContainers);
     } 
     
     public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
@@ -591,9 +631,6 @@ public class Project implements Serializable
             }
         }
         projectModified();
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
+        fireWhenModelsTransformed(modelContainers);
     }     
 }
