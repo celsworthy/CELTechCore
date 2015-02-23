@@ -183,7 +183,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 printerSettings.getSettings(), printer);
         } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
         {
-            currentPrinter.resetPurgeTemperature(printerSettings);
+            currentStatusPrinter.resetPurgeTemperature(printerSettings);
             printer.printProject(currentProject, printerSettings.getFilament0(),
                                  printerSettings.getPrintQuality(),
                                  printerSettings.getSettings());
@@ -337,13 +337,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         boolean goAheadAndOpenTheDoor = false;
 
-        if (currentPrinter.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
+        if (currentStatusPrinter.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
         {
             if (Lookup.getUserPreferences().isOverrideSafeties() == true)
             {
                 try
                 {
-                    currentPrinter.goToOpenDoorPositionDontWait(null);
+                    currentStatusPrinter.goToOpenDoorPositionDontWait(null);
                 } catch (PrinterException ex)
                 {
                     steno.error("Error opening door " + ex.getMessage());
@@ -356,7 +356,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 {
                     try
                     {
-                        currentPrinter.goToOpenDoorPosition(null);
+                        currentStatusPrinter.goToOpenDoorPosition(null);
                     } catch (PrinterException ex)
                     {
                         steno.error("Error opening door " + ex.getMessage());
@@ -367,7 +367,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             try
             {
-                currentPrinter.goToOpenDoorPosition(null);
+                currentStatusPrinter.goToOpenDoorPosition(null);
             } catch (PrinterException ex)
             {
                 steno.error("Error opening door " + ex.getMessage());
@@ -381,7 +381,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         //TODO modify for multiple extruders
         try
         {
-            currentPrinter.ejectFilament(0, null);
+            currentStatusPrinter.ejectFilament(0, null);
         } catch (PrinterException ex)
         {
             steno.error("Error when sending eject filament - " + ex.getMessage());
@@ -393,7 +393,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.selectNozzle(0);
+            currentStatusPrinter.selectNozzle(0);
             currentNozzle.set(0);
         } catch (PrinterException ex)
         {
@@ -406,7 +406,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.selectNozzle(1);
+            currentStatusPrinter.selectNozzle(1);
             currentNozzle.set(1);
         } catch (PrinterException ex)
         {
@@ -419,7 +419,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.openNozzleFully();
+            currentStatusPrinter.openNozzleFully();
         } catch (PrinterException ex)
         {
             steno.error("Error when opening nozzle" + ex.getMessage());
@@ -431,7 +431,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.closeNozzleFully();
+            currentStatusPrinter.closeNozzleFully();
         } catch (PrinterException ex)
         {
             steno.error("Error when closing nozzle" + ex.getMessage());
@@ -443,7 +443,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.executeMacro("Home_all");
+            currentStatusPrinter.executeMacro("Home_all");
         } catch (PrinterException ex)
         {
             steno.error("Couldn't run home macro");
@@ -455,12 +455,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            if (currentPrinter.getPrinterAncillarySystems().headFanOnProperty().get())
+            if (currentStatusPrinter.getPrinterAncillarySystems().headFanOnProperty().get())
             {
-                currentPrinter.switchOffHeadFan();
+                currentStatusPrinter.switchOffHeadFan();
             } else
             {
-                currentPrinter.switchOnHeadFan();
+                currentStatusPrinter.switchOnHeadFan();
             }
         } catch (PrinterException ex)
         {
@@ -477,11 +477,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             if (headLEDOn == true)
             {
-                currentPrinter.switchOffHeadLEDs();
+                currentStatusPrinter.switchOffHeadLEDs();
                 headLEDOn = false;
             } else
             {
-                currentPrinter.switchOnHeadLEDs();
+                currentStatusPrinter.switchOnHeadLEDs();
                 headLEDOn = true;
             }
         } catch (PrinterException ex)
@@ -503,15 +503,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             switch (ambientLEDState)
             {
                 case OFF:
-                    currentPrinter.setAmbientLEDColour(Color.BLACK);
+                    currentStatusPrinter.setAmbientLEDColour(Color.BLACK);
                     break;
                 case WHITE:
-                    currentPrinter.setAmbientLEDColour(
+                    currentStatusPrinter.setAmbientLEDColour(
                         colourMap.displayToPrinterColour(Color.WHITE));
                     break;
                 case COLOUR:
-                    currentPrinter.setAmbientLEDColour(
-                        currentPrinter.getPrinterIdentity().printerColourProperty().get());
+                    currentStatusPrinter.setAmbientLEDColour(
+                        currentStatusPrinter.getPrinterIdentity().printerColourProperty().get());
                     break;
             }
         } catch (PrinterException ex)
@@ -525,7 +525,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.removeHead((TaskResponse taskResponse) ->
+            currentStatusPrinter.removeHead((TaskResponse taskResponse) ->
             {
                 removeHeadFinished(taskResponse);
             });
@@ -552,7 +552,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     /**
      * The printer selected on the Status screen.
      */
-    private Printer currentPrinter = null;
+    private Printer currentStatusPrinter = null;
     /**
      * The printer selected on the Settings screen.
      */
@@ -576,7 +576,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         statusButtonHBox.setVisible(false);
 
-        createMainSelectedPrinterListener();
+        createStatusPrinterListener();
 
         printButton.installTag();
 
@@ -679,6 +679,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
+        PrinterSettings printerSettings = project.getPrinterSettings();
+        
+        printButton.uninstallTag();
+        printButton.installTag();
+        
         printButton.getTag().removeAllConditionalText();
 
         printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
@@ -733,9 +738,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     /**
      * Create the bindings to the Status selected printer.
      */
-    private void createMainSelectedPrinterListener()
+    private void createStatusPrinterListener()
     {
-        currentPrinter = Lookup.getCurrentlySelectedPrinterProperty().get();
+        currentStatusPrinter = Lookup.getCurrentlySelectedPrinterProperty().get();
 
         Lookup.getCurrentlySelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
@@ -744,7 +749,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 {
                     printerAvailable.set(true);
 
-                    if (currentPrinter != null)
+                    if (currentStatusPrinter != null)
                     {
                         unlockDoorButton.disableProperty().unbind();
                         ejectFilamentButton.disableProperty().unbind();
@@ -757,7 +762,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         openNozzleButton.disableProperty().unbind();
                         closeNozzleButton.disableProperty().unbind();
                         homeButton.disableProperty().unbind();
-                        currentPrinter.getPrinterAncillarySystems().headFanOnProperty().
+                        currentStatusPrinter.getPrinterAncillarySystems().headFanOnProperty().
                         removeListener(headFanStatusListener);
                         headLightsButton.disableProperty().unbind();
                         ambientLightsButton.disableProperty().unbind();
@@ -785,7 +790,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     bind(newValue.canCalibrateHeadProperty().not());
                     removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
 
-                    currentPrinter = newValue;
+                    currentStatusPrinter = newValue;
 
                 } else
                 {
@@ -850,7 +855,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void updateCanPrintProjectBindings(Printer printer, Project project)
     {
-        if (selectedProject == null || printer == null)
+        PrinterSettings printerSettings = project.getPrinterSettings();
+        if (project == null || printer == null)
         {
             return;
         }
@@ -960,7 +966,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        if (printer == currentPrinter)
+        if (printer == currentStatusPrinter)
         {
             openNozzleButton.visibleProperty().bind(
                 printer.headProperty().get().bPositionProperty().lessThan(0.5));
@@ -1012,11 +1018,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
+        if (printer == currentSettingsPrinter)
+        {
+            whenSettingsPrinterChanges(currentSettingsPrinter);
+        }        
     }
 
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
+        if (printer == currentSettingsPrinter)
+        {
+            whenSettingsPrinterChanges(currentSettingsPrinter);
+        }        
     }
 
 }
