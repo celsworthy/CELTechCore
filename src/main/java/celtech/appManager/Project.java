@@ -51,6 +51,7 @@ public class Project implements Serializable
     private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private PrinterSettings printerSettings;
+    private final ProjectManager projectManager = ProjectManager.getInstance();
 
     public Project()
     {
@@ -488,7 +489,7 @@ public class Project implements Serializable
                     break;
                 case MESH:
                     setProjectMode(ProjectMode.MESH);
-//                    projectManager.projectOpened(project);
+                    projectManager.projectOpened(this);
                     break;
                 default:
                     break;

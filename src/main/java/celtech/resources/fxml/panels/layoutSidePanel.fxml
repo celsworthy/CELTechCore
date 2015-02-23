@@ -98,14 +98,16 @@
                 </VBox>
             </top>
             <center>
-                <HBox alignment="CENTER">
-                    <VBox fx:id="materialContainer" BorderPane.alignment="CENTER" spacing="36.0"> 
-                        <children>
+                <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild">
+                   <children>
+                       <VBox fx:id="materialContainer" spacing="36.0" BorderPane.alignment="CENTER"> 
+                           <children>
                         </children>
-                        <HBox.margin>
-                            <Insets top="30.0" />
-                        </HBox.margin>
-                    </VBox>
+                           <HBox.margin>
+                               <Insets top="30.0" />
+                           </HBox.margin>
+                       </VBox>
+                   </children>
                 </HBox>
             </center>
             <bottom>

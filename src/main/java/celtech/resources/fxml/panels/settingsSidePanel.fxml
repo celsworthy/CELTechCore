@@ -188,7 +188,7 @@
                                 <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel">
   
                                 </Label>
-                        <HBox alignment="CENTER">
+                        <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild">
                            <children>
                               <VBox fx:id="materialContainer" spacing="36.0">
                                  <HBox.margin>
