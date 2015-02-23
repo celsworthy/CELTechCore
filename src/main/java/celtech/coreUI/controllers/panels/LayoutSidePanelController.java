@@ -5,13 +5,11 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
-import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.net.URL;
@@ -22,7 +20,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -88,7 +85,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private SelectedModelContainers selectionModel;
     private SelectedModelContainersListener tableViewSelectionListener = null;
-    private final DisplayManager displayManager = DisplayManager.getInstance();
 
     private ChangeListener<Number> modelScaleChangeListener = null;
     private ChangeListener<Number> modelRotationChangeListener = null;
@@ -154,6 +150,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
+        setupProjectSelectedListener();
+    }
+
+    private void setupProjectSelectedListener()
+    {
+        Lookup.getSelectedProjectProperty().addListener(
+            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+        {
+            bindProject(newValue);
+        });
     }
 
     private void setUpModelGeometryListeners()
@@ -233,11 +239,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                                              t1.doubleValue() * 100));
     }
 
-    private ThreeDViewManager get3DViewManager()
-    {
-        return displayManager.getCurrentlyVisibleViewManager();
-    }
-
     private void setUpKeyPressListeners()
     {
         scaleTextField.setOnKeyPressed(
@@ -254,7 +255,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().scaleSelection(
+                                boundProject.scaleModels(selectionModel.getSelectedModelsSnapshot(),
                                     scaleTextField.getAsDouble() / 100.0);
                             } catch (ParseException ex)
                             {
@@ -289,7 +290,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().rotateSelection(
+                                boundProject.rotateModels(selectionModel.getSelectedModelsSnapshot(),
                                     rotationTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -324,7 +325,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().resizeSelectionWidth(
+                                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
                                     widthTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -359,7 +360,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().resizeSelectionHeight(
+                                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
                                     heightTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -393,7 +394,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().resizeSelectionDepth(
+                                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
                                     depthTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -423,7 +424,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     case TAB:
                         try
                         {
-                            get3DViewManager().translateSelectionXTo(
+                            boundProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(),
                                 xAxisTextField.getAsDouble());
                         } catch (ParseException ex)
                         {
@@ -456,7 +457,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                get3DViewManager().translateSelectionZTo(
+                                boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
                                     yAxisTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -643,7 +644,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      *
      * @param viewManager
      */
-    public void bindProject(final Project project)
+    private void bindProject(final Project project)
     {
         if (boundProject != null) {
             unbindProject(boundProject);

@@ -3,6 +3,8 @@
  */
 package celtech.coreUI.visualisation;
 
+import celtech.appManager.Project;
+import celtech.appManager.Project.ProjectChangesListener;
 import celtech.modelcontrol.ModelContainer;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +21,7 @@ import javafx.collections.ObservableSet;
  *
  * @author tony
  */
-public class SelectedModelContainers
+public class SelectedModelContainers implements ProjectChangesListener
 {
 
     private final ObservableSet<ModelContainer> modelContainers;
@@ -27,11 +29,12 @@ public class SelectedModelContainers
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
     private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
 
-    public SelectedModelContainers()
+    public SelectedModelContainers(Project project)
     {
         modelContainers = FXCollections.observableSet();
         primarySelectedModelDetails = new PrimarySelectedModelDetails();
         selectedModelContainersListeners = new HashSet<>();
+        project.addProjectChangesListener(this);
     }
 
     /**
@@ -124,6 +127,28 @@ public class SelectedModelContainers
     {
         primarySelectedModelDetails.updateSelectedProperties();
     }
+    
+    @Override
+    public void whenModelAdded(ModelContainer modelContainer)
+    {
+    }
+
+    @Override
+    public void whenModelRemoved(ModelContainer modelContainer)
+    {
+        removeModelContainer(modelContainer);
+    }    
+    
+    @Override
+    public void whenAutoLaidOut()
+    {
+    } 
+    
+    @Override
+    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    {
+        updateSelectedValues();
+    }    
 
     /**
      * Add a listener that will be notified whenever a ModelContainer is selected or deselected.

@@ -6,7 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
@@ -14,34 +13,23 @@ import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
-import celtech.coreUI.controllers.panels.LayoutSidePanelController;
-import celtech.coreUI.controllers.panels.LayoutSlideOutPanelController;
-import celtech.coreUI.controllers.panels.LayoutStatusMenuStripController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
-import celtech.coreUI.controllers.panels.SettingsSidePanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
-import celtech.coreUI.visualisation.ThreeDViewManager;
-import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
-import celtech.services.modelLoader.ModelLoadResults;
-import celtech.services.modelLoader.ModelLoaderService;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -91,7 +79,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
 
     private static TabPane tabDisplay = null;
-    private LayoutStatusMenuStripController layoutStatusMenuStripController = null;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel = null;
     private static Tab printerStatusTab = null;
     private static Tab addPageTab = null;
@@ -106,16 +93,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      * Project loading
      */
     private ProjectLoader projectLoader = null;
-    /*
-     * Mesh Model loading
-     */
-    private final ModelLoaderService modelLoaderService = new ModelLoaderService();
-    private ProgressDialog modelLoadDialog = null;
-
-    /*
-     * GCode-related
-     */
-    private final IntegerProperty layersInGCode = new SimpleIntegerProperty(0);
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
@@ -143,58 +120,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
         steno.debug("Starting AutoMaker - machine type is " + ApplicationConfiguration.
             getMachineType());
-
-        modelLoadDialog = new ProgressDialog(modelLoaderService);
-
-        modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
-        {
-            whenModelLoadSucceeded();
-        });
     }
 
-    private void whenModelLoadSucceeded()
-    {
-        ModelLoadResults loadResults = modelLoaderService.getValue();
-        if (loadResults.getResults().isEmpty())
-        {
-            return;
-        }
-        ModelLoadResult firstResult = loadResults.getResults().get(0);
-        boolean projectIsEmpty = firstResult.getTargetProjectTab().getLoadedModels().isEmpty();
-        for (ModelLoadResult loadResult : loadResults.getResults())
-        {
-            if (loadResult != null)
-            {
-                if (loadResult.isModelTooLarge())
-                {
-                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
-                        showModelTooBigDialog(loadResult.getModelFilename());
-
-                    if (shrinkModel)
-                    {
-                        ModelContainer modelContainer = loadResult.getModelContainer();
-                        modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProjectTab().addModelContainer(
-                            loadResult.getFullFilename(), modelContainer);
-                    }
-                } else
-                {
-                    ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(),
-                                                                       modelContainer);
-                }
-            } else
-            {
-                steno.error("Error whilst attempting to load model");
-            }
-        }
-        if (loadResults.isRelayout() && projectIsEmpty && loadResults.getResults().size() > 1)
-        {
-            autoLayout();
-        }
-
-    }
-
+    
     private void loadProjectsAtStartup()
     {
         // Load up any projects that were open last time we shut down....
@@ -202,7 +130,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         List<Project> preloadedProjects = pm.getOpenProjects();
         for (Project project : preloadedProjects)
         {
-            ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(),
+            ProjectTab newProjectTab = new ProjectTab(project, tabDisplay.widthProperty(),
                                                       tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
         }
@@ -249,7 +177,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             //Create a tab if one doesn't already exist
             if (tabDisplay.getTabs().size() <= 1)
             {
-                projectTab = new ProjectTab(this, tabDisplay.widthProperty(),
+                projectTab = new ProjectTab(tabDisplay.widthProperty(),
                                             tabDisplay.heightProperty());
                 tabDisplay.getTabs().add(projectTab);
                 tabDisplaySelectionModel.select(projectTab);
@@ -270,15 +198,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 }
             }
 
-            projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
-            Project project = projectTab.getProject();
-            ((LayoutSlideOutPanelController) slideOutControllers.get(ApplicationMode.LAYOUT)).
-                bindLoadedModels(project);
-            ((LayoutSidePanelController) (sidePanelControllers.get(ApplicationMode.LAYOUT))).bindProject(project);
         } else if (newMode == ApplicationMode.SETTINGS)
         {
             rhPanel.getChildren().add(0, slideoutAndProjectHolder);
-            ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
         } else if (newMode == ApplicationMode.STATUS)
         {
             rhPanel.getChildren().add(0, slideoutAndProjectHolder);
@@ -286,10 +208,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public static DisplayManager getInstance()
     {
         if (instance == null)
@@ -319,11 +237,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
-    /**
-     *
-     * @param mainStage
-     * @param applicationName
-     */
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
         this.mainStage = mainStage;
@@ -440,8 +353,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         {
                             ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
                             getSelectedItem();
-                            Project project = projectTab.getProject();
-                            fireProjectChanged(project);
+                            projectTab.fireProjectSelected();
                         }
                     } else
                     {
@@ -477,7 +389,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 + "LayoutStatusMenuStrip.fxml");
             FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, Lookup.getLanguageBundle());
             VBox menuStripControls = (VBox) menuStripLoader.load();
-            layoutStatusMenuStripController = menuStripLoader.getController();
             menuStripControls.prefWidthProperty().bind(slideoutAndProjectHolder.widthProperty());
             slideoutAndProjectHolder.populateProjectDisplay(menuStripControls);
         } catch (IOException ex)
@@ -539,7 +450,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             public void changed(
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                steno.info("Stage fullscreen = " + newValue.booleanValue());
+                steno.debug("Stage fullscreen = " + newValue.booleanValue());
                 fireNodeMayHaveMovedTrigger();
             }
         });
@@ -560,15 +471,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         loadProjectsAtStartup();
 
         root.layout();
-    }
-
-    private void fireProjectChanged(Project project)
-    {
-        Lookup.setSelectedProject(project);
-        ((LayoutSidePanelController) (sidePanelControllers.get(
-            ApplicationMode.LAYOUT))).bindProject(project);
-//        ((SettingsSidePanelController) sidePanelControllers.get(
-//            ApplicationMode.SETTINGS)).projectChanged(project);
     }
 
     private void setupPanelsForMode(ApplicationMode mode)
@@ -679,7 +581,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private ProjectTab createAndAddNewProjectTab()
     {
-        ProjectTab projectTab = new ProjectTab(instance, tabDisplay.widthProperty(),
+        ProjectTab projectTab = new ProjectTab(tabDisplay.widthProperty(),
                                                tabDisplay.heightProperty());
         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
         tabDisplaySelectionModel.select(projectTab);
@@ -687,90 +589,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return projectTab;
     }
 
-    /**
-     *
-     * @return
-     */
     public static Stage getMainStage()
     {
         return mainStage;
     }
 
-    /**
-     *
-     * @param value
-     */
-    public final void setLayersInGCode(int value)
-    {
-        layersInGCode.set(value);
-    }
-
-    /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. ,
-     *
-     * @param modelsToLoad
-     */
-    public void loadExternalModels(List<File> modelsToLoad)
-    {
-        loadExternalModels(modelsToLoad, false);
-    }
-
-    /**
-     * Load each model in modelsToLoad and then optionally lay them out on the bed.
-     *
-     * @param modelsToLoad
-     * @param relayout
-     */
-    public void loadExternalModels(List<File> modelsToLoad, boolean relayout)
-    {
-        loadExternalModels(modelsToLoad, false, relayout);
-    }
-
-    /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already
-     * models loaded in the project then do not relayout even if relayout=true;
-     *
-     * @param modelsToLoad
-     * @param newTab
-     * @param relayout
-     */
-    public void loadExternalModels(List<File> modelsToLoad, boolean newTab, boolean relayout)
-    {
-        ProjectTab tabToUse = null;
-
-        if (!modelsToLoad.isEmpty())
-        {
-            if (newTab)
-            {
-                tabToUse = createAndAddNewProjectTab();
-            } else if (!modelLoaderService.isRunning()
-                && tabDisplaySelectionModel.selectedItemProperty().get() instanceof ProjectTab)
-            {
-                tabToUse = (ProjectTab) (tabDisplaySelectionModel.selectedItemProperty().get());
-            }
-
-            if (tabToUse != null)
-            {
-                modelLoaderService.reset();
-                modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
-                modelLoaderService.setTargetTab(tabToUse);
-                modelLoaderService.start();
-            }
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ReadOnlyBooleanProperty modelLoadingProperty()
-    {
-        return modelLoaderService.runningProperty();
-    }
-
-    /**
-     *
-     */
     public void shutdown()
     {
         if (projectManager != null)
@@ -789,103 +612,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     }
 
     /**
-     *
-     */
-    public void deleteSelectedModels()
-    {
-        Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).deleteSelectedModels();
-        }
-    }
-
-    /**
-     *
-     */
-    public void copySelectedModels()
-    {
-        Tab currentTab = tabDisplaySelectionModel.selectedItemProperty().get();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).copySelectedModels();
-        }
-    }
-
-    /**
-     *
-     */
-    public void autoLayout()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).autoLayout();
-        }
-    }
-
-    /**
-     *
-     */
-    public void activateSnapToGround()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).getThreeDViewManager().activateSnapToGround();
-        }
-    }
-
-    /**
-     *
-     * @param selectedModel
-     */
-    public void deselectModel(ModelContainer selectedModel)
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            ((ProjectTab) currentTab).deselectModel(selectedModel);
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ThreeDViewManager getCurrentlyVisibleViewManager()
-    {
-        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-        if (currentTab instanceof ProjectTab)
-        {
-            return ((ProjectTab) currentTab).getThreeDViewManager();
-        } else
-        {
-            return null;
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public Project getCurrentlyVisibleProject()
-    {
-        Project projectToReturn = null;
-
-        if (tabDisplaySelectionModel != null)
-        {
-            Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
-            if (currentTab instanceof ProjectTab)
-            {
-                projectToReturn = ((ProjectTab) currentTab).getProject();
-            }
-        }
-
-        return projectToReturn;
-    }
-
-    /**
      * Key handler for whole application Delete - deletes selected model
      *
      * @param event
@@ -898,17 +624,23 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
             if (currentTab instanceof ProjectTab)
             {
-                ProjectTab projectTab = (ProjectTab) currentTab;
+                Project project = Lookup.getSelectedProjectProperty().get();
                 switch (event.getCode())
                 {
                     case DELETE:
                     case BACK_SPACE:
-                        projectTab.deleteSelectedModels();
+                        Set<ModelContainer> selectedModels = 
+                            Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
+                        project.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())
                         {
-                            projectTab.selectAllModels();
+                            SelectedModelContainers selectionModel = 
+                                Lookup.getProjectGUIState(project).getSelectedModelContainers();
+                            for (ModelContainer modelContainer: project.getLoadedModels()) {
+                                selectionModel.addModelContainer(modelContainer);
+                            }
                         }
                     default:
                         break;
@@ -917,11 +649,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
     }
 
-    /**
-     *
-     * @param mode
-     * @return
-     */
     public VBox getSidePanelSlideOutHandle(ApplicationMode mode)
     {
         HBox slideOut = slideOutPanels.get(mode);
@@ -940,9 +667,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return container;
     }
 
-    /**
-     *
-     */
     public void slideOutAdvancedPanel()
     {
         if (slideoutAndProjectHolder.isSlidIn() && slideoutAndProjectHolder.isSliding() == false)

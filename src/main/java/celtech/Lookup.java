@@ -168,11 +168,6 @@ public class Lookup
         setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
     }
 
-    public static void initialise()
-    {
-        
-    }
-
     public static TaskExecutor getTaskExecutor()
     {
         return taskExecutor;
@@ -245,7 +240,7 @@ public class Lookup
     
     public static ProjectGUIState getProjectGUIState(Project project) {
         if (! projectGUIStates.containsKey(project)) {
-            ProjectGUIState projectGUIState = new ProjectGUIState();
+            ProjectGUIState projectGUIState = new ProjectGUIState(project);
             projectGUIStates.put(project, projectGUIState);
         }
         return projectGUIStates.get(project);

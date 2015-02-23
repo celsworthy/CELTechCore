@@ -472,7 +472,7 @@ public class ApplicationConfiguration
             try
             {
                 applicationShortName = configuration.getFilenameString(applicationConfigComponent, "ApplicationShortName", null);
-                steno.info("Application short name = " + applicationShortName);
+                steno.debug("Application short name = " + applicationShortName);
             } catch (ConfigNotLoadedException ex)
             {
                 steno.error("Couldn't determine application short name - the application will not run correctly");
@@ -598,7 +598,7 @@ public class ApplicationConfiguration
                 try
                 {
                     userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null) + commonFileDirectoryPath;
-                    steno.info("User storage directory = " + userStorageDirectory);
+                    steno.debug("User storage directory = " + userStorageDirectory);
                 } catch (ConfigNotLoadedException ex)
                 {
                     steno.error("Couldn't determine user storage location - the application will not run correctly");
@@ -630,7 +630,7 @@ public class ApplicationConfiguration
             try
             {
                 applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null);
-                steno.info("Application storage directory = " + applicationStorageDirectory);
+                steno.debug("Application storage directory = " + applicationStorageDirectory);
             } catch (ConfigNotLoadedException ex)
             {
                 steno.error("Couldn't determine application storage location - the application will not run correctly");

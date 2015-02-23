@@ -1,7 +1,6 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -160,7 +159,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             eepromCommsError.show();
         } catch (ParseException ex)
         {
-            steno.info("Parse error getting head data");
+            steno.error("Parse error getting head data");
         }
     }
 

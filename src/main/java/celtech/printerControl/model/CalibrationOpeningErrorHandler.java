@@ -25,8 +25,10 @@ import libertysystems.stenographer.StenographerFactory;
 class CalibrationOpeningErrorHandler
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(CalibrationOpeningErrorHandler.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CalibrationOpeningErrorHandler.class.getName());
     private boolean errorOccurred = true;
+    private FirmwareError lastError = null;
     private final Printer printer;
     private Cancellable cancellable;
 
@@ -47,6 +49,7 @@ class CalibrationOpeningErrorHandler
     public void registerForPrinterErrors()
     {
         errorOccurred = false;
+        lastError = null;
         List<FirmwareError> errors = new ArrayList<>();
         errors.add(FirmwareError.ALL_ERRORS);
         printer.registerErrorConsumer(errorConsumer, errors);
@@ -60,9 +63,9 @@ class CalibrationOpeningErrorHandler
     {
         if (errorOccurred)
         {
-            showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler);
+            showPrinterErrorOccurred(continueHandler, abortHandler, retryHandler, lastError);
         }
-        
+
         return errorOccurred;
     }
 
@@ -70,19 +73,24 @@ class CalibrationOpeningErrorHandler
     {
         steno.info(error.name() + " occurred during nozzle opening calibration");
         // Filament slips can occur during pressurisation - we need to ignore them
-        if (error == FirmwareError.E_FILAMENT_SLIP)
+        // B Position Lost reflects that the printer has detected a non-fatal problem - ignore it
+        //TODO modify for multiple extruders
+        if (error == FirmwareError.E_FILAMENT_SLIP
+            || error == FirmwareError.B_POSITION_LOST)
         {
-            steno.info("Discarded filament slip error during calibration");
+            steno.info("Discarded error " + error.name() + " during calibration");
         } else
         {
             cancellable.cancelled = true;
             errorOccurred = true;
+            lastError = error;
         }
     };
 
     public void deregisterForPrinterErrors()
     {
         errorOccurred = false;
+        lastError = null;
         printer.deregisterErrorConsumer(errorConsumer);
     }
 
@@ -92,15 +100,16 @@ class CalibrationOpeningErrorHandler
      * offered to the user. At least one handler must be non-null.
      */
     private void showPrinterErrorOccurred(TaskExecutor.NoArgsVoidFunc continueHandler,
-        TaskExecutor.NoArgsVoidFunc abortHandler, TaskExecutor.NoArgsVoidFunc retryHandler) throws CalibrationException
+        TaskExecutor.NoArgsVoidFunc abortHandler, TaskExecutor.NoArgsVoidFunc retryHandler,
+        FirmwareError error) throws CalibrationException
     {
         try
         {
             Optional<SystemNotificationManager.PrinterErrorChoice> choice = Lookup.
                 getSystemNotificationHandler().showPrinterErrorDialog(
-                    Lookup.i18n("calibrationPanel.title"), Lookup.i18n(
-                        "calibrationPanel.errorInPrinter"),
-                    continueHandler != null, abortHandler != null, retryHandler != null);
+                    error.getLocalisedErrorTitle(),
+                    Lookup.i18n("calibrationPanel.errorInPrinter"),
+                    false, false, false, true);
             if (!choice.isPresent())
             {
                 cancellable.cancelled = true;
@@ -109,15 +118,9 @@ class CalibrationOpeningErrorHandler
             }
             switch (choice.get())
             {
-                case CONTINUE:
-                    continueHandler.run();
-                    break;
-                case ABORT:
+                case OK:
                     cancellable.cancelled = true;
                     abortHandler.run();
-                    break;
-                case RETRY:
-                    retryHandler.run();
                     break;
             }
         } catch (Exception ex)

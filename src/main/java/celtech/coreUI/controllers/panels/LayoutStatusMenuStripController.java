@@ -20,7 +20,9 @@ import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -64,7 +66,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private final FileChooser modelFileChooser = new FileChooser();
-    private Project boundProject = null;
     private PrinterUtils printerUtils = null;
     private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
@@ -145,6 +146,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private GraphicToggleButtonWithLabel snapToGroundButton;
     private Project selectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
+    private SelectedModelContainers modelSelection;
+    private final ModelLoader modelLoader = new ModelLoader();
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -225,103 +228,108 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void addModel(ActionEvent event)
     {
-//        applicationStatus.setMode(ApplicationMode.ADD_MODEL);
         Platform.runLater(() ->
         {
-            ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
-
-            while (iterator.hasNext())
-            {
-                iterator.next();
-                iterator.remove();
-            }
-
-            ProjectMode projectMode = ProjectMode.NONE;
-
-            if (selectedProject != null)
-            {
-                projectMode = selectedProject.getProjectMode();
-            }
-
-            String descriptionOfFile = null;
-
-            switch (projectMode)
-            {
-                case NONE:
-                    descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
-                    break;
-                case MESH:
-                    descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
-                    break;
-                case GCODE:
-                    descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
-                    break;
-                default:
-                    break;
-            }
-            modelFileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(descriptionOfFile,
-                                                ApplicationConfiguration.
-                                                getSupportedFileExtensionWildcards(
-                                                    projectMode)));
-
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
-
-            List<File> files;
-            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
-            {
-                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-            } else
-            {
-                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-                files = new ArrayList<>();
-                if (file != null)
-                {
-                    files.add(file);
-                }
-            }
+            List<File> files = selectFiles();
 
             if (files != null && !files.isEmpty())
             {
                 ApplicationConfiguration.setLastDirectory(
                     DirectoryMemoryProperty.MODEL,
                     files.get(0).getParentFile().getAbsolutePath());
-                displayManager.loadExternalModels(files, true);
+                modelLoader.loadExternalModels(selectedProject, files, true);
             }
         });
     }
 
-    @FXML
-    void addCloudModel(ActionEvent event)
+    /**
+     * Allow the user to select the files they want to load.
+     */
+    private List<File> selectFiles()
     {
-        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
-//            miniFactoryController.loadWebData();
-//            myMiniFactoryLoaderStage.showAndWait();
+        ListIterator iterator = modelFileChooser.getExtensionFilters().listIterator();
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            iterator.remove();
+        }
+        ProjectMode projectMode = ProjectMode.NONE;
+        if (selectedProject != null)
+        {
+            projectMode = selectedProject.getProjectMode();
+        }
+        String descriptionOfFile = null;
+        switch (projectMode)
+        {
+            case NONE:
+                descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
+                break;
+            case MESH:
+                descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
+                break;
+            case GCODE:
+                descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
+                break;
+            default:
+                break;
+        }
+        modelFileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter(descriptionOfFile,
+                ApplicationConfiguration.
+                    getSupportedFileExtensionWildcards(
+                        projectMode)));
+        modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
+                DirectoryMemoryProperty.MODEL)));
+        List<File> files;
+        if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
+        {
+            files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+        } else
+        {
+            File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
+            files = new ArrayList<>();
+            if (file != null)
+            {
+                files.add(file);
+            }
+        }
+        return files;
     }
 
     @FXML
+        void addCloudModel(ActionEvent event)
+        {
+            applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
+        }
+        
+        @FXML
     void deleteModel(ActionEvent event)
     {
-        displayManager.deleteSelectedModels();
+        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
+        {
+            selectedProject.deleteModel(modelContainer);
+        }
     }
 
     @FXML
     void copyModel(ActionEvent event)
     {
-        displayManager.copySelectedModels();
+        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
+        {
+            selectedProject.copyModel(modelContainer);
+        }
     }
 
     @FXML
     void autoLayoutModels(ActionEvent event)
     {
-        displayManager.autoLayout();
+        selectedProject.autoLayout();
     }
 
     @FXML
     void snapToGround(ActionEvent event)
     {
-        displayManager.activateSnapToGround();
+        layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
     }
 
     @FXML
@@ -664,6 +672,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void whenSettingsPrinterChanges(Printer printer)
     {
+        
         updateCanPrintProjectBindings(printer, selectedProject);
         updatePrintButtonConditionalText(printer, selectedProject);
     }
@@ -676,7 +685,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 printer.getPrinterAncillarySystems().
                                                 lidOpenProperty().not().not());
 
-        if (printer.extrudersProperty().size() == 1) // only one extruder
+        if (! printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
             printButton.getTag().addConditionalText(
                 "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
@@ -707,13 +716,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             } else // both extruders are required
             {
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
-                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                    "dialogs.cantPrintNoFilamentSelectedMessage0", printerSettings.getFilament0Property().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
                                                         printer.extrudersProperty().get(0).
                                                         filamentLoadedProperty().not());
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament1Property().isNull());
-                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                    "dialogs.cantPrintNoFilamentSelectedMessage1", printerSettings.getFilament1Property().isNull());
+                printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
                                                         printer.extrudersProperty().get(1).
                                                         filamentLoadedProperty().not());
 
@@ -722,7 +731,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
 
     /**
-     * Create the bindings for controlling the main selected printer (for eg on Status screen).
+     * Create the bindings to the Status selected printer.
      */
     private void createMainSelectedPrinterListener()
     {
@@ -828,6 +837,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         selectedProject = project;
         printerSettings = project.getPrinterSettings();
         currentSettingsPrinter = printerSettings.getSelectedPrinter();
+        modelSelection = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         bindProject(project);
@@ -845,7 +855,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             return;
         }
         printButton.disableProperty().unbind();
-        if (printer.extrudersProperty().size() == 1) // only one extruder
+        if (! printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
             canPrintProject.bind(
                 printer.canPrintProperty()
@@ -919,12 +929,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         duplicateModelButton.disableProperty().bind(notSelectModeOrNoSelectedModels);
         distributeModelsButton.setDisable(true);
 
-        if (boundProject != null)
-        {
-            addModelButton.disableProperty().unbind();
-        }
-
-        boundProject = displayManager.getCurrentlyVisibleProject();
         addModelButton.disableProperty().bind(snapToGround);
 
         distributeModelsButton.disableProperty().bind(notSelectModeOrNoLoadedModels);

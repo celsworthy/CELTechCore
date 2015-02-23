@@ -4,7 +4,7 @@
  */
 package celtech.utils.threed.importers.gcode;
 
-import celtech.coreUI.components.ProjectTab;
+import celtech.appManager.Project;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
@@ -55,7 +55,7 @@ public class GCodeImporterLines
      * @param percentProgressProperty
      * @return
      */
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, Project targetProject, DoubleProperty percentProgressProperty)
     {
 //        G result = new Node();
 //        Node currentLayer = 
@@ -187,7 +187,7 @@ public class GCodeImporterLines
 //                            meshView.setDrawMode(DrawMode.LINE);
                             meshView.setId("Line " + lineNumber);
                             outputMeshes.getChildren().add(meshView);
-                            steno.info("The mesh contains " + meshToOutput.getPoints().size()
+                            steno.debug("The mesh contains " + meshToOutput.getPoints().size()
                                     + " points, " + meshToOutput.getTexCoords().size() + " tex coords and "
                                     + meshToOutput.getFaces().size() + " faces");
                             meshToOutput = new TriangleMesh();
@@ -210,19 +210,19 @@ public class GCodeImporterLines
                 lineNumber++;
             }
 
-            steno.info("there were " + g1Lines + " lines");
-            steno.info("About to close file");
+            steno.debug("there were " + g1Lines + " lines");
+            steno.debug("About to close file");
             reader.close();
         } catch (IOException ex)
         {
             steno.error("IO Exception whilst processing " + fFile.getName() + " : " + ex + " on line " + lineNumber);
         }
 
-        steno.info("About to add models");
+        steno.debug("About to add models");
 
         GCodeMeshData gcodeData = new GCodeMeshData(outputMeshes, referencedElements, referencedLayers);
         ModelContainer container = new ModelContainer(modelFileToLoad, gcodeData, fileLines);
-        return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProjectTab, container);
+        return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, container);
 
     }
 

@@ -100,10 +100,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            if (error == FirmwareError.B_POSITION_LOST)
-            {
-                showInformationNotification(error.getLocalisedErrorTitle(), error.getLocalisedErrorMessage());
-            } else
+            //Don't show B POSITION LOST errors for the moment...
+            if (error != FirmwareError.B_POSITION_LOST)
             {
                 if (!errorDialogOnDisplay)
                 {
@@ -741,77 +739,91 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     @Override
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
-        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption)
+        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption,
+        boolean showOKOption)
     {
-        if (!showContinueOption && !showAbortOption && !showRetryOption)
+        if (!showContinueOption && !showAbortOption && !showRetryOption && !showOKOption)
         {
             throw new RuntimeException("Must allow one option to be shown");
         }
-        Callable<PrinterErrorChoice> askUserToRespondToPrinterError = new Callable()
+        Callable<Optional<PrinterErrorChoice>> askUserToRespondToPrinterError = new Callable()
         {
             @Override
-            public PrinterErrorChoice call() throws Exception
+            public Optional<PrinterErrorChoice> call() throws Exception
             {
-                CommandLinksDialog2.CommandLinksButtonType continue_ = null;
-                CommandLinksDialog2.CommandLinksButtonType abort = null;
-                CommandLinksDialog2.CommandLinksButtonType retry = null;
-                List<CommandLinksDialog2.CommandLinksButtonType> choices = new ArrayList<>();
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
+                choiceLinkDialogBox.setTitle(title);
+                choiceLinkDialogBox.setMessage(message);
+
+                ChoiceLinkButton continueChoice = new ChoiceLinkButton();
+                continueChoice.setTitle(Lookup.i18n("dialogs.error.continue"));
+                continueChoice.setMessage(Lookup.i18n("dialogs.error.abortProcess"));
+
+                ChoiceLinkButton abortChoice = new ChoiceLinkButton();
+                abortChoice.setTitle(Lookup.i18n("dialogs.error.abort"));
+                abortChoice.setMessage(Lookup.i18n("dialogs.error.clearAndContinue"));
+
+                ChoiceLinkButton retryChoice = new ChoiceLinkButton();
+                retryChoice.setTitle(Lookup.i18n("dialogs.error.retry"));
+                retryChoice.setMessage(Lookup.i18n("dialogs.error.retryProcess"));
+
+                ChoiceLinkButton okChoice = new ChoiceLinkButton();
+                okChoice.setTitle(Lookup.i18n("error.handler.OK.title"));
+
                 if (showContinueOption)
                 {
-                    continue_
-                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n(
-                                "dialogs.error.continue"),
-                                                                         Lookup.i18n(
-                                                                             "dialogs.error.clearAndContinue"),
-                                                                         true);
-                    choices.add(continue_);
+                    choiceLinkDialogBox.addChoiceLink(continueChoice);
                 }
+
                 if (showAbortOption)
                 {
-                    abort
-                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n(
-                                "dialogs.error.abort"),
-                                                                         Lookup.i18n(
-                                                                             "dialogs.error.abortProcess"),
-                                                                         true);
-                    choices.add(abort);
+                    choiceLinkDialogBox.addChoiceLink(abortChoice);
                 }
+
                 if (showRetryOption)
                 {
-                    retry
-                        = new CommandLinksDialog2.CommandLinksButtonType(Lookup.i18n(
-                                "dialogs.error.retry"),
-                                                                         Lookup.i18n(
-                                                                             "dialogs.error.retryProcess"),
-                                                                         true);
-                    choices.add(retry);
+                    choiceLinkDialogBox.addChoiceLink(retryChoice);
                 }
 
-                CommandLinksDialog2 errorDialog = new CommandLinksDialog2(choices);
-                errorDialog.getDialogPane().setStyle(
-                    "-fx-wrap-text: true; -fx-font-size: 13px; -fx-font-family: 'Source Sans Pro Regular';");
-                errorDialog.setTitle(title);
-                errorDialog.setContentText(message);
-
-                Optional<ButtonType> errorResponse = errorDialog.showAndWait();
-
-                if (continue_ != null && errorResponse.get().equals(continue_.getButtonType()))
+                if (showOKOption)
                 {
-                    return PrinterErrorChoice.CONTINUE;
-                } else if (abort != null && errorResponse.get().equals(abort.getButtonType()))
-                {
-                    return PrinterErrorChoice.ABORT;
+                    choiceLinkDialogBox.addChoiceLink(okChoice);
                 }
-                return PrinterErrorChoice.RETRY;
+
+                Optional<ChoiceLinkButton> response = choiceLinkDialogBox.getUserInput();
+
+                Optional<PrinterErrorChoice> userResponse = Optional.empty();
+
+                if (response.isPresent())
+                {
+                    if (response.get() == continueChoice)
+                    {
+                        userResponse = Optional.of(PrinterErrorChoice.CONTINUE);
+                    }
+                    else if (response.get() == abortChoice)
+                    {
+                        userResponse = Optional.of(PrinterErrorChoice.ABORT);
+                    }
+                    else if (response.get() == okChoice)
+                    {
+                        userResponse = Optional.of(PrinterErrorChoice.OK);
+                    }
+                    else if (response.get() == retryChoice)
+                    {
+                        userResponse = Optional.of(PrinterErrorChoice.RETRY);
+                    }
+                }
+
+                return userResponse;
             }
         };
 
-        FutureTask<PrinterErrorChoice> askContinueAbortTask = new FutureTask<>(
+        FutureTask<Optional<PrinterErrorChoice>> askContinueAbortTask = new FutureTask<>(
             askUserToRespondToPrinterError);
         Lookup.getTaskExecutor().runOnGUIThread(askContinueAbortTask);
         try
         {
-            return Optional.of(askContinueAbortTask.get());
+            return askContinueAbortTask.get();
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during printer error query");

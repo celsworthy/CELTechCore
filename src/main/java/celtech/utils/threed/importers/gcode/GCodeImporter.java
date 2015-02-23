@@ -4,11 +4,10 @@
  */
 package celtech.utils.threed.importers.gcode;
 
+import celtech.appManager.Project;
 import celtech.services.gcodeLoader.GCodeLoadState;
 import celtech.services.gcodeLoader.GCodeEventType;
 import celtech.services.gcodeLoader.GCodeParseException;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
@@ -21,8 +20,6 @@ import celtech.utils.gcode.representation.ExtrusionMode;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeFile;
 import celtech.utils.gcode.representation.GCodeMeshData;
-import celtech.utils.gcode.representation.Layer;
-import celtech.utils.gcode.representation.Movement;
 import celtech.utils.gcode.representation.MovementMode;
 import celtech.utils.gcode.representation.MovementType;
 import java.io.BufferedReader;
@@ -42,9 +39,7 @@ import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.CullFace;
-import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Shape;
-import javafx.scene.shape.Shape3D;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -92,7 +87,7 @@ public class GCodeImporter
      * @param progressProperty
      * @return
      */
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, ProjectTab targetProjectTab, DoubleProperty progressProperty)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, Project targetProject, DoubleProperty progressProperty)
     {
         this.parentTask = parentTask;
         this.progressProperty = progressProperty;
@@ -148,16 +143,16 @@ public class GCodeImporter
         if (!parentTask.isCancelled())
         {
 //            fxtojmeInterface.sendGCodeModel(fFile.getName(), nodeList);
-            DisplayManager.getInstance().setLayersInGCode(layerNumber);
+//            DisplayManager.getInstance().setLayersInGCode(layerNumber);
 //            currentProject.setGCodeModelLoaded(fFile.getAbsolutePath());
-            steno.info("Loaded gcode " + fFile.getName());
+            steno.debug("Loaded gcode " + fFile.getName());
 
             ModelContainer modelContainer = new ModelContainer(fFile.getName(), new GCodeMeshData(gcodeParts, referencedElements, referencedLayers), fileLines);
 
             // Not sure if we should put the check for oversized GCode in or not...
 //            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
 //            modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(bounds);
-            ModelLoadResult result = new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProjectTab, modelContainer);
+            ModelLoadResult result = new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, modelContainer);
             result.setFileLines(fileLines);
             return result;
         } else

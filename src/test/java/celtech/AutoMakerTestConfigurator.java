@@ -32,7 +32,7 @@ public class AutoMakerTestConfigurator
             applicationInstallURL.getFile(),
             applicationCommonURL.getFile(),
             userStorageFolder);
-        Lookup.initialise();
+        Lookup.setupDefaultValues();
 
         new File(userStorageFolder
             + ApplicationConfiguration.printSpoolStorageDirectoryPath

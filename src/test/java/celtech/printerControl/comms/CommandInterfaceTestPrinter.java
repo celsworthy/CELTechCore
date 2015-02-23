@@ -51,6 +51,7 @@ import javafx.scene.paint.Color;
  */
 public class CommandInterfaceTestPrinter implements Printer
 {
+
     @Override
     public void addToGCodeTranscript(String gcodeToSend)
     {
@@ -238,7 +239,8 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void printProject(Project project, Filament filament, PrintQualityEnumeration printQuality, SlicerParametersFile settings)
+    public void printProject(Project project, Filament filament,
+        PrintQualityEnumeration printQuality, SlicerParametersFile settings)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -460,8 +462,11 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
-        float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature,
+    public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
+        float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
+        float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset,
+        float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
+        float lastFilamentTemperature,
         float hourCounter) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -552,7 +557,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void executeGCodeFile(String fileName) throws PrinterException
+    public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -582,8 +587,12 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(int reelNumber, String filamentID, float reelFirstLayerNozzleTemperature, float reelNozzleTemperature, float reelFirstLayerBedTemperature,
-        float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
+    public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
+        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+        float reelFirstLayerBedTemperature,
+        float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+        String friendlyName,
         MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -596,14 +605,17 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double filamentDiameterD, double filamentMultiplierD,
+    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE,
+        double filamentDiameterD, double filamentMultiplierD,
         double feedRateMultiplier) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target, double nozzle1FirstLayerTarget, double nozzle1Target, double bedFirstLayerTarget, double bedTarget,
+    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
+        double nozzle1FirstLayerTarget, double nozzle1Target, double bedFirstLayerTarget,
+        double bedTarget,
         double ambientTarget) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -622,7 +634,8 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void registerErrorConsumer(ErrorConsumer errorConsumer, List<FirmwareError> errorsOfInterest)
+    public void registerErrorConsumer(ErrorConsumer errorConsumer,
+        List<FirmwareError> errorsOfInterest)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -714,9 +727,9 @@ public class CommandInterfaceTestPrinter implements Printer
     @Override
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
     {
-        
+
     }
-    
+
     public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -757,7 +770,7 @@ public class CommandInterfaceTestPrinter implements Printer
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public String requestDebugData(boolean addToGCodeTranscript)
     {
@@ -785,6 +798,11 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void resetPurgeTemperature(PrinterSettings printerSettings)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public boolean doFilamentSlipWhilePrinting(FirmwareError error)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

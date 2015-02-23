@@ -8,21 +8,18 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelContentsEnumeration;
+import celtech.printerControl.model.Printer;
+import java.util.Set;
 import javafx.animation.AnimationTimer;
-import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -55,7 +52,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager
+public class ThreeDViewManager implements Project.ProjectChangesListener
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -69,16 +66,12 @@ public class ThreeDViewManager
     private SubScene subScene = null;
     private final SimpleObjectProperty<SubScene> subSceneProperty = new SimpleObjectProperty<>();
 
-//    private final PointLight pointLight1 = new PointLight(Color.WHITE);
-//    private final AmbientLight ambientLight = new AmbientLight(Color.WHITE);
     final Group axisGroup = new Group();
     double DELTA_MULTIPLIER = 200.0;
     double CONTROL_MULTIPLIER = 0.1;
     double SHIFT_MULTIPLIER = 0.1;
     double ALT_MULTIPLIER = 0.5;
 
-    private final SimpleObjectProperty<Timeline> timeline = new SimpleObjectProperty<>();
-    private ObjectProperty<Node> content = new SimpleObjectProperty<>();
     /*
      * Model moving
      */
@@ -87,7 +80,6 @@ public class ThreeDViewManager
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
                                                      * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
-//    private GizmoOverlayController gizmoOverlayController = null;
     /*
      * 
      */
@@ -102,20 +94,13 @@ public class ThreeDViewManager
     private ReadOnlyDoubleProperty widthPropertyToFollow = null;
     private ReadOnlyDoubleProperty heightPropertyToFollow = null;
 
-    private final IntegerProperty screenCentreOfSelectionX = new SimpleIntegerProperty(0);
-    private final IntegerProperty screenCentreOfSelectionY = new SimpleIntegerProperty(0);
-
     /*
      * ALT stuff
      */
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
-    private Group bed;
+    private final Group bed;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
-//    private final Rotate rotateCameraAroundXAxis = new Rotate(0, MathUtils.xAxis);
-//    private final Rotate rotateCameraAroundYAxis = new Rotate(0, MathUtils.yAxis);
-//    private final Rotate rotateCameraAroundZAxis = new Rotate(0, MathUtils.zAxis);
-//    private final Translate translateCamera = new Translate();
     private final static double initialCameraDistance = -350;
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
@@ -133,12 +118,8 @@ public class ThreeDViewManager
 
     private SelectedModelContainers selectedModelContainers = null;
 
-//    private final double settingsAnimationYAngle = 30;
-//    private final double settingsAnimationXAngle = 0;
     private long lastAnimationTrigger = 0;
 
-//    private double gizmoStartingRotationAngle = 0;
-//    private double gizmoRotationOffset = 0;
     private boolean gizmoRotationStarted = false;
 
     private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
@@ -159,12 +140,7 @@ public class ThreeDViewManager
     private final Project project;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
 
-    /**
-     *
-     * @param xangle
-     * @param yangle
-     */
-    public void rotateCameraAroundAxes(double xangle, double yangle)
+    private void rotateCameraAroundAxes(double xangle, double yangle)
     {
         double yAxisRotation = demandedCameraRotationY.get() - yangle;
 
@@ -192,12 +168,7 @@ public class ThreeDViewManager
 
     }
 
-    /**
-     *
-     * @param xangle
-     * @param yangle
-     */
-    public void rotateCameraAroundAxesTo(double xangle, double yangle)
+    private void rotateCameraAroundAxesTo(double xangle, double yangle)
     {
         double yAxisRotation = yangle;
 
@@ -311,34 +282,31 @@ public class ThreeDViewManager
 
         setDragMode(DragMode.TRANSLATING);
 
-        if (intersectedNode != null)
+        if (intersectedNode instanceof MeshView)
         {
-            if (intersectedNode instanceof MeshView)
+            Parent parent = intersectedNode.getParent();
+            if (!(parent instanceof ModelContainer))
             {
-                Parent parent = intersectedNode.getParent();
-                if (!(parent instanceof ModelContainer))
-                {
-                    parent = parent.getParent();
-                }
-
-                ModelContainer pickedModel = (ModelContainer) parent;
-
-                if (pickedModel.isSelected() == false)
-                {
-                    boolean multiSelect = event.isShortcutDown();
-                    selectModel(pickedModel, multiSelect);
-                } else
-                {
-                    boolean multiSelect = event.isShortcutDown();
-                    if (multiSelect)
-                    {
-                        deselectModel(pickedModel);
-                    }
-                }
-            } else if (true) //intersectedNode == subScene)
-            {
-                selectedModelContainers.deselectAllModels();
+                parent = parent.getParent();
             }
+
+            ModelContainer pickedModel = (ModelContainer) parent;
+
+            if (pickedModel.isSelected() == false)
+            {
+                boolean multiSelect = event.isShortcutDown();
+                selectModel(pickedModel, multiSelect);
+            } else
+            {
+                boolean multiSelect = event.isShortcutDown();
+                if (multiSelect)
+                {
+                    deselectModel(pickedModel);
+                }
+            }
+        } else if (true) //intersectedNode == subScene)
+        {
+            selectedModelContainers.deselectAllModels();
         }
     }
 
@@ -349,7 +317,7 @@ public class ThreeDViewManager
             modelContainer.setUseExtruder0Filament(false);
             updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
     }
 
@@ -360,7 +328,7 @@ public class ThreeDViewManager
             modelContainer.setUseExtruder0Filament(true);
             updateModelColour(modelContainer);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
     }
 
@@ -371,7 +339,7 @@ public class ThreeDViewManager
             int faceNumber = pickResult.getIntersectedFace();
             snapToGround(modelContainer, faceNumber);
             collideModels();
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
     }
 
@@ -494,7 +462,7 @@ public class ThreeDViewManager
                         stopSettingsAnimation();
                         break;
                 }
-                updateFilamentColoursForMode(newMode);
+                updateFilamentColoursForModeAndTargetPrinter();
             }
         }
 
@@ -570,27 +538,39 @@ public class ThreeDViewManager
         subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 
-        layoutSubmode.addListener(new ChangeListener<LayoutSubmode>()
+        layoutSubmode.addListener(
+            (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t,
-                LayoutSubmode t1)
+            if (t1 == LayoutSubmode.SNAP_TO_GROUND ||
+                t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0 ||
+                t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
             {
-                if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1
-                    == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0
-                    || t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
-                {
-                    subScene.setCursor(Cursor.HAND);
-                } else
-                {
-                    subScene.setCursor(Cursor.DEFAULT);
-                }
+                subScene.setCursor(Cursor.HAND);
+            } else
+            {
+                subScene.setCursor(Cursor.DEFAULT);
             }
         });
 
         dragMode.addListener(dragModeListener);
 
+        /**
+         * Set up filament, application mode and printer listeners so that the correct model colours
+         * are displayed.
+         */
         setupFilamentListeners(project);
+        setupPrintSettingsFilamentListeners(project);
+        updateFilamentColoursForModeAndTargetPrinter();
+        project.getPrinterSettings().selectedPrinterProperty().addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+            {
+                updateFilamentColoursForModeAndTargetPrinter();
+            });
+
+        /**
+         * Listen for adding and removing of models from the project
+         */
+        project.addProjectChangesListener(this);
     }
 
     private void goToPreset(CameraPositionPreset preset)
@@ -598,33 +578,6 @@ public class ThreeDViewManager
 //        camera.setCentreOfRotation(preset.getPointToLookAt());
 //        camera.rotateAndElevateCameraTo(preset.getAzimuth(), preset.getElevation());
 //        camera.zoomCameraTo(preset.getDistance());
-    }
-
-    /**
-     *
-     * @param timeline
-     */
-    public void setTimeline(Timeline timeline)
-    {
-        this.timeline.setValue(timeline);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public Timeline getTimeline()
-    {
-        return this.timeline.getValue();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public SimpleObjectProperty timelineProperty()
-    {
-        return timeline;
     }
 
     private Group buildBed()
@@ -688,123 +641,23 @@ public class ThreeDViewManager
         return bed;
     }
 
-//    private void buildAxes()
-//    {
-//        final PhongMaterial redMaterial = new PhongMaterial();
-//        redMaterial.setDiffuseColor(Color.DARKRED);
-//        redMaterial.setSpecularColor(Color.RED);
-//
-//        final PhongMaterial greenMaterial = new PhongMaterial();
-//        greenMaterial.setDiffuseColor(Color.DARKGREEN);
-//        greenMaterial.setSpecularColor(Color.GREEN);
-//
-//        final Box xAxis = new Box(40, 1, 1);
-//        xAxis.setTranslateZ(-25);
-//        xAxis.setTranslateX(-20);
-//
-//        final Box zAxis = new Box(1, 1, 40);
-//        zAxis.setTranslateX(-25);
-//        zAxis.setTranslateX(-20);
-//        zAxis.setTranslateZ(-20);
-//
-//        xAxis.setMaterial(redMaterial);
-//        zAxis.setMaterial(greenMaterial);
-//
-//        axisGroup.getChildren().addAll(xAxis, zAxis);
-//        root3D.getChildren().add(axisGroup);
-//
-////        autoScalingGroup.getChildren().addAll(axisGroup);
-//    }
-    /**
-     *
-     * @param modelContainer
-     */
-    public void addModel(ModelContainer modelContainer)
-    {
-        if (modelContainer.getModelContentsType() == ModelContentsEnumeration.MESH)
-        {
-            models.getChildren().add(modelContainer);
-            loadedModels.add(modelContainer);
-            updateModelColour(modelContainer);
-            collideModels();
-        } else
-        {
-            steno.info("About to add gcode to model");
-            models.getChildren().add(modelContainer);
-            steno.info("Done adding gcode");
-        }
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     */
-    public void deleteSelectedModels()
-    {
-        for (ModelContainer chosenModel : selectedModelContainers.getSelectedModelsSnapshot())
-        {
-            selectedModelContainers.removeModelContainer(chosenModel);
-            loadedModels.remove(chosenModel);
-            models.getChildren().remove(chosenModel);
-        }
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     */
-    public void copySelectedModels()
-    {
-        for (ModelContainer model : selectedModelContainers.getSelectedModelsSnapshot())
-        {
-            ModelContainer copy = model.makeCopy();
-            addModel(copy);
-            updateModelColour(copy);
-        }
-        collideModels();
-    }
-
-    /**
-     *
-     * @param modelGroup
-     */
-    public void removeModel(ModelContainer modelGroup)
-    {
-        models.getChildren().remove(modelGroup);
-        loadedModels.remove(modelGroup);
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param gCodeParts
-     */
     public void addGCodeParts(Group gCodeParts)
     {
         if (this.gcodeParts != null)
         {
             models.getChildren().remove(this.gcodeParts);
         }
-        this.gcodeParts = gcodeParts;
+        this.gcodeParts = gCodeParts;
         models.getChildren().add(gCodeParts);
     }
 
-    /**
-     *
-     */
     public void shutdown()
     {
         applicationStatus.modeProperty().removeListener(applicationModeListener);
         dragMode.removeListener(dragModeListener);
     }
 
-    /**
-     *
-     * @param selectedNode
-     * @param multiSelect
-     */
-    public void selectModel(ModelContainer selectedNode, boolean multiSelect)
+    private void selectModel(ModelContainer selectedNode, boolean multiSelect)
     {
         if (selectedNode == null)
         {
@@ -819,12 +672,7 @@ public class ThreeDViewManager
         }
     }
 
-    /**
-     *
-     * @param x
-     * @param z
-     */
-    public void translateSelection(double x, double z)
+    private void translateSelection(double x, double z)
     {
         for (ModelContainer model : loadedModels)
         {
@@ -836,196 +684,10 @@ public class ThreeDViewManager
         selectedModelContainers.updateSelectedValues();
 
         collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+        project.projectModified();
     }
 
-    /**
-     *
-     * @param x
-     */
-    public void translateSelectionX(double x)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateBy(x, 0);
-            }
-        }
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param z
-     */
-    public void translateSelectionZ(double z)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateBy(0, z);
-            }
-        }
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param x
-     */
-    public void translateSelectionXTo(double x)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateXTo(x);
-            }
-        }
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param z
-     */
-    public void translateSelectionZTo(double z)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.translateZTo(z);
-            }
-        }
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param width
-     */
-    public void resizeSelectionWidth(double width)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.resizeWidth(width);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param height
-     */
-    public void resizeSelectionHeight(double height)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.resizeHeight(height);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param depth
-     */
-    public void resizeSelectionDepth(double depth)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.resizeDepth(depth);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param newScale
-     */
-    public void scaleSelection(double newScale)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.setScale(newScale);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param rotation
-     */
-    public void rotateSelection(double rotation)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.setRotationY(rotation);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        // TODO: multi select rotate should be around the common centre of the multi select
-//            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
-//            selectionContainer.setRotationY(rotation);
-//            recalculateSelectionBounds(false);
-//        } else
-//        {
-//            for (ModelContainer model : loadedModels)
-//            {
-//                if (model.isSelected())
-//                {
-//                    model.deltaRotateAroundY(rotation);
-//                }
-//            }
-//            selectionContainer.setRotationX(0);
-//        }
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     * @param pickedModel
-     */
-    public void deselectModel(ModelContainer pickedModel)
+    private void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())
         {
@@ -1033,16 +695,7 @@ public class ThreeDViewManager
         }
     }
 
-    /**
-     *
-     * @return
-     */
-    public ObservableList<ModelContainer> getLoadedModels()
-    {
-        return loadedModels;
-    }
-
-    public void collideModels()
+    private void collideModels()
     {
         boolean[] collidedModels = new boolean[loadedModels.size()];
 
@@ -1072,223 +725,57 @@ public class ThreeDViewManager
         }
     }
 
-    /**
-     *
-     * @param delta
-     */
-    public void deltaScaleSelection(double delta)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.setScale(delta * model.getScale());
-            }
-        }
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     */
-    public void activateSnapToGround()
-    {
-        layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
-    }
-
     private void snapToGround(ModelContainer modelContainer, int faceNumber)
     {
         if (modelContainer != null)
         {
             modelContainer.snapToGround(faceNumber);
             collideModels();
-            DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+            project.projectModified();
         }
         layoutSubmode.set(LayoutSubmode.SELECT);
     }
 
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty screenCentreOfSelectionXProperty()
-    {
-        return screenCentreOfSelectionX;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty screenCentreOfSelectionYProperty()
-    {
-        return screenCentreOfSelectionY;
-    }
-
-    /**
-     *
-     * @return
-     */
     public SubScene getSubScene()
     {
         return subScene;
     }
 
-    /**
-     *
-     * @return
-     */
-    public Group getRoot()
-    {
-        return root3D;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty demandedCameraRotationYProperty()
+    private DoubleProperty demandedCameraRotationYProperty()
     {
         return demandedCameraRotationY;
     }
 
-    /**
-     *
-     * @return
-     */
-    public DoubleProperty demandedCameraRotationXProperty()
-    {
-        return demandedCameraRotationX;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setDragMode(DragMode value)
+    private void setDragMode(DragMode value)
     {
         dragMode.set(value);
     }
 
-    /**
-     *
-     * @return
-     */
-    public DragMode getDragMode()
-
-    {
-        return dragMode.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObjectProperty<DragMode> dragModeProperty()
-    {
-        return dragMode;
-    }
-
-    /**
-     *
-     * @param controller
-     */
     public void associateGizmoOverlayController(GizmoOverlayController controller)
     {
 //        this.gizmoOverlayController = controller;
     }
 
-    /**
-     *
-     * @param screenX
-     * @param screenY
-     */
-    public void checkit(double screenX, double screenY)
+    private void checkit(double screenX, double screenY)
     {
         Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
 //        Point2D localToSceneToScreen = camera.localToScreen(localToScene);
-        steno.info("screen to local " + screenToLocal);
+        steno.debug("screen to local " + screenToLocal);
 
         Point3D localToScene = camera.localToScene(screenToLocal.getX(), screenToLocal.getY(), 0);
-        steno.info("Local to scene " + localToScene);
+        steno.debug("Local to scene " + localToScene);
 
         Point3D correctedBed = bedTranslateXform.sceneToLocal(localToScene);
-        steno.info("Corrected bed = " + correctedBed);
+        steno.debug("Corrected bed = " + correctedBed);
 
 //        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
     }
 
-    /**
-     *
-     * @param translateStartPoint
-     * @param screenCoords
-     */
-    public void translateSelectionFromScreenCoords(Point2D translateStartPoint, Point2D screenCoords)
-    {
-        Point2D screenToLocal = camera.screenToLocal(translateStartPoint);
-        steno.info("Screen to local " + screenToLocal);
-
-//    final PickResultChooser result = new PickResultChooser();
-//    PickRay pickRay = new PickRay(null, null, mouseOldX, mouseOldX)
-//    subScene.getRoot().impl_pickNode(new PickRay(screenToLocal.getX(), screenToLocal.getY()), result);
-//    Node nodeToSendEvent = result.getIntersectedNode();
-//        
-    }
-
-//        public Point3D sceneToLocal3D(Node n, double sceneX, double sceneY) {
-//        Scene scene = n.getScene();
-//        if (scene == null) {
-//            return null;
-//        }
-//
-//        Point2D pt = new Point2D(screenX, screenY);
-//        final SubScene subScene = NodeHelper.getSubScene(n);
-//        if (subScene != null) {
-//            pt = SceneUtils.sceneToSubScenePlane(subScene, pt);
-//            if (pt == null) {
-//                return null;
-//            }
-//        }
-//
-//        // compute pick ray
-//        final Camera cam = subScene != null
-//                ? SubSceneHelper.getEffectiveCamera(subScene)
-//                : SceneHelper.getEffectiveCamera(scene);
-//        
-//        final PickRay pickRay = cam.computePickRay(pt.getX(), pt.getY(), null);
-//
-//        // convert it to node's local pickRay
-//        final Affine3D localToSceneTx = new Affine3D();
-//        n.getLocalToSceneTransform().impl_apply(localToSceneTx);
-//        try {
-//            Vec3d origin = pickRay.getOriginNoClone();
-//            Vec3d direction = pickRay.getDirectionNoClone();
-//            localToSceneTx.inverseTransform(origin, origin);
-//            localToSceneTx.inverseDeltaTransform(direction, direction);
-//        } catch (NoninvertibleTransformException e) {
-//            return null;
-//        }
-//
-//        // compute the intersection
-//        final PickResultChooser result = new PickResultChooser();
-//        impl_computeIntersects(pickRay, result);
-//        if (result.getIntersectedNode() == n) {
-//            return result.getIntersectedPoint();
-//        }
-//
-//        // there is none, use point on projection plane instead
-//        final Point3D ppIntersect = CameraAccess.getCameraAccess().pickProjectPlane(cam, pt.getX(), pt.getY());
-//        return n.sceneToLocal(ppIntersect);
-//    }
     private double preAnimationCameraXAngle = 0;
     private double preAnimationCameraYAngle = 0;
     private boolean needToRevertCameraPosition = false;
 
-    /**
-     *
-     */
-    public void startSettingsAnimation()
+    private void startSettingsAnimation()
     {
         preAnimationCameraXAngle = demandedCameraRotationX.get();
         preAnimationCameraYAngle = demandedCameraRotationY.get();
@@ -1297,10 +784,7 @@ public class ThreeDViewManager
         settingsScreenAnimationTimer.start();
     }
 
-    /**
-     *
-     */
-    public void stopSettingsAnimation()
+    private void stopSettingsAnimation()
     {
         settingsScreenAnimationTimer.stop();
         if (needToRevertCameraPosition == true)
@@ -1310,11 +794,6 @@ public class ThreeDViewManager
         }
     }
 
-    /**
-     *
-     * @param requiredDragMode
-     * @param event
-     */
     public void enterDragFromGizmo(DragMode requiredDragMode, MouseEvent event)
     {
         Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
@@ -1322,10 +801,6 @@ public class ThreeDViewManager
         dragMode.set(requiredDragMode);
     }
 
-    /**
-     *
-     * @param event
-     */
     public void dragFromGizmo(MouseEvent event)
     {
         if (dragMode.get() == DragMode.X_CONSTRAINED_TRANSLATE)
@@ -1351,89 +826,23 @@ public class ThreeDViewManager
         }
     }
 
-    /**
-     *
-     */
     public void exitDragFromGizmo()
     {
         dragMode.set(DragMode.IDLE);
     }
 
-    /**
-     *
-     * @param event
-     */
     public void enterRotateFromGizmo(MouseEvent event)
     {
         translationDragPlane.setTranslateY(0);
         dragMode.set(DragMode.ROTATE);
     }
 
-    /**
-     *
-     * @param event
-     * @return
-     */
-//    public double rotateFromGizmo(MouseEvent event)
-//    {
-//        Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-////        double xPos = currentDragPosition.getX() - selectionContainer.getCentreX();
-////        double yPos = currentDragPosition.getZ() - selectionContainer.getCentreZ();
-//
-//        double rotationAngle = MathUtils.cartesianToAngleDegreesCWFromTop(currentDragPosition.getX(),
-//                                                                          currentDragPosition.getZ());
-//
-//        double outputAngle = gizmoStartingRotationAngle - rotationAngle;
-//
-//        if (!gizmoRotationStarted)
-//        {
-//            gizmoRotationStarted = true;
-//            gizmoStartingRotationAngle = rotationAngle;
-//            gizmoRotationOffset = selectionContainer.getRotationY();
-//            return rotationAngle;
-//        } else
-//        {
-//            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationY());
-//            rotateSelection(outputAngle + gizmoRotationOffset);
-//            return outputAngle;
-//        }
-//    }
-    /**
-     *
-     */
     public void exitRotateFromGizmo()
     {
         dragMode.set(DragMode.IDLE);
         gizmoRotationStarted = false;
     }
 
-    /**
-     *
-     * @param loadedModels
-     */
-    public void setLoadedModels(ObservableList<ModelContainer> loadedModels)
-    {
-        this.loadedModels = loadedModels;
-        if (loadedModels.isEmpty() == false)
-        {
-            for (ModelContainer model : loadedModels)
-            {
-                models.getChildren().add(model);
-            }
-        }
-    }
-
-    public void setExtruder0Filament(Filament filament)
-    {
-        extruder0Filament = filament;
-        updateModelColours();
-    }
-
-    public void setExtruder1Filament(Filament filament)
-    {
-        extruder1Filament = filament;
-        updateModelColours();
-    }
 
     private void updateModelColours()
     {
@@ -1458,20 +867,7 @@ public class ThreeDViewManager
         model.setColour(colour0, colour1);
     }
 
-    public SelectedModelContainers getSelectedModelContainers()
-    {
-        return selectedModelContainers;
-    }
-
-    public void selectAllModels()
-    {
-        for (ModelContainer modelContainer : loadedModels)
-        {
-            selectedModelContainers.addModelContainer(modelContainer);
-        }
-    }
-
-    public void deselectAllModels()
+    private void deselectAllModels()
     {
         for (ModelContainer modelContainer : loadedModels)
         {
@@ -1484,20 +880,16 @@ public class ThreeDViewManager
      */
     private void setupFilamentListeners(Project project)
     {
-        extruder0Filament = project.getExtruder0FilamentProperty().get();
         project.getExtruder0FilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder0Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
 
-        extruder1Filament = project.getExtruder1FilamentProperty().get();
         project.getExtruder1FilamentProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder1Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
         updateModelColours();
     }
@@ -1507,40 +899,77 @@ public class ThreeDViewManager
      */
     private void setupPrintSettingsFilamentListeners(Project project)
     {
-        extruder0Filament = project.getPrinterSettings().getFilament0();
         project.getPrinterSettings().getFilament0Property().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder0Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
 
-        extruder1Filament = project.getPrinterSettings().getFilament1();
         project.getPrinterSettings().getFilament1Property().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                extruder1Filament = newValue;
-                updateModelColours();
+                updateFilamentColoursForModeAndTargetPrinter();
             });
         updateModelColours();
     }
 
-    /**
-     * In LAYOUT mode the filament colours should reflect the project filament colours In SETTINGS
-     * mode the filament colours should reflect the project print settings filament colours.
-     */
-    private void updateFilamentColoursForMode(ApplicationMode newMode)
+    private boolean targetPrinterHasOneExtruder()
     {
-        switch (newMode)
+        boolean extruder1IsFitted
+            = project.getPrinterSettings().getSelectedPrinter().extrudersProperty().get(
+                1).isFittedProperty().get();
+        return !extruder1IsFitted;
+    }
+
+    /**
+     * If either the chosen filaments, application mode or project printsettings printer
+     * changes then this must be called. In LAYOUT mode the filament colours should reflect the
+     * project filament colours In SETTINGS mode the filament colours should reflect the project
+     * print settings filament colours.
+     */
+    private void updateFilamentColoursForModeAndTargetPrinter()
+    {
+        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
-            case SETTINGS:
-                setupPrintSettingsFilamentListeners(project);
-                break;
-            default:
-                setupFilamentListeners(project);
-                break;
+            extruder0Filament = project.getPrinterSettings().getFilament0();
+            extruder1Filament = project.getPrinterSettings().getFilament1();
+            if (targetPrinterHasOneExtruder())
+            {
+                extruder1Filament = extruder0Filament;
+            }
+        } else
+        {
+            extruder0Filament = project.getExtruder0FilamentProperty().get();
+            extruder1Filament = project.getExtruder1FilamentProperty().get();
         }
         updateModelColours();
+    }
+
+    @Override
+    public void whenModelAdded(ModelContainer modelContainer)
+    {
+        models.getChildren().add(modelContainer);
+        updateModelColour(modelContainer);
+        collideModels();
+    }
+
+    @Override
+    public void whenModelRemoved(ModelContainer modelContainer)
+    {
+        models.getChildren().remove(modelContainer);
+        collideModels();
+    }
+
+    @Override
+    public void whenAutoLaidOut()
+    {
+        collideModels();
+    }
+
+    @Override
+    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    {
+        collideModels();
     }
 
 }

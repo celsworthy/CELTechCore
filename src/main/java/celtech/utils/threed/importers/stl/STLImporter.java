@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils.threed.importers.stl;
 
+import celtech.appManager.Project;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.configuration.PrintBed;
-import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
@@ -28,7 +23,6 @@ import java.io.LineNumberReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
 import javafx.beans.property.DoubleProperty;
@@ -39,7 +33,6 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -72,7 +65,7 @@ public class STLImporter
      * @return
      */
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
-        ProjectTab targetProjectTab, DoubleProperty percentProgressProperty)
+        Project targetProject, DoubleProperty percentProgressProperty)
     {
         this.parentTask = parentTask;
         this.percentProgressProperty = percentProgressProperty;
@@ -163,7 +156,7 @@ public class STLImporter
             modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
             ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
-                                                         modelFile.getName(), targetProjectTab,
+                                                         modelFile.getName(), targetProject,
                                                          modelContainer);
             steno.info("Done");
             return result;

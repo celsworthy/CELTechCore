@@ -31,7 +31,7 @@ public class ScalingGroup extends Group
      */
     public ScalingGroup()
     {
-        steno.info("Creating a scaling group");
+        steno.debug("Creating a scaling group");
     }
 
     @Override

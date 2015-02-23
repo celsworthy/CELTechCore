@@ -3,17 +3,23 @@ package celtech.appManager;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
+import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelContentsEnumeration;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
@@ -30,6 +36,8 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Project implements Serializable
 {
+    private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
+        "RBX-ABS-GR499");
 
     private transient Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
@@ -40,25 +48,16 @@ public class Project implements Serializable
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
     private String customProfileName = "";
     private String lastPrintJobID = "";
-    private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<Filament>();
-    private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<Filament>();
+    private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
+    private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private PrinterSettings printerSettings;
 
-    /**
-     *
-     */
     public Project()
     {
         initialiseExtruderFilaments();
         this.printerSettings = new PrinterSettings();
     }
 
-    /**
-     *
-     * @param preloadedProjectUUID
-     * @param projectName
-     * @param loadedModels
-     */
     public Project(String preloadedProjectUUID, String projectName,
         ObservableList<ModelContainer> loadedModels)
     {
@@ -68,65 +67,37 @@ public class Project implements Serializable
         this.printerSettings = new PrinterSettings();
     }
 
-    /**
-     *
-     * @param value
-     */
     public final void setProjectName(String value)
     {
         projectHeader.setProjectName(value);
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getProjectName()
     {
         return projectHeader.getProjectName();
     }
 
-    /**
-     *
-     * @return
-     */
     public final StringProperty projectNameProperty()
     {
         return projectHeader.projectNameProperty();
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getAbsolutePath()
     {
         return projectHeader.getProjectPath() + File.separator + projectHeader.getProjectName()
             + ApplicationConfiguration.projectFileExtension;
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getUUID()
     {
         return projectHeader.getUUID();
     }
 
-    /**
-     *
-     * @return
-     */
     public final String getGCodeFilename()
     {
         return gcodeFileName;
     }
 
-    /**
-     *
-     * @param gcodeFilename
-     */
     public final void setGCodeFilename(String gcodeFilename)
     {
         this.gcodeFileName = gcodeFilename;
@@ -163,6 +134,39 @@ public class Project implements Serializable
             out.writeUTF("NULL");
         }
     }
+    
+    public static void saveProject(Project project)
+    {
+        String path =  project.getProjectHeader().getProjectPath()
+                            + File.separator + project.getProjectName()
+                            + ApplicationConfiguration.projectFileExtension;
+        project.save(path);
+    }
+    
+    private void save(String path) {
+        //Only saveProject if there are some models and we aren't showing a GCODE project ...
+        if (getProjectMode() == ProjectMode.MESH)
+        {
+            if (getLoadedModels().size() > 0)
+            {
+                try
+                {
+                    ObjectOutputStream out = new ObjectOutputStream(
+                        new FileOutputStream(path));
+                    out.writeObject(this);
+                    out.close();
+                } catch (FileNotFoundException ex)
+                {
+                    steno.error("Failed to save project state");
+                } catch (IOException ex)
+                {
+                    steno.error(
+                        "Couldn't write project state to file for project "
+                        + getUUID());
+                }
+            }
+        }
+    }    
 
     /**
      * Return true if all objects are on the same extruder, else return false.
@@ -171,17 +175,19 @@ public class Project implements Serializable
     {
         return getUsedExtruders().size() < 2;
     }
-    
+
     /**
      * Return which extruders are used by the project, as a set of the extruder numbers
-     * @return 
+     *
+     * @return
      */
-    public Set<Integer> getUsedExtruders() {
+    public Set<Integer> getUsedExtruders()
+    {
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
             int extruderNumber = loadedModel.getAssociateWithExtruderNumber();
-            if (! usedExtruders.contains(extruderNumber))
+            if (!usedExtruders.contains(extruderNumber))
             {
                 usedExtruders.add(extruderNumber);
             }
@@ -192,11 +198,12 @@ public class Project implements Serializable
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
-        
+
         printerSettings = new PrinterSettings();
-        extruder0Filament = new SimpleObjectProperty<Filament>();
-        extruder1Filament = new SimpleObjectProperty<Filament>();
-        
+        extruder0Filament = new SimpleObjectProperty<>();
+        extruder1Filament = new SimpleObjectProperty<>();
+        projectChangesListeners = new HashSet<>();
+
         steno = StenographerFactory.getStenographer(Project.class.getName());
 
         projectHeader = (ProjectHeader) in.readObject();
@@ -261,100 +268,57 @@ public class Project implements Serializable
 
     }
 
-    /**
-     *
-     * @return
-     */
     public ProjectHeader getProjectHeader()
     {
         return projectHeader;
     }
 
-    /**
-     *
-     * @return
-     */
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return loadedModels;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public String toString()
     {
         return projectHeader.getProjectName();
     }
 
-    /**
-     *
-     * @return
-     */
     public ProjectMode getProjectMode()
     {
         return projectMode.get();
     }
 
-    /**
-     *
-     * @param mode
-     */
     public void setProjectMode(ProjectMode mode)
     {
         projectMode.set(mode);
     }
 
-    /**
-     *
-     * @return
-     */
     public ObjectProperty<ProjectMode> projectModeProperty()
     {
         return projectMode;
     }
 
-    /**
-     *
-     * @param printJobID
-     */
     public void addPrintJobID(String printJobID)
     {
         lastPrintJobID = printJobID;
     }
 
-    /**
-     *
-     */
     public void projectModified()
     {
         lastPrintJobID = "";
     }
 
-    /**
-     *
-     * @return
-     */
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
     }
 
-    /**
-     *
-     * @return
-     */
     public PrintQualityEnumeration getPrintQuality()
     {
         return printerSettings.getPrintQuality();
     }
 
-    /**
-     *
-     * @param printQuality
-     */
     public void setPrintQuality(PrintQualityEnumeration printQuality)
     {
         if (printerSettings.getPrintQuality() != printQuality)
@@ -364,19 +328,11 @@ public class Project implements Serializable
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public String getCustomProfileName()
     {
         return customProfileName;
     }
 
-    /**
-     *
-     * @param customProfileName
-     */
     public void setCustomProfileName(String customProfileName)
     {
         if (customProfileName == null)
@@ -415,9 +371,9 @@ public class Project implements Serializable
      */
     private void initialiseExtruderFilaments()
     {
-        // defaults in case of no printer or reel
-        extruder0Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));
-        extruder1Filament.set(FilamentContainer.getFilamentByID("RBX-ABS-GR499"));
+        // set defaults in case of no printer or reel
+        extruder0Filament.set(DEFAULT_FILAMENT);
+        extruder1Filament.set(DEFAULT_FILAMENT);
 
         Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
         if (printer != null)
@@ -439,4 +395,242 @@ public class Project implements Serializable
     {
         return printerSettings;
     }
+
+    public void copyModel(ModelContainer modelContainer)
+    {
+        ModelContainer copy = modelContainer.makeCopy();
+        addModel(copy);
+    }
+
+    public void addModel(ModelContainer modelContainer)
+    {
+        loadedModels.add(modelContainer);
+        projectModified();
+        fireWhenModelAdded(modelContainer);
+    }
+
+    private void fireWhenModelAdded(ModelContainer modelContainer)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelAdded(modelContainer);
+        }
+    }
+
+    public void deleteModel(ModelContainer modelContainer)
+    {
+        loadedModels.remove(modelContainer);
+        projectModified();
+        fireWhenModelRemoved(modelContainer);
+    }
+
+    private void fireWhenModelRemoved(ModelContainer modelContainer)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelRemoved(modelContainer);
+        }
+    }
+
+    Set<ProjectChangesListener> projectChangesListeners = new HashSet<>();
+
+    public void addProjectChangesListener(ProjectChangesListener projectChangesListener)
+    {
+        projectChangesListeners.add(projectChangesListener);
+    }
+
+    public void removeProjectChangesListener(ProjectChangesListener projectChangesListener)
+    {
+        projectChangesListeners.remove(projectChangesListener);
+    }
+
+    /**
+     * ProjectChangesListener allows other objects to observe when models are added or removed etc to
+     * the project.
+     */
+    public interface ProjectChangesListener
+    {
+        /**
+         * This should be fired when a model is added to the project.
+         */
+        void whenModelAdded(ModelContainer modelContainer);
+
+        /**
+         * This should be fired when a model is removed from the project.
+         */
+        void whenModelRemoved(ModelContainer modelContainer);
+
+        /**
+         * This should be fired when the project is auto laid out.
+         */
+        void whenAutoLaidOut();
+
+        /**
+         * This should be fired when one or more models have been moved, rotated or scaled etc. If
+         * possible try to fire just once for any given group change.
+         */
+        void whenModelsTransformed(Set<ModelContainer> modelContainers);
+    }
+
+    //TODO moved from ProjectTab, should be simplified or even eliminated if possible
+    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
+    {
+        steno.debug("I am loading " + fullFilename);
+        if (getProjectMode() == ProjectMode.NONE)
+        {
+            switch (modelContainer.getModelContentsType())
+            {
+                case GCODE:
+                    setProjectMode(ProjectMode.GCODE);
+                    setProjectName(modelContainer.getModelName());
+                    setGCodeFilename(fullFilename);
+//                    viewManager.activateGCodeVisualisationMode();
+                    break;
+                case MESH:
+                    setProjectMode(ProjectMode.MESH);
+//                    projectManager.projectOpened(project);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if ((getProjectMode() == ProjectMode.GCODE
+            && modelContainer.getModelContentsType()
+            == ModelContentsEnumeration.GCODE)
+            || (getProjectMode() == ProjectMode.MESH
+            && modelContainer.getModelContentsType()
+            == ModelContentsEnumeration.MESH))
+        {
+            addModel(modelContainer);
+        } else
+        {
+            steno.warning("Discarded load of " + modelContainer.getModelName()
+                + " due to conflict with project type");
+        }
+    }
+
+    public void autoLayout()
+    {
+        Collections.sort(loadedModels);
+        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
+                                              (int) PrintBed.maxPrintableZSize);
+
+        thing.reference(loadedModels, 10);
+        thing.pack();
+        thing.relocateBlocks();
+
+        projectModified();
+        fireWhenAutoLaidOut();
+    }
+
+    private void fireWhenAutoLaidOut()
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenAutoLaidOut();
+        }
+    }
+    
+    public void scaleModels(Set<ModelContainer> modelContainers, double newScale)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setScale(newScale);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+    
+    public void deleteModels(Set<ModelContainer> modelContainers)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                deleteModel(model);
+            }
+        }
+    }    
+    
+    public void rotateModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setRotationY(rotation);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }   
+    
+    public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.resizeDepth(depth);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }     
+    
+    public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.resizeHeight(height);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }   
+    
+    public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.resizeWidth(width);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }  
+
+    private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }  
+    
+    public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateXTo(x);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    } 
+    
+    public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateZTo(z);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }     
 }

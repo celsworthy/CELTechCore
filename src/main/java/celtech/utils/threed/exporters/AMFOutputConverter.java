@@ -4,6 +4,15 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.threed.AMFRepresentation;
+import celtech.utils.threed.amf.AMFObject;
+import celtech.utils.threed.amf.Constellation;
+import celtech.utils.threed.amf.Material;
+import celtech.utils.threed.amf.MaterialColour;
+import celtech.utils.threed.amf.MaterialMetadata;
+import celtech.utils.threed.amf.ConstellationObjectInstance;
+import celtech.utils.threed.amf.Coordinate;
+import celtech.utils.threed.amf.Mesh;
+import celtech.utils.threed.amf.Vertex;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.DataOutputStream;
@@ -15,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -243,9 +253,47 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 //        }
 //
         ObjectMapper xmlMapper = new XmlMapper();
+        AMFRepresentation amfFile = new AMFRepresentation();
+        
+        AMFObject firstObject = new AMFObject();
+        firstObject.setObjectid(1);
+        
+        Mesh m = new Mesh();
+        ArrayList<Vertex> vertices = new ArrayList<>();        
+        Vertex v1 = new Vertex();
+        Coordinate coord1 = new Coordinate();
+        v1.setCoordinate(coord1);
+            
+        
+        vertices.add(v1);
+        m.setVertices(vertices);
+        firstObject.setMesh(m);
+        amfFile.setObject(firstObject);
+        
+        Constellation constellation = new Constellation();
+        ConstellationObjectInstance instance = new ConstellationObjectInstance();
+        ArrayList<ConstellationObjectInstance> instances = new ArrayList<>();
+        instances.add(instance);
+        constellation.setInstance(instances);
+        amfFile.setConstellation(constellation);
+        
+        List<Material> materials = new ArrayList<>();
+        Material matA = new Material();
+        matA.setId(1);
+        MaterialMetadata metadata = new MaterialMetadata();
+        matA.setMetadata(metadata);
+        MaterialColour colour = new MaterialColour();
+        matA.setColor(colour);
+        materials.add(matA);
+
+        Material matB = new Material();
+        matB.setId(2);
+        materials.add(matB);
+        amfFile.setMaterial(materials);
+
         try
         {
-            xmlMapper.writeValue(new File("stuff.json"), new AMFRepresentation());
+            xmlMapper.writeValue(new File("stuff.xml"), amfFile);
         } catch (IOException ex)
         {
             System.out.println("Error writing AMF");

@@ -5,34 +5,8 @@ package celtech.services.printing;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
-import celtech.appManager.ProjectMode;
-import celtech.appManager.TestSystemNotificationManager;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.stl.STLImporter;
-import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.model.PrintEngine;
-import celtech.printerControl.model.HardwarePrinter;
-import celtech.services.slicer.PrintQualityEnumeration;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 
 /**
  *

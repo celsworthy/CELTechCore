@@ -14,6 +14,7 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.InsetPanelMenu;
 import celtech.coreUI.components.InsetPanelMenuItem;
+import celtech.coreUI.visualisation.ModelLoader;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,7 +57,8 @@ public class LoadModelInsetPanelController implements Initializable
     private final FileChooser modelFileChooser = new FileChooser();
     private DisplayManager displayManager = null;
     private static final Stenographer steno = StenographerFactory.getStenographer(LoadModelInsetPanelController.class.getName());
-
+    private ModelLoader modelLoader = new ModelLoader();
+    
     @FXML
     private VBox container;
 
@@ -87,9 +89,9 @@ public class LoadModelInsetPanelController implements Initializable
 
             ProjectMode projectMode = ProjectMode.NONE;
 
-            if (displayManager.getCurrentlyVisibleProject() != null)
+            if (Lookup.getSelectedProjectProperty().get() != null)
             {
-                projectMode = displayManager.getCurrentlyVisibleProject().getProjectMode();
+                projectMode = Lookup.getSelectedProjectProperty().get().getProjectMode();
             }
 
             String descriptionOfFile = null;
@@ -135,7 +137,7 @@ public class LoadModelInsetPanelController implements Initializable
                 ApplicationConfiguration.setLastDirectory(
                     DirectoryMemoryProperty.MODEL,
                     files.get(0).getParentFile().getAbsolutePath());
-                displayManager.loadExternalModels(files, true);
+                modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), files, true);
             }
         });
     }
@@ -201,7 +203,7 @@ public class LoadModelInsetPanelController implements Initializable
 
         public void downloadFile(String fileURL)
         {
-            steno.info("Got download URL of " + fileURL);
+            steno.debug("Got download URL of " + fileURL);
 
             String tempID = SystemUtils.generate16DigitID();
             try
@@ -217,12 +219,12 @@ public class LoadModelInsetPanelController implements Initializable
 
                 if (extension.equalsIgnoreCase("stl"))
                 {
-                    steno.info("Got stl file from My Mini Factory");
+                    steno.debug("Got stl file from My Mini Factory");
                     final String targetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + FileUtils.basename(fileURL);
                     writeStreamToFile(webInputStream, targetname);
                 } else if (extension.equalsIgnoreCase("zip"))
                 {
-                    steno.info("Got zip file from My Mini Factory");
+                    steno.debug("Got zip file from My Mini Factory");
                     writeStreamToFile(webInputStream, tempFilename);
                     ZipFile zipFile = new ZipFile(tempFilename);
                     try
@@ -236,14 +238,15 @@ public class LoadModelInsetPanelController implements Initializable
                             writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
                             filesToLoad.add(new File(tempTargetname));
                         }
-                        displayManager.loadExternalModels(filesToLoad);
+                        modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
+                                                       filesToLoad);
                     } finally
                     {
                         zipFile.close();
                     }
                 } else if (extension.equalsIgnoreCase("rar"))
                 {
-                    steno.info("Got rar file from My Mini Factory");
+                    steno.debug("Got rar file from My Mini Factory");
                 }
 
                 webInputStream.close();

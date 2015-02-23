@@ -1,10 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
+import celtech.appManager.Project;
 import celtech.coreUI.components.ProjectTab;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.utils.threed.importers.stl.STLImporter;
@@ -32,17 +29,17 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
     private Stenographer steno = StenographerFactory.getStenographer(ModelLoaderTask.class.getName());
 
     private final List<File> modelFilesToLoad;
-    private ProjectTab targetProjectTab = null;
+    private Project targetProject;
     private ResourceBundle languageBundle = null;
     private final DoubleProperty percentProgress = new SimpleDoubleProperty();
     private final boolean relayout;
 
-    public ModelLoaderTask(List<File> modelFilesToLoad, ProjectTab targetProjectTab,
+    public ModelLoaderTask(List<File> modelFilesToLoad, Project targetProject,
         boolean relayout)
     {
         this.modelFilesToLoad = modelFilesToLoad;
         this.relayout = relayout;
-        this.targetProjectTab = targetProjectTab;
+        this.targetProject = targetProject;
         languageBundle = Lookup.getLanguageBundle();
 
         percentProgress.addListener(new ChangeListener<Number>()
@@ -73,16 +70,16 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             {
                 ObjImporter reader = new ObjImporter();
                 modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath,
-                                                  targetProjectTab);
+                                                  targetProject);
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
-                modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
+                modelLoadResult = reader.loadFile(this, modelFilePath, targetProject,
                                                   percentProgress);
             } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
             {
                 GCodeImporterLines reader = new GCodeImporterLines();
-                modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
+                modelLoadResult = reader.loadFile(this, modelFilePath, targetProject,
                                                   percentProgress);
             }
             modelLoadResultList.add(modelLoadResult);

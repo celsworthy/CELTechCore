@@ -62,7 +62,7 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                          {
                              actions.doFailedAction();
                      },
-                                         NozzleOpeningCalibrationState.FAILED));
+                                         NozzleOpeningCalibrationState.DONE));
 
         transitions = new HashSet<>();
 
