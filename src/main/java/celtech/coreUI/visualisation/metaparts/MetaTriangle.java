@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package celtech.coreUI.visualisation.importers;
+package celtech.coreUI.visualisation.metaparts;
 
 import javafx.geometry.Point3D;
 

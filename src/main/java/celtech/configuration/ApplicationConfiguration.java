@@ -258,6 +258,11 @@ public class ApplicationConfiguration
     /**
      *
      */
+    public static final String amfTempFileExtension = ".amf";
+
+    /**
+     *
+     */
     public static final String gcodeTempFileExtension = ".gcode";
 
     /**

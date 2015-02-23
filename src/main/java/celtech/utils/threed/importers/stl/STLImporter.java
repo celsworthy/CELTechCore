@@ -1,17 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package celtech.coreUI.visualisation.importers.stl;
+package celtech.utils.threed.importers.stl;
 
 import celtech.appManager.Project;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
-import celtech.coreUI.visualisation.importers.FloatArrayList;
-import celtech.coreUI.visualisation.importers.IntegerArrayList;
-import celtech.coreUI.visualisation.importers.MetaTriangle;
+import celtech.coreUI.visualisation.metaparts.FloatArrayList;
+import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
+import celtech.coreUI.visualisation.metaparts.MetaTriangle;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;

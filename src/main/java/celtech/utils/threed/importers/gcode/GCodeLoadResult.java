@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package celtech.coreUI.visualisation.importers.gcode;
+package celtech.utils.threed.importers.gcode;
 
 import celtech.utils.gcode.representation.ExtrusionMode;
 import celtech.utils.gcode.representation.GCodeMeshData;

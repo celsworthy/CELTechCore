@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
@@ -16,6 +11,7 @@ import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.modelcontrol.ModelContainer;
+import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ResourceBundle;
@@ -24,6 +20,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -108,6 +105,14 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private MaterialComponent selectedMaterialComponent;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
+
+    private AMFOutputConverter outputConverter = new AMFOutputConverter();
+
+    @FXML
+    void outputAMF(ActionEvent event)
+    {
+        outputConverter.outputFile(boundProject, "Blargle");
+    }
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -579,7 +584,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 }
                 suppressModelDataTableViewNotifications = true;
                 selectionModel.deselectAllModels();
-                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().getSelectedItems())
+                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().
+                    getSelectedItems())
                 {
                     selectionModel.addModelContainer(modelContainer);
                 }

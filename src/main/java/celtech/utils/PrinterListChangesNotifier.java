@@ -81,6 +81,14 @@ public class PrinterListChangesNotifier
             {
                 listener.whenHeadRemoved(printer, printer.headProperty().get());
             }
+            
+            for (int extruderIndex = 0; extruderIndex < printer.extrudersProperty().size(); extruderIndex++)
+            {
+                if (printer.extrudersProperty().get(extruderIndex).isFittedProperty().get())
+                {
+                    listener.whenExtruderRemoved(printer, extruderIndex);
+                }
+            }
 
             listener.whenPrinterRemoved(printer);
         }

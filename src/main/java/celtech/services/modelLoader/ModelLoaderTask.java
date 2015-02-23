@@ -1,15 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.coreUI.visualisation.importers.obj.ObjImporter;
-import celtech.coreUI.visualisation.importers.stl.STLImporter;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.gcode.GCodeImporterLines;
+import celtech.coreUI.components.ProjectTab;
+import celtech.utils.threed.importers.obj.ObjImporter;
+import celtech.utils.threed.importers.stl.STLImporter;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.utils.threed.importers.gcode.GCodeImporterLines;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

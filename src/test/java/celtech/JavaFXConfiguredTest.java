@@ -40,7 +40,7 @@ public class JavaFXConfiguredTest
             applicationInstallURL.getFile(),
             applicationCommonURL.getFile(),
             userStorageFolder);
-        Lookup.initialise();
+        Lookup.setupDefaultValues();
 
         new File(userStorageFolder
             + ApplicationConfiguration.printSpoolStorageDirectoryPath

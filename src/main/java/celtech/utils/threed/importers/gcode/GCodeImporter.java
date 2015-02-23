@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.coreUI.visualisation.importers.gcode;
+package celtech.utils.threed.importers.gcode;
 
 import celtech.appManager.Project;
 import celtech.services.gcodeLoader.GCodeLoadState;
@@ -10,7 +10,7 @@ import celtech.services.gcodeLoader.GCodeEventType;
 import celtech.services.gcodeLoader.GCodeParseException;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.Xform;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import celtech.utils.Math.MathUtils;

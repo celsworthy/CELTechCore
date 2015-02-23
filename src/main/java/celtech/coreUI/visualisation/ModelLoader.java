@@ -6,7 +6,7 @@ package celtech.coreUI.visualisation;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;

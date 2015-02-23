@@ -29,14 +29,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package celtech.coreUI.visualisation.importers.obj;
+package celtech.utils.threed.importers.obj;
 
 import celtech.appManager.Project;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
-import celtech.coreUI.visualisation.importers.IntegerArrayList;
-import celtech.coreUI.visualisation.importers.FloatArrayList;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
+import celtech.coreUI.visualisation.metaparts.FloatArrayList;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;

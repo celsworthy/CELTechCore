@@ -168,11 +168,6 @@ public class Lookup
         setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
     }
 
-    public static void initialise()
-    {
-        
-    }
-
     public static TaskExecutor getTaskExecutor()
     {
         return taskExecutor;
