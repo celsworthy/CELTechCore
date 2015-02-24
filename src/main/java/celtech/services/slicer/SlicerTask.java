@@ -195,9 +195,11 @@ public class SlicerTask extends Task<SliceResult>
 
         if (commands.size() > 0)
         {
+            steno.debug("Slicer command is " + String.join(" ", commands));
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
             if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95)
             {
+                steno.debug("Set working directory (Non-Windows) to " + workingDirectory);
                 slicerProcessBuilder.directory(new File(workingDirectory));
             }
 
@@ -251,14 +253,10 @@ public class SlicerTask extends Task<SliceResult>
                                succeeded);
     }
 
-    /**
-     *
-     * @param message
-     * @param workDone
-     */
     protected void progressUpdateFromSlicer(String message, int workDone)
     {
         updateMessage(message);
         updateProgress(workDone, 100);
     }
+
 }

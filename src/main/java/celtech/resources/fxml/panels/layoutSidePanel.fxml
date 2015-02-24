@@ -199,7 +199,7 @@
                                 <RowConstraints maxHeight="31.0" minHeight="10.0" prefHeight="31.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                         </GridPane>
-                        <Button onAction="#outputAMF"/> 
+                        <Button onAction="#outputAMF" /> 
                     </children>
                     <padding>
                         <Insets left="5.0" right="5.0" top="10.0" />

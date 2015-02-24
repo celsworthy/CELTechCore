@@ -46,12 +46,15 @@ public class Project implements Serializable
     private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String gcodeFileName = "";
     private ObjectProperty<ProjectMode> projectMode = new SimpleObjectProperty<>(ProjectMode.NONE);
-    private String customProfileName = "";
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private PrinterSettings printerSettings;
     private final ProjectManager projectManager = ProjectManager.getInstance();
+
+    private int brimOverride = 0;
+    private float fillDensityOverride = 0;
+    private boolean printSupportOverride = false;
 
     public Project()
     {
@@ -117,7 +120,7 @@ public class Project implements Serializable
         out.writeUTF(lastPrintJobID);
 
         //Introduced in version 1.00.06
-        out.writeUTF(customProfileName);
+//        out.writeUTF(customProfileName);
 
         //Introduced in version 1.??
         if (extruder0Filament.get() != null)
@@ -225,11 +228,11 @@ public class Project implements Serializable
         try
         {
 //            SlicerParametersFile settings = (SlicerParametersFile) in.readObject();
-            //Introduced in version 1.00.06
-            if (in.available() > 0)
-            {
-                customProfileName = in.readUTF();
-            }
+//            //Introduced in version 1.00.06
+//            if (in.available() > 0)
+//            {
+//                customProfileName = in.readUTF();
+//            }
             //Introduced in version 1.??
             if (in.available() > 0)
             {
@@ -258,7 +261,7 @@ public class Project implements Serializable
         } catch (IOException ex)
         {
             steno.warning("Unable to deserialise settings " + ex);
-            customProfileName = "";
+//            customProfileName = "";
         }
 
     }
@@ -326,23 +329,6 @@ public class Project implements Serializable
         {
             projectModified();
             printerSettings.setPrintQuality(printQuality);
-        }
-    }
-
-    public String getCustomProfileName()
-    {
-        return customProfileName;
-    }
-
-    public void setCustomProfileName(String customProfileName)
-    {
-        if (customProfileName == null)
-        {
-            this.customProfileName = "";
-        } else if (this.customProfileName.equals(customProfileName) == false)
-        {
-            projectModified();
-            this.customProfileName = customProfileName;
         }
     }
 
@@ -633,5 +619,38 @@ public class Project implements Serializable
         }
         projectModified();
         fireWhenModelsTransformed(modelContainers);
-    }     
+    }   
+    
+    public int getBrimOverride()
+    {
+        return brimOverride;
+    }
+
+    public void setBrimOverride(int brimOverride)
+    {
+        this.brimOverride = brimOverride;
+        projectModified();
+    }  
+    
+    public float getFillDensityOverride()
+    {
+        return fillDensityOverride;
+    }
+
+    public void setFillDensityOverride(float fillDensityOverride)
+    {
+        this.fillDensityOverride = fillDensityOverride;
+        projectModified();
+    }   
+    
+    public boolean getPrintSupportOverride()
+    {
+        return printSupportOverride;
+    }
+
+    public void setPrintSupportOverride(boolean printSupportOverride)
+    {
+        this.printSupportOverride = printSupportOverride;
+        projectModified();
+    }    
 }
