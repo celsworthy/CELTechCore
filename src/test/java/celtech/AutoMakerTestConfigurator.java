@@ -24,19 +24,21 @@ public class AutoMakerTestConfigurator
 
         testProperties.setProperty("language", "UK");
         URL applicationInstallURL = AutoMakerTestConfigurator.class.getResource("/");
-        URL applicationCommonURL = AutoMakerTestConfigurator.class.getResource("/Common/");
         String userStorageFolder = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(
             testProperties,
             applicationInstallURL.getFile(),
-            applicationCommonURL.getFile(),
             userStorageFolder);
         Lookup.setupDefaultValues();
 
         new File(userStorageFolder
             + ApplicationConfiguration.printSpoolStorageDirectoryPath
             + File.separator).mkdir();
+        
+        new File(userStorageFolder
+            + ApplicationConfiguration.projectFileDirectoryPath
+            + File.separator).mkdir();        
 
         // force initialisation
         URL configURL = AutoMakerTestConfigurator.class.getResource("/AutoMaker.configFile.xml");

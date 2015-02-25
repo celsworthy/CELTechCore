@@ -126,7 +126,7 @@ public class ProjectManager implements Savable, Serializable
             loadedProject = (Project) reader.readObject();
             reader.close();
 
-            loadedProject.getProjectHeader().setProjectPath(projectFile.getParent());
+//            loadedProject.getProjectHeader().setProjectPath(projectFile.getParent());
         } catch (IOException ex)
         {
             steno.error("Failed to load project " + projectFile.getAbsolutePath());

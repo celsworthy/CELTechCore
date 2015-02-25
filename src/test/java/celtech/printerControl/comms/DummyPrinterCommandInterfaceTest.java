@@ -3,12 +3,11 @@
  */
 package celtech.printerControl.comms;
 
-import celtech.AutoMakerTestConfigurator;
+import celtech.JavaFXConfiguredTest;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.HardwarePrinter;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
@@ -16,17 +15,11 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author tony
  */
-public class DummyPrinterCommandInterfaceTest
+public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
 {
 
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setUpClass()
-    {
-        AutoMakerTestConfigurator.setUp(temporaryUserStorageFolder);
-    }
 
     @Test
     public void testSetNozzleTargetTemperature() throws Exception

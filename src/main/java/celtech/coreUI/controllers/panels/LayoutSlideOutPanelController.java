@@ -51,7 +51,7 @@ public class LayoutSlideOutPanelController implements Initializable
     {
         this.currentProject = currentProject;
         lastModifiedDate.textProperty().unbind();
-        lastModifiedDate.textProperty().bind(currentProject.getProjectHeader().getLastModifiedDateProperty().asString());
+        lastModifiedDate.textProperty().bind(currentProject.getLastModifiedDate().asString());
 
         printHistory.getItems().clear();
     }

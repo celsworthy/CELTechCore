@@ -5,7 +5,6 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
-import static celtech.appManager.ProjectMode.GCODE;
 import static celtech.appManager.ProjectMode.MESH;
 import static celtech.appManager.ProjectMode.NONE;
 import celtech.appManager.PurgeResponse;
@@ -253,56 +252,29 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             iterator.next();
             iterator.remove();
         }
-        ProjectMode projectMode = ProjectMode.NONE;
-        if (selectedProject != null)
-        {
-            projectMode = selectedProject.getProjectMode();
-        }
-        String descriptionOfFile = null;
-        switch (projectMode)
-        {
-            case NONE:
-                descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
-                break;
-            case MESH:
-                descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
-                break;
-            case GCODE:
-                descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
-                break;
-            default:
-                break;
-        }
+        String descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
+
         modelFileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter(descriptionOfFile,
-                ApplicationConfiguration.
-                    getSupportedFileExtensionWildcards(
-                        projectMode)));
+                                            ApplicationConfiguration.
+                                            getSupportedFileExtensionWildcards(
+                                                ProjectMode.MESH)));
         modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
+            DirectoryMemoryProperty.MODEL)));
         List<File> files;
-        if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
-        {
-            files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-        } else
-        {
-            File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-            files = new ArrayList<>();
-            if (file != null)
-            {
-                files.add(file);
-            }
-        }
+
+        files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
+
         return files;
     }
 
     @FXML
-        void addCloudModel(ActionEvent event)
-        {
-            applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
-        }
-        
-        @FXML
+    void addCloudModel(ActionEvent event)
+    {
+        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
+    }
+
+    @FXML
     void deleteModel(ActionEvent event)
     {
         for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
@@ -672,7 +644,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void whenSettingsPrinterChanges(Printer printer)
     {
-        
+
         updateCanPrintProjectBindings(printer, selectedProject);
         updatePrintButtonConditionalText(printer, selectedProject);
     }
@@ -680,20 +652,21 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
         PrinterSettings printerSettings = project.getPrinterSettings();
-        
+
         printButton.uninstallTag();
         printButton.installTag();
-        
+
         printButton.getTag().removeAllConditionalText();
 
         printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
                                                 printer.getPrinterAncillarySystems().
                                                 lidOpenProperty().not().not());
 
-        if (! printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
+        if (!printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
             printButton.getTag().addConditionalText(
-                "dialogs.cantPrintNoFilamentSelectedMessage", printerSettings.getFilament0Property().isNull());
+                "dialogs.cantPrintNoFilamentSelectedMessage",
+                printerSettings.getFilament0Property().isNull());
             printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                                     printer.extrudersProperty().get(0).
                                                     filamentLoadedProperty().not());
@@ -721,12 +694,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             } else // both extruders are required
             {
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage0", printerSettings.getFilament0Property().isNull());
+                    "dialogs.cantPrintNoFilamentSelectedMessage0",
+                    printerSettings.getFilament0Property().isNull());
                 printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
                                                         printer.extrudersProperty().get(0).
                                                         filamentLoadedProperty().not());
                 printButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentSelectedMessage1", printerSettings.getFilament1Property().isNull());
+                    "dialogs.cantPrintNoFilamentSelectedMessage1",
+                    printerSettings.getFilament1Property().isNull());
                 printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
                                                         printer.extrudersProperty().get(1).
                                                         filamentLoadedProperty().not());
@@ -861,7 +836,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             return;
         }
         printButton.disableProperty().unbind();
-        if (! printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
+        if (!printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
             canPrintProject.bind(
                 printer.canPrintProperty()
@@ -1021,7 +996,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (printer == currentSettingsPrinter)
         {
             whenSettingsPrinterChanges(currentSettingsPrinter);
-        }        
+        }
     }
 
     @Override
@@ -1030,7 +1005,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (printer == currentSettingsPrinter)
         {
             whenSettingsPrinterChanges(currentSettingsPrinter);
-        }        
+        }
     }
 
 }

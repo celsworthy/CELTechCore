@@ -21,10 +21,5 @@ public enum ProjectMode
     /**
      *
      */
-    GCODE,
-
-    /**
-     *
-     */
     MESH
 }

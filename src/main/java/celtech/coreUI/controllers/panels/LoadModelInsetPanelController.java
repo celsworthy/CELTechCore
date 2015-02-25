@@ -56,9 +56,10 @@ public class LoadModelInsetPanelController implements Initializable
 
     private final FileChooser modelFileChooser = new FileChooser();
     private DisplayManager displayManager = null;
-    private static final Stenographer steno = StenographerFactory.getStenographer(LoadModelInsetPanelController.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        LoadModelInsetPanelController.class.getName());
     private ModelLoader modelLoader = new ModelLoader();
-    
+
     @FXML
     private VBox container;
 
@@ -87,57 +88,27 @@ public class LoadModelInsetPanelController implements Initializable
                 iterator.remove();
             }
 
-            ProjectMode projectMode = ProjectMode.NONE;
+            String descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
 
-            if (Lookup.getSelectedProjectProperty().get() != null)
-            {
-                projectMode = Lookup.getSelectedProjectProperty().get().getProjectMode();
-            }
-
-            String descriptionOfFile = null;
-
-            switch (projectMode)
-            {
-                case NONE:
-                    descriptionOfFile = Lookup.i18n("dialogs.anyFileChooserDescription");
-                    break;
-                case MESH:
-                    descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
-                    break;
-                case GCODE:
-                    descriptionOfFile = Lookup.i18n("dialogs.gcodeFileChooserDescription");
-                    break;
-                default:
-                    break;
-            }
             modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(descriptionOfFile,
                                                 ApplicationConfiguration.getSupportedFileExtensionWildcards(
-                                                    projectMode)));
+                                                    ProjectMode.MESH)));
 
             modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
                 DirectoryMemoryProperty.MODEL)));
 
             List<File> files;
-            if (projectMode == ProjectMode.NONE || projectMode == ProjectMode.MESH)
-            {
-                files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
-            } else
-            {
-                File file = modelFileChooser.showOpenDialog(displayManager.getMainStage());
-                files = new ArrayList<>();
-                if (file != null)
-                {
-                    files.add(file);
-                }
-            }
+
+            files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
 
             if (files != null && !files.isEmpty())
             {
                 ApplicationConfiguration.setLastDirectory(
                     DirectoryMemoryProperty.MODEL,
                     files.get(0).getParentFile().getAbsolutePath());
-                modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), files, true);
+                modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), files,
+                                               true);
             }
         });
     }
@@ -160,42 +131,45 @@ public class LoadModelInsetPanelController implements Initializable
 
         modelFileChooser.setTitle(Lookup.i18n("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(Lookup.i18n("dialogs.modelFileChooserDescription"), ApplicationConfiguration.getSupportedFileExtensionWildcards(ProjectMode.NONE)));
+            new FileChooser.ExtensionFilter(Lookup.i18n("dialogs.modelFileChooserDescription"),
+                                            ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                                                ProjectMode.NONE)));
 
-        ApplicationStatus.getInstance().modeProperty().addListener((ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-        {
-            if (newValue == ApplicationMode.ADD_MODEL && oldValue != newValue)
+        ApplicationStatus.getInstance().modeProperty().addListener(
+            (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
             {
-                webContentContainer.getChildren().clear();
+                if (newValue == ApplicationMode.ADD_MODEL && oldValue != newValue)
+                {
+                    webContentContainer.getChildren().clear();
 
-                WebView webView = new WebView();
-                VBox.setVgrow(webView, Priority.ALWAYS);
+                    WebView webView = new WebView();
+                    VBox.setVgrow(webView, Priority.ALWAYS);
 
-                final WebEngine webEngine = webView.getEngine();
+                    final WebEngine webEngine = webView.getEngine();
 
-                webEngine.getLoadWorker().stateProperty().addListener(
-                    new ChangeListener<State>()
-                    {
-                        @Override
-                        public void changed(ObservableValue<? extends State> ov,
-                            State oldState, State newState)
+                    webEngine.getLoadWorker().stateProperty().addListener(
+                        new ChangeListener<State>()
                         {
-                            switch (newState)
+                            @Override
+                            public void changed(ObservableValue<? extends State> ov,
+                                State oldState, State newState)
                             {
-                                case RUNNING:
-                                    break;
-                                case SUCCEEDED:
-                                    JSObject win = (JSObject) webEngine.executeScript("window");
-                                    win.setMember("automaker", new WebCallback());
-                                    break;
+                                switch (newState)
+                                {
+                                    case RUNNING:
+                                        break;
+                                    case SUCCEEDED:
+                                        JSObject win = (JSObject) webEngine.executeScript("window");
+                                        win.setMember("automaker", new WebCallback());
+                                        break;
+                                }
                             }
                         }
-                    }
-                );
-                webContentContainer.getChildren().addAll(webView);
-                webEngine.load("http://cel-robox.myminifactory.com");
-            }
-        });
+                    );
+                    webContentContainer.getChildren().addAll(webView);
+                    webEngine.load("http://cel-robox.myminifactory.com");
+                }
+            });
     }
 
     public class WebCallback
@@ -211,7 +185,8 @@ public class LoadModelInsetPanelController implements Initializable
                 URL downloadURL = new URL(fileURL);
 
                 String extension = FilenameUtils.getExtension(fileURL);
-                final String tempFilename = ApplicationConfiguration.getApplicationStorageDirectory() + File.separator + tempID + "." + extension;
+                final String tempFilename = ApplicationConfiguration.getApplicationStorageDirectory()
+                    + File.separator + tempID + "." + extension;
 
                 URLConnection urlConn = downloadURL.openConnection();
 
@@ -220,7 +195,8 @@ public class LoadModelInsetPanelController implements Initializable
                 if (extension.equalsIgnoreCase("stl"))
                 {
                     steno.debug("Got stl file from My Mini Factory");
-                    final String targetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + FileUtils.basename(fileURL);
+                    final String targetname = ApplicationConfiguration.getUserStorageDirectory()
+                        + File.separator + FileUtils.basename(fileURL);
                     writeStreamToFile(webInputStream, targetname);
                 } else if (extension.equalsIgnoreCase("zip"))
                 {
@@ -234,7 +210,8 @@ public class LoadModelInsetPanelController implements Initializable
                         while (entries.hasMoreElements())
                         {
                             final ZipEntry entry = entries.nextElement();
-                            final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory() + File.separator + entry.getName();
+                            final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory()
+                                + File.separator + entry.getName();
                             writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
                             filesToLoad.add(new File(tempTargetname));
                         }

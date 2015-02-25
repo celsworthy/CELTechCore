@@ -5,7 +5,6 @@ package celtech;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
@@ -13,19 +12,12 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author tony
  */
-public class LookupTest 
+public class LookupTest extends JavaFXConfiguredTest
 {
     
     
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
-    
-    @BeforeClass
-    public static void setUpClass()
-    {
-        AutoMakerTestConfigurator.setUp(temporaryUserStorageFolder);
-    }
-
    
     @Test
     public void testI18n()

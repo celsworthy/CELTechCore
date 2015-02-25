@@ -31,19 +31,21 @@ public class JavaFXConfiguredTest
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
-        URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/");
-        URL applicationCommonURL = JavaFXConfiguredTest.class.getResource("/Common/");
+        URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/InstallDir/AutoMaker/");
         String userStorageFolder = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(
             testProperties,
             applicationInstallURL.getFile(),
-            applicationCommonURL.getFile(),
             userStorageFolder);
         Lookup.setupDefaultValues();
 
         new File(userStorageFolder
             + ApplicationConfiguration.printSpoolStorageDirectoryPath
+            + File.separator).mkdir();
+        
+        new File(userStorageFolder
+            + ApplicationConfiguration.projectFileDirectoryPath
             + File.separator).mkdir();
 
         // force initialisation

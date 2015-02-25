@@ -143,8 +143,7 @@ public class ProjectTab extends Tab
 
         nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
         {
-            if (event.getClickCount() == 2 && project.getProjectMode()
-                != ProjectMode.GCODE)
+            if (event.getClickCount() == 2)
             {
                 editableProjectNameField.setText(
                     nonEditableProjectNameField.getText());
@@ -196,7 +195,7 @@ public class ProjectTab extends Tab
                             {
                                 boolean extensionFound = false;
                                 for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    project.getProjectMode()))
+                                    ProjectMode.MESH))
                                 {
                                     if (file.getName().toUpperCase().endsWith(
                                         extension.toUpperCase()))
@@ -245,7 +244,7 @@ public class ProjectTab extends Tab
                             {
                                 boolean extensionFound = false;
                                 for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    project.getProjectMode()))
+                                    ProjectMode.MESH))
                                 {
                                     if (file.getName().endsWith(extension))
                                     {
