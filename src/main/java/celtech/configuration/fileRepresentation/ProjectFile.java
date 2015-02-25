@@ -1,6 +1,8 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Date;
 
 
@@ -15,6 +17,28 @@ public class ProjectFile
     private String extruder0FilamentID;
     private String extruder1FilamentID;
     private String lastPrintJobID = "";
+    private String settingsName = ApplicationConfiguration.draftSettingsProfileName;
+    private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
+
+    public String getSettingsName()
+    {
+        return settingsName;
+    }
+
+    public void setSettingsName(String settingsName)
+    {
+        this.settingsName = settingsName;
+    }
+
+    public PrintQualityEnumeration getPrintQuality()
+    {
+        return printQuality;
+    }
+
+    public void setPrintQuality(PrintQualityEnumeration printQuality)
+    {
+        this.printQuality = printQuality;
+    }
 
     public Date getLastModifiedDate()
     {
@@ -106,6 +130,7 @@ public class ProjectFile
         this.version = version;
     }
     
+    
     public void populateFromProject(Project project) {
         projectName = project.getProjectName();
         brimOverride = project.getBrimOverride();
@@ -115,5 +140,7 @@ public class ProjectFile
         lastPrintJobID = project.getLastPrintJobID();
         extruder0FilamentID = project.getExtruder0FilamentProperty().get().getFilamentID();
         extruder1FilamentID = project.getExtruder1FilamentProperty().get().getFilamentID();
+        settingsName = project.getPrinterSettings().getSettingsName();
+        printQuality = project.getPrinterSettings().getPrintQuality();
     }
 }

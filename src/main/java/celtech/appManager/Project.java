@@ -137,6 +137,8 @@ public class Project implements Serializable
                     extruder1Filament.set(filament1);
                 }
             }
+            printerSettings.setSettingsName(projectFile.getSettingsName());
+            printerSettings.setPrintQuality(projectFile.getPrintQuality());
 
             loadModels(basePath);
 
@@ -639,4 +641,5 @@ public class Project implements Serializable
         this.printSupportOverride = printSupportOverride;
         projectModified();
     }
+
 }
