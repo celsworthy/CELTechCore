@@ -134,6 +134,7 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
     public void configure(ObservableList<ModelContainer> modelList, Project project)
     {
 //        gcodeEditParent.visibleProperty().bind(project.projectModeProperty().isEqualTo(ProjectMode.GCODE));
+        gcodeEditParent.setVisible(false);
         modelList.addListener(new ListChangeListener<ModelContainer>()
         {
             @Override
