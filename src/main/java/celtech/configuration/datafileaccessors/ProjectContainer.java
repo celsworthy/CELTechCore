@@ -19,18 +19,17 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class ProjectContainer
 {
-    private final Stenographer steno = StenographerFactory.getStenographer(ProjectContainer.class.getName());
-    private static ProjectContainer instance = null;
+    private static final Stenographer steno = StenographerFactory.getStenographer(ProjectContainer.class.getName());
     private final ObservableList<ProjectFile> completeProjectList = FXCollections.observableArrayList();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private ProjectContainer()
+    public ProjectContainer()
     {
         ingestProjectFiles();
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
     }
 
-    void ingestProjectFiles()
+    public final void ingestProjectFiles()
     {
         File applicationHeadDir = new File(ApplicationConfiguration.getProjectDirectory());
         File[] applicationProjects = applicationHeadDir.listFiles(new ProjectFileFilter());
@@ -52,23 +51,8 @@ public class ProjectContainer
 
     }
 
-    public static ProjectContainer getInstance()
-    {
-        if (instance == null)
-        {
-            instance = new ProjectContainer();
-        }
-
-        return instance;
-    }
-
     public ObservableList<ProjectFile> getCompleteProjectList()
     {
-        if (instance == null)
-        {
-            instance = new ProjectContainer();
-        }
-
         return completeProjectList;
     }
 

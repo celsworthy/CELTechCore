@@ -7,7 +7,6 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.appManager.ProjectMode;
 import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Printer;

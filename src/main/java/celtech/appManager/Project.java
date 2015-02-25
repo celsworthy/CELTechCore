@@ -30,6 +30,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -43,8 +44,8 @@ public class Project implements Serializable
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
-    private final ProjectManager projectManager = ProjectManager.getInstance();
-    private static final SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
     private final ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String lastPrintJobID = "";
@@ -64,6 +65,7 @@ public class Project implements Serializable
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
             + formatter.format(now));
         lastModifiedDate.set(now);
@@ -136,10 +138,11 @@ public class Project implements Serializable
         {
             try
             {
-                ObjectOutputStream out = new ObjectOutputStream(
-                    new FileOutputStream(path));
-                out.writeObject(this);
-                out.close();
+                ProjectFile projectFile = new ProjectFile();
+                projectFile.populateFromProject(this);
+                File file = new File(ApplicationConfiguration.getProjectDirectory()
+                    + projectFile.getProjectName() + ApplicationConfiguration.projectFileExtension);
+                mapper.writeValue(file, projectFile);
             } catch (FileNotFoundException ex)
             {
                 steno.error("Failed to save project state");

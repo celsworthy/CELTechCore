@@ -22,7 +22,7 @@ public class ProjectContainerTest extends JavaFXConfiguredTest
     @Test
     public void testSaveOneProject() throws IOException
     {
-        ProjectContainer projectContainer = ProjectContainer.getInstance();
+        ProjectContainer projectContainer = new ProjectContainer();
         ObservableList<ProjectFile> projectList = projectContainer.getCompleteProjectList();
         
         String PROJECT_NAME = "TestA";
@@ -50,7 +50,6 @@ public class ProjectContainerTest extends JavaFXConfiguredTest
         
         projectList.clear();
         assertEquals(0, projectList.size());
-        
         projectContainer.ingestProjectFiles();
         assertEquals(1, projectList.size());
         Project newProject = new Project(projectList.get(0));
