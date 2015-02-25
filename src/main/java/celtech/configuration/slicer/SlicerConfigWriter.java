@@ -55,6 +55,9 @@ public abstract class SlicerConfigWriter
      */
     public final void generateConfigForSlicer(SlicerParametersFile profileData, String destinationFile)
     {
+        
+        bringDataInBounds(profileData);
+        
         File outputFile = new File(destinationFile);
         FileWriter writer = null;
 
@@ -382,4 +385,6 @@ public abstract class SlicerConfigWriter
 
         return foundMethod;
     }
+
+    abstract void bringDataInBounds(SlicerParametersFile profileData);
 }

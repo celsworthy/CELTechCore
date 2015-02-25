@@ -620,16 +620,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private void setupQualityOverrideControls(Project project)
     {
         fillDensitySlider.setValue(project.getFillDensityOverride() * 100.0);
-//        if (settings.getFillPattern().equals(FillPattern.LINE))
-//        {
-//            fillDensitySlider.setMax(99);
-//        } else
-//        {
-//            fillDensitySlider.setMax(100);
-//        }
         brimSlider.setValue(project.getBrimOverride());
         supportSlider.setValue(project.getPrintSupportOverride() ? 1: 0);
-        
     }
 
     private void updateProfileList()

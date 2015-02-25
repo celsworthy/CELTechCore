@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -35,6 +33,7 @@ import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 
 /**
  *
@@ -54,14 +53,14 @@ public class Project implements Serializable
     private String lastPrintJobID = "";
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
-    private PrinterSettings printerSettings;
+    private final PrinterSettings printerSettings;
 
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
 
-    private StringProperty projectNameProperty;
-    private ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
+    private final StringProperty projectNameProperty;
+    private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
 
     public Project()
     {
@@ -72,6 +71,7 @@ public class Project implements Serializable
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
             + formatter.format(now));
         lastModifiedDate.set(now);
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
     }
 
     public final void setProjectName(String value)
