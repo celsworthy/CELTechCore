@@ -151,6 +151,7 @@ public class ApplicationConfiguration
      *
      */
     public static final String projectFileExtension = ".robox";
+    public static final String projectModelsFileExtension = ".models";
     private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst("\\.", "");
 
     /**

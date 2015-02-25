@@ -12,9 +12,11 @@ import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -22,6 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -47,7 +51,7 @@ public class Project implements Serializable
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final ProjectManager projectManager = ProjectManager.getInstance();
 
-    private final ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
+    private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String lastPrintJobID = "";
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
@@ -69,37 +73,6 @@ public class Project implements Serializable
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
             + formatter.format(now));
         lastModifiedDate.set(now);
-    }
-
-    public Project(ProjectFile projectFile)
-    {
-        this();
-        brimOverride = projectFile.getBrimOverride();
-        fillDensityOverride = projectFile.getFillDensityOverride();
-        printSupportOverride = projectFile.getPrintSupportOverride();
-        projectNameProperty.set(projectFile.getProjectName());
-        lastModifiedDate.set(projectFile.getLastModifiedDate());
-        lastPrintJobID = projectFile.getLastPrintJobID();
-
-        String filamentID0 = projectFile.getExtruder0FilamentID();
-        String filamentID1 = projectFile.getExtruder1FilamentID();
-        if (!filamentID0.equals("NULL"))
-        {
-            Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
-            if (filament0 != null)
-            {
-                extruder0Filament.set(filament0);
-            }
-        }
-        if (!filamentID1.equals("NULL"))
-        {
-            Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
-            if (filament1 != null)
-            {
-                extruder1Filament.set(filament1);
-            }
-        }
-
     }
 
     public final void setProjectName(String value)
@@ -124,15 +97,93 @@ public class Project implements Serializable
             + ApplicationConfiguration.projectFileExtension;
     }
 
-    public static void saveProject(Project project)
+    static Project loadProject(String basePath)
     {
-        String path = ApplicationConfiguration.getProjectDirectory() + File.separator
-            + project.getProjectName()
-            + ApplicationConfiguration.projectFileExtension;
-        project.save(path);
+        Project project = new Project();
+        project.load(basePath);
+        return project;
+
     }
 
-    private void save(String path)
+    public void load(String basePath)
+    {
+
+        File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
+
+        try
+        {
+            ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
+
+            brimOverride = projectFile.getBrimOverride();
+            fillDensityOverride = projectFile.getFillDensityOverride();
+            printSupportOverride = projectFile.getPrintSupportOverride();
+            projectNameProperty.set(projectFile.getProjectName());
+            lastModifiedDate.set(projectFile.getLastModifiedDate());
+            lastPrintJobID = projectFile.getLastPrintJobID();
+
+            String filamentID0 = projectFile.getExtruder0FilamentID();
+            String filamentID1 = projectFile.getExtruder1FilamentID();
+            if (!filamentID0.equals("NULL"))
+            {
+                Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
+                if (filament0 != null)
+                {
+                    extruder0Filament.set(filament0);
+                }
+            }
+            if (!filamentID1.equals("NULL"))
+            {
+                Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
+                if (filament1 != null)
+                {
+                    extruder1Filament.set(filament1);
+                }
+            }
+
+            loadModels(basePath);
+
+        } catch (IOException ex)
+        {
+            steno.error("Failed to load project " + basePath);
+        } catch (ClassNotFoundException ex)
+        {
+            steno.error("Failed to load project " + basePath);
+        }
+    }
+
+    private void loadModels(String basePath) throws IOException, ClassNotFoundException
+    {
+        ObjectInputStream modelsInput = new ObjectInputStream(
+            new FileInputStream(basePath
+                + ApplicationConfiguration.projectModelsFileExtension));
+        int numModels = modelsInput.readInt();
+        for (int i = 0; i < numModels; i++)
+        {
+            ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
+            loadedModels.add(modelContainer);
+        }
+        loadedModels = (ObservableList<ModelContainer>) modelsInput.readObject();
+    }
+
+    public static void saveProject(Project project)
+    {
+        String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
+            + project.getProjectName();
+        project.save(basePath);
+    }
+
+    private void saveModels(String path) throws IOException
+    {
+        ObjectOutputStream modelsOutput = new ObjectOutputStream(
+            new FileOutputStream(path));
+        modelsOutput.writeInt(loadedModels.size());
+        for (int i = 0; i < loadedModels.size(); i++)
+        {
+            modelsOutput.writeObject(loadedModels.get(i));
+        }
+    }
+
+    private void save(String basePath)
     {
         if (getLoadedModels().size() > 0)
         {
@@ -140,9 +191,9 @@ public class Project implements Serializable
             {
                 ProjectFile projectFile = new ProjectFile();
                 projectFile.populateFromProject(this);
-                File file = new File(ApplicationConfiguration.getProjectDirectory()
-                    + projectFile.getProjectName() + ApplicationConfiguration.projectFileExtension);
+                File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
                 mapper.writeValue(file, projectFile);
+                saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
             } catch (FileNotFoundException ex)
             {
                 steno.error("Failed to save project state");

@@ -1,30 +1,34 @@
 /*
  * Copyright 2015 CEL UK
  */
-package celtech.configuration.datafileaccessors;
+package celtech.appManager;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
 import java.io.IOException;
-import javafx.collections.ObservableList;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.ClassRule;
+import org.junit.rules.TemporaryFolder;
 
 /**
  *
  * @author tony
  */
-public class ProjectContainerTest extends JavaFXConfiguredTest
+public class ProjectTest extends JavaFXConfiguredTest
 {
+    @ClassRule
+    public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+    
+    private ObjectMapper objectMapper = new ObjectMapper();
     
     @Test
     public void testSaveOneProject() throws IOException
     {
-        ProjectContainer projectContainer = new ProjectContainer();
-        ObservableList<ProjectFile> projectList = projectContainer.getCompleteProjectList();
-        
         String PROJECT_NAME = "TestA";
         int BRIM = 2;
         float FILL_DENSITY = 0.45f;
@@ -44,15 +48,12 @@ public class ProjectContainerTest extends JavaFXConfiguredTest
         
         ProjectFile projectFile = new ProjectFile();
         projectFile.populateFromProject(project);
-        projectList.add(projectFile);
         
-        projectContainer.saveProjectFiles();
+        File tempFile = temporaryUserStorageFolder.newFile("projA.robox");
+        objectMapper.writeValue(tempFile, projectFile);
         
-        projectList.clear();
-        assertEquals(0, projectList.size());
-        projectContainer.ingestProjectFiles();
-        assertEquals(1, projectList.size());
-        Project newProject = new Project(projectList.get(0));
+        Project newProject = new Project();
+        newProject.load(tempFile.getAbsolutePath());
         assertEquals(PROJECT_NAME, newProject.getProjectName());
         assertEquals(BRIM, newProject.getBrimOverride());
         assertEquals(FILL_DENSITY, newProject.getFillDensityOverride(), 1e-10);
@@ -60,5 +61,4 @@ public class ProjectContainerTest extends JavaFXConfiguredTest
         assertEquals(FILAMENT_0, newProject.getExtruder0FilamentProperty().get());
         assertEquals(FILAMENT_1, newProject.getExtruder1FilamentProperty().get());
     }
-    
 }

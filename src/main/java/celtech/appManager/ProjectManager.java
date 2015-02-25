@@ -6,7 +6,6 @@
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.fileRepresentation.ProjectFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -101,21 +100,8 @@ public class ProjectManager implements Savable, Serializable
 
     public static Project loadProject(String projectPath)
     {
-        File file = new File(projectPath);
-
-        Project loadedProject = null;
-
-        try
-        {
-            ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
-            loadedProject = new Project(projectFile);
-
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load project " + projectPath);
-        }
-
-        return loadedProject;
+        String basePath = projectPath.substring(0, projectPath.lastIndexOf('.'));
+        return Project.loadProject(basePath);
     }
 
     @Override
