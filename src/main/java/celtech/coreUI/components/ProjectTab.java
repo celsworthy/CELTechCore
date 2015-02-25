@@ -98,7 +98,7 @@ public class ProjectTab extends Tab
 
         basePane.getChildren().add(viewManager.getSubScene());
 
-        setupGCodeEditor();
+//        setupGCodeEditor();
 
         this.setContent(basePane);
 
@@ -108,27 +108,27 @@ public class ProjectTab extends Tab
 
     }
 
-    private void setupGCodeEditor()
-    {
-        try
-        {
-            URL gcodeEditorURL = getClass().getResource(
-                ApplicationConfiguration.fxmlResourcePath
-                    + "GCodeEditorPanel.fxml");
-            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
-                Lookup.getLanguageBundle());
-            StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
-            GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(project.getLoadedModels(), project);
-            AnchorPane.setTopAnchor(gcodeEditor, 30.0);
-            AnchorPane.setRightAnchor(gcodeEditor, 0.0);
-
-            basePane.getChildren().add(gcodeEditor);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load gcode editor:" + ex);
-        }
-    }
+//    private void setupGCodeEditor()
+//    {
+//        try
+//        {
+//            URL gcodeEditorURL = getClass().getResource(
+//                ApplicationConfiguration.fxmlResourcePath
+//                    + "GCodeEditorPanel.fxml");
+//            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
+//                Lookup.getLanguageBundle());
+//            StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
+//            GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
+//            gcodeEditorController.configure(project.getLoadedModels(), project);
+//            AnchorPane.setTopAnchor(gcodeEditor, 30.0);
+//            AnchorPane.setRightAnchor(gcodeEditor, 0.0);
+//
+//            basePane.getChildren().add(gcodeEditor);
+//        } catch (IOException ex)
+//        {
+//            steno.error("Failed to load gcode editor:" + ex);
+//        }
+//    }
 
     private void setupNameFields()
     {

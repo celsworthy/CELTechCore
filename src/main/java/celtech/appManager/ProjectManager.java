@@ -22,7 +22,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -37,7 +36,6 @@ public class ProjectManager implements Savable, Serializable
     private final static Stenographer steno = StenographerFactory.getStenographer(
         ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
-    private final static ObjectMapper mapper = new ObjectMapper();
 
     private ProjectManager()
     {

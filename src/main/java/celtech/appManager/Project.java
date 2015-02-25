@@ -49,7 +49,6 @@ public class Project implements Serializable
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final ProjectManager projectManager = ProjectManager.getInstance();
 
     private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String lastPrintJobID = "";
@@ -102,7 +101,6 @@ public class Project implements Serializable
         Project project = new Project();
         project.load(basePath);
         return project;
-
     }
 
     public void load(String basePath)
@@ -481,7 +479,7 @@ public class Project implements Serializable
     public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
         steno.debug("I am loading " + fullFilename);
-        projectManager.projectOpened(this);
+        ProjectManager.getInstance().projectOpened(this);
         addModel(modelContainer);
     }
 
