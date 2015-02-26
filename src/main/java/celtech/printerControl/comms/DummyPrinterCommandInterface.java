@@ -86,7 +86,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
     HeaterMode bedHeaterMode = HeaterMode.OFF;
     protected int currentBedTemperature = ROOM_TEMPERATURE;
     protected int bedTargetTemperature = 30;
-    private boolean errorTriggered;
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
@@ -149,7 +148,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             }
         } else if (bedHeaterMode == HeaterMode.OFF && currentBedTemperature > ROOM_TEMPERATURE)
         {
-            currentNozzleTemperature -= 5;
+            currentBedTemperature -= 5;
             if (currentBedTemperature < ROOM_TEMPERATURE)
             {
                 currentBedTemperature = ROOM_TEMPERATURE;
@@ -336,17 +335,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
             response = (RoboxRxPacket) idResponse;
         } else if (messageToWrite instanceof StatusRequest)
         {
-            if (errorTriggered)
-            {
-                clearAllErrors();
-            }
-            if (!errorTriggered && currentNozzleTemperature > 50)
-            {
-                // Uncomment the following two lines to test handling a printer error
-//                errorTriggered = true;
-//                raiseError(FirmwareError.ERROR_D_FILAMENT_SLIP);
-            }
-
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
             handleNozzleTempChange();
             handleBedTempChange();
@@ -355,11 +343,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 printJobLineNo += 1;
 
-//                if (!errorTriggered && printJobLineNo > 3) {
-//                    steno.debug("raise ERROR");
-//                    errorTriggered = true;
-//                    raiseError(FirmwareError.ERROR_B_STUCK);
-//                }
                 if (printJobLineNo > 20)
                 {
                     printJobLineNo = 0;
