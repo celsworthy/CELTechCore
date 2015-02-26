@@ -28,6 +28,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
@@ -224,7 +226,7 @@ public class Project implements Serializable
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
-            int extruderNumber = loadedModel.getAssociateWithExtruderNumber();
+            int extruderNumber = loadedModel.getAssociateWithExtruderNumberProperty().get();
             if (!usedExtruders.contains(extruderNumber))
             {
                 usedExtruders.add(extruderNumber);
@@ -407,6 +409,7 @@ public class Project implements Serializable
         loadedModels.add(modelContainer);
         projectModified();
         fireWhenModelAdded(modelContainer);
+        addModelListeners(modelContainer);
     }
 
     private void fireWhenModelAdded(ModelContainer modelContainer)
@@ -422,6 +425,7 @@ public class Project implements Serializable
         loadedModels.remove(modelContainer);
         projectModified();
         fireWhenModelRemoved(modelContainer);
+        removeModelListeners(modelContainer);
     }
 
     private void fireWhenModelRemoved(ModelContainer modelContainer)
@@ -448,6 +452,23 @@ public class Project implements Serializable
     {
         return lastModifiedDate;
     }
+    
+    private ChangeListener<Number> modelExtruderNumberListener;
+
+    private void addModelListeners(ModelContainer modelContainer)
+    {
+        modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            fireWhenModelChanged(modelContainer, "associateWithExtruderNumber");
+        };
+        modelContainer.getAssociateWithExtruderNumberProperty().addListener(modelExtruderNumberListener);
+    }
+    
+    private void removeModelListeners(ModelContainer modelContainer)
+    {
+        modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
+            modelExtruderNumberListener);
+    }    
 
     /**
      * ProjectChangesListener allows other objects to observe when models are added or removed etc
@@ -476,8 +497,16 @@ public class Project implements Serializable
          * possible try to fire just once for any given group change.
          */
         void whenModelsTransformed(Set<ModelContainer> modelContainers);
+        
+        /**
+         * This should be fired when certain details of the model change. Currently
+         * this is only:
+         * - associatedExtruder
+         */
+        void whenModelChanged(ModelContainer modelContainer, String propertyName);
     }
 
+    //TODO get rid of this function
     public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
         steno.debug("I am loading " + fullFilename);
@@ -582,6 +611,13 @@ public class Project implements Serializable
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenModelsTransformed(modelContainers);
+        }
+    }
+    
+    private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName) {
+         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelChanged(modelContainer, propertyName);
         }
     }
 

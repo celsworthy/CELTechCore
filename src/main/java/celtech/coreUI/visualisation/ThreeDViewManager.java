@@ -80,9 +80,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
                                                      * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
-    /*
-     * 
-     */
+
     private Group gcodeParts = null;
 
     private Group models = new Group();
@@ -540,17 +538,17 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         layoutSubmode.addListener(
             (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1) ->
-        {
-            if (t1 == LayoutSubmode.SNAP_TO_GROUND ||
-                t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0 ||
-                t1 == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
             {
-                subScene.setCursor(Cursor.HAND);
-            } else
-            {
-                subScene.setCursor(Cursor.DEFAULT);
-            }
-        });
+                if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1
+                == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0 || t1
+                == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
+                {
+                    subScene.setCursor(Cursor.HAND);
+                } else
+                {
+                    subScene.setCursor(Cursor.DEFAULT);
+                }
+            });
 
         dragMode.addListener(dragModeListener);
 
@@ -564,7 +562,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         project.getPrinterSettings().selectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
-                updateFilamentColoursForModeAndTargetPrinter();
+                if (newValue != null)
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                }
             });
 
         /**
@@ -843,7 +844,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         gizmoRotationStarted = false;
     }
 
-
     private void updateModelColours()
     {
         for (ModelContainer model : loadedModels)
@@ -922,13 +922,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     /**
-     * If either the chosen filaments, application mode or project printsettings printer
-     * changes then this must be called. In LAYOUT mode the filament colours should reflect the
-     * project filament colours In SETTINGS mode the filament colours should reflect the project
-     * print settings filament colours.
+     * If either the chosen filaments, application mode or project printsettings printer changes
+     * then this must be called. In LAYOUT mode the filament colours should reflect the project
+     * filament colours In SETTINGS mode the filament colours should reflect the project print
+     * settings filament colours.
      */
     private void updateFilamentColoursForModeAndTargetPrinter()
     {
+        if (project.getPrinterSettings().getSelectedPrinter() == null) {
+            return;
+        }
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
             extruder0Filament = project.getPrinterSettings().getFilament0();
@@ -970,6 +973,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     public void whenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         collideModels();
+    }
+
+    @Override
+    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    {
     }
 
 }
