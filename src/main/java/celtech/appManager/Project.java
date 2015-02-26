@@ -57,10 +57,6 @@ public class Project implements Serializable
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private final PrinterSettings printerSettings;
 
-    private int brimOverride = 0;
-    private float fillDensityOverride = 0;
-    private boolean printSupportOverride = false;
-
     private final StringProperty projectNameProperty;
     private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
 
@@ -114,9 +110,6 @@ public class Project implements Serializable
         {
             ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
 
-            brimOverride = projectFile.getBrimOverride();
-            fillDensityOverride = projectFile.getFillDensityOverride();
-            printSupportOverride = projectFile.getPrintSupportOverride();
             projectNameProperty.set(projectFile.getProjectName());
             lastModifiedDate.set(projectFile.getLastModifiedDate());
             lastPrintJobID = projectFile.getLastPrintJobID();
@@ -139,8 +132,12 @@ public class Project implements Serializable
                     extruder1Filament.set(filament1);
                 }
             }
+            
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
+            printerSettings.setBrimOverride(projectFile.getBrimOverride());
+            printerSettings.setFillDensityOverride(projectFile.getFillDensityOverride());
+            printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
 
             loadModels(basePath);
 
@@ -644,38 +641,4 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
-    public int getBrimOverride()
-    {
-        return brimOverride;
-    }
-
-    public void setBrimOverride(int brimOverride)
-    {
-        this.brimOverride = brimOverride;
-        projectModified();
-    }
-
-    public float getFillDensityOverride()
-    {
-        return fillDensityOverride;
-    }
-
-    public void setFillDensityOverride(float fillDensityOverride)
-    {
-        this.fillDensityOverride = fillDensityOverride;
-        projectModified();
-    }
-
-    public boolean getPrintSupportOverride()
-    {
-        return printSupportOverride;
-    }
-
-    public void setPrintSupportOverride(boolean printSupportOverride)
-    {
-        this.printSupportOverride = printSupportOverride;
-        projectModified();
-    }
-
 }

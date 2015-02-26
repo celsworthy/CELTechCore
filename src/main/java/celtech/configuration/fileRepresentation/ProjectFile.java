@@ -130,17 +130,16 @@ public class ProjectFile
         this.version = version;
     }
     
-    
     public void populateFromProject(Project project) {
         projectName = project.getProjectName();
-        brimOverride = project.getBrimOverride();
-        fillDensityOverride = project.getFillDensityOverride();
-        printSupportOverride = project.getPrintSupportOverride();
         lastModifiedDate = project.getLastModifiedDate().get();
         lastPrintJobID = project.getLastPrintJobID();
         extruder0FilamentID = project.getExtruder0FilamentProperty().get().getFilamentID();
         extruder1FilamentID = project.getExtruder1FilamentProperty().get().getFilamentID();
         settingsName = project.getPrinterSettings().getSettingsName();
         printQuality = project.getPrinterSettings().getPrintQuality();
+        brimOverride = project.getPrinterSettings().getBrimOverride();
+        fillDensityOverride = project.getPrinterSettings().getFillDensityOverride();
+        printSupportOverride = project.getPrinterSettings().getPrintSupportOverride();
     }
 }

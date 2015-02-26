@@ -712,53 +712,40 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
+        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+
         String modelName = in.readUTF();
         meshGroup = new Group();
         getChildren().add(meshGroup);
 
         modelContentsType = (ModelContentsEnumeration) in.readObject();
 
-        if (modelContentsType == ModelContentsEnumeration.MESH)
+        numberOfMeshes = in.readInt();
+
+        for (int i = 0; i < numberOfMeshes; i++)
         {
-            numberOfMeshes = in.readInt();
+            int[] smoothingGroups = (int[]) in.readObject();
+            int[] faces = (int[]) in.readObject();
+            float[] points = (float[]) in.readObject();
 
-            for (int i = 0; i < numberOfMeshes; i++)
-            {
-                int[] smoothingGroups = (int[]) in.readObject();
-                int[] faces = (int[]) in.readObject();
-                float[] points = (float[]) in.readObject();
+            TriangleMesh triMesh = new TriangleMesh();
 
-                TriangleMesh triMesh = new TriangleMesh();
+            FloatArrayList texCoords = new FloatArrayList();
+            texCoords.add(0f);
+            texCoords.add(0f);
 
-                FloatArrayList texCoords = new FloatArrayList();
-                texCoords.add(0f);
-                texCoords.add(0f);
+            triMesh.getPoints().addAll(points);
+            triMesh.getTexCoords().addAll(texCoords.toFloatArray());
+            triMesh.getFaces().addAll(faces);
+            triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
-                triMesh.getPoints().addAll(points);
-                triMesh.getTexCoords().addAll(texCoords.toFloatArray());
-                triMesh.getFaces().addAll(faces);
-                triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+            MeshView newMesh = new MeshView(triMesh);
+            newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+            newMesh.setCullFace(CullFace.BACK);
+            newMesh.setId(modelName + "_mesh");
 
-                MeshView newMesh = new MeshView(triMesh);
-                newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                newMesh.setCullFace(CullFace.BACK);
-                newMesh.setId(modelName + "_mesh");
-
-                meshGroup.getChildren().add(newMesh);
-            }
-
-        } else
-        {
-//            int numNodes = in.readInt();
-//            
-//            for (int i = 0; i < numNodes; i++)
-//            {
-//                Node node = (Node)in.readObject();
-//                getChildren().add(node);
-//            }
+            meshGroup.getChildren().add(newMesh);
         }
-//        this.getTransforms().clear();
-//        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
 
         initialise(modelName);
 
@@ -767,7 +754,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScale = in.readDouble();
         double storedRotationY = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
-        if (in.available() > 0) {
+        if (in.available() > 0)
+        {
             // Introduced in version 1.??
             associateWithExtruderNumber.set(in.readInt());
         }
@@ -1608,14 +1596,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
     }
-    
 
     public ReadOnlyIntegerProperty getAssociateWithExtruderNumberProperty()
     {
         return associateWithExtruderNumber;
-    }    
-    
-    void setAssociateWithExtruderNumber(int associateWithExtruderNumber) {
+    }
+
+    void setAssociateWithExtruderNumber(int associateWithExtruderNumber)
+    {
         this.associateWithExtruderNumber.set(associateWithExtruderNumber);
     }
 

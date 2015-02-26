@@ -361,7 +361,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 if (lastSupportValue != newSupportValue)
                 {
                     boolean supportSelected = (newSupportValue.doubleValue() >= 1.0);
-                    currentProject.setPrintSupportOverride(supportSelected);
+                    printerSettings.setPrintSupportOverride(supportSelected);
                 }
             }
         });
@@ -372,7 +372,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         {
             if (suppressQualityOverrideTriggers == false)
             {
-                currentProject.setFillDensityOverride(newValue.floatValue() / 100.0f);
+                printerSettings.setFillDensityOverride(newValue.floatValue() / 100.0f);
             }
         });
 
@@ -383,7 +383,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 {
                     if (newValue != oldValue)
                     {
-                        currentProject.setBrimOverride(newValue.intValue());
+                        printerSettings.setBrimOverride(newValue.intValue());
                     }
                 }
             });
@@ -618,9 +618,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void setupQualityOverrideControls(Project project)
     {
-        fillDensitySlider.setValue(project.getFillDensityOverride() * 100.0);
-        brimSlider.setValue(project.getBrimOverride());
-        supportSlider.setValue(project.getPrintSupportOverride() ? 1: 0);
+        fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
+        brimSlider.setValue(printerSettings.getBrimOverride());
+        supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1: 0);
     }
 
     private void updateProfileList()
