@@ -130,6 +130,9 @@ public class RoboxTxPacketFactory
                 case READ_DEBUG_DATA:
                     returnVal = new ReadDebugData();
                     break;
+                case READ_SEND_FILE_REPORT:
+                    returnVal = new ReadSendFileReport();
+                    break;
                 default:
                     break;
             }

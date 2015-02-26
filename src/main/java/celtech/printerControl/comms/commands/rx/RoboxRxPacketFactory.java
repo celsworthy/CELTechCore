@@ -66,7 +66,9 @@ public class RoboxRxPacketFactory
                 case DEBUG_DATA:
                     returnVal = new DebugDataResponse();
                     break;
-                    
+                case SEND_FILE:
+                    returnVal = new SendFile();
+                    break;
                 default:
                     break;
             }
@@ -154,6 +156,11 @@ public class RoboxRxPacketFactory
                     DebugDataResponse debugResponse = new DebugDataResponse();
                     debugResponse.populatePacket(inputBytes);
                     returnVal = debugResponse;
+                    break;
+                case SEND_FILE:
+                    SendFile sendFileResponse = new SendFile();
+                    sendFileResponse.populatePacket(inputBytes);
+                    returnVal = sendFileResponse;
                     break;
                 default:
                     throw new UnknownPacketTypeException();
