@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package celtech.configuration;
 
 /**
@@ -17,19 +11,25 @@ public enum MaterialType
      *
      */
     ABS("ABS", 1.04),
-
     /**
      *
      */
     PLA("PLA", 1.25),
-
     /**
      *
      */
-    Nylon("Nylon", 1.134);
-    
+    NYL("Nylon", 1.134),
+    /**
+     *
+     */
+    HIP("HIPS", 1.134),
+    /**
+     *
+     */
+    SPC("Special", 1.0);
+
     private String friendlyName;
-     /**
+    /**
      * Approximate material density in g / cm^3.
      */
     private double density;
@@ -39,7 +39,7 @@ public enum MaterialType
         this.friendlyName = friendlyName;
         this.density = density;
     }
-    
+
     /**
      *
      * @return
@@ -48,11 +48,12 @@ public enum MaterialType
     {
         return friendlyName;
     }
-    
-    public double getDensity() {
+
+    public double getDensity()
+    {
         return density;
     }
-    
+
     /**
      *
      * @return

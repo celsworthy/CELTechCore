@@ -23,9 +23,11 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     private Printer printerToUse = null;
     private String gcodeFileToPrint = null;
     private String printJobID = null;
-    private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
+    private final Stenographer steno = StenographerFactory.
+        getStenographer(this.getClass().getName());
     private IntegerProperty linesInFile = null;
     private boolean printUsingSDCard = true;
+    private int startFromSequenceNumber = 0;
 
     /**
      *
@@ -34,14 +36,22 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
      * @param printJobID
      * @param linesInFile
      * @param printUsingSDCard
+     * @param startFromSequenceNumber
      */
-    public GCodePrinterTask(Printer printerToUse, String modelFileToPrint, String printJobID, IntegerProperty linesInFile, boolean printUsingSDCard)
+    public GCodePrinterTask(Printer printerToUse,
+        String modelFileToPrint,
+        String printJobID,
+        IntegerProperty linesInFile,
+        boolean printUsingSDCard,
+        int startFromSequenceNumber
+    )
     {
         this.printerToUse = printerToUse;
         this.gcodeFileToPrint = modelFileToPrint;
         this.printJobID = printJobID;
         this.linesInFile = linesInFile;
         this.printUsingSDCard = printUsingSDCard;
+        this.startFromSequenceNumber = startFromSequenceNumber;
     }
 
     @Override
@@ -61,7 +71,8 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         int numberOfLines = SystemUtils.countLinesInFile(gcodeFile, ";");
         linesInFile.setValue(numberOfLines);
 
-        steno.info("Start of file " + gcodeFileToPrint);
+        steno.info("Beginning transfer of file " + gcodeFileToPrint + " to printer from line "
+            + startFromSequenceNumber);
 
         //Note that FileReader is used, not File, since File is not Closeable
         try
@@ -69,10 +80,14 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             gcodeReader = new FileReader(gcodeFile);
             scanner = new Scanner(gcodeReader);
 
-            if (printUsingSDCard)
+            if (printUsingSDCard && startFromSequenceNumber == 0)
             {
                 printerToUse.initialiseDataFileSend(printJobID);
             }
+
+            printerToUse.resetDataFileSequenceNumber();
+            printerToUse.setDataFileSequenceNumberStartPoint(startFromSequenceNumber);
+
             updateMessage("Transferring data");
 
             int lineCounter = 0;
@@ -93,10 +108,14 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                     line = SystemUtils.cleanGCodeForTransmission(line);
                     if (printUsingSDCard)
                     {
-//                        steno.info("Sending line " + lineCounter);
-                        printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1, true);
-                        if ((printerToUse.getDataFileSequenceNumber() > 1 && printerToUse.isPrintInitiated() == false)
-                            || (lineCounter == numberOfLines - 1 && printerToUse.isPrintInitiated() == false))
+                        steno.trace("Sending data line " + lineCounter + " to printer");
+                        printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1,
+                                                       true);
+                        if (startFromSequenceNumber == 0
+                            && ((printerToUse.getDataFileSequenceNumber() > 1
+                            && printerToUse.isPrintInitiated() == false)
+                            || (lineCounter == numberOfLines - 1
+                            && printerToUse.isPrintInitiated() == false)))
                         {
                             //Start printing!
                             printerToUse.initiatePrint(printJobID);
@@ -118,7 +137,8 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
             steno.error("Couldn't open gcode file " + gcodeFileToPrint + ": " + ex);
         } catch (RoboxCommsException ex)
         {
-            steno.error("Error during print operation - abandoning print " + printJobID + " " + ex.getMessage());
+            steno.error("Error during print operation - abandoning print " + printJobID + " " + ex.
+                getMessage());
             if (printUsingSDCard)
             {
                 try

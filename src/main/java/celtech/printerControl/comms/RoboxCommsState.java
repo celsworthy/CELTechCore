@@ -26,6 +26,10 @@ public enum RoboxCommsState
     /**
      *
      */
+    DETERMINING_PRINTER_STATUS,
+    /**
+     *
+     */
     CONNECTED
 
 }

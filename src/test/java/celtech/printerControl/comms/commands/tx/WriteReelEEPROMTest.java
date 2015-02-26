@@ -58,7 +58,7 @@ public class WriteReelEEPROMTest
         float reelFeedRateMultiplier = 88;
         float reelRemainingFilament = 99;
         String friendlyName = "سلام";
-        MaterialType materialType = MaterialType.Nylon;
+        MaterialType materialType = MaterialType.NYL;
         Color displayColour = Color.BLUE;
         WriteReel0EEPROM instance = new WriteReel0EEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,

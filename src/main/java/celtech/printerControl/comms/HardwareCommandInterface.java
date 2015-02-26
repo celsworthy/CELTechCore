@@ -92,12 +92,20 @@ public class HardwareCommandInterface extends CommandInterface
     @Override
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
+        return writeToPrinter(messageToWrite, false);
+    }
+
+    @Override
+    public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite,
+        boolean dontPublishResult) throws RoboxCommsException
+    {
         steno.trace("Command Interface was asked to send " + messageToWrite.getPacketType());
         RoboxRxPacket receivedPacket = null;
 
         if (commsState == RoboxCommsState.CONNECTED
             || commsState == RoboxCommsState.CHECKING_FIRMWARE
             || commsState == RoboxCommsState.CHECKING_ID
+            || commsState == RoboxCommsState.DETERMINING_PRINTER_STATUS
             && serialPort != null)
         {
             try
@@ -116,12 +124,12 @@ public class HardwareCommandInterface extends CommandInterface
 //                    steno.trace("Avail is " + dataInputStream.available());
                         try
                         {
-                            this.sleep(50);
+                            this.sleep(0, 1000);
                         } catch (InterruptedException ex)
                         {
                         }
 
-                        if (waitCounter >= 10)
+                        if (waitCounter >= 500000)
                         {
                             steno.error("No response from printer - disconnecting");
                             throw new SerialPortException(serialPort.getPortName(),
@@ -187,7 +195,10 @@ public class HardwareCommandInterface extends CommandInterface
                             steno.
                                 trace("Got packet of type " + receivedPacket.getPacketType().name());
 
-                            printerToUse.processRoboxResponse(receivedPacket);
+                            if (!dontPublishResult)
+                            {
+                                printerToUse.processRoboxResponse(receivedPacket);
+                            }
                         } catch (InvalidCommandByteException ex)
                         {
                             steno.error("Command byte of " + String.format("0x%02X", inputBuffer[0])
@@ -276,5 +287,4 @@ public class HardwareCommandInterface extends CommandInterface
     {
         sleepBetweenStatusChecks = sleepMillis;
     }
-
 }

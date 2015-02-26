@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 
 /**
  *
@@ -12,15 +13,33 @@ import javafx.scene.control.ToggleButton;
  */
 public class GraphicToggleButton extends ToggleButton
 {
+
     private final StringProperty fxmlFileName = new SimpleStringProperty("");
+    private final Tooltip tooltip = new Tooltip();
 
     public GraphicToggleButton()
     {
         loadFXML();
-        
+
         this.getStyleClass().add("graphic-button");
+        Tooltip.install(this, tooltip);
     }
-    
+
+    public String getTooltipText()
+    {
+        return tooltip.getText();
+    }
+
+    public void setTooltipText(String text)
+    {
+        tooltip.setText(text);
+    }
+
+    public StringProperty getTooltipTextProperty()
+    {
+        return tooltip.textProperty();
+    }
+
     public String getFxmlFileName()
     {
         return fxmlFileName.get();
@@ -29,10 +48,10 @@ public class GraphicToggleButton extends ToggleButton
     public void setFxmlFileName(String fxmlFileName)
     {
         this.fxmlFileName.set(fxmlFileName);
-        
+
         loadFXML();
     }
-    
+
     public StringProperty getFxmlFileNameProperty()
     {
         return fxmlFileName;

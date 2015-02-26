@@ -24,6 +24,7 @@ import celtech.gcodetranslator.events.RetractDuringExtrusionEvent;
 import celtech.gcodetranslator.events.RetractEvent;
 import celtech.gcodetranslator.events.TravelEvent;
 import celtech.gcodetranslator.events.UnretractEvent;
+import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.utils.Math.MathUtils;
 import static celtech.utils.Math.MathUtils.EQUAL;
@@ -202,6 +203,11 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             } catch (IOException ex)
             {
                 steno.error("Error roboxising file " + inputFilename);
+            } catch (MacroLoadException ex)
+            {
+                steno.error(
+                    "Error roboxising file - couldn't add before print header due to circular macro reference "
+                    + inputFilename);
             }
 
             result.setSuccess(success);
@@ -766,15 +772,17 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
             try
             {
                 outputWriter.writeOutput(";\n; Post print gcode\n");
-                for (String macroLine : GCodeMacros.getMacroContents(
-                    "after_print"))
+                for (String macroLine : GCodeMacros.getMacroContents("after_print"))
                 {
                     outputWriter.writeOutput(macroLine + "\n");
                 }
                 outputWriter.writeOutput("; End of Post print gcode\n");
             } catch (IOException ex)
             {
-                steno.error("Error whilst writing post-print gcode to file");
+                throw new PostProcessingError("IO Error whilst writing post-print gcode to file: " + ex.getMessage());
+            } catch (MacroLoadException ex)
+            {
+                throw new PostProcessingError("Error whilst writing post-print gcode to file - couldn't add after print footer due to circular macro reference");
             }
 
             writeEventToFile(event);
@@ -1813,13 +1821,13 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 {
                     closeCounter++;
                 }
-                
+
                 // Always output an M109 after nozzle close
                 // Required to ensure that print temperature is maintained if nozzle heater inhibit is active
                 MCodeEvent m109Event = new MCodeEvent();
                 m109Event.setMNumber(109);
                 writeEventToFile(m109Event);
-                
+
             } else if (extrusionBuffer.size() > 0 && extrusionBuffer.containsExtrusionEvents())
             {
                 CommentEvent failureComment = new CommentEvent();
