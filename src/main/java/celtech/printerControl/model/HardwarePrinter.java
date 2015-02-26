@@ -945,7 +945,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             jobAccepted = printEngine.runMacroPrintJob(macroName, true);
         } catch (MacroPrintException ex)
         {
-            steno.error("Failed to run abort macro: " + ex.getMessage());
+            steno.error("Failed to run macro " + macroName + ": " + ex.getMessage());
         }
         
         if (!jobAccepted)

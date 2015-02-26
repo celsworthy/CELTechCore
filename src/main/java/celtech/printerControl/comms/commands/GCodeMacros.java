@@ -1,17 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Scanner;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -22,35 +18,117 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeMacros
 {
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.getName());
+    private static final String safetyOnDirectory = "Override_Safety_OFF";
+    private static final String safetyOffDirectory = "Override_Safety_ON";
+
+    private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.
+        getName());
+    private static final String macroDefinitionString = "Macro:";
 
     /**
      *
-     * @param macroFile
+     * @param macroName - this can include the macro execution directive at the start of the line
      * @return
+     * @throws java.io.IOException
+     * @throws celtech.printerControl.comms.commands.MacroLoadException
      */
-    public static ArrayList<String> getMacroContents(String macroFile)
+    public static ArrayList<String> getMacroContents(String macroName) throws IOException, MacroLoadException
     {
         ArrayList<String> contents = new ArrayList<>();
+        ArrayList<String> parentMacros = new ArrayList<>();
 
-        String macrofile = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroFile + ApplicationConfiguration.macroFileExtension;
-
-        try
+        if (Lookup.getUserPreferences().isOverrideSafeties())
         {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(macrofile)));
-            String line;
-            while ((line = reader.readLine()) != null)
+            contents.add("; Printed with safety override ON");
+        } else
+        {
+            contents.add("; Printed with safety override OFF");
+        }
+
+        String cleanedMacroName = macroName.replaceFirst(macroDefinitionString, "").trim();
+        appendMacroContents(contents, parentMacros, cleanedMacroName);
+
+        return contents;
+    }
+
+    /**
+     *
+     * @param macroName
+     * @return
+     */
+    private static ArrayList<String> appendMacroContents(ArrayList<String> contents,
+        final ArrayList<String> parentMacros,
+        String macroName) throws IOException, MacroLoadException
+    {
+        if (!parentMacros.contains(macroName))
+        {
+            steno.debug("Processing macro: " + macroName);
+            contents.add(";");
+            contents.add("; Macro Start - " + macroName);
+            contents.add(";");
+
+            parentMacros.add(macroName);
+
+            FileReader fileReader = null;
+
+            try
             {
-                contents.add(line);
+                fileReader = new FileReader(GCodeMacros.getFilename(macroName));
+                Scanner scanner = new Scanner(fileReader);
+
+                while (scanner.hasNextLine())
+                {
+                    String line = scanner.nextLine();
+                    line = line.trim();
+
+                    if (isMacroExecutionDirective(line))
+                    {
+                        String[] parts = line.split(":");
+                        if (parts.length == 2)
+                        {
+                            String subMacroName = parts[1].trim();
+                            steno.debug("Sub-macro " + subMacroName + " detected");
+
+                            appendMacroContents(contents, parentMacros, subMacroName);
+                        } else
+                        {
+                            steno.error("Saw macro directive but couldn't understand it: " + line);
+                        }
+                    } else
+                    {
+                        contents.add(line);
+                    }
+                }
+            } catch (FileNotFoundException ex)
+            {
+                throw new MacroLoadException("Failure to load contents of macro file " + macroName
+                    + " : " + ex.getMessage());
+            } finally
+            {
+                if (fileReader != null)
+                {
+                    fileReader.close();
+                }
             }
 
-        } catch (FileNotFoundException ex)
+            parentMacros.remove(macroName);
+        } else
         {
-            steno.error("Couldn't load macro file " + macroFile);
-        } catch (IOException ex)
-        {
-            steno.error("IO Error whilst loading macro file " + macroFile);
+            StringBuilder messageBuffer = new StringBuilder();
+            messageBuffer.append("Macro circular dependency detected in chain: ");
+            parentMacros.forEach(macro ->
+            {
+                messageBuffer.append(macro);
+                messageBuffer.append("->");
+            });
+            messageBuffer.append(macroName);
+
+            throw new MacroLoadException(messageBuffer.toString());
         }
+
+        contents.add(";");
+        contents.add("; Macro End - " + macroName);
+        contents.add(";");
 
         return contents;
     }
@@ -62,40 +140,27 @@ public class GCodeMacros
      */
     public static String getFilename(String macroName)
     {
-        String macrofile = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroName + ApplicationConfiguration.macroFileExtension;
-        return macrofile;
+        StringBuilder fileNameBuffer = new StringBuilder();
+
+        fileNameBuffer.append(ApplicationConfiguration.getCommonApplicationDirectory());
+        fileNameBuffer.append(ApplicationConfiguration.macroFileSubpath);
+        if (Lookup.getUserPreferences().isOverrideSafeties())
+        {
+            fileNameBuffer.append(safetyOffDirectory);
+            fileNameBuffer.append(File.separator);
+        } else
+        {
+            fileNameBuffer.append(safetyOnDirectory);
+            fileNameBuffer.append(File.separator);
+        }
+        fileNameBuffer.append(macroName);
+        fileNameBuffer.append(ApplicationConfiguration.macroFileExtension);
+
+        return fileNameBuffer.toString();
     }
 
-//    public String getMacroContentsInOneLine()
-//    {
-//        StringBuilder output = new StringBuilder();
-//
-//        String macrofile = ApplicationConfiguration.getApplicationInstallDirectory(null) + ApplicationConfiguration.macroFileSubpath + macroFilename + ApplicationConfiguration.macroFileExtension;
-//
-//        try
-//        {
-//            boolean firstLine = true;
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(macrofile)));
-//            String line;
-//            while ((line = reader.readLine()) != null)
-//            {
-//                if (!firstLine)
-//                {
-//                    output.append("\\n");
-//                }
-//                String strippedLine = line.replaceAll(";.*", "");
-//                output.append(strippedLine.toUpperCase().trim());
-//                firstLine = false;
-//            }
-//
-//        } catch (FileNotFoundException ex)
-//        {
-//            steno.error("Couldn't load macro file " + macroFilename);
-//        } catch (IOException ex)
-//        {
-//            steno.error("IO Error whilst loading macro file " + macroFilename);
-//        }
-//
-//        return output.toString();
-//    }
+    public static boolean isMacroExecutionDirective(String input)
+    {
+        return input.startsWith(macroDefinitionString);
+    }
 }
