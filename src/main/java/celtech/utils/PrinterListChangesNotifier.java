@@ -16,17 +16,10 @@ import javafx.collections.ObservableList;
 
 /**
  * PrinterListChangesNotifier listens to a list of printers and notifies registered listeners about
- * the following events: 
- * - Printer added 
- * - Printer removed 
- * - Head added to printer 
- * - Head removed from printer 
- * - Reel added to printer (with reel index) 
- * - Reel removed from printer (with reel index) 
- * - Printer Identity changed 
- * To be done: 
- * - Filament detected on extruder (with extruder index) 
- * - Filament removed from extruder (with extruder index)
+ * the following events: - Printer added - Printer removed - Head added to printer - Head removed
+ * from printer - Reel added to printer (with reel index) - Reel removed from printer (with reel
+ * index) - Printer Identity changed To be done: - Filament detected on extruder (with extruder
+ * index) - Filament removed from extruder (with extruder index)
  *
  * @author tony
  */
@@ -71,17 +64,17 @@ public class PrinterListChangesNotifier
     private void fireWhenPrinterRemoved(Printer printer)
     {
         for (PrinterListChangesListener listener : listeners)
-        {            
+        {
             for (Entry<Integer, Reel> mappedReel : printer.reelsProperty().entrySet())
             {
                 listener.whenReelRemoved(printer, mappedReel.getValue(), mappedReel.getKey());
             }
-            
+
             if (printer.headProperty().get() != null)
             {
                 listener.whenHeadRemoved(printer, printer.headProperty().get());
             }
-            
+
             for (int extruderIndex = 0; extruderIndex < printer.extrudersProperty().size(); extruderIndex++)
             {
                 if (printer.extrudersProperty().get(extruderIndex).isFittedProperty().get())
@@ -129,7 +122,7 @@ public class PrinterListChangesNotifier
             {
                 fireWhenReelChanged(printer, reel);
             }
-            
+
             @Override
             public void whenExtruderAdded(int extruderIndex)
             {
@@ -140,7 +133,7 @@ public class PrinterListChangesNotifier
             public void whenExtruderRemoved(int extruderIndex)
             {
                 fireWhenExtruderRemoved(printer, extruderIndex);
-            }            
+            }
 
         };
         printerListeners.put(printer, printerChangesListener);
@@ -162,12 +155,20 @@ public class PrinterListChangesNotifier
             {
                 listener.whenHeadAdded(printer);
             }
-            
+
             printer.reelsProperty().entrySet().stream().
                 forEach((mappedReel) ->
+                    {
+                        listener.whenReelAdded(printer, mappedReel.getKey());
+                });
+
+            for (int extruderIndex = 0; extruderIndex < printer.extrudersProperty().size(); extruderIndex++)
             {
-                listener.whenReelAdded(printer, mappedReel.getKey());
-            });
+                if (printer.extrudersProperty().get(extruderIndex).isFittedProperty().get())
+                {
+                    listener.whenExtruderAdded(printer, extruderIndex);
+                }
+            }
         }
     }
 
@@ -215,7 +216,7 @@ public class PrinterListChangesNotifier
             listener.whenReelChanged(printer, reel);
         }
     }
-    
+
     private void fireWhenExtruderAdded(Printer printer, int extruderIndex)
     {
         for (PrinterListChangesListener listener : new ArrayList<>(listeners))
@@ -230,6 +231,6 @@ public class PrinterListChangesNotifier
         {
             listener.whenExtruderRemoved(printer, extruderIndex);
         }
-    }    
+    }
 
 }
