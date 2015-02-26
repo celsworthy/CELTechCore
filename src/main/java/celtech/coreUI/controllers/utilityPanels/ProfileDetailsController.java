@@ -362,7 +362,6 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     private final Image redcrossImage = new Image(CoreTest.class.getResource(
         ApplicationConfiguration.imageResourcePath + "redcross.png").toExternalForm());
-    private final ImageView redcrossHolder = new ImageView(redcrossImage);
 
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
     private final BooleanProperty isMutable = new SimpleBooleanProperty(false);
@@ -370,7 +369,7 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
 
     private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.observableArrayList();
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
-        new String("0.3mm"), new String("0.8mm"));
+        "0.3mm", "0.8mm");
     private final ObservableList<FillPattern> fillPatternOptions = FXCollections.observableArrayList(
         FillPattern.values());
 
@@ -659,32 +658,26 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         //Nozzle Page
         firstLayerExtrusionWidthSlider.valueProperty()
             .bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
-        firstLayerExtrusionWidth.textProperty()
-            .addListener(dirtyStringListener);
-        firstLayerNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
+        firstLayerExtrusionWidth.textProperty().addListener(dirtyStringListener);
+        firstLayerNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
+            dirtyStringListener);
 
-        perimeterExtrusionWidthSlider.valueProperty()
-            .bindBidirectional(perimeterExtrusionWidth.floatValueProperty());
-        perimeterExtrusionWidth.textProperty()
-            .addListener(dirtyStringListener);
-        perimeterNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
+        perimeterExtrusionWidthSlider.valueProperty().bindBidirectional(
+            perimeterExtrusionWidth.floatValueProperty());
+        perimeterExtrusionWidth.textProperty().addListener(dirtyStringListener);
+        perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
+            dirtyStringListener);
 
-        infillExtrusionWidthSlider.valueProperty()
-            .bindBidirectional(infillExtrusionWidth.floatValueProperty());
-        infillExtrusionWidth.textProperty()
-            .addListener(dirtyStringListener);
-        solidInfillExtrusionWidthSlider.valueProperty()
-            .bindBidirectional(solidInfillExtrusionWidth.floatValueProperty());
-        solidInfillExtrusionWidth.textProperty()
-            .addListener(dirtyStringListener);
-        fillNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
-        topSolidInfillExtrusionWidthSlider.valueProperty()
-            .bindBidirectional(topSolidInfillExtrusionWidth.floatValueProperty());
-        topSolidInfillExtrusionWidth.textProperty()
-            .addListener(dirtyStringListener);
+        infillExtrusionWidthSlider.valueProperty().bindBidirectional(
+            infillExtrusionWidth.floatValueProperty());
+        infillExtrusionWidth.textProperty().addListener(dirtyStringListener);
+        solidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(
+            solidInfillExtrusionWidth.floatValueProperty());
+        solidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
+        fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
+        topSolidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(
+            topSolidInfillExtrusionWidth.floatValueProperty());
+        topSolidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
 
         supportExtrusionWidthSlider.valueProperty()
             .bindBidirectional(supportExtrusionWidth.floatValueProperty());
@@ -696,43 +689,30 @@ public class ProfileDetailsController implements Initializable, PopupCommandTran
         supportInterfaceNozzleChoice.getSelectionModel()
             .selectedItemProperty().addListener(dirtyStringListener);
 
-        fillDensity.textProperty()
-            .addListener(dirtyStringListener);
-        slowFanIfLayerTimeBelow.textProperty()
-            .addListener(dirtyStringListener);
-        enableFanIfLayerTimeBelow.textProperty()
-            .addListener(dirtyStringListener);
-        solidInfillSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        supportMaterialEnabled.textProperty()
-            .addListener(dirtyStringListener);
-        supportOverhangThreshold.textProperty()
-            .addListener(dirtyStringListener);
-        solidLayersTop.textProperty()
-            .addListener(dirtyStringListener);
-        solidLayersBottom.textProperty()
-            .addListener(dirtyStringListener);
-        numberOfPerimeters.textProperty()
-            .addListener(dirtyStringListener);
-        topSolidInfillSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        firstLayerSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        perimeterSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        gapFillSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        fillPatternChoice.getSelectionModel()
-            .selectedItemProperty().addListener(new ChangeListener<FillPattern>()
-                {
+        fillDensity.textProperty().addListener(dirtyStringListener);
+        slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
+        enableFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
+        solidInfillSpeed.textProperty().addListener(dirtyStringListener);
+        supportMaterialEnabled.textProperty().addListener(dirtyStringListener);
+        supportOverhangThreshold.textProperty().addListener(dirtyStringListener);
+        solidLayersTop.textProperty().addListener(dirtyStringListener);
+        solidLayersBottom.textProperty().addListener(dirtyStringListener);
+        numberOfPerimeters.textProperty().addListener(dirtyStringListener);
+        topSolidInfillSpeed.textProperty().addListener(dirtyStringListener);
+        firstLayerSpeed.textProperty().addListener(dirtyStringListener);
+        perimeterSpeed.textProperty().addListener(dirtyStringListener);
+        gapFillSpeed.textProperty().addListener(dirtyStringListener);
+        fillPatternChoice.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<FillPattern>()
+            {
 
-                    @Override
-                    public void changed(
-                        ObservableValue<? extends FillPattern> observable, FillPattern oldValue,
-                        FillPattern newValue)
-                    {
-                        isDirty.set(true);
-                        }
+                @Override
+                public void changed(
+                    ObservableValue<? extends FillPattern> observable, FillPattern oldValue,
+                    FillPattern newValue)
+                {
+                    isDirty.set(true);
+                    }
             });
 
         supportMaterialSpeed.textProperty()

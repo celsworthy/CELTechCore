@@ -145,12 +145,13 @@ public class ApplicationConfiguration
     private static String commonApplicationDirectory = null;
 
     private static String projectFileStorageDirectory = null;
-    private static String projectFileDirectoryPath = "Projects";
+    public static String projectFileDirectoryPath = "Projects";
 
     /**
      *
      */
     public static final String projectFileExtension = ".robox";
+    public static final String projectModelsFileExtension = ".models";
     private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst("\\.", "");
 
     /**
@@ -337,12 +338,10 @@ public class ApplicationConfiguration
      * Used in testing only
      */
     public static void setInstallationProperties(Properties testingProperties,
-        String applicationInstallDirectory, String commonApplicationDirectory,
-        String userStorageDirectory)
+        String applicationInstallDirectory, String userStorageDirectory)
     {
         installationProperties = testingProperties;
         ApplicationConfiguration.applicationInstallDirectory = applicationInstallDirectory;
-        ApplicationConfiguration.commonApplicationDirectory = commonApplicationDirectory;
         ApplicationConfiguration.userStorageDirectory = userStorageDirectory;
     }
 
@@ -876,12 +875,6 @@ public class ApplicationConfiguration
                     returnVal.add("*." + extension);
                 }
                 break;
-            case GCODE:
-                for (String extension : supportedProcessedModelExtensions)
-                {
-                    returnVal.add("*." + extension);
-                }
-                break;
             default:
                 break;
         }
@@ -913,12 +906,6 @@ public class ApplicationConfiguration
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)
-                {
-                    returnVal.add(extension);
-                }
-                break;
-            case GCODE:
-                for (String extension : supportedProcessedModelExtensions)
                 {
                     returnVal.add(extension);
                 }

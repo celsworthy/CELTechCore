@@ -240,7 +240,7 @@ public class PrintEngine implements ControllableService
                 String jobUUID = result.getPrintJobUUID();
 
                 Project project = printJobsAgainstProjects.get(jobUUID);
-                project.addPrintJobID(jobUUID);
+                project.setLastPrintJobID(jobUUID);
 
                 PrintJobStatistics printJobStatistics = result.getRoboxiserResult().getPrintJobStatistics();
 
@@ -645,8 +645,8 @@ public class PrintEngine implements ControllableService
             }
         }
 
-        if (project.getProjectMode() == ProjectMode.MESH)
-        {
+//        if (project.getProjectMode() == ProjectMode.MESH)
+//        {
             //Write out the slicer config
             SlicerType slicerTypeToUse = null;
             if (settings.getSlicerOverride() != null)
@@ -684,33 +684,33 @@ public class PrintEngine implements ControllableService
 
             // Do we need to slice?
             acceptedPrintRequest = true;
-        } else if (project.getProjectMode() == ProjectMode.GCODE)
-        {
-            String printjobFilename = ApplicationConfiguration.
-                getPrintSpoolDirectory() + printUUID + File.separator
-                + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
-            String fileToCopyname = project.getGCodeFilename();
-            File printjobFile = new File(printjobFilename);
-            File fileToCopy = new File(fileToCopyname);
-            try
-            {
-                Files.copy(fileToCopy.toPath(), printjobFile.toPath(),
-                           StandardCopyOption.REPLACE_EXISTING);
-                associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
-
-                gcodePrintService.reset();
-                gcodePrintService.setCurrentPrintJobID(printUUID);
-                gcodePrintService.setModelFileToPrint(printjobFilename);
-                gcodePrintService.setPrinterToUse(associatedPrinter);
-                gcodePrintService.start();
-                acceptedPrintRequest = true;
-            } catch (IOException ex)
-            {
-                steno.error(
-                    "Error whilst preparing for print. Can't copy "
-                    + fileToCopyname + " to " + printjobFilename);
-            }
-        }
+//        } else if (project.getProjectMode() == ProjectMode.GCODE)
+//        {
+//            String printjobFilename = ApplicationConfiguration.
+//                getPrintSpoolDirectory() + printUUID + File.separator
+//                + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
+//            String fileToCopyname = project.getGCodeFilename();
+//            File printjobFile = new File(printjobFilename);
+//            File fileToCopy = new File(fileToCopyname);
+//            try
+//            {
+//                Files.copy(fileToCopy.toPath(), printjobFile.toPath(),
+//                           StandardCopyOption.REPLACE_EXISTING);
+//                associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+//
+//                gcodePrintService.reset();
+//                gcodePrintService.setCurrentPrintJobID(printUUID);
+//                gcodePrintService.setModelFileToPrint(printjobFilename);
+//                gcodePrintService.setPrinterToUse(associatedPrinter);
+//                gcodePrintService.start();
+//                acceptedPrintRequest = true;
+//            } catch (IOException ex)
+//            {
+//                steno.error(
+//                    "Error whilst preparing for print. Can't copy "
+//                    + fileToCopyname + " to " + printjobFilename);
+//            }
+//        }
         return acceptedPrintRequest;
     }
 

@@ -13,12 +13,9 @@ import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
-import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -27,7 +24,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.effect.Glow;
@@ -36,7 +32,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -98,36 +93,12 @@ public class ProjectTab extends Tab
 
         basePane.getChildren().add(viewManager.getSubScene());
 
-        setupGCodeEditor();
-
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);
 
         setupNameFields();
 
-    }
-
-    private void setupGCodeEditor()
-    {
-        try
-        {
-            URL gcodeEditorURL = getClass().getResource(
-                ApplicationConfiguration.fxmlResourcePath
-                    + "GCodeEditorPanel.fxml");
-            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
-                Lookup.getLanguageBundle());
-            StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
-            GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(project.getLoadedModels(), project);
-            AnchorPane.setTopAnchor(gcodeEditor, 30.0);
-            AnchorPane.setRightAnchor(gcodeEditor, 0.0);
-
-            basePane.getChildren().add(gcodeEditor);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load gcode editor:" + ex);
-        }
     }
 
     private void setupNameFields()
@@ -143,8 +114,7 @@ public class ProjectTab extends Tab
 
         nonEditableProjectNameField.setOnMouseClicked((MouseEvent event) ->
         {
-            if (event.getClickCount() == 2 && project.getProjectMode()
-                != ProjectMode.GCODE)
+            if (event.getClickCount() == 2)
             {
                 editableProjectNameField.setText(
                     nonEditableProjectNameField.getText());
@@ -196,7 +166,7 @@ public class ProjectTab extends Tab
                             {
                                 boolean extensionFound = false;
                                 for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    project.getProjectMode()))
+                                    ProjectMode.MESH))
                                 {
                                     if (file.getName().toUpperCase().endsWith(
                                         extension.toUpperCase()))
@@ -245,7 +215,7 @@ public class ProjectTab extends Tab
                             {
                                 boolean extensionFound = false;
                                 for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    project.getProjectMode()))
+                                    ProjectMode.MESH))
                                 {
                                     if (file.getName().endsWith(extension))
                                     {
@@ -324,21 +294,6 @@ public class ProjectTab extends Tab
         }
     }
 
-//    public void addProjectContainer(File projectToLoad)
-//    {
-//        nonEditableProjectNameField.textProperty().unbind();
-//        nonEditableProjectNameField.setText("");
-//
-//        project = ProjectManager.loadProject(projectToLoad);
-//        nonEditableProjectNameField.textProperty().bind(
-//            project.projectNameProperty());
-//        viewManager.setLoadedModels(project.getLoadedModels());
-//
-//        projectManager.projectOpened(project);
-//    }
-    /**
-     *
-     */
     public void saveProject()
     {
 

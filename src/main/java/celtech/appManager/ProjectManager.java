@@ -33,18 +33,14 @@ public class ProjectManager implements Savable, Serializable
     private static ProjectManager instance = null;
     private static List<Project> openProjects = new ArrayList<>();
     private final static String projectFileName = "projects.dat";
-    private final static Stenographer steno = StenographerFactory.getStenographer(ProjectManager.class.getName());
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
 
     private ProjectManager()
     {
-
     }
 
-    /**
-     *
-     * @return
-     */
     public static ProjectManager getInstance()
     {
         if (instance == null)
@@ -74,21 +70,22 @@ public class ProjectManager implements Savable, Serializable
         ProjectManager pm = null;
         try
         {
-            FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
+            FileInputStream projectFile = new FileInputStream(
+                ApplicationConfiguration.getProjectDirectory() + projectFileName);
             ObjectInputStream reader = new ObjectInputStream(projectFile);
             pm = new ProjectManager();
             int numberOfOpenProjects = reader.readInt();
             for (int counter = 0; counter < numberOfOpenProjects; counter++)
             {
-                String projectName = reader.readUTF();
-                Project project = loadProject(projectName);
+                String projectPath = reader.readUTF();
+                Project project = loadProject(projectPath);
                 if (project != null)
                 {
                     pm.projectOpened(project);
-                }
-                else
+                } else
                 {
-                    steno.warning("Project Manager tried to load " + projectName + " but it couldn't be opened");
+                    steno.warning("Project Manager tried to load " + projectPath
+                        + " but it couldn't be opened");
                 }
             }
             reader.close();
@@ -99,49 +96,12 @@ public class ProjectManager implements Savable, Serializable
         return pm;
     }
 
-    /**
-     *
-     * @param projectName
-     * @return
-     */
-    public static Project loadProject(String projectName)
+    public static Project loadProject(String projectPath)
     {
-        File projectFile = new File(projectName);
-        return loadProject(projectFile);
+        String basePath = projectPath.substring(0, projectPath.lastIndexOf('.'));
+        return Project.loadProject(basePath);
     }
 
-    /**
-     *
-     * @param projectFile
-     * @return
-     */
-    public static Project loadProject(File projectFile)
-    {
-        Project loadedProject = null;
-
-        try
-        {
-            FileInputStream projectFileStream = new FileInputStream(projectFile);
-            ObjectInputStream reader = new ObjectInputStream(projectFileStream);
-            loadedProject = (Project) reader.readObject();
-            reader.close();
-
-            loadedProject.getProjectHeader().setProjectPath(projectFile.getParent());
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load project " + projectFile.getAbsolutePath());
-        } catch (ClassNotFoundException ex)
-        {
-            steno.error("Couldn't locate class while loading project " + projectFile.getAbsolutePath());
-        }
-
-        return loadedProject;
-    }
-
-    /**
-     *
-     * @return
-     */
     @Override
     public boolean saveState()
     {
@@ -149,7 +109,8 @@ public class ProjectManager implements Savable, Serializable
 
         try
         {
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName));
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
+                ApplicationConfiguration.getProjectDirectory() + projectFileName));
             out.writeInt(openProjects.size());
             for (Project project : openProjects)
             {
@@ -167,39 +128,24 @@ public class ProjectManager implements Savable, Serializable
         return savedSuccessfully;
     }
 
-    /**
-     *
-     * @param project
-     */
     public void projectOpened(Project project)
     {
-        if (! openProjects.contains(project)) {
+        if (!openProjects.contains(project))
+        {
             openProjects.add(project);
         }
     }
 
-    /**
-     *
-     * @param project
-     */
     public void projectClosed(Project project)
     {
         openProjects.remove(project);
     }
 
-    /**
-     *
-     * @return
-     */
     public List<Project> getOpenProjects()
     {
         return openProjects;
     }
 
-    /**
-     *
-     * @return
-     */
     public ObservableList<Project> getAvailableProjects()
     {
         ObservableList<Project> availableProjects = FXCollections.observableArrayList();
@@ -225,8 +171,9 @@ public class ProjectManager implements Savable, Serializable
         }
         return availableProjects;
     }
-    
-    public Set<String> getOpenAndAvailableProjectNames() {
+
+    public Set<String> getOpenAndAvailableProjectNames()
+    {
         Set<String> openAndAvailableProjectNames = new HashSet<>();
         for (Project project : openProjects)
         {

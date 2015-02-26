@@ -24,6 +24,7 @@ import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -117,7 +118,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Print the part using the extruder of the given number.
      */
-    private int associateWithExtruderNumber = 0;
+    private IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private PhongMaterial material;
 
@@ -174,10 +175,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         if (useExtruder0)
         {
-            associateWithExtruderNumber = 0;
+            associateWithExtruderNumber.set(0);
         } else
         {
-            associateWithExtruderNumber = 1;
+            associateWithExtruderNumber.set(1);
         }
     }
 
@@ -262,7 +263,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void initialise(String name)
     {
         material = ApplicationMaterials.getDefaultModelMaterial();
-        associateWithExtruderNumber = 0;
+        associateWithExtruderNumber.set(0);
         shapeChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
@@ -317,7 +318,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         copy.setScale(this.getScale());
         copy.setRotationY(this.getRotationY());
         copy.setSnapFaceIndex(snapFaceIndex);
-        copy.setAssociateWithExtruderNumber(associateWithExtruderNumber);
+        copy.setAssociateWithExtruderNumber(associateWithExtruderNumber.get());
         return copy;
     }
 
@@ -705,59 +706,46 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getScale());
         out.writeDouble(getRotationY());
         out.writeInt(snapFaceIndex);
-        out.writeInt(associateWithExtruderNumber);
+        out.writeInt(associateWithExtruderNumber.get());
     }
 
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
+        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+
         String modelName = in.readUTF();
         meshGroup = new Group();
         getChildren().add(meshGroup);
 
         modelContentsType = (ModelContentsEnumeration) in.readObject();
 
-        if (modelContentsType == ModelContentsEnumeration.MESH)
+        numberOfMeshes = in.readInt();
+
+        for (int i = 0; i < numberOfMeshes; i++)
         {
-            numberOfMeshes = in.readInt();
+            int[] smoothingGroups = (int[]) in.readObject();
+            int[] faces = (int[]) in.readObject();
+            float[] points = (float[]) in.readObject();
 
-            for (int i = 0; i < numberOfMeshes; i++)
-            {
-                int[] smoothingGroups = (int[]) in.readObject();
-                int[] faces = (int[]) in.readObject();
-                float[] points = (float[]) in.readObject();
+            TriangleMesh triMesh = new TriangleMesh();
 
-                TriangleMesh triMesh = new TriangleMesh();
+            FloatArrayList texCoords = new FloatArrayList();
+            texCoords.add(0f);
+            texCoords.add(0f);
 
-                FloatArrayList texCoords = new FloatArrayList();
-                texCoords.add(0f);
-                texCoords.add(0f);
+            triMesh.getPoints().addAll(points);
+            triMesh.getTexCoords().addAll(texCoords.toFloatArray());
+            triMesh.getFaces().addAll(faces);
+            triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
-                triMesh.getPoints().addAll(points);
-                triMesh.getTexCoords().addAll(texCoords.toFloatArray());
-                triMesh.getFaces().addAll(faces);
-                triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+            MeshView newMesh = new MeshView(triMesh);
+            newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+            newMesh.setCullFace(CullFace.BACK);
+            newMesh.setId(modelName + "_mesh");
 
-                MeshView newMesh = new MeshView(triMesh);
-                newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                newMesh.setCullFace(CullFace.BACK);
-                newMesh.setId(modelName + "_mesh");
-
-                meshGroup.getChildren().add(newMesh);
-            }
-
-        } else
-        {
-//            int numNodes = in.readInt();
-//            
-//            for (int i = 0; i < numNodes; i++)
-//            {
-//                Node node = (Node)in.readObject();
-//                getChildren().add(node);
-//            }
+            meshGroup.getChildren().add(newMesh);
         }
-//        this.getTransforms().clear();
-//        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
 
         initialise(modelName);
 
@@ -766,9 +754,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScale = in.readDouble();
         double storedRotationY = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
-        if (in.available() > 0) {
+        if (in.available() > 0)
+        {
             // Introduced in version 1.??
-            associateWithExtruderNumber = in.readInt();
+            associateWithExtruderNumber.set(in.readInt());
         }
 
         initialiseTransforms();
@@ -1607,15 +1596,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
     }
-    
 
-    public int getAssociateWithExtruderNumber()
+    public ReadOnlyIntegerProperty getAssociateWithExtruderNumberProperty()
     {
         return associateWithExtruderNumber;
-    }    
-    
-    void setAssociateWithExtruderNumber(int associateWithExtruderNumber) {
-        this.associateWithExtruderNumber = associateWithExtruderNumber;
+    }
+
+    void setAssociateWithExtruderNumber(int associateWithExtruderNumber)
+    {
+        this.associateWithExtruderNumber.set(associateWithExtruderNumber);
     }
 
     /**
@@ -1626,7 +1615,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
 
         PhongMaterial meshMaterial = null;
-        if (associateWithExtruderNumber == 0)
+        if (associateWithExtruderNumber.get() == 0)
         {
             if (displayColourExtruder0 == null)
             {

@@ -123,9 +123,15 @@
                             </rowConstraints>
                         </GridPane>
                         <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
-                        <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
+                        <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
                      <children>
-                        <VBox fx:id="materialContainer" alignment="TOP_CENTER" spacing="36.0" />
+                        <VBox fx:id="materialContainer" alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" spacing="36.0" styleClass="statusPanelChild">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                           <padding>
+                              <Insets left="10.0" />
+                           </padding></VBox>
                      </children></HBox>
                         <HBox fx:id="speedSliderHBox" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
                             <children>

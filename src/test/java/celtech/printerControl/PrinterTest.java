@@ -1,6 +1,7 @@
 package celtech.printerControl;
 
 import celtech.AutoMakerTestConfigurator;
+import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -23,7 +24,7 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author Ian
  */
-public class PrinterTest
+public class PrinterTest extends JavaFXConfiguredTest
 {
 
     @ClassRule
@@ -38,14 +39,8 @@ public class PrinterTest
     {
     }
 
-    @BeforeClass
-    public static void setUpClass()
-    {
-        AutoMakerTestConfigurator.setUp(temporaryUserStorageFolder);
-    }
-
     @Before
-    public void setUp()
+    public void setUpConsumer()
     {
         statusConsumer = new StatusConsumer();
         testCommandInterface = new TestCommandInterface(statusConsumer, "Test Printer", false,

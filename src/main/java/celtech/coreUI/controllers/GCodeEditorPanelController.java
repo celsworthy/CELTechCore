@@ -7,7 +7,6 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.appManager.ProjectMode;
 import celtech.coreUI.components.SlidingComponentDirection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Printer;
@@ -133,7 +132,8 @@ public class GCodeEditorPanelController extends SlidingElementController impleme
      */
     public void configure(ObservableList<ModelContainer> modelList, Project project)
     {
-        gcodeEditParent.visibleProperty().bind(project.projectModeProperty().isEqualTo(ProjectMode.GCODE));
+//        gcodeEditParent.visibleProperty().bind(project.projectModeProperty().isEqualTo(ProjectMode.GCODE));
+        gcodeEditParent.setVisible(false);
         modelList.addListener(new ListChangeListener<ModelContainer>()
         {
             @Override

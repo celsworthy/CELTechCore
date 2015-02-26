@@ -149,6 +149,11 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         updateSelectedValues();
     }    
+    
+    @Override
+    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    {
+    }    
 
     /**
      * Add a listener that will be notified whenever a ModelContainer is selected or deselected.
