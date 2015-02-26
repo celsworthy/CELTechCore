@@ -86,7 +86,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
     HeaterMode bedHeaterMode = HeaterMode.OFF;
     protected int currentBedTemperature = ROOM_TEMPERATURE;
     protected int bedTargetTemperature = 30;
-    private boolean errorTriggered;
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
         boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
@@ -113,6 +112,210 @@ public class DummyPrinterCommandInterface extends CommandInterface
     @Override
     public RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
+        return writeToPrinter(messageToWrite, false);
+    }
+
+    private void handleNozzleTempChange()
+    {
+        if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature)
+        {
+            currentNozzleTemperature += 10;
+            if (currentNozzleTemperature > nozzleTargetTemperature)
+            {
+                currentNozzleTemperature = nozzleTargetTemperature;
+            }
+        } else if (nozzleHeaterMode == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE)
+        {
+            currentNozzleTemperature -= 10;
+            if (currentNozzleTemperature < ROOM_TEMPERATURE)
+            {
+                currentNozzleTemperature = ROOM_TEMPERATURE;
+            }
+        }
+        currentStatus.setNozzle0HeaterMode(nozzleHeaterMode);
+        currentStatus.setNozzle0Temperature(currentNozzleTemperature);
+        currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
+    }
+
+    private void handleBedTempChange()
+    {
+        if (bedHeaterMode != HeaterMode.OFF && currentBedTemperature < bedTargetTemperature)
+        {
+            currentBedTemperature += 5;
+            if (currentBedTemperature > bedTargetTemperature)
+            {
+                currentBedTemperature = bedTargetTemperature;
+            }
+        } else if (bedHeaterMode == HeaterMode.OFF && currentBedTemperature > ROOM_TEMPERATURE)
+        {
+            currentBedTemperature -= 5;
+            if (currentBedTemperature < ROOM_TEMPERATURE)
+            {
+                currentBedTemperature = ROOM_TEMPERATURE;
+            }
+        }
+        currentStatus.setBedHeaterMode(bedHeaterMode);
+        currentStatus.setBedTemperature(currentBedTemperature);
+        currentStatus.setBedTargetTemperature(bedTargetTemperature);
+    }
+
+    private void detachReel(int reelNumber)
+    {
+        switch (reelNumber)
+        {
+            case 0:
+                currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
+                break;
+            case 1:
+                currentStatus.setReel1EEPROMState(EEPROMState.NOT_PRESENT);
+                break;
+        }
+        attachedReels[reelNumber] = null;
+    }
+
+    private boolean attachReel(String filamentName, int reelNumber) throws NumberFormatException
+    {
+        boolean success = false;
+
+        Filament filament = FilamentContainer.getFilamentByID(filamentName);
+        if (filament != null && reelNumber >= 0 && reelNumber <= 2)
+        {
+            switch (reelNumber)
+            {
+                case 0:
+                    currentStatus.setReel0EEPROMState(EEPROMState.PROGRAMMED);
+                    break;
+                case 1:
+                    currentStatus.setReel1EEPROMState(EEPROMState.PROGRAMMED);
+                    break;
+            }
+            attachedReels[reelNumber] = new Reel();
+            attachedReels[reelNumber].updateContents(filament);
+            success = true;
+        }
+
+        return success;
+    }
+
+    @Override
+    protected boolean connectToPrinter(String commsPortName)
+    {
+        steno.info("Dummy printer connected");
+        return true;
+    }
+
+    @Override
+    protected void disconnectSerialPort()
+    {
+        steno.info("Dummy printer disconnected");
+    }
+
+    private boolean attachHead(String headName)
+    {
+        boolean success = false;
+        HeadFile headData = HeadContainer.getHeadByID(headName);
+
+        if (headData != null)
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head(headData);
+            success = true;
+        } else if (headName.equalsIgnoreCase("BLANK"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            success = true;
+        } else if (headName.equalsIgnoreCase("UNFORMATTED"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.NOT_PROGRAMMED);
+            attachedHead = new Head();
+            success = true;
+        } else if (headName.equalsIgnoreCase("BADTYPE"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            attachedHead.typeCodeProperty().set("WRONG");
+            success = true;
+        } else if (headName.equalsIgnoreCase("UNREAL"))
+        {
+            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
+            attachedHead = new Head();
+            attachedHead.typeCodeProperty().set("RBX01-??");
+            success = true;
+        }
+
+        return success;
+    }
+
+    private boolean attachExtruder(int extruderNumber)
+    {
+        boolean success = false;
+
+        switch (extruderNumber)
+        {
+            case 0:
+                currentStatus.setExtruderEPresent(true);
+                success = true;
+                break;
+            case 1:
+                currentStatus.setExtruderDPresent(true);
+                success = true;
+                break;
+            default:
+        }
+
+        return success;
+    }
+
+    private boolean detachExtruder(int extruderNumber)
+    {
+        boolean success = false;
+
+        switch (extruderNumber)
+        {
+            case 0:
+                currentStatus.setExtruderEPresent(false);
+                success = true;
+                break;
+            case 1:
+                currentStatus.setExtruderDPresent(false);
+                success = true;
+                break;
+            default:
+        }
+
+        return success;
+    }
+
+    private void setPrintLine(int printLineNumber)
+    {
+        currentStatus.setPrintJobLineNumber(printLineNumber);
+    }
+
+    protected void finishPrintJob()
+    {
+        currentStatus.setPrintJobLineNumberString("");
+        currentStatus.setRunningPrintJobID("");
+    }
+
+    protected void raiseError(FirmwareError error)
+    {
+        errorStatus.getFirmwareErrors().add(error);
+    }
+
+    protected void clearError(FirmwareError error)
+    {
+        errorStatus.getFirmwareErrors().remove(error);
+    }
+
+    protected void clearAllErrors()
+    {
+        errorStatus.getFirmwareErrors().clear();
+    }
+
+    @Override
+    public RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite, boolean dontPublishResult) throws RoboxCommsException
+    {
         RoboxRxPacket response = null;
 
 //        steno.debug("Dummy printer received " + messageToWrite.getPacketType().name());
@@ -132,17 +335,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
             response = (RoboxRxPacket) idResponse;
         } else if (messageToWrite instanceof StatusRequest)
         {
-            if (errorTriggered)
-            {
-                clearAllErrors();
-            }
-            if (!errorTriggered && currentNozzleTemperature > 50)
-            {
-                // Uncomment the following two lines to test handling a printer error
-//                errorTriggered = true;
-//                raiseError(FirmwareError.ERROR_D_FILAMENT_SLIP);
-            }
-
             currentStatus.setAmbientTemperature((int) (Math.random() * 100));
             handleNozzleTempChange();
             handleBedTempChange();
@@ -151,11 +343,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
             {
                 printJobLineNo += 1;
 
-//                if (!errorTriggered && printJobLineNo > 3) {
-//                    steno.debug("raise ERROR");
-//                    errorTriggered = true;
-//                    raiseError(FirmwareError.ERROR_B_STUCK);
-//                }
                 if (printJobLineNo > 20)
                 {
                     printJobLineNo = 0;
@@ -432,206 +619,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 getExpectedResponse());
         }
 
-        printerToUse.processRoboxResponse(response);
+        if (!dontPublishResult)
+        {
+            printerToUse.processRoboxResponse(response);
+        }
 
         return response;
-    }
-
-    private void handleNozzleTempChange()
-    {
-        if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature)
-        {
-            currentNozzleTemperature += 10;
-            if (currentNozzleTemperature > nozzleTargetTemperature)
-            {
-                currentNozzleTemperature = nozzleTargetTemperature;
-            }
-        } else if (nozzleHeaterMode == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE)
-        {
-            currentNozzleTemperature -= 10;
-            if (currentNozzleTemperature < ROOM_TEMPERATURE)
-            {
-                currentNozzleTemperature = ROOM_TEMPERATURE;
-            }
-        }
-        currentStatus.setNozzle0HeaterMode(nozzleHeaterMode);
-        currentStatus.setNozzle0Temperature(currentNozzleTemperature);
-        currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
-    }
-
-    private void handleBedTempChange()
-    {
-        if (bedHeaterMode != HeaterMode.OFF && currentBedTemperature < bedTargetTemperature)
-        {
-            currentBedTemperature += 5;
-            if (currentBedTemperature > bedTargetTemperature)
-            {
-                currentBedTemperature = bedTargetTemperature;
-            }
-        } else if (bedHeaterMode == HeaterMode.OFF && currentBedTemperature > ROOM_TEMPERATURE)
-        {
-            currentNozzleTemperature -= 5;
-            if (currentBedTemperature < ROOM_TEMPERATURE)
-            {
-                currentBedTemperature = ROOM_TEMPERATURE;
-            }
-        }
-        currentStatus.setBedHeaterMode(bedHeaterMode);
-        currentStatus.setBedTemperature(currentBedTemperature);
-        currentStatus.setBedTargetTemperature(bedTargetTemperature);
-    }
-
-    private void detachReel(int reelNumber)
-    {
-        switch (reelNumber)
-        {
-            case 0:
-                currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
-                break;
-            case 1:
-                currentStatus.setReel1EEPROMState(EEPROMState.NOT_PRESENT);
-                break;
-        }
-        attachedReels[reelNumber] = null;
-    }
-
-    private boolean attachReel(String filamentName, int reelNumber) throws NumberFormatException
-    {
-        boolean success = false;
-
-        Filament filament = FilamentContainer.getFilamentByID(filamentName);
-        if (filament != null && reelNumber >= 0 && reelNumber <= 2)
-        {
-            switch (reelNumber)
-            {
-                case 0:
-                    currentStatus.setReel0EEPROMState(EEPROMState.PROGRAMMED);
-                    break;
-                case 1:
-                    currentStatus.setReel1EEPROMState(EEPROMState.PROGRAMMED);
-                    break;
-            }
-            attachedReels[reelNumber] = new Reel();
-            attachedReels[reelNumber].updateContents(filament);
-            success = true;
-        }
-
-        return success;
-    }
-
-    @Override
-    protected boolean connectToPrinter(String commsPortName)
-    {
-        steno.info("Dummy printer connected");
-        return true;
-    }
-
-    @Override
-    protected void disconnectSerialPort()
-    {
-        steno.info("Dummy printer disconnected");
-    }
-
-    private boolean attachHead(String headName)
-    {
-        boolean success = false;
-        HeadFile headData = HeadContainer.getHeadByID(headName);
-
-        if (headData != null)
-        {
-            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-            attachedHead = new Head(headData);
-            success = true;
-        } else if (headName.equalsIgnoreCase("BLANK"))
-        {
-            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-            attachedHead = new Head();
-            success = true;
-        } else if (headName.equalsIgnoreCase("UNFORMATTED"))
-        {
-            currentStatus.setHeadEEPROMState(EEPROMState.NOT_PROGRAMMED);
-            attachedHead = new Head();
-            success = true;
-        } else if (headName.equalsIgnoreCase("BADTYPE"))
-        {
-            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-            attachedHead = new Head();
-            attachedHead.typeCodeProperty().set("WRONG");
-            success = true;
-        } else if (headName.equalsIgnoreCase("UNREAL"))
-        {
-            currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
-            attachedHead = new Head();
-            attachedHead.typeCodeProperty().set("RBX01-??");
-            success = true;
-        }
-
-        return success;
-    }
-
-    private boolean attachExtruder(int extruderNumber)
-    {
-        boolean success = false;
-
-        switch (extruderNumber)
-        {
-            case 0:
-                currentStatus.setExtruderEPresent(true);
-                success = true;
-                break;
-            case 1:
-                currentStatus.setExtruderDPresent(true);
-                success = true;
-                break;
-            default:
-        }
-
-        return success;
-    }
-
-    private boolean detachExtruder(int extruderNumber)
-    {
-        boolean success = false;
-
-        switch (extruderNumber)
-        {
-            case 0:
-                currentStatus.setExtruderEPresent(false);
-                success = true;
-                break;
-            case 1:
-                currentStatus.setExtruderDPresent(false);
-                success = true;
-                break;
-            default:
-        }
-
-        return success;
-    }
-
-    private void setPrintLine(int printLineNumber)
-    {
-        currentStatus.setPrintJobLineNumber(printLineNumber);
-    }
-
-    protected void finishPrintJob()
-    {
-        currentStatus.setPrintJobLineNumberString("");
-        currentStatus.setRunningPrintJobID("");
-    }
-
-    protected void raiseError(FirmwareError error)
-    {
-        errorStatus.getFirmwareErrors().add(error);
-    }
-
-    protected void clearError(FirmwareError error)
-    {
-        errorStatus.getFirmwareErrors().remove(error);
-    }
-
-    protected void clearAllErrors()
-    {
-        errorStatus.getFirmwareErrors().clear();
     }
 }

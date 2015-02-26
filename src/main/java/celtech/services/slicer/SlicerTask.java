@@ -230,6 +230,8 @@ public class SlicerTask extends Task<SliceResult>
                         succeeded = true;
                         break;
                     default:
+                        steno.info("Failure when invoking slicer with command line: " + String.join(
+                            " ", commands));
                         steno.info("Slicer terminated with unknown exit code " + exitStatus);
                         break;
                 }

@@ -69,15 +69,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 
                 break;
 
-            case RUNNING_PURGE:
-//                try
-//                {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException ex)
-//                {
-//                    steno.error("Error running purge");
-//                }
-//                break;                
+            case RUNNING_PURGE:                
                 try
                 {
                     printerToUse.executeMacro("Purge Material");

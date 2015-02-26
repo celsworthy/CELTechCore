@@ -236,4 +236,10 @@ public class TestCommandInterface extends CommandInterface
         headResponse.setHoursUsed(message.getHourCounter());
 
     }
+
+    @Override
+    public RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite, boolean dontPublishResult) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

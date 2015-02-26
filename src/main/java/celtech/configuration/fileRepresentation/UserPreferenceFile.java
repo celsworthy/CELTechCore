@@ -12,6 +12,7 @@ public class UserPreferenceFile
     private SlicerType slicerType = null;
     private boolean overrideSafeties = false;
     private String languageTag = "";
+    private boolean showTooltips = false;
 
     public String getLanguageTag()
     {
@@ -43,10 +44,21 @@ public class UserPreferenceFile
         this.overrideSafeties = overrideSafeties;
     }
 
+    public boolean isShowTooltips()
+    {
+        return showTooltips;
+    }
+
+    public void setShowTooltips(boolean showTooltips)
+    {
+        this.showTooltips = showTooltips;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
         setOverrideSafeties(userPreferences.isOverrideSafeties());
         setLanguageTag(userPreferences.getLanguageTag());
+        setShowTooltips(userPreferences.isShowTooltips());
     }
 }

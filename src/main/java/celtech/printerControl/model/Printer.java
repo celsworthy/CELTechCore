@@ -173,6 +173,10 @@ public interface Printer extends RoboxResponseConsumer
      */
     public int getDataFileSequenceNumber();
 
+    public void resetDataFileSequenceNumber();
+
+    public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber);
+
     public PrintEngine getPrintEngine();
 
     public PrinterAncillarySystems getPrinterAncillarySystems();
@@ -195,7 +199,7 @@ public interface Printer extends RoboxResponseConsumer
     public void goToZPosition(double position);
 
     public void goToXYPosition(double xPosition, double yPosition);
-    
+
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition);
 
     public void homeZ();
@@ -301,21 +305,25 @@ public interface Printer extends RoboxResponseConsumer
     /*
      * Macros
      */
-    
     /**
-     * This method 'prints' a GCode file. A print job is created and the printer will manage extrusion dynamically.
-     * The printer will register as an error handler for the duration of the 'print'.
+     * This method 'prints' a GCode file. A print job is created and the printer will manage
+     * extrusion dynamically. The printer will register as an error handler for the duration of the
+     * 'print'.
+     *
      * @see executeMacro executeMacro - if you wish to run a macro rather than execute a print job
      * @param fileName
-     * @param monitorForErrors Indicates whether the printer should automatically manage error handling (e.g. auto reduction of print speed)
-     * @throws PrinterException 
+     * @param monitorForErrors Indicates whether the printer should automatically manage error
+     * handling (e.g. auto reduction of print speed)
+     * @throws PrinterException
      */
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
 
     /**
-     * This method runs the commands found in a GCode file without management - if an error occurs the caller is expected to deal with it.
+     * This method runs the commands found in a GCode file without management - if an error occurs
+     * the caller is expected to deal with it.
+     *
      * @param macroName
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void executeMacro(String macroName) throws PrinterException;
 
@@ -323,9 +331,9 @@ public interface Printer extends RoboxResponseConsumer
 
     public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
         TaskResponder responder);
-    
+
     public void callbackWhenNotBusy(TaskResponder responder);
-    
+
     /**
      *
      * @param nozzleNumber
@@ -513,11 +521,11 @@ public interface Printer extends RoboxResponseConsumer
     public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException;
 
     public void updatePrinterWeek(String weekIdentifier) throws PrinterException;
-    
+
     public void updatePrinterYear(String yearIdentifier) throws PrinterException;
-    
+
     public void updatePrinterPONumber(String poIdentifier) throws PrinterException;
-    
+
     public void updatePrinterSerialNumber(String serialIdentifier) throws PrinterException;
 
     public void updatePrinterIDChecksum(String checksum) throws PrinterException;
@@ -539,8 +547,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public ReadOnlyStringProperty printJobIDProperty();
 
-    public boolean printJobIDIndicatesPrinting();
-
     public ReadOnlyObjectProperty pauseStatusProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
@@ -557,16 +563,17 @@ public interface Printer extends RoboxResponseConsumer
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer);
 
     public void connectionEstablished();
-    
+
     public String requestDebugData(boolean addToGCodeTranscript);
-    
-    public ReadOnlyObjectProperty busyStatusProperty();    
-    
+
+    public ReadOnlyObjectProperty busyStatusProperty();
+
     /**
-     * Causes a reduction in feedrate until the minimum value is reached.
-     * Returns false if the limit has not been reached and true if it has (implying further action is needed by the caller)
+     * Causes a reduction in feedrate until the minimum value is reached. Returns false if the limit
+     * has not been reached and true if it has (implying further action is needed by the caller)
+     *
      * @param error
-     * @return 
+     * @return
      */
     public boolean doFilamentSlipWhilePrinting(FirmwareError error);
 }

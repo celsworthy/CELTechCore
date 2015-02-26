@@ -53,7 +53,7 @@ public class ArrowTag extends HBox
 
     public ArrowTag()
     {
-        this.getStylesheets().add("arrow-tag");
+        this.getStyleClass().add("arrow-tag");
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
             "/celtech/resources/fxml/components/ArrowTag.fxml"));

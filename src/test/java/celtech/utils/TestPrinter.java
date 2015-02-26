@@ -96,7 +96,7 @@ class TestPrinter implements Printer
         eepromData.setReelFirstLayerBedTemperature(110);
         eepromData.setReelFirstLayerNozzleTemperature(180);
         eepromData.setReelFriendlyName("F1");
-        eepromData.setReelMaterialType(MaterialType.Nylon);
+        eepromData.setReelMaterialType(MaterialType.NYL);
         eepromData.setReelNozzleTemperature(205);
         eepromData.setReelRemainingFilament(85);
         reelsProperty().get(i).updateFromEEPROMData(eepromData);
@@ -600,12 +600,6 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public boolean printJobIDIndicatesPrinting()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -852,6 +846,18 @@ class TestPrinter implements Printer
     }
 
     public boolean doFilamentSlipWhilePrinting(FirmwareError error)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void resetDataFileSequenceNumber()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

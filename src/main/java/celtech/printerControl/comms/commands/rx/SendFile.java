@@ -1,7 +1,5 @@
 package celtech.printerControl.comms.commands.rx;
 
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -15,7 +13,7 @@ public class SendFile extends RoboxRxPacket
     private String fileID = null;
     private final int fileIDBytes = 16;
     private int expectedSequenceNumber = -1;
-    private final int expectedSequenceNumberBytes = 16;
+    private final int expectedSequenceNumberBytes = 8;
 
     /**
      *

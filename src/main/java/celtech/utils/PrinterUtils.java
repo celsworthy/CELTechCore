@@ -79,7 +79,7 @@ public class PrinterUtils
             steno.error("Interrupted whilst waiting on Macro");
         }
 
-        if (task != null && ! interrupted)
+        if (task != null && !interrupted)
         {
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
                 && task.isCancelled() == false && !TaskController.isShuttingDown())
@@ -120,7 +120,7 @@ public class PrinterUtils
     public static boolean waitOnMacroFinished(Printer printerToCheck, Cancellable cancellable)
     {
         boolean failed = false;
-        
+
         if (Platform.isFxApplicationThread())
         {
             throw new RuntimeException("Cannot call this function from the GUI thread");
@@ -134,9 +134,9 @@ public class PrinterUtils
         {
             failed = true;
             steno.error("Interrupted whilst waiting on Macro");
-        }        
+        }
 
-        while (printerToCheck.printJobIDIndicatesPrinting()
+        while (printJobIDIndicatesPrinting(printerToCheck.printJobIDProperty().get())
             && !TaskController.isShuttingDown())
         {
             try
@@ -174,7 +174,8 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
+                    isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -200,7 +201,8 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
+                    isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -233,7 +235,8 @@ public class PrinterUtils
         {
             StatusResponse response = printerToCheck.transmitStatusRequest();
 
-            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.isShuttingDown())
+            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
+                isShuttingDown())
             {
                 Thread.sleep(100);
                 response = printerToCheck.transmitStatusRequest();
@@ -275,13 +278,15 @@ public class PrinterUtils
         } else
         {
             //TODO modify to work with multiple reels
-            targetNozzleTemperature = (float) printer.reelsProperty().get(0).nozzleTemperatureProperty().get();
+            targetNozzleTemperature = (float) printer.reelsProperty().get(0).
+                nozzleTemperatureProperty().get();
         }
 
         // A reel is attached - check to see if the temperature is different from that stored on the head
         //TODO modify to work with multiple heaters
         if (Math.abs(targetNozzleTemperature
-            - printer.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get())
+            - printer.headProperty().get().getNozzleHeaters().get(0).
+            lastFilamentTemperatureProperty().get())
             > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
         {
             purgeIsNecessary = true;
@@ -303,18 +308,19 @@ public class PrinterUtils
             purgeDialogVisible = true;
 
             purgeConsent = Lookup.getSystemNotificationHandler().showPurgeDialog();
-            
+
             purgeDialogVisible = false;
         }
 
         return purgeConsent;
     }
-    
+
     public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
         Task task, int temperature, int tolerance, int timeoutSec) throws InterruptedException
     {
         return waitUntilTemperatureIsReached(temperatureProperty,
-            task, temperature, tolerance, timeoutSec, (Cancellable) null);
+                                             task, temperature, tolerance, timeoutSec,
+                                             (Cancellable) null);
     }
 
     public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
@@ -334,8 +340,9 @@ public class PrinterUtils
                 while ((temperatureProperty.get() < minTemp
                     || temperatureProperty.get() > maxTemp))
                 {
-                    if (task != null && task.isCancelled() ||
-                       (cancellable != null && cancellable.cancelled)) {
+                    if (task != null && task.isCancelled() || (cancellable != null
+                        && cancellable.cancelled))
+                    {
                         break;
                     }
                     Thread.sleep(100);
@@ -422,4 +429,16 @@ public class PrinterUtils
         return nozzle2Offset;
     }
 
+    public static boolean printJobIDIndicatesPrinting(String printJobID)
+    {
+        boolean printing = true;
+        if (printJobID == null
+            || (printJobID.length() > 0
+            && printJobID.charAt(0) == '\0')
+            || printJobID.equals(""))
+        {
+            printing = false;
+        }
+        return printing;
+    }
 }

@@ -22,9 +22,11 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     private final StringProperty modelFileToPrint = new SimpleStringProperty();
     private final StringProperty currentPrintJobID = new SimpleStringProperty();
     private final IntegerProperty linesInGCodeFile = new SimpleIntegerProperty(1);
-    private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
+    private final Stenographer steno = StenographerFactory.
+        getStenographer(this.getClass().getName());
     private boolean printUsingSDCard = true;
-    
+    private int startFromSequenceNumber = 0;
+
     /**
      *
      * @param printerToUse
@@ -33,7 +35,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     {
         this.printerToUse = printerToUse;
     }
-    
+
     private final Printer getPrinterToUse()
     {
         return printerToUse;
@@ -119,7 +121,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     {
         return linesInGCodeFile;
     }
-    
+
     /**
      *
      * @param useSDCard
@@ -132,7 +134,9 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     @Override
     protected Task<GCodePrintResult> createTask()
     {
-        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(), linesInGCodeFileProperty(), printUsingSDCard);
+        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(),
+                                    linesInGCodeFileProperty(), printUsingSDCard,
+                                    startFromSequenceNumber);
     }
 
     /**
@@ -150,5 +154,10 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     public void reset()
     {
         super.reset();
+    }
+
+    public void setStartFromSequenceNumber(int startFromSequenceNumber)
+    {
+        this.startFromSequenceNumber = startFromSequenceNumber;
     }
 }

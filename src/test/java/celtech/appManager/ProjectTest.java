@@ -53,7 +53,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         objectMapper.writeValue(tempFile, projectFile);
         
         Project newProject = new Project();
-        newProject.load(tempFile.getAbsolutePath());
+//        newProject.load(tempFile.getAbsolutePath());
         assertEquals(PROJECT_NAME, newProject.getProjectName());
         assertEquals(BRIM, newProject.getPrinterSettings().getBrimOverride());
         assertEquals(FILL_DENSITY, newProject.getPrinterSettings().getFillDensityOverride(), 1e-10);
