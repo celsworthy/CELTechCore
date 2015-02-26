@@ -569,6 +569,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printButton.setVisible(false);
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.SETTINGS));
+        
+        closeNozzleButton.setVisible(false);
+        fillNozzleButton.setVisible(false);
 
         printButton.installTag();
 
