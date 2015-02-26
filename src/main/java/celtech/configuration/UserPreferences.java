@@ -12,9 +12,11 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public class UserPreferences
 {
+
     private SlicerType slicerType = SlicerType.Cura;
-    private BooleanProperty overrideSafeties = new SimpleBooleanProperty(false);
+    private final BooleanProperty overrideSafeties = new SimpleBooleanProperty(false);
     private String languageTag = "";
+    private final BooleanProperty showTooltips = new SimpleBooleanProperty(true);
 
     public String getLanguageTag()
     {
@@ -55,10 +57,26 @@ public class UserPreferences
         this.overrideSafeties.set(overrideSafeties);
         saveSettings();
     }
-    
+
     public ReadOnlyBooleanProperty overrideSafetiesProperty()
     {
         return overrideSafeties;
+    }
+
+    public boolean isShowTooltips()
+    {
+        return showTooltips.get();
+    }
+
+    public void setShowTooltips(boolean overrideSafeties)
+    {
+        this.showTooltips.set(overrideSafeties);
+        saveSettings();
+    }
+
+    public ReadOnlyBooleanProperty showTooltipsProperty()
+    {
+        return showTooltips;
     }
 
     private void saveSettings()

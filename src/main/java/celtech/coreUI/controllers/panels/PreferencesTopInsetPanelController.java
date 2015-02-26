@@ -8,6 +8,9 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
+import celtech.coreUI.controllers.panels.userpreferences.OverrideSafetiesPreference;
+import celtech.coreUI.controllers.panels.userpreferences.ShowTooltipPreference;
+import celtech.coreUI.controllers.panels.userpreferences.SlicerTypePreference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,93 +116,15 @@ public class PreferencesTopInsetPanelController implements Initializable
     {
         List<Preference> preferences = new ArrayList<>();
 
-        Preference slicerTypePref = new Preference()
-        {
-            private final ComboBox<SlicerType> control;
+        Preference slicerTypePref = new SlicerTypePreference(userPreferences);
 
-            
-            {
-                control = new ComboBox<>();
-                control.setItems(FXCollections.observableArrayList(SlicerType.values()));
-                control.setPrefWidth(150);
-                control.setMinWidth(control.getPrefWidth());
-                control.valueProperty().addListener(
-                    (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-                    {
-                        updateValueFromControl();
-                    });
-            }
-
-            @Override
-            public void updateValueFromControl()
-            {
-                SlicerType slicerType = control.getValue();
-                userPreferences.setSlicerType(slicerType);
-            }
-
-            @Override
-            public void populateControlWithCurrentValue()
-            {
-                control.setValue(userPreferences.getSlicerType());
-            }
-
-            @Override
-            public Control getControl()
-            {
-                return control;
-            }
-
-            @Override
-            public String getDescription()
-            {
-                return Lookup.i18n("preferences.slicerType");
-            }
-        };
-
-        Preference overrideSafetyPref = new Preference()
-        {
-            private final CheckBox control;
-
-            
-            {
-                control = new CheckBox();
-                control.setPrefWidth(150);
-                control.setMinWidth(control.getPrefWidth());
-                control.selectedProperty().addListener(
-                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                    {
-                        updateValueFromControl();
-                    });
-            }
-
-            @Override
-            public void updateValueFromControl()
-            {
-                boolean overrideSafety = control.isSelected();
-                userPreferences.setOverrideSafeties(overrideSafety);
-            }
-
-            @Override
-            public void populateControlWithCurrentValue()
-            {
-                control.setSelected(userPreferences.isOverrideSafeties());
-            }
-
-            @Override
-            public Control getControl()
-            {
-                return control;
-            }
-
-            @Override
-            public String getDescription()
-            {
-                return Lookup.i18n("preferences.overrideSafety");
-            }
-        };
+        Preference overrideSafetyPref = new OverrideSafetiesPreference(userPreferences);
+        
+        Preference showTooltipsPref = new ShowTooltipPreference(userPreferences);
 
         preferences.add(slicerTypePref);
-//        preferences.add(overrideSafetyPref);
+        preferences.add(overrideSafetyPref);
+        preferences.add(showTooltipsPref);
 
         return preferences;
     }
