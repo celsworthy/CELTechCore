@@ -200,11 +200,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         printQualityUpdate(PrintQualityEnumeration.DRAFT);
 
-        qualityChooser.valueProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number lastQualityValue,
-                Number newQualityValue)
+        qualityChooser.valueProperty().addListener(
+            (ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue) ->
             {
                 if (lastQualityValue != newQualityValue)
                 {
@@ -213,8 +210,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
                     printQualityUpdate(quality);
                 }
-            }
-        });
+            });
     }
 
     private void setupCustomProfileChooser()
@@ -254,14 +250,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         } else if (newValue != null)
                         {
                             if (printerSettings != null && printerSettings.getPrintQuality()
-                                == PrintQualityEnumeration.CUSTOM)
+                            == PrintQualityEnumeration.CUSTOM)
                             {
                                 slideOutController.updateProfileData(newValue);
                                 printerSettings.setSettingsName(newValue.getProfileName());
                             }
                         } else if (printerSettings != null && newValue == null
-                            && printerSettings.getPrintQuality()
-                            == PrintQualityEnumeration.CUSTOM)
+                        && printerSettings.getPrintQuality()
+                        == PrintQualityEnumeration.CUSTOM)
                         {
                             slideOutController.updateProfileData(null);
                         }
@@ -355,26 +351,26 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         supportSlider.valueProperty().addListener(
             (ObservableValue<? extends Number> ov, Number lastSupportValue, Number newSupportValue) ->
-        {
-            if (suppressQualityOverrideTriggers == false)
             {
-                if (lastSupportValue != newSupportValue)
+                if (suppressQualityOverrideTriggers == false)
                 {
-                    boolean supportSelected = (newSupportValue.doubleValue() >= 1.0);
-                    printerSettings.setPrintSupportOverride(supportSelected);
+                    if (lastSupportValue != newSupportValue)
+                    {
+                        boolean supportSelected = (newSupportValue.doubleValue() >= 1.0);
+                        printerSettings.setPrintSupportOverride(supportSelected);
+                    }
                 }
-            }
-        });
+            });
 
         fillDensitySlider.valueProperty()
             .addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            if (suppressQualityOverrideTriggers == false)
-            {
-                printerSettings.setFillDensityOverride(newValue.floatValue() / 100.0f);
-            }
-        });
+                {
+                    if (suppressQualityOverrideTriggers == false)
+                    {
+                        printerSettings.setFillDensityOverride(newValue.floatValue() / 100.0f);
+                    }
+                });
 
         brimSlider.valueProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -616,11 +612,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         }
     }
 
-    private void setupQualityOverrideControls(Project project)
+    private void setupQualityOverrideControls(PrinterSettings printerSettings)
     {
         fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
         brimSlider.setValue(printerSettings.getBrimOverride());
-        supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1: 0);
+        supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
     }
 
     private void updateProfileList()
@@ -741,9 +737,17 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         currentProject = project;
         printerSettings = project.getPrinterSettings();
 
-        qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
+        int saveBrim = printerSettings.getBrimOverride();
+        float saveFillDensity = printerSettings.getFillDensityOverride();
+        boolean saveSupports = printerSettings.getPrintSupportOverride();
 
-        setupQualityOverrideControls(project);
+        qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
+        // UGH quality chooser has (rightly) stamped on the overrides so restore them
+        printerSettings.setBrimOverride(saveBrim);
+        printerSettings.setFillDensityOverride(saveFillDensity);
+        printerSettings.setPrintSupportOverride(saveSupports);
+
+        setupQualityOverrideControls(printerSettings);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
@@ -798,13 +802,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 break;
         }
 
-        if (settings != null)
-        {
-            suppressQualityOverrideTriggers = true;
-//            setupQualityOverrideControls(settings);
-            suppressQualityOverrideTriggers = false;
-        }
-
         if (slideOutController != null)
         {
             slideOutController.updateProfileData(settings);
@@ -813,13 +810,14 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         if (currentProject != null)
         {
-            currentProject.projectModified();
-        }
-
-        if (printerSettings != null)
-        {
             printerSettings.setPrintQuality(quality);
-//            printerSettings.setSettings(settings);
+            if (quality != PrintQualityEnumeration.CUSTOM)
+            {
+                printerSettings.setBrimOverride(settings.getBrimWidth_mm());
+                printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
+                printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
+                setupQualityOverrideControls(printerSettings);
+            }
         }
     }
 

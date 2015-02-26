@@ -6,7 +6,10 @@ import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -25,6 +28,7 @@ public class PrinterSettings
     private final StringProperty settingsName = new SimpleStringProperty();
     private final ObjectProperty<PrintQualityEnumeration> printQuality
         = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
+    private BooleanProperty dataChanged = new SimpleBooleanProperty(false);
     
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
@@ -35,6 +39,14 @@ public class PrinterSettings
         settingsName.set(ApplicationConfiguration.draftSettingsProfileName);
     }
 
+    private void toggleDataChanged() {
+        dataChanged.set(dataChanged.not().get());
+    }
+    
+    public ReadOnlyBooleanProperty getDataChanged() {
+        return dataChanged;
+    }
+    
     public void setSelectedPrinter(Printer value)
     {
         selectedPrinter.set(value);
@@ -53,11 +65,13 @@ public class PrinterSettings
     public void setFilament0(Filament filament)
     {
         selectedFilament0.set(filament);
+        toggleDataChanged();
     }
 
     public void setFilament1(Filament filament)
     {
         selectedFilament1.set(filament);
+        toggleDataChanged();
     }
 
     public Filament getFilament0()
@@ -83,6 +97,7 @@ public class PrinterSettings
     public void setPrintQuality(PrintQualityEnumeration value)
     {
         printQuality.set(value);
+        toggleDataChanged();
     }
 
     public PrintQualityEnumeration getPrintQuality()
@@ -98,6 +113,7 @@ public class PrinterSettings
     public void setSettingsName(String settingsName)
     {
         this.settingsName.set(settingsName);
+        toggleDataChanged();
     }
     
     public String getSettingsName()
@@ -143,6 +159,7 @@ public class PrinterSettings
     public void setBrimOverride(int brimOverride)
     {
         this.brimOverride = brimOverride;
+        toggleDataChanged();
     }
 
     public float getFillDensityOverride()
@@ -153,6 +170,7 @@ public class PrinterSettings
     public void setFillDensityOverride(float fillDensityOverride)
     {
         this.fillDensityOverride = fillDensityOverride;
+        toggleDataChanged();
     }
 
     public boolean getPrintSupportOverride()
@@ -163,5 +181,6 @@ public class PrinterSettings
     public void setPrintSupportOverride(boolean printSupportOverride)
     {
         this.printSupportOverride = printSupportOverride;
+        toggleDataChanged();
     }    
 }

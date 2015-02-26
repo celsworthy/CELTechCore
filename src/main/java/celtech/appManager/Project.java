@@ -59,6 +59,8 @@ public class Project implements Serializable
 
     private final StringProperty projectNameProperty;
     private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
+    
+    private boolean suppressProjectChanged = false;
 
     public Project()
     {
@@ -70,6 +72,11 @@ public class Project implements Serializable
             + formatter.format(now));
         lastModifiedDate.set(now);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        printerSettings.getDataChanged().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                projectModified();
+            });
     }
 
     public final void setProjectName(String value)
@@ -101,8 +108,9 @@ public class Project implements Serializable
         return project;
     }
 
-    public void load(String basePath)
+    private void load(String basePath)
     {
+        suppressProjectChanged = true;
 
         File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
 
@@ -132,7 +140,7 @@ public class Project implements Serializable
                     extruder1Filament.set(filament1);
                 }
             }
-            
+
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
@@ -148,6 +156,7 @@ public class Project implements Serializable
         {
             steno.error("Failed to load project " + basePath);
         }
+        suppressProjectChanged = false;
     }
 
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
@@ -161,7 +170,6 @@ public class Project implements Serializable
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
             loadedModels.add(modelContainer);
         }
-        loadedModels = (ObservableList<ModelContainer>) modelsInput.readObject();
     }
 
     public static void saveProject(Project project)
@@ -173,8 +181,7 @@ public class Project implements Serializable
 
     private void saveModels(String path) throws IOException
     {
-        ObjectOutputStream modelsOutput = new ObjectOutputStream(
-            new FileOutputStream(path));
+        ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
         modelsOutput.writeInt(loadedModels.size());
         for (int i = 0; i < loadedModels.size(); i++)
         {
@@ -321,8 +328,11 @@ public class Project implements Serializable
 
     public void projectModified()
     {
-        lastPrintJobID = "";
-        lastModifiedDate.set(new Date());
+        if (!suppressProjectChanged)
+        {
+            lastPrintJobID = "";
+            lastModifiedDate.set(new Date());
+        }
     }
 
     public String getLastPrintJobID()
@@ -449,7 +459,7 @@ public class Project implements Serializable
     {
         return lastModifiedDate;
     }
-    
+
     private ChangeListener<Number> modelExtruderNumberListener;
 
     private void addModelListeners(ModelContainer modelContainer)
@@ -458,14 +468,15 @@ public class Project implements Serializable
         {
             fireWhenModelChanged(modelContainer, "associateWithExtruderNumber");
         };
-        modelContainer.getAssociateWithExtruderNumberProperty().addListener(modelExtruderNumberListener);
+        modelContainer.getAssociateWithExtruderNumberProperty().addListener(
+            modelExtruderNumberListener);
     }
-    
+
     private void removeModelListeners(ModelContainer modelContainer)
     {
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
             modelExtruderNumberListener);
-    }    
+    }
 
     /**
      * ProjectChangesListener allows other objects to observe when models are added or removed etc
@@ -494,11 +505,10 @@ public class Project implements Serializable
          * possible try to fire just once for any given group change.
          */
         void whenModelsTransformed(Set<ModelContainer> modelContainers);
-        
+
         /**
-         * This should be fired when certain details of the model change. Currently
-         * this is only:
-         * - associatedExtruder
+         * This should be fired when certain details of the model change. Currently this is only: -
+         * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
     }
@@ -610,9 +620,10 @@ public class Project implements Serializable
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
     }
-    
-    private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName) {
-         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+
+    private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenModelChanged(modelContainer, propertyName);
         }
