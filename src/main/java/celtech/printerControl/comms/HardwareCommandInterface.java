@@ -124,12 +124,12 @@ public class HardwareCommandInterface extends CommandInterface
 //                    steno.trace("Avail is " + dataInputStream.available());
                         try
                         {
-                            this.sleep(50);
+                            this.sleep(0, 1000);
                         } catch (InterruptedException ex)
                         {
                         }
 
-                        if (waitCounter >= 10)
+                        if (waitCounter >= 500000)
                         {
                             steno.error("No response from printer - disconnecting");
                             throw new SerialPortException(serialPort.getPortName(),
