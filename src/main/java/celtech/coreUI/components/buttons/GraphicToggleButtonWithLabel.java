@@ -10,6 +10,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 
 /**
@@ -22,6 +23,7 @@ public class GraphicToggleButtonWithLabel extends TaggablePane
     private final VBox container = new VBox();
     private final GraphicToggleButton button = new GraphicToggleButton();
     private final Label label = new Label();
+    private final Tooltip tooltip = new Tooltip();
 
     public GraphicToggleButtonWithLabel()
     {
@@ -45,6 +47,23 @@ public class GraphicToggleButtonWithLabel extends TaggablePane
         getChildren().add(container);
         container.getChildren().add(button);
         container.getChildren().add(label);
+
+        Tooltip.install(this, tooltip);
+    }
+
+    public String getTooltipText()
+    {
+        return tooltip.getText();
+    }
+
+    public void setTooltipText(String text)
+    {
+        tooltip.setText(text);
+    }
+
+    public StringProperty getTooltipTextProperty()
+    {
+        return tooltip.textProperty();
     }
 
     public String getFxmlFileName()
@@ -109,7 +128,8 @@ public class GraphicToggleButtonWithLabel extends TaggablePane
         double centreY = button.getHeight() / 2;
         double offsetFromCentre = 30;
 
-        Point2D tagOffsetFromCentre = MathUtils.angleDegreesToCartesianCWFromTop(tagOrientationProperty().get().getAngle(), offsetFromCentre, true);
+        Point2D tagOffsetFromCentre = MathUtils.angleDegreesToCartesianCWFromTop(
+            tagOrientationProperty().get().getAngle(), offsetFromCentre, true);
         Point2D position = tagOffsetFromCentre.add(centreX, centreY);
 
         return new Point2D(0, 0);
