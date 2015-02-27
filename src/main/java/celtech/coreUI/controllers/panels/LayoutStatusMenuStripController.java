@@ -332,7 +332,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         if (currentPrinter.getPrinterAncillarySystems().bedTemperatureProperty().get() > 60)
         {
-            if (Lookup.getUserPreferences().isOverrideSafeties() == true)
+            if (Lookup.getUserPreferences().isSafetyFeaturesOn() == false)
             {
                 try
                 {

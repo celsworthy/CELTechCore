@@ -14,7 +14,7 @@ public class UserPreferences
 {
 
     private SlicerType slicerType = SlicerType.Cura;
-    private final BooleanProperty overrideSafeties = new SimpleBooleanProperty(false);
+    private final BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
     private String languageTag = "";
     private final BooleanProperty showTooltips = new SimpleBooleanProperty(true);
 
@@ -32,7 +32,7 @@ public class UserPreferences
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType = userPreferenceFile.getSlicerType();
-        overrideSafeties.set(userPreferenceFile.isOverrideSafeties());
+        safetyFeaturesOn.set(userPreferenceFile.isSafetyFeaturesOn());
         this.languageTag = userPreferenceFile.getLanguageTag();
     }
 
@@ -47,20 +47,20 @@ public class UserPreferences
         saveSettings();
     }
 
-    public boolean isOverrideSafeties()
+    public boolean isSafetyFeaturesOn()
     {
-        return overrideSafeties.get();
+        return safetyFeaturesOn.get();
     }
 
-    public void setOverrideSafeties(boolean overrideSafeties)
+    public void setSafetyFeaturesOn(boolean value)
     {
-        this.overrideSafeties.set(overrideSafeties);
+        this.safetyFeaturesOn.set(value);
         saveSettings();
     }
 
-    public ReadOnlyBooleanProperty overrideSafetiesProperty()
+    public ReadOnlyBooleanProperty safetyFeaturesOnProperty()
     {
-        return overrideSafeties;
+        return safetyFeaturesOn;
     }
 
     public boolean isShowTooltips()
@@ -68,9 +68,9 @@ public class UserPreferences
         return showTooltips.get();
     }
 
-    public void setShowTooltips(boolean overrideSafeties)
+    public void setShowTooltips(boolean value)
     {
-        this.showTooltips.set(overrideSafeties);
+        this.showTooltips.set(value);
         saveSettings();
     }
 

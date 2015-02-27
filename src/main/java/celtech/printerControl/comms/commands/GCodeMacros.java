@@ -18,8 +18,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeMacros
 {
 
-    private static final String safetyOnDirectory = "Override_Safety_OFF";
-    private static final String safetyOffDirectory = "Override_Safety_ON";
+    private static final String safetyFeaturesOnDirectory = "Safety_Features_On";
+    private static final String safetyFeaturesOffDirectory = "Safety_Features_Off";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.
         getName());
@@ -37,12 +37,12 @@ public class GCodeMacros
         ArrayList<String> contents = new ArrayList<>();
         ArrayList<String> parentMacros = new ArrayList<>();
 
-        if (Lookup.getUserPreferences().isOverrideSafeties())
+        if (Lookup.getUserPreferences().isSafetyFeaturesOn())
         {
-            contents.add("; Printed with safety override ON");
+            contents.add("; Printed with safety features ON");
         } else
         {
-            contents.add("; Printed with safety override OFF");
+            contents.add("; Printed with safety features OFF");
         }
 
         String cleanedMacroName = macroName.replaceFirst(macroDefinitionString, "").trim();
@@ -144,13 +144,13 @@ public class GCodeMacros
 
         fileNameBuffer.append(ApplicationConfiguration.getCommonApplicationDirectory());
         fileNameBuffer.append(ApplicationConfiguration.macroFileSubpath);
-        if (Lookup.getUserPreferences().isOverrideSafeties())
+        if (Lookup.getUserPreferences().isSafetyFeaturesOn())
         {
-            fileNameBuffer.append(safetyOffDirectory);
+            fileNameBuffer.append(safetyFeaturesOnDirectory);
             fileNameBuffer.append(File.separator);
         } else
         {
-            fileNameBuffer.append(safetyOnDirectory);
+            fileNameBuffer.append(safetyFeaturesOffDirectory);
             fileNameBuffer.append(File.separator);
         }
         fileNameBuffer.append(macroName);
