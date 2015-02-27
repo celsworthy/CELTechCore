@@ -92,7 +92,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     @FXML
     private ComboBox<Object> cmbMaterials;
 
-    private ObservableList<Filament> availableFilaments = FXCollections.observableArrayList();
+    private ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
+    private ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
 
     public MaterialComponent()
     {
@@ -118,8 +119,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         try
         {
-            availableFilaments.addAll(FilamentContainer.getAppFilamentList());
-            availableFilaments.addAll(FilamentContainer.getUserFilamentList());
+            allFilaments.addAll(FilamentContainer.getAppFilamentList());
+            allFilaments.addAll(FilamentContainer.getUserFilamentList());
+            userFilaments.addAll(FilamentContainer.getUserFilamentList());
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
@@ -251,8 +253,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (mode == Mode.SETTINGS)
         {
             filamentsList.add(Lookup.i18n("materialComponent.unknown"));
+            filamentsList.addAll(userFilaments);
+        } else
+        {
+            filamentsList.addAll(allFilaments);
         }
-        filamentsList.addAll(availableFilaments);
         cmbMaterials.setItems(FXCollections.observableArrayList(filamentsList));
 
         FilamentContainer.getUserFilamentList().addListener(
@@ -469,7 +474,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
         String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
         String error = Lookup.i18n("smartReelProgrammer.error");
-        showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString, Color.BLACK);
+        showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString,
+                    Color.BLACK);
 
     }
 

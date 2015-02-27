@@ -37,6 +37,11 @@ public class PrinterSettings
     public PrinterSettings()
     {
         settingsName.set(ApplicationConfiguration.draftSettingsProfileName);
+        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getSettingsByProfileName(
+                    ApplicationConfiguration.draftSettingsProfileName);
+        brimOverride = draftParametersFile.getBrimWidth_mm();
+        fillDensityOverride = draftParametersFile.getFillDensity_normalised();
+        printSupportOverride = draftParametersFile.getGenerateSupportMaterial();
     }
 
     private void toggleDataChanged() {
