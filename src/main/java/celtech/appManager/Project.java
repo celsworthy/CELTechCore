@@ -51,7 +51,7 @@ public class Project implements Serializable
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
+    private final ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
     private String lastPrintJobID = "";
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
@@ -326,7 +326,7 @@ public class Project implements Serializable
         lastPrintJobID = printJobID;
     }
 
-    public void projectModified()
+    public final void projectModified()
     {
         if (!suppressProjectChanged)
         {
@@ -511,14 +511,6 @@ public class Project implements Serializable
          * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
-    }
-
-    //TODO get rid of this function
-    public void addModelContainer(String fullFilename, ModelContainer modelContainer)
-    {
-        steno.debug("I am loading " + fullFilename);
-        ProjectManager.getInstance().projectOpened(this);
-        addModel(modelContainer);
     }
 
     public void autoLayout()
