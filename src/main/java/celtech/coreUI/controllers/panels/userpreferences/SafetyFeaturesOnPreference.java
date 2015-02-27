@@ -11,13 +11,13 @@ import javafx.scene.control.Control;
  *
  * @author Ian
  */
-public class OverrideSafetiesPreference implements PreferencesTopInsetPanelController.Preference
+public class SafetyFeaturesOnPreference implements PreferencesTopInsetPanelController.Preference
 {
 
     private final CheckBox control;
     private final UserPreferences userPreferences;
 
-    public OverrideSafetiesPreference(UserPreferences userPreferences)
+    public SafetyFeaturesOnPreference(UserPreferences userPreferences)
     {
         this.userPreferences = userPreferences;
 
@@ -35,13 +35,13 @@ public class OverrideSafetiesPreference implements PreferencesTopInsetPanelContr
     public void updateValueFromControl()
     {
         boolean overrideSafety = control.isSelected();
-        userPreferences.setOverrideSafeties(overrideSafety);
+        userPreferences.setSafetyFeaturesOn(overrideSafety);
     }
 
     @Override
     public void populateControlWithCurrentValue()
     {
-        control.setSelected(userPreferences.isOverrideSafeties());
+        control.setSelected(userPreferences.isSafetyFeaturesOn());
     }
 
     @Override
@@ -53,6 +53,6 @@ public class OverrideSafetiesPreference implements PreferencesTopInsetPanelContr
     @Override
     public String getDescription()
     {
-        return Lookup.i18n("preferences.overrideSafety");
+        return Lookup.i18n("preferences.safetyFeaturesOn");
     }
 }

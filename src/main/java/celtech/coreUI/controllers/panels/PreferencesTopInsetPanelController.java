@@ -8,7 +8,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
-import celtech.coreUI.controllers.panels.userpreferences.OverrideSafetiesPreference;
+import celtech.coreUI.controllers.panels.userpreferences.SafetyFeaturesOnPreference;
 import celtech.coreUI.controllers.panels.userpreferences.ShowTooltipPreference;
 import celtech.coreUI.controllers.panels.userpreferences.SlicerTypePreference;
 import java.net.URL;
@@ -118,12 +118,12 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         Preference slicerTypePref = new SlicerTypePreference(userPreferences);
 
-        Preference overrideSafetyPref = new OverrideSafetiesPreference(userPreferences);
+        Preference safetyFeaturesOnPref = new SafetyFeaturesOnPreference(userPreferences);
         
         Preference showTooltipsPref = new ShowTooltipPreference(userPreferences);
 
         preferences.add(slicerTypePref);
-        preferences.add(overrideSafetyPref);
+        preferences.add(safetyFeaturesOnPref);
         preferences.add(showTooltipsPref);
 
         return preferences;

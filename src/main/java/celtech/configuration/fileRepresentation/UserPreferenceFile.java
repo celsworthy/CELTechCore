@@ -10,7 +10,7 @@ import celtech.configuration.UserPreferences;
 public class UserPreferenceFile
 {
     private SlicerType slicerType = null;
-    private boolean overrideSafeties = false;
+    private boolean safetyFeaturesOn = true;
     private String languageTag = "";
     private boolean showTooltips = false;
 
@@ -34,14 +34,14 @@ public class UserPreferenceFile
         this.slicerType = slicerType;
     }
 
-    public boolean isOverrideSafeties()
+    public boolean isSafetyFeaturesOn()
     {
-        return overrideSafeties;
+        return safetyFeaturesOn;
     }
 
-    public void setOverrideSafeties(boolean overrideSafeties)
+    public void setSafetyFeaturesOn(boolean value)
     {
-        this.overrideSafeties = overrideSafeties;
+        this.safetyFeaturesOn = value;
     }
 
     public boolean isShowTooltips()
@@ -57,7 +57,7 @@ public class UserPreferenceFile
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
-        setOverrideSafeties(userPreferences.isOverrideSafeties());
+        setSafetyFeaturesOn(userPreferences.isSafetyFeaturesOn());
         setLanguageTag(userPreferences.getLanguageTag());
         setShowTooltips(userPreferences.isShowTooltips());
     }
