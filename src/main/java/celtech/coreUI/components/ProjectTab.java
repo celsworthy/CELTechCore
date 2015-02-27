@@ -59,6 +59,7 @@ public class ProjectTab extends Tab
         ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = new Project();
+        projectManager.projectOpened(project);
         initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
     }
 

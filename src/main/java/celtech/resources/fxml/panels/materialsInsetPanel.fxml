@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<VBox minWidth="920.0" styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.MaterialsPanelController">
+    <children>
+        <BorderPane style="-fx-background-color: black;">
+            <center>
+                <VBox>
+                    <children>
+                        <TopMenuStrip BorderPane.alignment="CENTER" />
+                        <AnchorPane styleClass="aboutBody" BorderPane.alignment="CENTER">
+                            <children>
+                                <Group AnchorPane.bottomAnchor="60.0" AnchorPane.rightAnchor="60.0" />
+                            </children>
+                        </AnchorPane>
+                        <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
+                            <children>
+                                <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </center>
+            <left>
+                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+            </left>
+        </BorderPane>
+        
+    </children>
+</VBox>

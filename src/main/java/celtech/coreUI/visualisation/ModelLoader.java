@@ -65,14 +65,12 @@ public class ModelLoader
                     {
                         ModelContainer modelContainer = loadResult.getModelContainer();
                         modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProject().addModelContainer(
-                            loadResult.getFullFilename(), modelContainer);
+                        loadResult.getTargetProject().addModel(modelContainer);
                     }
                 } else
                 {
                     ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProject().addModelContainer(loadResult.getFullFilename(),
-                                                                    modelContainer);
+                    loadResult.getTargetProject().addModel(modelContainer);
                 }
             } else
             {
