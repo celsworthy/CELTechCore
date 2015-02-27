@@ -25,31 +25,31 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PurgeHelper
 {
-    
+
     private Stenographer steno = StenographerFactory.getStenographer(PurgeHelper.class.getName());
-    
+
     private Printer printerToUse = null;
-    
+
     private HeadEEPROMDataResponse savedHeadData = null;
-    
+
     private PurgeTask purgeTask = null;
-    
+
     private PurgeState state = PurgeState.IDLE;
     private final ArrayList<PurgeStateListener> stateListeners = new ArrayList<>();
-    
+
     private float reelNozzleTemperature = 0;
     private int lastDisplayTemperature = 0;
     private int currentDisplayTemperature = 0;
     private int purgeTemperature = 0;
-    
+
     private final PurgePrinterErrorHandler printerErrorHandler;
     private final Cancellable cancellable = new Cancellable();
-    
+
     private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
     {
         cancelPurgeAction();
     };
-    
+
     private final EventHandler<WorkerStateEvent> succeededTaskHandler = (WorkerStateEvent event) ->
     {
         PurgeStepResult result = (PurgeStepResult) event.getSource().getValue();
@@ -61,14 +61,14 @@ public class PurgeHelper
             setState(PurgeState.FAILED);
         }
     };
-    
+
     PurgeHelper(Printer printer)
     {
         this.printerToUse = printer;
         printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();
     }
-    
+
     public void cancelPurgeAction()
     {
         try
@@ -90,27 +90,27 @@ public class PurgeHelper
             resetPrinter();
         }
     }
-    
+
     public void repeatPurgeAction()
     {
         setState(PurgeState.INITIALISING);
     }
-    
+
     public PurgeState getState()
     {
         return state;
     }
-    
+
     public void addStateListener(PurgeStateListener stateListener)
     {
         stateListeners.add(stateListener);
     }
-    
+
     public void removeStateListener(PurgeStateListener stateListener)
     {
         stateListeners.remove(stateListener);
     }
-    
+
     public void setState(PurgeState newState)
     {
         this.state = newState;
@@ -118,7 +118,7 @@ public class PurgeHelper
         {
             listener.setState(state);
         }
-        
+
         switch (state)
         {
             case IDLE:
@@ -129,7 +129,7 @@ public class PurgeHelper
                 }
                 ;
                 break;
-            
+
             case INITIALISING:
                 // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
                 try
@@ -140,9 +140,9 @@ public class PurgeHelper
                     //temperature stored on the head and the current required temperature stored
                     // on the reel
                     SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
-                    
+
                     Filament settingsFilament = settingsScreenState.getFilament();
-                    
+
                     if (settingsFilament != null)
                     {
                         reelNozzleTemperature = settingsFilament.getNozzleTemperature();
@@ -152,7 +152,7 @@ public class PurgeHelper
                         reelNozzleTemperature = (float) printerToUse.reelsProperty().get(0).
                             nozzleTemperatureProperty().get();
                     }
-                    
+
                     float temperatureDifference = reelNozzleTemperature
                         - savedHeadData.getLastFilamentTemperature();
                     lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
@@ -174,7 +174,7 @@ public class PurgeHelper
                 }
                 ;
                 break;
-            
+
             case RUNNING_PURGE:
                 if (cancellable.cancelled)
                 {
@@ -185,14 +185,14 @@ public class PurgeHelper
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(purgeTask);
-                
+
                 purgeTask.setPurgeTemperature(purgeTemperature);
-                
+
                 Thread purgingTaskThread = new Thread(purgeTask, "run purge");
                 purgingTaskThread.setName("Purge - running purge");
                 purgingTaskThread.start();
                 break;
-            
+
             case HEATING:
                 if (cancellable.cancelled)
                 {
@@ -203,14 +203,14 @@ public class PurgeHelper
                 purgeTask.setOnSucceeded(succeededTaskHandler);
                 purgeTask.setOnFailed(failedTaskHandler);
                 TaskController.getInstance().manageTask(purgeTask);
-                
+
                 purgeTask.setPurgeTemperature(purgeTemperature);
-                
+
                 Thread heatingTaskThread = new Thread(purgeTask, "purge heating");
                 heatingTaskThread.setName("Purge - heating");
                 heatingTaskThread.start();
                 break;
-            
+
             case FINISHED:
                 if (cancellable.cancelled)
                 {
@@ -243,12 +243,18 @@ public class PurgeHelper
                 printerErrorHandler.deregisterForPrinterErrors();
                 break;
             case FAILED:
-                resetPrinter();
+                try
+                {
+                    printerToUse.cancel(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error whilst running purge - " + ex.getMessage());
+                }
                 printerErrorHandler.deregisterForPrinterErrors();
                 break;
         }
     }
-    
+
     private void resetPrinter()
     {
         try
@@ -263,22 +269,22 @@ public class PurgeHelper
             steno.error("Error resetting printer");
         }
     }
-    
+
     public int getLastMaterialTemperature()
     {
         return lastDisplayTemperature;
     }
-    
+
     public int getCurrentMaterialTemperature()
     {
         return currentDisplayTemperature;
     }
-    
+
     public int getPurgeTemperature()
     {
         return purgeTemperature;
     }
-    
+
     public void setPurgeTemperature(int newPurgeTemperature)
     {
         purgeTemperature = newPurgeTemperature;

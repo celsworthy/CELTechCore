@@ -78,6 +78,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
                     steno.error("Error running purge");
                 }
                 PrinterUtils.waitOnMacroFinished(printerToUse, this);
+                success = true;
                 break;
         }
 
@@ -96,16 +97,6 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
     @Override
     public boolean cancelRun()
     {
-        if (desiredState == PurgeState.RUNNING_PURGE)
-        {
-            try
-            {
-                printerToUse.cancel(null);
-            } catch (PrinterException ex)
-            {
-                steno.error("Error whilst running purge - " + ex.getMessage());
-            }
-        }
         return cancel();
     }
 }
