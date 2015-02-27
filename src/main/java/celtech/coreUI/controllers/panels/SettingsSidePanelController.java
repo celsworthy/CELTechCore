@@ -456,40 +456,23 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
             });
 
-        printerChooser.getSelectionModel()
-            .selectedItemProperty().addListener(new ChangeListener<Printer>()
-                {
-                    @Override
-                    public void changed(ObservableValue<? extends Printer> ov,
-                        Printer lastSelectedPrinter, Printer selectedPrinter
-                    )
-                    {
-                        if (selectedPrinter != null)
-                        {
-                            unbindPrinter(selectedPrinter);
-                        }
-                        if (lastSelectedPrinter != null)
-                        {
-                        }
-                        if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
-                        {
-                            currentPrinter = selectedPrinter;
-                        }
-
-                        if (selectedPrinter == null)
-                        {
-                            currentPrinter = null;
-                        }
-                        if (printerSettings != null)
-                        {
-                            printerSettings.setSelectedPrinter(selectedPrinter);
-                        }
-                        bindPrinter(selectedPrinter);
-                        configureMaterialComponents(selectedPrinter);
-
-                    }
+        printerChooser.getSelectionModel().selectedItemProperty().addListener(
+                (ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter) ->
+        {
+            if (currentPrinter != null)
+            {
+                unbindPrinter(currentPrinter);
             }
-            );
+            
+            currentPrinter = selectedPrinter;
+           
+            if (printerSettings != null)
+            {
+                printerSettings.setSelectedPrinter(selectedPrinter);
+            }
+            bindPrinter(selectedPrinter);
+            configureMaterialComponents(selectedPrinter);
+        });
     }
 
     private ChangeListener<Filament> materialFilament0Listener = (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
