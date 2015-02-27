@@ -194,7 +194,7 @@ public class MaintenancePanelController implements Initializable
     {
         gcodeFileChooser.setInitialFileName("Untitled");
 
-        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.MACRO)));
+        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.GCODE)));
 
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
 
