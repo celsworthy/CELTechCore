@@ -17,7 +17,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class PurgeTask extends Task<PurgeStepResult> implements ControllableService
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(PurgeTask.class.getName());
+    private final Stenographer steno = StenographerFactory.
+        getStenographer(PurgeTask.class.getName());
     private PurgeState desiredState = null;
 
     private Printer printerToUse = null;
@@ -51,7 +52,7 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
                 printerToUse.setBedTargetTemperature(desiredBedTemperature);
                 printerToUse.goToTargetBedTemperature();
                 boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
-                    printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this, 
+                    printerToUse.getPrinterAncillarySystems().bedTemperatureProperty(), this,
                     desiredBedTemperature, 5, 600, cancellable);
 
                 printerToUse.setNozzleTargetTemperature(purgeTemperature);
@@ -59,7 +60,8 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
                 //TODO modify to support multiple heaters
                 boolean extruderHeatFailed = PrinterUtils.
                     waitUntilTemperatureIsReached(
-                        printerToUse.headProperty().get().getNozzleHeaters().get(0).nozzleTemperatureProperty(), 
+                        printerToUse.headProperty().get().getNozzleHeaters().get(0).
+                        nozzleTemperatureProperty(),
                         this, purgeTemperature, 5, 300, cancellable);
 
                 if (!bedHeatFailed && !extruderHeatFailed)
@@ -69,16 +71,16 @@ public class PurgeTask extends Task<PurgeStepResult> implements ControllableServ
 
                 break;
 
-            case RUNNING_PURGE:                
+            case RUNNING_PURGE:
                 try
                 {
                     printerToUse.executeMacro("Purge Material");
+                    PrinterUtils.waitOnMacroFinished(printerToUse, this);
+                    success = true;
                 } catch (PrinterException ex)
                 {
                     steno.error("Error running purge");
                 }
-                PrinterUtils.waitOnMacroFinished(printerToUse, this);
-                success = true;
                 break;
         }
 
