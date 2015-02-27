@@ -48,6 +48,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private Mode mode;
     private boolean selected;
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
+    private final static String UNKNOWN = Lookup.i18n("materialComponent.unknown");
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
 
     public enum ReelType
@@ -215,7 +216,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
      */
     private void displayForSettingsScreen(Filament filament)
     {
-        if (selectedFilamentProperty.get() == null)
+        if (filament == null)
         {
             showReelNotLoaded();
         } else
@@ -240,6 +241,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
+    private ObservableList<Object> comboItems;
+
     /**
      * Set up the materials combo box. This displays a list of filaments and can also display an
      * "Unknown" (string) option when required.
@@ -252,13 +255,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         List<Object> filamentsList = new ArrayList<>();
         if (mode == Mode.SETTINGS)
         {
-            filamentsList.add(Lookup.i18n("materialComponent.unknown"));
+            filamentsList.add(UNKNOWN);
             filamentsList.addAll(userFilaments);
         } else
         {
             filamentsList.addAll(allFilaments);
         }
-        cmbMaterials.setItems(FXCollections.observableArrayList(filamentsList));
+        comboItems = FXCollections.observableArrayList(filamentsList);
+        cmbMaterials.setItems(comboItems);
 
         FilamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
@@ -266,12 +270,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 updateFilamentList();
             });
 
-        cmbMaterials.valueProperty().addListener(
-            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+        cmbMaterials.valueProperty().addListener((ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
             {
                 if (newValue instanceof Filament)
                 {
                     selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
+                    removeUnknownFromCombo();
                 } else
                 {
                     // must be "Unknown"
@@ -281,7 +285,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         if (mode == Mode.SETTINGS)
         {
-            cmbMaterials.setValue(Lookup.i18n("materialComponent.unknown"));
+            cmbMaterials.setValue(UNKNOWN);
         }
 
     }
@@ -482,7 +486,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private void showReelNotLoaded()
     {
         setReelType(ReelType.SOLID_QUESTION);
-        String unknown = Lookup.i18n("materialComponent.unknown");
+        String unknown = UNKNOWN;
         String noReelLoaded = Lookup.i18n("smartReelProgrammer.noReelLoaded");
         showDetails((1 + extruderNumber) + ":", unknown, noReelLoaded, Color.BLACK);
     }
@@ -515,6 +519,26 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         this.selected = selected;
         anchorPane.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, selected);
     }
+    
+     /**
+     * In SETTINGS mode, when a reel is removed then re-add the Unknown option.
+     */
+    private void readdUnknownToCombo()
+    {
+        if (!comboItems.contains(UNKNOWN))
+        {
+            comboItems.add(0, UNKNOWN);
+            cmbMaterials.setValue(UNKNOWN);
+        }
+    }
+    
+    /**
+     * In SETTINGS mode, when a custom filament has been chosen remove the Unknown option.
+     */
+    private void removeUnknownFromCombo()
+    {
+        comboItems.remove(UNKNOWN);
+    }        
 
     // PrinterListChangesNotifier
     @Override
@@ -551,6 +575,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         if (this.printer == printer)
         {
+            readdUnknownToCombo();
             updateGUIForModeAndPrinterExtruder();
         }
     }
