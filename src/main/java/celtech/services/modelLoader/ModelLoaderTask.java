@@ -10,7 +10,7 @@ import celtech.coreUI.visualisation.importers.obj.ObjImporter;
 import celtech.coreUI.visualisation.importers.stl.STLImporter;
 import celtech.coreUI.visualisation.importers.ModelLoadResult;
 import celtech.coreUI.visualisation.importers.gcode.GCodeImporterLines;
-import celtech.coreUI.visualisation.importers.stl.OptimisedSTLImporter;
+import celtech.coreUI.visualisation.importers.stl.STLImporter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +77,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
                                                   targetProjectTab);
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
-                OptimisedSTLImporter reader = new OptimisedSTLImporter();
+                STLImporter reader = new STLImporter();
                 modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
                                                   percentProgress);
             } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
