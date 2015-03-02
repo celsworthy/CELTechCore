@@ -2182,3 +2182,11 @@ all inherit from Menu Control's popup-menu. --- */
 {
     -fx-max-height: -1;
 }
+
+/**
+* Material Management
+*/
+
+#materialManagementBody {
+    -fx-background-color: mid_grey;
+}

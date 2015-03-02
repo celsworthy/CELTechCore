@@ -9,17 +9,95 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
+<?import org.controlsfx.control.textfield.*?>
 
-<VBox minWidth="920.0" styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.MaterialsPanelController">
+<VBox styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.MaterialsPanelController">
     <children>
-        <BorderPane style="-fx-background-color: black;">
+        <BorderPane style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
             <center>
                 <VBox>
                     <children>
                         <TopMenuStrip BorderPane.alignment="CENTER" />
-                        <AnchorPane styleClass="aboutBody" BorderPane.alignment="CENTER">
+                        <AnchorPane id="materialManagementBody" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
                             <children>
-                                <Group AnchorPane.bottomAnchor="60.0" AnchorPane.rightAnchor="60.0" />
+                                <HBox prefHeight="100.0" prefWidth="200.0" />
+                                <GridPane hgap="5.0" vgap="5.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" percentWidth="40.0" />
+                                        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="60.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints fillHeight="false" />
+                                        <RowConstraints valignment="CENTER" />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                    </rowConstraints>
+                                    <children>
+                                        <Label text="%sidePanel_settings.MaterialName" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <Label text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <Label text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <Label text="%sidePanel_settings.filamentDiameterLabel" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <Label text="%sidePanel_settings.filamentMultiplierLabel" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <Label text="%sidePanel_settings.extrusionRateMultiplierLabel" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                        <Label text="%sidePanel_settings.firstLayerBedTemp" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                        <Label text="%sidePanel_settings.bedTemp" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                        <Label text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                        <Label text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                        <Label text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                
+                                        <CustomTextField fx:id="name" maxWidth="-Infinity" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                        <ComboBox fx:id="material" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <ColorPicker fx:id="colour" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3"> 
+                                            <children>
+                                                <RestrictedNumberField fx:id="filamentDiameter" allowedDecimalPlaces="2" maxLength="4" prefColumnCount="4" />
+                                                <Label text="%misc.mm" />
+                                            </children>
+                                        </HBox>
+                                        <RestrictedNumberField fx:id="filamentMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
+                                        <RestrictedNumberField fx:id="feedRateMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="5" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6"> 
+                                            <children>
+                                                <RestrictedNumberField fx:id="firstLayerBedTemperature" maxLength="3" prefColumnCount="4" />
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7"> 
+                                            <children>
+                                                <RestrictedNumberField fx:id="bedTemperature" maxLength="3" prefColumnCount="4" />
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <HBox fillHeight="false" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8"> 
+                                            <children>
+                                                <RestrictedNumberField fx:id="firstLayerNozzleTemperature" maxLength="3" prefColumnCount="4" />
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9"> 
+                                            <children>
+                                                <RestrictedNumberField fx:id="nozzleTemperature" maxLength="3" prefColumnCount="4" />
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10"> 
+                                            <children>
+                                                <RestrictedNumberField fx:id="ambientTemperature" maxLength="3" prefColumnCount="4" />
+                                                <Label text="%misc.degreesC" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </GridPane>
                             </children>
                         </AnchorPane>
                         <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
