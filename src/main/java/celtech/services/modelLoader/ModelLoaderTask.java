@@ -2,12 +2,10 @@ package celtech.services.modelLoader;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.coreUI.components.ProjectTab;
-import celtech.utils.threed.importers.obj.ObjImporter;
-import celtech.utils.threed.importers.stl.STLImporter;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.utils.threed.importers.gcode.GCodeImporterLines;
-import celtech.utils.threed.importers.stl.OptimisedSTLImporter;
+import celtech.utils.threed.importers.obj.ObjImporter;
+import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
