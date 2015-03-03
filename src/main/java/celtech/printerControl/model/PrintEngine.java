@@ -894,7 +894,7 @@ public class PrintEngine implements ControllableService
                     FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line));
                 } else
                 {
-                    FileUtils.write(printjobFile, line);
+                    FileUtils.writeStringToFile(printjobFile, line + "\r", true);
                 }
             }
             reader.close();

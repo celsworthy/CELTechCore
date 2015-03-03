@@ -91,23 +91,26 @@ class SlicerOutputGobbler extends Thread
                         if (lineParts.length == 4)
                         {
                             String task = lineParts[1];
-                            int progressInt = Integer.valueOf(lineParts[2]);
+                            int progressInt = 0;
+                            
+                            float workDone = Float.valueOf(lineParts[2]);
+                            float totalWork = Float.valueOf(lineParts[3]);
                             
                             if (task.equalsIgnoreCase("inset"))
                             {
-                                progressInt = (int)(((double)progressInt / 100) * 25);
+                                progressInt = (int)((workDone/ totalWork) * 25);
                             }
                             else if (task.equalsIgnoreCase("skin"))
                             {
-                                progressInt = (int)(((double)progressInt / 100) * 25) + 25;                                
+                                progressInt = (int)((workDone/ totalWork) * 25) + 25;                                
                             }
                             else if (task.equalsIgnoreCase("export"))
                             {
-                                progressInt = (int)(((double)progressInt / 100) * 49) + 50;                                
+                                progressInt = (int)((workDone/ totalWork) * 49) + 50;                                
                             }
                             else if (task.equalsIgnoreCase("process"))
                             {
-                                progressInt = (int)(((double)progressInt / 100) * 1) + 99;                                
+                                progressInt = (int)((workDone/ totalWork) * 1) + 99;                                
                             }
                             setLoadProgress(task, progressInt);
                         }
