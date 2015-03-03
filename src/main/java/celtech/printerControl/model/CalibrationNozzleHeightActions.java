@@ -202,7 +202,7 @@ public class CalibrationNozzleHeightActions
 
             printer.selectNozzle(nozzleTo);
             PrinterUtils.waitOnBusy(printer, cancellable);
-            printer.probeBed();
+            printer.probeZ();
             PrinterUtils.waitOnBusy(printer, cancellable);
             float deltaValue = printer.getZDelta();
 

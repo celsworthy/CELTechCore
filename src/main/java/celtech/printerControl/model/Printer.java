@@ -202,7 +202,16 @@ public interface Printer extends RoboxResponseConsumer
 
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition);
 
+    public void homeX();
+    public void homeY();
     public void homeZ();
+
+    public void probeX();
+    public float getXDelta() throws PrinterException;
+    public void probeY();
+    public float getYDelta() throws PrinterException;
+    public void probeZ();
+    public float getZDelta() throws PrinterException;
 
     public void levelGantry();
 
@@ -530,10 +539,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public void updatePrinterIDChecksum(String checksum) throws PrinterException;
 
-    public void probeBed();
-
-    public float getZDelta() throws PrinterException;
-
     /**
      *
      * @param headToWrite
@@ -576,4 +581,6 @@ public interface Printer extends RoboxResponseConsumer
      * @return
      */
     public boolean doFilamentSlipWhilePrinting(FirmwareError error);
+
+    public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
 }
