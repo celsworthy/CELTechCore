@@ -610,7 +610,8 @@ public class CalibrationInsetPanelController implements Initializable,
     {
 //        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
         calibrationProgressPrint.setTargetLegend("");
-        calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
+        calibrationProgressPrint.
+            setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
 //        calibrationProgressPrint.setTargetValue("0");
         calibrationProgressPrint.setTargetValue("");
 
@@ -628,7 +629,10 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void hideSpinner()
     {
+        if (spinnerControl != null)
+        {
             spinnerControl.stopSpinning();
+        }
     }
 
     @Override
