@@ -2190,3 +2190,18 @@ all inherit from Menu Control's popup-menu. --- */
 #materialManagementBody {
     -fx-background-color: mid_grey;
 }
+
+#materialsGridPane {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 16pt;
+}
+
+#materialsGridPane .RestrictedNumberField {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 16pt;
+}
+
+#materialsGridPane .TextField {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 16pt;
+}

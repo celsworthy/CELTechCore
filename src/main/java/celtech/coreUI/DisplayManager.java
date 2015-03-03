@@ -55,7 +55,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener
+public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener, SpinnerControl
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(

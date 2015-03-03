@@ -12,7 +12,9 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ProjectGUIState;
+import celtech.coreUI.SpinnerControl;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
@@ -50,6 +52,7 @@ public class Lookup
     private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
+    private static SpinnerControl spinnerControl;
     /**
      * The printer that has been selected on the Status panel.
      */
@@ -188,6 +191,17 @@ public class Lookup
     {
         Lookup.systemNotificationHandler = systemNotificationHandler;
     }
+    
+    public static SpinnerControl getSpinnerControl()
+    {
+       return spinnerControl;
+    }     
+    
+    public static void setSpinnerControl(
+        SpinnerControl spinnerControl)
+    {
+        Lookup.spinnerControl = spinnerControl;
+    }    
 
     public static PrinterListChangesNotifier getPrinterListChangesNotifier()
     {

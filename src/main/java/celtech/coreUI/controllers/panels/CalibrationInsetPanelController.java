@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
+import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
@@ -58,6 +58,7 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
     CalibrationNozzleOpeningGUI calibrationNozzleOpeningGUI;
     StateTransitionManager stateManager;
+    SpinnerControl spinnerControl;
 
     private ResourceBundle resources;
 
@@ -234,6 +235,7 @@ public class CalibrationInsetPanelController implements Initializable,
     public void initialize(URL location, ResourceBundle resources)
     {
         this.resources = resources;
+        spinnerControl = Lookup.getSpinnerControl();
 
         setupProgressBars();
 
@@ -245,8 +247,6 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 
         addDiagramMoveScaleListeners();
-
-        
 
     }
 
@@ -507,22 +507,25 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void configureStartButtonForMode(CalibrationMode calibrationMode, Printer printer)
     {
-        if (printer == null) {
+        if (printer == null)
+        {
             return;
         }
         startCalibrationButton.getTag().removeAllConditionalText();
         startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateHeadIsDetached",
-                                           Bindings.isNull(printer.headProperty()));
+                                                           Bindings.isNull(printer.headProperty()));
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
                 startCalibrationButton.disableProperty().bind(
                     printer.canCalibrateNozzleOpeningProperty().not());
-                 startCalibrationButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                           printer.extrudersProperty().get(0).
-                                           filamentLoadedProperty().not());
-                 startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateNoSmartReel",
-                                           Bindings.isEmpty(printer.reelsProperty()));
+                startCalibrationButton.getTag().addConditionalText(
+                    "dialogs.cantPrintNoFilamentMessage",
+                    printer.extrudersProperty().get(0).
+                    filamentLoadedProperty().not());
+                startCalibrationButton.getTag().addConditionalText(
+                    "dialogs.cantCalibrateNoSmartReel",
+                    Bindings.isEmpty(printer.reelsProperty()));
                 break;
             case NOZZLE_HEIGHT:
                 startCalibrationButton.disableProperty().bind(
@@ -617,12 +620,15 @@ public class CalibrationInsetPanelController implements Initializable,
 
     protected void showSpinner()
     {
-        DisplayManager.getInstance().startSpinning(informationCentre);
+        if (spinnerControl != null)
+        {
+            spinnerControl.startSpinning(informationCentre);
+        }
     }
 
     protected void hideSpinner()
     {
-        DisplayManager.getInstance().stopSpinning();
+            spinnerControl.stopSpinning();
     }
 
     @Override
@@ -671,6 +677,7 @@ public class CalibrationInsetPanelController implements Initializable,
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
+
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
