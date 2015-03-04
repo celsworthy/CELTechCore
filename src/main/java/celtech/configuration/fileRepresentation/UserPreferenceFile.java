@@ -2,11 +2,14 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  *
  * @author Ian
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class UserPreferenceFile
 {
     private SlicerType slicerType = null;
