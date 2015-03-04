@@ -269,6 +269,7 @@ public class FilamentContainer
      */
     public static void deleteFilament(Filament filamentToSave)
     {
+        assert(filamentToSave.isMutable());
         File filamentToDelete = new File(constructFilePath(filamentToSave));
         FileUtils.deleteQuietly(filamentToDelete);
         loadFilamentData();

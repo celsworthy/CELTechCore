@@ -85,7 +85,7 @@
                 <Label text="%misc.degreesC" />
             </children>
         </HBox>
-        <ComboBox fx:id="cmbFilament" prefWidth="150.0" styleClass="materialCombos" GridPane.columnIndex="1" />
+        <ComboBox id="cmbLibraryFilament" fx:id="cmbFilament" prefWidth="150.0" GridPane.columnIndex="1" />
     </children>
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

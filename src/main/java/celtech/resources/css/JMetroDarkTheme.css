@@ -2216,3 +2216,7 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 13pt;
 }
+
+#cmbLibraryFilament {
+    -fx-pref-width: 250;
+}

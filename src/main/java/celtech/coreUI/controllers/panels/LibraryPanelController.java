@@ -90,6 +90,7 @@ public class LibraryPanelController implements Initializable
     private void associateInnerController(FilamentLibraryPanelController libraryController)
     {
         saveButton.disableProperty().bind(libraryController.getCanSave().not());
+        deleteButton.disableProperty().bind(libraryController.getCanDelete().not());
     }
 
     void setMode(Mode mode)

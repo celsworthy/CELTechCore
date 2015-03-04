@@ -4,9 +4,12 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -18,10 +21,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -33,6 +41,7 @@ public class FilamentLibraryPanelController implements Initializable
 
     enum State
     {
+
         /**
          * Editing a new profile that has not yet been saved
          */
@@ -52,6 +61,7 @@ public class FilamentLibraryPanelController implements Initializable
 
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
+    private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
 
     private String currentFilamentID;
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
@@ -100,6 +110,8 @@ public class FilamentLibraryPanelController implements Initializable
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
 
+        canDelete.bind(state.isNotEqualTo(State.ROBOX));
+
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
 
         for (MaterialType materialType : MaterialType.values())
@@ -112,27 +124,57 @@ public class FilamentLibraryPanelController implements Initializable
         setupWidgetChangeListeners();
 
         setupFilamentCombo();
-
+        
+        cmbFilament.setValue(cmbFilament.getItems().get(0));
     }
 
     private void setupFilamentCombo()
     {
+        cmbFilament.setCellFactory((ListView<Filament> param) -> new FilamentCell());
+
+        repopulateCmbFilament();
+
+        cmbFilament.valueProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                selectFilament(newValue);
+            });
+
+        
+
+    }
+
+    private void repopulateCmbFilament()
+    {
         try
         {
+            allFilaments.clear();
             allFilaments.addAll(FilamentContainer.getAppFilamentList());
-            allFilaments.addAll(FilamentContainer.getUserFilamentList());
+            allFilaments.addAll(FilamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             comboItems = FXCollections.observableArrayList(allFilaments);
             cmbFilament.setItems(comboItems);
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
         }
-        
-        cmbFilament.valueProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-        {
-            selectFilament(newValue);
-        });
+    }
+
+    private void clearWidgets()
+    {
+        name.setText("");
+//        material.getSelectionModel().select(filament.getMaterial());
+        filamentDiameter.floatValueProperty().set(0f);
+        filamentMultiplier.floatValueProperty().set(0f);
+        feedRateMultiplier.floatValueProperty().set(0f);
+        ambientTemperature.intValueProperty().set(0);
+        firstLayerBedTemperature.intValueProperty().set(0);
+        bedTemperature.intValueProperty().set(0);
+        firstLayerNozzleTemperature.intValueProperty().set(0);
+        nozzleTemperature.intValueProperty().set(0);
+//        colour.setValue(filament.getDisplayColour());
+        isDirty.set(false);
     }
 
     private void setupWidgetChangeListeners()
@@ -176,17 +218,19 @@ public class FilamentLibraryPanelController implements Initializable
         {
             isDirty.set(true);
         };
-    
+
     private void selectFilament(Filament filament)
     {
         currentFilamentID = filament.getFilamentID();
         updateWidgets(filament);
-        if (currentFilamentID.startsWith("U")) {
+        if (currentFilamentID.startsWith("U"))
+        {
             state.set(State.CUSTOM);
-        } else {
+        } else
+        {
             state.set(State.ROBOX);
         }
-    }    
+    }
 
     public void updateWidgets(Filament filament)
     {
@@ -204,7 +248,11 @@ public class FilamentLibraryPanelController implements Initializable
         isDirty.set(false);
     }
 
-    public Filament getFilament()
+    /**
+     * Construct a new Filament from the contents of the widgets. If filamentID is null then a new
+     * one is generated.
+     */
+    public Filament getFilament(String filamentID)
     {
         Filament filamentToReturn = null;
 
@@ -213,7 +261,7 @@ public class FilamentLibraryPanelController implements Initializable
             filamentToReturn = new Filament(
                 name.getText(),
                 material.getSelectionModel().getSelectedItem(),
-                currentFilamentID,
+                filamentID,
                 filamentDiameter.getAsFloat(),
                 filamentMultiplier.getAsFloat(),
                 feedRateMultiplier.getAsFloat(),
@@ -232,12 +280,11 @@ public class FilamentLibraryPanelController implements Initializable
         return filamentToReturn;
     }
 
-    private void validateMaterialName()
+    private void validateMaterialName(String name)
     {
         boolean invalid = false;
-        String profileNameText = name.getText();
 
-        if (profileNameText.equals(""))
+        if (name.equals(""))
         {
             invalid = true;
         } else
@@ -245,7 +292,7 @@ public class FilamentLibraryPanelController implements Initializable
             ObservableList<Filament> existingMaterialList = FilamentContainer.getUserFilamentList();
             for (Filament material : existingMaterialList)
             {
-                if (material.getFriendlyFilamentName().equals(profileNameText))
+                if (material.getFriendlyFilamentName().equals(name))
                 {
                     invalid = true;
                     break;
@@ -257,25 +304,91 @@ public class FilamentLibraryPanelController implements Initializable
     void whenSavePressed()
     {
         assert (state.get() != State.ROBOX);
-        Filament filament = getFilament();
+        Filament filament = getFilament(currentFilamentID);
         FilamentContainer.saveFilament(filament);
+        repopulateCmbFilament();
+        cmbFilament.setValue(FilamentContainer.getFilamentByID(filament.getFilamentID()));
     }
 
     void whenNewPressed()
     {
+        state.set(State.NEW);
+        clearWidgets();
+        currentFilamentID = null;
     }
 
     void whenCopyPressed()
     {
+        Filament filament = getFilament(null);
+        Set<String> allCurrentNames = new HashSet<>();
+        allFilaments.forEach((Filament filament1) ->
+        {
+            allCurrentNames.add(filament1.getFriendlyFilamentName());
+        });
+        String newName = DeDuplicator.suggestNonDuplicateName(filament.getFriendlyFilamentName(),
+                                                              allCurrentNames);
+        filament.setFriendlyFilamentName(newName);
+        FilamentContainer.saveFilament(filament);
+        repopulateCmbFilament();
+        cmbFilament.setValue(FilamentContainer.getFilamentByID(filament.getFilamentID()));
     }
 
     void whenDeletePressed()
     {
+        if (state.get() != State.NEW)
+        {
+            FilamentContainer.deleteFilament(FilamentContainer.getFilamentByID(currentFilamentID));
+        }
+        repopulateCmbFilament();
+        clearWidgets();
     }
 
     public ReadOnlyBooleanProperty getCanSave()
     {
         return canSave;
+    }
+
+    ReadOnlyBooleanProperty getCanDelete()
+    {
+        return canDelete;
+    }
+
+    public class FilamentCell extends ListCell<Filament>
+    {
+
+        private int SWATCH_SQUARE_SIZE = 16;
+
+        HBox cellContainer;
+        Rectangle rectangle = new Rectangle();
+        Label label;
+
+        public FilamentCell()
+        {
+            cellContainer = new HBox();
+            cellContainer.setAlignment(Pos.CENTER_LEFT);
+            rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
+            label = new Label();
+            cellContainer.getChildren().addAll(rectangle, label);
+        }
+
+        @Override
+        protected void updateItem(Filament item, boolean empty)
+        {
+            super.updateItem(item, empty);
+            if (item != null && !empty)
+            {
+                Filament filament = (Filament) item;
+                setGraphic(cellContainer);
+                rectangle.setFill(filament.getDisplayColour());
+
+                label.setText(filament.getLongFriendlyName() + " "
+                    + filament.getMaterial().getFriendlyName());
+                label.getStyleClass().add("filamentSwatchPadding");
+            } else
+            {
+                setGraphic(null);
+            }
+        }
     }
 
 }
