@@ -101,6 +101,9 @@ public class FilamentLibraryPanelController implements Initializable
     private TextField name;
 
     @FXML
+    private TextField filamentID;
+
+    @FXML
     private RestrictedNumberField filamentMultiplier;
 
     @Override
@@ -124,7 +127,12 @@ public class FilamentLibraryPanelController implements Initializable
         setupWidgetChangeListeners();
 
         setupFilamentCombo();
-        
+
+        selectFirstFilament();
+    }
+
+    private void selectFirstFilament()
+    {
         cmbFilament.setValue(cmbFilament.getItems().get(0));
     }
 
@@ -139,9 +147,6 @@ public class FilamentLibraryPanelController implements Initializable
             {
                 selectFilament(newValue);
             });
-
-        
-
     }
 
     private void repopulateCmbFilament()
@@ -164,9 +169,11 @@ public class FilamentLibraryPanelController implements Initializable
     private void clearWidgets()
     {
         name.setText("");
+        filamentID.setText("");
 //        material.getSelectionModel().select(filament.getMaterial());
         filamentDiameter.floatValueProperty().set(0f);
         filamentMultiplier.floatValueProperty().set(0f);
+
         feedRateMultiplier.floatValueProperty().set(0f);
         ambientTemperature.intValueProperty().set(0);
         firstLayerBedTemperature.intValueProperty().set(0);
@@ -194,6 +201,7 @@ public class FilamentLibraryPanelController implements Initializable
 
     private void setupWidgetEditableBindings()
     {
+        filamentID.disableProperty().bind(isEditable.not());
         bedTemperature.disableProperty().bind(isEditable.not());
         firstLayerNozzleTemperature.disableProperty().bind(isEditable.not());
         colour.disableProperty().bind(isEditable.not());
@@ -235,6 +243,7 @@ public class FilamentLibraryPanelController implements Initializable
     public void updateWidgets(Filament filament)
     {
         name.setText(filament.getFriendlyFilamentName());
+        filamentID.setText(filament.getFilamentID());
         material.getSelectionModel().select(filament.getMaterial());
         filamentDiameter.floatValueProperty().set(filament.getDiameter());
         filamentMultiplier.floatValueProperty().set(filament.getFilamentMultiplier());
@@ -341,6 +350,7 @@ public class FilamentLibraryPanelController implements Initializable
         }
         repopulateCmbFilament();
         clearWidgets();
+        selectFirstFilament();
     }
 
     public ReadOnlyBooleanProperty getCanSave()

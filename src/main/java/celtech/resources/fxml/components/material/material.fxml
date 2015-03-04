@@ -23,7 +23,7 @@
                   <Text fx:id="materialColour" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialName" text="Royal Blue" translateX="9.0" translateY="6.0" />
                </children>
             </HBox>
-                  <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" minHeight="-Infinity" onAction="#whenMaterialSelected" prefHeight="36.0" prefWidth="245.0" />
+                  <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" minHeight="-Infinity" onAction="#whenMaterialSelected" prefHeight="36.0" prefWidth="245.0" styleClass="cmbCleanCombo" />
                </children>
             </StackPane>
       <HBox fx:id="materialRemainingContainer" prefHeight="20.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="100.0">

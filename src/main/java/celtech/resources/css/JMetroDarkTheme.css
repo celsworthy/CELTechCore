@@ -111,7 +111,7 @@
 .text-field {
     -fx-font-size: 10pt;
     -fx-background-radius: 0px;
-    -fx-padding: 0 0 0 0;
+    /*-fx-padding: 0 0 0 0;*/
 }
 
 
@@ -1990,7 +1990,7 @@ modal-dialogue{
 }
 
 /**
-* Filament choice combo
+* MaterialComponent choice combo
 */
 
 #MaterialComponentAnchorPane:selected {
@@ -2006,10 +2006,6 @@ modal-dialogue{
     -fx-font-family: 'Source Sans Pro Light';
 }
 
-#cmbMaterials {
-    -fx-font-family: 'Source Sans Pro Regular';
-}
-
 .filamentSwatchPadding {
     -fx-padding: 0 10 0 10;
 }
@@ -2018,35 +2014,36 @@ modal-dialogue{
 /* -------------- CODE FOR THE NON-EDITABLE COMBO-BOX -------------- */
 
 /* ------- MAIN BUTTON ------- */
-#cmbMaterials {
+.cmbCleanCombo {
 /*-fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";*/
+-fx-font-family: 'Source Sans Pro Regular';
 -fx-background-color: white;
 /*-fx-background-radius: 5, 5, 4, 3;
 -fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
 -fx-padding: 0;
 }
 
-#cmbMaterials:hover {
+.cmbCleanCombo:hover {
 -fx-color: -fx-hover-base;
 }
 
 /*------- THIS SPECIFIES THE BUTTON COLOR WHEN THE POPUP MENU IS SHOWING -------*/
-#cmbMaterials:showing {
+.cmbCleanCombo:showing {
 -fx-color: -fx-pressed-base;
 }
 
-#cmbMaterials:focused {
+.cmbCleanCombo:focused {
 /*-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
 -fx-background-radius: 6.4, 4, 5, 3;
 -fx-background-insets: -1.4, 0, 1, 2;*/
 }
 
-#cmbMaterials:disabled {
+.cmbCleanCombo:disabled {
 -fx-opacity: .4;
 }
 
 /* ------- OPEN BUTTON ------- */
-#cmbMaterials .arrow-button {
+.cmbCleanCombo .arrow-button {
 -fx-background-color: white;
 /*-fx-background-insets: 0, 1, 2;
 -fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
@@ -2054,7 +2051,7 @@ modal-dialogue{
 }
 
 /* ------- ARROW* ------- */
-#cmbMaterials .arrow {
+.cmbCleanCombo .arrow {
 -fx-background-insets: 1 0 -1 0, 0;
 -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
 -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
@@ -2184,39 +2181,47 @@ all inherit from Menu Control's popup-menu. --- */
 }
 
 /**
-* Material Management
+* Filament Library
 */
 
-.materialCombos {
-    -fx-pref-width: 180;
+.materialNumbers {
+    -fx-alignment: CENTER;
 }
 
 #materialsGridPane {
     -fx-background-color: light_grey;
-}
-
-#materialsGridPane {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 13pt;
+    -fx-font-size: 10pt;    
 }
 
 #materialsGridPane .RestrictedNumberField {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 13pt;
+    -fx-font-size: 10pt;
 }
 
 #materialsGridPane .text-field {
-    -fx-pref-width: 130;
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 13pt;
+    -fx-font-size: 10pt;
 }
 
 #materialsGridPane .label {
-    -fx-padding: 7;
+    /*-fx-padding: 0 0 0 7;*/
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 13pt;
+    -fx-font-size: 10pt;
 }
 
 #cmbLibraryFilament {
-    -fx-pref-width: 250;
+    -fx-pref-width: 290;
+}
+
+.filamentLibUpper {
+    -fx-pref-width: 190;
+}
+
+.filamentLibLower {
+    -fx-pref-width: 70;
+}
+
+.filamentLibTitle {
+    -fx-text-fill: robox_blue;
 }
