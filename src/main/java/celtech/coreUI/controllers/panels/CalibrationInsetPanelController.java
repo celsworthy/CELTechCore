@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
@@ -24,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -142,6 +145,12 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     private VBox diagramContainer;
 
+    @FXML
+    private Pane calibrationLeftBorder;
+
+    @FXML
+    private TopMenuStrip topMenuStrip;
+
     private Printer currentPrinter;
     private int targetTemperature;
     private double currentExtruderTemperature;
@@ -150,6 +159,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private Pane diagramNode;
     DiagramController diagramController;
     private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
+    private boolean backToStatusInhibitWhenAtTop = false;
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -602,7 +612,13 @@ public class CalibrationInsetPanelController implements Initializable,
         calibrationMenu.reset();
         hideAllInputControlsExceptStepNumber();
         stepNumber.setVisible(false);
-        backToStatus.setVisible(true);
+        if (!backToStatusInhibitWhenAtTop)
+        {
+            backToStatus.setVisible(true);
+        } else
+        {
+            backToStatus.setVisible(false);
+        }
         cancelCalibrationButton.setVisible(false);
     }
 
@@ -633,6 +649,18 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             spinnerControl.stopSpinning();
         }
+    }
+
+    public void hideCommonBordersAndBackButton()
+    {
+        calibrationLeftBorder.setMinWidth(0);
+        calibrationLeftBorder.setPrefWidth(0);
+        calibrationLeftBorder.setVisible(false);
+        topMenuStrip.setMinHeight(0);
+        topMenuStrip.setPrefHeight(0);
+        topMenuStrip.setVisible(false);
+        backToStatus.setVisible(false);
+        backToStatusInhibitWhenAtTop = true;
     }
 
     @Override

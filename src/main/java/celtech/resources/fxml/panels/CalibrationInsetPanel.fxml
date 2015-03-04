@@ -120,10 +120,10 @@
                 </VBox>
             </bottom>
             <left>
-                <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
+                <Pane fx:id="calibrationLeftBorder" id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
             </left>
             <top>
-                <TopMenuStrip BorderPane.alignment="CENTER" />
+                <TopMenuStrip fx:id="topMenuStrip" BorderPane.alignment="CENTER" />
             </top>
         </BorderPane>
     </children>
