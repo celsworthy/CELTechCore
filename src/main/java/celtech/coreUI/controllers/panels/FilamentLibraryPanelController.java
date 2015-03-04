@@ -181,6 +181,11 @@ public class FilamentLibraryPanelController implements Initializable
     {
         currentFilamentID = filament.getFilamentID();
         updateWidgets(filament);
+        if (currentFilamentID.startsWith("U")) {
+            state.set(State.CUSTOM);
+        } else {
+            state.set(State.ROBOX);
+        }
     }    
 
     public void updateWidgets(Filament filament)
