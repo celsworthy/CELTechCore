@@ -39,7 +39,7 @@ public class CalibrationMenuConfiguration
                 currentlySelectedPrinter.canCalibrateXYAlignmentProperty());
         }
 
-        calibrationMenu.setTitle("Calibration");
+        calibrationMenu.setTitle(Lookup.i18n("calibrationPanel.title"));
         Callable doOpeningCalibration = () ->
         {
             calibrationInsetPanelController.setCalibrationMode(
