@@ -35,7 +35,7 @@ public class LibraryPanelController implements Initializable
     enum Mode
     {
 
-        FILAMENT, PRINT_PROFILE
+        FILAMENT, PRINT_PROFILE, WRITE_TO_REEL
     }
 
     @FXML
@@ -83,6 +83,14 @@ public class LibraryPanelController implements Initializable
         };
         libraryMenu.addItem(Lookup.i18n("library.printProfile"),
                             doOpenPrintProfileLibrary, null);
+        
+        Callable doOpenWriteToReel = () ->
+        {
+            setMode(Mode.WRITE_TO_REEL);
+            return null;
+        };
+        libraryMenu.addItem(Lookup.i18n("library.writeToReel"),
+                            doOpenWriteToReel, null);        
 
         libraryMenu.selectFirstItem();
     }

@@ -99,15 +99,15 @@
             </top>
             <center>
                 <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild">
-                   <children>
-                       <VBox fx:id="materialContainer" spacing="36.0" BorderPane.alignment="CENTER"> 
-                           <children>
-                        </children>
-                           <HBox.margin>
-                               <Insets top="30.0" />
-                           </HBox.margin>
-                       </VBox>
-                   </children>
+                    <children>
+                        <VBox fx:id="materialContainer" spacing="36.0" BorderPane.alignment="CENTER"> 
+                            <children>
+                            </children>
+                            <HBox.margin>
+                                <Insets top="30.0" />
+                            </HBox.margin>
+                        </VBox>
+                    </children>
                 </HBox>
             </center>
             <bottom>
@@ -175,13 +175,13 @@
                                 <Label text="%sidePanel_layout.RotationLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
+                                        <RestrictedNumberField fx:id="scaleTextField" allowedDecimalPlaces="3" maxLength="11" prefColumnCount="4" text="-" />
                                         <Label text="%misc.percent" />
                                     </children>
                                 </HBox>
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="rotationTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
+                                        <RestrictedNumberField fx:id="rotationTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" text="-" />
                                         <Label text="%misc.degrees" />
                                     </children>
                                 </HBox>
