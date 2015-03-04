@@ -2015,47 +2015,47 @@ modal-dialogue{
 
 /* ------- MAIN BUTTON ------- */
 .cmbCleanCombo {
-/*-fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";*/
--fx-font-family: 'Source Sans Pro Regular';
--fx-background-color: white;
-/*-fx-background-radius: 5, 5, 4, 3;
--fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
--fx-padding: 0;
+    /*-fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";*/
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: white;
+    /*-fx-background-radius: 5, 5, 4, 3;
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
+    -fx-padding: 0;
 }
 
 .cmbCleanCombo:hover {
--fx-color: -fx-hover-base;
+    -fx-color: -fx-hover-base;
 }
 
 /*------- THIS SPECIFIES THE BUTTON COLOR WHEN THE POPUP MENU IS SHOWING -------*/
 .cmbCleanCombo:showing {
--fx-color: -fx-pressed-base;
+    -fx-color: -fx-pressed-base;
 }
 
 .cmbCleanCombo:focused {
-/*-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
--fx-background-radius: 6.4, 4, 5, 3;
--fx-background-insets: -1.4, 0, 1, 2;*/
+    /*-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-background-radius: 6.4, 4, 5, 3;
+    -fx-background-insets: -1.4, 0, 1, 2;*/
 }
 
 .cmbCleanCombo:disabled {
--fx-opacity: .4;
+    -fx-opacity: .4;
 }
 
 /* ------- OPEN BUTTON ------- */
 .cmbCleanCombo .arrow-button {
--fx-background-color: white;
-/*-fx-background-insets: 0, 1, 2;
--fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
--fx-padding: 0.5em 0.416667em 0.5em 0.416667em; /* 6 5 6 5 */
+    -fx-background-color: white;
+    /*-fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
+    -fx-padding: 0.5em 0.416667em 0.5em 0.416667em; /* 6 5 6 5 */
 }
 
 /* ------- ARROW* ------- */
 .cmbCleanCombo .arrow {
--fx-background-insets: 1 0 -1 0, 0;
--fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
--fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
--fx-shape: "M 0 0 h 7 l -3.5 4 z";
+    -fx-background-insets: 1 0 -1 0, 0;
+    -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+    -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
 }
 
 /* ------- POPUP MENU ------- */
@@ -2224,4 +2224,19 @@ all inherit from Menu Control's popup-menu. --- */
 
 .filamentLibTitle {
     -fx-text-fill: robox_blue;
+}
+
+#helpText {
+    -fx-text-fill: white;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 9pt;  
+}
+
+#helpText .scroll-pane {
+    -fx-background-color: mid_grey;
+}
+
+#helpText .content {
+    -fx-background-color: mid_grey;
+ 
 }

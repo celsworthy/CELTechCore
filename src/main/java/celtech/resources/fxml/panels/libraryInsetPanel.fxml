@@ -44,7 +44,7 @@
                                 </HBox>
                             </left>
                             <center>
-                                <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                <HBox alignment="CENTER" prefHeight="90.0" BorderPane.alignment="CENTER">
                                     <children>
                                         <GraphicButtonWithLabel fx:id="newButton" fxmlFileName="newButton" labelText="New" onAction="#newPressed" tagOrientation="WEST" tooltipText="New Filament" />
                                         <GraphicButtonWithLabel fx:id="copyButton" fxmlFileName="copyButton" labelText="Copy" onAction="#copyPressed" tagOrientation="EAST" tooltipText="Copy Filament" />
