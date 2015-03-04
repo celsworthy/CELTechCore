@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import org.controlsfx.control.textfield.*?>
+
+<VBox styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LibraryPanelController">
+    <children>
+        <BorderPane style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+            <center>
+                <VBox>
+                    <children>
+                        <TopMenuStrip BorderPane.alignment="CENTER" />
+                        <HBox style="-fx-background-color: light_grey;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+                            <children>
+                        <VerticalMenu fx:id="libraryMenu" />
+                        <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
+                           <HBox.margin>
+                              <Insets bottom="30.0" top="95.0" />
+                           </HBox.margin>
+                        </Separator>
+                        <VBox fx:id="insetNodeContainer">
+                           <children>
+                           </children>
+                           <padding>
+                              <Insets top="95.0" />
+                           </padding>
+                        </VBox>
+                            </children>
+                        </HBox>
+                        <BorderPane>
+                            <left>
+                                <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
+                                    </children>
+                                </HBox>
+                            </left>
+                            <center>
+                                <HBox alignment="CENTER" prefHeight="90.0" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <GraphicButtonWithLabel fx:id="newButton" fxmlFileName="newButton" labelText="New" onAction="#newPressed" tagOrientation="WEST" tooltipText="New Filament" />
+                                        <GraphicButtonWithLabel fx:id="copyButton" fxmlFileName="copyButton" labelText="Copy" onAction="#copyPressed" tagOrientation="EAST" tooltipText="Copy Filament" />
+                                        <GraphicButtonWithLabel fx:id="deleteButton" fxmlFileName="deleteModelButton" labelText="Delete" onAction="#deletePressed" tooltipText="Delete Filament" />
+                                        <GraphicButtonWithLabel fx:id="saveButton" fxmlFileName="saveButton" labelText="Save" onAction="#savePressed" tooltipText="Save Filament" />
+                                    </children>
+                                </HBox>
+                            </center>
+                        </BorderPane>
+                    </children>
+                </VBox>
+            </center>
+            <left>
+                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+            </left>
+        </BorderPane>
+        
+    </children>
+</VBox>

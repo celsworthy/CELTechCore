@@ -49,7 +49,7 @@ public class TopMenuStrip extends HBox
     @FXML
     void materialsPressed(ActionEvent event)
     {
-        applicationStatus.setMode(ApplicationMode.MATERIALS);
+        applicationStatus.setMode(ApplicationMode.LIBRARY);
     }    
 
     public TopMenuStrip()
@@ -80,7 +80,7 @@ public class TopMenuStrip extends HBox
                 or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE).
                 or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE).
                 or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PREFERENCES_TOP_LEVEL).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.MATERIALS)    
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LIBRARY)    
                 ))));
 
         aboutButton.disableProperty().bind(buttonDisabled);

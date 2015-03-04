@@ -12,7 +12,6 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
 import celtech.gcodetranslator.GCodeOutputWriter;

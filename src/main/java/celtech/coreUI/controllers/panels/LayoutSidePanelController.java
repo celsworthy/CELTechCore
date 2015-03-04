@@ -13,6 +13,7 @@ import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContain
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -94,7 +95,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ChangeListener<Number> xAxisListener = null;
     private ChangeListener<Number> yAxisListener = null;
 
-    private final String scaleFormat = "%.0f";
+    private final String scaleFormat = "######.###";
     private final String rotationFormat = "%.0f";
 
     private ListChangeListener selectionListener = null;
@@ -235,8 +236,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private void populateScaleField(Number t1)
     {
         scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
-        scaleTextField.setText(String.format(scaleFormat,
-                                             t1.doubleValue() * 100));
+        DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+        String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+        scaleTextField.setText(scaleString);
     }
 
     private void setUpKeyPressListeners()

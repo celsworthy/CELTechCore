@@ -25,12 +25,22 @@ public class DeDuplicator
     public static String suggestNonDuplicateName(String name,
         Collection<String> currentNames)
     {
-        int suffix = 0;
+        int attempt = 1;
         String suggestedName = name;
         while (currentNames.contains(suggestedName))
         {
-            suffix++;
-            suggestedName =  name + suffix;
+            switch (attempt) {
+                case 1:
+                    suggestedName = name + " (Copy)";
+                    break;
+                case 2:
+                    suggestedName = name + " (Another Copy)";
+                    break;
+                default:   
+                    suggestedName = name + " (Copy #" + attempt + ")";
+            }
+            
+            attempt++;
         }
         return suggestedName;
     }

@@ -5,6 +5,7 @@ package celtech.coreUI.components.material;
 
 import celtech.Lookup;
 import celtech.configuration.Filament;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
@@ -14,7 +15,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author tony
  */
-class FilamentCell extends ListCell<Object>
+public class FilamentCell extends ListCell<Object>
 {
 
     private static int SWATCH_SQUARE_SIZE = 16;
@@ -26,6 +27,7 @@ class FilamentCell extends ListCell<Object>
     public FilamentCell()
     {
         cellContainer = new HBox();
+        cellContainer.setAlignment(Pos.CENTER_LEFT);
         rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
         label = new Label();
         cellContainer.getChildren().addAll(rectangle, label);

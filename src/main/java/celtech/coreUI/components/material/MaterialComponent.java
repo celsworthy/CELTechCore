@@ -249,8 +249,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
      */
     private void setupComboBox()
     {
-        cmbMaterials.setCellFactory((ListView<Object> param)
-            -> new FilamentCell());
+        cmbMaterials.setCellFactory((ListView<Object> param) -> new FilamentCell());
 
         List<Object> filamentsList = new ArrayList<>();
         if (mode == Mode.SETTINGS)
