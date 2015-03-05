@@ -14,6 +14,7 @@ import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
+import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
@@ -46,11 +47,18 @@ public class Lookup
     private static ApplicationEnvironment applicationEnvironment;
     private static TaskExecutor taskExecutor;
     private static SystemNotificationManager systemNotificationHandler;
-    private static final Stenographer steno = StenographerFactory.getStenographer(Lookup.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
+    /**
+     * The UserPreferences being used by the application.
+     */
     private static UserPreferences userPreferences;
     private static SlicerMappings slicerMappings;
+    /**
+     * The SpinnerControl being used by the GUI.
+     */
     private static SpinnerControl spinnerControl;
     /**
      * The printer that has been selected on the Status panel.
@@ -62,12 +70,16 @@ public class Lookup
      */
     private static final ObjectProperty<Project> selectedProject = new SimpleObjectProperty<>();
     /**
-     * Each Project has a ProjectGUIState that holds all the necessary GUI state for the Project
-     * eg selectionModel.
+     * Each Project has a ProjectGUIState that holds all the necessary GUI state for the Project eg
+     * selectionModel.
      */
     private static final Map<Project, ProjectGUIState> projectGUIStates = new HashMap<>();
-    private static Languages languages = new Languages();
+    private static final Languages languages = new Languages();
     private static GCodeOutputWriterFactory<GCodeOutputWriter> postProcessorGCodeOutputWriterFactory;
+    /**
+     * The ExtrasMenuInnerPanel that is being displayed inside the ExtrasMenuPanel.
+     */
+    private static final ObjectProperty<ExtrasMenuInnerPanel> extrasMenuInnerPanel = new SimpleObjectProperty<>();
 
     public static Languages getLanguages()
     {
@@ -104,7 +116,8 @@ public class Lookup
                 String template = "*T" + matcher.group(1);
                 String templatePattern = "\\*T" + matcher.group(1);
                 langString = langString.replaceAll(templatePattern, i18n(template));
-            } else {
+            } else
+            {
                 break;
             }
         }
@@ -190,17 +203,17 @@ public class Lookup
     {
         Lookup.systemNotificationHandler = systemNotificationHandler;
     }
-    
+
     public static SpinnerControl getSpinnerControl()
     {
-       return spinnerControl;
-    }     
-    
+        return spinnerControl;
+    }
+
     public static void setSpinnerControl(
         SpinnerControl spinnerControl)
     {
         Lookup.spinnerControl = spinnerControl;
-    }    
+    }
 
     public static PrinterListChangesNotifier getPrinterListChangesNotifier()
     {
@@ -242,20 +255,34 @@ public class Lookup
     {
         postProcessorGCodeOutputWriterFactory = factory;
     }
-    
-    public static ObjectProperty<Project> getSelectedProjectProperty() {
+
+    public static ObjectProperty<Project> getSelectedProjectProperty()
+    {
         return selectedProject;
     }
-    
-    public static void setSelectedProject(Project project) {
+
+    public static void setSelectedProject(Project project)
+    {
         selectedProject.set(project);
     }
-    
-    public static ProjectGUIState getProjectGUIState(Project project) {
-        if (! projectGUIStates.containsKey(project)) {
+
+    public static ProjectGUIState getProjectGUIState(Project project)
+    {
+        if (!projectGUIStates.containsKey(project))
+        {
             ProjectGUIState projectGUIState = new ProjectGUIState(project);
             projectGUIStates.put(project, projectGUIState);
         }
         return projectGUIStates.get(project);
-    }    
+    }
+
+    public static void setExtrasInnerPanel(ExtrasMenuInnerPanel extrasMenuInnerPanel)
+    {
+        Lookup.extrasMenuInnerPanel.set(extrasMenuInnerPanel);
+    }
+
+    public static ReadOnlyObjectProperty<ExtrasMenuInnerPanel> getExtrasInnerPanel()
+    {
+        return Lookup.extrasMenuInnerPanel;
+    }
 }

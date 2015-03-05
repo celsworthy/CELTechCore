@@ -23,17 +23,17 @@ public interface ExtrasMenuInnerPanel
         /**
          * The i18n id of the text of the button.
          */
-        public String getText();
+        public String getTextId();
         
         /**
-         * Return the URL for the fxml that defines the button graphic.
+         * Return the file location for the fxml that defines the button graphic.
          */
-        public URL getFXMLURL();
+        public String getFXMLLocation();
         
         /**
          * The i18n id of the tooltip text.
          */
-        public String getTooltipText();
+        public String getTooltipTextId();
     }
     
     /**

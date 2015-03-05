@@ -1,5 +1,6 @@
 package celtech.coreUI.components.buttons;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.HideableTooltip;
 import java.io.IOException;
 import javafx.beans.property.SimpleStringProperty;
@@ -64,7 +65,7 @@ public class GraphicButton extends Button
         if (fxmlFileName.get().equalsIgnoreCase("") == false)
         {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "/celtech/resources/fxml/buttons/" + fxmlFileName.get() + ".fxml"));
+                ApplicationConfiguration.fxmlButtonsResourcePath + fxmlFileName.get() + ".fxml"));
             fxmlLoader.setRoot(this);
             fxmlLoader.setController(this);
 
