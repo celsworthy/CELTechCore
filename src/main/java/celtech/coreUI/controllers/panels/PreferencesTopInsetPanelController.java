@@ -8,6 +8,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
+import celtech.coreUI.controllers.panels.userpreferences.LogLevelPreference;
 import celtech.coreUI.controllers.panels.userpreferences.SafetyFeaturesOnPreference;
 import celtech.coreUI.controllers.panels.userpreferences.ShowTooltipPreference;
 import celtech.coreUI.controllers.panels.userpreferences.SlicerTypePreference;
@@ -75,7 +76,8 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         preferencesMenu.setTitle(Lookup.i18n("preferences.preferences"));
 
-        preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences, null);
+        preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences,
+                                null);
         preferencesMenu.addItem(Lookup.i18n("preferences.environment"),
                                 this::showEnvironmentPreferences, null);
         preferencesMenu.selectFirstItem();
@@ -119,12 +121,9 @@ public class PreferencesTopInsetPanelController implements Initializable
         Preference slicerTypePref = new SlicerTypePreference(userPreferences);
 
         Preference safetyFeaturesOnPref = new SafetyFeaturesOnPreference(userPreferences);
-        
-        Preference showTooltipsPref = new ShowTooltipPreference(userPreferences);
 
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
-        preferences.add(showTooltipsPref);
 
         return preferences;
     }
@@ -177,10 +176,12 @@ public class PreferencesTopInsetPanelController implements Initializable
                     Locale localeToUse = ((Locale) control.getValue());
                     if (localeToUse.getVariant().length() > 0)
                     {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-" + localeToUse.getCountry() + "-" + localeToUse.getVariant());
+                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
+                            + localeToUse.getCountry() + "-" + localeToUse.getVariant());
                     } else if (localeToUse.getCountry().length() > 0)
                     {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-" + localeToUse.getCountry());
+                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
+                            + localeToUse.getCountry());
                     } else
                     {
                         userPreferences.setLanguageTag(localeToUse.getLanguage());
@@ -253,7 +254,12 @@ public class PreferencesTopInsetPanelController implements Initializable
             }
         };
 
+        Preference showTooltipsPref = new ShowTooltipPreference(userPreferences);
+        Preference logLevelPref = new LogLevelPreference(userPreferences);
+
         preferences.add(languagePref);
+//        preferences.add(showTooltipsPref);
+        preferences.add(logLevelPref);
 
         return preferences;
     }

@@ -2,9 +2,8 @@ package celtech.configuration;
 
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import libertysystems.stenographer.LogLevel;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -14,9 +13,11 @@ public class UserPreferences
 {
 
     private SlicerType slicerType = SlicerType.Cura;
-    private final BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
+    private boolean safetyFeaturesOn = true;
     private String languageTag = "";
-    private final BooleanProperty showTooltips = new SimpleBooleanProperty(true);
+    private boolean showTooltips = false;
+    private LogLevel loggingLevel = LogLevel.INFO;
+    private boolean advancedMode = false;
 
     public String getLanguageTag()
     {
@@ -32,8 +33,10 @@ public class UserPreferences
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType = userPreferenceFile.getSlicerType();
-        safetyFeaturesOn.set(userPreferenceFile.isSafetyFeaturesOn());
+        safetyFeaturesOn = userPreferenceFile.isSafetyFeaturesOn();
         this.languageTag = userPreferenceFile.getLanguageTag();
+        this.loggingLevel = userPreferenceFile.getLoggingLevel();
+        this.advancedMode = userPreferenceFile.isAdvancedMode();
     }
 
     public SlicerType getSlicerType()
@@ -49,34 +52,47 @@ public class UserPreferences
 
     public boolean isSafetyFeaturesOn()
     {
-        return safetyFeaturesOn.get();
+        return safetyFeaturesOn;
     }
 
     public void setSafetyFeaturesOn(boolean value)
     {
-        this.safetyFeaturesOn.set(value);
+        this.safetyFeaturesOn = value;
         saveSettings();
-    }
-
-    public ReadOnlyBooleanProperty safetyFeaturesOnProperty()
-    {
-        return safetyFeaturesOn;
     }
 
     public boolean isShowTooltips()
     {
-        return showTooltips.get();
+        return showTooltips;
     }
 
     public void setShowTooltips(boolean value)
     {
-        this.showTooltips.set(value);
+        this.showTooltips = value;
         saveSettings();
     }
 
-    public ReadOnlyBooleanProperty showTooltipsProperty()
+    public LogLevel getLoggingLevel()
     {
-        return showTooltips;
+        return loggingLevel;
+    }
+
+    public void setLoggingLevel(LogLevel loggingLevel)
+    {
+        StenographerFactory.changeAllLogLevels(loggingLevel);
+        this.loggingLevel = loggingLevel;
+        saveSettings();
+    }
+
+    public boolean isAdvancedMode()
+    {
+        return advancedMode;
+    }
+
+    public void setAdvancedMode(boolean advancedMode)
+    {
+        this.advancedMode = advancedMode;
+        saveSettings();
     }
 
     private void saveSettings()

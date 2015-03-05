@@ -2,6 +2,7 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
+import libertysystems.stenographer.LogLevel;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
@@ -16,6 +17,8 @@ public class UserPreferenceFile
     private boolean safetyFeaturesOn = true;
     private String languageTag = "";
     private boolean showTooltips = false;
+    private LogLevel loggingLevel = LogLevel.INFO;
+    private boolean advancedMode = false;
 
     public String getLanguageTag()
     {
@@ -57,11 +60,33 @@ public class UserPreferenceFile
         this.showTooltips = showTooltips;
     }
 
+    public LogLevel getLoggingLevel()
+    {
+        return loggingLevel;
+    }
+
+    public void setLoggingLevel(LogLevel loggingLevel)
+    {
+        this.loggingLevel = loggingLevel;
+    }
+
+    public boolean isAdvancedMode()
+    {
+        return advancedMode;
+    }
+
+    public void setAdvancedMode(boolean advancedMode)
+    {
+        this.advancedMode = advancedMode;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
         setSafetyFeaturesOn(userPreferences.isSafetyFeaturesOn());
         setLanguageTag(userPreferences.getLanguageTag());
         setShowTooltips(userPreferences.isShowTooltips());
+        setLoggingLevel(userPreferences.getLoggingLevel());
+        setAdvancedMode(userPreferences.isAdvancedMode());
     }
 }
