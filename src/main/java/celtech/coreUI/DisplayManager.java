@@ -62,6 +62,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
+    
+    private static final int START_SCALING_WINDOW_HEIGHT = 800;
+    private static final double MINIMUM_SCALE_FACTOR = 0.8;
+    
     private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private static final ProjectManager projectManager = ProjectManager.getInstance();
 
@@ -237,6 +241,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.setVisible(false);
         spinner.stopSpinning();
     }
+
+    private StackPane rootStackPane = new StackPane();
 
     /**
      * This StackPane is required for scaling at small window sizes
@@ -698,10 +704,15 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
 
         double scaleFactor = 1.0;
-        if (scene.getHeight() < 800) {
-            scaleFactor = scene.getHeight() / 800;
+        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
+        {
+            scaleFactor = scene.getHeight() / START_SCALING_WINDOW_HEIGHT;
+            if (scaleFactor < MINIMUM_SCALE_FACTOR)
+            {
+                scaleFactor = MINIMUM_SCALE_FACTOR;
+            }
         }
-        
+
         rootAnchorPane.setScaleX(scaleFactor);
         rootAnchorPane.setScaleY(scaleFactor);
 
