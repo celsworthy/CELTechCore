@@ -242,8 +242,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
-    private StackPane rootStackPane = new StackPane();
-
     /**
      * This StackPane is required for scaling at small window sizes
      */
