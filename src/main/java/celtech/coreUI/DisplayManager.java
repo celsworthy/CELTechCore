@@ -47,6 +47,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -122,7 +124,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             getMachineType());
     }
 
-    
     private void loadProjectsAtStartup()
     {
         // Load up any projects that were open last time we shut down....
@@ -237,6 +238,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
+    private StackPane rootRoot = new StackPane();
+
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
         this.mainStage = mainStage;
@@ -247,6 +250,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
         root = new AnchorPane();
+
+        rootRoot.getChildren().add(root);
 
         spinnerContainer = new Pane();
         spinnerContainer.setMouseTransparent(true);
@@ -399,7 +404,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         projectLoader = new ProjectLoader();
 
-        scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
+        scene = new Scene(rootRoot, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
@@ -629,16 +634,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     case DELETE:
                     case BACK_SPACE:
-                        Set<ModelContainer> selectedModels = 
-                            Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
+                        Set<ModelContainer> selectedModels
+                            = Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
                         project.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())
                         {
-                            SelectedModelContainers selectionModel = 
-                                Lookup.getProjectGUIState(project).getSelectedModelContainers();
-                            for (ModelContainer modelContainer: project.getLoadedModels()) {
+                            SelectedModelContainers selectionModel
+                                = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+                            for (ModelContainer modelContainer : project.getLoadedModels())
+                            {
                                 selectionModel.addModelContainer(modelContainer);
                             }
                         }
@@ -683,6 +689,20 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private void fireNodeMayHaveMovedTrigger()
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
+
+        double scaleFactor = 1.0;
+        if (scene.getHeight() < 800) {
+            scaleFactor = scene.getHeight() / 800;
+        }
+        
+        rootRoot.setScaleX(scaleFactor);
+        rootRoot.setScaleY(scaleFactor);
+
+        root.setPrefWidth(scene.getWidth() / scaleFactor);
+        root.setMinWidth(scene.getWidth() / scaleFactor);
+        root.setPrefHeight(scene.getHeight() / scaleFactor);
+        root.setMinHeight(scene.getHeight() / scaleFactor);
+
     }
 
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
