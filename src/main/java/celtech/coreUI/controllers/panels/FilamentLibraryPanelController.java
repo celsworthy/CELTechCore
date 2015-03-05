@@ -37,7 +37,7 @@ public class FilamentLibraryPanelController implements Initializable
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        LibraryPanelController.class.getName());
+        ExtrasMenuPanelController.class.getName());
 
     enum State
     {

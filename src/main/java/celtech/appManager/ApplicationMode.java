@@ -16,9 +16,8 @@ public enum ApplicationMode
     REGISTRATION("printerStatus", "registration"),
     PURGE("printerStatus", "purge"),
     ABOUT("printerStatus", "about"),
-    LIBRARY("printerStatus", "library"),
     SYSTEM_INFORMATION("printerStatus", "systemInformation"),
-    PREFERENCES_TOP_LEVEL("printerStatus", "preferencesTop"),
+    EXTRAS_MENU("printerStatus", "extrasMenu"),
     //TODO printer status has to be last otherwise the temperature graph doesn't work!! Fix in DisplayManager
     STATUS("printerStatus", null),
     /**

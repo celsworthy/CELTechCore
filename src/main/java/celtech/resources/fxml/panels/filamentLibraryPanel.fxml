@@ -11,7 +11,7 @@
 <?import javafx.scene.text.*?>
 <?import org.controlsfx.control.textfield.*?>
 
-<GridPane id="materialsGridPane" vgap="8.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<GridPane id="materialsGridPane" vgap="8.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"  fx:controller="celtech.coreUI.controllers.panels.FilamentLibraryPanelController">
     <columnConstraints>
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="45.0" />
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="15.0" />

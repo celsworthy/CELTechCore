@@ -29,15 +29,12 @@ public class TopMenuStrip extends HBox
     private GraphicButton aboutButton;
 
     @FXML
-    private GraphicButton preferencesButton;
+    private GraphicButton extrasMenuButton;
     
     @FXML
-    private GraphicButton materialsButton;    
-
-    @FXML
-    void preferencesPressed(ActionEvent event)
+    void extrasMenuPressed(ActionEvent event)
     {
-        applicationStatus.setMode(ApplicationMode.PREFERENCES_TOP_LEVEL);
+        applicationStatus.setMode(ApplicationMode.EXTRAS_MENU);
     }
 
     @FXML
@@ -46,12 +43,6 @@ public class TopMenuStrip extends HBox
         applicationStatus.setMode(ApplicationMode.ABOUT);
     }
     
-    @FXML
-    void materialsPressed(ActionEvent event)
-    {
-        applicationStatus.setMode(ApplicationMode.LIBRARY);
-    }    
-
     public TopMenuStrip()
     {
         super();
@@ -79,14 +70,12 @@ public class TopMenuStrip extends HBox
             applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT).
                 or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE).
                 or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PREFERENCES_TOP_LEVEL).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LIBRARY)    
-                ))));
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.EXTRAS_MENU)
+                )));
 
         aboutButton.disableProperty().bind(buttonDisabled);
 
-        preferencesButton.disableProperty().bind(buttonDisabled);
+        extrasMenuButton.disableProperty().bind(buttonDisabled);
         
-        materialsButton.disableProperty().bind(buttonDisabled);        
     }
 }
