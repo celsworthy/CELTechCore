@@ -47,6 +47,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -60,6 +62,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
+    
+    private static final int START_SCALING_WINDOW_HEIGHT = 800;
+    private static final double MINIMUM_SCALE_FACTOR = 0.8;
+    
     private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private static final ProjectManager projectManager = ProjectManager.getInstance();
 
@@ -99,7 +105,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static final String addDummyPrinterCommand = "AddDummy";
     private static final String dummyCommandPrefix = "dummy:";
 
-    private AnchorPane root;
+    private AnchorPane rootAnchorPane;
     private Pane spinnerContainer;
     private Spinner spinner;
 
@@ -122,7 +128,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             getMachineType());
     }
 
-    
     private void loadProjectsAtStartup()
     {
         // Load up any projects that were open last time we shut down....
@@ -237,6 +242,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
+    /**
+     * This StackPane is required for scaling at small window sizes
+     */
+    private StackPane rootStackPane = new StackPane();
+
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
         this.mainStage = mainStage;
@@ -246,7 +256,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             "application.title")
             + " - " + ApplicationConfiguration.getApplicationVersion());
 
-        root = new AnchorPane();
+        rootAnchorPane = new AnchorPane();
+
+        rootStackPane.getChildren().add(rootAnchorPane);
 
         spinnerContainer = new Pane();
         spinnerContainer.setMouseTransparent(true);
@@ -254,10 +266,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner = new Spinner();
         spinnerContainer.getChildren().add(spinner);
 
-        AnchorPane.setBottomAnchor(root, 0.0);
-        AnchorPane.setLeftAnchor(root, 0.0);
-        AnchorPane.setRightAnchor(root, 0.0);
-        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(rootAnchorPane, 0.0);
+        AnchorPane.setLeftAnchor(rootAnchorPane, 0.0);
+        AnchorPane.setRightAnchor(rootAnchorPane, 0.0);
+        AnchorPane.setTopAnchor(rootAnchorPane, 0.0);
 
         mainHolder = new HBox();
         mainHolder.setPrefSize(-1, -1);
@@ -267,8 +279,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         AnchorPane.setRightAnchor(mainHolder, 0.0);
         AnchorPane.setTopAnchor(mainHolder, 0.0);
 
-        root.getChildren().add(mainHolder);
-        root.getChildren().add(spinnerContainer);
+        rootAnchorPane.getChildren().add(mainHolder);
+        rootAnchorPane.getChildren().add(spinnerContainer);
 
         // Load in all of the side panels
         for (ApplicationMode mode : ApplicationMode.values())
@@ -399,7 +411,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         projectLoader = new ProjectLoader();
 
-        scene = new Scene(root, ApplicationConfiguration.DEFAULT_WIDTH,
+        scene = new Scene(rootStackPane, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);
 
         scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
@@ -410,7 +422,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             public void changed(
                 ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
             {
-                fireNodeMayHaveMovedTrigger();
+                whenWindowChangesSize();
             }
         });
 
@@ -420,7 +432,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             public void changed(
                 ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
             {
-                fireNodeMayHaveMovedTrigger();
+                whenWindowChangesSize();
             }
         });
 
@@ -430,7 +442,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             public void changed(
                 ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
             {
-                fireNodeMayHaveMovedTrigger();
+                whenWindowChangesSize();
             }
         });
 
@@ -440,7 +452,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             public void changed(
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                fireNodeMayHaveMovedTrigger();
+                whenWindowChangesSize();
             }
         });
 
@@ -451,7 +463,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
                 steno.debug("Stage fullscreen = " + newValue.booleanValue());
-                fireNodeMayHaveMovedTrigger();
+                whenWindowChangesSize();
             }
         });
 
@@ -470,7 +482,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         loadProjectsAtStartup();
 
-        root.layout();
+        rootAnchorPane.layout();
     }
 
     private void setupPanelsForMode(ApplicationMode mode)
@@ -629,16 +641,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     case DELETE:
                     case BACK_SPACE:
-                        Set<ModelContainer> selectedModels = 
-                            Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
+                        Set<ModelContainer> selectedModels
+                            = Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
                         project.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())
                         {
-                            SelectedModelContainers selectionModel = 
-                                Lookup.getProjectGUIState(project).getSelectedModelContainers();
-                            for (ModelContainer modelContainer: project.getLoadedModels()) {
+                            SelectedModelContainers selectionModel
+                                = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+                            for (ModelContainer modelContainer : project.getLoadedModels())
+                            {
                                 selectionModel.addModelContainer(modelContainer);
                             }
                         }
@@ -680,9 +693,32 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
 
-    private void fireNodeMayHaveMovedTrigger()
+    /**
+     * This is fired when the main window or one of the internal windows may have changed
+     * size.
+     */
+    private void whenWindowChangesSize()
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
+
+        double scaleFactor = 1.0;
+        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
+        {
+            scaleFactor = scene.getHeight() / START_SCALING_WINDOW_HEIGHT;
+            if (scaleFactor < MINIMUM_SCALE_FACTOR)
+            {
+                scaleFactor = MINIMUM_SCALE_FACTOR;
+            }
+        }
+
+        rootAnchorPane.setScaleX(scaleFactor);
+        rootAnchorPane.setScaleY(scaleFactor);
+
+        rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
+        rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
+        rootAnchorPane.setPrefHeight(scene.getHeight() / scaleFactor);
+        rootAnchorPane.setMinHeight(scene.getHeight() / scaleFactor);
+
     }
 
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()

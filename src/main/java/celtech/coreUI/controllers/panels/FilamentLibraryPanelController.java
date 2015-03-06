@@ -7,7 +7,9 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
@@ -33,11 +35,17 @@ import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
-public class FilamentLibraryPanelController implements Initializable
+public class FilamentLibraryPanelController implements Initializable, ExtrasMenuInnerPanel
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        LibraryPanelController.class.getName());
+        ExtrasMenuPanelController.class.getName());
+
+    enum ButtonId
+    {
+
+        SAVE, COPY, NEW, DELETE;
+    }
 
     enum State
     {
@@ -399,6 +407,155 @@ public class FilamentLibraryPanelController implements Initializable
                 setGraphic(null);
             }
         }
+    }
+
+    @Override
+    public String getMenuTitle()
+    {
+        return "extrasMenu.filament";
+    }
+
+    @Override
+    public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
+    {
+        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        ExtrasMenuInnerPanel.OperationButton newButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "projectLoader.newButtonLabel";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "newButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "projectLoader.newButtonLabele";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenNewPressed();
+            }
+
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return new SimpleBooleanProperty(true);
+            }
+
+        };
+        operationButtons.add(newButton);
+        ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Save";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "saveButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Save";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenSavePressed();
+            }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return canSave;
+            }            
+
+        };
+        operationButtons.add(saveButton);
+        ExtrasMenuInnerPanel.OperationButton copyButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Copy";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "copyButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Copy";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenCopyPressed();
+            }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return new SimpleBooleanProperty(true);
+            }              
+
+        };
+        operationButtons.add(copyButton);
+        ExtrasMenuInnerPanel.OperationButton deleteButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Delete";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "deleteModelButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Delete";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenDeletePressed();
+            }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return canDelete;
+            }              
+
+        };
+        operationButtons.add(deleteButton);        
+        return operationButtons;
     }
 
 }
