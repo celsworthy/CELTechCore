@@ -643,6 +643,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
+        if (printer == null) {
+            return;
+        }
         PrinterSettings printerSettings = project.getPrinterSettings();
 
         BooleanBinding filament0Mismatch = project.getExtruder0FilamentProperty().isNotEqualTo(

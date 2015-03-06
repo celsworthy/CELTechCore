@@ -6,6 +6,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.controllers.panels.userpreferences.Preferences;
+import celtech.coreUI.controllers.utilityPanels.ProfileDetailsControllerCopy;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -76,6 +77,9 @@ public class ExtrasMenuPanelController implements Initializable
         loadInnerPanel(
             ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml",
             new FilamentLibraryPanelController());
+        loadInnerPanel(
+            ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetailsCopy.fxml",
+            new ProfileDetailsControllerCopy());        
         UserPreferences userPreferences = Lookup.getUserPreferences();
         loadInnerPanel(
             ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
@@ -104,6 +108,7 @@ public class ExtrasMenuPanelController implements Initializable
             this.innerPanelDetails.add(innerPanelDetails);
         } catch (IOException ex)
         {
+            ex.printStackTrace();
             steno.error("Unable to load panel: " + fxmlLocation + " " + ex);
         }
     }

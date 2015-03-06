@@ -2181,6 +2181,14 @@ all inherit from Menu Control's popup-menu. --- */
 }
 
 /**
+* Extras inner panels
+*/
+
+.innerPanel {
+    -fx-background-color: light_grey;
+}
+
+/**
 * Filament Library
 */
 
@@ -2238,5 +2246,35 @@ all inherit from Menu Control's popup-menu. --- */
 
 #helpText .content {
     -fx-background-color: mid_grey;
- 
+
+}
+
+/**
+* Print Profiles
+*/
+
+
+#printProfileInnerPanel .tab-pane, .tab-header-background{
+    -fx-background-color: light_grey;
+}
+
+
+#printProfileInnerPanel .tab:hover, .tab:hover .tab-label{
+    -fx-background-color: light_grey;
+}
+
+#printProfileInnerPanel .tab:selected, .tab:selected .tab-label{
+    -fx-background-color: highlight_colour;
+    -fx-border-color: highlight_colour;
+}
+
+#printProfileInnerPanel .tab .tab-label{
+    -fx-background-color: light_grey;
+    -fx-text-fill: white;
+
+#printProfileInnerPanel  .tab:top {
+        -fx-border-width: 0.3;
+        -fx-border-color: dark_grey;
+    }
+
 }
