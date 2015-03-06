@@ -7,7 +7,9 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
@@ -33,11 +35,17 @@ import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
-public class FilamentLibraryPanelController implements Initializable
+public class FilamentLibraryPanelController implements Initializable, ExtrasMenuInnerPanel
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ExtrasMenuPanelController.class.getName());
+
+    enum ButtonId
+    {
+
+        SAVE, COPY, NEW, DELETE;
+    }
 
     enum State
     {
@@ -399,6 +407,41 @@ public class FilamentLibraryPanelController implements Initializable
                 setGraphic(null);
             }
         }
+    }
+
+    @Override
+    public String getMenuTitle()
+    {
+        return "extrasMenu.filament";
+    }
+
+    @Override
+    public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
+    {
+        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Save";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "saveButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Save";
+            }
+
+        };
+        operationButtons.add(saveButton);
+        return operationButtons;
     }
 
 }

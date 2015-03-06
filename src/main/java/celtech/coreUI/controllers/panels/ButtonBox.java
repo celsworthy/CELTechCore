@@ -8,8 +8,6 @@ import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel.OperationButton;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.layout.HBox;
 
 /**
@@ -44,11 +42,8 @@ public class ButtonBox extends HBox
         {
             GraphicButtonWithLabel button = new GraphicButtonWithLabel();
             button.setLabelText(Lookup.i18n(operationButton.getTextId()));
-            button.setFxmlFileName(operationButton.getFXMLLocation());
-            button.onActionProperty().addListener(
-                (ObservableValue<? extends EventHandler<ActionEvent>> observable, EventHandler<ActionEvent> oldValue, EventHandler<ActionEvent> newValue) ->
-            {
-            });
+            button.setFxmlFileName(operationButton.getFXMLName());
+          
             getChildren().add(button);
         }
     }

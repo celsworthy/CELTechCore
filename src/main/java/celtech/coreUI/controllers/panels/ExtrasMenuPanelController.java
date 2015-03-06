@@ -9,6 +9,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,12 +24,25 @@ import libertysystems.stenographer.StenographerFactory;
 public class ExtrasMenuPanelController implements Initializable
 {
 
+    private class InnerPanel
+    {
+
+        Node node;
+        ExtrasMenuInnerPanel controller;
+
+        InnerPanel(Node node, ExtrasMenuInnerPanel controller)
+        {
+            this.node = node;
+            this.controller = controller;
+        }
+    }
+
+    List<InnerPanel> innerPanels = new ArrayList<>();
+
     private final Stenographer steno = StenographerFactory.getStenographer(
         ExtrasMenuPanelController.class.getName());
 
     private ResourceBundle resources;
-    private FilamentLibraryPanelController libraryController;
-    private List<ExtrasMenuInnerPanel> innerPanels = new ArrayList<>();
 
     @FXML
     private VerticalMenu libraryMenu;
@@ -59,71 +74,36 @@ public class ExtrasMenuPanelController implements Initializable
     private void setupInnerPanels()
     {
 
-        ExtrasMenuInnerPanel libraryInnerPanel = new ExtrasMenuInnerPanel()
+        loadInnerPanel(
+            ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml");
+    }
+
+    /**
+     * Load the given inner panel.
+     */
+    private void loadInnerPanel(String fxmlLocation)
+    {
+        URL fxmlURL = getClass().getResource(fxmlLocation);
+        FXMLLoader loader = new FXMLLoader(fxmlURL, resources);
+        try
         {
-
-            @Override
-            public String getMenuTitle()
-            {
-                return "extrasMenu.filament";
-            }
-
-            @Override
-            public URL getFXMLURL()
-            {
-                String fxmlFileName = ApplicationConfiguration.fxmlPanelResourcePath
-                    + "filamentLibraryPanel.fxml";
-                return getClass().getResource(fxmlFileName);
-            }
-
-            @Override
-            public List<OperationButton> getOperationButtons()
-            {
-                List<OperationButton> operationButtons = new ArrayList<>();
-                OperationButton saveButton = new OperationButton()
-                {
-
-                    @Override
-                    public String getTextId()
-                    {
-                        return "genericFirstLetterCapitalised.Save";
-                    }
-
-                    @Override
-                    public String getFXMLLocation()
-                    {
-                        return "saveButton";
-                    }
-
-                    @Override
-                    public String getTooltipTextId()
-                    {
-                        return "genericFirstLetterCapitalised.Save";
-                    }
-                };
-                operationButtons.add(saveButton);
-                return operationButtons;
-            }
-        };
-
-        innerPanels.add(libraryInnerPanel);
+            Node node = loader.load();
+            InnerPanel innerPanel = new InnerPanel(node,
+                                                   (ExtrasMenuInnerPanel) loader.getController());
+            innerPanels.add(innerPanel);
+        } catch (IOException ex)
+        {
+            steno.error("Unable to load panel: " + fxmlLocation + " " + ex);
+        }
     }
 
     /**
      * Open the given inner panel.
      */
-    private void doOpenInnerPanel(ExtrasMenuInnerPanel innerPanel)
+    private void doOpenInnerPanel(InnerPanel innerPanel)
     {
-        FXMLLoader loader = new FXMLLoader(innerPanel.getFXMLURL(), resources);
-        try
-        {
-            Node node = loader.load();
-            insetNodeContainer.getChildren().clear();
-            insetNodeContainer.getChildren().add(node);
-        } catch (IOException ex)
-        {
-            steno.error("Cannot load fxml: " + innerPanel.getFXMLURL().toString() + ex);
-        }
+        insetNodeContainer.getChildren().clear();
+        insetNodeContainer.getChildren().add(innerPanel.node);
     }
 
     /**
@@ -133,12 +113,12 @@ public class ExtrasMenuPanelController implements Initializable
     {
         libraryMenu.setTitle(Lookup.i18n("extrasMenu.title"));
 
-        for (ExtrasMenuInnerPanel innerPanel : innerPanels)
+        for (InnerPanel innerPanel : innerPanels)
         {
-            libraryMenu.addItem(Lookup.i18n(innerPanel.getMenuTitle()), () ->
+            libraryMenu.addItem(Lookup.i18n(innerPanel.controller.getMenuTitle()), () ->
                             {
                                 doOpenInnerPanel(innerPanel);
-                                Lookup.setExtrasInnerPanel(innerPanel);
+                                Lookup.setExtrasInnerPanel(innerPanel.controller);
                                 return null;
             }, null);
         }
