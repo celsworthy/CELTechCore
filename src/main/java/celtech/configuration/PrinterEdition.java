@@ -115,4 +115,10 @@ public enum PrinterEdition
 //
 //        return printHead;
 //    }
+
+    @Override
+    public String toString()
+    {
+        return getCodeName() + " - " + getFriendlyName();
+    }
 }

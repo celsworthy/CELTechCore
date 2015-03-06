@@ -569,7 +569,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void connectionEstablished();
 
-    public String requestDebugData(boolean addToGCodeTranscript);
+    public List<Integer> requestDebugData(boolean addToGCodeTranscript);
 
     public ReadOnlyObjectProperty busyStatusProperty();
 

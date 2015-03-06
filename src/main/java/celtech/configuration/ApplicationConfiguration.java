@@ -1140,4 +1140,9 @@ public class ApplicationConfiguration
 
         return myMiniFactoryDownloadsDirectory;
     }
+    
+    public static String getApplicationModelDirectory()
+    {
+        return getCommonApplicationDirectory() + "Models/";
+    }
 }
