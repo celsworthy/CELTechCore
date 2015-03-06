@@ -1,124 +1,44 @@
 /*
- * Copyright 2014 CEL UK
+ * Copyright 2015 CEL UK
  */
-package celtech.coreUI.controllers.panels;
+package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationStatus;
 import celtech.configuration.UserPreferences;
-import celtech.coreUI.components.VerticalMenu;
-import celtech.coreUI.controllers.panels.userpreferences.SafetyFeaturesOnPreference;
-import celtech.coreUI.controllers.panels.userpreferences.ShowTooltipPreference;
-import celtech.coreUI.controllers.panels.userpreferences.SlicerTypePreference;
-import java.net.URL;
+import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
 import javafx.util.Callback;
 
 /**
- *
+ * Preferences creates collections of the Preference class.
  * @author tony
  */
-public class PreferencesTopInsetPanelController implements Initializable
+public class Preferences
 {
-
-    private static final int ROW_HEIGHT = 60;
 
     private static final String SYSTEM_DEFAULT = "System Default";
 
-    public interface Preference
+    public static List<PreferencesInnerPanelController.Preference> createPrintingPreferences(
+        UserPreferences userPreferences)
     {
+        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
-        public void updateValueFromControl();
+        PreferencesInnerPanelController.Preference slicerTypePref = new SlicerTypePreference(
+            userPreferences);
 
-        public void populateControlWithCurrentValue();
+        PreferencesInnerPanelController.Preference safetyFeaturesOnPref = new SafetyFeaturesOnPreference(
+            userPreferences);
 
-        public Control getControl();
-
-        public String getDescription();
-    }
-
-    @FXML
-    void backwardPressed(ActionEvent event)
-    {
-        ApplicationStatus.getInstance().returnToLastMode();
-    }
-
-    @FXML
-    private GridPane preferencesGridPane;
-
-    @FXML
-    private VerticalMenu preferencesMenu;
-
-    private UserPreferences userPreferences;
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources)
-    {
-        userPreferences = Lookup.getUserPreferences();
-
-        preferencesMenu.setTitle(Lookup.i18n("preferences.preferences"));
-
-        preferencesMenu.addItem(Lookup.i18n("preferences.printing"), this::showPrintingPreferences, null);
-        preferencesMenu.addItem(Lookup.i18n("preferences.environment"),
-                                this::showEnvironmentPreferences, null);
-        preferencesMenu.selectFirstItem();
-
-    }
-
-    private Object showEnvironmentPreferences()
-    {
-        List<Preference> preferences = createEnvironmentPreferences();
-
-        displayPreferences(preferences);
-
-        return null;
-    }
-
-    private void displayPreferences(List<Preference> preferences)
-    {
-        preferencesGridPane.getChildren().clear();
-        int rowNo = 0;
-        for (Preference preference : preferences)
-        {
-            preference.populateControlWithCurrentValue();
-            addPreferenceToContainer(preference, rowNo);
-            rowNo++;
-        }
-    }
-
-    private Object showPrintingPreferences()
-    {
-        List<Preference> preferences = createPrintingPreferences();
-
-        displayPreferences(preferences);
-
-        return null;
-    }
-
-    private List<Preference> createPrintingPreferences()
-    {
-        List<Preference> preferences = new ArrayList<>();
-
-        Preference slicerTypePref = new SlicerTypePreference(userPreferences);
-
-        Preference safetyFeaturesOnPref = new SafetyFeaturesOnPreference(userPreferences);
-        
-        Preference showTooltipsPref = new ShowTooltipPreference(userPreferences);
+        PreferencesInnerPanelController.Preference showTooltipsPref = new ShowTooltipPreference(
+            userPreferences);
 
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
@@ -127,11 +47,12 @@ public class PreferencesTopInsetPanelController implements Initializable
         return preferences;
     }
 
-    private List<Preference> createEnvironmentPreferences()
+    public static List<PreferencesInnerPanelController.Preference> createEnvironmentPreferences(
+        UserPreferences userPreferences)
     {
-        List<Preference> preferences = new ArrayList<>();
+        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
-        Preference languagePref = new Preference()
+        PreferencesInnerPanelController.Preference languagePref = new PreferencesInnerPanelController.Preference()
         {
             private final ComboBox<Object> control;
 
@@ -175,10 +96,12 @@ public class PreferencesTopInsetPanelController implements Initializable
                     Locale localeToUse = ((Locale) control.getValue());
                     if (localeToUse.getVariant().length() > 0)
                     {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-" + localeToUse.getCountry() + "-" + localeToUse.getVariant());
+                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
+                            + localeToUse.getCountry() + "-" + localeToUse.getVariant());
                     } else if (localeToUse.getCountry().length() > 0)
                     {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-" + localeToUse.getCountry());
+                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
+                            + localeToUse.getCountry());
                     } else
                     {
                         userPreferences.setLanguageTag(localeToUse.getLanguage());
@@ -254,31 +177,6 @@ public class PreferencesTopInsetPanelController implements Initializable
         preferences.add(languagePref);
 
         return preferences;
-    }
-
-    private void addPreferenceToContainer(Preference preference, int rowNo)
-    {
-        Label description = getPreferenceDescriptionLabel(preference);
-        Control editor = getPreferenceEditorControl(preference);
-        preferencesGridPane.addRow(rowNo, description, editor);
-        RowConstraints rowConstraints = preferencesGridPane.getRowConstraints().get(rowNo);
-        rowConstraints.setPrefHeight(ROW_HEIGHT);
-        rowConstraints.setMinHeight(ROW_HEIGHT);
-        rowConstraints.setMaxHeight(ROW_HEIGHT);
-    }
-
-    private Label getPreferenceDescriptionLabel(Preference preference)
-    {
-        Label descriptionLabel = new Label(preference.getDescription() + ":");
-        descriptionLabel.getStyleClass().add("preferenceLabel");
-        return descriptionLabel;
-    }
-
-    private Control getPreferenceEditorControl(Preference preference)
-    {
-        Control control = preference.getControl();
-        control.getStyleClass().add("preferenceControl");
-        return control;
     }
 
 }

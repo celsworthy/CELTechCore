@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
 import celtech.configuration.UserPreferences;
-import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
+import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Control;
@@ -11,7 +11,7 @@ import javafx.scene.control.Control;
  *
  * @author Ian
  */
-public class ShowTooltipPreference implements PreferencesTopInsetPanelController.Preference
+public class ShowTooltipPreference implements PreferencesInnerPanelController.Preference
 {
     private final CheckBox control;
     private final UserPreferences userPreferences;

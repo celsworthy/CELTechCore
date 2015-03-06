@@ -3,7 +3,9 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
+import celtech.coreUI.controllers.panels.userpreferences.Preferences;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -22,20 +24,20 @@ import libertysystems.stenographer.StenographerFactory;
 public class ExtrasMenuPanelController implements Initializable
 {
 
-    private class InnerPanel
+    private class InnerPanelDetails
     {
 
         Node node;
-        ExtrasMenuInnerPanel controller;
+        ExtrasMenuInnerPanel innerPanel;
 
-        InnerPanel(Node node, ExtrasMenuInnerPanel controller)
+        InnerPanelDetails(Node node, ExtrasMenuInnerPanel innerPanel)
         {
             this.node = node;
-            this.controller = controller;
+            this.innerPanel = innerPanel;
         }
     }
 
-    List<InnerPanel> innerPanels = new ArrayList<>();
+    List<InnerPanelDetails> innerPanelDetails = new ArrayList<>();
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ExtrasMenuPanelController.class.getName());
@@ -72,22 +74,34 @@ public class ExtrasMenuPanelController implements Initializable
     private void setupInnerPanels()
     {
         loadInnerPanel(
-            ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml");
+            ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml",
+            new FilamentLibraryPanelController());
+        UserPreferences userPreferences = Lookup.getUserPreferences();
+        loadInnerPanel(
+            ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
+            new PreferencesInnerPanelController("preferences.environment",
+                                                Preferences.createEnvironmentPreferences(
+                                                    userPreferences)));
+        loadInnerPanel(
+            ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
+            new PreferencesInnerPanelController("preferences.printing",
+                                                Preferences.createPrintingPreferences(
+                                                    userPreferences)));        
     }
 
     /**
      * Load the given inner panel.
      */
-    private void loadInnerPanel(String fxmlLocation)
+    private void loadInnerPanel(String fxmlLocation, ExtrasMenuInnerPanel extrasMenuInnerPanel)
     {
         URL fxmlURL = getClass().getResource(fxmlLocation);
         FXMLLoader loader = new FXMLLoader(fxmlURL, resources);
+        loader.setController(extrasMenuInnerPanel);
         try
         {
             Node node = loader.load();
-            InnerPanel innerPanel = new InnerPanel(node,
-                                                   (ExtrasMenuInnerPanel) loader.getController());
-            innerPanels.add(innerPanel);
+            InnerPanelDetails innerPanelDetails = new InnerPanelDetails(node, extrasMenuInnerPanel);
+            this.innerPanelDetails.add(innerPanelDetails);
         } catch (IOException ex)
         {
             steno.error("Unable to load panel: " + fxmlLocation + " " + ex);
@@ -97,7 +111,7 @@ public class ExtrasMenuPanelController implements Initializable
     /**
      * Open the given inner panel.
      */
-    private void doOpenInnerPanel(InnerPanel innerPanel)
+    private void doOpenInnerPanel(InnerPanelDetails innerPanel)
     {
         insetNodeContainer.getChildren().clear();
         insetNodeContainer.getChildren().add(innerPanel.node);
@@ -110,12 +124,12 @@ public class ExtrasMenuPanelController implements Initializable
     {
         libraryMenu.setTitle(Lookup.i18n("extrasMenu.title"));
 
-        for (InnerPanel innerPanel : innerPanels)
+        for (InnerPanelDetails innerPanelDetails : innerPanelDetails)
         {
-            libraryMenu.addItem(Lookup.i18n(innerPanel.controller.getMenuTitle()), () ->
+            libraryMenu.addItem(Lookup.i18n(innerPanelDetails.innerPanel.getMenuTitle()), () ->
                             {
-                                doOpenInnerPanel(innerPanel);
-                                Lookup.setExtrasInnerPanel(innerPanel.controller);
+                                doOpenInnerPanel(innerPanelDetails);
+                                Lookup.setExtrasInnerPanel(innerPanelDetails.innerPanel);
                                 return null;
             }, null);
         }

@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.Lookup;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
-import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
+import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
@@ -13,7 +13,7 @@ import javafx.scene.control.Control;
  *
  * @author Ian
  */
-public class SlicerTypePreference implements PreferencesTopInsetPanelController.Preference
+public class SlicerTypePreference implements PreferencesInnerPanelController.Preference
 {
 
     private final ComboBox<SlicerType> control;
