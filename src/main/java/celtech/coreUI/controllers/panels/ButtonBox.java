@@ -51,6 +51,7 @@ public class ButtonBox extends HBox
             {
                 operationButton.whenClicked();
             });
+            button.disableProperty().bind(operationButton.whenEnabled().not());
           
             getChildren().add(button);
         }

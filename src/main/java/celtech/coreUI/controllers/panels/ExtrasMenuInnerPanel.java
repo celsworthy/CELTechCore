@@ -4,6 +4,7 @@
 package celtech.coreUI.controllers.panels;
 
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
 
 /**
  * ExtrasMenuInnerPanel defines the properties needed to instantiate an inner panel from
@@ -38,6 +39,11 @@ public interface ExtrasMenuInnerPanel
          * This will be called when the button has been clicked.
          */
         public void whenClicked();
+        
+        /**
+         * This observable property governs when the button should be enabled.
+         */
+        public BooleanProperty whenEnabled();
     }
     
     /**

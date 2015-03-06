@@ -445,6 +445,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 whenNewPressed();
             }
 
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return new SimpleBooleanProperty(true);
+            }
+
         };
         operationButtons.add(newButton);
         ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
@@ -472,6 +478,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenSavePressed();
             }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return canSave;
+            }            
 
         };
         operationButtons.add(saveButton);
@@ -500,6 +512,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenCopyPressed();
             }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return new SimpleBooleanProperty(true);
+            }              
 
         };
         operationButtons.add(copyButton);
@@ -528,6 +546,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenDeletePressed();
             }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return canDelete;
+            }              
 
         };
         operationButtons.add(deleteButton);        
