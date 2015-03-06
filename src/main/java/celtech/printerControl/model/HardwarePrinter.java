@@ -2917,9 +2917,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public String requestDebugData(boolean addToGCodeTranscript)
+    public List<Integer> requestDebugData(boolean addToGCodeTranscript)
     {
-        String debugData = null;
+        List<Integer> debugData = null;
 
         RoboxTxPacket debugRequest = RoboxTxPacketFactory.
             createPacket(TxPacketTypeEnum.READ_DEBUG_DATA);
