@@ -419,6 +419,34 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
     {
         List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        ExtrasMenuInnerPanel.OperationButton newButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "projectLoader.newButtonLabel";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "newButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "projectLoader.newButtonLabele";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenNewPressed();
+            }
+
+        };
+        operationButtons.add(newButton);
         ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
@@ -439,8 +467,70 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 return "genericFirstLetterCapitalised.Save";
             }
 
+            @Override
+            public void whenClicked()
+            {
+                whenSavePressed();
+            }
+
         };
         operationButtons.add(saveButton);
+        ExtrasMenuInnerPanel.OperationButton copyButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Copy";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "copyButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Copy";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenCopyPressed();
+            }
+
+        };
+        operationButtons.add(copyButton);
+        ExtrasMenuInnerPanel.OperationButton deleteButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Delete";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "deleteModelButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Delete";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenDeletePressed();
+            }
+
+        };
+        operationButtons.add(deleteButton);        
         return operationButtons;
     }
 

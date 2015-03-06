@@ -33,6 +33,11 @@ public interface ExtrasMenuInnerPanel
          * The i18n id of the tooltip text.
          */
         public String getTooltipTextId();
+
+        /**
+         * This will be called when the button has been clicked.
+         */
+        public void whenClicked();
     }
     
     /**
