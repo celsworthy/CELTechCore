@@ -400,7 +400,6 @@ public class ProjectTab extends Tab
      */
     public void addModelContainer(String fullFilename, ModelContainer modelContainer)
     {
-        steno.debug("I am loading " + fullFilename);
         if (project.getProjectMode() == ProjectMode.NONE)
         {
             switch (modelContainer.getModelContentsType())

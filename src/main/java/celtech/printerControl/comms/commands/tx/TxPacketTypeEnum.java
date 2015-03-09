@@ -147,7 +147,17 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    SET_FILAMENT_INFO((byte) 0xc5, 41, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_FEED_RATE_MULTIPLIER((byte) 0xc4, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    SET_E_FILAMENT_INFO((byte) 0xc8, 17, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    SET_D_FILAMENT_INFO((byte) 0xc9, 17, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

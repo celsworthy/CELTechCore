@@ -167,28 +167,34 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer);
 
-        if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+        try
         {
-            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject,
-                                                                        settingsScreenState.
-                                                                        getFilament(),
-                                                                        settingsScreenState.
-                                                                        getPrintQuality(),
-                                                                        settingsScreenState.
-                                                                        getSettings(), printer);
-        } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+            {
+                displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject,
+                                                                            settingsScreenState.
+                                                                            getFilament(),
+                                                                            settingsScreenState.
+                                                                            getPrintQuality(),
+                                                                            settingsScreenState.
+                                                                            getSettings(), printer);
+            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+            {
+                currentPrinter.resetPurgeTemperature();
+                printer.printProject(currentProject, settingsScreenState.getFilament(),
+                                     settingsScreenState.getPrintQuality(),
+                                     settingsScreenState.getSettings());
+                applicationStatus.setMode(ApplicationMode.STATUS);
+            } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
+            {
+                printer.printProject(currentProject, settingsScreenState.getFilament(),
+                                     settingsScreenState.getPrintQuality(),
+                                     settingsScreenState.getSettings());
+                applicationStatus.setMode(ApplicationMode.STATUS);
+            }
+        } catch (PrinterException ex)
         {
-            currentPrinter.resetPurgeTemperature();
-            printer.printProject(currentProject, settingsScreenState.getFilament(),
-                                 settingsScreenState.getPrintQuality(),
-                                 settingsScreenState.getSettings());
-            applicationStatus.setMode(ApplicationMode.STATUS);
-        } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
-        {
-            printer.printProject(currentProject, settingsScreenState.getFilament(),
-                                 settingsScreenState.getPrintQuality(),
-                                 settingsScreenState.getSettings());
-            applicationStatus.setMode(ApplicationMode.STATUS);
+            steno.error("Error during print project " + ex.getMessage());
         }
     }
 
@@ -569,7 +575,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printButton.setVisible(false);
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.SETTINGS));
-        
+        printButton.setDisable(true);
+
         closeNozzleButton.setVisible(false);
         fillNozzleButton.setVisible(false);
 
@@ -610,19 +617,28 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
                     ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).
                         canEjectProperty().not());
-                    fineNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    fillNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    openNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    closeNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    homeButton.disableProperty().bind(newValue.canPrintProperty().not());
+
+                    // These buttons should only be available in advanced mode
+                    fineNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    fillNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().
+                        not().or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    openNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    closeNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    homeButton.disableProperty().bind(newValue.canPrintProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+
                     newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(
                         headFanStatusListener);
-                    calibrateButton.disableProperty().
-                    bind(newValue.canCalibrateHeadProperty().not());
+
+                    calibrateButton.disableProperty()
+                    .bind(newValue.canCalibrateHeadProperty().not());
                     removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
 
                     printButton.getTag().addConditionalText(
@@ -630,7 +646,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         filamentProperty().isNull());
                     printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
                                                             newValue.getPrinterAncillarySystems().
-                                                            lidOpenProperty().not().not());
+                                                            lidOpenProperty()
+                                                            .and(Lookup.getUserPreferences().
+                                                                safetyFeaturesOnProperty()));
                     printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                                             newValue.extrudersProperty().get(0).
                                                             filamentLoadedProperty().not());
@@ -645,7 +663,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             Printer printer = settingsScreenState.selectedPrinterProperty().get();
             printButton.setDisable(!printer.canPrintProperty().get()
                 || settingsScreenState.filamentProperty() == null
-                || printer.getPrinterAncillarySystems().lidOpenProperty().get()
+                || (printer.getPrinterAncillarySystems().lidOpenProperty().get()
+                && Lookup.getUserPreferences().isSafetyFeaturesOn())
                 || !printer.extrudersProperty().get(0).filamentLoadedProperty().get());
         }
 
@@ -660,7 +679,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     }
                     printButton.disableProperty().bind(newValue.canPrintProperty().not()
                         .or(settingsScreenState.filamentProperty().isNull())
-                        .or(newValue.getPrinterAncillarySystems().lidOpenProperty())
+                        .or(newValue.getPrinterAncillarySystems().lidOpenProperty()
+                            .and(Lookup.getUserPreferences().safetyFeaturesOnProperty()))
                         .or(newValue.extrudersProperty().get(0).filamentLoadedProperty().not()));
 
                     currentPrinter = newValue;

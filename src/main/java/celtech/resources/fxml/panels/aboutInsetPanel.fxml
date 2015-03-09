@@ -35,7 +35,7 @@
                                 </Group>
                                 <Group AnchorPane.bottomAnchor="60.0" AnchorPane.rightAnchor="60.0">
                                     <children>
-                                        <SVGPath content="M159.614,30.283h-35.769l-2.785,7.896h35.768L159.614,30.283z      M150.332,7.862h28.199L181.306,0h-31.098C123.431,0,97.681,10.855,93,24.125l-7.123,20.181     c-4.676,13.266,13.406,24.125,40.189,24.125h31.096l2.775-7.861H131.74c-16.131,0-26.715-7.434-23.514-16.518l6.941-19.676     C118.375,15.292,134.197,7.862,150.332,7.862 M191.507,0.188l-15.564,44.119c-4.681,13.27,13.406,24.125,40.186,24.125h31.094     L250,60.57h-28.197c-16.137,0-26.717-7.434-23.512-16.518l15.474-43.865H191.507z M65.187,7.862h28.199L96.16,0H65.064     C38.292,0,12.539,10.855,7.857,24.125L0.738,44.307c-4.68,13.26,13.402,24.125,40.184,24.125h31.094l2.775-7.861H46.595     c-16.127,0-26.715-7.434-23.512-16.518l6.941-19.676C33.23,15.292,49.052,7.862,65.187,7.862" fill="white" />
+                                        <SVGPath content="M159.614,30.283h-35.769l-2.785,7.896h35.768L159.614,30.283z      M150.332,7.862h28.199L181.306,0h-31.098C123.431,0,97.681,10.855,93,24.125l-7.123,20.181     c-4.676,13.266,13.406,24.125,40.189,24.125h31.096l2.775-7.861H131.74c-16.131,0-26.715-7.434-23.514-16.518l6.941-19.676     C118.375,15.292,134.197,7.862,150.332,7.862 M191.507,0.188l-15.564,44.119c-4.681,13.27,13.406,24.125,40.186,24.125h31.094     L250,60.57h-28.197c-16.137,0-26.717-7.434-23.512-16.518l15.474-43.865H191.507z M65.187,7.862h28.199L96.16,0H65.064     C38.292,0,12.539,10.855,7.857,24.125L0.738,44.307c-4.68,13.26,13.402,24.125,40.184,24.125h31.094l2.775-7.861H46.595     c-16.127,0-26.715-7.434-23.512-16.518l6.941-19.676C33.23,15.292,49.052,7.862,65.187,7.862" fill="white" layoutY="-12.0" />
                                     </children>
                                 </Group>
                                 <Group AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="60.0">
@@ -167,9 +167,9 @@
                                         </HBox>
                                         <HBox alignment="CENTER" spacing="40.0">
                                             <padding>
-                                                <Insets top="40.0" />
+                                                <Insets top="20.0" />
                                             </padding>
-                                        </HBox>
+                                        </HBox><Button layoutX="399.0" layoutY="862.4320068359375" mnemonicParsing="false" text="Button" BorderPane.alignment="CENTER" />
                                     </children>
                                     <opaqueInsets>
                                         <Insets />
@@ -179,7 +179,7 @@
                         </AnchorPane>
                         <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
                             <children>
-                                <GraphicButtonWithLabel fxmlFileName="backwardButton" onAction="#okPressed" labelText="%buttonText.back" prefWidth="80.0" />
+                                <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
                             </children>
                         </HBox>
                     </children>

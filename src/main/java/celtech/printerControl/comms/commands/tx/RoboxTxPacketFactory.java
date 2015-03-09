@@ -118,8 +118,14 @@ public class RoboxTxPacketFactory
                 case SET_TEMPERATURES:
                     returnVal = new SetTemperatures();
                     break;
-                case SET_FILAMENT_INFO:
-                    returnVal = new SetFilamentInfo();
+                case SET_FEED_RATE_MULTIPLIER:
+                    returnVal = new SetFeedRateMultiplier();
+                    break;
+                case SET_E_FILAMENT_INFO:
+                    returnVal = new SetEFilamentInfo();
+                    break;
+                case SET_D_FILAMENT_INFO:
+                    returnVal = new SetDFilamentInfo();
                     break;
                 case LIST_FILES:
                     returnVal = new ListFiles();
