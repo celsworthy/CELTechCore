@@ -93,9 +93,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     @FXML
     private ComboBox<Object> cmbMaterials;
 
-    private ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
-    private ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
-
     public MaterialComponent()
     {
         // Should only be called from scene builder
@@ -116,16 +113,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         } catch (IOException exception)
         {
             throw new RuntimeException(exception);
-        }
-
-        try
-        {
-            allFilaments.addAll(FilamentContainer.getAppFilamentList());
-            allFilaments.addAll(FilamentContainer.getUserFilamentList());
-            userFilaments.addAll(FilamentContainer.getUserFilamentList());
-        } catch (NoClassDefFoundError exception)
-        {
-            // this should only happen in SceneBuilder            
         }
 
         this.mode = mode;
@@ -251,25 +238,16 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         cmbMaterials.setCellFactory((ListView<Object> param) -> new FilamentCell());
 
-        List<Object> filamentsList = new ArrayList<>();
-        if (mode == Mode.SETTINGS)
-        {
-            filamentsList.add(UNKNOWN);
-            filamentsList.addAll(userFilaments);
-        } else
-        {
-            filamentsList.addAll(allFilaments);
-        }
-        comboItems = FXCollections.observableArrayList(filamentsList);
-        cmbMaterials.setItems(comboItems);
+        repopulateCmbMaterials();
 
         FilamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
-                updateFilamentList();
+                repopulateCmbMaterials();
             });
 
-        cmbMaterials.valueProperty().addListener((ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+        cmbMaterials.valueProperty().addListener(
+            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
             {
                 if (newValue instanceof Filament)
                 {
@@ -289,10 +267,33 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     }
 
-    //TODO make this update the available filaments
-    private void updateFilamentList()
+    private void repopulateCmbMaterials()
     {
 
+        ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
+        ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
+
+        try
+        {
+            allFilaments.addAll(FilamentContainer.getAppFilamentList());
+            allFilaments.addAll(FilamentContainer.getUserFilamentList());
+            userFilaments.addAll(FilamentContainer.getUserFilamentList());
+        } catch (NoClassDefFoundError exception)
+        {
+            // this should only happen in SceneBuilder            
+        }
+
+        List<Object> filamentsList = new ArrayList<>();
+        if (mode == Mode.SETTINGS)
+        {
+            filamentsList.add(UNKNOWN);
+            filamentsList.addAll(userFilaments);
+        } else
+        {
+            filamentsList.addAll(allFilaments);
+        }
+        comboItems = FXCollections.observableArrayList(filamentsList);
+        cmbMaterials.setItems(comboItems);
     }
 
     public void whenMaterialSelected(ActionEvent actionEvent)
@@ -518,8 +519,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         this.selected = selected;
         anchorPane.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, selected);
     }
-    
-     /**
+
+    /**
      * In SETTINGS mode, when a reel is removed then re-add the Unknown option.
      */
     private void readdUnknownToCombo()
@@ -530,14 +531,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             cmbMaterials.setValue(UNKNOWN);
         }
     }
-    
+
     /**
      * In SETTINGS mode, when a custom filament has been chosen remove the Unknown option.
      */
     private void removeUnknownFromCombo()
     {
         comboItems.remove(UNKNOWN);
-    }        
+    }
 
     // PrinterListChangesNotifier
     @Override

@@ -2247,16 +2247,17 @@ all inherit from Menu Control's popup-menu. --- */
 }
 
 
-#printProfileInnerPanel .tab-pane, .tab-header-background{
+#printProfileInnerPanel .tab-pane, .tab-header-background {
     -fx-background-color: light_grey;
+    -fx-border-color: light_grey;
 }
 
 
-#printProfileInnerPanel .tab:hover, .tab:hover .tab-label{
+#printProfileInnerPanel .tab:hover, #printProfileInnerPanel .tab:hover .tab-label{
     -fx-background-color: light_grey;
 }
 
-#printProfileInnerPanel .tab:selected, .tab:selected .tab-label{
+#printProfileInnerPanel .tab:selected, #printProfileInnerPanel .tab:selected .tab-label{
     -fx-background-color: highlight_colour;
     -fx-border-color: highlight_colour;
 }
@@ -2265,10 +2266,11 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-background-color: light_grey;
     -fx-text-fill: white;
 
-    #printProfileInnerPanel  .tab:top {
-        -fx-border-width: 0.3;
-        -fx-border-color: dark_grey;
-    }
+}   
+
+#printProfileInnerPanel  .tab:top {
+    -fx-border-width: 0.3;
+    -fx-border-color: light_grey;
 }
 
 #printProfileName {

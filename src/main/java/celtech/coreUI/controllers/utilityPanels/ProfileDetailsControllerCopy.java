@@ -34,7 +34,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
@@ -854,7 +853,7 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
 
     private SlicerParametersFile getPrintProfile()
     {
-        SlicerParametersFile settingsToUpdate = new SlicerParametersFile();
+        SlicerParametersFile settingsToUpdate = makeNewSlicerParametersFile();
         settingsToUpdate.setSlicerOverride(slicerChooser.getValue().getSlicerType());
         settingsToUpdate.setProfileName(profileNameField.getText());
         // Extrusion tab
@@ -1004,12 +1003,20 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
     void whenNewPressed()
     {
         state.set(ProfileDetailsControllerCopy.State.NEW);
+        SlicerParametersFile slicerParametersFile = makeNewSlicerParametersFile();
+        slicerParametersFile.setProfileName("");
+        updateWidgets(slicerParametersFile);
+    }
+
+    private SlicerParametersFile makeNewSlicerParametersFile()
+    {
         SlicerParametersFile slicerParametersFile = new SlicerParametersFile();
         slicerParametersFile.setNozzleParameters(new ArrayList<>());
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
-        slicerParametersFile.setProfileName("");
-        updateWidgets(slicerParametersFile);
+        slicerParametersFile.setFillPattern(FillPattern.LINE);
+        slicerParametersFile.setSupportPattern(SupportPattern.RECTILINEAR);
+        return slicerParametersFile;
     }
 
     void whenCopyPressed()
