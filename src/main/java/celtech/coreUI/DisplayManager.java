@@ -31,6 +31,7 @@ import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -72,10 +73,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
-    
+
     private static final int START_SCALING_WINDOW_HEIGHT = 800;
     private static final double MINIMUM_SCALE_FACTOR = 0.8;
-    
+
     private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private static final ProjectManager projectManager = ProjectManager.getInstance();
 
@@ -209,6 +210,20 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             ProjectTab newProjectTab = new ProjectTab(instance, project, tabDisplay.widthProperty(),
                                                       tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+        }
+
+        if (Lookup.getUserPreferences().isFirstUse())
+        {
+            File firstUsePrintFile = new File(ApplicationConfiguration.
+                getApplicationModelDirectory().concat(
+                    "Robox CEL RB robot.stl"));
+
+            List<File> fileToLoad = new ArrayList<>();
+            fileToLoad.add(firstUsePrintFile);
+
+            ProjectTab newTab = loadExternalModels(fileToLoad, true, false);
+            newTab.getProject().setProjectName(Lookup.i18n("myFirstPrintTitle"));
+            Lookup.getUserPreferences().setFirstUse(false);
         }
     }
 
@@ -487,6 +502,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         } catch (IOException ex)
         {
             steno.error("Failed to load printer status page:" + ex);
+            ex.printStackTrace();
         }
 
         applicationStatus.modeProperty().addListener(
@@ -751,8 +767,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      * @param modelsToLoad
      * @param newTab
      * @param relayout
+     * @return
      */
-    public void loadExternalModels(List<File> modelsToLoad, boolean newTab, boolean relayout)
+    public ProjectTab loadExternalModels(List<File> modelsToLoad, boolean newTab, boolean relayout)
     {
         ProjectTab tabToUse = null;
 
@@ -775,6 +792,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 modelLoaderService.start();
             }
         }
+
+        return tabToUse;
     }
 
     /**

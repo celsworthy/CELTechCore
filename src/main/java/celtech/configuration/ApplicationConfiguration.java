@@ -180,6 +180,11 @@ public class ApplicationConfiguration
     /**
      *
      */
+    public static final String modelStorageDirectoryPath = "Models";
+
+    /**
+     *
+     */
     public static final String printFileExtension = ".prt";
 
     private static String filamentFileDirectory = null;
@@ -1147,5 +1152,10 @@ public class ApplicationConfiguration
         }
 
         return myMiniFactoryDownloadsDirectory;
+    }
+    
+    public static String getApplicationModelDirectory()
+    {
+        return getCommonApplicationDirectory().concat(modelStorageDirectoryPath).concat("/");
     }
 }

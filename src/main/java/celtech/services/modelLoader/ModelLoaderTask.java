@@ -81,7 +81,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
-                modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
+                modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProjectTab,
                                                   percentProgress);
             } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
             {

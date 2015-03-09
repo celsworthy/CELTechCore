@@ -5,32 +5,23 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
-import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.components.VerticalMenu;
+import celtech.coreUI.controllers.panels.userpreferences.LanguagePreference;
 import celtech.coreUI.controllers.panels.userpreferences.LogLevelPreference;
-import celtech.coreUI.controllers.panels.userpreferences.SafetyFeaturesOnPreference;
-import celtech.coreUI.controllers.panels.userpreferences.ShowTooltipPreference;
 import celtech.coreUI.controllers.panels.userpreferences.SlicerTypePreference;
+import celtech.coreUI.controllers.panels.userpreferences.TickBoxPreference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
-import javafx.util.Callback;
 
 /**
  *
@@ -40,8 +31,6 @@ public class PreferencesTopInsetPanelController implements Initializable
 {
 
     private static final int ROW_HEIGHT = 60;
-
-    private static final String SYSTEM_DEFAULT = "System Default";
 
     public interface Preference
     {
@@ -120,7 +109,8 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         Preference slicerTypePref = new SlicerTypePreference(userPreferences);
 
-        Preference safetyFeaturesOnPref = new SafetyFeaturesOnPreference(userPreferences);
+        Preference safetyFeaturesOnPref = new TickBoxPreference(userPreferences.
+            safetyFeaturesOnProperty(), "preferences.safetyFeaturesOn");
 
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
@@ -132,134 +122,20 @@ public class PreferencesTopInsetPanelController implements Initializable
     {
         List<Preference> preferences = new ArrayList<>();
 
-        Preference languagePref = new Preference()
-        {
-            private final ComboBox<Object> control;
-
-            
-            {
-                control = new ComboBox<>();
-
-                setupCellFactory(control);
-
-                List<Object> localesList = new ArrayList<>();
-                localesList.add(SYSTEM_DEFAULT);
-                localesList.addAll(Lookup.getLanguages().getLocales());
-                localesList.sort((Object o1, Object o2) ->
-                {
-                    // Make "System Default" come at the top of the combo
-                    if (o1 instanceof String)
-                    {
-                        return -1;
-                    } else if (o2 instanceof String)
-                    {
-                        return 1;
-                    }
-                    // o1 and o2 are both Locales
-                    return ((Locale) o1).getDisplayName().compareTo(((Locale) o2).getDisplayName());
-                });
-                control.setItems(FXCollections.observableArrayList(localesList));
-                control.setPrefWidth(300);
-                control.setMinWidth(control.getPrefWidth());
-                control.valueProperty().addListener(
-                    (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-                    {
-                        updateValueFromControl();
-                    });
-            }
-
-            @Override
-            public void updateValueFromControl()
-            {
-                if (control.getValue() instanceof Locale)
-                {
-                    Locale localeToUse = ((Locale) control.getValue());
-                    if (localeToUse.getVariant().length() > 0)
-                    {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
-                            + localeToUse.getCountry() + "-" + localeToUse.getVariant());
-                    } else if (localeToUse.getCountry().length() > 0)
-                    {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
-                            + localeToUse.getCountry());
-                    } else
-                    {
-                        userPreferences.setLanguageTag(localeToUse.getLanguage());
-                    }
-                } else
-                {
-                    userPreferences.setLanguageTag("");
-                }
-            }
-
-            @Override
-            public void populateControlWithCurrentValue()
-            {
-                Object preferredLocale;
-                String userPrefLanguageTag = userPreferences.getLanguageTag();
-
-                if (userPrefLanguageTag == null || userPrefLanguageTag.equals(""))
-                {
-                    preferredLocale = SYSTEM_DEFAULT;
-                } else
-                {
-                    preferredLocale = Locale.forLanguageTag(userPrefLanguageTag);
-                }
-                control.setValue(preferredLocale);
-            }
-
-            @Override
-            public Control getControl()
-            {
-                return control;
-            }
-
-            @Override
-            public String getDescription()
-            {
-                return Lookup.i18n("preferences.language");
-            }
-
-            private void setupCellFactory(ComboBox<Object> control)
-            {
-
-                Callback<ListView<Object>, ListCell<Object>> cellFactory = new Callback<ListView<Object>, ListCell<Object>>()
-                {
-                    @Override
-                    public ListCell<Object> call(ListView<Object> p)
-                    {
-                        return new ListCell<Object>()
-                        {
-                            @Override
-                            protected void updateItem(Object item, boolean empty)
-                            {
-                                super.updateItem(item, empty);
-                                if (item != null && !empty)
-                                {
-                                    if (item instanceof Locale)
-                                    {
-                                        setText(((Locale) item).getDisplayName());
-                                    } else
-                                    {
-                                        setText((String) item);
-                                    }
-                                }
-                            }
-                        };
-                    }
-                };
-
-                control.setButtonCell(cellFactory.call(null));
-                control.setCellFactory(cellFactory);
-            }
-        };
-
-        Preference showTooltipsPref = new ShowTooltipPreference(userPreferences);
+        Preference languagePref = new LanguagePreference(userPreferences);
+        Preference showTooltipsPref = new TickBoxPreference(userPreferences.showTooltipsProperty(),
+                                                            "preferences.showTooltips");
         Preference logLevelPref = new LogLevelPreference(userPreferences);
+        Preference advancedModePref = new TickBoxPreference(userPreferences.advancedModeProperty(),
+                                                            "preferences.advancedMode");
+        Preference firstUsePref = new TickBoxPreference(userPreferences.firstUseProperty(),
+                                                        "preferences.firstUse");
 
+        preferences.add(firstUsePref);
         preferences.add(languagePref);
 //        preferences.add(showTooltipsPref);
         preferences.add(logLevelPref);
+        preferences.add(advancedModePref);
 
         return preferences;
     }
@@ -269,10 +145,18 @@ public class PreferencesTopInsetPanelController implements Initializable
         Label description = getPreferenceDescriptionLabel(preference);
         Control editor = getPreferenceEditorControl(preference);
         preferencesGridPane.addRow(rowNo, description, editor);
-        RowConstraints rowConstraints = preferencesGridPane.getRowConstraints().get(rowNo);
-        rowConstraints.setPrefHeight(ROW_HEIGHT);
-        rowConstraints.setMinHeight(ROW_HEIGHT);
-        rowConstraints.setMaxHeight(ROW_HEIGHT);
+
+        if (preferencesGridPane.getRowConstraints().size() < rowNo)
+        {
+            RowConstraints rowConstraints = preferencesGridPane.getRowConstraints().get(rowNo);
+            rowConstraints.setPrefHeight(ROW_HEIGHT);
+            rowConstraints.setMinHeight(ROW_HEIGHT);
+            rowConstraints.setMaxHeight(ROW_HEIGHT);
+        } else
+        {
+            preferencesGridPane.getRowConstraints().add(rowNo, new RowConstraints(ROW_HEIGHT, ROW_HEIGHT,
+                                                                           ROW_HEIGHT));
+        }
     }
 
     private Label getPreferenceDescriptionLabel(Preference preference)

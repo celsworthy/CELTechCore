@@ -4,10 +4,7 @@
 package celtech.services.purge;
 
 import celtech.Lookup;
-import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
-import celtech.coreUI.components.ChoiceLinkButton;
-import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.CalibrationXAndYActions;
@@ -17,9 +14,6 @@ import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 

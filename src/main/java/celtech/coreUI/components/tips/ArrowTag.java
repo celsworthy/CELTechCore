@@ -126,7 +126,7 @@ public class ArrowTag extends HBox
         }
     }
 
-    public void addConditionalText(String i18nText, BooleanBinding whenToAddText)
+    public void addConditionalText(String i18nText, ObservableValue<Boolean> whenToAddText)
     {
         conditionalTextElements.add(new ConditionalText(i18nText, whenToAddText));
         whenToAddText.addListener(conditionChangeListener);
@@ -162,7 +162,7 @@ public class ArrowTag extends HBox
 
         for (ConditionalText conditionalText : conditionalTextElements)
         {
-            if (conditionalText.getAppearanceCondition().get())
+            if (conditionalText.getAppearanceCondition().getValue())
             {
                 if (addedFirst)
                 {
@@ -216,7 +216,7 @@ public class ArrowTag extends HBox
         {
             for (ConditionalText conditionalText : conditionalTextElements)
             {
-                visible |= conditionalText.getAppearanceCondition().get();
+                visible |= conditionalText.getAppearanceCondition().getValue();
             }
         }
 

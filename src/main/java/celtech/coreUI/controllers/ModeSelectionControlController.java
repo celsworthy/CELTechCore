@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers;
 
 import celtech.Lookup;
@@ -12,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.EnhancedToggleGroup;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -40,7 +36,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class ModeSelectionControlController implements Initializable
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(ModeSelectionControlController.class.getName());
+    private Stenographer steno = StenographerFactory.getStenographer(
+        ModeSelectionControlController.class.getName());
     private ApplicationStatus applicationStatus = null;
     private SettingsScreenState settingsScreenState = null;
     private ObjectProperty<Toggle> selectedToggle = new SimpleObjectProperty<>();
@@ -55,7 +52,7 @@ public class ModeSelectionControlController implements Initializable
 
     @FXML
     private Rectangle progressArrowPart1;
-    
+
     @FXML
     private ImageView progressArrowPart2;
 
@@ -90,6 +87,7 @@ public class ModeSelectionControlController implements Initializable
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -137,9 +135,22 @@ public class ModeSelectionControlController implements Initializable
             {
                 if (t1.booleanValue() == true)
                 {
-                    Project currentProject = DisplayManager.getInstance().getCurrentlyVisibleProject();
-                    settingsScreenState.getSelectedPrinter().printProject(currentProject, settingsScreenState.getFilament(), settingsScreenState.getPrintQuality(), settingsScreenState.getSettings());
-                    applicationStatus.setMode(ApplicationMode.STATUS);
+                    try
+                    {
+                        Project currentProject = DisplayManager.getInstance().
+                            getCurrentlyVisibleProject();
+                        settingsScreenState.getSelectedPrinter().printProject(currentProject,
+                                                                              settingsScreenState.
+                                                                              getFilament(),
+                                                                              settingsScreenState.
+                                                                              getPrintQuality(),
+                                                                              settingsScreenState.
+                                                                              getSettings());
+                        applicationStatus.setMode(ApplicationMode.STATUS);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error printing project: " + ex.getMessage());
+                    }
                 }
             }
         });
@@ -151,40 +162,46 @@ public class ModeSelectionControlController implements Initializable
         applicationStatus.modeProperty().addListener(new ChangeListener<ApplicationMode>()
         {
             @Override
-            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
+            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t,
+                ApplicationMode t1)
             {
                 setupModeButtons();
             }
         });
 
         layoutModeButton.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                if (applicationStatus.getMode() == ApplicationMode.LAYOUT)
-                {
-                    t.consume();
-                }
-            }
+                                    {
+                                        @Override
+                                        public void handle(MouseEvent t)
+                                        {
+                                            if (applicationStatus.getMode()
+                                                == ApplicationMode.LAYOUT)
+                                            {
+                                                t.consume();
+                                            }
+                                        }
         });
 
         settingsModeButton.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>()
-        {
-            @Override
-            public void handle(MouseEvent t)
-            {
-                if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
-                {
-                    t.consume();
-                }
-            }
+                                      {
+                                          @Override
+                                          public void handle(MouseEvent t)
+                                          {
+                                              if (applicationStatus.getMode()
+                                                  == ApplicationMode.SETTINGS)
+                                              {
+                                                  t.consume();
+                                              }
+                                          }
         });
 
         connectedPrinters = Lookup.getConnectedPrinters();
 
-        settingsModeButton.disableProperty().bind(Bindings.isEmpty(connectedPrinters).or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)));
-        printModeButton.disableProperty().bind(Bindings.isEmpty(connectedPrinters).or(applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).or(settingsScreenState.selectedPrinterProperty().isNull())));
+        settingsModeButton.disableProperty().bind(Bindings.isEmpty(connectedPrinters).or(
+            applicationStatus.modeProperty().isEqualTo(ApplicationMode.STATUS)));
+        printModeButton.disableProperty().bind(Bindings.isEmpty(connectedPrinters).or(
+            applicationStatus.modeProperty().isNotEqualTo(ApplicationMode.SETTINGS).or(
+                settingsScreenState.selectedPrinterProperty().isNull())));
 
     }
 

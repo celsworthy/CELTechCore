@@ -19,6 +19,7 @@ public class UserPreferenceFile
     private boolean showTooltips = false;
     private LogLevel loggingLevel = LogLevel.INFO;
     private boolean advancedMode = false;
+    private boolean firstUse = true;
 
     public String getLanguageTag()
     {
@@ -80,6 +81,16 @@ public class UserPreferenceFile
         this.advancedMode = advancedMode;
     }
 
+    public boolean isFirstUse()
+    {
+        return firstUse;
+    }
+
+    public void setFirstUse(boolean value)
+    {
+        this.firstUse = value;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
@@ -88,5 +99,6 @@ public class UserPreferenceFile
         setShowTooltips(userPreferences.isShowTooltips());
         setLoggingLevel(userPreferences.getLoggingLevel());
         setAdvancedMode(userPreferences.isAdvancedMode());
+        setFirstUse(userPreferences.isFirstUse());
     }
 }

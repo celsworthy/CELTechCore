@@ -4,7 +4,10 @@ import celtech.Lookup;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.SlidablePanel;
 import celtech.coreUI.controllers.SlideOutHandleController;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
@@ -26,7 +29,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class PrinterStatusSlideOutPanelController implements Initializable, SlidablePanel
+public class PrinterStatusSlideOutPanelController implements Initializable, SlidablePanel, PrinterListChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(PrinterStatusSlideOutPanelController.class.getName());
@@ -49,6 +52,9 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
     @FXML
     private HBox slideout;
+    
+    @FXML
+    private HBox gcodePanel;
 
     @FXML
     void sendGCodeM(MouseEvent event)
@@ -197,5 +203,42 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     public void slideIn()
     {
         SlideOutHandleController.slideIn();
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+        gcodePanel.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        gcodePanel.disableProperty().unbind();
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
     }
 }

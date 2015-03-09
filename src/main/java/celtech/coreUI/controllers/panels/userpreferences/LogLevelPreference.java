@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import libertysystems.stenographer.LogLevel;

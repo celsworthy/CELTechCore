@@ -332,7 +332,8 @@ public class PrintEngine implements ControllableService
                 }
             } else
             {
-                Lookup.getSystemNotificationHandler().showPrintJobFailedNotification();
+                Lookup.getSystemNotificationHandler().showPrintTransferFailedNotification(
+                    associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
                 steno.error("Submission of job to printer failed");
                 try
                 {

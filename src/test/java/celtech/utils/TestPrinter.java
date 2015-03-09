@@ -634,14 +634,7 @@ class TestPrinter implements Printer
     }
 
     @Override
-    public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void transmitSetFilamentInfo(double filamentDiameterE, double filamentMultiplierE, double filamentDiameterD, double filamentMultiplierD,
-        double feedRateMultiplier) throws RoboxCommsException
+    public void changeFeedRateMultiplier(double feedRate) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -685,12 +678,6 @@ class TestPrinter implements Printer
 
     @Override
     public void levelGantry()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ReadOnlyBooleanProperty canChangeFilamentInfoProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -841,6 +828,13 @@ class TestPrinter implements Printer
 
     @Override
     public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void changeFilamentInfo(String extruderLetter, double filamentDiameter,
+        double extrusionMultiplier) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
