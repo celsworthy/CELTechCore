@@ -7,6 +7,7 @@ import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.FillPattern;
+import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
@@ -1004,6 +1005,9 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
     {
         state.set(ProfileDetailsControllerCopy.State.NEW);
         SlicerParametersFile slicerParametersFile = new SlicerParametersFile();
+        slicerParametersFile.setNozzleParameters(new ArrayList<>());
+        slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
+        slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
         slicerParametersFile.setProfileName("");
         updateWidgets(slicerParametersFile);
     }
