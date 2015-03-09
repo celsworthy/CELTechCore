@@ -14,7 +14,7 @@
                 <HBox alignment="TOP_CENTER" spacing="5.0">
                     <children>
                         <Label text="%sidePanel_settings.Profilename" />
-                        <RestrictedTextField fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" restrict="-_0-9a-zA-Z\p{L}\p{M}*+" />
+                        <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" restrict="-_0-9a-zA-Z\p{L}\p{M}*+" />
                     </children>
                     <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -35,9 +35,9 @@
             <tabs>
                 <Tab text="%sidePanel_settings.ExtrusionTabTitle">
                     <content>
-                        <GridPane fx:id="extrusionGrid" alignment="TOP_CENTER">
+                        <GridPane fx:id="extrusionGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" percentWidth="50.0" />
+                                <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
                                 <ColumnConstraints percentWidth="50.0" />
                             </columnConstraints>
                             <rowConstraints>
@@ -102,7 +102,7 @@
                     <content>
                         <VBox alignment="CENTER">
                             <children>
-                                <GridPane id="Content" fx:id="extrusionControls" alignment="TOP_CENTER" maxHeight="-1.0">
+                                <GridPane id="Content" fx:id="extrusionControls" alignment="TOP_CENTER" maxHeight="-1.0" styleClass="printProfileGrid" vgap="8.0">
                                     <children>
                                         <Label fx:id="extrusionWidthLabel" minHeight="40.0" style="-fx-text-alignment: CENTER;" text="%extrusion.extrusionWidth" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                                         <Label fx:id="nozzleLabel" style="-fx-text-alignment: CENTER;" text="%extrusion.nozzle" GridPane.columnIndex="2" GridPane.rowIndex="0" />
@@ -197,7 +197,7 @@
                                         <ToggleButton fx:id="nozzle2Button" mnemonicParsing="false" text="%sidePanel_settings.Nozzle2Title" toggleGroup="$nozzleChoiceGroup" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                                     </children>
                                 </HBox>
-                                <GridPane id="Content" fx:id="nozzleControls" alignment="TOP_CENTER" maxHeight="-1.0">
+                                <GridPane id="Content" fx:id="nozzleControls" alignment="TOP_CENTER" maxHeight="-1.0" vgap="8.0">
                                     <children>
                                         <Label fx:id="nozzleOpenVolumeLabel" minWidth="95.0" text="%nozzle.openVolume" GridPane.rowIndex="1" />
                                         <HBox fx:id="nozzleOpenVolumeHBox" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -286,7 +286,7 @@
                 </Tab>
                 <Tab text="%sidePanel_settings.supportTab">
                     <content>
-                        <GridPane id="Content" fx:id="supportGrid" alignment="TOP_CENTER">
+                        <GridPane id="Content" fx:id="supportGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
                             <children>
                                 <CheckBox fx:id="supportMaterialEnabled" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="CheckBox" GridPane.columnIndex="1" />
                                 <Label minWidth="95.0" text="%support.overhangThreshold" GridPane.rowIndex="1" />
@@ -323,7 +323,7 @@
                                 <Label layoutX="31.0" layoutY="61.0" minWidth="95.0" text="%support.supportEnabled" textAlignment="RIGHT" wrapText="true" />
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" percentWidth="50.0" />
+                                <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
                                 <ColumnConstraints percentWidth="50.0" />
                             </columnConstraints>
                             <rowConstraints>
@@ -339,7 +339,7 @@
                 </Tab>
                 <Tab text="%sidePanel_settings.speedTab">
                     <content>
-                        <GridPane id="Content" fx:id="speedGrid" alignment="TOP_CENTER" minHeight="0.0" minWidth="0.0">
+                        <GridPane id="Content" fx:id="speedGrid" alignment="TOP_CENTER" minHeight="0.0" minWidth="0.0" vgap="8.0">
                             <children>
                                 <Label alignment="TOP_RIGHT" minWidth="115.0" text="%speed.firstLayer" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="0">
@@ -422,7 +422,7 @@
                                 </HBox>
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" percentWidth="50.0" />
+                                <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
                                 <ColumnConstraints percentWidth="50.0" />
                             </columnConstraints>
                             <rowConstraints>
@@ -442,7 +442,7 @@
                 </Tab>
                 <Tab text="%sidePanel_settings.coolingTabTitle">
                     <content>
-                        <GridPane id="Content" fx:id="coolingGrid" alignment="TOP_CENTER" styleClass="tab-pane">
+                        <GridPane id="Content" fx:id="coolingGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
                             <children>
                                 <CheckBox id="autoUnretract" fx:id="enableAutoCooling" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%cooling.enableAutoCooling" GridPane.columnIndex="1" />
                                 <Label styleClass="sidePanelDivider" text="%cooling.fanSettingsTitle" GridPane.rowIndex="1" />
@@ -489,7 +489,7 @@
                                 </HBox>
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints fillWidth="false" halignment="RIGHT" percentWidth="50.0" />
+                                <ColumnConstraints fillWidth="false" halignment="LEFT" percentWidth="50.0" />
                                 <ColumnConstraints fillWidth="false" percentWidth="50.0" />
                             </columnConstraints>
                             <rowConstraints>
