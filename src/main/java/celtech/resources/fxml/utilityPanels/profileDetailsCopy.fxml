@@ -8,6 +8,7 @@
 
 <VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="380.0" spacing="5.0" styleClass="innerPanel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
+      <ComboBox id="cmbPrintProfile" fx:id="cmbPrintProfile" prefWidth="150.0" />
         <VBox>
             <children>
                 <HBox alignment="TOP_CENTER" spacing="5.0">
@@ -508,11 +509,6 @@
                 </Tab>
             </tabs>
         </TabPane>
-        <StackPane>
-            <children>
-                <HBox fx:id="editingOptions" alignment="CENTER" spacing="5.0" VBox.vgrow="NEVER" />
-            </children>
-        </StackPane>
     </children>
    <padding>
       <Insets left="25.0" />

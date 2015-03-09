@@ -2253,6 +2253,10 @@ all inherit from Menu Control's popup-menu. --- */
 * Print Profiles
 */
 
+#cmbPrintProfile {
+    -fx-pref-width: 290;
+}
+
 
 #printProfileInnerPanel .tab-pane, .tab-header-background{
     -fx-background-color: light_grey;
