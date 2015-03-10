@@ -7,11 +7,9 @@ import celtech.Lookup;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel.OperationButton;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
+import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 
 /**
@@ -25,6 +23,7 @@ public class ButtonBox extends HBox
 
     public ButtonBox(ReadOnlyObjectProperty<ExtrasMenuInnerPanel> extrasMenuInnerPanelProperty)
     {
+        setAlignment(Pos.CENTER);
         extrasMenuInnerPanelProperty.addListener(
             (ObservableValue<? extends ExtrasMenuInnerPanel> observable, ExtrasMenuInnerPanel oldValue, ExtrasMenuInnerPanel newValue) ->
             {

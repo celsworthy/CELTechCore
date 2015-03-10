@@ -1431,22 +1431,6 @@ modal-dialogue{
     -fx-text-fill: black;
 }
 
-.bob
-{
-    -fx-fill: purple;
-}
-
-.bob:focus
-{
-    -fx-fill: green;
-}
-/*.status-tab-graphic, .status-tab-graphi{
-    -fx-background-color: green;
-    -fx-content-display: graphic-only;
-    -fx-fill: purple;
-}*/
-
-
 /*******************************************************************************
  *                                                                             *
  * ProjectMenu                                                                    *
@@ -2253,17 +2237,27 @@ all inherit from Menu Control's popup-menu. --- */
 * Print Profiles
 */
 
+#cmbPrintProfile {
+    -fx-pref-width: 290;
+}
 
-#printProfileInnerPanel .tab-pane, .tab-header-background{
-    -fx-background-color: light_grey;
+#printProfileInnerPanel {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt; 
 }
 
 
-#printProfileInnerPanel .tab:hover, .tab:hover .tab-label{
+#printProfileInnerPanel .tab-pane, .tab-header-background {
+    -fx-background-color: light_grey;
+    -fx-border-color: light_grey;
+}
+
+
+#printProfileInnerPanel .tab:hover, #printProfileInnerPanel .tab:hover .tab-label{
     -fx-background-color: light_grey;
 }
 
-#printProfileInnerPanel .tab:selected, .tab:selected .tab-label{
+#printProfileInnerPanel .tab:selected, #printProfileInnerPanel .tab:selected .tab-label{
     -fx-background-color: highlight_colour;
     -fx-border-color: highlight_colour;
 }
@@ -2272,9 +2266,38 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-background-color: light_grey;
     -fx-text-fill: white;
 
-#printProfileInnerPanel  .tab:top {
-        -fx-border-width: 0.3;
-        -fx-border-color: dark_grey;
-    }
+}   
 
+#printProfileInnerPanel  .tab:top {
+    -fx-border-width: 0.3;
+    -fx-border-color: light_grey;
+}
+
+#printProfileName {
+    -fx-padding: 2 2 2 2;
+}
+
+.printProfileGrid {
+    -fx-background-color: light_grey;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;    
+}
+
+.printProfileGrid .RestrictedNumberField {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+.printProfileGrid .text-field {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+.printProfileGrid .label {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+.printProfileGrid {
+    -fx-vgap: 8;
 }

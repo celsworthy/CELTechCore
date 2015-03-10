@@ -241,22 +241,22 @@ public class ApplicationConfiguration
     /**
      *
      */
-    public static final String customSettingsProfileName = "CustomSettings";
+    public static final String customSettingsProfileName = "Custom";
 
     /**
      *
      */
-    public static final String draftSettingsProfileName = "DraftSettings";
+    public static final String draftSettingsProfileName = "Draft";
 
     /**
      *
      */
-    public static final String normalSettingsProfileName = "NormalSettings";
+    public static final String normalSettingsProfileName = "Normal";
 
     /**
      *
      */
-    public static final String fineSettingsProfileName = "FineSettings";
+    public static final String fineSettingsProfileName = "Fine";
 
     /**
      *

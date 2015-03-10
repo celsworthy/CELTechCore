@@ -41,12 +41,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private final Stenographer steno = StenographerFactory.getStenographer(
         ExtrasMenuPanelController.class.getName());
 
-    enum ButtonId
-    {
-
-        SAVE, COPY, NEW, DELETE;
-    }
-
     enum State
     {
 
@@ -70,6 +64,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
+    private final BooleanProperty canWriteToReel1 = new SimpleBooleanProperty(false);
+    private final BooleanProperty canWriteToReel2 = new SimpleBooleanProperty(false);
 
     private String currentFilamentID;
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
@@ -360,6 +356,14 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         clearWidgets();
         selectFirstFilament();
     }
+    
+    void whenWriteToReel1Pressed() {
+        
+    }
+    
+    void whenWriteToReel2Pressed() {
+        
+    }    
 
     public ReadOnlyBooleanProperty getCanSave()
     {
@@ -436,7 +440,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getTooltipTextId()
             {
-                return "projectLoader.newButtonLabele";
+                return "projectLoader.newButtonLabel";
             }
 
             @Override
@@ -555,6 +559,75 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         };
         operationButtons.add(deleteButton);        
+        ExtrasMenuInnerPanel.OperationButton writeToReel1Button = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "filamentLibrary.writeToReel1";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "lightsButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "filamentLibrary.writeToReel1";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenWriteToReel1Pressed();
+            }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return canWriteToReel1;
+            }              
+
+        };
+        operationButtons.add(writeToReel1Button);        
+        ExtrasMenuInnerPanel.OperationButton writeToReel2Button = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "filamentLibrary.writeToReel2";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "lightsButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "filamentLibrary.writeToReel2";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenWriteToReel2Pressed();
+            }
+            
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return canWriteToReel2;
+            }              
+
+        };
+        operationButtons.add(writeToReel1Button);    
+
         return operationButtons;
     }
 

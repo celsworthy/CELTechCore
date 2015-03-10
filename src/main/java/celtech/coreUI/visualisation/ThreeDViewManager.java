@@ -562,10 +562,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         project.getPrinterSettings().selectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
-                if (newValue != null)
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                }
+                updateFilamentColoursForModeAndTargetPrinter();
             });
 
         /**
@@ -929,14 +926,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
      */
     private void updateFilamentColoursForModeAndTargetPrinter()
     {
-        if (project.getPrinterSettings().getSelectedPrinter() == null) {
-            return;
-        }
+        Printer selectedPrinter = project.getPrinterSettings().getSelectedPrinter();
+
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
             extruder0Filament = project.getPrinterSettings().getFilament0();
             extruder1Filament = project.getPrinterSettings().getFilament1();
-            if (targetPrinterHasOneExtruder())
+            if (selectedPrinter != null && targetPrinterHasOneExtruder())
             {
                 extruder1Filament = extruder0Filament;
             }
