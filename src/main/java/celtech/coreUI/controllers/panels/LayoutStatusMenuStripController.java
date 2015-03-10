@@ -665,7 +665,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
                                                 printer.getPrinterAncillarySystems().
-                                                lidOpenProperty().not().not());
+                                                lidOpenProperty()
+                                                .and(Lookup.getUserPreferences().
+                                                    safetyFeaturesOnProperty()));
 
         if (!printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
         {
@@ -931,7 +933,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             canPrintProject.bind(
                 printer.canPrintProperty()
                 .and(printerSettings.getFilament0Property().isNotNull())
-                .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
+                .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
+                    .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                 .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
             );
         } else // this printer has two extruders
@@ -952,8 +955,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 canPrintProject.bind(
                     printer.canPrintProperty()
                     .and(requiredFilamentProperty.isNotNull())
-                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
-                    .and(printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty())
+                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
+                        .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                    .and(printer.extrudersProperty().get(extruderNumber).
+                        filamentLoadedProperty())
                 );
             } else // both extruders are required
             {
@@ -961,7 +966,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     printer.canPrintProperty()
                     .and(printerSettings.getFilament0Property().isNotNull())
                     .and(printerSettings.getFilament1Property().isNotNull())
-                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not())
+                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
+                        .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                     .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                     .and(printer.extrudersProperty().get(1).filamentLoadedProperty())
                 );
