@@ -7,19 +7,15 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.services.purge.PurgeState;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -344,13 +340,13 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     {
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
                                            printerToUse.getPrinterAncillarySystems().
-                                           lidOpenProperty().not().not());
+                                           lidOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()));
         button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                            printerToUse.extrudersProperty().get(0).
                                            filamentLoadedProperty().not());
 
         button.disableProperty().bind(printerToUse.canPrintProperty().not()
-            .or(printerToUse.getPrinterAncillarySystems().lidOpenProperty())
+            .or(printerToUse.getPrinterAncillarySystems().lidOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()))
             .or(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
 
