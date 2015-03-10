@@ -1229,6 +1229,7 @@ public class PrintEngine implements ControllableService
         if (printJob.roboxisedFileExists())
         {
             acceptedPrintRequest = reprintFileFromDisk(printJob, expectedSequenceNumber);
+            Lookup.getSystemNotificationHandler().removePrintTransferFailedNotification();
         }
 
         return acceptedPrintRequest;

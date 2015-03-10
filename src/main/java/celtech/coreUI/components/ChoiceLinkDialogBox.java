@@ -136,4 +136,9 @@ public class ChoiceLinkDialogBox extends VBox
     {
         return dialogStage.isShowing();
     }
+    
+    public void close()
+    {
+        dialogStage.close();
+    }
 }

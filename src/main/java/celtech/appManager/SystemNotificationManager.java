@@ -60,6 +60,8 @@ public interface SystemNotificationManager
 
     void showPrintTransferFailedNotification(String printerName);
 
+    void removePrintTransferFailedNotification();
+
     void showReprintStartedNotification();
 
     void showSDCardNotification();
