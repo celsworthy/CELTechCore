@@ -3,8 +3,10 @@ package celtech.utils.threed.importers.stl;
 import celtech.appManager.Project;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
+import celtech.coreUI.visualisation.metaparts.Face;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.Part;
 
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.modelcontrol.ModelContainer;
@@ -22,7 +24,9 @@ import java.io.LineNumberReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import javafx.geometry.BoundingBox;
 import javafx.scene.shape.CullFace;
@@ -39,8 +43,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 public class STLImporter
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(STLImporter.class.getName());
-    private TriangleMesh meshToOutput = null;
+    private final Stenographer steno = StenographerFactory.getStenographer(STLImporter.class.
+        getName());
     private ModelLoaderTask parentTask = null;
     private DoubleProperty percentProgressProperty = null;
     private final String spacePattern = "[ ]+";
@@ -60,6 +64,8 @@ public class STLImporter
         this.percentProgressProperty = percentProgressProperty;
         boolean fileIsBinary;
         boolean modelIsTooLarge = false;
+
+        Part loadedPart = null;
 
         steno.info("Starting STL load");
 
@@ -83,12 +89,12 @@ public class STLImporter
             {
                 if (fileIsBinary)
                 {
-                    meshToOutput = processBinarySTLData(modelFile);
+                    loadedPart = processBinarySTLData(modelFile);
 
                 } else
                 {
 
-                    meshToOutput = processAsciiSTLData(modelFile);
+                    loadedPart = processAsciiSTLData(modelFile);
                 }
             } catch (STLFileParsingException ex)
             {
@@ -106,29 +112,11 @@ public class STLImporter
         {
             steno.error("Couldn't find or open " + modelFile.getName());
         }
-
-        steno.info("loaded and processing mesh");
-
         if (parentTask == null || (!parentTask.isCancelled()))
         {
-            MeshView meshView = new MeshView();
-
-            meshView.setMesh(meshToOutput);
-            meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-            meshView.setCullFace(CullFace.BACK);
-            meshView.setId(modelFile.getName() + "_mesh");
-
-            ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshView);
-
-            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
-            steno.info("Model bounds are : " + bounds);
-            ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
-            steno.info("Model orig bounds are : " + originalBounds);
-            modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
-
-            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFile.getAbsolutePath(),
+            ModelLoadResult result = new ModelLoadResult(modelFile.getAbsolutePath(),
                                                          modelFile.getName(), targetProject,
-                                                         modelContainer);
+                                                         loadedPart);
             return result;
         } else
         {
@@ -206,7 +194,7 @@ public class STLImporter
      * @return
      * @throws STLFileParsingException
      */
-    protected TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
+    protected Part processBinarySTLData(File stlFile) throws STLFileParsingException
     {
         DataInputStream inputFileStream;
         ByteBuffer dataBuffer;
@@ -217,7 +205,7 @@ public class STLImporter
         steno.info("Processing binary STL");
 
         TriangleMesh triangleMesh = new TriangleMesh();
-        HashMap<Vector3D, Integer> graph = new HashMap<>();
+        HashMap<Vector3D, Integer> vertices = new HashMap<>();
         try
         {
             inputFileStream = new DataInputStream(new FileInputStream(stlFile));
@@ -233,7 +221,7 @@ public class STLImporter
 
             steno.debug("There are " + numberOfFacets + " facets");
 
-            int[] faceIndexArray = new int[6];
+            Set<Face> faces = new HashSet<>();
 
             int vertexCounter = 0;
 
@@ -260,6 +248,8 @@ public class STLImporter
                 dataBuffer.getFloat();
                 dataBuffer.getFloat();
 
+                Face newFace = new Face();
+
                 for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
                 {
                     float inputVertexX, inputVertexY, inputVertexZ;
@@ -272,19 +262,16 @@ public class STLImporter
                                                             -inputVertexZ,
                                                             inputVertexY);
 
-                    if (!graph.containsKey(generatedVertex))
+                    if (!vertices.containsKey(generatedVertex))
                     {
-                        graph.put(generatedVertex, vertexCounter);
-                        faceIndexArray[vertexNumber * 2] = vertexCounter;
+                        vertices.put(generatedVertex, vertexCounter);
+                        newFace.setVertexIndex(vertexNumber, vertexCounter);
                         vertexCounter++;
                     } else
                     {
-                        faceIndexArray[vertexNumber * 2] = graph.get(generatedVertex);
+                        newFace.setVertexIndex(vertexNumber, vertices.get(generatedVertex));
                     }
                 }
-
-                // Add the face to the triangle mesh
-                triangleMesh.getFaces().addAll(faceIndexArray, 0, 6);
 
                 // After each facet there are 2 bytes without information
                 // In the last iteration we dont have to skip those bytes..
@@ -296,47 +283,9 @@ public class STLImporter
             }
 
             steno.info("Started with " + numberOfFacets * 3 + " vertices and now have "
-                + graph.size());
+                + vertices.size());
 
-            float[] tempVertexPointArray = new float[3];
-            graph.entrySet()
-                .stream()
-                .sorted((s1, s2) ->
-                    {
-                        if (s1.getValue() == s2.getValue())
-                        {
-                            return 0;
-                        } else if (s1.getValue() > s2.getValue())
-                        {
-                            return 1;
-                        } else
-                        {
-                            return -1;
-                        }
-                })
-                .forEach(vertexEntry ->
-                    {
-                        tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
-                        tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
-                        tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
-
-                        triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
-                });
-
-            FloatArrayList texCoords = new FloatArrayList();
-            texCoords.add(0f);
-            texCoords.add(0f);
-            triangleMesh.getTexCoords().addAll(texCoords.toFloatArray());
-
-            int[] smoothingGroups = new int[numberOfFacets];
-            for (int i = 0; i < smoothingGroups.length; i++)
-            {
-                smoothingGroups[i] = 0;
-            }
-            triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
-            steno.info("The mesh contains " + triangleMesh.getPoints().size()
-                + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
-                + triangleMesh.getFaces().size() + " faces");
+            Part newPart = new Part(vertices, faces);
 
         } catch (FileNotFoundException ex)
         {
@@ -378,7 +327,7 @@ public class STLImporter
                 if (line.trim().startsWith("vertex"))
                 {
                     facetCounter++;
-                    
+
                     for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
                     {
                         String[] lineBits = line.trim().split(spacePattern);

@@ -5,7 +5,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.JogButton;
-import celtech.coreUI.visualisation.threed.StaticModelOverlay;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -56,7 +55,6 @@ public class PrinterStatusPageController implements Initializable
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
-    private StaticModelOverlay staticModelOverlay = null;
 
     private String transferringDataString = null;
 
@@ -510,9 +508,6 @@ public class PrinterStatusPageController implements Initializable
                     lastSelectedPrinter = selectedPrinter;
                 }
             });
-
-//        staticModelOverlay = new StaticModelOverlay(statusPane.getWidth(), statusPane.getHeight());
-//        statusPane.getChildren().add(staticModelOverlay.getSubScene());
     }
 
     private void setAdvancedControlsVisibility(boolean visible)

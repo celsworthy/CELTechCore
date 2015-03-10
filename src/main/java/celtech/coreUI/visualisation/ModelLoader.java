@@ -6,6 +6,7 @@ package celtech.coreUI.visualisation;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
@@ -53,22 +54,22 @@ public class ModelLoader
         {
             if (loadResult != null)
             {
-                if (loadResult.isModelTooLarge())
-                {
-                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
-                        showModelTooBigDialog(loadResult.getModelFilename());
-
-                    if (shrinkModel)
-                    {
-                        ModelContainer modelContainer = loadResult.getModelContainer();
-                        modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProject().addModel(modelContainer);
-                    }
-                } else
-                {
-                    ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProject().addModel(modelContainer);
-                }
+//                if (loadResult.isModelTooLarge())
+//                {
+//                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
+//                        showModelTooBigDialog(loadResult.getModelFilename());
+//
+//                    if (shrinkModel)
+//                    {
+//                        ModelContainer modelContainer = loadResult.getModelContainer();
+//                        modelContainer.shrinkToFitBed();
+//                        loadResult.getTargetProject().addModel(modelContainer);
+//                    }
+//                } else
+//                {
+                    Part loadedPart = loadResult.getLoadedPart();
+                    loadResult.getTargetProject().addPart(loadedPart);
+//                }
             } else
             {
                 steno.error("Error whilst attempting to load model");

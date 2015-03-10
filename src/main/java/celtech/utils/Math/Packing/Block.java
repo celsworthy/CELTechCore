@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils.Math.Packing;
 
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.modelcontrol.ModelContainer;
 
 /**
@@ -14,7 +10,7 @@ import celtech.modelcontrol.ModelContainer;
 public class Block
 {
 
-    private ModelContainer model = null;
+    private Part part = null;
     private int halfPadding = 0;
     int w = 0;
     int h = 0;
@@ -22,15 +18,15 @@ public class Block
 
     /**
      *
-     * @param model
+     * @param part
      * @param padding
      */
-    public Block(ModelContainer model, int padding)
+    public Block(Part part, int padding)
     {
-        this.model = model;
+        this.part = part;
         this.halfPadding = padding / 2;
-        this.w = (int) model.getTotalWidth() + padding;
-        this.h = (int) model.getTotalDepth() + padding;
+        this.w = (int) part.getTotalWidth() + padding;
+        this.h = (int) part.getTotalDepth() + padding;
     }
 
     /**
@@ -94,7 +90,7 @@ public class Block
     {
         if (fit != null)
         {
-            model.translateFrontLeftTo((double) fit.getX() + halfPadding, (double) fit.getY() + halfPadding);
+            part.translateFrontLeftTo((double) fit.getX() + halfPadding, (double) fit.getY() + halfPadding);
         }
     }
 

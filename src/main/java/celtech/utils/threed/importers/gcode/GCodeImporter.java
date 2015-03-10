@@ -152,7 +152,7 @@ public class GCodeImporter
             // Not sure if we should put the check for oversized GCode in or not...
 //            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
 //            modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(bounds);
-            ModelLoadResult result = new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, modelContainer);
+            ModelLoadResult result = new ModelLoadResult(modelFileToLoad, fFile.getName(), targetProject, modelContainer);
             result.setFileLines(fileLines);
             return result;
         } else

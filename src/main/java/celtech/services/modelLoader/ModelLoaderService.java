@@ -1,13 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.modelLoader;
 
 import celtech.appManager.Project;
-import celtech.coreUI.components.ProjectTab;
 import celtech.services.ControllableService;
-import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import java.io.File;
 import java.util.List;
 import javafx.concurrent.Service;

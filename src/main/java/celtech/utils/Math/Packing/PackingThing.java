@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils.Math.Packing;
 
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.modelcontrol.ModelContainer;
 import java.util.ArrayList;
 import javafx.collections.ObservableList;
@@ -88,13 +84,13 @@ public class PackingThing
 
     /**
      *
-     * @param loadedModels
+     * @param loadedParts
      * @param padding
      */
-    public void reference(ObservableList<ModelContainer> loadedModels, int padding)
+    public void reference(ObservableList<Part> loadedParts, int padding)
     {
         blocks.clear();
-        loadedModels.stream().forEach((model) ->
+        loadedParts.stream().forEach((model) ->
         {
             blocks.add(new Block(model, padding));
         });

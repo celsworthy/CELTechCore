@@ -7,17 +7,13 @@ import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.modelcontrol.ModelContainer;
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -51,7 +47,7 @@ public class Project implements Serializable
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
+    private final ObservableList<Part> loadedParts = FXCollections.observableArrayList();
     private String lastPrintJobID = "";
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
@@ -59,7 +55,7 @@ public class Project implements Serializable
 
     private final StringProperty projectNameProperty;
     private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
-    
+
     private boolean suppressProjectChanged = false;
 
     public Project()
@@ -161,15 +157,16 @@ public class Project implements Serializable
 
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
-        ObjectInputStream modelsInput = new ObjectInputStream(
-            new FileInputStream(basePath
-                + ApplicationConfiguration.projectModelsFileExtension));
-        int numModels = modelsInput.readInt();
-        for (int i = 0; i < numModels; i++)
-        {
-            ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
-            loadedModels.add(modelContainer);
-        }
+        //TODO sort serialisation
+//        ObjectInputStream modelsInput = new ObjectInputStream(
+//            new FileInputStream(basePath
+//                + ApplicationConfiguration.projectModelsFileExtension));
+//        int numModels = modelsInput.readInt();
+//        for (int i = 0; i < numModels; i++)
+//        {
+//            Part part = (Part) modelsInput.readObject();
+//            loadedParts.add(modelContainer);
+//        }
     }
 
     public static void saveProject(Project project)
@@ -181,12 +178,13 @@ public class Project implements Serializable
 
     private void saveModels(String path) throws IOException
     {
-        ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
-        modelsOutput.writeInt(loadedModels.size());
-        for (int i = 0; i < loadedModels.size(); i++)
-        {
-            modelsOutput.writeObject(loadedModels.get(i));
-        }
+        //TODO sort serialisation
+//        ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
+//        modelsOutput.writeInt(loadedParts.size());
+//        for (int i = 0; i < loadedParts.size(); i++)
+//        {
+//            modelsOutput.writeObject(loadedParts.get(i));
+//        }
     }
 
     private void save(String basePath)
@@ -228,9 +226,9 @@ public class Project implements Serializable
     public Set<Integer> getUsedExtruders()
     {
         Set<Integer> usedExtruders = new HashSet<>();
-        for (ModelContainer loadedModel : loadedModels)
+        for (Part part : loadedParts)
         {
-            int extruderNumber = loadedModel.getAssociateWithExtruderNumberProperty().get();
+            int extruderNumber = part.getAssociateWithExtruderNumberProperty().get();
             if (!usedExtruders.contains(extruderNumber))
             {
                 usedExtruders.add(extruderNumber);
@@ -255,7 +253,7 @@ public class Project implements Serializable
 //        loadedModels = FXCollections.observableArrayList();
 //        for (int counter = 0; counter < numberOfModels; counter++)
 //        {
-//            ModelContainer model = (ModelContainer) in.readObject();
+//            Part model = (Part) in.readObject();
 //            loadedModels.add(model);
 //        }
 //
@@ -310,9 +308,9 @@ public class Project implements Serializable
 //    {
 //
 //    }
-    public ObservableList<ModelContainer> getLoadedModels()
+    public ObservableList<Part> getLoadedModels()
     {
-        return loadedModels;
+        return loadedParts;
     }
 
     @Override
@@ -405,37 +403,37 @@ public class Project implements Serializable
         return printerSettings;
     }
 
-    public void copyModel(ModelContainer modelContainer)
+    public void copyModel(Part modelContainer)
     {
-        ModelContainer copy = modelContainer.makeCopy();
-        addModel(copy);
+        Part copy = modelContainer.makeCopy();
+        addPart(copy);
     }
 
-    public void addModel(ModelContainer modelContainer)
+    public void addPart(Part part)
     {
-        loadedModels.add(modelContainer);
+        loadedParts.add(part);
         projectModified();
-        fireWhenModelAdded(modelContainer);
-        addModelListeners(modelContainer);
+        fireWhenModelAdded(part);
+        addModelListeners(part);
     }
 
-    private void fireWhenModelAdded(ModelContainer modelContainer)
+    private void fireWhenModelAdded(Part part)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
-            projectChangesListener.whenModelAdded(modelContainer);
+            projectChangesListener.whenModelAdded(part);
         }
     }
 
-    public void deleteModel(ModelContainer modelContainer)
+    public void deleteModel(Part modelContainer)
     {
-        loadedModels.remove(modelContainer);
+        loadedParts.remove(modelContainer);
         projectModified();
         fireWhenModelRemoved(modelContainer);
         removeModelListeners(modelContainer);
     }
 
-    private void fireWhenModelRemoved(ModelContainer modelContainer)
+    private void fireWhenModelRemoved(Part modelContainer)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
@@ -462,7 +460,7 @@ public class Project implements Serializable
 
     private ChangeListener<Number> modelExtruderNumberListener;
 
-    private void addModelListeners(ModelContainer modelContainer)
+    private void addModelListeners(Part modelContainer)
     {
         modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
@@ -472,7 +470,7 @@ public class Project implements Serializable
             modelExtruderNumberListener);
     }
 
-    private void removeModelListeners(ModelContainer modelContainer)
+    private void removeModelListeners(Part modelContainer)
     {
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
             modelExtruderNumberListener);
@@ -487,13 +485,17 @@ public class Project implements Serializable
 
         /**
          * This should be fired when a model is added to the project.
+         *
+         * @param part
          */
-        void whenModelAdded(ModelContainer modelContainer);
+        void whenModelAdded(Part part);
 
         /**
          * This should be fired when a model is removed from the project.
+         *
+         * @param part
          */
-        void whenModelRemoved(ModelContainer modelContainer);
+        void whenModelRemoved(Part part);
 
         /**
          * This should be fired when the project is auto laid out.
@@ -503,23 +505,28 @@ public class Project implements Serializable
         /**
          * This should be fired when one or more models have been moved, rotated or scaled etc. If
          * possible try to fire just once for any given group change.
+         *
+         * @param part
          */
-        void whenModelsTransformed(Set<ModelContainer> modelContainers);
+        void whenModelsTransformed(Set<Part> part);
 
         /**
          * This should be fired when certain details of the model change. Currently this is only: -
          * associatedExtruder
+         *
+         * @param part
+         * @param propertyName
          */
-        void whenModelChanged(ModelContainer modelContainer, String propertyName);
+        void whenModelChanged(Part part, String propertyName);
     }
 
     public void autoLayout()
     {
-        Collections.sort(loadedModels);
+        Collections.sort(loadedParts);
         PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
                                               (int) PrintBed.maxPrintableZSize);
 
-        thing.reference(loadedModels, 10);
+        thing.reference(loadedParts, 10);
         thing.pack();
         thing.relocateBlocks();
 
@@ -535,21 +542,21 @@ public class Project implements Serializable
         }
     }
 
-    public void scaleModels(Set<ModelContainer> modelContainers, double newScale)
+    public void scaleModels(Set<Part> parts, double newScale)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.setScale(newScale);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 
-    public void deleteModels(Set<ModelContainer> modelContainers)
+    public void deleteModels(Set<Part> parts)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 deleteModel(model);
@@ -557,63 +564,70 @@ public class Project implements Serializable
         }
     }
 
-    public void rotateModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateModels(Set<Part> parts, double rotation)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.setRotationY(rotation);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 
-    public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
+    public void resizeModelsDepth(Set<Part> parts, double depth)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.resizeDepth(depth);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 
-    public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
+    public void resizeModelsHeight(Set<Part> parts, double height)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.resizeHeight(height);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 
-    public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
+    public void resizeModelsWidth(Set<Part> parts, double width)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.resizeWidth(width);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 
-    private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
+    public void cutModelAtHeight(Part model, double heightAboveBed)
+    {
+        Set<Part> cutModels = model.cutModelAtHeight(heightAboveBed);
+        projectModified();
+//        fireWhenModelsTransformed(parts);
+    }
+
+    private void fireWhenModelsTransformed(Set<Part> parts)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
-            projectChangesListener.whenModelsTransformed(modelContainers);
+            projectChangesListener.whenModelsTransformed(parts);
         }
     }
 
-    private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
+    private void fireWhenModelChanged(Part modelContainer, String propertyName)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
@@ -621,27 +635,27 @@ public class Project implements Serializable
         }
     }
 
-    public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
+    public void translateModelsXTo(Set<Part> parts, double x)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.translateXTo(x);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 
-    public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
+    public void translateModelsZTo(Set<Part> parts, double z)
     {
-        for (ModelContainer model : modelContainers)
+        for (Part model : parts)
         {
             {
                 model.translateZTo(z);
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed(parts);
     }
 }
