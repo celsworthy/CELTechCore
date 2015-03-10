@@ -23,6 +23,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -85,6 +86,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     @FXML
     private Button writeOffsetsButton;
+    
+    @FXML
+    private GridPane headEEPROMOffsets;
 
     private ModalDialog eepromCommsError = null;
 
@@ -334,11 +338,13 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @Override
     public void whenPrinterAdded(Printer printer)
     {
+        headEEPROMOffsets.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
     }
 
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
+        headEEPROMOffsets.disableProperty().unbind();
     }
 
     @Override

@@ -5,7 +5,9 @@
  */
 package celtech.appManager;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,7 +56,7 @@ public class ProjectManager implements Savable, Serializable
                 instance = new ProjectManager();
             }
         }
-
+        
         return instance;
     }
 

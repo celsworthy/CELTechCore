@@ -17,11 +17,14 @@ import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
+import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -62,10 +65,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
-    
+
     private static final int START_SCALING_WINDOW_HEIGHT = 800;
     private static final double MINIMUM_SCALE_FACTOR = 0.8;
-    
+
     private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private static final ProjectManager projectManager = ProjectManager.getInstance();
 
@@ -133,11 +136,33 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         // Load up any projects that were open last time we shut down....
         ProjectManager pm = ProjectManager.getInstance();
         List<Project> preloadedProjects = pm.getOpenProjects();
+
         for (Project project : preloadedProjects)
         {
             ProjectTab newProjectTab = new ProjectTab(project, tabDisplay.widthProperty(),
                                                       tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+        }
+
+        if (Lookup.getUserPreferences().isFirstUse())
+        {
+            File firstUsePrintFile = new File(ApplicationConfiguration.
+                getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
+
+            Project newProject = new Project();
+            newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));
+
+            List<File> fileToLoad = new ArrayList<>();
+            fileToLoad.add(firstUsePrintFile);
+            ModelLoader loader = new ModelLoader();
+            loader.loadExternalModels(newProject, fileToLoad, true, false);
+
+            ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
+                                                   tabDisplay.heightProperty());
+            tabDisplay.getTabs().add(projectTab);
+            tabDisplaySelectionModel.select(projectTab);
+
+            Lookup.getUserPreferences().setFirstUse(false);
         }
     }
 
@@ -385,6 +410,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         } catch (IOException ex)
         {
             steno.error("Failed to load printer status page:" + ex);
+            ex.printStackTrace();
         }
 
         applicationStatus.modeProperty().addListener(
@@ -642,7 +668,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     case DELETE:
                     case BACK_SPACE:
                         Set<ModelContainer> selectedModels
-                            = Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
+                            = Lookup.getProjectGUIState(project).getSelectedModelContainers().
+                            getSelectedModelsSnapshot();
                         project.deleteModels(selectedModels);
                         break;
                     case A:
@@ -694,8 +721,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     }
 
     /**
-     * This is fired when the main window or one of the internal windows may have changed
-     * size.
+     * This is fired when the main window or one of the internal windows may have changed size.
      */
     private void whenWindowChangesSize()
     {

@@ -5,6 +5,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
@@ -132,7 +133,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             try
             {
-                selectedPrinter.changeFeedRateMultiplierDuringPrint(newValue.doubleValue());
+                selectedPrinter.changeFeedRateMultiplier(newValue.doubleValue());
             } catch (PrinterException ex)
             {
                 steno.error("Error setting feed rate multiplier - " + ex.getMessage());
@@ -427,8 +428,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.
             bedFirstLayerTargetTemperatureProperty());
         
-        speedSliderHBox.setVisible(printer.canChangeFilamentInfoProperty().get());
-        speedSliderHBox.visibleProperty().bind(printer.canChangeFilamentInfoProperty());
+        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
+        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
         speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
             feedRateMultiplierProperty().get());
         speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);

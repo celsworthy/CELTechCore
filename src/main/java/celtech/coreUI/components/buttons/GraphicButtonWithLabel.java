@@ -9,7 +9,6 @@ import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 
 /**
@@ -22,7 +21,6 @@ public class GraphicButtonWithLabel extends TaggablePane
     private final VBox container = new VBox();
     private final GraphicButton button = new GraphicButton();
     private final Label label = new Label();
-    private final Tooltip tooltip = new Tooltip();
 
     public GraphicButtonWithLabel()
     {
@@ -46,8 +44,6 @@ public class GraphicButtonWithLabel extends TaggablePane
         getChildren().add(container);
         container.getChildren().add(button);
         container.getChildren().add(label);
-
-        Tooltip.install(this, tooltip);
     }
 
     public String getFxmlFileName()
@@ -93,21 +89,6 @@ public class GraphicButtonWithLabel extends TaggablePane
     public StringProperty getLabelTextProperty()
     {
         return label.textProperty();
-    }
-
-    public String getTooltipText()
-    {
-        return tooltip.getText();
-    }
-
-    public void setTooltipText(String text)
-    {
-        tooltip.setText(text);
-    }
-
-    public StringProperty getTooltipTextProperty()
-    {
-        return tooltip.textProperty();
     }
 
     @Override

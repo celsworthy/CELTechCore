@@ -2,6 +2,7 @@
 package celtech.coreUI.components.tips;
 
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.value.ObservableValue;
 
 /**
  *
@@ -9,16 +10,16 @@ import javafx.beans.binding.BooleanBinding;
  */
 public class ConditionalText
 {
-    private BooleanBinding appearanceCondition;
+    private ObservableValue<Boolean> appearanceCondition;
     private String i18nText;
 
-    public ConditionalText(String i18nText, BooleanBinding appearanceCondition)
+    public ConditionalText(String i18nText, ObservableValue<Boolean> appearanceCondition)
     {
         this.i18nText = i18nText;
         this.appearanceCondition = appearanceCondition;
     }
 
-    public BooleanBinding getAppearanceCondition()
+    public ObservableValue<Boolean> getAppearanceCondition()
     {
         return appearanceCondition;
     }

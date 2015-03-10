@@ -17,13 +17,11 @@ import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -34,11 +32,11 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class SystemNotificationManagerJavaFX implements SystemNotificationManager
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(
         SystemNotificationManagerJavaFX.class.getName());
     private boolean errorDialogOnDisplay = false;
-
+    
     private HashMap<SystemErrorHandlerOptions, ChoiceLinkButton> errorToButtonMap = null;
 
     /*
@@ -59,15 +57,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * SD card dialog
      */
     protected boolean sdDialogOnDisplay = false;
-
+    
     private boolean programInvalidHeadDialogOnDisplay = false;
-
+    
     private boolean headNotRecognisedDialogOnDisplay = false;
-
+    
     private boolean reelNotRecognisedDialogOnDisplay = false;
-
+    
     private boolean clearBedDialogOnDisplay = false;
-
+    
+    private boolean failedTransferDialogOnDisplay = false;
+    
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -76,7 +76,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             Notifier.showErrorNotification(title, message);
         });
     }
-
+    
     @Override
     public void showWarningNotification(String title, String message)
     {
@@ -85,7 +85,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             Notifier.showWarningNotification(title, message);
         });
     }
-
+    
     @Override
     public void showInformationNotification(String title, String message)
     {
@@ -94,7 +94,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             Notifier.showInformationNotification(title, message);
         });
     }
-
+    
     @Override
     public void processErrorPacketFromPrinter(FirmwareError error, Printer printer)
     {
@@ -106,9 +106,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 if (!errorDialogOnDisplay)
                 {
                     errorDialogOnDisplay = true;
-
+                    
                     setupErrorOptions();
-
+                    
                     ChoiceLinkDialogBox errorChoiceBox = new ChoiceLinkDialogBox();
                     errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
                     errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
@@ -116,9 +116,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         .stream()
                         .forEach(option -> errorChoiceBox.
                             addChoiceLink(errorToButtonMap.get(option)));
-
+                    
                     Optional<ChoiceLinkButton> buttonPressed = errorChoiceBox.getUserInput();
-
+                    
                     if (buttonPressed.isPresent())
                     {
                         for (Entry<SystemErrorHandlerOptions, ChoiceLinkButton> mapEntry : errorToButtonMap.
@@ -162,13 +162,13 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                             }
                         }
                     }
-
+                    
                     errorDialogOnDisplay = false;
                 }
             }
         });
     }
-
+    
     private void setupErrorOptions()
     {
         if (errorToButtonMap == null)
@@ -183,7 +183,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         }
     }
-
+    
     @Override
     public void showCalibrationDialogue()
     {
@@ -197,10 +197,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 Lookup.i18n("dialogs.headUpdateCalibrationYes"));
             ChoiceLinkButton dontCalibrateChoice = choiceLinkDialogBox.addChoiceLink(
                 Lookup.i18n("dialogs.headUpdateCalibrationNo"));
-
+            
             Optional<ChoiceLinkButton> calibrationResponse = choiceLinkDialogBox.
                 getUserInput();
-
+            
             if (calibrationResponse.isPresent())
             {
                 if (calibrationResponse.get() == okCalibrateChoice)
@@ -210,7 +210,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         });
     }
-
+    
     @Override
     public void showHeadUpdatedNotification()
     {
@@ -221,7 +221,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 Lookup.i18n("notification.noActionRequired"));
         });
     }
-
+    
     @Override
     public void showSDCardNotification()
     {
@@ -236,49 +236,49 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             });
         }
     }
-
+    
     @Override
     public void showSliceFailedNotification()
     {
         showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                               "notification.sliceFailed"));
     }
-
+    
     @Override
     public void showSliceSuccessfulNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                                     "notification.sliceSuccessful"));
     }
-
+    
     @Override
     public void showGCodePostProcessFailedNotification()
     {
         showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                               "notification.gcodePostProcessFailed"));
     }
-
+    
     @Override
     public void showGCodePostProcessSuccessfulNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                                     "notification.gcodePostProcessSuccessful"));
     }
-
+    
     @Override
     public void showPrintJobCancelledNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                                     "notification.printJobCancelled"));
     }
-
+    
     @Override
     public void showPrintJobFailedNotification()
     {
         showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                               "notification.printJobFailed"));
     }
-
+    
     @Override
     public void showPrintTransferSuccessfulNotification(String printerName)
     {
@@ -289,27 +289,53 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                     + Lookup.i18n("notification.printTransferredSuccessfullyEnd"));
     }
 
+    /**
+     *
+     * @param printerName
+     */
+    @Override
+    public void showPrintTransferFailedNotification(String printerName)
+    {
+        if (!failedTransferDialogOnDisplay)
+        {
+            failedTransferDialogOnDisplay = true;
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
+                choiceLinkDialogBox.setTitle(Lookup.i18n("notification.PrintQueueTitle"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n("notification.printTransferFailed"));
+                
+                choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
+                
+                choiceLinkDialogBox.getUserInput();
+                steno.error("Print job transfer failed to printer " + printerName);
+                
+                failedTransferDialogOnDisplay = false;
+            });
+        }
+    }
+    
     @Override
     public void showPrintTransferInitiatedNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                                     "notification.printTransferInitiated"));
     }
-
+    
     @Override
     public void showReprintStartedNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                                     "notification.reprintInitiated"));
     }
-
+    
     @Override
     public void showDetectedPrintInProgressNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                                     "notification.activePrintDetected"));
     }
-
+    
     @Override
     public void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result)
     {
@@ -358,17 +384,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkButton dontUpdateFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.firmwareUpdateNotOKTitle"),
                     Lookup.i18n("dialogs.firmwareUpdateNotOKMessage"));
-
+                
                 Optional<ChoiceLinkButton> firmwareUpgradeResponse = choiceLinkDialogBox.
                     getUserInput();
-
+                
                 boolean updateConfirmed = false;
-
+                
                 if (firmwareUpgradeResponse.isPresent())
                 {
                     updateConfirmed = firmwareUpgradeResponse.get() == updateFirmwareChoice;
                 }
-
+                
                 return updateConfirmed;
             }
         };
@@ -383,7 +409,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return false;
         }
     }
-
+    
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)
     {
@@ -392,7 +418,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
         });
     }
-
+    
     @Override
     public void showNoSDCardDialog()
     {
@@ -407,33 +433,33 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     "dialogs.noSDCardMessage"));
                 ChoiceLinkButton openTheLidChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("misc.OK"));
-
+                
                 choiceLinkDialogBox.getUserInput();
-
+                
                 sdDialogOnDisplay = false;
             });
         }
     }
-
+    
     @Override
     public void showNoPrinterIDDialog(Printer printer)
     {
         if (printerIDDialog.isShowing() == false)
         {
             printerIDDialog.setPrinterToUse(printer);
-
+            
             Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 if (printerIDDialog == null)
                 {
                     printerIDDialog = new PrinterIDDialog();
                 }
-
+                
                 printerIDDialog.show();
             });
         }
     }
-
+    
     @Override
     public boolean showOpenDoorDialog()
     {
@@ -451,21 +477,21 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     Lookup.i18n("dialogs.openLidPrinterHotGoAheadInfo"));
                 ChoiceLinkButton dontOpenTheLidChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.openLidPrinterHotDontOpenHeading"));
-
+                
                 Optional<ChoiceLinkButton> doorOpenResponse = choiceLinkDialogBox.
                     getUserInput();
-
+                
                 boolean openTheLid = false;
-
+                
                 if (doorOpenResponse.isPresent())
                 {
                     openTheLid = doorOpenResponse.get() == openTheLidChoice;
                 }
-
+                
                 return openTheLid;
             }
         };
-
+        
         FutureTask<Boolean> askUserWhetherToOpenDoorTask = new FutureTask<>(
             askUserWhetherToOpenDoorDialog);
         Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToOpenDoorTask);
@@ -500,21 +526,21 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     Lookup.i18n("dialogs.ShrinkModelToFit"));
                 ChoiceLinkButton dontShrinkChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.ModelTooLargeNo"));
-
+                
                 Optional<ChoiceLinkButton> shrinkResponse = choiceLinkDialogBox.
                     getUserInput();
-
+                
                 boolean shrinkModel = false;
-
+                
                 if (shrinkResponse.isPresent())
                 {
                     shrinkModel = shrinkResponse.get() == shrinkChoice;
                 }
-
+                
                 return shrinkModel;
             }
         };
-
+        
         FutureTask<Boolean> askUserWhetherToLoadModelTask = new FutureTask<>(
             askUserWhetherToLoadModel);
         Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToLoadModelTask);
@@ -552,21 +578,21 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkButton dontUpgradeChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("misc.No"),
                     Lookup.i18n("dialogs.updateContinueWithCurrent"));
-
+                
                 Optional<ChoiceLinkButton> upgradeResponse = choiceLinkDialogBox.
                     getUserInput();
-
+                
                 boolean upgradeApplication = false;
-
+                
                 if (upgradeResponse.isPresent())
                 {
                     upgradeApplication = upgradeResponse.get() == upgradeChoice;
                 }
-
+                
                 return upgradeApplication;
             }
         };
-
+        
         FutureTask<Boolean> askWhetherToUpgradeTask = new FutureTask<>(askUserWhetherToUpgrade);
         Lookup.getTaskExecutor().runOnGUIThread(askWhetherToUpgradeTask);
         try
@@ -603,12 +629,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkButton dontPrint = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.dontPrintTitle"),
                     Lookup.i18n("dialogs.dontPrintInstruction"));
-
+                
                 Optional<ChoiceLinkButton> purgeResponse = choiceLinkDialogBox.
                     getUserInput();
-
+                
                 PurgeResponse response = null;
-
+                
                 if (purgeResponse.get() == purge)
                 {
                     response = PurgeResponse.PRINT_WITH_PURGE;
@@ -619,11 +645,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 {
                     response = PurgeResponse.DONT_PRINT;
                 }
-
+                
                 return response;
             }
         };
-
+        
         FutureTask<PurgeResponse> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
         Lookup.getTaskExecutor().runOnGUIThread(askWhetherToPurgeTask);
         try
@@ -658,14 +684,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkButton dontShutdown = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.dontShutDownTitle"),
                     Lookup.i18n("dialogs.dontShutDownMessage"));
-
+                
                 Optional<ChoiceLinkButton> shutdownResponse = choiceLinkDialogBox.
                     getUserInput();
-
+                
                 return shutdownResponse.get() == shutdown;
             }
         };
-
+        
         FutureTask<Boolean> askWhetherToShutdownTask = new FutureTask<>(askUserWhetherToShutdown);
         Lookup.getTaskExecutor().runOnGUIThread(askWhetherToShutdownTask);
         try
@@ -677,7 +703,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return false;
         }
     }
-
+    
     @Override
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> responder)
     {
@@ -687,27 +713,27 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             {
                 programInvalidHeadDialogOnDisplay = true;
                 ArrayList<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
-
+                
                 ChoiceDialog headRewriteDialog = new ChoiceDialog(headFiles.get(0), headFiles);
-
+                
                 headRewriteDialog.setTitle(Lookup.i18n("dialogs.headRepairTitle"));
                 headRewriteDialog.setHeaderText(Lookup.i18n("dialogs.headRepairHeader"));
                 headRewriteDialog.setContentText(Lookup.i18n("dialogs.headRepairInstruction"));
-
+                
                 Optional<HeadFile> chosenFileOption = headRewriteDialog.showAndWait();
                 HeadFile chosenFile = null;
                 if (chosenFileOption.isPresent())
                 {
                     chosenFile = chosenFileOption.get();
                 }
-
+                
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null,
                                                             "Head profile chosen", chosenFile);
                 programInvalidHeadDialogOnDisplay = false;
             });
         }
     }
-
+    
     @Override
     public void showHeadNotRecognisedDialog(String printerName)
     {
@@ -726,17 +752,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     + Lookup.i18n("dialogs.headNotRecognisedMessage2")
                     + " "
                     + ApplicationConfiguration.getApplicationName());
-
+                
                 ChoiceLinkButton openTheLidChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("misc.OK"));
-
+                
                 choiceLinkDialogBox.getUserInput();
-
+                
                 headNotRecognisedDialogOnDisplay = false;
             });
         }
     }
-
+    
     @Override
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
         boolean showContinueOption, boolean showAbortOption, boolean showRetryOption,
@@ -754,70 +780,67 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
                 choiceLinkDialogBox.setTitle(title);
                 choiceLinkDialogBox.setMessage(message);
-
+                
                 ChoiceLinkButton continueChoice = new ChoiceLinkButton();
                 continueChoice.setTitle(Lookup.i18n("dialogs.error.continue"));
-                continueChoice.setMessage(Lookup.i18n("dialogs.error.abortProcess"));
-
+                continueChoice.setMessage(Lookup.i18n("dialogs.error.clearAndContinue"));
+                
                 ChoiceLinkButton abortChoice = new ChoiceLinkButton();
                 abortChoice.setTitle(Lookup.i18n("dialogs.error.abort"));
-                abortChoice.setMessage(Lookup.i18n("dialogs.error.clearAndContinue"));
-
+                abortChoice.setMessage(Lookup.i18n("dialogs.error.abortProcess"));
+                
                 ChoiceLinkButton retryChoice = new ChoiceLinkButton();
                 retryChoice.setTitle(Lookup.i18n("dialogs.error.retry"));
                 retryChoice.setMessage(Lookup.i18n("dialogs.error.retryProcess"));
-
+                
                 ChoiceLinkButton okChoice = new ChoiceLinkButton();
                 okChoice.setTitle(Lookup.i18n("error.handler.OK.title"));
-
+                
                 if (showContinueOption)
                 {
                     choiceLinkDialogBox.addChoiceLink(continueChoice);
                 }
-
+                
                 if (showAbortOption)
                 {
                     choiceLinkDialogBox.addChoiceLink(abortChoice);
                 }
-
+                
                 if (showRetryOption)
                 {
                     choiceLinkDialogBox.addChoiceLink(retryChoice);
                 }
-
+                
                 if (showOKOption)
                 {
                     choiceLinkDialogBox.addChoiceLink(okChoice);
                 }
-
+                
                 Optional<ChoiceLinkButton> response = choiceLinkDialogBox.getUserInput();
-
+                
                 Optional<PrinterErrorChoice> userResponse = Optional.empty();
-
+                
                 if (response.isPresent())
                 {
                     if (response.get() == continueChoice)
                     {
                         userResponse = Optional.of(PrinterErrorChoice.CONTINUE);
-                    }
-                    else if (response.get() == abortChoice)
+                    } else if (response.get() == abortChoice)
                     {
                         userResponse = Optional.of(PrinterErrorChoice.ABORT);
-                    }
-                    else if (response.get() == okChoice)
+                    } else if (response.get() == okChoice)
                     {
                         userResponse = Optional.of(PrinterErrorChoice.OK);
-                    }
-                    else if (response.get() == retryChoice)
+                    } else if (response.get() == retryChoice)
                     {
                         userResponse = Optional.of(PrinterErrorChoice.RETRY);
                     }
                 }
-
+                
                 return userResponse;
             }
         };
-
+        
         FutureTask<Optional<PrinterErrorChoice>> askContinueAbortTask = new FutureTask<>(
             askUserToRespondToPrinterError);
         Lookup.getTaskExecutor().runOnGUIThread(askContinueAbortTask);
@@ -829,9 +852,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             steno.error("Error during printer error query");
             return Optional.empty();
         }
-
+        
     }
-
+    
     @Override
     public void showReelUpdatedNotification()
     {
@@ -841,7 +864,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                  Lookup.i18n("notification.noActionRequired"));
         });
     }
-
+    
     @Override
     public void showReelNotRecognisedDialog(String printerName)
     {
@@ -859,16 +882,16 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     + Lookup.i18n("dialogs.reelNotRecognisedMessage2")
                     + " "
                     + ApplicationConfiguration.getApplicationName());
-
+                
                 choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
-
+                
                 choiceLinkDialogBox.getUserInput();
-
+                
                 reelNotRecognisedDialogOnDisplay = false;
             });
         }
     }
-
+    
     @Override
     public void askUserToClearBed()
     {
@@ -880,13 +903,62 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.clearBedTitle"));
                 choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.clearBedInstruction"));
-
+                
                 choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
-
+                
                 choiceLinkDialogBox.getUserInput();
-
+                
                 clearBedDialogOnDisplay = false;
             });
+        }
+    }
+
+    /**
+     * Returns 0 for no downgrade and 1 for downgrade
+     *
+     * @return True if the user has decided to switch to Advanced Mode, otherwise false
+     */
+    @Override
+    public boolean confirmAdvancedMode()
+    {
+        Callable<Boolean> confirmAdvancedModeDialog = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox();
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.goToAdvancedModeTitle"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.goToAdvancedModeMessage"));
+                ChoiceLinkButton goToAdvancedModeChoice = choiceLinkDialogBox.addChoiceLink(
+                    Lookup.i18n("dialogs.goToAdvancedModeYesTitle"),
+                    Lookup.i18n("dialogs.goToAdvancedModeYesMessage"));
+                ChoiceLinkButton dontGoToAdvancedModeChoice = choiceLinkDialogBox.addChoiceLink(
+                    Lookup.i18n("dialogs.goToAdvancedModeNoTitle"),
+                    Lookup.i18n("dialogs.goToAdvancedModeNoMessage"));
+                
+                Optional<ChoiceLinkButton> goToAdvancedModeResponse
+                    = choiceLinkDialogBox.getUserInput();
+                
+                boolean goToAdvancedMode = false;
+                
+                if (goToAdvancedModeResponse.isPresent())
+                {
+                    goToAdvancedMode = goToAdvancedModeResponse.get() == goToAdvancedModeChoice;
+                }
+                
+                return goToAdvancedMode;
+            }
+        };
+        
+        FutureTask<Boolean> confirmAdvancedModeTask = new FutureTask<>(confirmAdvancedModeDialog);
+        Lookup.getTaskExecutor().runOnGUIThread(confirmAdvancedModeTask);
+        try
+        {
+            return confirmAdvancedModeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during advanced mode query");
+            return false;
         }
     }
 }

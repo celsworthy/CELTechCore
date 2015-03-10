@@ -65,16 +65,25 @@ public class PreferencesInnerPanelController implements Initializable, ExtrasMen
             rowNo++;
         }
     }
-    
+
     private void addPreferenceToContainer(Preference preference, int rowNo)
     {
         Label description = getPreferenceDescriptionLabel(preference);
         Control editor = getPreferenceEditorControl(preference);
         preferencesGridPane.addRow(rowNo, description, editor);
-        RowConstraints rowConstraints = preferencesGridPane.getRowConstraints().get(rowNo);
-        rowConstraints.setPrefHeight(ROW_HEIGHT);
-        rowConstraints.setMinHeight(ROW_HEIGHT);
-        rowConstraints.setMaxHeight(ROW_HEIGHT);
+
+        if (preferencesGridPane.getRowConstraints().size() < rowNo)
+        {
+            RowConstraints rowConstraints = preferencesGridPane.getRowConstraints().get(rowNo);
+            rowConstraints.setPrefHeight(ROW_HEIGHT);
+            rowConstraints.setMinHeight(ROW_HEIGHT);
+            rowConstraints.setMaxHeight(ROW_HEIGHT);
+        } else
+        {
+            preferencesGridPane.getRowConstraints().add(rowNo, new RowConstraints(ROW_HEIGHT,
+                                                                                  ROW_HEIGHT,
+                                                                                  ROW_HEIGHT));
+        }
     }
 
     private Label getPreferenceDescriptionLabel(Preference preference)

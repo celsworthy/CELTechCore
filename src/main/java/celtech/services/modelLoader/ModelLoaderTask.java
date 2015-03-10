@@ -25,7 +25,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class ModelLoaderTask extends Task<ModelLoadResults>
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(ModelLoaderTask.class.getName());
+    private Stenographer steno = StenographerFactory.
+        getStenographer(ModelLoaderTask.class.getName());
 
     private final List<File> modelFilesToLoad;
     private Project targetProject;
@@ -60,6 +61,8 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
 
         for (File modelFileToLoad : modelFilesToLoad)
         {
+            steno.info("Model file load started:" + modelFileToLoad.getName());
+
             ModelLoadResult modelLoadResult = null;
             String modelFilePath = modelFileToLoad.getAbsolutePath();
             updateMessage(languageBundle.getString("dialogs.gcodeLoadMessagePrefix")
@@ -73,7 +76,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
-                modelLoadResult = reader.loadFile(this, modelFilePath, targetProject,
+                modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProject,
                                                   percentProgress);
             } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
             {

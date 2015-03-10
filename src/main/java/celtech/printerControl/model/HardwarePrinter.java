@@ -49,7 +49,9 @@ import celtech.printerControl.comms.commands.tx.ReadPrinterID;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
-import celtech.printerControl.comms.commands.tx.SetFilamentInfo;
+import celtech.printerControl.comms.commands.tx.SetDFilamentInfo;
+import celtech.printerControl.comms.commands.tx.SetEFilamentInfo;
+import celtech.printerControl.comms.commands.tx.SetFeedRateMultiplier;
 import celtech.printerControl.comms.commands.tx.SetReelLEDColour;
 import celtech.printerControl.comms.commands.tx.SetTemperatures;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
@@ -153,7 +155,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
     private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
-    private final BooleanProperty canSetFilamentInfo = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateNozzleHeight = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateXYAlignment = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateNozzleOpening = new SimpleBooleanProperty(false);
@@ -291,10 +292,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
-
-        canSetFilamentInfo.bind(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER)
-            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING))
-            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO)));
 
         canRemoveHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
@@ -1549,40 +1546,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     /**
-     * @return
-     */
-    @Override
-    public ReadOnlyBooleanProperty canChangeFilamentInfoProperty()
-    {
-        return canSetFilamentInfo;
-    }
-
-    /**
-     *
-     * @param filamentDiameterE
-     * @param filamentMultiplierE
-     * @param filamentDiameterD
-     * @param filamentMultiplierD
-     * @param feedRateMultiplier
-     * @throws RoboxCommsException
-     */
-    @Override
-    public void transmitSetFilamentInfo(
-        double filamentDiameterE,
-        double filamentMultiplierE,
-        double filamentDiameterD,
-        double filamentMultiplierD,
-        double feedRateMultiplier) throws RoboxCommsException
-    {
-        SetFilamentInfo setFilamentInfo = (SetFilamentInfo) RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.SET_FILAMENT_INFO);
-        setFilamentInfo.setFilamentInfo(filamentDiameterE, filamentMultiplierE,
-                                        filamentDiameterD, filamentMultiplierD,
-                                        feedRateMultiplier);
-        commandInterface.writeToPrinter(setFilamentInfo);
-    }
-
-    /**
      *
      * @return @throws RoboxCommsException
      */
@@ -1733,7 +1696,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      */
     @Override
     public void printProject(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, SlicerParametersFile settings)
+        PrintQualityEnumeration printQuality, SlicerParametersFile settings) throws PrinterException
     {
 
         //TODO modify for multiple reels
@@ -1752,11 +1715,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                         filament.getFirstLayerBedTemperature(),
                                         filament.getBedTemperature(),
                                         filament.getAmbientTemperature());
-                transmitSetFilamentInfo(filament.getDiameter(),
-                                        filament.getFilamentMultiplier(),
-                                        filament.getDiameter(),
-                                        filament.getFilamentMultiplier(),
-                                        filament.getFeedRateMultiplier());
+
+                changeFeedRateMultiplier(filament.getFeedRateMultiplier());
+                //TODO modify for multiple extruders
+                changeFilamentInfo("E", filament.getDiameter(), filament.getFilamentMultiplier());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
@@ -2859,7 +2821,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             try
             {
                 steno.info("Automatically reducing feedrate to " + feedrateMultiplier);
-                changeFeedRateMultiplierDuringPrint(feedrateMultiplier);
+                changeFeedRateMultiplier(feedrateMultiplier);
             } catch (PrinterException ex)
             {
                 steno.warning("Failed to automatically reduce feedrate during print - " + ex.
@@ -3545,28 +3507,76 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void changeFeedRateMultiplierDuringPrint(double feedRate) throws PrinterException
+    public void changeFeedRateMultiplier(double feedRate) throws PrinterException
     {
-        if (!canSetFilamentInfo.get())
-        {
-            throw new PrinterException("Cannot change feed rate at this time");
-        }
-
-        // Get the current values
-        float eFilamentDiameter = extruders.get(firstExtruderNumber).filamentDiameter.get();
-        float eExtrusionMultiplier = extruders.get(firstExtruderNumber).extrusionMultiplier.get();
-        float dFilamentDiameter = extruders.get(secondExtruderNumber).filamentDiameter.get();
-        float dExtrusionMultiplier = extruders.get(secondExtruderNumber).extrusionMultiplier.get();
+        steno.debug("Firing change feed rate multiplier: " + feedRate);
 
         try
         {
-            transmitSetFilamentInfo(eFilamentDiameter, eExtrusionMultiplier,
-                                    dFilamentDiameter, dExtrusionMultiplier,
-                                    feedRate);
+            SetFeedRateMultiplier setFeedRateMultiplier = (SetFeedRateMultiplier) RoboxTxPacketFactory.
+                createPacket(
+                    TxPacketTypeEnum.SET_FEED_RATE_MULTIPLIER);
+            setFeedRateMultiplier.setFeedRateMultiplier(feedRate);
+            commandInterface.writeToPrinter(setFeedRateMultiplier);
         } catch (RoboxCommsException ex)
         {
-            steno.error("Comms exception when settings feed rate during print");
-            throw new PrinterException("Comms exception when settings feed rate during print");
+            steno.error("Comms exception when settings feed rate");
+            throw new PrinterException("Comms exception when settings feed rate");
+        }
+    }
+
+    @Override
+    public void changeFilamentInfo(String extruderLetter,
+        double filamentDiameter,
+        double extrusionMultiplier) throws PrinterException
+    {
+        Extruder selectedExtruder = null;
+
+        for (Extruder extruder : extruders)
+        {
+            if (extruder.getExtruderAxisLetter().equalsIgnoreCase(extruderLetter) && extruder.
+                isFittedProperty().get())
+            {
+                selectedExtruder = extruder;
+                break;
+            }
+        }
+
+        if (selectedExtruder == null)
+        {
+            throw new PrinterException("Attempt to change filament info for non-existent extruder: "
+                + extruderLetter);
+        }
+
+        steno.debug("Firing change filament info:"
+            + "Extruder " + extruderLetter
+            + " Diameter " + filamentDiameter
+            + " Multiplier " + extrusionMultiplier);
+
+        try
+        {
+            switch (extruderLetter)
+            {
+                case "E":
+                    SetEFilamentInfo setEFilamentInfo = (SetEFilamentInfo) RoboxTxPacketFactory.
+                        createPacket(
+                            TxPacketTypeEnum.SET_E_FILAMENT_INFO);
+                    setEFilamentInfo.setFilamentInfo(filamentDiameter, extrusionMultiplier);
+                    commandInterface.writeToPrinter(setEFilamentInfo);
+                    break;
+                case "D":
+                    SetDFilamentInfo setDFilamentInfo = (SetDFilamentInfo) RoboxTxPacketFactory.
+                        createPacket(
+                            TxPacketTypeEnum.SET_D_FILAMENT_INFO);
+                    setDFilamentInfo.setFilamentInfo(filamentDiameter, extrusionMultiplier);
+                    commandInterface.writeToPrinter(setDFilamentInfo);
+                    break;
+            }
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception when setting filament info for extruder " + extruderLetter);
+            throw new PrinterException("Comms exception when setting filament info for extruder "
+                + extruderLetter);
         }
     }
 

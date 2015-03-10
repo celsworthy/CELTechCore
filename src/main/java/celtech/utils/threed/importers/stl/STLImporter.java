@@ -2,7 +2,6 @@ package celtech.utils.threed.importers.stl;
 
 import celtech.appManager.Project;
 import celtech.configuration.PrintBed;
-import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
@@ -49,19 +48,18 @@ public class STLImporter
     /**
      *
      * @param parentTask
-     * @param modelFileToLoad
+     * @param modelFile
      * @param targetProject
      * @param percentProgressProperty
      * @return
      */
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, File modelFile,
         Project targetProject, DoubleProperty percentProgressProperty)
     {
         this.parentTask = parentTask;
         this.percentProgressProperty = percentProgressProperty;
         boolean fileIsBinary;
         boolean modelIsTooLarge = false;
-        File modelFile = new File(modelFileToLoad);
 
         steno.info("Starting STL load");
 
@@ -128,7 +126,7 @@ public class STLImporter
             steno.info("Model orig bounds are : " + originalBounds);
             modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
-            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
+            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFile.getAbsolutePath(),
                                                          modelFile.getName(), targetProject,
                                                          modelContainer);
             return result;

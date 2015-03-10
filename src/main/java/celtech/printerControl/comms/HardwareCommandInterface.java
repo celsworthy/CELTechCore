@@ -11,9 +11,7 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
-import java.util.concurrent.Callable;
 import jssc.SerialPort;
-import static jssc.SerialPort.PURGE_RXCLEAR;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 
@@ -121,15 +119,14 @@ public class HardwareCommandInterface extends CommandInterface
                     int waitCounter = 0;
                     while (serialPort.getInputBufferBytesCount() <= 0)
                     {
-//                    steno.trace("Avail is " + dataInputStream.available());
                         try
                         {
-                            this.sleep(0, 1000);
+                            this.sleep(0, 100000);
                         } catch (InterruptedException ex)
                         {
                         }
 
-                        if (waitCounter >= 500000)
+                        if (waitCounter >= 5000)
                         {
                             steno.error("No response from printer - disconnecting");
                             throw new SerialPortException(serialPort.getPortName(),

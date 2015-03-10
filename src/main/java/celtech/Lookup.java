@@ -141,6 +141,8 @@ public class Lookup
     {
         steno.debug("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
+        
+        StenographerFactory.changeAllLogLevels(userPreferences.getLoggingLevel());
 
         Locale appLocale;
         String languageTag = userPreferences.getLanguageTag();

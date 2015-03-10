@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 
 /**
  *
@@ -17,30 +16,12 @@ public class GraphicButton extends Button
 {
 
     private final StringProperty fxmlFileName = new SimpleStringProperty("");
-    private final HideableTooltip tooltip = new HideableTooltip();
 
     public GraphicButton()
     {
         loadFXML();
         getStyleClass().add("graphic-button");
         setPickOnBounds(false);
-
-        Tooltip.install(this, tooltip);
-    }
-
-    public String getTooltipText()
-    {
-        return tooltip.getText();
-    }
-
-    public void setTooltipText(String text)
-    {
-        tooltip.setText(text);
-    }
-
-    public StringProperty getTooltipTextProperty()
-    {
-        return tooltip.textProperty();
     }
 
     public String getFxmlFileName()

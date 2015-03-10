@@ -58,6 +58,8 @@ public interface SystemNotificationManager
 
     void showPrintTransferSuccessfulNotification(String printerName);
 
+    void showPrintTransferFailedNotification(String printerName);
+
     void showReprintStartedNotification();
 
     void showSDCardNotification();
@@ -105,4 +107,6 @@ public interface SystemNotificationManager
     public void showReelUpdatedNotification();
     
     public void askUserToClearBed();
+    
+    public boolean confirmAdvancedMode();
 }

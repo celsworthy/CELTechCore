@@ -1,8 +1,8 @@
 package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
-import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Control;
@@ -11,15 +11,17 @@ import javafx.scene.control.Control;
  *
  * @author Ian
  */
-public class SafetyFeaturesOnPreference implements PreferencesInnerPanelController.Preference
+public class TickBoxPreference implements PreferencesInnerPanelController.Preference
 {
 
     private final CheckBox control;
-    private final UserPreferences userPreferences;
+    private final BooleanProperty booleanProperty;
+    private final String caption;
 
-    public SafetyFeaturesOnPreference(UserPreferences userPreferences)
+    public TickBoxPreference(BooleanProperty booleanProperty, String caption)
     {
-        this.userPreferences = userPreferences;
+        this.booleanProperty = booleanProperty;
+        this.caption = caption;
 
         control = new CheckBox();
         control.setPrefWidth(150);
@@ -34,14 +36,16 @@ public class SafetyFeaturesOnPreference implements PreferencesInnerPanelControll
     @Override
     public void updateValueFromControl()
     {
-        boolean overrideSafety = control.isSelected();
-        userPreferences.setSafetyFeaturesOn(overrideSafety);
+        booleanProperty.set(control.isSelected());
+
+        // User Preferences controls whether the property can be set - read back just in case our selection was overridden
+        control.selectedProperty().set(booleanProperty.get());
     }
 
     @Override
     public void populateControlWithCurrentValue()
     {
-        control.setSelected(userPreferences.isSafetyFeaturesOn());
+        control.setSelected(booleanProperty.get());
     }
 
     @Override
@@ -53,6 +57,6 @@ public class SafetyFeaturesOnPreference implements PreferencesInnerPanelControll
     @Override
     public String getDescription()
     {
-        return Lookup.i18n("preferences.safetyFeaturesOn");
+        return Lookup.i18n(caption);
     }
 }

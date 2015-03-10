@@ -172,26 +172,32 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject);
 
-        if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+        try
         {
-            displayManager.getPurgeInsetPanelController().purgeAndPrint(
-                currentProject,
-                printerSettings.getFilament0(),
-                printerSettings.getPrintQuality(),
-                printerSettings.getSettings(), printer);
-        } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+            {
+                displayManager.getPurgeInsetPanelController().purgeAndPrint(
+                    currentProject,
+                    printerSettings.getFilament0(),
+                    printerSettings.getPrintQuality(),
+                    printerSettings.getSettings(), printer);
+            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+            {
+                currentStatusPrinter.resetPurgeTemperature(printerSettings);
+                printer.printProject(currentProject, printerSettings.getFilament0(),
+                                     printerSettings.getPrintQuality(),
+                                     printerSettings.getSettings());
+                applicationStatus.setMode(ApplicationMode.STATUS);
+            } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
+            {
+                printer.printProject(currentProject, printerSettings.getFilament0(),
+                                     printerSettings.getPrintQuality(),
+                                     printerSettings.getSettings());
+                applicationStatus.setMode(ApplicationMode.STATUS);
+            }
+        } catch (PrinterException ex)
         {
-            currentStatusPrinter.resetPurgeTemperature(printerSettings);
-            printer.printProject(currentProject, printerSettings.getFilament0(),
-                                 printerSettings.getPrintQuality(),
-                                 printerSettings.getSettings());
-            applicationStatus.setMode(ApplicationMode.STATUS);
-        } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
-        {
-            printer.printProject(currentProject, printerSettings.getFilament0(),
-                                 printerSettings.getPrintQuality(),
-                                 printerSettings.getSettings());
-            applicationStatus.setMode(ApplicationMode.STATUS);
+            steno.error("Error during print project " + ex.getMessage());
         }
     }
 
@@ -574,7 +580,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
             ApplicationMode.SETTINGS));
-        
+        printButton.setDisable(true);
+
         closeNozzleButton.setVisible(false);
         fillNozzleButton.setVisible(false);
 
@@ -643,7 +650,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
-        if (printer == null) {
+        if (printer == null)
+        {
             return;
         }
         PrinterSettings printerSettings = project.getPrinterSettings();
@@ -785,19 +793,28 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
                     ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).
                         canEjectProperty().not());
-                    fineNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    fillNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    openNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    closeNozzleButton.disableProperty().bind(newValue.canOpenCloseNozzleProperty().
-                        not());
-                    homeButton.disableProperty().bind(newValue.canPrintProperty().not());
+
+                    // These buttons should only be available in advanced mode
+                    fineNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    fillNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().
+                        not().or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    openNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    closeNozzleButton.disableProperty().bind(
+                        newValue.canOpenCloseNozzleProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                    homeButton.disableProperty().bind(newValue.canPrintProperty().not()
+                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+
                     newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(
                         headFanStatusListener);
-                    calibrateButton.disableProperty().
-                    bind(newValue.canCalibrateHeadProperty().not());
+
+                    calibrateButton.disableProperty()
+                    .bind(newValue.canCalibrateHeadProperty().not());
                     removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
 
                     currentStatusPrinter = newValue;
@@ -816,7 +833,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             snapToGroundButton.selectedProperty().set(false);
         }
     };
-    
+
     ProjectChangesListener projectChangesListener = new ProjectChangesListener()
     {
 
@@ -963,7 +980,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         ProjectGUIState projectGUIState = Lookup.getProjectGUIState(project);
         SelectedModelContainers selectionModel = projectGUIState.getSelectedModelContainers();
-        ReadOnlyObjectProperty<LayoutSubmode> layoutSubmodeProperty = projectGUIState.getLayoutSubmodeProperty();
+        ReadOnlyObjectProperty<LayoutSubmode> layoutSubmodeProperty = projectGUIState.
+            getLayoutSubmodeProperty();
 
         addModelButton.disableProperty().unbind();
         deleteModelButton.disableProperty().unbind();

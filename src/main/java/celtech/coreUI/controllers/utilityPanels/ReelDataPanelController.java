@@ -28,6 +28,7 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -89,6 +90,9 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
 
     @FXML
     private Button saveFilamentAs;
+    
+    @FXML
+    private VBox reelDataPanel;
 
     private Printer selectedPrinter;
 
@@ -268,11 +272,13 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
     @Override
     public void whenPrinterAdded(Printer printer)
     {
+        reelDataPanel.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
     }
 
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
+        reelDataPanel.disableProperty().unbind();
     }
 
     @Override
