@@ -4,6 +4,7 @@
 package celtech.gcodetranslator;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -29,17 +30,13 @@ import org.junit.rules.TemporaryFolder;
  */
 public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 {
-
-    static String DRAFT_SETTINGS = "DraftSettings";
-    static String NORMAL_SETTINGS = "NormalSettings";
-
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void testShortPathPartialOpenAndClose() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
 
         ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
@@ -70,7 +67,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathBox() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
 
         ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
@@ -155,7 +152,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathConcentricBox() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
 
         ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
@@ -388,7 +385,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathBoxScenario2() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
         parameters.setSlicerOverride(SlicerType.Cura);
 
         ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();

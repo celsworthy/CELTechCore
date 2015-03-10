@@ -20,90 +20,90 @@ import org.junit.Test;
 public class PrinterListChangesNotifierTest
 {
 
-    @Test
-    public void testWhenPrinterAdded()
-    {
-        ObservableList<Printer> printers = FXCollections.observableArrayList();
-        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
-        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
-        notifier.addListener(plcListener);
-
-        assertEquals(0, plcListener.addedPrinters.size());
-        TestPrinter printer = new TestPrinter();
-        printers.add(printer);
-        assertEquals(1, plcListener.addedPrinters.size());
-    }
-
-    @Test
-    public void testWhenPrinterAddedAndRemoved()
-    {
-        ObservableList<Printer> printers = FXCollections.observableArrayList();
-        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
-        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
-        notifier.addListener(plcListener);
-
-        TestPrinter printer = new TestPrinter();
-        printers.add(printer);
-        printers.remove(printer);
-        assertEquals(0, plcListener.addedPrinters.size());
-    }
-
-    @Test
-    public void testWhenPrinterAddedThenHeadAdded()
-    {
-        ObservableList<Printer> printers = FXCollections.observableArrayList();
-        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
-        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
-        notifier.addListener(plcListener);
-
-        assertEquals(0, plcListener.printersWithHeadAdded.size());
-        TestPrinter printer = new TestPrinter();
-        printers.add(printer);
-        printer.addHead();
-        assertEquals(1, plcListener.printersWithHeadAdded.size());
-    }
-
-    @Test
-    public void testWhenPrinterAddedThenHeadRemoved()
-    {
-        ObservableList<Printer> printers = FXCollections.observableArrayList();
-        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
-        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
-        notifier.addListener(plcListener);
-
-        assertEquals(0, plcListener.printersWithHeadRemoved.size());
-        TestPrinter printer = new TestPrinter();
-        printers.add(printer);
-        printer.addHead();
-        printer.removeHead();
-        assertEquals(1, plcListener.printersWithHeadRemoved.size());
-    }
-
-    @Test
-    public void testWhenPrinterAddedThenHeadRemovedWithThreePrinters()
-    {
-        ObservableList<Printer> printers = FXCollections.observableArrayList();
-        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
-        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
-        notifier.addListener(plcListener);
-
-        assertEquals(0, plcListener.printersWithHeadRemoved.size());
-        TestPrinter printer1 = new TestPrinter();
-        TestPrinter printer2 = new TestPrinter();
-        TestPrinter printer3 = new TestPrinter();
-        printers.add(printer1);
-        printers.add(printer2);
-        printers.add(printer3);
-        printer1.addHead();
-        printer2.addHead();
-        printer2.removeHead();
-        assertEquals(1, plcListener.printersWithHeadRemoved.size());
-        assertEquals(printer2, plcListener.printersWithHeadRemoved.get(0));
-
-        assertEquals(2, plcListener.printersWithHeadAdded.size());
-        assertEquals(printer1, plcListener.printersWithHeadAdded.get(0));
-        assertEquals(printer2, plcListener.printersWithHeadAdded.get(1));
-    }
+//    @Test
+//    public void testWhenPrinterAdded()
+//    {
+//        ObservableList<Printer> printers = FXCollections.observableArrayList();
+//        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+//        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+//        notifier.addListener(plcListener);
+//
+//        assertEquals(0, plcListener.addedPrinters.size());
+//        TestPrinter printer = new TestPrinter();
+//        printers.add(printer);
+//        assertEquals(1, plcListener.addedPrinters.size());
+//    }
+//
+//    @Test
+//    public void testWhenPrinterAddedAndRemoved()
+//    {
+//        ObservableList<Printer> printers = FXCollections.observableArrayList();
+//        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+//        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+//        notifier.addListener(plcListener);
+//
+//        TestPrinter printer = new TestPrinter();
+//        printers.add(printer);
+//        printers.remove(printer);
+//        assertEquals(0, plcListener.addedPrinters.size());
+//    }
+//
+//    @Test
+//    public void testWhenPrinterAddedThenHeadAdded()
+//    {
+//        ObservableList<Printer> printers = FXCollections.observableArrayList();
+//        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+//        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+//        notifier.addListener(plcListener);
+//
+//        assertEquals(0, plcListener.printersWithHeadAdded.size());
+//        TestPrinter printer = new TestPrinter();
+//        printers.add(printer);
+//        printer.addHead();
+//        assertEquals(1, plcListener.printersWithHeadAdded.size());
+//    }
+//
+//    @Test
+//    public void testWhenPrinterAddedThenHeadRemoved()
+//    {
+//        ObservableList<Printer> printers = FXCollections.observableArrayList();
+//        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+//        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+//        notifier.addListener(plcListener);
+//
+//        assertEquals(0, plcListener.printersWithHeadRemoved.size());
+//        TestPrinter printer = new TestPrinter();
+//        printers.add(printer);
+//        printer.addHead();
+//        printer.removeHead();
+//        assertEquals(1, plcListener.printersWithHeadRemoved.size());
+//    }
+//
+//    @Test
+//    public void testWhenPrinterAddedThenHeadRemovedWithThreePrinters()
+//    {
+//        ObservableList<Printer> printers = FXCollections.observableArrayList();
+//        PrinterListChangesNotifier notifier = new PrinterListChangesNotifier(printers);
+//        TestPrinterListChangesListener plcListener = new TestPrinterListChangesListener();
+//        notifier.addListener(plcListener);
+//
+//        assertEquals(0, plcListener.printersWithHeadRemoved.size());
+//        TestPrinter printer1 = new TestPrinter();
+//        TestPrinter printer2 = new TestPrinter();
+//        TestPrinter printer3 = new TestPrinter();
+//        printers.add(printer1);
+//        printers.add(printer2);
+//        printers.add(printer3);
+//        printer1.addHead();
+//        printer2.addHead();
+//        printer2.removeHead();
+//        assertEquals(1, plcListener.printersWithHeadRemoved.size());
+//        assertEquals(printer2, plcListener.printersWithHeadRemoved.get(0));
+//
+//        assertEquals(2, plcListener.printersWithHeadAdded.size());
+//        assertEquals(printer1, plcListener.printersWithHeadAdded.get(0));
+//        assertEquals(printer2, plcListener.printersWithHeadAdded.get(1));
+//    }
 
     //TODO reinstate tests
 //    @Test
