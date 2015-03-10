@@ -22,16 +22,6 @@ public class HeadTest extends JavaFXConfiguredTest
     {
     }
 
-    @Before
-    public void setUp()
-    {
-    }
-
-    @After
-    public void tearDown()
-    {
-    }
-
 //    /**
 //     * Test of createHead method, of class Head.
 //     */

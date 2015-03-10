@@ -6,6 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
@@ -102,6 +103,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      * Project loading
      */
     private ProjectLoader projectLoader = null;
+    private ProgressDialog modelLoadDialog = null;   
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
@@ -436,6 +438,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
 
         projectLoader = new ProjectLoader();
+        modelLoadDialog = new ProgressDialog(ModelLoader.modelLoaderService);
 
         scene = new Scene(rootStackPane, ApplicationConfiguration.DEFAULT_WIDTH,
                           ApplicationConfiguration.DEFAULT_HEIGHT);

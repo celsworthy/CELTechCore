@@ -5,7 +5,6 @@ package celtech.coreUI.visualisation;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoadResults;
@@ -30,13 +29,11 @@ public class ModelLoader
     /*
      * Mesh Model loading
      */
-    private final ModelLoaderService modelLoaderService = new ModelLoaderService();
-    private ProgressDialog modelLoadDialog = null;    
+    public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
+     
 
     public ModelLoader()
     {
-        modelLoadDialog = new ProgressDialog(modelLoaderService);
-
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
             whenModelLoadSucceeded();

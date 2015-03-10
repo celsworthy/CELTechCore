@@ -1,6 +1,5 @@
 package celtech.printerControl;
 
-import celtech.AutoMakerTestConfigurator;
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.TestCommandInterface;
@@ -15,7 +14,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
