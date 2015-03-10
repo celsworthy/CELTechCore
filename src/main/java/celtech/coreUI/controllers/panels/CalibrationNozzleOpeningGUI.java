@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.printerControl.model.calibration.StateTransitionManager;
 import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
 import celtech.printerControl.model.calibration.StateTransition;
@@ -85,18 +86,18 @@ public class CalibrationNozzleOpeningGUI
                 stepNo = 1;
                 break;
             case NO_MATERIAL_CHECK:
-                controller.buttonA.setText("Yes");
-                controller.buttonB.setText("No");
+                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
+                controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 2;
                 break;
             case T0_EXTRUDING:
-                controller.buttonA.setText("Yes");
-                controller.buttonB.setText("No");
+                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
+                controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 3;
                 break;
             case T1_EXTRUDING:
-                controller.buttonA.setText("Yes");
-                controller.buttonB.setText("No");
+                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
+                controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 4;
                 break;
             case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
@@ -105,13 +106,13 @@ public class CalibrationNozzleOpeningGUI
             case PRE_CALIBRATION_PRIMING_FINE:
                 break;
             case CALIBRATE_FINE_NOZZLE:
-                controller.buttonA.setText("Flowing");
-                controller.buttonB.setText("Not flowing");
+                controller.buttonA.setText(Lookup.i18n("calibrationPanel.flowing"));
+                controller.buttonB.setText(Lookup.i18n("calibrationPanel.notFlowing"));
                 stepNo = 6;
                 break;
             case CALIBRATE_FILL_NOZZLE:
-                controller.buttonA.setText("Flowing");
-                controller.buttonB.setText("Not flowing");
+                controller.buttonA.setText(Lookup.i18n("calibrationPanel.flowing"));
+                controller.buttonB.setText(Lookup.i18n("calibrationPanel.notFlowing"));
                 stepNo = 7;
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
@@ -119,8 +120,8 @@ public class CalibrationNozzleOpeningGUI
                 break;
             case CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS:
             case CONFIRM_NO_MATERIAL:
-                controller.buttonA.setText("Yes");
-                controller.buttonB.setText("No");
+                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
+                controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 9;
                 break;
             case FINISHED:
