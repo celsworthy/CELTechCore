@@ -11,9 +11,9 @@
 <?import celtech.coreUI.components.*?>
 <?import celtech.coreUI.components.buttons.* ?>
 
-<Pane fx:id="topPane" minHeight="700.0" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
+<Pane fx:id="topPane" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
-        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" style="-fx-background-color: black;">
+        <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
             <center>
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" BorderPane.alignment="CENTER">
                     <children>
@@ -58,7 +58,7 @@
                                         <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
                                     </VBox.margin>
                                 </Label>
-                                <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
+                                <VBox fx:id="diagramContainer" minHeight="100"  alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
                                 <HBox alignment="CENTER" VBox.vgrow="NEVER">
                                     <children>
                                         <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
