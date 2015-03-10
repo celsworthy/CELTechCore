@@ -7,12 +7,9 @@ import celtech.JavaFXConfiguredTest;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
-import celtech.coreUI.visualisation.ModelLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.ClassRule;
@@ -56,12 +53,8 @@ public class ProjectTest extends JavaFXConfiguredTest
         File tempFile = temporaryUserStorageFolder.newFile("projA.robox");
         objectMapper.writeValue(tempFile, projectFile);
 
-        Project newProject = new Project();
-//        ModelLoader loader = new ModelLoader();
-//        List<File> fileToLoad = new ArrayList<>();
-//        fileToLoad.add(tempFile);
-//        loader.loadExternalModels(project, fileToLoad);
-        newProject.loadProject(tempFile.getAbsolutePath());
+        String filePath = tempFile.getAbsolutePath();
+        Project newProject = Project.loadProject(filePath.substring(0, filePath.length() - 6));
 
         assertEquals(PROJECT_NAME, newProject.getProjectName());
         assertEquals(BRIM, newProject.getPrinterSettings().getBrimOverride());
