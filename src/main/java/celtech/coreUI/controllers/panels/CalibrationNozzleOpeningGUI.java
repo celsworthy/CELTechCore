@@ -106,13 +106,13 @@ public class CalibrationNozzleOpeningGUI
             case PRE_CALIBRATION_PRIMING_FINE:
                 break;
             case CALIBRATE_FINE_NOZZLE:
-                controller.buttonA.setText(Lookup.i18n("calibrationPanel.flowing"));
-                controller.buttonB.setText(Lookup.i18n("calibrationPanel.notFlowing"));
+                controller.buttonA.setText(Lookup.i18n("calibrationPanel.present"));
+                controller.buttonB.setText(Lookup.i18n("calibrationPanel.notPresent"));
                 stepNo = 6;
                 break;
             case CALIBRATE_FILL_NOZZLE:
-                controller.buttonA.setText(Lookup.i18n("calibrationPanel.flowing"));
-                controller.buttonB.setText(Lookup.i18n("calibrationPanel.notFlowing"));
+                controller.buttonA.setText(Lookup.i18n("calibrationPanel.present"));
+                controller.buttonB.setText(Lookup.i18n("calibrationPanel.notPresent"));
                 stepNo = 7;
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:

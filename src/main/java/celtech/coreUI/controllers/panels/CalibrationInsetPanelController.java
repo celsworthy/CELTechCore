@@ -23,6 +23,13 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
+import javafx.animation.Transition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -40,7 +47,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -149,6 +158,20 @@ public class CalibrationInsetPanelController implements Initializable,
     private Pane diagramNode;
     DiagramController diagramController;
     private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
+    private Line lineToAnimate;
+    private double originalAnimatedLineLength = 0;
+    private Transition animatedFilamentTransition = new Transition()
+    {
+        {
+            setCycleDuration(Duration.millis(2000));
+        }
+
+        @Override
+        public void interpolate(double frac)
+        {
+            lineToAnimate.setEndY(frac * originalAnimatedLineLength);
+        }
+    };
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -244,9 +267,10 @@ public class CalibrationInsetPanelController implements Initializable,
 
         calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 
-        addDiagramMoveScaleListeners();
+        animatedFilamentTransition.setCycleCount(Timeline.INDEFINITE);
+        animatedFilamentTransition.setAutoReverse(false);
 
-        
+        addDiagramMoveScaleListeners();
 
     }
 
@@ -322,12 +346,19 @@ public class CalibrationInsetPanelController implements Initializable,
     private Node getDiagramNode(URL fxmlFileName)
     {
         Pane loadedDiagramNode = null;
+        animatedFilamentTransition.stop();
         try
         {
             FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
             diagramController = new DiagramController();
             loader.setController(diagramController);
             loadedDiagramNode = loader.load();
+            lineToAnimate = (Line) loadedDiagramNode.lookup("#animatedFilament");
+            if (lineToAnimate != null)
+            {
+                originalAnimatedLineLength = lineToAnimate.getEndY();
+                animatedFilamentTransition.playFrom(Duration.ZERO);
+            }
 
             Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
             steno.debug("diagram bounds are " + bounds);
@@ -507,22 +538,25 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void configureStartButtonForMode(CalibrationMode calibrationMode, Printer printer)
     {
-        if (printer == null) {
+        if (printer == null)
+        {
             return;
         }
         startCalibrationButton.getTag().removeAllConditionalText();
         startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateHeadIsDetached",
-                                           Bindings.isNull(printer.headProperty()));
+                                                           Bindings.isNull(printer.headProperty()));
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
                 startCalibrationButton.disableProperty().bind(
                     printer.canCalibrateNozzleOpeningProperty().not());
-                 startCalibrationButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                           printer.extrudersProperty().get(0).
-                                           filamentLoadedProperty().not());
-                 startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateNoSmartReel",
-                                           Bindings.isEmpty(printer.reelsProperty()));
+                startCalibrationButton.getTag().addConditionalText(
+                    "dialogs.cantPrintNoFilamentMessage",
+                    printer.extrudersProperty().get(0).
+                    filamentLoadedProperty().not());
+                startCalibrationButton.getTag().addConditionalText(
+                    "dialogs.cantCalibrateNoSmartReel",
+                    Bindings.isEmpty(printer.reelsProperty()));
                 break;
             case NOZZLE_HEIGHT:
                 startCalibrationButton.disableProperty().bind(
@@ -607,7 +641,8 @@ public class CalibrationInsetPanelController implements Initializable,
     {
 //        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
         calibrationProgressPrint.setTargetLegend("");
-        calibrationProgressPrint.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
+        calibrationProgressPrint.
+            setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
 //        calibrationProgressPrint.setTargetValue("0");
         calibrationProgressPrint.setTargetValue("");
 

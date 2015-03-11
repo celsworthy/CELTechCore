@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.shape.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <Pane styleClass="lightGreyBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
@@ -22,7 +19,6 @@
                         <Line endX="28.951" endY="280.918" startX="59.48" startY="281.195" stroke="#FFFFFF" />
                         <Line endX="96.67" endY="281.535" startX="114.77" startY="281.345" stroke="#FFFFFF" />
                         <Line endX="136.346" endY="281.115" startX="164.408" startY="280.818" stroke="#FFFFFF" />
-                        <SVGPath content="M69.443,374.513l0.158-8.681l0.105-8.748l0.064-8.742l0.045-8.43l0.035-7.76l0.033-7.443l0.057-7.923     l0.1-8.68l0.156-9.159l0.086-3.768l1.09,0.115l-0.037,1.393l-0.145,7.875l-0.109,8.384l-0.078,9.171l-0.049,9.725l-0.041,9.494     l-0.047,9.016l-0.08,8.795l-0.121,8.59l-0.164,8.383l-0.152,6.182l-0.018,0.604c-0.121,1.982-0.004,3.427-0.674,3.361     c-0.541-0.053-0.5-2.05-0.408-3.912L69.443,374.513z" fill="#009EE3" />
                         <Line endX="185.717" endY="0.93" startX="190.959" startY="6.209" stroke="#FFFFFF" />
                         <Line endX="185.715" endY="0.932" startX="190.959" startY="6.211" stroke="#FFFFFF" />
                         <Polyline stroke="#FFFFFF">
@@ -1997,6 +1993,6 @@
                     </children>
                 </Pane>
             </children>
-        </Pane>
+        </Pane><Line id="animatedFilament" endY="40.0" layoutX="71.0" layoutY="296.0" stroke="#009ee3" />
     </children>
 </Pane>
