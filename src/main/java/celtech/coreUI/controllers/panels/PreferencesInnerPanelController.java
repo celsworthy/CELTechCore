@@ -57,6 +57,7 @@ public class PreferencesInnerPanelController implements Initializable, ExtrasMen
     private void displayPreferences(List<Preference> preferences)
     {
         preferencesGridPane.getChildren().clear();
+        preferencesGridPane.getRowConstraints().clear();
         int rowNo = 0;
         for (Preference preference : preferences)
         {

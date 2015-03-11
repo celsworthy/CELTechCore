@@ -39,11 +39,13 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.tasks.TaskResponder;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -159,7 +161,10 @@ class TestPrinter implements Printer
     @Override
     public ObservableList<Extruder> extrudersProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ObservableList<Extruder> extruders = FXCollections.observableList(new ArrayList<Extruder>());
+        extruders.add(new Extruder("E"));
+        extruders.add(new Extruder("D"));
+        return extruders;
     }
 
     @Override
