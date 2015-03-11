@@ -98,7 +98,7 @@ public class LargeProgress extends BorderPane
 
     private void redraw()
     {
-        double progressBackWidth = largeProgressBarBack.boundsInParentProperty().get().getWidth();
+        double progressBackWidth = largeProgressBarBack.getWidth();
         double barWidth = progressBackWidth * progress;
         largeProgressBarInner.setWidth(barWidth);
 

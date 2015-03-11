@@ -1865,6 +1865,7 @@ modal-dialogue{
 #largeProgressBarBack {
     -fx-border-color: white;
     -fx-border-width: 3px;
+    -fx-border-insets: 0 -3 0 -3;
 }
 
 #largeProgressBarInner {

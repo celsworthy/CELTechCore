@@ -123,7 +123,7 @@
                 <Pane id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
             </left>
             <top>
-                <TopMenuStrip BorderPane.alignment="CENTER" />
+                <HBox minHeight="60"/> 
             </top>
         </BorderPane>
     </children>
