@@ -143,7 +143,6 @@ public class PreferencesTopInsetPanelController implements Initializable
 
     private void addPreferenceToContainer(Preference preference, int rowNo)
     {
-        System.out.println("ADD ROW " + rowNo);
         Label description = getPreferenceDescriptionLabel(preference);
         Control editor = getPreferenceEditorControl(preference);
         preferencesGridPane.addRow(rowNo, description, editor);
@@ -156,7 +155,6 @@ public class PreferencesTopInsetPanelController implements Initializable
             rowConstraints.setMaxHeight(ROW_HEIGHT);
         } else
         {
-            System.out.println("ADD ROW CONSTRAINT");
             preferencesGridPane.getRowConstraints().add(rowNo, new RowConstraints(ROW_HEIGHT, ROW_HEIGHT,
                                                                            ROW_HEIGHT));
         }
