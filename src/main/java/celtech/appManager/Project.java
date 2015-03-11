@@ -11,6 +11,7 @@ import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
+import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -474,6 +476,11 @@ public class Project implements Serializable
     {
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
             modelExtruderNumberListener);
+    }
+
+    public Vector3D getCentreOfLoadedModels()
+    {
+        return ThreeDUtils.calculateCentre(loadedParts);
     }
 
     /**

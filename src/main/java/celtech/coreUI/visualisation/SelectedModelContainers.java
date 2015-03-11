@@ -5,7 +5,7 @@ package celtech.coreUI.visualisation;
 
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
-import celtech.modelcontrol.ModelContainer;
+import celtech.coreUI.visualisation.metaparts.Part;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
@@ -17,95 +17,97 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
 /**
- * SelectedModelContainers captures all required state about the currently selected ModelContainers.
+ * SelectedParts captures all required state about the currently selected Parts.
  *
  * @author tony
  */
 public class SelectedModelContainers implements ProjectChangesListener
 {
 
-    private final ObservableSet<ModelContainer> modelContainers;
+    private final ObservableSet<Part> parts;
     private final PrimarySelectedModelDetails primarySelectedModelDetails;
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
-    private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
+    private final Set<SelectedModelContainersListener> selectedPartsListeners;
 
     public SelectedModelContainers(Project project)
     {
-        modelContainers = FXCollections.observableSet();
+        parts = FXCollections.observableSet();
         primarySelectedModelDetails = new PrimarySelectedModelDetails();
-        selectedModelContainersListeners = new HashSet<>();
+        selectedPartsListeners = new HashSet<>();
         project.addProjectChangesListener(this);
     }
 
     /**
-     * Add the given modelContainer to the set of selected ModelContainers.
+     * Add the given part to the set of selected Parts.
      */
-    public void addModelContainer(ModelContainer modelContainer)
+    public void addPart(Part part)
     {
-        if (!modelContainers.contains(modelContainer))
+        if (!parts.contains(part))
         {
-            modelContainers.add(modelContainer);
-            modelContainer.setSelected(true);
-            primarySelectedModelDetails.setTo(modelContainer);
-            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            parts.add(part);
+            part.setSelected(true);
+            primarySelectedModelDetails.setTo(part);
+            for (SelectedModelContainersListener selectedPartsListener : selectedPartsListeners)
             {
-                selectedModelContainersListener.whenAdded(modelContainer);
+                selectedPartsListener.whenAdded(part);
             }
             numModelsSelected.set(numModelsSelected.get() + 1);
         }
     }
 
     /**
-     * Remove the given modelContainer from the set of selected ModelContainers.
+     * Remove the given part from the set of selected Parts.
      */
-    public void removeModelContainer(ModelContainer modelContainer)
+    public void removePart(Part part)
     {
-        if (modelContainers.contains(modelContainer))
+        if (parts.contains(part))
         {
-            modelContainers.remove(modelContainer);
+            parts.remove(part);
             numModelsSelected.set(numModelsSelected.get() - 1);
-            modelContainer.setSelected(false);
-            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            part.setSelected(false);
+            for (SelectedModelContainersListener selectedPartsListener : selectedPartsListeners)
             {
-                selectedModelContainersListener.whenRemoved(modelContainer);
+                selectedPartsListener.whenRemoved(part);
             }
         }
 
     }
 
     /**
-     * Return if the given ModelContainer is selected or not.
+     * Return if the given Part is selected or not.
      *
-     * @param modelContainer
+     * @param part
      * @return
      */
-    public boolean isSelected(ModelContainer modelContainer)
+    public boolean isSelected(Part part)
     {
-        return modelContainers.contains(modelContainer);
+        return parts.contains(part);
     }
 
     /**
-     * Deselect all ModelContainers in the set of ModelContainers.
+     * Deselect all Parts in the set of Parts.
      */
     public void deselectAllModels()
     {
-        Set<ModelContainer> allSelectedModelContainers = new HashSet<>(modelContainers);
-        for (ModelContainer modelContainer : allSelectedModelContainers)
+        Set<Part> allSelectedParts = new HashSet<>(parts);
+        for (Part part : allSelectedParts)
         {
-            removeModelContainer(modelContainer);
+            removePart(part);
         }
     }
 
     /**
      * Return a copy of the set of selected models.
+     * @return 
      */
-    public Set<ModelContainer> getSelectedModelsSnapshot()
+    public Set<Part> getSelectedModelsSnapshot()
     {
-        return new HashSet<>(modelContainers);
+        return new HashSet<>(parts);
     }
 
     /**
-     * Return the number of selected ModelContainers as an observable number.
+     * Return the number of selected Parts as an observable number.
+     * @return 
      */
     public ReadOnlyIntegerProperty getNumModelsSelectedProperty()
     {
@@ -113,7 +115,8 @@ public class SelectedModelContainers implements ProjectChangesListener
     }
 
     /**
-     * Return the details of the primary selected ModelContainer.
+     * Return the details of the primary selected Part.
+     * @return 
      */
     public PrimarySelectedModelDetails getPrimarySelectedModelDetails()
     {
@@ -127,72 +130,72 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         primarySelectedModelDetails.updateSelectedProperties();
     }
-    
+
     @Override
-    public void whenModelAdded(ModelContainer modelContainer)
+    public void whenModelAdded(Part part)
     {
     }
 
     @Override
-    public void whenModelRemoved(ModelContainer modelContainer)
+    public void whenModelRemoved(Part part)
     {
-        removeModelContainer(modelContainer);
-    }    
-    
+        removePart(part);
+    }
+
     @Override
     public void whenAutoLaidOut()
     {
-    } 
-    
+    }
+
     @Override
-    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    public void whenModelsTransformed(Set<Part> parts)
     {
         updateSelectedValues();
-    }    
-    
-    @Override
-    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
-    {
-    }    
+    }
 
-    /**
-     * Add a listener that will be notified whenever a ModelContainer is selected or deselected.
-     */
-    public void addListener(SelectedModelContainersListener selectedModelContainersListener)
+    @Override
+    public void whenModelChanged(Part part, String propertyName)
     {
-        selectedModelContainersListeners.add(selectedModelContainersListener);
     }
 
     /**
-     * Remove a listener that will be notified whenever a ModelContainer is selected or deselected.
+     * Add a listener that will be notified whenever a Part is selected or deselected.
      */
-    public void removeListener(SelectedModelContainersListener selectedModelContainersListener)
+    public void addListener(SelectedModelContainersListener selectedPartsListener)
     {
-        selectedModelContainersListeners.remove(selectedModelContainersListener);
+        selectedPartsListeners.add(selectedPartsListener);
+    }
+
+    /**
+     * Remove a listener that will be notified whenever a Part is selected or deselected.
+     */
+    public void removeListener(SelectedModelContainersListener selectedPartsListener)
+    {
+        selectedPartsListeners.remove(selectedPartsListener);
     }
 
     public interface SelectedModelContainersListener
     {
 
         /**
-         * Called when a ModelContainer is selected.
+         * Called when a Part is selected.
          */
-        public void whenAdded(ModelContainer modelContainer);
+        public void whenAdded(Part part);
 
         /**
-         * Called when a ModelContainer is removed.
+         * Called when a Part is removed.
          */
-        public void whenRemoved(ModelContainer modelContainer);
+        public void whenRemoved(Part part);
     }
 
     /**
      * PrimarySelectedModelDetails contains the details pertaining to the primary selected
-     * ModelContainer.
+     * Part.
      */
     public class PrimarySelectedModelDetails
     {
 
-        ModelContainer boundModelContainer;
+        Part boundPart;
 
         // initing values to -1 forces a change update when value first set to 0 (e.g. rotY)
         private final DoubleProperty width = new SimpleDoubleProperty(-1);
@@ -212,23 +215,23 @@ public class SelectedModelContainers implements ProjectChangesListener
             return width;
         }
 
-        public void setTo(ModelContainer modelContainer)
+        public void setTo(Part part)
         {
-            boundModelContainer = modelContainer;
+            boundPart = part;
             updateSelectedProperties();
         }
 
         private void updateSelectedProperties()
         {
-            if (boundModelContainer != null)
+            if (boundPart != null)
             {
-                width.set(boundModelContainer.getScaledWidth());
-                centreX.set(boundModelContainer.getTransformedCentreX());
-                centreZ.set(boundModelContainer.getTransformedCentreZ());
-                height.set(boundModelContainer.getScaledHeight());
-                depth.set(boundModelContainer.getScaledDepth());
-                scale.set(boundModelContainer.getScale());
-                rotationY.set(boundModelContainer.getRotationY());
+                width.set(boundPart.getScaledWidth());
+                centreX.set(boundPart.getTransformedCentreX());
+                centreZ.set(boundPart.getTransformedCentreZ());
+                height.set(boundPart.getScaledHeight());
+                depth.set(boundPart.getScaledDepth());
+                scale.set(boundPart.getScale());
+                rotationY.set(boundPart.getRotationY());
             }
         }
 

@@ -8,15 +8,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -27,8 +31,9 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class Part implements Comparable, ShapeProvider
 {
-   private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
- 
+
+    private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+
     private HashMap<Vector3D, Integer> vertices;
     private Set<Face> faces;
     /**
@@ -62,6 +67,10 @@ public class Part implements Comparable, ShapeProvider
     private ModelBounds originalModelBounds;
     private ModelBounds lastTransformedBounds;
 
+    private boolean isCollided = false;
+    private BooleanProperty isSelected = null;
+    private BooleanProperty isOffBed = null;
+
     public Part(HashMap<Vector3D, Integer> vertices, Set<Face> faces)
     {
         this.vertices = vertices;
@@ -80,17 +89,15 @@ public class Part implements Comparable, ShapeProvider
         preferredRotationY = new SimpleDoubleProperty(0);
         shapeChangeListeners = new ArrayList<>();
 
+        isSelected = new SimpleBooleanProperty(false);
+        isOffBed = new SimpleBooleanProperty(false);
+
+        initialiseTransforms();
     }
 
     private void initialiseTransforms()
     {
-
         setBedCentreOffsetTransform();
-
-        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
-                               transformMoveToCentre, transformBedCentre,
-                               transformRotateYPreferred, transformRotateSnapToGround);
-        meshGroup.getTransforms().addAll(transformScalePreferred);
 
         originalModelBounds = calculateBounds();
 
@@ -746,8 +753,8 @@ public class Part implements Comparable, ShapeProvider
                                newheight, newdepth, newcentreX, newcentreY,
                                newcentreZ);
     }
-    
-        public ModelBounds getTransformedBounds()
+
+    public ModelBounds getTransformedBounds()
     {
         return lastTransformedBounds;
     }
@@ -756,6 +763,7 @@ public class Part implements Comparable, ShapeProvider
     {
         return originalModelBounds;
     }
+
     public ModelBounds getOriginalModelBounds()
     {
         return originalModelBounds;
@@ -788,6 +796,7 @@ public class Part implements Comparable, ShapeProvider
     {
         return getTransformedBounds().getCentreX();
     }
+
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
         lastTransformedBounds.translateX(deltaCentreX);
@@ -899,6 +908,29 @@ public class Part implements Comparable, ShapeProvider
     {
         return getLocalBounds().getWidth() * preferredScale.doubleValue();
     }
+    
+    public void setSelected(boolean selected)
+    {
+        isSelected.set(selected);        
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isSelected()
+    {
+        return isSelected.get();
+    }
+
+    /**
+     *
+     * @return
+     */
+    public BooleanProperty isSelectedProperty()
+    {
+        return isSelected;
+    }
 
     /*
      Persistence
@@ -921,4 +953,9 @@ public class Part implements Comparable, ShapeProvider
      snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
      }
      */
+
+    public Bounds getRealWorldBounds()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils.threed;
 
-import celtech.modelcontrol.ModelContainer;
+import celtech.coreUI.visualisation.metaparts.Part;
 import java.util.List;
 import javafx.geometry.Bounds;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -17,7 +12,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 public class ThreeDUtils
 {
 
-    public static Vector3D calculateCentre(List<ModelContainer> models)
+    public static Vector3D calculateCentre(final List<Part> parts)
     {
         double minX = 999;
         double minY = 999;
@@ -26,9 +21,9 @@ public class ThreeDUtils
         double maxY = 0;
         double maxZ = 0;
 
-        for (ModelContainer model : models)
+        for (Part part : parts)
         {
-            Bounds modelBounds = model.getBoundsInParent();
+            Bounds modelBounds = part.getRealWorldBounds();
 
             minX = Math.min(modelBounds.getMinX(), minX);
             minY = Math.min(modelBounds.getMinY(), minY);

@@ -171,10 +171,11 @@ public class ObjImporter
                 meshes.add(buildMeshView(key));
             }
 
-            ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshes);
-            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
-
-            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);
+            //TODO fix obj importing
+//            ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshes);
+//            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
+//
+//            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);
         } catch (IOException ex)
         {
             steno.error("Exception whilst reading obj file " + modelFileToLoad + ":" + ex);

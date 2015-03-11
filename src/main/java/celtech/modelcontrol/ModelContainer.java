@@ -33,10 +33,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class ModelContainer extends Group
 {
-    private Stenographer steno = null;
-    private boolean isCollided = false;
-    private BooleanProperty isSelected = null;
-    private BooleanProperty isOffBed = null;
+
+    private Stenographer steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
     private SimpleStringProperty modelName = null;
 
     private Group meshGroup = new Group();
@@ -47,15 +45,22 @@ public class ModelContainer extends Group
     private TriangleMesh triangleMesh;
     private PhongMaterial material;
 
+    private boolean isCollided = false;
+    private boolean isOffBed = false;
+    private boolean isSelected = false;
+    private final Part associatedPart;
+
     /**
      *
      * @param name
-     * @param meshToAdd
+     * @param partToAdd
      */
     public ModelContainer(String name, Part partToAdd)
     {
         super();
 
+        associatedPart = partToAdd;
+        
         triangleMesh = new TriangleMesh();
 
         int[] faceIndexArray = new int[6];
@@ -112,30 +117,21 @@ public class ModelContainer extends Group
         MeshView meshView = new MeshView();
 
         meshView.setMesh(triangleMesh);
-        meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+        material = ApplicationMaterials.getDefaultModelMaterial();
+        meshView.setMaterial(material);
         meshView.setCullFace(CullFace.BACK);
         meshView.setId(name + "_mesh");
 
         this.getChildren().add(meshGroup);
         meshGroup.getChildren().add(meshView);
-        initialise(name);
-        initialiseTransforms();
-    }
-
-    private void initialise(String name)
-    {
-        material = ApplicationMaterials.getDefaultModelMaterial();
-        steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
-        printBed = PrintBed.getInstance();
-
-        isSelected = new SimpleBooleanProperty(false);
-        isOffBed = new SimpleBooleanProperty(false);
 
         modelName = new SimpleStringProperty(name);
-
         selectedMarkers = new HashSet<>();
-
         this.setId(name);
+        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
+                               transformMoveToCentre, transformBedCentre,
+                               transformRotateYPreferred, transformRotateSnapToGround);
+        meshGroup.getTransforms().addAll(transformScalePreferred);
     }
 
     /**
@@ -153,7 +149,7 @@ public class ModelContainer extends Group
         MeshView meshView = getMeshView();
         if (meshView != null)
         {
-            if (isOffBed.get())
+            if (isOffBed)
             {
                 meshView.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
             } else if (isCollided)
@@ -170,7 +166,7 @@ public class ModelContainer extends Group
             {
                 if (node instanceof MeshView)
                 {
-                    if (isOffBed.get())
+                    if (isOffBed)
                     {
                         ((MeshView) node).setMaterial(ApplicationMaterials.getOffBedModelMaterial());
                     } else if (isCollided)
@@ -185,15 +181,6 @@ public class ModelContainer extends Group
                 }
             }
         }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public boolean isCollided()
-    {
-        return isCollided;
     }
 
     /**
@@ -230,26 +217,8 @@ public class ModelContainer extends Group
         } else
         {
             hideSelectedMarkers();
-        }
-        isSelected.set(selected);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public boolean isSelected()
-    {
-        return isSelected.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public BooleanProperty isSelectedProperty()
-    {
-        return isSelected;
+        }        
+        isSelected = selected;
     }
 
     /**
@@ -311,7 +280,6 @@ public class ModelContainer extends Group
 //                               newheight, newdepth, newcentreX, newcentreY,
 //                               newcentreZ);
 //    }
-
     /**
      * Return the face normal for the face of the given index.
      *
@@ -344,7 +312,7 @@ public class ModelContainer extends Group
 
     public void addSelectionHighlighter()
     {
-        selectionHighlighter = new SelectionHighlighter(this);
+        selectionHighlighter = new SelectionHighlighter(associatedPart);
         getChildren().add(selectionHighlighter);
         selectedMarkers.add(selectionHighlighter);
         notifyShapeChange();
@@ -365,7 +333,6 @@ public class ModelContainer extends Group
             selectedMarker.setVisible(false);
         }
     }
-
 
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
@@ -408,5 +375,15 @@ public class ModelContainer extends Group
             MeshView meshView = (MeshView) mesh;
             meshView.setMaterial(meshMaterial);
         }
+    }
+    
+    public boolean isSelected()
+    {
+        return isSelected;
+    }
+
+    public Part getAssociatedPart()
+    {
+        return associatedPart;
     }
 }

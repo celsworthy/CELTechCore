@@ -20,7 +20,7 @@ import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
-import celtech.modelcontrol.ModelContainer;
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -282,18 +282,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void deleteModel(ActionEvent event)
     {
-        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
+        for (Part part : modelSelection.getSelectedModelsSnapshot())
         {
-            selectedProject.deleteModel(modelContainer);
+            selectedProject.deleteModel(part);
         }
     }
 
     @FXML
     void copyModel(ActionEvent event)
     {
-        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
+        for (Part part : modelSelection.getSelectedModelsSnapshot())
         {
-            selectedProject.copyModel(modelContainer);
+            selectedProject.copyModel(part);
         }
     }
 
@@ -839,13 +839,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
 
         @Override
-        public void whenModelAdded(ModelContainer modelContainer)
+        public void whenModelAdded(Part part)
         {
             whenProjectOrSettingsPrinterChange();
         }
 
         @Override
-        public void whenModelRemoved(ModelContainer modelContainer)
+        public void whenModelRemoved(Part part)
         {
             whenProjectOrSettingsPrinterChange();
         }
@@ -856,12 +856,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
 
         @Override
-        public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+        public void whenModelsTransformed(Set<Part> parts)
         {
         }
 
         @Override
-        public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+        public void whenModelChanged(Part part, String propertyName)
         {
             whenProjectOrSettingsPrinterChange();
         }

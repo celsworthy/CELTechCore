@@ -1,12 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.visualisation.modelDisplay;
 
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.Xform;
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
 import javafx.scene.Group;
@@ -39,17 +35,16 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     /**
      *
-     * @param modelContainer
+     * @param part
      */
-    public SelectionHighlighter(final ModelContainer modelContainer)
+    public SelectionHighlighter(final Part part)
     {
-
         this.setId(idString);
 
         buildSelectionBox();
 
-        modelContainer.addShapeChangeListener(this);
-
+        //TODO ensure this is a weak listener
+        part.addShapeChangeListener(this);
     }
 
     private void buildSelectionBox()

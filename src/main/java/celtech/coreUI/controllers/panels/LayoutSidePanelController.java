@@ -10,7 +10,7 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
-import celtech.modelcontrol.ModelContainer;
+import celtech.coreUI.visualisation.metaparts.Part;
 import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -75,7 +75,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private RestrictedNumberField rotationTextField;
 
     @FXML
-    private TableView<ModelContainer> modelDataTableView;
+    private TableView<Part> partDataTableView;
 
     @FXML
     private VBox materialContainer;
@@ -498,13 +498,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         scaleColumn.setPrefWidth(60);
         scaleColumn.setMaxWidth(60);
         scaleColumn.setCellFactory(
-            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
+            new Callback<TableColumn<Part, Double>, TableCell<Part, Double>>()
             {
                 @Override
-                public TableCell<ModelContainer, Double> call(
-                    TableColumn<ModelContainer, Double> param)
+                public TableCell<Part, Double> call(
+                    TableColumn<Part, Double> param)
                 {
-                    return new TableCell<ModelContainer, Double>()
+                    return new TableCell<Part, Double>()
                     {
 
                         @Override
@@ -532,13 +532,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         rotationColumn.setPrefWidth(60);
         rotationColumn.setMaxWidth(60);
         rotationColumn.setCellFactory(
-            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
+            new Callback<TableColumn<Part, Double>, TableCell<Part, Double>>()
             {
                 @Override
-                public TableCell<ModelContainer, Double> call(
-                    TableColumn<ModelContainer, Double> param)
+                public TableCell<Part, Double> call(
+                    TableColumn<Part, Double> param)
                 {
-                    return new TableCell<ModelContainer, Double>()
+                    return new TableCell<Part, Double>()
                     {
 
                         @Override
@@ -559,26 +559,26 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     }
             });
 
-        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
-        modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        modelDataTableView.setEditable(true);
-        modelDataTableView.getSortOrder().add(modelNameColumn);
+        partDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
+        partDataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        partDataTableView.setEditable(true);
+        partDataTableView.getSortOrder().add(modelNameColumn);
 
         Label noModelsLoadedPlaceholder = new Label();
         noModelsLoadedPlaceholder.setText(languageBundle.getString(
             "sidePanel_layout.noModelsLoaded"));
-        modelDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
+        partDataTableView.setPlaceholder(noModelsLoadedPlaceholder);
 
         setUpTableViewListeners();
     }
 
     private void setUpTableViewListeners()
     {
-        selectionListener = new ListChangeListener<ModelContainer>()
+        selectionListener = new ListChangeListener<Part>()
         {
             @Override
             public void onChanged(
-                ListChangeListener.Change<? extends ModelContainer> change)
+                ListChangeListener.Change<? extends Part> change)
             {
                 if (suppressModelDataTableViewNotifications)
                 {
@@ -586,47 +586,47 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 }
                 suppressModelDataTableViewNotifications = true;
                 selectionModel.deselectAllModels();
-                for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().
+                for (Part part : partDataTableView.getSelectionModel().
                     getSelectedItems())
                 {
-                    selectionModel.addModelContainer(modelContainer);
+                    selectionModel.addPart(part);
                 }
                 suppressModelDataTableViewNotifications = false;
             }
         };
 
-        modelDataTableView.getSelectionModel().getSelectedItems().addListener(
+        partDataTableView.getSelectionModel().getSelectedItems().addListener(
             selectionListener);
 
         tableViewSelectionListener = new SelectedModelContainersListener()
         {
 
             @Override
-            public void whenAdded(ModelContainer modelContainer)
+            public void whenAdded(Part part)
             {
                 if (suppressModelDataTableViewNotifications)
                 {
                     return;
                 }
                 suppressModelDataTableViewNotifications = true;
-                modelDataTableView.getSelectionModel().select(modelContainer);
+                partDataTableView.getSelectionModel().select(part);
                 suppressModelDataTableViewNotifications = false;
             }
 
             @Override
-            public void whenRemoved(ModelContainer modelContainer)
+            public void whenRemoved(Part part)
             {
                 if (suppressModelDataTableViewNotifications)
                 {
                     return;
                 }
                 suppressModelDataTableViewNotifications = true;
-                int modelIndex = modelDataTableView.getItems().indexOf(modelContainer);
+                int modelIndex = partDataTableView.getItems().indexOf(part);
                 if (modelIndex != -1)
                 {
-                    if (modelDataTableView.getSelectionModel().isSelected(modelIndex))
+                    if (partDataTableView.getSelectionModel().isSelected(modelIndex))
                     {
-                        modelDataTableView.getSelectionModel().clearSelection(modelIndex);
+                        partDataTableView.getSelectionModel().clearSelection(modelIndex);
                     }
                 }
                 suppressModelDataTableViewNotifications = false;
@@ -656,7 +656,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
-        modelDataTableView.setItems(project.getLoadedModels());
+        partDataTableView.setItems(project.getLoadedModels());
         resetTableViewSelection(selectionModel);
         selectionModel.addListener(tableViewSelectionListener);
         layoutSubmode.addListener(layoutSubmodeListener);
@@ -700,10 +700,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private void resetTableViewSelection(SelectedModelContainers selectionModel)
     {
         suppressModelDataTableViewNotifications = true;
-        modelDataTableView.getSelectionModel().clearSelection();
-        for (ModelContainer modelContainer : selectionModel.getSelectedModelsSnapshot())
+        partDataTableView.getSelectionModel().clearSelection();
+        for (Part part : selectionModel.getSelectedModelsSnapshot())
         {
-            modelDataTableView.getSelectionModel().select(modelContainer);
+            partDataTableView.getSelectionModel().select(part);
         }
         suppressModelDataTableViewNotifications = false;
     }
