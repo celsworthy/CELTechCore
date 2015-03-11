@@ -17,8 +17,6 @@ import java.util.List;
 public class Preferences
 {
 
-    private static final String SYSTEM_DEFAULT = "System Default";
-
     public static List<PreferencesInnerPanelController.Preference> createPrintingPreferences(
         UserPreferences userPreferences)
     {

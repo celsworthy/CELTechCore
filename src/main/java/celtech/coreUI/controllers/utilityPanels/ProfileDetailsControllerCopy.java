@@ -1120,40 +1120,6 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
     public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
     {
         List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
-        ExtrasMenuInnerPanel.OperationButton newButton = new ExtrasMenuInnerPanel.OperationButton()
-        {
-            @Override
-            public String getTextId()
-            {
-                return "projectLoader.newButtonLabel";
-            }
-
-            @Override
-            public String getFXMLName()
-            {
-                return "newButton";
-            }
-
-            @Override
-            public String getTooltipTextId()
-            {
-                return "projectLoader.newButtonLabel";
-            }
-
-            @Override
-            public void whenClicked()
-            {
-                whenNewPressed();
-            }
-
-            @Override
-            public BooleanProperty whenEnabled()
-            {
-                return new SimpleBooleanProperty(true);
-            }
-
-        };
-        operationButtons.add(newButton);
         ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override

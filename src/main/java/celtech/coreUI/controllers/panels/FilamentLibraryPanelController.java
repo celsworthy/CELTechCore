@@ -1,9 +1,12 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.model.Printer;
 import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.text.ParseException;
@@ -12,6 +15,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -70,6 +76,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private String currentFilamentID;
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
     private ObservableList<Filament> comboItems;
+    private final ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
 
     @FXML
     private ComboBox<Filament> cmbFilament;
@@ -113,6 +120,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+
+        currentPrinter.bind(Lookup.getCurrentlySelectedPrinterProperty());
+
         canSave.bind(isDirty.and(
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
@@ -120,6 +130,13 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
 
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
+
+        updateWriteToReelBindings();
+        currentPrinter.addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+        {
+            updateWriteToReelBindings();
+        });
 
         for (MaterialType materialType : MaterialType.values())
         {
@@ -133,6 +150,22 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         setupFilamentCombo();
 
         selectFirstFilament();
+    }
+
+    private void updateWriteToReelBindings()
+    {
+        canWriteToReel1.unbind();
+        canWriteToReel2.unbind();
+        if (currentPrinter.get() != null)
+        {
+            canWriteToReel1.bind(
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0));
+            canWriteToReel2.bind(
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1));
+        } else {
+            canWriteToReel1.set(false);
+            canWriteToReel2.set(false);
+        }
     }
 
     private void selectFirstFilament()
@@ -149,7 +182,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         cmbFilament.valueProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
-                selectFilament(newValue);
+                if (newValue != null)
+                {
+                    selectFilament(newValue);
+                }
             });
     }
 
@@ -205,7 +241,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private void setupWidgetEditableBindings()
     {
-        filamentID.disableProperty().bind(isEditable.not());
+        filamentID.setDisable(true);
         bedTemperature.disableProperty().bind(isEditable.not());
         firstLayerNozzleTemperature.disableProperty().bind(isEditable.not());
         colour.disableProperty().bind(isEditable.not());
@@ -356,14 +392,28 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         clearWidgets();
         selectFirstFilament();
     }
-    
-    void whenWriteToReel1Pressed() {
-        
+
+    void whenWriteToReel1Pressed()
+    {
+        try
+        {
+            currentPrinter.get().transmitWriteReelEEPROM(0, cmbFilament.getValue());
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Unable to write to Reel 0 " + ex);
+        }
     }
-    
-    void whenWriteToReel2Pressed() {
-        
-    }    
+
+    void whenWriteToReel2Pressed()
+    {
+        try
+        {
+            currentPrinter.get().transmitWriteReelEEPROM(1, cmbFilament.getValue());
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Unable to write to Reel 1 " + ex);
+        }
+    }
 
     public ReadOnlyBooleanProperty getCanSave()
     {
@@ -423,40 +473,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
     {
         List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
-        ExtrasMenuInnerPanel.OperationButton newButton = new ExtrasMenuInnerPanel.OperationButton()
-        {
-            @Override
-            public String getTextId()
-            {
-                return "projectLoader.newButtonLabel";
-            }
 
-            @Override
-            public String getFXMLName()
-            {
-                return "newButton";
-            }
-
-            @Override
-            public String getTooltipTextId()
-            {
-                return "projectLoader.newButtonLabel";
-            }
-
-            @Override
-            public void whenClicked()
-            {
-                whenNewPressed();
-            }
-
-            @Override
-            public BooleanProperty whenEnabled()
-            {
-                return new SimpleBooleanProperty(true);
-            }
-
-        };
-        operationButtons.add(newButton);
         ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
@@ -482,12 +499,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenSavePressed();
             }
-            
+
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canSave;
-            }            
+            }
 
         };
         operationButtons.add(saveButton);
@@ -516,12 +533,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenCopyPressed();
             }
-            
+
             @Override
             public BooleanProperty whenEnabled()
             {
                 return new SimpleBooleanProperty(true);
-            }              
+            }
 
         };
         operationButtons.add(copyButton);
@@ -550,15 +567,15 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenDeletePressed();
             }
-            
+
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canDelete;
-            }              
+            }
 
         };
-        operationButtons.add(deleteButton);        
+        operationButtons.add(deleteButton);
         ExtrasMenuInnerPanel.OperationButton writeToReel1Button = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
@@ -584,15 +601,15 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenWriteToReel1Pressed();
             }
-            
+
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canWriteToReel1;
-            }              
+            }
 
         };
-        operationButtons.add(writeToReel1Button);        
+        operationButtons.add(writeToReel1Button);
         ExtrasMenuInnerPanel.OperationButton writeToReel2Button = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
@@ -618,15 +635,15 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenWriteToReel2Pressed();
             }
-            
+
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canWriteToReel2;
-            }              
+            }
 
         };
-        operationButtons.add(writeToReel1Button);    
+        operationButtons.add(writeToReel2Button);
 
         return operationButtons;
     }

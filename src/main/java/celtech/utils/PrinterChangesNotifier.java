@@ -25,7 +25,7 @@ import javafx.collections.MapChangeListener;
  * - Extruder added (with extruder index)
  * <p>
  * - Reel removed from printer (with reel) <p>
- * - Extruder added (with extruder index)
+ * - Extruder removed (with extruder index)
  * <p>
  * - Reel changed<p>
  * - Printer Identity changed<p>

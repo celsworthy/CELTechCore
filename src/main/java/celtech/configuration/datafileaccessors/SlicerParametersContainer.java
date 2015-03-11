@@ -69,7 +69,6 @@ public class SlicerParametersContainer
         userProfileList.clear();
         profileMap.clear();
 
-        System.out.println("XXX PROFILE DATA IN " + ApplicationConfiguration.getApplicationPrintProfileDirectory());
         File applicationDirHandle = new File(ApplicationConfiguration.getApplicationPrintProfileDirectory());
         File[] applicationprofiles = applicationDirHandle.listFiles(new PrintProfileFileFilter());
         ArrayList<SlicerParametersFile> profiles = ingestProfiles(applicationprofiles, false);
