@@ -892,7 +892,7 @@ public class PrintEngine implements ControllableService
                 String line = scanner.nextLine();
                 if (GCodeMacros.isMacroExecutionDirective(line))
                 {
-                    FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line));
+                    FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line), true);
                 } else
                 {
                     FileUtils.writeStringToFile(printjobFile, line + "\r", true);
@@ -987,7 +987,7 @@ public class PrintEngine implements ControllableService
         {
             ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
             // Write the contents of the macro file to the print area
-            FileUtils.writeLines(printjobFile, macroContents);
+            FileUtils.writeLines(printjobFile, macroContents, true);
         } catch (IOException ex)
         {
             throw new MacroPrintException("Error writing macro print job file: "
