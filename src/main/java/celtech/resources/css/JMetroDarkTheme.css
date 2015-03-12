@@ -2210,6 +2210,11 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-pref-width: 190;
 }
 
+.filamentLibUpper:error {
+  -fx-text-box-border: red ;
+  -fx-focus-color: red ;
+}
+
 .filamentLibLower {
     -fx-pref-width: 70;
 }

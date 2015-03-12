@@ -15,8 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -27,6 +25,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -35,6 +34,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
@@ -46,20 +46,40 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ExtrasMenuPanelController.class.getName());
+    
+    enum Fields {
+        
+        NAME("name"), COLOUR("colour"), AMBIENT_TEMP("ambientTemp"), MATERIAL("material"), 
+        DIAMETER("diameter"), MULTIPLIER("multiplier"), FEED_RATE_MULTIPLIER("feedRateMultiplier"),
+        FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"), 
+        FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp");
+        
+        private final String helpTextId;
+        
+        Fields(String helpTextId) {
+            this.helpTextId = helpTextId;
+        }
+        
+        String getHelpText() {
+            return Lookup.i18n("filamentLibraryHelp." + helpTextId);
+        }
+    }
+
+    private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
 
     enum State
     {
 
         /**
-         * Editing a new profile that has not yet been saved
+         * Editing a new profile that has not yet been saved.
          */
         NEW,
         /**
-         * Editing a custom profile
+         * Editing a custom profile.
          */
         CUSTOM,
         /**
-         * Viewing a standard profile
+         * Viewing a standard profile.
          */
         ROBOX
     };
@@ -72,6 +92,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty canWriteToReel1 = new SimpleBooleanProperty(false);
     private final BooleanProperty canWriteToReel2 = new SimpleBooleanProperty(false);
+    /**
+     * Indicates if the contents of all widgets is valid or not.
+     */
+    private final BooleanProperty isValid = new SimpleBooleanProperty(false);
+    private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
+    private final BooleanProperty isNozzleTempValid = new SimpleBooleanProperty(true);
 
     private String currentFilamentID;
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
@@ -116,6 +142,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private RestrictedNumberField filamentMultiplier;
+    
+    @FXML
+    private TextArea helpText;    
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -123,20 +152,22 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         currentPrinter.bind(Lookup.getCurrentlySelectedPrinterProperty());
 
-        canSave.bind(isDirty.and(
+        canSave.bind(isValid.and(isDirty).and(
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
 
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
 
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
-
+        
+        isValid.bind(isNameValid.and(isNozzleTempValid));
+        
         updateWriteToReelBindings();
         currentPrinter.addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-        {
-            updateWriteToReelBindings();
-        });
+            {
+                updateWriteToReelBindings();
+            });
 
         for (MaterialType materialType : MaterialType.values())
         {
@@ -146,6 +177,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         setupWidgetEditableBindings();
 
         setupWidgetChangeListeners();
+
+        setupHelpTextListeners();
 
         setupFilamentCombo();
 
@@ -159,10 +192,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         if (currentPrinter.get() != null)
         {
             canWriteToReel1.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0));
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0).and(isDirty.not()));
             canWriteToReel2.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1));
-        } else {
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1).and(isDirty.not()));
+        } else
+        {
             canWriteToReel1.set(false);
             canWriteToReel2.set(false);
         }
@@ -226,6 +260,22 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private void setupWidgetChangeListeners()
     {
+
+        name.textProperty().addListener(
+            (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+            {
+                System.out.println("NAME TEXT CHANGED TO " + newValue);
+                if (!validateMaterialName(newValue))
+                {
+                    isNameValid.set(false);
+                    name.pseudoClassStateChanged(ERROR, true);
+                } else
+                {
+                    isNameValid.set(true);
+                    name.pseudoClassStateChanged(ERROR, false);
+                }
+            });
+
         name.textProperty().addListener(dirtyStringListener);
         colour.valueProperty().asString().addListener(dirtyStringListener);
         material.valueProperty().addListener(dirtyMaterialTypeListener);
@@ -253,6 +303,59 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.disableProperty().bind(isEditable.not());
         nozzleTemperature.disableProperty().bind(isEditable.not());
         ambientTemperature.disableProperty().bind(isEditable.not());
+    }
+    
+    private void showHelpText(Fields field) {
+        helpText.setText(field.getHelpText());
+    }
+
+    private void setupHelpTextListeners()
+    {
+        name.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NAME);
+            });
+        colour.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.COLOUR);
+            });
+        material.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MATERIAL);
+            });
+        filamentDiameter.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.DIAMETER);
+            });
+        filamentMultiplier.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MULTIPLIER);
+            });
+        feedRateMultiplier.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FEED_RATE_MULTIPLIER);
+            });
+        firstLayerBedTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_BED_TEMP);
+            });
+        bedTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BED_TEMP);
+            });
+        firstLayerNozzleTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_NOZZLE_TEMP);
+            });
+        nozzleTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_TEMP);
+            });
+        ambientTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.AMBIENT_TEMP);
+            });
     }
 
     private final ChangeListener<String> dirtyStringListener
@@ -329,25 +432,28 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         return filamentToReturn;
     }
 
-    private void validateMaterialName(String name)
+    private boolean validateMaterialName(String name)
     {
-        boolean invalid = false;
+        boolean valid = true;
 
         if (name.equals(""))
         {
-            invalid = true;
+            valid = false;
         } else
         {
             ObservableList<Filament> existingMaterialList = FilamentContainer.getUserFilamentList();
-            for (Filament material : existingMaterialList)
+            for (Filament existingMaterial : existingMaterialList)
             {
-                if (material.getFriendlyFilamentName().equals(name))
+                if ((! existingMaterial.getFilamentID().equals(currentFilamentID)) && 
+                    existingMaterial.getFriendlyFilamentName().equals(name))
                 {
-                    invalid = true;
+                    valid = false;
                     break;
                 }
             }
         }
+        System.out.println("NAME VALID IS " + valid);
+        return valid;
     }
 
     void whenSavePressed()
