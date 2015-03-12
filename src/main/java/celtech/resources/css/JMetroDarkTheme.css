@@ -2103,3 +2103,24 @@ modal-dialogue{
 {
     -fx-max-height: -1;
 }
+
+
+/*
+ * Splash screen settings
+ */
+
+.splashCopyright
+{
+    -fx-font-family: SourceSansPro-Light;
+    -fx-font-size: 12pt;
+    -fx-fill: white;
+    -fx-text-alignment: left;
+}
+
+.splashVersion
+{
+    -fx-font-family: SourceSansPro-Light;
+    -fx-font-size: 12pt;
+    -fx-fill: white;
+    -fx-text-alignment: right;
+}
