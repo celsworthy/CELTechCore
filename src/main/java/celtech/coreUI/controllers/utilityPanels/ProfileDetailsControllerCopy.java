@@ -1012,7 +1012,8 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
             ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.getUserProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
-                if (settings.getProfileName().equals(profileNameText))
+                if (settings.getProfileName() != currentProfileName && 
+                    settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
                     break;

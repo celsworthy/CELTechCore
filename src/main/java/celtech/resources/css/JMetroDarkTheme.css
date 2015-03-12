@@ -1642,7 +1642,7 @@ modal-dialogue{
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
 .slider .fill {
-    -fx-background-color: #008287;
+    -fx-background-color: robox_blue;
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
 .slider .fill:hover {
@@ -2062,12 +2062,12 @@ all inherit from Menu Control's popup-menu. --- */
 
 .preferenceLabel {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 22px;
+    -fx-font-size: 20px;
 }
 
 .preferenceControl {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 22px;
+    -fx-font-size: 16px;
 
 }
 
@@ -2249,14 +2249,13 @@ all inherit from Menu Control's popup-menu. --- */
 #printProfileInnerPanel {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 10pt; 
+    
 }
-
 
 #printProfileInnerPanel .tab-pane, .tab-header-background {
     -fx-background-color: light_grey;
     -fx-border-color: light_grey;
 }
-
 
 #printProfileInnerPanel .tab:hover, #printProfileInnerPanel .tab:hover .tab-label{
     -fx-background-color: light_grey;
@@ -2268,14 +2267,21 @@ all inherit from Menu Control's popup-menu. --- */
 }
 
 #printProfileInnerPanel .tab .tab-label{
-    -fx-background-color: light_grey;
+    -fx-background-color: mid_grey;
     -fx-text-fill: white;
-
 }   
 
 #printProfileInnerPanel  .tab:top {
     -fx-border-width: 0.3;
     -fx-border-color: light_grey;
+}
+
+#printProfileInnerPanel .tab{
+    -fx-background-color: mid_grey;
+    -fx-background-radius: 0px;
+    -fx-background-insets: 0px;
+    -fx-border-color: black;
+    -fx-min-width: 80;
 }
 
 #printProfileName {
@@ -2305,4 +2311,20 @@ all inherit from Menu Control's popup-menu. --- */
 
 .printProfileGrid {
     -fx-vgap: 8;
+}
+
+.blackTabUnderline {
+    -fx-pref-height: 30;
+    -fx-min-height: 30;
+    -fx-background-color: light_grey;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: robox_blue;
+}
+
+.printProfileTabVBox {
+    -fx-spacing: 10;
+}
+
+.printProfileDivider {
+    -fx-text-fill: robox_blue;
 }

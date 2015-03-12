@@ -264,7 +264,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.textProperty().addListener(
             (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
             {
-                System.out.println("NAME TEXT CHANGED TO " + newValue);
                 if (!validateMaterialName(newValue))
                 {
                     isNameValid.set(false);
@@ -441,7 +440,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             valid = false;
         } else
         {
-            ObservableList<Filament> existingMaterialList = FilamentContainer.getUserFilamentList();
+            ObservableList<Filament> existingMaterialList = FilamentContainer.getCompleteFilamentList();
             for (Filament existingMaterial : existingMaterialList)
             {
                 if ((! existingMaterial.getFilamentID().equals(currentFilamentID)) && 
@@ -452,7 +451,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 }
             }
         }
-        System.out.println("NAME VALID IS " + valid);
         return valid;
     }
 

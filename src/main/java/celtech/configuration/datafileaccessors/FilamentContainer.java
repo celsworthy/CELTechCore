@@ -258,7 +258,7 @@ public class FilamentContainer
             loadFilamentData();
         } catch (IOException ex)
         {
-            steno.error("Error whilst storing filament file " + filament.getFileName());
+            steno.error("Error whilst storing filament file " + filament.getFileName() + " " + ex);
         }
         return success;
     }
