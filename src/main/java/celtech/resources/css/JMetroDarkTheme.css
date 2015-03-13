@@ -2124,3 +2124,93 @@ modal-dialogue{
     -fx-fill: white;
     -fx-text-alignment: right;
 }
+
+.welcome-inset-panel
+{
+    -fx-fill: light_grey;
+}
+
+.welcome-title-bold
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 60px;
+    -fx-fill: white;
+}
+
+.welcome-title-light
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 60px;
+    -fx-fill: white;
+}
+
+.welcome-title-superscript
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 14px;
+    -fx-fill: white;
+    -fx-alignment: TOP_LEFT;
+}
+
+.welcome-version
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 24px;
+    -fx-fill: white;
+}
+
+.welcome-intro
+{
+    -fx-font-size: 18pt;
+    -fx-fill: white;
+    -fx-wrap-text: true;
+}
+
+.welcome-subtitle
+{
+    -fx-font-size: 22pt;
+    -fx-fill: white;
+}
+
+.welcome-body
+{
+    -fx-font-size: 14pt;
+    -fx-fill: white;
+}
+
+.inset-panel-body-redux
+{
+}
+
+.inset-panel-redux
+{
+    -fx-background-color: light_grey;
+    -fx-min-width: 10px;
+    -fx-min-height: 10px;
+}
+
+.inset-panel-centre-redux
+{
+    -fx-padding: 60 60 60 60;
+    -fx-min-width: 10px;
+    -fx-min-height: 10px;
+    -fx-spacing: 10;
+}
+
+.inset-panel-background-redux
+{
+    -fx-background-color: black;
+    -fx-padding: 60 0 0 30;
+    -fx-min-width: 10px;
+    -fx-min-height: 10px;
+}
+
+.inset-panel-bottom-bar-redux
+{
+    -fx-background-color: black;
+    -fx-pref-height: 90px;
+    -fx-min-height: 90px;
+    -fx-max-height: 90px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 0 0 0;
+}

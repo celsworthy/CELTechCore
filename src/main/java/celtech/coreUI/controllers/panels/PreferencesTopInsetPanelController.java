@@ -110,11 +110,7 @@ public class PreferencesTopInsetPanelController implements Initializable
 
         Preference slicerTypePref = new SlicerTypePreference(userPreferences);
 
-        Preference safetyFeaturesOnPref = new TickBoxPreference(userPreferences.
-            safetyFeaturesOnProperty(), "preferences.safetyFeaturesOn");
-
         preferences.add(slicerTypePref);
-        preferences.add(safetyFeaturesOnPref);
 
         return preferences;
     }
@@ -122,6 +118,9 @@ public class PreferencesTopInsetPanelController implements Initializable
     private List<Preference> createEnvironmentPreferences()
     {
         List<Preference> preferences = new ArrayList<>();
+
+        Preference safetyFeaturesOnPref = new TickBoxPreference(userPreferences.
+            safetyFeaturesOnProperty(), "preferences.safetyFeaturesOn");
 
         Preference languagePref = new LanguagePreference(userPreferences);
         Preference showTooltipsPref = new TickBoxPreference(userPreferences.showTooltipsProperty(),
@@ -132,6 +131,7 @@ public class PreferencesTopInsetPanelController implements Initializable
         Preference firstUsePref = new TickBoxPreference(userPreferences.firstUseProperty(),
                                                         "preferences.firstUse");
 
+        preferences.add(safetyFeaturesOnPref);
         preferences.add(firstUsePref);
         preferences.add(languagePref);
 //        preferences.add(showTooltipsPref);
