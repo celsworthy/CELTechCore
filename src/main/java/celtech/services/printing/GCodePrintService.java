@@ -26,6 +26,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
         getStenographer(this.getClass().getName());
     private boolean printUsingSDCard = true;
     private int startFromSequenceNumber = 0;
+    private boolean canBeReprinted = true;
 
     /**
      *
@@ -136,7 +137,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     {
         return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(),
                                     linesInGCodeFileProperty(), printUsingSDCard,
-                                    startFromSequenceNumber);
+                                    startFromSequenceNumber, canBeReprinted);
     }
 
     /**
@@ -159,5 +160,10 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     public void setStartFromSequenceNumber(int startFromSequenceNumber)
     {
         this.startFromSequenceNumber = startFromSequenceNumber;
+    }
+
+    public void setThisCanBeReprinted(boolean thisJobCanBeReprinted)
+    {
+        canBeReprinted = thisJobCanBeReprinted;
     }
 }

@@ -187,11 +187,12 @@ public interface Printer extends RoboxResponseConsumer
     /**
      *
      * @param fileID
+     * @param jobCanBeReprinted
      * @return
      * @throws DatafileSendAlreadyInProgress
      * @throws RoboxCommsException
      */
-    public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException;
+    public boolean initialiseDataFileSend(String fileID, boolean jobCanBeReprinted) throws DatafileSendAlreadyInProgress, RoboxCommsException;
 
     /**
      *

@@ -1008,6 +1008,7 @@ public class PrintEngine implements ControllableService
             gcodePrintService.setCurrentPrintJobID(printUUID);
             gcodePrintService.setModelFileToPrint(printjobFilename);
             gcodePrintService.setPrinterToUse(associatedPrinter);
+            gcodePrintService.setThisCanBeReprinted(false);
             gcodePrintService.start();
             consideringPrintRequest = false;
         });

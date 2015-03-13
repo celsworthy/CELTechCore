@@ -1066,10 +1066,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return response.getGCodeResponse();
     }
 
-    private boolean transmitDataFileStart(final String fileID) throws RoboxCommsException
+    private boolean transmitDataFileStart(final String fileID, boolean jobCanBeReprinted) throws RoboxCommsException
     {
-        RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
-            TxPacketTypeEnum.START_OF_DATA_FILE);
+        RoboxTxPacket gcodePacket = null;
+
+        if (jobCanBeReprinted)
+        {
+            gcodePacket = RoboxTxPacketFactory.createPacket(
+                TxPacketTypeEnum.SEND_PRINT_FILE_START);
+        } else
+        {
+            gcodePacket = RoboxTxPacketFactory.createPacket(
+                TxPacketTypeEnum.START_OF_DATA_FILE);
+        }
+
         gcodePacket.setMessagePayload(fileID);
 
         AckResponse response = (AckResponse) commandInterface.writeToPrinter(gcodePacket);
@@ -1573,15 +1583,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     /**
      *
      * @param fileID
+     * @param jobCanBeReprinted
      * @return
      * @throws DatafileSendAlreadyInProgress
      * @throws RoboxCommsException
      */
     @Override
-    public boolean initialiseDataFileSend(String fileID) throws DatafileSendAlreadyInProgress, RoboxCommsException
+    public boolean initialiseDataFileSend(String fileID, boolean jobCanBeReprinted) throws DatafileSendAlreadyInProgress, RoboxCommsException
     {
         boolean success = false;
-        success = transmitDataFileStart(fileID);
+        success = transmitDataFileStart(fileID, jobCanBeReprinted);
         outputBuffer.delete(0, outputBuffer.length());
         dataFileSequenceNumber = 0;
         printInitiated = false;
@@ -3214,6 +3225,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             // We don't recognise the head but it seems to be valid
                             Lookup.getSystemNotificationHandler().showHeadNotRecognisedDialog(
                                 printerIdentity.printerFriendlyName.get());
+                            steno.error("Head with type code: " + headResponse.getTypeCode()
+                                + " attached. Not in database so ignoring...");
                         }
                     } else
                     {
