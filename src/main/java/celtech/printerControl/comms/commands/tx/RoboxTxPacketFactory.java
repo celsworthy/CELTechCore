@@ -40,7 +40,7 @@ public class RoboxTxPacketFactory
                     returnVal = new SendGCodeRequest();
                     break;
                 case SEND_PRINT_FILE_START:
-                    returnVal = new SendDataFileStart();
+                    returnVal = new SendPrintFileStart();
                     break;
                 case START_OF_DATA_FILE:
                     returnVal = new SendDataFileStart();
