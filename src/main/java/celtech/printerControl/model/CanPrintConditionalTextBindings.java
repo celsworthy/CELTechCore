@@ -7,6 +7,8 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -14,6 +16,9 @@ import javafx.beans.binding.BooleanBinding;
  */
 public class CanPrintConditionalTextBindings
 {
+    
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        CanPrintConditionalTextBindings.class.getName());
     
     private final Project project;
     private final Printer printer;
@@ -45,7 +50,7 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                System.out.println("Recompute conditional text reqd binding");
+                steno.debug("Recompute conditional text reqd binding");
                 boolean filamentMismatch = true;
 
                 Filament printerFilament = project.getPrinterSettings().getFilament0Property().get();
@@ -54,28 +59,28 @@ public class CanPrintConditionalTextBindings
                 if (!printer.extrudersProperty().get(1).isFittedProperty().get())
                 {
                     // only one extruder on the printer
-                    System.out.println("One Extruder Only");
-                    System.out.println("Printer Settings filament 0 is "
+                    steno.debug("One Extruder Only");
+                    steno.debug("Printer Settings filament 0 is "
                         + project.getPrinterSettings().getFilament0Property());
 
                     if (usedExtruders.contains(0))
                     {
-                        System.out.println("extruder 0 is being used");
+                        steno.debug("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            System.out.println("used filament 0 matches printer filament 0");
+                            steno.debug("used filament 0 matches printer filament 0");
                             filamentMismatch = false;
                         }
                     }
 
                     if (usedExtruders.contains(1))
                     {
-                        System.out.println("extruder 1 is being used");
+                        steno.debug("extruder 1 is being used");
                         Filament usedFilament = project.getExtruder1FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            System.out.println(
+                            steno.debug(
                                 "used filament 1 matches printer filament 0 for single extruder printer");
                             filamentMismatch = false;
                         }
@@ -85,16 +90,16 @@ public class CanPrintConditionalTextBindings
                     // two extruders on printer, just check extruder 0
                     if (usedExtruders.contains(0))
                     {
-                        System.out.println("extruder 0 is being used");
+                        steno.debug("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            System.out.println("used filament 0 matches printer filament 0");
+                            steno.debug("used filament 0 matches printer filament 0");
                             filamentMismatch = false;
                         }
                     }
                 }
-                System.out.println("mismatch on 0 detected: " + filamentMismatch);
+                steno.debug("mismatch on 0 detected: " + filamentMismatch);
                 return filamentMismatch;
             }
         };
@@ -122,24 +127,24 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                System.out.println("Recompute conditional text reqd binding (1)");
+                steno.debug("Recompute conditional text reqd binding (1)");
                 boolean filamentMismatch = true;
                 Filament printerFilament = project.getPrinterSettings().getFilament1Property().get();
                 Set<Integer> usedExtruders = project.getUsedExtruders();
 
                 if (usedExtruders.contains(1))
                 {
-                    System.out.println("extruder 1 is being used");
+                    steno.debug("extruder 1 is being used");
                     Filament usedFilament = project.getExtruder1FilamentProperty().get();
-                    System.out.println("printer 1 filament " + printerFilament);
-                    System.out.println("project 1 filament " + usedFilament);
+                    steno.debug("printer 1 filament " + printerFilament);
+                    steno.debug("project 1 filament " + usedFilament);
                     if (usedFilament.equals(printerFilament))
                     {
-                        System.out.println("used filament 1 matches printer filament 1");
+                        steno.debug("used filament 1 matches printer filament 1");
                         filamentMismatch = false;
                     }
                 }
-                System.out.println("mismatch on 1 detected: " + filamentMismatch);
+                steno.debug("mismatch on 1 detected: " + filamentMismatch);
                 return filamentMismatch;
             }
         };
