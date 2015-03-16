@@ -176,7 +176,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        staticSaveAsButton.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());        
+        staticSaveAsButton.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
         
         name.setRight(redcrossHolder);
         name.getRight().visibleProperty().bind(materialNameInvalid.and(isDirty));

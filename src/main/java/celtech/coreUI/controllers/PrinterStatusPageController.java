@@ -273,7 +273,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     public void initialize(URL url, ResourceBundle rb)
     {
         Lookup.getPrinterListChangesNotifier().addListener(this);
-        
+
+        Lookup.getUserPreferences().advancedModeProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                setAdvancedControlsVisibility();
+            });
+
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
         threeDPformatter.setGroupingUsed(false);
@@ -321,7 +327,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
             z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10
         };
-        setAdvancedControlsVisibility(false);
+        setAdvancedControlsVisibility();
 
         pausePrintButton.setVisible(false);
         resumePrintButton.setVisible(false);
@@ -500,8 +506,45 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 //        statusPane.getChildren().add(staticModelOverlay.getSubScene());
     }
 
-    private void setAdvancedControlsVisibility(boolean visible)
+    private void setAdvancedControlsVisibility()
     {
+        boolean visible = false;
+
+        if (printerToUse != null
+            && Lookup.getUserPreferences().isAdvancedMode())
+        {
+            switch (printerToUse.printerStatusProperty().get())
+            {
+                case IDLE:
+                    visible = true;
+                    break;
+                case PAUSING:
+                    visible = false;
+                    break;
+                case RESUMING:
+                    visible = false;
+                    break;
+                case PAUSED:
+                    visible = true;
+                    break;
+                case SENDING_TO_PRINTER:
+                    visible = false;
+                    break;
+                case PRINTING:
+                    visible = false;
+                    break;
+                case EXECUTING_MACRO:
+                    visible = false;
+                    break;
+                case SLICING:
+                case POST_PROCESSING:
+                    visible = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+
         for (Node node : advancedControls)
         {
             node.setVisible(visible);
@@ -517,28 +560,22 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void processPrinterStatusChange(PrinterStatus printerStatus)
     {
-        if (printerStatus == null)
-        {
-            setAdvancedControlsVisibility(false);
-        } else
+        setAdvancedControlsVisibility();
+        if (printerStatus != null)
         {
             switch (printerStatus)
             {
                 case IDLE:
                     showProgressGroup.set(false);
-                    setAdvancedControlsVisibility(true);
                     break;
                 case PAUSING:
                     showProgressGroup.set(false);
-                    setAdvancedControlsVisibility(false);
                     break;
                 case RESUMING:
                     showProgressGroup.set(false);
-                    setAdvancedControlsVisibility(false);
                     break;
                 case PAUSED:
                     showProgressGroup.set(false);
-                    setAdvancedControlsVisibility(true);
                     break;
                 case SENDING_TO_PRINTER:
                     if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
@@ -548,11 +585,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     {
                         showProgressGroup.set(false);
                     }
-                    setAdvancedControlsVisibility(false);
                     break;
                 case PRINTING:
                     showProgressGroup.set(true);
-                    setAdvancedControlsVisibility(false);
 //                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
                     break;
                 case EXECUTING_MACRO:
@@ -564,12 +599,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     {
                         showProgressGroup.set(false);
                     }
-                    setAdvancedControlsVisibility(false);
                     break;
                 case SLICING:
                 case POST_PROCESSING:
                     showProgressGroup.set(true);
-                    setAdvancedControlsVisibility(false);
                     break;
                 default:
                     showProgressGroup.set(false);
