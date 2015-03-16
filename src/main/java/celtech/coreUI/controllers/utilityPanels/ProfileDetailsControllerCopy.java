@@ -12,6 +12,7 @@ import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
+import celtech.coreUI.controllers.panels.FXMLUtilities;
 import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
@@ -46,6 +48,29 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuInnerPanel
 {
+
+    enum Fields
+    {
+
+        NAME("name"), SLICER_CHOOSER("slicerChooser"), LAYER_HEIGHT("layerHeight"), FILL_DENSITY(
+            "fillDensity"),
+        FILL_PATTERN("fillPattern"), INFILL_EVERYN("infillEveryN"), SOLID_LAYERS_TOP(
+            "solidLayersTop"),
+        SOLID_LAYERS_BOTTOM("solidLayersBottom"), NUMBER_OF_PERIMETERS("numberOfPerimeters"),
+        BRIM_WIDTH("brimWidth");
+
+        private final String helpTextId;
+
+        Fields(String helpTextId)
+        {
+            this.helpTextId = helpTextId;
+        }
+
+        String getHelpText()
+        {
+            return Lookup.i18n("profileLibraryHelp." + helpTextId);
+        }
+    }
 
     enum State
     {
@@ -270,6 +295,9 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
     @FXML
     private ComboBox<CustomSlicerType> slicerChooser;
 
+    @FXML
+    private TextArea helpText;
+
     private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
 
     private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.observableArrayList();
@@ -347,6 +375,10 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
         fillPatternChoice.setItems(fillPatternOptions);
 
         supportPattern.setItems(supportPatternOptions);
+
+        FXMLUtilities.addColonsToLabels(container);
+        
+        setupHelpTextListeners();
     }
 
     private void setupPrintProfileCombo()
@@ -612,6 +644,65 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
         nozzleControls.disableProperty().bind(isEditable.not());
         supportGrid.disableProperty().bind(isEditable.not());
         speedGrid.disableProperty().bind(isEditable.not());
+    }
+
+    private void setupHelpTextListeners()
+    {
+        profileNameField.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NAME);
+            });
+        slicerChooser.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SLICER_CHOOSER);
+            });
+        layerHeight.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.LAYER_HEIGHT);
+            });
+        fillDensity.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FILL_DENSITY);
+            });
+        fillPatternChoice.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FILL_PATTERN);
+            });
+        infillEveryN.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_EVERYN);
+            });
+        solidLayersTop.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_LAYERS_TOP);
+            });
+        solidLayersBottom.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_LAYERS_BOTTOM);
+            });
+        numberOfPerimeters.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NUMBER_OF_PERIMETERS);
+            });
+        brimWidth.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIM_WIDTH);
+            });
+    }
+
+    private void showHelpText(Fields field)
+    {
+        helpText.setText(field.getHelpText());
     }
 
     private void setupWidgetChangeListeners()
@@ -1012,8 +1103,8 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
             ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.getUserProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
-                if (settings.getProfileName() != currentProfileName && 
-                    settings.getProfileName().equals(profileNameText))
+                if (settings.getProfileName() != currentProfileName
+                    && settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
                     break;
@@ -1022,13 +1113,15 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
         }
         return valid;
     }
-    
+
     /**
      * Validate the data in the widgets and return false if it is invalid else return true.
      */
-    private boolean validateData() {
+    private boolean validateData()
+    {
         boolean valid = true;
-        if (! validateProfileName()) {
+        if (!validateProfileName())
+        {
             valid = false;
         }
         return valid;
@@ -1054,7 +1147,8 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
     void whenSavePressed()
     {
         assert (state.get() != ProfileDetailsControllerCopy.State.ROBOX);
-        if (!validateData()) {
+        if (!validateData())
+        {
             return;
         }
         SlicerParametersFile parametersFile = getPrintProfile();

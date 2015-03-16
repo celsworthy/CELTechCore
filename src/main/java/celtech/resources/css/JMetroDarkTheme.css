@@ -1646,7 +1646,7 @@ modal-dialogue{
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
 .slider .fill:hover {
-    -fx-background-color: #219297;
+    -fx-background-color: robox_blue;
 }
 .slider .fill:pressed {
     -fx-background-color: #25bbc4;
@@ -2339,6 +2339,8 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-text-fill: white;
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 9pt;  
+    -fx-pref-height: 80;
+    -fx-pref-width: 120;
 }
 
 #helpText .scroll-pane {
