@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" styleClass="slideout-control-button" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<graphic><VBox alignment="CENTER" fillWidth="false" spacing="2.0">
+<children><Circle fill="DODGERBLUE" radius="5.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="slideout-control-button-graphic" />
+<Circle fill="DODGERBLUE" layoutX="20.0" layoutY="110.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="slideout-control-button-graphic" />
+<Circle fill="DODGERBLUE" layoutX="20.0" layoutY="120.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="slideout-control-button-graphic" />
+</children>
+<padding>
+<Insets top="1.0" />
+</padding></VBox>
+</graphic></Button>

@@ -1,0 +1,11 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl BlackPlastic
+Ns 9.803922
+Ka 0.000000 0.000000 0.000000
+Kd 0.003133 0.003133 0.003133
+Ks 0.265432 0.265432 0.265432
+Ni 1.000000
+d 1.000000
+illum 2

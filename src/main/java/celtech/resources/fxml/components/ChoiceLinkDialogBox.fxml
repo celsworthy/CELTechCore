@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import celtech.coreUI.components.*?>
+
+<fx:root type="celtech.coreUI.components.ChoiceLinkDialogBox" minHeight="100.0" minWidth="100.0" styleClass="error-dialogue" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Label id="errorDialogTitle" fx:id="title" text="" />
+        <Label id="errorDialogMessage" fx:id="message" text="" />
+        <VBox id="errorDialogButtonContainer" fx:id="buttonContainer" />
+    </children>
+</fx:root>

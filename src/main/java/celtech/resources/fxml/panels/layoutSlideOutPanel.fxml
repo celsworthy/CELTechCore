@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox fx:id="slideout" maxHeight="1.7976931348623157E308" maxWidth="380.0" minWidth="-Infinity" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSlideOutPanelController">
+    <children>
+        <VBox id="Container" fx:id="gcodeEditParent" spacing="10.0" HBox.hgrow="ALWAYS">
+<children><Label styleClass="sidePanelDivider" text="%layoutSlideOut.ProjectMetadata" /><HBox spacing="5.0">
+<children>
+<Label layoutX="10.0" layoutY="10.0" text="%layoutSlideOut.LastModified" />
+<Label fx:id="lastModifiedDate" layoutX="10.0" layoutY="40.0" text="&lt;DATE&gt;" />
+</children></HBox>
+<Label layoutX="10.0" layoutY="10.0" styleClass="sidePanelDivider" text="Placeholder for project information">
+<padding>
+<Insets top="45.0" />
+</padding>
+</Label><Label layoutX="10.0" layoutY="10.0" text="%layoutSlideOut.PrintHistory" /><ListView fx:id="printHistory" prefHeight="200.0" prefWidth="200.0" />
+</children>
+        </VBox>
+        <!--<fx:include fx:id="SlideOutHandle" source="SlideOutHandle.fxml" />-->
+    </children>
+<padding>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</padding>
+   <styleClass>
+      <String fx:value="slideOutPanel" />
+      <String fx:value="regularFont" />
+   </styleClass>
+</HBox>

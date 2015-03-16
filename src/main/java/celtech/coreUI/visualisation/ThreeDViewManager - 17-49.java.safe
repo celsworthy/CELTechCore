@@ -1,0 +1,1230 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package celtech.coreUI.visualisation;
+
+import celtech.CoreTest;
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
+import celtech.configuration.PrintBed;
+import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.visualisation.importers.ModelLoadResult;
+import celtech.coreUI.visualisation.importers.obj.ObjImporter;
+import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
+import celtech.coreUI.visualisation.shapes.SubdivisionMesh;
+import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelContentsEnumeration;
+import celtech.utils.Math.MathUtils;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
+import javafx.animation.Timeline;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableFloatArray;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
+import javafx.scene.AmbientLight;
+import javafx.scene.Cursor;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.PointLight;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.PickResult;
+import javafx.scene.input.RotateEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.ZoomEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
+import javafx.util.Duration;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
+/**
+ *
+ * @author Ian Hudson @ Liberty Systems Limited
+ */
+public class ThreeDViewManager
+{
+
+    private static final Stenographer steno = StenographerFactory.getStenographer(ThreeDViewManager.class.getName());
+
+    private ObservableList<ModelContainer> loadedModels = null;
+    private final SelectionContainer selectionContainer = new SelectionContainer();
+    private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
+
+    private final PrintBed printBedData = PrintBed.getInstance();
+    private final Group root3D = new Group();
+    private SubScene subScene = null;
+    private final SimpleObjectProperty<SubScene> subSceneProperty = new SimpleObjectProperty<>();
+
+    private final PointLight pointLight1 = new PointLight(Color.WHITE);
+    private final AmbientLight ambientLight = new AmbientLight(Color.WHITE);
+
+    final Group axisGroup = new Group();
+    double DELTA_MULTIPLIER = 200.0;
+    double CONTROL_MULTIPLIER = 0.1;
+    double SHIFT_MULTIPLIER = 0.1;
+    double ALT_MULTIPLIER = 0.5;
+
+    private final SimpleObjectProperty<Timeline> timeline = new SimpleObjectProperty<>();
+    private ObjectProperty<Node> content = new SimpleObjectProperty<>();
+    /*
+     * Model moving
+     */
+    private Point3D lastDragPosition = null;
+    private final int dragPlaneHalfSize = 500;
+    private final Box dragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
+    private SelectionHighlighter threeDControl = null;
+    /*
+     * 
+     */
+    private Group gcodeParts = null;
+    /*
+    
+     */
+    private Group models = new Group();
+    /*
+     * Selection stuff
+     */
+    private boolean inDragMode = false;
+
+
+    /*
+     * Leap Motion
+     */
+//    private Controller leapController = null;
+//    private LeapMotionListener leapMotionListener = null;
+    /*
+    
+     */
+    private ReadOnlyDoubleProperty widthPropertyToFollow = null;
+    private ReadOnlyDoubleProperty heightPropertyToFollow = null;
+
+    private IntegerProperty screenCentreOfSelectionX = new SimpleIntegerProperty(0);
+    private IntegerProperty screenCentreOfSelectionY = new SimpleIntegerProperty(0);
+
+    /*
+     * ALT stuff
+     */
+    private final Xform bedXform = new Xform();
+    private final PerspectiveCamera camera = new PerspectiveCamera(true);
+
+    private final Xform cameraXform = new Xform();
+    private final Xform cameraXform2 = new Xform();
+    private final DoubleProperty cameraDistance = new SimpleDoubleProperty(200);
+
+    private double mousePosX;
+    private double mousePosY;
+    private double mouseOldX;
+    private double mouseOldY;
+    private double mouseDeltaX;
+    private double mouseDeltaY;
+
+    private double bedXOffsetFromCameraZero;
+    private double bedZOffsetFromCameraZero;
+
+    private double dragStartX, dragStartY;
+
+    private final EventHandler<MouseEvent> mouseEventHandler = event ->
+    {
+        // System.out.println("MouseEvent ...");
+
+        double yFlip = 1.0;
+//        if (getYUp()) {
+//            yFlip = 1.0;
+//        }
+//        else {
+//            yFlip = -1.0;
+//        }
+        if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
+        {
+            dragStartX = event.getSceneX();
+            dragStartY = event.getSceneY();
+            mousePosX = event.getSceneX();
+            mousePosY = event.getSceneY();
+            mouseOldX = event.getSceneX();
+            mouseOldY = event.getSceneY();
+
+            if (event.isPrimaryButtonDown())
+            {
+                PickResult pickResult = event.getPickResult();
+                Point3D pickedPoint = pickResult.getIntersectedPoint();
+
+                Node intersectedNode = pickResult.getIntersectedNode();
+
+                if (intersectedNode != null && intersectedNode instanceof MeshView)
+                {
+                    lastDragPosition = intersectedNode.localToScene(pickedPoint);
+                    dragMode(true);
+
+                    Parent parent = intersectedNode.getParent();
+                    if (!(parent instanceof ModelContainer))
+                    {
+                        parent = parent.getParent();
+                    }
+                    ModelContainer pickedModel = (ModelContainer) parent;
+
+                    if (pickedModel.isSelected() == false)
+                    {
+                        if (event.isControlDown() == false)
+                        {
+                            deselectAllModels();
+                        }
+                        selectModel(pickedModel);
+                    } else if (event.isControlDown())
+                    {
+                        deselectModel(pickedModel);
+                    }
+                } else
+                {
+                    deselectAllModels();
+                }
+                recalculateCentre();
+            }
+        } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED)
+        {
+            double xDelta = event.getSceneX() - dragStartX;
+            double yDelta = event.getSceneY() - dragStartY;
+            //cameraXRotate.setAngle(dragStartRotateX - (yDelta*0.7));
+            //cameraYRotate.setAngle(dragStartRotateY + (xDelta*0.7));
+
+            double modifier = 1.0;
+            double modifierFactor = 0.3;
+
+            if (event.isControlDown())
+            {
+                modifier = 0.1;
+            }
+            if (event.isShiftDown())
+            {
+                modifier = 10.0;
+            }
+
+            mouseOldX = mousePosX;
+            mouseOldY = mousePosY;
+            mousePosX = event.getSceneX();
+            mousePosY = event.getSceneY();
+            mouseDeltaX = -(mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
+            mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
+
+            double flip = -1.0;
+
+            boolean alt = (true || event.isAltDown());  // For now, don't require ALT to be pressed
+            if (alt && event.isSecondaryButtonDown())
+            {
+                cameraXform2.t.setX(cameraXform2.t.getX() + flip * mouseDeltaX * modifierFactor * modifier * 0.3);  // -
+                cameraXform2.t.setY(cameraXform2.t.getY() + yFlip * mouseDeltaY * modifierFactor * modifier * 0.3);  // -
+            } else if (alt && (event.isMiddleButtonDown() || (event.isPrimaryButtonDown() && event.isSecondaryButtonDown())))
+            {
+                cameraXform.ry.setAngle(cameraXform.ry.getAngle() - yFlip * mouseDeltaX * modifierFactor * modifier * 2.0);  // +
+                cameraXform.rx.setAngle(cameraXform.rx.getAngle() + flip * mouseDeltaY * modifierFactor * modifier * 2.0);  // -
+            } else if (selectionContainer.selectedModelsProperty().size() > 0 && event.isPrimaryButtonDown())
+            {
+                Node intersectedNode = event.getPickResult().getIntersectedNode();
+
+                //Move the model!
+                if (intersectedNode == dragPlane)
+                {
+                    Point3D currentDragPosition = intersectedNode.localToScene(event.getPickResult().getIntersectedPoint());
+//                steno.info("Pick drag " + me.getPickResult().getIntersectedNode().getId());
+//                    steno.info("Drag from " + lastDragPosition + " to " + currentDragPosition);
+                    if (lastDragPosition != null)
+                    {
+                        Point3D resultant = currentDragPosition.subtract(lastDragPosition);
+//                        steno.info("Resultant " + resultant);
+                        translateSelection(resultant.getX(), resultant.getZ());
+                    }
+                    dragPlane.setTranslateX(currentDragPosition.getX());
+                    dragPlane.setTranslateZ(currentDragPosition.getZ());
+                    lastDragPosition = currentDragPosition;
+                }
+            }
+            recalculateCentre();
+
+        } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
+        {
+            dragMode(false);
+            lastDragPosition = null;
+            recalculateCentre();
+        }
+    };
+
+    private final EventHandler<ScrollEvent> scrollEventHandler = event ->
+    {
+        if (event.getTouchCount() > 0)
+        { // touch pad scroll
+            cameraXform2.t.setX(cameraXform2.t.getX() - (0.01 * event.getDeltaX()));  // -
+            cameraXform2.t.setY(cameraXform2.t.getY() + (0.01 * event.getDeltaY()));  // -
+        } else
+        {
+            double z = cameraXform2.t.getZ() - (event.getDeltaY() * 0.2);
+            z = Math.max(z, -1000);
+            z = Math.min(z, 0);
+            cameraXform2.t.setZ(z);
+        }
+    };
+    private final EventHandler<ZoomEvent> zoomEventHandler = event ->
+    {
+        if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8 && event.getZoomFactor() < 1.2)
+        {
+            double z = cameraXform2.t.getZ() / event.getZoomFactor();
+            z = Math.max(z, -1000);
+            z = Math.min(z, 0);
+            cameraXform2.t.setZ(z);
+        }
+    };
+    private final EventHandler<KeyEvent> keyEventHandler = event ->
+    {
+        /*
+         if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8 && event.getZoomFactor() < 1.2) {
+         double z = cameraPosition.getZ()/event.getZoomFactor();
+         z = Math.max(z,-1000);
+         z = Math.min(z,0);
+         cameraPosition.setZ(z);
+         }
+         */
+        System.out.println("KeyEvent ...");
+        Timeline timeline = getTimeline();
+        Duration currentTime;
+        double CONTROL_MULTIPLIER = 0.1;
+        double SHIFT_MULTIPLIER = 0.1;
+        double ALT_MULTIPLIER = 0.5;
+        //System.out.println("--> handleKeyboard>handle");
+
+        // event.getEventType();
+        switch (event.getCode())
+        {
+            case F:
+                if (event.isControlDown())
+                {
+                    //onButtonSave();
+                }
+                break;
+            case O:
+                if (event.isControlDown())
+                {
+                    //onButtonLoad();
+                }
+                break;
+            case Z:
+                if (event.isShiftDown())
+                {
+                    cameraXform.ry.setAngle(0.0);
+                    cameraXform.rx.setAngle(0.0);
+                    camera.setTranslateZ(-300.0);
+                }
+                cameraXform2.t.setX(0.0);
+                cameraXform2.t.setY(0.0);
+                break;
+            /*
+             case SPACE:
+             if (timelinePlaying) {
+             timeline.pause();
+             timelinePlaying = false;
+             }
+             else {
+             timeline.play();
+             timelinePlaying = true;
+             }
+             break;
+             */
+            case UP:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() - 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 10.0 * ALT_MULTIPLIER);
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() - 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 2.0 * ALT_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    double z = camera.getTranslateZ();
+                    double newZ = z + 5.0 * SHIFT_MULTIPLIER;
+                    camera.setTranslateZ(newZ);
+                }
+                break;
+            case DOWN:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() + 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 10.0 * ALT_MULTIPLIER);
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setY(cameraXform2.t.getY() + 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown())
+                {
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 2.0 * ALT_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    double z = camera.getTranslateZ();
+                    double newZ = z - 5.0 * SHIFT_MULTIPLIER;
+                    camera.setTranslateZ(newZ);
+                }
+                break;
+            case RIGHT:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() + 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 10.0 * ALT_MULTIPLIER);
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() + 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 + 10));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
+                } else if (event.isAltDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 2.0 * ALT_MULTIPLIER);
+                } else
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) + 1));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() + ONE_FRAME));
+                }
+                break;
+            case LEFT:
+                if (event.isControlDown() && event.isShiftDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() - 10.0 * CONTROL_MULTIPLIER);
+                } else if (event.isAltDown() && event.isShiftDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 10.0 * ALT_MULTIPLIER);  // -
+                } else if (event.isControlDown())
+                {
+                    cameraXform2.t.setX(cameraXform2.t.getX() - 1.0 * CONTROL_MULTIPLIER);
+                } else if (event.isShiftDown())
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Math.round(Frame.toFrame(currentTime) / 10.0) * 10 - 10));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
+                } else if (event.isAltDown())
+                {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 2.0 * ALT_MULTIPLIER);  // -
+                } else
+                {
+                    currentTime = timeline.getCurrentTime();
+                    timeline.jumpTo(Frame.frame(Frame.toFrame(currentTime) - 1));
+                    // timeline.jumpTo(Duration.seconds(currentTime.toSeconds() - ONE_FRAME));
+                }
+                break;
+        }
+        //System.out.println(cameraXform.getTranslateX() + ", " + cameraXform.getTranslateY() + ", " + cameraXform.getTranslateZ());
+
+    };
+
+
+    /*
+     * Snap to ground
+     */
+    private ObjectProperty<LayoutSubmode> layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
+
+    public ThreeDViewManager(ObservableList<ModelContainer> loadedModels, ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
+    {
+        this.loadedModels = loadedModels;
+        threeDControl = new SelectionHighlighter(selectionContainer, cameraDistance);
+
+        this.widthPropertyToFollow = widthProperty;
+        this.heightPropertyToFollow = heightProperty;
+
+        AnchorPane.setBottomAnchor(root3D, 0.0);
+        AnchorPane.setTopAnchor(root3D, 0.0);
+        AnchorPane.setLeftAnchor(root3D, 0.0);
+        AnchorPane.setRightAnchor(root3D, 0.0);
+        root3D.setPickOnBounds(false);
+
+        root3D.getChildren().add(cameraXform);
+        cameraXform.getChildren().add(cameraXform2);
+        cameraXform2.getChildren().add(camera);
+        cameraXform2.t.setZ(-cameraDistance.get());
+
+//        root3D.getStyleClass().add("roboxPanel");
+        camera.setNearClip(0.1);
+        camera.setFarClip(10000.0);
+
+        // Build SubScene
+        subScene = new SubScene(root3D, widthProperty.getValue(), heightProperty.getValue(), true, SceneAntialiasing.BALANCED);
+        this.subSceneProperty.set(subScene);
+        subScene.setFill(Color.TRANSPARENT);
+        subScene.setCamera(camera);
+
+        Group bed = buildBed();
+        dragPlane.setId("DragPlane");
+        dragPlane.setVisible(false);
+        dragPlane.setOpacity(0.0);
+        dragPlane.setMouseTransparent(true);
+
+        bedXform.getChildren().addAll(bed, models, dragPlane, threeDControl);
+        root3D.getChildren().add(bedXform);
+
+        bedXOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getWidth() / 2;
+        bedZOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getDepth() / 2;
+
+        bedXform.setTx(bedXOffsetFromCameraZero);
+        bedXform.setTz(bedZOffsetFromCameraZero);
+
+//        buildAxes();
+//        contentProperty()
+//                .addListener(new ChangeListener<Node>()
+//                        {
+//                            @Override
+//                            public void changed(ObservableValue<? extends Node> ov, Node oldContent, Node newContent
+//                            )
+//                            {
+//                                autoScalingGroup.getChildren().remove(oldContent);
+//                                autoScalingGroup.getChildren().add(newContent);
+////                setWireFrame(newContent, wireframe);
+//                                // TODO mesh is updated each time these are called even if no rendering needs to happen
+//                                setSubdivisionLevel(newContent, subdivisionLevel);
+//                                setBoundaryMode(newContent, boundaryMode);
+//                                setMapBorderMode(newContent, mapBorderMode);
+//                            }
+//                }
+//                );
+        subScene.widthProperty().bind(widthPropertyToFollow);
+        subScene.heightProperty().bind(heightPropertyToFollow);
+
+//        subScene.widthProperty().addListener(new ChangeListener<Number>()
+//        {
+//
+//            @Override
+//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+//            {
+//steno.info("Scene width = " + t1.doubleValue());            }
+//        });
+//        
+//                subScene.heightProperty().addListener(new ChangeListener<Number>()
+//        {
+//
+//            @Override
+//            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+//            {
+//steno.info("Scene height = " + t1.doubleValue());            }
+//        });
+//        leapController = new Controller();
+//        leapMotionListener = new LeapMotionListener();
+//        leapController.addListener(leapMotionListener);
+        if (loadedModels.isEmpty() == false)
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                models.getChildren().add(model);
+            }
+        }
+
+        applicationStatus.modeProperty().addListener(new ChangeListener<ApplicationMode>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode)
+            {
+                if (oldMode != newMode)
+                {
+                    switch (newMode)
+                    {
+                        case SETTINGS:
+                            subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
+                            subScene.removeEventHandler(KeyEvent.ANY, keyEventHandler);
+                            // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
+                            subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                            subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                            goToPreset(CameraPositionPreset.TOP);
+                            break;
+                        default:
+                            goToPreset(CameraPositionPreset.FRONT);
+                            subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
+                            subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
+                            // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
+                            subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                            subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                            break;
+                    }
+                }
+            }
+        }
+        );
+        subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
+        subScene.addEventHandler(KeyEvent.ANY, keyEventHandler);
+        // subScene.addEventFilter(KeyEvent.ANY, keyEventHandler);
+        subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+        subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+
+        layoutSubmodeProperty().addListener(new ChangeListener<LayoutSubmode>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1)
+            {
+                if (t1 == LayoutSubmode.SNAP_TO_GROUND)
+                {
+                    subScene.setCursor(Cursor.HAND);
+                } else
+                {
+                    subScene.setCursor(Cursor.DEFAULT);
+                }
+            }
+        });
+
+    }
+
+    private void goToPreset(CameraPositionPreset preset)
+    {
+//        camera.setCentreOfRotation(preset.getPointToLookAt());
+//        camera.rotateAndElevateCameraTo(preset.getAzimuth(), preset.getElevation());
+//        camera.zoomCameraTo(preset.getDistance());
+    }
+
+    public void setTimeline(Timeline timeline)
+    {
+        this.timeline.setValue(timeline);
+    }
+
+    public Timeline getTimeline()
+    {
+        return this.timeline.getValue();
+    }
+
+    public SimpleObjectProperty timelineProperty()
+    {
+        return timeline;
+    }
+
+    private void recalculateCentre()
+    {
+        steno.info("=================");
+        steno.info("From " + selectionContainer.getCentreX() + ":" + selectionContainer.getCentreY() + ":" + selectionContainer.getCentreZ());
+//        Point3D testPoint = new Point3D(selectionContainer.getCentreX() + bedXOffsetFromCameraZero, selectionContainer.getCentreY(), selectionContainer.getCentreZ() + bedZOffsetFromCameraZero);
+        Point3D testPoint = new Point3D(0,0,0);
+        steno.info("Conditioned point " + testPoint);
+        Point3D sceneToCamera = camera.sceneToLocal(testPoint);
+        steno.info("Scene to camera " + sceneToCamera);
+        Point3D xform2 = cameraXform2.sceneToLocal(testPoint);
+        steno.info("Xform 2 " + xform2);
+        Point3D xformToScreen = cameraXform.sceneToLocal(testPoint);
+        steno.info("XformToScreen " + xformToScreen);
+//        Point2D xformToScreen = cameraXform.localToScreen(xform2);
+//        steno.info("XformToScreen " + xformToScreen);
+        
+        selectionContainer.setScreenX(xformToScreen.getX());
+        selectionContainer.setScreenY(xformToScreen.getY());
+    }
+
+    private Group buildBed()
+    {
+
+        String bedOuterURL = CoreTest.class
+                .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").toExternalForm();
+        String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath + "bedInner.obj").toExternalForm();
+
+        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.BLACK);
+
+        bedOuterMaterial.setSpecularColor(Color.WHITE);
+
+        bedOuterMaterial.setSpecularPower(
+                5.0);
+
+        PhongMaterial bedInnerMaterial = new PhongMaterial(Color.GREY);
+
+        bedInnerMaterial.setSpecularColor(Color.WHITE);
+
+        bedInnerMaterial.setSpecularPower(
+                .1);
+
+        Group bedParts = new Group();
+
+        ObjImporter bedOuterImporter = new ObjImporter();
+        ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
+
+        bedParts.getChildren()
+                .addAll(bedOuterLoadResult.getModelContainer().getMeshes());
+
+        ObjImporter bedInnerImporter = new ObjImporter();
+        ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
+
+        bedParts.getChildren()
+                .addAll(bedInnerLoadResult.getModelContainer().getMeshes());
+
+        final Image roboxLogoImage = new Image(CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
+        final ImageView roboxLogoView = new ImageView();
+
+        roboxLogoView.setImage(roboxLogoImage);
+
+        final Xform roboxLogoTransformNode = new Xform();
+
+        roboxLogoTransformNode.setRotateX(
+                -90);
+
+        final double logoSide_mm = 100;
+        double logoScale = logoSide_mm / roboxLogoImage.getWidth();
+
+        roboxLogoTransformNode.setScale(logoScale);
+
+        roboxLogoTransformNode.setTz(logoSide_mm
+                + PrintBed.getPrintVolumeCentre().getZ() / 2);
+        roboxLogoTransformNode.setTy(
+                -.1);
+        roboxLogoTransformNode.setTx(PrintBed.getPrintVolumeCentre().getX() / 2);
+        roboxLogoTransformNode.getChildren()
+                .add(roboxLogoView);
+        roboxLogoTransformNode.setId(
+                "LogoImage");
+
+        bedParts.getChildren()
+                .add(roboxLogoTransformNode);
+        bedParts.setMouseTransparent(
+                true);
+
+        return bedParts;
+    }
+
+    private void buildAxes()
+    {
+        final PhongMaterial redMaterial = new PhongMaterial();
+        redMaterial.setDiffuseColor(Color.DARKRED);
+        redMaterial.setSpecularColor(Color.RED);
+
+        final PhongMaterial greenMaterial = new PhongMaterial();
+        greenMaterial.setDiffuseColor(Color.DARKGREEN);
+        greenMaterial.setSpecularColor(Color.GREEN);
+
+        final Box xAxis = new Box(40, 1, 1);
+        xAxis.setTranslateZ(-25);
+        xAxis.setTranslateX(-20);
+
+        final Box zAxis = new Box(1, 1, 40);
+        zAxis.setTranslateX(-25);
+        zAxis.setTranslateX(-20);
+        zAxis.setTranslateZ(-20);
+
+        xAxis.setMaterial(redMaterial);
+        zAxis.setMaterial(greenMaterial);
+
+        axisGroup.getChildren().addAll(xAxis, zAxis);
+        root3D.getChildren().add(axisGroup);
+
+//        autoScalingGroup.getChildren().addAll(axisGroup);
+    }
+
+    public void addModel(ModelContainer modelGroup)
+    {
+        if (modelGroup.getModelContentsType() == ModelContentsEnumeration.MESH)
+        {
+            modelGroup.centreObjectOnBed();
+            models.getChildren().add(modelGroup);
+            loadedModels.add(modelGroup);
+            collideModels();
+        } else
+        {
+            steno.info("About to add gcode to model");
+            models.getChildren().add(modelGroup);
+            steno.info("Done adding gcode");
+        }
+    }
+
+    public void deleteSelectedModels()
+    {
+        ListIterator<ModelContainer> modelIterator = loadedModels.listIterator();
+        while (modelIterator.hasNext())
+        {
+            ModelContainer model = modelIterator.next();
+
+            if (model.isSelected())
+            {
+                deselectModel(model);
+                models.getChildren().remove(model);
+                modelIterator.remove();
+            }
+        }
+        collideModels();
+    }
+
+    public void copySelectedModels()
+    {
+        ArrayList<ModelContainer> modelsToAdd = new ArrayList<>();
+
+        ListIterator<ModelContainer> modelIterator = loadedModels.listIterator();
+        while (modelIterator.hasNext())
+        {
+            ModelContainer model = modelIterator.next();
+
+            if (model.isSelected())
+            {
+                ModelContainer modelCopy = model.clone();
+                modelCopy.centreObjectOnBed();
+                modelsToAdd.add(modelCopy);
+            }
+        }
+
+        for (ModelContainer model : modelsToAdd)
+        {
+            addModel(model);
+        }
+        collideModels();
+    }
+
+    public void removeModel(ModelContainer modelGroup)
+    {
+        models.getChildren().remove(modelGroup);
+        loadedModels.remove(modelGroup);
+    }
+
+    public void addGCodeParts(Group gCodeParts)
+    {
+        if (this.gcodeParts != null)
+        {
+            models.getChildren().remove(this.gcodeParts);
+        }
+        this.gcodeParts = gcodeParts;
+        models.getChildren().add(gCodeParts);
+    }
+
+    public void shutdown()
+    {
+//        controller.removeListener(leapMotionListener);
+    }
+
+    private void dragMode(boolean on)
+    {
+        if (on && !inDragMode)
+        {
+            dragPlane.setVisible(true);
+            dragPlane.setTranslateX(lastDragPosition.getX());
+            dragPlane.setTranslateY(lastDragPosition.getY());
+            dragPlane.setTranslateZ(lastDragPosition.getZ());
+            dragPlane.setMouseTransparent(false);
+            models.setMouseTransparent(true);
+
+            inDragMode = true;
+        } else if (!on && inDragMode)
+        {
+            models.setMouseTransparent(false);
+            dragPlane.setVisible(false);
+            dragPlane.setMouseTransparent(true);
+
+            inDragMode = false;
+        }
+    }
+
+//    public PolarCamera getCamera()
+//    {
+//        return camera;
+//    }
+    private void recalculateSelectionBounds(boolean addedOrRemoved)
+    {
+        if (selectionContainer.selectedModelsProperty().size() == 1)
+        {
+            ModelContainer model = selectionContainer.selectedModelsProperty().get(0);
+            ModelBounds originalBounds = model.getOriginalModelBounds();
+            double width = originalBounds.getWidth() * model.getScale();
+            double height = originalBounds.getHeight() * model.getScale();
+            double depth = originalBounds.getDepth() * model.getScale();
+
+            selectionContainer.setWidth(width);
+            selectionContainer.setHeight(height);
+            selectionContainer.setDepth(depth);
+            selectionContainer.setScale(model.getScale());
+//            selectionContainer.setRotationX(model.getRotationX());
+            selectionContainer.setRotationY(model.getRotationY());
+//            selectionContainer.setRotationZ(model.getRotationZ());
+//            selectionContainer.setMinX(model.getCentreX() - );
+
+            Bounds parentBounds = model.getBoundsInParent();
+//            
+            double centreX = model.getCentreX();
+            double centreY = model.getTranslateY();
+            double centreZ = model.getCentreZ();
+            selectionContainer.setCentreX(centreX);
+            selectionContainer.setCentreY(centreY);
+            selectionContainer.setCentreZ(centreZ);
+
+//            steno.info("Ctr X" + centreX + ":Y" + centreY + ":Z" + centreZ);
+//            steno.info("Screen " + newScreen.getX() + ":Y" + newScreen.getY());
+//            Point3D scene = root3D.localToScene(centreX, centreY, centreZ);
+//            steno.info("Scene " + scene);
+//            Point3D parent = root3D.localToParent(centreX, centreY, centreZ);
+//            steno.info("Parent " + parent);
+        } else
+        {
+            double minX = 999;
+            double minY = 999;
+            double minZ = 999;
+            double maxX = 0;
+            double maxY = 0;
+            double maxZ = 0;
+
+            for (ModelContainer model : loadedModels)
+            {
+                if (model.isSelected())
+                {
+                    Bounds modelBounds = model.getBoundsInParent();
+
+                    minX = Math.min(modelBounds.getMinX(), minX);
+                    minY = Math.min(modelBounds.getMinY(), minY);
+                    minZ = Math.min(modelBounds.getMinZ(), minZ);
+
+                    maxX = Math.max(modelBounds.getMaxX(), maxX);
+                    maxY = Math.max(modelBounds.getMaxY(), maxY);
+                    maxZ = Math.max(modelBounds.getMaxZ(), maxZ);
+                }
+            }
+
+            double width = maxX - minX;
+            double depth = maxZ - minZ;
+            double height = maxY - minY;
+
+            double centreX = minX + (width / 2);
+            double centreY = maxY - (height / 2);
+            double centreZ = minZ + (depth / 2);
+
+            selectionContainer.setCentreX(centreX);
+            selectionContainer.setCentreY(centreY);
+            selectionContainer.setCentreZ(centreZ);
+            selectionContainer.setWidth(width);
+            selectionContainer.setDepth(depth);
+            selectionContainer.setHeight(height);
+            if (addedOrRemoved)
+            {
+                selectionContainer.setRotationY(0);
+                selectionContainer.setScale(1);
+            }
+        }
+    }
+
+    public void selectModel(ModelContainer selectedNode)
+    {
+        if (selectedNode == null)
+        {
+            deselectAllModels();
+        } else if (selectedNode.isSelected() == false)
+        {
+            selectedNode.setSelected(true);
+            selectionContainer.addSelectedModel(selectedNode);
+            recalculateSelectionBounds(true);
+        }
+    }
+
+    public void deselectAllModels()
+    {
+        Iterator<ModelContainer> loadedModelIterator = loadedModels.iterator();
+        while (loadedModelIterator.hasNext())
+        {
+            ModelContainer model = loadedModelIterator.next();
+
+            deselectModel(model);
+        }
+        recalculateSelectionBounds(true);
+    }
+
+    public void translateSelection(double x, double z)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.translateBy(x, z);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void translateSelectionX(double x)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.translateX(x);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void translateSelectionZ(double z)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.translateZ(z);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void translateSelectionXTo(double x)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.translateXTo(x);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void translateSelectionZTo(double z)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.translateZTo(z);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void resizeSelectionWidth(double width)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.resizeWidth(width);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void resizeSelectionHeight(double height)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.resizeHeight(height);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void resizeSelectionDepth(double depth)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.resizeDepth(depth);
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void scaleSelection(double newScale)
+    {
+        if (selectionContainer.selectedModelsProperty().size() == 1)
+        {
+            selectionContainer.selectedModelsProperty().get(0).scale(newScale);
+        } else
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                if (model.isSelected())
+                {
+                    model.scale(model.getScale() * newScale);
+                }
+            }
+        }
+
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void rotateSelection(double rotation)
+    {
+        if (selectionContainer.selectedModelsProperty().size() == 1)
+        {
+            selectionContainer.selectedModelsProperty().get(0).setRotationY(rotation);
+//            steno.info(selectionContainer.selectedModelsProperty().get(0).toString());
+            selectionContainer.setRotationY(rotation);
+            recalculateSelectionBounds(false);
+        } else
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                if (model.isSelected())
+                {
+                    model.deltaRotateAroundY(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ(), rotation);
+                }
+            }
+            selectionContainer.setRotationX(0);
+        }
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void changeModelHeight(double newHeight)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.resizeHeight(newHeight);
+            }
+        }
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void deselectModel(ModelContainer pickedModel)
+    {
+        if (pickedModel.isSelected())
+        {
+            pickedModel.setSelected(false);
+            selectionContainer.removeSelectedModel(pickedModel);
+            recalculateSelectionBounds(false);
+        }
+    }
+
+    public ObservableList<ModelContainer> getLoadedModels()
+    {
+        return loadedModels;
+    }
+
+    public SelectionContainer getSelectionContainer()
+    {
+        return selectionContainer;
+    }
+
+    private void collideModels()
+    {
+        boolean[] collidedModels = new boolean[loadedModels.size()];
+
+        for (int printableNum = 0; printableNum < loadedModels.size(); printableNum++)
+        {
+            ModelContainer modelToCollide = loadedModels.get(printableNum);
+
+            for (int secondaryPrintableNum = 0; secondaryPrintableNum < loadedModels.size(); secondaryPrintableNum++)
+            {
+                if (secondaryPrintableNum > printableNum)
+                {
+                    ModelContainer modelToCollideWith = loadedModels.get(secondaryPrintableNum);
+
+                    if (modelToCollide.getBoundsInParent().intersects(modelToCollideWith.getBoundsInParent()))
+                    {
+                        collidedModels[printableNum] = true;
+                        collidedModels[secondaryPrintableNum] = true;
+//                        steno.info(modelToCollide.getId() + " collided with " + modelToCollideWith.getId());
+                    }
+                }
+            }
+        }
+
+        for (int index = 0; index < collidedModels.length; index++)
+        {
+            loadedModels.get(index).setCollision(collidedModels[index]);
+        }
+    }
+
+    public void deltaScaleSelection(double d)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (model.isSelected())
+            {
+                model.scale(d * model.getScale());
+            }
+        }
+        recalculateSelectionBounds(false);
+        collideModels();
+    }
+
+    public void activateSnapToGround()
+    {
+        layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
+    }
+
+    public ObjectProperty<LayoutSubmode> layoutSubmodeProperty()
+    {
+        return layoutSubmode;
+    }
+
+    public void activateGCodeVisualisationMode()
+    {
+        layoutSubmode.set(LayoutSubmode.GCODE_VISUALISATION);
+    }
+
+    public SelectionHighlighter getSelectionHighlighter()
+    {
+        return threeDControl;
+    }
+
+    public IntegerProperty screenCentreOfSelectionXProperty()
+    {
+        return screenCentreOfSelectionX;
+    }
+
+    public IntegerProperty screenCentreOfSelectionYProperty()
+    {
+        return screenCentreOfSelectionY;
+    }
+
+    public SubScene getSubScene()
+    {
+        return subScene;
+    }
+
+    public Group getRoot()
+    {
+        return root3D;
+    }
+}
