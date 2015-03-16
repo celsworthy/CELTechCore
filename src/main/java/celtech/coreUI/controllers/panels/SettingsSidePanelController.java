@@ -48,7 +48,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import jfxtras.styles.jmetro8.ToggleSwitch;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -155,6 +154,11 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        Lookup.getUserPreferences().advancedModeProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            updateFilamentList();
+        });
+        
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         settingsScreenState = SettingsScreenState.getInstance();
@@ -395,28 +399,28 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         printerChooser.getSelectionModel()
             .selectedItemProperty().addListener(new ChangeListener<Printer>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Printer> ov,
+                    Printer lastSelectedPrinter, Printer selectedPrinter
+                )
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Printer> ov,
-                        Printer lastSelectedPrinter, Printer selectedPrinter
-                    )
+                    if (lastSelectedPrinter != null)
                     {
-                        if (lastSelectedPrinter != null)
-                        {
-                        }
-                        if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
-                        {
-                            currentPrinter = selectedPrinter;
-                        }
-
-                        if (selectedPrinter == null)
-                        {
-                            currentPrinter = null;
-                        }
-
-                        settingsScreenState.setSelectedPrinter(selectedPrinter);
-
                     }
+                    if (selectedPrinter != null && selectedPrinter != lastSelectedPrinter)
+                    {
+                        currentPrinter = selectedPrinter;
+                    }
+
+                    if (selectedPrinter == null)
+                    {
+                        currentPrinter = null;
+                    }
+
+                    settingsScreenState.setSelectedPrinter(selectedPrinter);
+
+                }
             }
             );
 
@@ -529,48 +533,48 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         fillDensitySlider.valueProperty()
             .addListener(new ChangeListener<Number>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable,
+                    Number oldValue,
+                    Number newValue
+                )
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> observable,
-                        Number oldValue,
-                        Number newValue
-                    )
+                    if (suppressQualityOverrideTriggers == false)
                     {
-                        if (suppressQualityOverrideTriggers == false)
+                        if (newValue != oldValue)
                         {
-                            if (newValue != oldValue)
-                            {
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                projectModified();
-                            }
-
-                            settingsScreenState.getSettings().setFillDensity_normalised(
-                                newValue.floatValue() / 100.0f);
+                            DisplayManager.getInstance().getCurrentlyVisibleProject().
+                            projectModified();
                         }
+
+                        settingsScreenState.getSettings().setFillDensity_normalised(
+                            newValue.floatValue() / 100.0f);
                     }
+                }
             }
             );
 
         brimSlider.valueProperty()
             .addListener(new ChangeListener<Number>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable,
+                    Number oldValue,
+                    Number newValue
+                )
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> observable,
-                        Number oldValue,
-                        Number newValue
-                    )
+                    if (suppressQualityOverrideTriggers == false)
                     {
-                        if (suppressQualityOverrideTriggers == false)
+                        if (newValue != oldValue)
                         {
-                            if (newValue != oldValue)
-                            {
-                                DisplayManager.getInstance().getCurrentlyVisibleProject().
-                                projectModified();
-                            }
-
-                            settingsScreenState.getSettings().setBrimWidth_mm(newValue.intValue());
+                            DisplayManager.getInstance().getCurrentlyVisibleProject().
+                            projectModified();
                         }
+
+                        settingsScreenState.getSettings().setBrimWidth_mm(newValue.intValue());
                     }
+                }
             }
             );
 
@@ -599,8 +603,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private void setupQualityOverrideControls(SlicerParametersFile settings)
     {
-        supportSlider.setValue((settings.getGenerateSupportMaterial()==true)?1.0:0.0);
-        
+        supportSlider.setValue((settings.getGenerateSupportMaterial() == true) ? 1.0 : 0.0);
+
         fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
         if (settings.getFillPattern().equals(FillPattern.LINE))
         {
@@ -644,9 +648,12 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             availableFilaments.add(currentlyLoadedFilament);
         }
 
-        availableFilaments.addAll(FilamentContainer.getUserFilamentList());
-        availableFilaments.add(FilamentContainer.createNewFilament);
-
+        if (Lookup.getUserPreferences().isAdvancedMode())
+        {
+            availableFilaments.addAll(FilamentContainer.getUserFilamentList());
+            availableFilaments.add(FilamentContainer.createNewFilament);
+        }
+        
         if (currentSelection != null && availableFilaments.contains(currentSelection)
             && currentSelection != FilamentContainer.createNewFilament)
         {

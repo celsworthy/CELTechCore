@@ -77,6 +77,9 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        gcodeEntryField.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
+        sendGCodeButton.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
+        
         gcodeTranscript.setEditable(false);
         gcodeTranscript.setScrollTop(Double.MAX_VALUE);
 

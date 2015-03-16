@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.CoreTest;
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
@@ -65,6 +66,9 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
     
     @FXML
     private Button saveAsButton;
+    
+    @FXML
+    private Button staticSaveAsButton;
     
     @FXML
     private ColorPicker colour;
@@ -172,6 +176,8 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        staticSaveAsButton.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());        
+        
         name.setRight(redcrossHolder);
         name.getRight().visibleProperty().bind(materialNameInvalid.and(isDirty));
         name.textProperty().addListener(new ChangeListener<String>()

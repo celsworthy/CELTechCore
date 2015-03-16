@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
-import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -15,7 +9,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintBed;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.controllers.GCodeEditorPanelController;
 import celtech.coreUI.visualisation.CameraPositionPreset;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -27,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +30,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.effect.Glow;
@@ -47,7 +38,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -299,26 +289,6 @@ public class ProjectTab extends Tab
         });
 
         basePane.getChildren().add(viewManager.getSubScene());
-
-        try
-        {
-            URL gcodeEditorURL = getClass().getResource(
-                ApplicationConfiguration.fxmlResourcePath
-                + "GCodeEditorPanel.fxml");
-            FXMLLoader gcodeEditorLoader = new FXMLLoader(gcodeEditorURL,
-                                                          Lookup.getLanguageBundle());
-            StackPane gcodeEditor = (StackPane) gcodeEditorLoader.load();
-            GCodeEditorPanelController gcodeEditorController = gcodeEditorLoader.getController();
-            gcodeEditorController.configure(viewManager.getLoadedModels(),
-                                            project);
-            AnchorPane.setTopAnchor(gcodeEditor, 30.0);
-            AnchorPane.setRightAnchor(gcodeEditor, 0.0);
-
-            basePane.getChildren().add(gcodeEditor);
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load gcode editor:" + ex);
-        }
 
         this.setContent(basePane);
 

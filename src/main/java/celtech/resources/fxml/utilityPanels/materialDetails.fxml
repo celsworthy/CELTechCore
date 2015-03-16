@@ -102,7 +102,7 @@
                 </HBox>
                 <HBox fx:id="immutableOptions" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
+                        <Button fx:id="staticSaveAsButton" mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
                     </children>
                 </HBox>
             </children>
