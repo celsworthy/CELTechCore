@@ -24,7 +24,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -55,11 +58,13 @@ public class Project implements Serializable
     private String lastPrintJobID = "";
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
+    private final BooleanProperty modelColourChanged = new SimpleBooleanProperty();
+
     private final PrinterSettings printerSettings;
 
     private final StringProperty projectNameProperty;
     private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
-    
+
     private boolean suppressProjectChanged = false;
 
     public Project()
@@ -168,7 +173,7 @@ public class Project implements Serializable
         for (int i = 0; i < numModels; i++)
         {
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
-            loadedModels.add(modelContainer);
+            addModel(modelContainer);
         }
     }
 
@@ -340,6 +345,11 @@ public class Project implements Serializable
         return lastPrintJobID;
     }
 
+    public ReadOnlyBooleanProperty getModelColourChanged()
+    {
+        return modelColourChanged;
+    }
+
     public PrintQualityEnumeration getPrintQuality()
     {
         return printerSettings.getPrintQuality();
@@ -467,6 +477,7 @@ public class Project implements Serializable
         modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             fireWhenModelChanged(modelContainer, "associateWithExtruderNumber");
+            modelColourChanged.set(!modelColourChanged.get());
         };
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
             modelExtruderNumberListener);
