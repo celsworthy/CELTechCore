@@ -11,11 +11,13 @@
     <children>
         <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="inset-panel-redux" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <children>
-<VBox styleClass="inset-panel-centre-redux">
-<children><TextFlow fx:id="titleTextFlow" /><Label fx:id="intro" styleClass="welcome-intro" text="Text that is very long and goes on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on" VBox.vgrow="SOMETIMES" />
-                <TextFlow fx:id="textFlow" styleClass="inset-panel-body-redux" />
-</children>
-</VBox>
+                <VBox styleClass="inset-panel-centre-redux">
+                    <children>
+                        <TextFlow fx:id="titleTextFlow" />
+                        <Label fx:id="intro" styleClass="welcome-intro" text="Text that is very long and goes on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on" VBox.vgrow="SOMETIMES" />
+                        <TextFlow fx:id="textFlow" styleClass="inset-panel-body-redux" />
+                    </children>
+                </VBox>
             </children>
             <VBox.margin>
                 <Insets />
