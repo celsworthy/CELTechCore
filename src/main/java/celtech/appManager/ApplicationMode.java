@@ -12,6 +12,7 @@ import celtech.configuration.ApplicationConfiguration;
  */
 public enum ApplicationMode
 {
+    WELCOME("printerStatus", "Welcome"),
     CALIBRATION_CHOICE("printerStatus", "Calibration"),
     REGISTRATION("printerStatus", "registration"),
     PURGE("printerStatus", "purge"),

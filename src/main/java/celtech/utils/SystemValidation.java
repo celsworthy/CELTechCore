@@ -46,9 +46,13 @@ public class SystemValidation
     /**
      * Check that 3D is supported on this machine and if not then exit the
      * application.
+     * @param i18nBundle
+     * @return 
      */
-    public static void check3DSupported(ResourceBundle i18nBundle)
+    public static boolean check3DSupported(ResourceBundle i18nBundle)
     {
+        boolean threeDSupportOK = false;
+        
         steno.debug("Starting AutoMaker - check 3D support...");
         boolean checkForScene3D = true;
 
@@ -82,7 +86,13 @@ public class SystemValidation
                     }
                 });
             }
+            else
+            {
+                threeDSupportOK = true;
+            }
         }
+        
+        return threeDSupportOK;
     }
 
 }

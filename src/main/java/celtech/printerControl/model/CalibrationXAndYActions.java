@@ -3,6 +3,7 @@
  */
 package celtech.printerControl.model;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -50,7 +51,7 @@ public class CalibrationXAndYActions
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
 //        Thread.sleep(3000);
-        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-1_roboxised"), false);
+        printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat("rbx_test_xy-offset-1_roboxised.gcode"), false);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         // keep bed temp up to keep remaining part on the bed
 //        printer.goToTargetBedTemperature();

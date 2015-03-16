@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.shape.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <Pane styleClass="lightGreyBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -21,7 +19,6 @@
                <Line endX="28.954" endY="280.918" startX="59.481" startY="281.195" stroke="#FFFFFF" />
                <Line endX="96.673" endY="281.535" startX="114.772" startY="281.344" stroke="#FFFFFF" />
                <Line endX="136.349" endY="281.115" startX="164.411" startY="280.818" stroke="#FFFFFF" />
-               <SVGPath content="M69.443,374.512l0.158-8.68l0.107-8.748l0.065-8.742l0.044-8.43l0.034-7.762l0.032-7.441l0.059-7.924     l0.098-8.68l0.157-9.158l0.085-3.768l1.093,0.115l-0.037,1.391l-0.145,7.875l-0.11,8.385l-0.078,9.172l-0.049,9.723l-0.041,9.496     l-0.049,9.016l-0.078,8.795l-0.121,8.59l-0.163,8.383l-0.155,6.18l-0.018,0.605c-0.119,1.98,0,3.426-0.673,3.361     c-0.539-0.053-0.499-2.051-0.407-3.912L69.443,374.512z" fill="#009EE3" />
                <Line endX="185.72" endY="0.93" startX="190.96" startY="6.207" stroke="#FFFFFF" />
                <Line endX="185.717" endY="0.93" startX="190.96" startY="6.211" stroke="#FFFFFF" />
                <Polyline stroke="#FFFFFF">
@@ -2070,7 +2067,6 @@
                </Pane>
              </children>
           </Pane>
-          <SVGPath content="M129.527,332.447l-0.217-4.408l-0.367-4.445l-0.47-4.439l-0.517-4.283l-0.493-3.941l-0.459-3.779    l-0.438-4.025l-0.379-4.408l-0.267-4.654l-0.045-2.023h3l0.013,0.863l0.185,3.996l0.331,4.264l0.479,4.658l0.589,4.936    l0.604,4.824l0.544,4.578l0.442,4.469l0.318,4.363l0.182,4.26l0.042,3.139l-0.008,0.309c-0.181,1.01,0.249,1.738-1.597,1.715    c-1.487-0.02-1.518-1.033-1.412-1.979L129.527,332.447z" fill="#009EE3" />
         </children>
      </Pane>
      <Pane>
@@ -4143,6 +4139,6 @@
              </children>
           </Pane>
         </children>
-     </Pane>
+     </Pane><Line endY="20.0" layoutX="70.54299926757812" layoutY="294.8871154785156" rotate="3.0" stroke="#009ee3" /><Line endY="20.0" layoutX="128.0" layoutY="293.0" rotate="-4.0" stroke="#009ee3" strokeWidth="2.5" />
    </children>
 </Pane>

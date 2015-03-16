@@ -221,7 +221,7 @@ public class FilamentContainer
             Properties filamentProperties = new Properties();
 
             filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
-            filamentProperties.setProperty(materialProperty, filament.getMaterial().getFriendlyName());
+            filamentProperties.setProperty(materialProperty, filament.getMaterial().name());
             if (filament.getFilamentID() == null)
             {
                 String userReelID = Filament.generateUserReelID();

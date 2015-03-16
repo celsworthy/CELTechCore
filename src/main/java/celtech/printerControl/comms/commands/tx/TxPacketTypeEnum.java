@@ -11,6 +11,8 @@ public enum TxPacketTypeEnum
 
     /**
      *
+     *//**
+     *
      */
     STATUS_REQUEST((byte) 0xB0, 1, false, RxPacketTypeEnum.STATUS_RESPONSE),
 
@@ -23,6 +25,11 @@ public enum TxPacketTypeEnum
      *
      */
     START_OF_DATA_FILE((byte) 0x90, 1, true, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    SEND_PRINT_FILE_START((byte) 0x97, 1, true, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.shape.*?>
 <?import java.lang.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <Pane styleClass="lightGreyBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -21,7 +20,6 @@
                <Line endX="164.395" endY="280.918" startX="133.865" startY="281.194" stroke="#FFFFFF" />
                <Line endX="96.676" endY="281.535" startX="78.574" startY="281.344" stroke="#FFFFFF" />
                <Line endX="56.999" endY="281.115" startX="28.937" startY="280.817" stroke="#FFFFFF" />
-               <SVGPath content="M124.742,335.586l-0.218-4.408l-0.366-4.445l-0.471-4.439l-0.516-4.283l-0.494-3.94l-0.459-3.78     l-0.438-4.024l-0.38-4.409l-0.267-4.654l-0.045-2.022h3l0.013,0.862l0.185,3.997l0.332,4.262l0.478,4.659l0.589,4.936     l0.605,4.824l0.543,4.579l0.442,4.468l0.319,4.363l0.182,4.26l0.041,3.139l-0.008,0.309c-0.18,1.01,0.25,1.739-1.598,1.715     c-1.486-0.02-1.516-1.032-1.411-1.979L124.742,335.586z" fill="#009EE3" />
                <Line endX="7.629" endY="0.929" startX="2.387" startY="6.207" stroke="#FFFFFF" />
                <Line endX="7.631" endY="0.93" startX="2.387" startY="6.211" stroke="#FFFFFF" />
                <Polyline stroke="#FFFFFF">
@@ -1997,6 +1995,6 @@
           </Pane>
         </children>
      </Pane>
-      <TextField fx:id="BPosition" alignment="CENTER" editable="false" layoutX="32.0" layoutY="375.0" prefColumnCount="6" styleClass="calibrationInfoField" />
+      <TextField fx:id="BPosition" alignment="CENTER" editable="false" layoutX="32.0" layoutY="375.0" prefColumnCount="6" styleClass="calibrationInfoField" /><Line endY="20.0" layoutX="123.0" layoutY="296.0" stroke="#009ee3" strokeWidth="2.5" />
    </children>
 </Pane>

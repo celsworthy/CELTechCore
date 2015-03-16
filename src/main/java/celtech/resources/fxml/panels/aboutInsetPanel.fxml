@@ -16,8 +16,8 @@
             <center>
                 <VBox>
                     <children>
-                        <TopMenuStrip BorderPane.alignment="CENTER" />
-                        <AnchorPane styleClass="aboutBody" BorderPane.alignment="CENTER">
+                        <HBox minHeight="60" /> 
+                        <AnchorPane styleClass="aboutBody" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
                             <children>
                                 <Group AnchorPane.leftAnchor="60.0" AnchorPane.topAnchor="60.0">
                                     <children>
@@ -169,7 +169,7 @@
                                             <padding>
                                                 <Insets top="20.0" />
                                             </padding>
-                                        </HBox><Button layoutX="399.0" layoutY="862.4320068359375" mnemonicParsing="false" text="Button" BorderPane.alignment="CENTER" />
+                                        </HBox>
                                     </children>
                                     <opaqueInsets>
                                         <Insets />

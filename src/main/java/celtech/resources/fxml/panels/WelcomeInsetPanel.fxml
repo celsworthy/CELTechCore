@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.buttons.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.WelcomeInsetPanelController">
+    <children>
+        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="inset-panel-redux" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+            <children>
+                <VBox styleClass="inset-panel-centre-redux">
+                    <children>
+                        <TextFlow fx:id="titleTextFlow" />
+                        <Label fx:id="intro" styleClass="welcome-intro" text="Text that is very long and goes on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on" VBox.vgrow="SOMETIMES" />
+                        <TextFlow fx:id="textFlow" styleClass="inset-panel-body-redux" />
+                    </children>
+                </VBox>
+            </children>
+            <VBox.margin>
+                <Insets />
+            </VBox.margin>
+        </VBox>
+        <HBox fillHeight="false" styleClass="inset-panel-bottom-bar-redux" VBox.vgrow="NEVER">
+            <children>
+                <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#backToStatusAction" />
+            </children>
+        </HBox>
+    </children>
+</VBox>

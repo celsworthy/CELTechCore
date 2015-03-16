@@ -79,6 +79,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 keepRunning = false;
                 break;
         }
+
+        steno.trace("Robox detector command: " + roboxDetectorCommand);
     }
 
     /**

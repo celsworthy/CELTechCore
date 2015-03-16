@@ -54,7 +54,7 @@ public class FirmwareLoadTask extends Task<FirmwareLoadResult>
             int remainingBytes = fileData.length;
             int bufferPosition = 0;
             String firmwareID = SystemUtils.generate16DigitID();
-            boolean sendOK = printerToUpdate.initialiseDataFileSend(firmwareID);
+            boolean sendOK = printerToUpdate.initialiseDataFileSend(firmwareID, false);
 
             if (sendOK)
             {

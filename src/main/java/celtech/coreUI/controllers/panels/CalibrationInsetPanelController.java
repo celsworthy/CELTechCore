@@ -24,9 +24,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.animation.Timeline;
+import javafx.animation.Transition;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -43,7 +43,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -160,6 +162,20 @@ public class CalibrationInsetPanelController implements Initializable,
     DiagramController diagramController;
     private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
     private boolean backToStatusInhibitWhenAtTop = false;
+    private Line lineToAnimate;
+    private double originalAnimatedLineLength = 0;
+    private Transition animatedFilamentTransition = new Transition()
+    {
+        {
+            setCycleDuration(Duration.millis(2000));
+        }
+
+        @Override
+        public void interpolate(double frac)
+        {
+            lineToAnimate.setEndY(frac * originalAnimatedLineLength);
+        }
+    };
 
     @FXML
     void buttonAAction(ActionEvent event)
@@ -256,6 +272,9 @@ public class CalibrationInsetPanelController implements Initializable,
 
         calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 
+        animatedFilamentTransition.setCycleCount(Timeline.INDEFINITE);
+        animatedFilamentTransition.setAutoReverse(false);
+
         addDiagramMoveScaleListeners();
 
     }
@@ -332,12 +351,19 @@ public class CalibrationInsetPanelController implements Initializable,
     private Node getDiagramNode(URL fxmlFileName)
     {
         Pane loadedDiagramNode = null;
+        animatedFilamentTransition.stop();
         try
         {
             FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
             diagramController = new DiagramController();
             loader.setController(diagramController);
             loadedDiagramNode = loader.load();
+            lineToAnimate = (Line) loadedDiagramNode.lookup("#animatedFilament");
+            if (lineToAnimate != null)
+            {
+                originalAnimatedLineLength = lineToAnimate.getEndY();
+                animatedFilamentTransition.playFrom(Duration.ZERO);
+            }
 
             Bounds bounds = getBoundsOfNotYetDisplayedNode(loadedDiagramNode);
             steno.debug("diagram bounds are " + bounds);
