@@ -163,6 +163,10 @@ public class UserPreferences
             {
                 this.advancedMode.set(true);
             }
+            else
+            {
+                this.setAdvancedMode(false);
+            }
         } else
         {
             this.advancedMode.set(advancedMode);

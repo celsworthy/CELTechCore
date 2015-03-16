@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.shape.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <Pane styleClass="lightGreyBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -21,8 +19,6 @@
                <Line endX="164.392" endY="280.918" startX="133.862" startY="281.195" stroke="#FFFFFF" />
                <Line endX="96.673" endY="281.535" startX="78.571" startY="281.344" stroke="#FFFFFF" />
                <Line endX="56.997" endY="281.115" startX="28.935" startY="280.818" stroke="#FFFFFF" />
-               <SVGPath content="M124.739,335.586l-0.217-4.408l-0.367-4.445l-0.469-4.439l-0.518-4.282l-0.494-3.94l-0.457-3.78     l-0.439-4.024l-0.38-4.409l-0.266-4.654l-0.044-2.022h3l0.011,0.862l0.187,3.997l0.332,4.262l0.477,4.658l0.59,4.936l0.604,4.824     l0.544,4.58l0.442,4.467l0.318,4.363l0.182,4.26l0.042,3.14l-0.009,0.308c-0.18,1.01,0.25,1.74-1.598,1.715     c-1.486-0.019-1.516-1.032-1.411-1.979L124.739,335.586z" fill="#009EE3" />
-               <SVGPath content="M64.611,371.487l0.161-8.681l0.105-8.748l0.066-8.742l0.043-8.43l0.035-7.76l0.031-7.443l0.058-7.923     l0.099-8.68l0.158-9.159l0.084-3.768l1.092,0.115l-0.037,1.393l-0.145,7.875l-0.109,8.384l-0.078,9.171l-0.051,9.725     l-0.039,9.494l-0.049,9.016l-0.079,8.795l-0.12,8.59l-0.164,8.383l-0.152,6.182l-0.018,0.604     c-0.12,1.982-0.002,3.427-0.676,3.361c-0.539-0.053-0.498-2.05-0.406-3.912L64.611,371.487z" fill="#009EE3" />
                <Line endX="7.626" endY="0.93" startX="2.386" startY="6.208" stroke="#FFFFFF" />
                <Line endX="7.628" endY="0.931" startX="2.386" startY="6.211" stroke="#FFFFFF" />
                <Polyline stroke="#FFFFFF">
@@ -4143,6 +4139,7 @@
              </children>
           </Pane>
         </children>
-     </Pane>
+     </Pane><Line fx:id="fineDangly" endY="20.0" layoutX="65.54299926757812" layoutY="292.8871154785156" rotate="3.0" stroke="#009ee3" />
+<Line fx:id="thickDangly" endY="20.0" layoutX="123.0" layoutY="296.0" stroke="#009ee3" strokeWidth="2.5" />
    </children>
 </Pane>

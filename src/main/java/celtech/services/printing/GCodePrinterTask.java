@@ -28,6 +28,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     private IntegerProperty linesInFile = null;
     private boolean printUsingSDCard = true;
     private int startFromSequenceNumber = 0;
+    private boolean thisJobCanBeReprinted = false;
 
     /**
      *
@@ -37,13 +38,15 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
      * @param linesInFile
      * @param printUsingSDCard
      * @param startFromSequenceNumber
+     * @param thisJobCanBeReprinted
      */
     public GCodePrinterTask(Printer printerToUse,
         String modelFileToPrint,
         String printJobID,
         IntegerProperty linesInFile,
         boolean printUsingSDCard,
-        int startFromSequenceNumber
+        int startFromSequenceNumber,
+        boolean thisJobCanBeReprinted
     )
     {
         this.printerToUse = printerToUse;
@@ -52,6 +55,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         this.linesInFile = linesInFile;
         this.printUsingSDCard = printUsingSDCard;
         this.startFromSequenceNumber = startFromSequenceNumber;
+        this.thisJobCanBeReprinted = thisJobCanBeReprinted;
     }
 
     @Override
@@ -82,7 +86,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
 
             if (printUsingSDCard && startFromSequenceNumber == 0)
             {
-                printerToUse.initialiseDataFileSend(printJobID);
+                printerToUse.initialiseDataFileSend(printJobID, thisJobCanBeReprinted);
             }
 
             printerToUse.resetDataFileSequenceNumber();

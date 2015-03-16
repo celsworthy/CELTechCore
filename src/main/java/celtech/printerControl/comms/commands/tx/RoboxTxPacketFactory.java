@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.tx;
 
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
@@ -42,6 +38,9 @@ public class RoboxTxPacketFactory
                     break;
                 case EXECUTE_GCODE:
                     returnVal = new SendGCodeRequest();
+                    break;
+                case SEND_PRINT_FILE_START:
+                    returnVal = new SendPrintFileStart();
                     break;
                 case START_OF_DATA_FILE:
                     returnVal = new SendDataFileStart();
