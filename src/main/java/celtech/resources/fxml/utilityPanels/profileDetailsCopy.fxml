@@ -461,7 +461,7 @@
                                         <Label styleClass="printProfileDivider" text="%cooling.fanSettingsTitle" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableAutoCooling" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.MinimumSpeed" GridPane.rowIndex="2" />
-                                        <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.MaximumSpeed" GridPane.rowIndex="3" />
                                         <RestrictedNumberField id="unretractLength" fx:id="maxFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.bridgesFanSpeedLabel" GridPane.rowIndex="4" />
