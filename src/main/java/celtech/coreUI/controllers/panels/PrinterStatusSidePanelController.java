@@ -1,17 +1,13 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.configuration.PrinterColourMap;
-import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
@@ -21,7 +17,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
@@ -83,6 +78,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private PrinterGridComponent printerGridComponent;
     
+    private Printer previousSelectedPrinter = null;
     private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     
     private final int MAX_DATA_POINTS = 210;
@@ -177,17 +173,18 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
      */
     private void whenPrinterSelected(Printer printer)
     {
-        if (selectedPrinter.get() != null)
+        if (previousSelectedPrinter != null)
         {
-            unbindPrinter(selectedPrinter.get());
-            if (selectedPrinter.get().headProperty().get() != null)
+            unbindPrinter(previousSelectedPrinter);
+            if (previousSelectedPrinter.headProperty().get() != null)
             {
-                unbindHeadProperties(selectedPrinter.get().headProperty().get());
+                unbindHeadProperties(previousSelectedPrinter.headProperty().get());
             }
         }
         
         if (printer != null)
         {
+            previousSelectedPrinter = printer;
             Lookup.setCurrentlySelectedPrinter(printer);
             bindDetails(printer);
             if (printer.headProperty().get() != null)
