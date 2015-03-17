@@ -90,8 +90,8 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
-        URL statusInsetPanelURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "settingsInsetPanel.fxml");
-        FXMLLoader loader = new FXMLLoader(statusInsetPanelURL, Lookup.getLanguageBundle());
+        URL settingsInsetPanelURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "settingsInsetPanel.fxml");
+        FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, Lookup.getLanguageBundle());
         Node settingsInsetPanel = null;
         try
         {
@@ -107,6 +107,8 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         basePane.getChildren().addAll(viewManager.getSubScene(), settingsInsetPanel);
+        AnchorPane.setTopAnchor(settingsInsetPanel, 30.0);
+        AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
 
         this.setContent(basePane);
 

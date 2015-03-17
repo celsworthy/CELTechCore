@@ -11,9 +11,9 @@
 <?import javafx.scene.shape.*?>
 <?import jfxtras.styles.jmetro8.*?>
 
-<HBox fx:id="root" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsInsetPanelController">
+<HBox id="settingsInsetRoot" fx:id="settingsInsetRoot" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsInsetPanelController">
     <children>
-        <BorderPane id="AnchorPane" maxHeight="-1.0" styleClass="sidePanel" HBox.hgrow="ALWAYS">
+        <BorderPane id="AnchorPane" maxHeight="-1.0" HBox.hgrow="ALWAYS">
             <top>
                 <VBox alignment="TOP_CENTER" fillWidth="true" maxWidth="-1.0" prefWidth="-1.0" spacing="25.0" BorderPane.alignment="CENTER">
                     <children>
@@ -75,8 +75,4 @@
             </HBox.margin>
         </BorderPane>
     </children>
-    <styleClass>
-        <String fx:value="sidePanel" />
-        <String fx:value="regularFont" />
-    </styleClass>
 </HBox>

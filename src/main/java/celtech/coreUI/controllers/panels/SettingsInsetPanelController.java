@@ -41,11 +41,9 @@ public class SettingsInsetPanelController implements Initializable
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         SettingsInsetPanelController.class.getName());
-    private PrinterSettings printerSettings = null;
-    private ApplicationStatus applicationStatus = null;
 
     @FXML
-    private HBox root;
+    private HBox settingsInsetRoot;
 
     @FXML
     private Slider brimSlider;
@@ -80,18 +78,14 @@ public class SettingsInsetPanelController implements Initializable
         observableArrayList();
 
     private Project currentProject;
+    private PrinterSettings printerSettings = null;
 
     /**
      * Initialises the controller class.
-     *
-     * @param url
-     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        applicationStatus = ApplicationStatus.getInstance();
-
         setupQualityChooser();
 
         setupCustomProfileChooser();
@@ -108,15 +102,15 @@ public class SettingsInsetPanelController implements Initializable
                 whenProjectChanged(newValue);
             });
 
-        applicationStatus.modeProperty().addListener(
+        ApplicationStatus.getInstance().modeProperty().addListener(
             (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
             {
                 if (newValue == ApplicationMode.SETTINGS)
                 {
-                    root.setVisible(true);
+                    settingsInsetRoot.setVisible(true);
                 } else
                 {
-                    root.setVisible(false);
+                    settingsInsetRoot.setVisible(false);
                 }
             });
     }

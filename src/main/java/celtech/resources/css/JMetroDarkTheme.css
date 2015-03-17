@@ -35,6 +35,7 @@
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
     mid_grey: rgb(64,64,64);
+    mid_grey_50: rgb(64,64,64, 0.5);
     light_grey: rgb(99,99,99);
     robox_blue: #0096e1;
     highlight_colour: rgb(0, 157, 226);
@@ -2444,4 +2445,12 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-min-height: 260;    
     -fx-hgap: 20;
     -fx-background-color: mid_grey;
+}
+
+/**
+* Settings Inset Panel
+*/
+#settingsInsetRoot {
+ -fx-background-color: mid_grey_50;
+ -fx-font-family: 'Source Sans Pro Regular';
 }
