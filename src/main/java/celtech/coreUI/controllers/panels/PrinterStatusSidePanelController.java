@@ -213,23 +213,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     
     private void bindPrinter(Printer printer)
     {
-        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
-        currentAmbientTemperatureHistory = ancillarySystems.getAmbientTemperatureHistory();
-        
+        currentAmbientTemperatureHistory = printer.getPrinterAncillarySystems().getAmbientTemperatureHistory();
         chartManager.setLegendLabels(legendNozzle, legendBed, legendAmbient);
-        
-        chartManager.setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
-        chartManager.setBedData(ancillarySystems.getBedTemperatureHistory());
-        chartManager.setAmbientTemperatureProperty(ancillarySystems.ambientTemperatureProperty());
-        chartManager.setBedTemperatureProperty(ancillarySystems.bedTemperatureProperty());
-        
-        chartManager.setTargetAmbientTemperatureProperty(
-            ancillarySystems.ambientTargetTemperatureProperty());
-        chartManager.setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
-        chartManager.
-            setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
-        chartManager.setTargetBedFirstLayerTemperatureProperty(ancillarySystems.
-            bedFirstLayerTargetTemperatureProperty());
+        chartManager.bindPrinter(printer);
         
         speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
         speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
@@ -269,10 +255,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             unbindHeadProperties(printer.headProperty().get());
         }
         
-        chartManager.clearAmbientData();
-        chartManager.clearBedData();
-        chartManager.clearLegendLabels();
         currentAmbientTemperatureHistory = null;
+        chartManager.unbindPrinter();
         
         speedSliderHBox.visibleProperty().unbind();
         speedSliderHBox.setVisible(false);
