@@ -537,7 +537,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
      */
     private void removeUnknownFromCombo()
     {
-        comboItems.remove(UNKNOWN);
+        if (comboItems.contains(UNKNOWN))
+        {
+            Object currentVal = cmbMaterials.getValue();
+            comboItems.remove(UNKNOWN);
+            cmbMaterials.setValue(currentVal);
+        }
     }
 
     // PrinterListChangesNotifier

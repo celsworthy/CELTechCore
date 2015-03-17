@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.printerstatus.*?>
 <?import celtech.coreUI.components.material.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -182,12 +183,11 @@
                         </VBox>
                         <VBox alignment="CENTER" fillWidth="true" spacing="5.0">
                             <children>
-                                <Label layoutX="141.0" layoutY="141.0" maxWidth="-1.0" styleClass="sidePanelDivider" text="%sidePanel_settings.printerSelectionLabel" />
-                                <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_printerStatus.noPrinterPlaceholder" styleClass="cmbCleanCombo" VBox.vgrow="NEVER">
-                                </ComboBox>
-                                <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel">
-  
-                                </Label>
+                        <HBox alignment="CENTER">
+                           <children>
+                              <PrinterGridComponent fx:id="printerGrid" styleClass="printerGrid" />
+                           </children>
+                        </HBox>
                         <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild">
                            <children>
                               <VBox fx:id="materialContainer" spacing="36.0">

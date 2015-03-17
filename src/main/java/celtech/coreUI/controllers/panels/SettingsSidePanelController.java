@@ -12,6 +12,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.components.material.MaterialComponent;
+import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import celtech.printerControl.model.Extruder;
@@ -54,7 +55,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         SettingsSidePanelController.class.getName());
-    private ObservableList<Printer> printerStatusList = null;
     private PrinterSettings printerSettings = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
@@ -80,7 +80,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private VBox customProfileVBox;
 
     @FXML
-    private ComboBox<Printer> printerChooser;
+    private PrinterGridComponent printerGrid;
 
     @FXML
     private Slider fillDensitySlider;
@@ -99,7 +99,8 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private final ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
         observableArrayList();
 
-    private Printer currentPrinter;
+    private Printer previouslySelectedPrinter = null;
+    private ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
     private Project currentProject;
     /**
      * filament0 is updated by the MaterialComponent for extruder 0, then changes to filament0 are
@@ -126,7 +127,24 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     {
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
-        printerStatusList = Lookup.getConnectedPrinters();
+        
+        currentPrinter.bind(printerGrid.getSelectedPrinter());
+        currentPrinter.addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+        {
+            if (previouslySelectedPrinter != null)
+            {
+                unbindPrinter(previouslySelectedPrinter);
+            }
+            previouslySelectedPrinter = currentPrinter.get();
+            
+            if (printerSettings != null)
+            {
+                printerSettings.setSelectedPrinter(currentPrinter.get());
+            }
+            bindPrinter(currentPrinter.get());
+            configureMaterialComponents(currentPrinter.get());
+        });
 
         try
         {
@@ -148,8 +166,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         setupQualityChooser();
 
         setupCustomProfileChooser();
-
-        setupPrinterChooser();
 
         nonCustomProfileVBox.visibleProperty()
             .bind(qualityChooser.valueProperty().isNotEqualTo(
@@ -354,96 +370,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
             });
     }
 
-    private void setupPrinterChooser()
-    {
-        printerChooser.setCellFactory(
-            new Callback<ListView<Printer>, ListCell<Printer>>()
-            {
-                @Override
-                public ListCell<Printer> call(ListView<Printer> param)
-                {
-                    final ListCell<Printer> cell = new ListCell<Printer>()
-                    {
-                        {
-                            super.setPrefWidth(100);
-                        }
-
-                        @Override
-                        public void updateItem(Printer item,
-                            boolean empty)
-                        {
-                            super.updateItem(item, empty);
-                            if (item != null)
-                            {
-                                setText(
-                                    item.getPrinterIdentity().printerFriendlyNameProperty().get());
-                            } else
-                            {
-                                setText(null);
-                            }
-                        }
-                    };
-                    return cell;
-                }
-            });
-
-        printerChooser.setItems(printerStatusList);
-
-        printerChooser.getSelectionModel().clearSelection();
-
-        printerChooser.getItems().addListener(
-            (ListChangeListener.Change<? extends Printer> change) ->
-            {
-                while (change.next())
-                {
-                    if (change.wasAdded())
-                    {
-                        for (Printer addedPrinter : change.getAddedSubList())
-                        {
-                            printerChooser.setValue(addedPrinter);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Printer removedPrinter : change.getRemoved())
-                        {
-                            if (printerChooser.getItems().isEmpty())
-                            {
-                                printerChooser.getSelectionModel().select(null);
-                            } else
-                            {
-                                printerChooser.getSelectionModel().selectFirst();
-                            }
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                        steno.info("Replace");
-                    } else if (change.wasUpdated())
-                    {
-                        steno.info("Update");
-
-                    }
-                }
-            });
-
-        printerChooser.getSelectionModel().selectedItemProperty().addListener(
-                (ObservableValue<? extends Printer> ov, Printer lastSelectedPrinter, Printer selectedPrinter) ->
-        {
-            if (currentPrinter != null)
-            {
-                unbindPrinter(currentPrinter);
-            }
-            
-            currentPrinter = selectedPrinter;
-           
-            if (printerSettings != null)
-            {
-                printerSettings.setSelectedPrinter(selectedPrinter);
-            }
-            bindPrinter(selectedPrinter);
-            configureMaterialComponents(selectedPrinter);
-        });
-    }
-
     private ChangeListener<Filament> materialFilament0Listener = (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
     {
         filament0.set(newValue);
@@ -518,7 +444,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                         }
                     }
                 }
-
             }
         }
     }
@@ -643,9 +568,9 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
-        if (printerSettings.getSelectedPrinter() == null && printerChooser.getValue() != null)
+        if (printerSettings.getSelectedPrinter() == null && currentPrinter.get() != null)
         {
-            printerSettings.setSelectedPrinter(printerChooser.getValue());
+            printerSettings.setSelectedPrinter(currentPrinter.get());
         }
 
         printerSettings.setFilament0(filament0.get());
@@ -743,7 +668,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
-        if (printer == currentPrinter)
+        if (printer == currentPrinter.get())
         {
             configureMaterialComponents(printer);
         }
@@ -752,7 +677,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-        if (printer == currentPrinter)
+        if (printer == currentPrinter.get())
         {
             configureMaterialComponents(printer);
         }

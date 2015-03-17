@@ -1371,17 +1371,6 @@ table-view .column-header-background {
     -fx-background-color: black;
     -fx-border-width: 0px;
 }
-/*
-.button:default
-{
-    -fx-background-color: mid_grey;
-    -fx-border-color: transparent;
-}
-
-.button:default:hover{
-    -fx-background-color: mid_grey;
-    -fx-border-color: transparent;
-}*/
 
 .slideout-control-button:hover .slideout-control-button-graphic{
     -fx-fill: white;
@@ -1433,7 +1422,7 @@ modal-dialogue{
 
 /*******************************************************************************
  *                                                                             *
- * ProjectMenu                                                                    *
+ * ProjectMenu                                                                 *
  *                                                                             *
  ******************************************************************************/
 
@@ -1804,7 +1793,7 @@ modal-dialogue{
 
 #verticalMenuTitle {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size:60px;
+    -fx-font-size:50px;
     -fx-fill: white;
 }
 
@@ -1815,7 +1804,7 @@ modal-dialogue{
 
 .verticalMenuOption {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 36px;
+    -fx-font-size: 30px;
 }
 
 .verticalMenuOption:selected {
