@@ -24,6 +24,7 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         this.userPreferences = userPreferences;
 
         control = new ComboBox<>();
+        control.getStyleClass().add("cmbCleanCombo");
         control.setItems(FXCollections.observableArrayList(SlicerType.values()));
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());

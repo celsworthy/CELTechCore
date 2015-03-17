@@ -239,7 +239,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         try
         {
             allFilaments.clear();
-            allFilaments.addAll(FilamentContainer.getAppFilamentList());
+            allFilaments.addAll(FilamentContainer.getAppFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             allFilaments.addAll(FilamentContainer.getUserFilamentList().sorted(
                 (Filament o1, Filament o2)
                 -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));

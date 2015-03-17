@@ -17,7 +17,7 @@ public class FXMLUtilities
 {
 
     /**
-     * Add colons to all descendent labels that have the styleclass "colon".
+     * Recursively add colons to all descendent labels that have the styleclass "colon".
      *
      * @param parentNode the node from which to start the recursion.
      */
@@ -49,10 +49,8 @@ public class FXMLUtilities
                             addColonsToLabels((Parent) content);
                         }
                     }
-
                 }
             }
         }
     }
-
 }

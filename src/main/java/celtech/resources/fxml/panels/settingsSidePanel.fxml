@@ -183,7 +183,7 @@
                         <VBox alignment="CENTER" fillWidth="true" spacing="5.0">
                             <children>
                                 <Label layoutX="141.0" layoutY="141.0" maxWidth="-1.0" styleClass="sidePanelDivider" text="%sidePanel_settings.printerSelectionLabel" />
-                                <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_printerStatus.noPrinterPlaceholder" VBox.vgrow="NEVER">
+                                <ComboBox fx:id="printerChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_printerStatus.noPrinterPlaceholder" styleClass="cmbCleanCombo" VBox.vgrow="NEVER">
                                 </ComboBox>
                                 <Label fx:id="materialLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.materialSelectionLabel">
   
@@ -209,7 +209,7 @@
                                         <children>
                                             <Label fx:id="customSettingsLabel" minHeight="0.0" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
                                             </Label>
-                                            <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.customProfileSelectionLabel">
+                                            <ComboBox fx:id="customProfileChooser" maxWidth="1.7976931348623157E308" promptText="%sidePanel_settings.customProfileSelectionLabel" styleClass="cmbCleanCombo">
                                             </ComboBox>
                                         </children>
                                     </VBox>

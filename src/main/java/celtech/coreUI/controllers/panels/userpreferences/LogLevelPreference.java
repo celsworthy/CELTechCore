@@ -23,6 +23,7 @@ public class LogLevelPreference implements PreferencesInnerPanelController.Prefe
         this.userPreferences = userPreferences;
 
         control = new ComboBox<>();
+        control.getStyleClass().add("cmbCleanCombo");
         control.setPrefWidth(250);
         control.setMinWidth(control.getPrefWidth());
         control.getItems().setAll(LogLevel.values());
