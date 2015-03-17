@@ -2442,3 +2442,17 @@ all inherit from Menu Control's popup-menu. --- */
 .printProfileDivider {
     -fx-text-fill: robox_blue;
 }
+
+/**
+* PrinterGrid
+*/
+.printerGrid {
+    -fx-pref-width: 260;
+    -fx-max_width: 260;
+    -fx-min-width: 260;
+    -fx-pref-height: 260;
+    -fx-max_height: 260;
+    -fx-min-height: 260;    
+    -fx-hgap: 20;
+    -fx-background-color: mid_grey;
+}

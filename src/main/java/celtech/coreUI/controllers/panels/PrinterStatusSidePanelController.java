@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
-import celtech.coreUI.components.printerstatus.PrinterComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Extruder;
@@ -16,9 +15,9 @@ import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -48,10 +47,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterStatusSidePanelController.class.getName());
-    
-    private MaterialComponent material0;
-    
-    private MaterialComponent material1;
     
     @FXML
     private VBox materialContainer;
@@ -88,71 +83,52 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private PrinterGridComponent printerGridComponent;
     
-    private PrinterIDDialog printerIDDialog = null;
-    
-    private Printer selectedPrinter = null;
-    private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
+    private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     
     private final int MAX_DATA_POINTS = 210;
-    
-    private final ObservableList<Printer> connectedPrinters = Lookup.getConnectedPrinters();
     
     private LineChart.Series<Number, Number> currentAmbientTemperatureHistory = null;
     
     private ChartManager chartManager;
     
-    private final ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = new ListChangeListener<XYChart.Data<Number, Number>>()
+    private final ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener = 
+        (ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change) ->
     {
-        @Override
-        public void onChanged(
-            ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change)
+        while (change.next())
         {
-            while (change.next())
+            if (change.wasAdded() || change.wasRemoved())
             {
-                if (change.wasAdded() || change.wasRemoved())
-                {
-                    timeAxis.setLowerBound(currentAmbientTemperatureHistory.getData().size()
-                        - MAX_DATA_POINTS);
-                    timeAxis.setUpperBound(currentAmbientTemperatureHistory.getData().size());
-                } else if (change.wasReplaced())
-                {
-                } else if (change.wasUpdated())
-                {
-                }
+                timeAxis.setLowerBound(currentAmbientTemperatureHistory.getData().size()
+                    - MAX_DATA_POINTS);
+                timeAxis.setUpperBound(currentAmbientTemperatureHistory.getData().size());
+            } else if (change.wasReplaced())
+            {
+            } else if (change.wasUpdated())
+            {
             }
         }
     };
     
-    private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
-    
-    private final ChangeListener<Number> speedMultiplierListener = new ChangeListener<Number>()
+    private final ChangeListener<Number> speedMultiplierListener = 
+        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        @Override
-        public void changed(ObservableValue<? extends Number> observable, Number oldValue,
-            Number newValue)
+        try
         {
-            try
-            {
-                selectedPrinter.changeFeedRateMultiplier(newValue.doubleValue());
-            } catch (PrinterException ex)
-            {
-                steno.error("Error setting feed rate multiplier - " + ex.getMessage());
-            }
+            selectedPrinter.get().changeFeedRateMultiplier(newValue.doubleValue());
+        } catch (PrinterException ex)
+        {
+            steno.error("Error setting feed rate multiplier - " + ex.getMessage());
         }
     };
     
-    private final ChangeListener<Number> feedRateChangeListener = new ChangeListener<Number>()
+    private final ChangeListener<Number> feedRateChangeListener = 
+        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        @Override
-        public void changed(
-            ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-        {
-            speedMultiplierSlider.setValue(newValue.doubleValue());
-        }
+        speedMultiplierSlider.setValue(newValue.doubleValue());
     };
 
     /**
-     * Initializes the controller class.
+     * Initialises the controller class.
      *
      * @param url
      * @param rb
@@ -162,12 +138,16 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         chartManager = new ChartManager(temperatureChart);
         
-        printerIDDialog = new PrinterIDDialog();
-        
         speedSliderHBox.setVisible(false);
         
+        selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
+        selectedPrinter.addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+        {
+            whenPrinterSelected(newValue);
+        });
+        
         initialiseTemperatureChart();
-        initialisePrinterStatusGrid();
         controlDetailsVisibility();
         
         Lookup.getPrinterListChangesNotifier().addListener(this);
@@ -190,48 +170,24 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setVisible(false);
     }
     
-    private void initialisePrinterStatusGrid()
-    {
-        printerGridComponent.clearAndAddAllPrintersToGrid();
-    }
-    
     /**
-     * Select any one of the active printers. If there are no printers left then select 'null'
-     */
-    private void selectOnePrinter()
-    {
-        if (connectedPrinters.size() > 0)
-        {
-            selectPrinter(connectedPrinters.get(0));
-        } else
-        {
-            selectPrinter(null);
-            Lookup.setCurrentlySelectedPrinter(null);
-        }
-    }
-
-    /**
-     * Make the given printer the selected printer.
+     * When a printer is selected bind to it and show temperature chart etc if necessary.
      *
      * @param printer
      */
-    private void selectPrinter(Printer printer)
+    private void whenPrinterSelected(Printer printer)
     {
-        if (selectedPrinter != null)
+        if (selectedPrinter.get() != null)
         {
-            PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter);
-            printerComponent.setSelected(false);
-            unbindPrinter(selectedPrinter);
-            if (selectedPrinter.headProperty().get() != null)
+            unbindPrinter(selectedPrinter.get());
+            if (selectedPrinter.get().headProperty().get() != null)
             {
-                unbindHeadProperties(selectedPrinter.headProperty().get());
+                unbindHeadProperties(selectedPrinter.get().headProperty().get());
             }
         }
         
         if (printer != null)
         {
-            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
-            printerComponent.setSelected(true);
             Lookup.setCurrentlySelectedPrinter(printer);
             bindDetails(printer);
             if (printer.headProperty().get() != null)
@@ -240,46 +196,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             }
         }
         controlDetailsVisibility();
-        
-        selectedPrinter = printer;
-    }
-
-    /**
-     * Show the printerIDDialog for the given printer.
-     */
-    private void showEditPrinterDetails(Printer printer)
-    {
-        if (printer != null)
-        {
-            printerIDDialog.setPrinterToUse(printer);
-            PrinterIdentity printerIdentity = printer.getPrinterIdentity();
-            printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
-                printerIdentity.printerColourProperty().get()));
-            printerIDDialog.
-                setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
-            
-            boolean okPressed = printerIDDialog.show();
-            
-            if (okPressed)
-            {
-                try
-                {
-                    printer.updatePrinterName(printerIDDialog.getChosenPrinterName());
-                    printer.updatePrinterDisplayColour(colourMap.displayToPrinterColour(
-                        printerIDDialog.getChosenDisplayColour()));
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error writing printer ID");
-                }
-            }
-        }
     }
 
     private void bindDetails(Printer printer)
     {
-        if (selectedPrinter != null)
+        if (selectedPrinter.get() != null)
         {
-            unbindPrinter(selectedPrinter);
+            unbindPrinter(selectedPrinter.get());
         }
         
         if (printer != null)
@@ -385,7 +308,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void controlDetailsVisibility()
     {
-        boolean visible = connectedPrinters.size() > 0;
+        boolean visible = selectedPrinter.get() != null;
         
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
@@ -401,24 +324,19 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenPrinterAdded(Printer printer)
     {
-        printerGridComponent.clearAndAddAllPrintersToGrid();
-        selectPrinter(printer);
         controlDetailsVisibility();
     }
     
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
-        printerGridComponent.removePrinter(printer);
-        printerGridComponent.clearAndAddAllPrintersToGrid();
-        selectOnePrinter();
         controlDetailsVisibility();
     }
     
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        if (printer == selectedPrinter)
+        if (printer == selectedPrinter.get())
         {
             Head head = printer.headProperty().get();
             bindHeadProperties(head);
@@ -428,7 +346,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
-        if (printer == selectedPrinter)
+        if (printer == selectedPrinter.get())
         {
             unbindHeadProperties(head);
         }
@@ -452,7 +370,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
-        if (printer == selectedPrinter) {
+        if (printer == selectedPrinter.get()) {
             bindMaterialContainer(printer);
         }
     }
@@ -460,7 +378,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-        if (printer == selectedPrinter) {
+        if (printer == selectedPrinter.get()) {
             bindMaterialContainer(printer);
         }
     }

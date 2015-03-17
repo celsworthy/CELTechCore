@@ -4,24 +4,59 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.Lookup;
+import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.components.PrinterIDDialog;
+import celtech.coreUI.controllers.panels.PrinterStatusSidePanelController;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.PrinterIdentity;
+import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesListener;
 import java.util.HashMap;
 import java.util.Map;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
- * This component houses a square grid of PrinterComponents.
+ * This component houses a square grid of PrinterComponents and is used a printer
+ * selector.
  *
  * @author tony
  */
-public class PrinterGridComponent extends GridPane
+public class PrinterGridComponent extends GridPane implements PrinterListChangesListener
 {
-
-    private final ObservableList<Printer> connectedPrinters = Lookup.getConnectedPrinters();
-    private Printer selectedPrinter = null;
+    private ObservableList<Printer> connectedPrinters;
     private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
+    private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
+    private PrinterIDDialog printerIDDialog = null;
+
+    public PrinterGridComponent()
+    {
+        try
+        {
+            connectedPrinters = Lookup.getConnectedPrinters();
+            Lookup.getPrinterListChangesNotifier().addListener(this);
+        } catch (NoClassDefFoundError error)
+        {
+            // this should only happen in SceneBuilder
+            connectedPrinters = new SimpleListProperty<>();
+        }
+        printerIDDialog = new PrinterIDDialog();
+        clearAndAddAllPrintersToGrid();
+    }
+
+    public ReadOnlyObjectProperty<Printer> getSelectedPrinter()
+    {
+        return selectedPrinter;
+    }
 
     /**
      * Add the given printer component to the given grid coordinates.
@@ -73,7 +108,7 @@ public class PrinterGridComponent extends GridPane
         removePrinterComponentFromGrid(printerComponent);
     }
 
-    public void clearAndAddAllPrintersToGrid()
+    public final void clearAndAddAllPrintersToGrid()
     {
         removeAllPrintersFromGrid();
         int row = 0;
@@ -143,15 +178,115 @@ public class PrinterGridComponent extends GridPane
         }
     }
 
-    // To be passed back to owner
     private void selectPrinter(Printer printer)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (selectedPrinter.get() != null)
+        {
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter.get());
+            printerComponent.setSelected(false);
+        }
+        PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
+        printerComponent.setSelected(true);
+        selectedPrinter.set(printer);
     }
 
+    /**
+     * Show the printerIDDialog for the given printer.
+     */
     private void showEditPrinterDetails(Printer printer)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Stenographer steno = StenographerFactory.getStenographer(
+                                    PrinterGridComponent.class.getName());
+        PrinterColourMap colourMap = PrinterColourMap.getInstance();
+        if (printer != null)
+        {
+            printerIDDialog.setPrinterToUse(printer);
+            PrinterIdentity printerIdentity = printer.getPrinterIdentity();
+            printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
+                printerIdentity.printerColourProperty().get()));
+            printerIDDialog.
+                setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
+            
+            boolean okPressed = printerIDDialog.show();
+            
+            if (okPressed)
+            {
+                try
+                {
+                    printer.updatePrinterName(printerIDDialog.getChosenPrinterName());
+                    printer.updatePrinterDisplayColour(colourMap.displayToPrinterColour(
+                        printerIDDialog.getChosenDisplayColour()));
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error writing printer ID");
+                }
+            }
+        }
+    }
+
+    /**
+     * Select any one of the active printers. If there are no printers left then select 'null'
+     */
+    private void selectOnePrinter()
+    {
+        if (connectedPrinters.size() > 0)
+        {
+            selectPrinter(connectedPrinters.get(0));
+        } else
+        {
+            selectPrinter(null);
+            Lookup.setCurrentlySelectedPrinter(null);
+        }
+    }
+
+    @Override
+    public void whenPrinterAdded(Printer printer)
+    {
+        clearAndAddAllPrintersToGrid();
+        selectPrinter(printer);
+    }
+
+    @Override
+    public void whenPrinterRemoved(Printer printer)
+    {
+        removePrinter(printer);
+        clearAndAddAllPrintersToGrid();
+        selectOnePrinter();
+    }
+
+    @Override
+    public void whenHeadAdded(Printer printer)
+    {
+    }
+
+    @Override
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+    {
+    }
+
+    @Override
+    public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
     }
 
 }
