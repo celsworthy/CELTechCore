@@ -326,7 +326,7 @@ public class PrinterComponent extends Pane
     }
 
     /**
-     * Fit the printer name to the available space
+     * Fit the printer name to the available space.
      */
     public String fitNameToWidth(String name)
     {

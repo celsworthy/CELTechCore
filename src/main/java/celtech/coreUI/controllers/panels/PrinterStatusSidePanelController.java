@@ -5,6 +5,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterComponent;
+import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Printer;
@@ -30,7 +31,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -66,9 +66,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     protected LineChart<Number, Number> temperatureChart;
     
     @FXML
-    private GridPane printerStatusGrid;
-    
-    @FXML
     private NumberAxis temperatureAxis;
     @FXML
     private NumberAxis timeAxis;
@@ -87,6 +84,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     
     @FXML
     private HBox speedSliderHBox;
+    
+    @FXML
+    private PrinterGridComponent printerGridComponent;
     
     private PrinterIDDialog printerIDDialog = null;
     
@@ -192,86 +192,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     
     private void initialisePrinterStatusGrid()
     {
-        clearAndAddAllPrintersToGrid();
+        printerGridComponent.clearAndAddAllPrintersToGrid();
     }
     
-    private void clearAndAddAllPrintersToGrid()
-    {
-        removeAllPrintersFromGrid();
-        int row = 0;
-        int column = 0;
-        int columnsPerRow = 2;
-        if (connectedPrinters.size() > 4)
-        {
-            columnsPerRow = 3;
-        }
-        for (Printer printer : connectedPrinters)
-        {
-            PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
-            addPrinterComponentToGrid(printerComponent, row, column);
-            column += 1;
-            if (column == columnsPerRow)
-            {
-                column = 0;
-                row += 1;
-            }
-        }
-        // UGH shouldnt need this here but can't get PrinterComponent / Grid to negotiate size
-        if (connectedPrinters.size() > 1 && connectedPrinters.size() <= 2)
-        {
-            printerStatusGrid.setPrefSize(260, 120);
-        } else if (connectedPrinters.size() > 2 && connectedPrinters.size() <= 4)
-        {
-            printerStatusGrid.setPrefSize(260, 260);
-        } else if (connectedPrinters.size() > 4 && connectedPrinters.size() < 7)
-        {
-            printerStatusGrid.setPrefSize(260, 180);
-        } else
-        {
-            printerStatusGrid.setPrefSize(260, 260);
-        }
-    }
-
-    /**
-     * Add the given printer component to the given grid coordinates.
-     */
-    private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
-        int column)
-    {
-        PrinterComponent.Size size;
-        if (connectedPrinters.size() > 6)
-        {
-            size = PrinterComponent.Size.SIZE_SMALL;
-        } else if (connectedPrinters.size() > 1)
-        {
-            size = PrinterComponent.Size.SIZE_MEDIUM;
-        } else
-        {
-            size = PrinterComponent.Size.SIZE_LARGE;
-        }
-        printerComponent.setSize(size);
-        printerStatusGrid.add(printerComponent, column, row);
-    }
-    
-    private void removeAllPrintersFromGrid()
-    {
-        for (Printer printer : connectedPrinters)
-        {
-            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
-            removePrinterComponentFromGrid(printerComponent);
-        }
-    }
-
-    /**
-     * Remove the given printer from the display. Update the selected printer to one of the
-     * remaining printers.
-     */
-    private void removePrinter(Printer printer)
-    {
-        PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
-        removePrinterComponentFromGrid(printerComponent);
-    }
-
     /**
      * Select any one of the active printers. If there are no printers left then select 'null'
      */
@@ -322,24 +245,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * This is called when the user clicks on the printer component for the given printer, and
-     * handles click (select printer) and double-click (go to edit printer details).
-     *
-     * @param event
-     */
-    private void handlePrinterClicked(MouseEvent event, Printer printer)
-    {
-        if (event.getClickCount() == 1)
-        {
-            selectPrinter(printer);
-        }
-        if (event.getClickCount() > 1)
-        {
-            showEditPrinterDetails(printer);
-        }
-    }
-
-    /**
      * Show the printerIDDialog for the given printer.
      */
     private void showEditPrinterDetails(Printer printer)
@@ -370,31 +275,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     }
 
-    /**
-     * Create the PrinterComponent for the given printer and set up any listeners on component
-     * events.
-     */
-    private PrinterComponent createPrinterComponentForPrinter(Printer printer)
-    {
-        PrinterComponent printerComponent = new PrinterComponent(printer);
-        printerComponent.setOnMouseClicked((MouseEvent event) ->
-        {
-            handlePrinterClicked(event, printer);
-        });
-        printerComponentsByPrinter.put(printer, printerComponent);
-        return printerComponent;
-    }
-
-    /**
-     * Remove the given printer from the grid.
-     *
-     * @param printerComponent
-     */
-    private void removePrinterComponentFromGrid(PrinterComponent printerComponent)
-    {
-        printerStatusGrid.getChildren().remove(printerComponent);
-    }
-    
     private void bindDetails(Printer printer)
     {
         if (selectedPrinter != null)
@@ -521,7 +401,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenPrinterAdded(Printer printer)
     {
-        clearAndAddAllPrintersToGrid();
+        printerGridComponent.clearAndAddAllPrintersToGrid();
         selectPrinter(printer);
         controlDetailsVisibility();
     }
@@ -529,8 +409,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
-        removePrinter(printer);
-        clearAndAddAllPrintersToGrid();
+        printerGridComponent.removePrinter(printer);
+        printerGridComponent.clearAndAddAllPrintersToGrid();
         selectOnePrinter();
         controlDetailsVisibility();
     }
