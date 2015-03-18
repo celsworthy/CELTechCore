@@ -44,7 +44,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     private PrinterGridComponent printerGrid;
 
     private Printer previouslySelectedPrinter = null;
-    private ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
+    private final ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
     private Project currentProject;
     /**
      * filament0 is updated by the MaterialComponent for extruder 0, then changes to filament0 are

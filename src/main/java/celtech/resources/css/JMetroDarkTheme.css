@@ -2454,3 +2454,18 @@ all inherit from Menu Control's popup-menu. --- */
  -fx-background-color: mid_grey_50;
  -fx-font-family: 'Source Sans Pro Regular';
 }
+
+
+/**
+* Layout
+*/
+
+#modelTable {
+    -fx-pref-width: 260;
+    -fx-max_width: 260;
+    -fx-min-width: 260;
+    -fx-pref-height: 260;
+    -fx-max_height: 260;
+    -fx-min-height: 260;    
+    -fx-background-color: light_grey;
+}

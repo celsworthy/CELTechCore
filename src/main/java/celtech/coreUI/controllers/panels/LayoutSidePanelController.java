@@ -27,14 +27,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -81,8 +79,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private VBox materialContainer;
 
     private final TableColumn modelNameColumn = new TableColumn();
-    private final TableColumn scaleColumn = new TableColumn();
-    private final TableColumn rotationColumn = new TableColumn();
 
     private SelectedModelContainers selectionModel;
     private SelectedModelContainersListener tableViewSelectionListener = null;
@@ -487,79 +483,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         modelNameColumn.setText(modelNameLabelString);
         modelNameColumn.setCellValueFactory(
             new PropertyValueFactory<>("modelName"));
-        modelNameColumn.setMinWidth(170);
-        modelNameColumn.setMaxWidth(170);
+        modelNameColumn.setMinWidth(250);
+        modelNameColumn.setMaxWidth(250);
         modelNameColumn.setEditable(false);
 
-        scaleColumn.setText(scaleLabelString);
-        scaleColumn.setCellValueFactory(
-            new PropertyValueFactory<>("preferredScale"));
-        scaleColumn.setMinWidth(60);
-        scaleColumn.setPrefWidth(60);
-        scaleColumn.setMaxWidth(60);
-        scaleColumn.setCellFactory(
-            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
-            {
-                @Override
-                public TableCell<ModelContainer, Double> call(
-                    TableColumn<ModelContainer, Double> param)
-                {
-                    return new TableCell<ModelContainer, Double>()
-                    {
-
-                        @Override
-                        protected void updateItem(Double item, boolean empty)
-                        {
-                            super.updateItem(item, empty);
-
-                            if (!empty)
-                            {
-                                // Use a SimpleDateFormat or similar in the format method
-                                setText(String.format("%.0f%%", item * 100));
-                            } else
-                            {
-                                setText(null);
-                            }
-                        }
-                    };
-                    }
-            });
-
-        rotationColumn.setText(rotationLabelString);
-        rotationColumn.setCellValueFactory(
-            new PropertyValueFactory<>("preferredRotationY"));
-        rotationColumn.setMinWidth(60);
-        rotationColumn.setPrefWidth(60);
-        rotationColumn.setMaxWidth(60);
-        rotationColumn.setCellFactory(
-            new Callback<TableColumn<ModelContainer, Double>, TableCell<ModelContainer, Double>>()
-            {
-                @Override
-                public TableCell<ModelContainer, Double> call(
-                    TableColumn<ModelContainer, Double> param)
-                {
-                    return new TableCell<ModelContainer, Double>()
-                    {
-
-                        @Override
-                        protected void updateItem(Double item, boolean empty)
-                        {
-                            super.updateItem(item, empty);
-
-                            if (!empty)
-                            {
-                                // Use a SimpleDateFormat or similar in the format method
-                                setText(String.format("%.0f°", item));
-                            } else
-                            {
-                                setText(null);
-                            }
-                        }
-                    };
-                    }
-            });
-
-        modelDataTableView.getColumns().addAll(modelNameColumn, scaleColumn, rotationColumn);
+        modelDataTableView.getColumns().addAll(modelNameColumn);
         modelDataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         modelDataTableView.setEditable(true);
         modelDataTableView.getSortOrder().add(modelNameColumn);
