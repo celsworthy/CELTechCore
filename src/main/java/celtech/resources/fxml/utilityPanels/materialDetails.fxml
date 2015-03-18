@@ -40,7 +40,7 @@
                 <Label text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="9" />
                 <Label text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="10" />
                 
-                <CustomTextField fx:id="name" maxWidth="-Infinity" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <RestrictedCustomTextField fx:id="name" maxWidth="-Infinity" maxLength="30" restrict="-_' 0-9\p{L}\p{M}*+" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                 <ComboBox fx:id="material" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <ColorPicker fx:id="colour" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3"> 
@@ -102,7 +102,7 @@
                 </HBox>
                 <HBox fx:id="immutableOptions" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
+                        <Button fx:id="staticSaveAsButton" mnemonicParsing="false" onAction="#launchSaveAsDialogue" prefWidth="120.0" text="%genericFirstLetterCapitalised.SaveAs" GridPane.rowIndex="10" />
                     </children>
                 </HBox>
             </children>

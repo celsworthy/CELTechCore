@@ -123,7 +123,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
-    {
+    {   
         applicationStatus = ApplicationStatus.getInstance();
         displayManager = DisplayManager.getInstance();
         printerStatusList = Lookup.getConnectedPrinters();

@@ -122,6 +122,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         updateGUIForModeAndPrinterExtruder();
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
+        Lookup.getUserPreferences().advancedModeProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                repopulateCmbMaterials();
+            });
+
         selectedFilamentProperty.addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
@@ -276,8 +282,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         try
         {
             allFilaments.addAll(FilamentContainer.getAppFilamentList());
-            allFilaments.addAll(FilamentContainer.getUserFilamentList());
-            userFilaments.addAll(FilamentContainer.getUserFilamentList());
+            if (Lookup.getUserPreferences().isAdvancedMode())
+            {
+                allFilaments.addAll(FilamentContainer.getUserFilamentList());
+                userFilaments.addAll(FilamentContainer.getUserFilamentList());
+            }
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
