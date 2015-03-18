@@ -160,7 +160,7 @@ public class FilamentContainer
                         filamentList.add(newFilament);
                         completeFilamentMap.put(reelID, newFilament);
 
-                    } catch (NumberFormatException ex)
+                    } catch (IllegalArgumentException ex)
                     {
                         steno.error("Failed to parse filament file " + filamentFile.getAbsolutePath());
                     }
