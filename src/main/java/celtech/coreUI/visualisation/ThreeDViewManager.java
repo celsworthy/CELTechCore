@@ -916,13 +916,13 @@ public class ThreeDViewManager
      *
      * @param newScale
      */
-    public void scaleSelection(double newScale)
+    public void scaleXSelection(double newScale)
     {
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
             {
-                model.setScale(newScale);
+                model.setXScale(newScale);
             }
         }
         selectedModelContainers.updateSelectedValues();
@@ -930,6 +930,36 @@ public class ThreeDViewManager
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
+    
+    public void scaleYSelection(double newScale)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setYScale(newScale);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+    
+    public void scaleZSelection(double newScale)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setZScale(newScale);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }    
 
     public void setLeanSelection(double rotation)
     {
@@ -1027,26 +1057,6 @@ public class ThreeDViewManager
         }
     }
 
-    /**
-     *
-     * @param delta
-     */
-    public void deltaScaleSelection(double delta)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (model.isSelected())
-            {
-                model.setScale(delta * model.getScale());
-            }
-        }
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }
-
-    /**
-     *
-     */
     public void activateSnapToGround()
     {
         layoutSubmode.set(LayoutSubmode.SNAP_TO_GROUND);
@@ -1064,10 +1074,6 @@ public class ThreeDViewManager
         layoutSubmode.set(LayoutSubmode.SELECT);
     }
 
-    /**
-     *
-     * @return
-     */
     public ObjectProperty<LayoutSubmode> layoutSubmodeProperty()
     {
         return layoutSubmode;

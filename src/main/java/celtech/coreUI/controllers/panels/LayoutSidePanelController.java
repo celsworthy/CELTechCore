@@ -66,7 +66,13 @@ public class LayoutSidePanelController implements Initializable,
     private RestrictedNumberField xAxisTextField;
 
     @FXML
-    private RestrictedNumberField scaleTextField;
+    private RestrictedNumberField scaleTextXField;
+
+    @FXML
+    private RestrictedNumberField scaleTextYField;
+
+    @FXML
+    private RestrictedNumberField scaleTextZField;
 
     @FXML
     private RestrictedNumberField heightTextField;
@@ -133,7 +139,9 @@ public class LayoutSidePanelController implements Initializable,
         String rotationLabelString = languageBundle.getString(
             "sidePanel_layout.RotationLabel");
 
-        scaleTextField.setText("100");
+        scaleTextXField.setText("100");
+        scaleTextYField.setText("100");
+        scaleTextZField.setText("100");
         rotationXTextField.setText("0");
         rotationYTextField.setText("0");
         rotationZTextField.setText("0");
@@ -186,7 +194,7 @@ public class LayoutSidePanelController implements Initializable,
 
         modelScaleChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateScaleField(t1);
+            populateScaleXField(t1);
         };
 
         modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
@@ -263,16 +271,30 @@ public class LayoutSidePanelController implements Initializable,
         rotationYTextField.setText(String.format(rotationFormat, t1));
     }
 
-    private void populateScaleField(Number t1)
+    private void populateScaleXField(Number t1)
     {
-        scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
-        scaleTextField.setText(String.format(scaleFormat,
-                                             t1.doubleValue() * 100));
+        scaleTextXField.doubleValueProperty().set(t1.doubleValue() * 100);
+        scaleTextXField.setText(String.format(scaleFormat,
+                                              t1.doubleValue() * 100));
+    }
+
+    private void populateScaleYField(Number t1)
+    {
+        scaleTextYField.doubleValueProperty().set(t1.doubleValue() * 100);
+        scaleTextYField.setText(String.format(scaleFormat,
+                                              t1.doubleValue() * 100));
+    }
+
+    private void populateScaleZField(Number t1)
+    {
+        scaleTextZField.doubleValueProperty().set(t1.doubleValue() * 100);
+        scaleTextZField.setText(String.format(scaleFormat,
+                                              t1.doubleValue() * 100));
     }
 
     private void setUpKeyPressListeners()
     {
-        scaleTextField.setOnKeyPressed(
+        scaleTextXField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
 
@@ -286,12 +308,82 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().scaleSelection(
-                                    scaleTextField.getAsDouble() / 100.0);
+                                displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
+                                    scaleTextXField.getAsDouble() / 100.0);
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "
-                                    + scaleTextField.getText());
+                                    + scaleTextXField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        scaleTextYField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().scaleYSelection(
+                                    scaleTextYField.getAsDouble() / 100.0);
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting scale "
+                                    + scaleTextYField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        scaleTextZField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().scaleZSelection(
+                                    scaleTextZField.getAsDouble() / 100.0);
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting scale "
+                                    + scaleTextZField.getText());
                             }
                             break;
                         case DECIMAL:
@@ -821,7 +913,7 @@ public class LayoutSidePanelController implements Initializable,
      */
     private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
     {
-        populateScaleField(selectedModelDetails.getScale().get());
+        populateScaleXField(selectedModelDetails.getScale().get());
         populateRotationYField(selectedModelDetails.getRotationY().get());
         populateWidthField(selectedModelDetails.getWidth().get());
         populateHeightField(selectedModelDetails.getHeight().get());
