@@ -490,6 +490,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (scaling != 1.0f)
         {
             setXScale(scaling);
+            setYScale(scaling);
+            setZScale(scaling);
         }
 
     }
@@ -792,6 +794,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getXScale());
         out.writeDouble(getRotationTwist());
         out.writeInt(snapFaceIndex);
+        out.writeDouble(getYScale());
+        out.writeDouble(getZScale());
+        out.writeDouble(getRotationLean());
+        out.writeDouble(getRotationTurn());
     }
 
     private void readObject(ObjectInputStream in)
@@ -849,16 +855,32 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double storedX = in.readDouble();
         double storedZ = in.readDouble();
-        double storedScale = in.readDouble();
-        double storedRotationY = in.readDouble();
+        double storedScaleX = in.readDouble();
+        double storedRotationTwist = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
+        
+        double storedScaleY = 1d;
+        double storedScaleZ = 1d;
+        double storedRotationLean = 0d;
+        double storedRotationTurn = 0d;
+        
+        if (in.available() > 0) {
+            storedScaleY = in.readDouble();
+            storedScaleZ = in.readDouble();
+            storedRotationLean = in.readDouble();
+            storedRotationTurn = in.readDouble();
+        }
 
         initialiseTransforms();
 
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
-        setXScale(storedScale);
-        setRotationTwist(storedRotationY);
+        setXScale(storedScaleX);
+        setYScale(storedScaleY);
+        setZScale(storedScaleZ);
+        setRotationLean(storedRotationLean);
+        setRotationTwist(storedRotationTwist);
+        setRotationTurn(storedRotationTurn);
         if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
             snapToGround(storedSnapFaceIndex);
@@ -1557,7 +1579,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledHeight()
     {
-        return getLocalBounds().getHeight() * preferredXScale.doubleValue();
+        return getLocalBounds().getHeight() * preferredYScale.doubleValue();
     }
 
     @Override
@@ -1569,7 +1591,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledDepth()
     {
-        return getLocalBounds().getDepth() * preferredXScale.doubleValue();
+        return getLocalBounds().getDepth() * preferredZScale.doubleValue();
     }
 
     @Override
