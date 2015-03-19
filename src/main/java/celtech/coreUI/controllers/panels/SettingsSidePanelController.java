@@ -1,10 +1,8 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -19,7 +17,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -38,10 +35,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         SettingsSidePanelController.class.getName());
-    private ObservableList<Printer> printerStatusList = null;
     private PrinterSettings printerSettings = null;
-    private ApplicationStatus applicationStatus = null;
-    private DisplayManager displayManager = null;
 
     @FXML
     private VBox materialContainer;
@@ -68,28 +62,23 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        applicationStatus = ApplicationStatus.getInstance();
-        displayManager = DisplayManager.getInstance();
-        printerStatusList = Lookup.getConnectedPrinters();
-
-        try
+        currentPrinter.bind(printerGrid.getSelectedPrinter());
+        currentPrinter.addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
             if (previouslySelectedPrinter != null)
             {
                 unbindPrinter(previouslySelectedPrinter);
             }
             previouslySelectedPrinter = currentPrinter.get();
-
+            
             if (printerSettings != null)
             {
                 printerSettings.setSelectedPrinter(currentPrinter.get());
             }
             bindPrinter(currentPrinter.get());
             configureMaterialComponents(currentPrinter.get());
-        } catch (Exception ex)
-        {
-            steno.error("Failed to load profile creation page");
-        }
+        });
 
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
@@ -271,7 +260,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         currentProject = project;
         printerSettings = project.getPrinterSettings();
-
+       
         if (printerSettings.getSelectedPrinter() == null && currentPrinter.get() != null)
         {
             printerSettings.setSelectedPrinter(currentPrinter.get());
@@ -282,6 +271,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         setupFilamentListeners();
     }
+
 
     @Override
     public void whenPrinterAdded(Printer printer)
