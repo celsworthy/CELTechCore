@@ -151,14 +151,14 @@
                                 </HBox>
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="3">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextXField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
+                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
                                     </children>
                                 </HBox>
                                 <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                         <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" />
                         <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                        <RestrictedNumberField fx:id="scaleTextYField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                        <RestrictedNumberField fx:id="scaleTextZField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                         <ToggleButton fx:id="preserveAspectRatio" mnemonicParsing="false" text="ToggleButton" GridPane.columnIndex="4" GridPane.rowSpan="2147483647" />
                             </children>
                             <columnConstraints>

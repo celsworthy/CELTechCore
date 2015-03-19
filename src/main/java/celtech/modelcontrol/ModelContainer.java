@@ -616,7 +616,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     
     public void setZScale(double scaleFactor)
     {
-        preferredXScale.set(scaleFactor);
+        preferredZScale.set(scaleFactor);
         updateScaleTransform();
     }    
 
