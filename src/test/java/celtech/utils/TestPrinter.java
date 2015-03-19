@@ -45,7 +45,6 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -56,11 +55,22 @@ import javafx.scene.paint.Color;
  *
  * @author tony
  */
-class TestPrinter implements Printer
+public class TestPrinter implements Printer
 {
 
     private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
     private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
+    private int numExtruders = 1;
+    
+    public TestPrinter()
+    {
+        this(1);
+    }
+
+    public TestPrinter(int numExtruders)
+    {
+        this.numExtruders = numExtruders;
+    }
 
     void addHead()
     {
@@ -161,9 +171,41 @@ class TestPrinter implements Printer
     @Override
     public ObservableList<Extruder> extrudersProperty()
     {
+
+        class FittedExtruder extends Extruder
+        {
+
+            public FittedExtruder(String extruderAxisLetter)
+            {
+                super(extruderAxisLetter);
+                isFitted.set(true);
+            }
+        }
+
+        class UnFittedExtruder extends Extruder
+        {
+
+            public UnFittedExtruder(String extruderAxisLetter)
+            {
+                super(extruderAxisLetter);
+                isFitted.set(false);
+            }
+        }
+
         ObservableList<Extruder> extruders = FXCollections.observableList(new ArrayList<Extruder>());
-        extruders.add(new Extruder("E"));
-        extruders.add(new Extruder("D"));
+        if (numExtruders == 0)
+        {
+            extruders.add(new UnFittedExtruder("D"));
+            extruders.add(new UnFittedExtruder("E"));
+        } else if (numExtruders == 1)
+        {
+            extruders.add(new FittedExtruder("D"));
+            extruders.add(new UnFittedExtruder("E"));
+        } else if (numExtruders == 2)
+        {
+            extruders.add(new FittedExtruder("D"));
+            extruders.add(new FittedExtruder("E"));
+        }
         return extruders;
     }
 

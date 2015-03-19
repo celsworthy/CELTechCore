@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;

@@ -6,6 +6,8 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeaterMode;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterAncillarySystems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,8 +17,10 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 
@@ -70,12 +74,35 @@ class ChartManager
 
     private final String graphLineCSS
         = "-fx-stroke-width: 3; ";
-
+    
     public ChartManager(LineChart<Number, Number> chart)
     {
         this.chart = chart;
         ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
+    }
+
+    public void bindPrinter(Printer printer)
+    {
+        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
+        setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
+        setBedData(ancillarySystems.getBedTemperatureHistory());
+        setAmbientTemperatureProperty(ancillarySystems.ambientTemperatureProperty());
+        setBedTemperatureProperty(ancillarySystems.bedTemperatureProperty());
+
+        setTargetAmbientTemperatureProperty(
+            ancillarySystems.ambientTargetTemperatureProperty());
+        setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
+
+        setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
+        setTargetBedFirstLayerTemperatureProperty(ancillarySystems.
+            bedFirstLayerTargetTemperatureProperty());
+    }
+    
+    public void unbindPrinter() {
+        clearAmbientData();
+        clearBedData();
+        clearLegendLabels();
     }
 
     public void setAmbientData(XYChart.Series<Number, Number> ambientData)

@@ -91,7 +91,7 @@
                                         </Group>
                                     </graphic>
                                 </Label>
-                                <TableView fx:id="modelDataTableView" editable="false" minWidth="-1.0" prefHeight="200.0" prefWidth="-1.0" tableMenuButtonVisible="false" />
+                                <TableView id="modelTable" fx:id="modelDataTableView" editable="false" minWidth="-1.0" prefWidth="-1.0" tableMenuButtonVisible="false" />
                             </children>
                         </VBox>
                     </children>

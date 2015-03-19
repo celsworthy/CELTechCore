@@ -36,6 +36,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
@@ -46,21 +47,24 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ExtrasMenuPanelController.class.getName());
-    
-    enum Fields {
-        
-        NAME("name"), COLOUR("colour"), AMBIENT_TEMP("ambientTemp"), MATERIAL("material"), 
+
+    enum Fields
+    {
+
+        NAME("name"), COLOUR("colour"), AMBIENT_TEMP("ambientTemp"), MATERIAL("material"),
         DIAMETER("diameter"), MULTIPLIER("multiplier"), FEED_RATE_MULTIPLIER("feedRateMultiplier"),
-        FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"), 
+        FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"),
         FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp");
-        
+
         private final String helpTextId;
-        
-        Fields(String helpTextId) {
+
+        Fields(String helpTextId)
+        {
             this.helpTextId = helpTextId;
         }
-        
-        String getHelpText() {
+
+        String getHelpText()
+        {
             return Lookup.i18n("filamentLibraryHelp." + helpTextId);
         }
     }
@@ -142,9 +146,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private RestrictedNumberField filamentMultiplier;
-    
+
     @FXML
-    private TextArea helpText;    
+    private TextArea helpText;
+
+    @FXML
+    private GridPane filamentsGridPane;
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -159,9 +166,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
 
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
-        
+
         isValid.bind(isNameValid.and(isNozzleTempValid));
-        
+
         updateWriteToReelBindings();
         currentPrinter.addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
@@ -183,7 +190,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         setupFilamentCombo();
 
         selectFirstFilament();
+
+        FXMLUtilities.addColonsToLabels(filamentsGridPane);
     }
+
+
 
     private void updateWriteToReelBindings()
     {
@@ -228,7 +239,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         try
         {
             allFilaments.clear();
-            allFilaments.addAll(FilamentContainer.getAppFilamentList());
+            allFilaments.addAll(FilamentContainer.getAppFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             allFilaments.addAll(FilamentContainer.getUserFilamentList().sorted(
                 (Filament o1, Filament o2)
                 -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
@@ -303,8 +316,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         nozzleTemperature.disableProperty().bind(isEditable.not());
         ambientTemperature.disableProperty().bind(isEditable.not());
     }
-    
-    private void showHelpText(Fields field) {
+
+    private void showHelpText(Fields field)
+    {
         helpText.setText(field.getHelpText());
     }
 
@@ -315,43 +329,53 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 showHelpText(Fields.NAME);
             });
-        colour.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        colour.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.COLOUR);
             });
-        material.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        material.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.MATERIAL);
             });
-        filamentDiameter.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        filamentDiameter.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.DIAMETER);
             });
-        filamentMultiplier.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        filamentMultiplier.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.MULTIPLIER);
             });
-        feedRateMultiplier.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        feedRateMultiplier.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.FEED_RATE_MULTIPLIER);
             });
-        firstLayerBedTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        firstLayerBedTemperature.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.FIRST_LAYER_BED_TEMP);
             });
-        bedTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        bedTemperature.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.BED_TEMP);
             });
-        firstLayerNozzleTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        firstLayerNozzleTemperature.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.FIRST_LAYER_NOZZLE_TEMP);
             });
-        nozzleTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        nozzleTemperature.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.NOZZLE_TEMP);
             });
-        ambientTemperature.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        ambientTemperature.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.AMBIENT_TEMP);
             });
@@ -443,8 +467,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             ObservableList<Filament> existingMaterialList = FilamentContainer.getCompleteFilamentList();
             for (Filament existingMaterial : existingMaterialList)
             {
-                if ((! existingMaterial.getFilamentID().equals(currentFilamentID)) && 
-                    existingMaterial.getFriendlyFilamentName().equals(name))
+                if ((!existingMaterial.getFilamentID().equals(currentFilamentID))
+                    && existingMaterial.getFriendlyFilamentName().equals(name))
                 {
                     valid = false;
                     break;

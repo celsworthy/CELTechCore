@@ -29,6 +29,7 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
     {
         this.userPreferences = userPreferences;
         control = new ComboBox<>();
+        control.getStyleClass().add("cmbCleanCombo");
 
         setupCellFactory(control);
 

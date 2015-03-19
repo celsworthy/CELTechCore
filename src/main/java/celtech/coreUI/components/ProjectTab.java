@@ -11,6 +11,8 @@ import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -19,6 +21,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.effect.Glow;
@@ -81,13 +85,25 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
+        URL settingsInsetPanelURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "settingsInsetPanel.fxml");
+        FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, Lookup.getLanguageBundle());
+        Node settingsInsetPanel = null;
+        try
+        {
+            settingsInsetPanel = loader.load();
+        } catch (IOException ex)
+        {
+            steno.error("Unable to load settings inset panel: " + ex);
+        }
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
 
         setupDragHandlers();
 
-        basePane.getChildren().add(viewManager.getSubScene());
+        basePane.getChildren().addAll(viewManager.getSubScene(), settingsInsetPanel);
+        AnchorPane.setTopAnchor(settingsInsetPanel, 30.0);
+        AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
 
         this.setContent(basePane);
 

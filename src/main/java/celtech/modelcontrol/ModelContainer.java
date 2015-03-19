@@ -132,8 +132,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         super();
         this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
-        meshGroup.getChildren().add(meshToAdd);
-        numberOfMeshes = 1;
+        if (meshToAdd != null)
+        {
+            meshGroup.getChildren().add(meshToAdd);
+            numberOfMeshes = 1;
+        }
+        
         initialise(name);
         initialiseTransforms();
     }
@@ -173,6 +177,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void setUseExtruder0Filament(boolean useExtruder0)
     {
+
         if (useExtruder0)
         {
             associateWithExtruderNumber.set(0);

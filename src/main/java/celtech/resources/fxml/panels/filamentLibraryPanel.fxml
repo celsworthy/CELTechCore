@@ -11,7 +11,7 @@
 <?import javafx.scene.text.*?>
 <?import org.controlsfx.control.textfield.*?>
 
-<GridPane id="materialsGridPane" vgap="8.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<GridPane id="materialsGridPane" fx:id="filamentsGridPane" vgap="8.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <columnConstraints>
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="45.0" />
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="15.0" />
@@ -39,17 +39,17 @@
       <RowConstraints />
     </rowConstraints>
     <children>
-        <Label text="%sidePanel_settings.MaterialName" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <Label text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <Label text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <Label text="%sidePanel_settings.filamentDiameterLabel" GridPane.rowIndex="13" />
-        <Label text="%sidePanel_settings.filamentMultiplierLabel" GridPane.rowIndex="14" />
-        <Label text="%sidePanel_settings.extrusionRateMultiplierLabel" GridPane.rowIndex="15" />
-        <Label text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="8" />
-        <Label text="%sidePanel_settings.bedTemp" GridPane.rowIndex="7" />
-        <Label text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="9" />
-        <Label text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="10" />
-        <Label text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+        <Label styleClass="colon" text="%sidePanel_settings.MaterialName" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <Label styleClass="colon" text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <Label styleClass="colon" text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label styleClass="colon" text="%sidePanel_settings.filamentDiameterLabel" GridPane.rowIndex="13" />
+        <Label styleClass="colon" text="%sidePanel_settings.filamentMultiplierLabel" GridPane.rowIndex="14" />
+        <Label styleClass="colon" text="%sidePanel_settings.extrusionRateMultiplierLabel" GridPane.rowIndex="15" />
+        <Label styleClass="colon" text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="8" />
+        <Label styleClass="colon" text="%sidePanel_settings.bedTemp" GridPane.rowIndex="7" />
+        <Label styleClass="colon" text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="9" />
+        <Label styleClass="colon" text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+        <Label styleClass="colon" text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="11" />
                       
         <TextField fx:id="name" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" />
         <ComboBox fx:id="material" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
@@ -143,12 +143,12 @@
             </children>
         </HBox>
         <ComboBox id="cmbLibraryFilament" fx:id="cmbFilament" prefWidth="150.0" styleClass="cmbCleanCombo" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" />
-        <Label text="%reelPanel.filamentID" GridPane.rowIndex="2" />
+        <Label styleClass="colon" text="%reelPanel.filamentID" GridPane.rowIndex="2" />
         <TextField fx:id="filamentID" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
         <Label alignment="CENTER" styleClass="filamentLibTitle" text="Temperature" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
         <Label alignment="CENTER" styleClass="filamentLibTitle" text="Filament" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="12" />
       <Label alignment="CENTER" styleClass="filamentLibTitle" text="Identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-      <TextArea id="helpText" fx:id="helpText" prefHeight="80.0" prefWidth="100.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="16" />
+      <TextArea id="helpText" fx:id="helpText" editable="false" GridPane.columnSpan="2147483647" GridPane.rowIndex="16" />
     </children>
     <padding>
         <Insets left="35.0" right="5.0" top="15.0" />

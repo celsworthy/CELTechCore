@@ -21,6 +21,7 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -629,10 +630,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     ChangeListener<Printer> printerSettingsListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
     {
+        currentSettingsPrinter = newValue;
         if (newValue != null)
         {
-            currentSettingsPrinter = newValue;
             whenProjectOrSettingsPrinterChange();
+        } else {
+            printButton.disableProperty().unbind();
+            printButton.setDisable(true);
         }
     };
 
@@ -653,13 +657,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             return;
         }
-        PrinterSettings printerSettings = project.getPrinterSettings();
-
-        BooleanBinding filament0Mismatch = project.getExtruder0FilamentProperty().isNotEqualTo(
-            printerSettings.getFilament0Property());
-
-        BooleanBinding filament1Mismatch = project.getExtruder1FilamentProperty().isNotEqualTo(
-            printerSettings.getFilament1Property());
 
         printButton.getTag().removeAllConditionalText();
 
@@ -669,89 +666,40 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 .and(Lookup.getUserPreferences().
                                                     safetyFeaturesOnProperty()));
 
-        if (!printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
-        {
-            updateConditionalTextOneExtruder(printerSettings, printer, filament0Mismatch);
-        } else
-        {
-            if (project.allModelsOnSameExtruder())
-            {
-                updateConditionalTextOneColour(project, printerSettings, printer, filament0Mismatch,
-                                               filament1Mismatch);
-            } else
-            {
-                updateConditionalTextTwoColours(printerSettings, printer, filament0Mismatch,
-                                                filament1Mismatch);
-            }
-        }
-    }
+        CanPrintConditionalTextBindings conditionalTextBindings =
+            new CanPrintConditionalTextBindings(project, printer);
+        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
+        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+        
+        BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
+        BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
+        BooleanBinding noFilament0Selected = project.getPrinterSettings().getFilament0Property().isNull();
+        BooleanBinding noFilament1Selected = project.getPrinterSettings().getFilament1Property().isNull();
 
-    /**
-     * Update the conditional text for a printer that has two extruders and the project has two
-     * colours.
-     */
-    private void updateConditionalTextTwoColours(PrinterSettings printerSettings1, Printer printer,
-        BooleanBinding filament0Mismatch, BooleanBinding filament1Mismatch)
-    {
-        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage0",
-                                                printerSettings1.getFilament0Property().isNull());
-        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
-                                                printer.extrudersProperty().get(0).
-                                                filamentLoadedProperty().not());
-        printButton.getTag().addConditionalText("dialogs.filament0MismatchMessage",
-                                                filament0Mismatch);
-        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage1",
-                                                printerSettings1.getFilament1Property().isNull());
-        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
-                                                printer.extrudersProperty().get(1).
-                                                filamentLoadedProperty().not());
-        printButton.getTag().addConditionalText("dialogs.filament1MismatchMessage",
-                                                filament1Mismatch);
-    }
-
-    /**
-     * Update the conditional text for a printer that has two extruders but project only has one
-     * colour.
-     */
-    private void updateConditionalTextOneColour(Project project, PrinterSettings printerSettings1,
-        Printer printer,
-        BooleanBinding filament0Mismatch, BooleanBinding filament1Mismatch)
-    {
-        // only one extruder required, which one is it?
-        int extruderNumber = project.getUsedExtruders().iterator().next();
-        ObjectProperty<Filament> requiredFilamentProperty = null;
-        if (extruderNumber == 0)
-        {
-            requiredFilamentProperty = printerSettings1.getFilament0Property();
-            printButton.getTag().addConditionalText("dialogs.filament0MismatchMessage",
-                                                    filament0Mismatch);
-        } else
-        {
-            requiredFilamentProperty = printerSettings1.getFilament1Property();
-            printButton.getTag().addConditionalText("dialogs.filament0MismatchMessage",
-                                                    filament0Mismatch);
-        }
-        printButton.getTag().addConditionalText(
-            "dialogs.cantPrintNoFilamentSelectedMessage", requiredFilamentProperty.isNull());
-        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                                printer.extrudersProperty().get(
-                                                    extruderNumber).
-                                                filamentLoadedProperty().not());
-    }
-
-    /**
-     * Update the conditional text for when the printer only has one extruder.
-     */
-    private void updateConditionalTextOneExtruder(PrinterSettings printerSettings1, Printer printer,
-        BooleanBinding filament0Mismatch)
-    {
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage",
-                                                printerSettings1.getFilament0Property().isNull());
+                                                oneExtruderPrinter.and(filament0Reqd).and(noFilament0Selected));
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                                printer.extrudersProperty().get(0).
-                                                filamentLoadedProperty().not());
+                                                oneExtruderPrinter.and(filament0Reqd).and(printer.extrudersProperty().get(0).
+                                                filamentLoadedProperty().not()));
         printButton.getTag().addConditionalText("dialogs.filamentMismatchMessage",
-                                                filament0Mismatch);
+                                                oneExtruderPrinter.and(extruder0FilamentMismatch));
+    
+        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage0",
+                                                twoExtruderPrinter.and(filament0Reqd).and(noFilament0Selected));
+        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
+                                                twoExtruderPrinter.and(filament0Reqd).and(printer.extrudersProperty().get(0).
+                                                filamentLoadedProperty().not()));
+        printButton.getTag().addConditionalText("dialogs.filament0MismatchMessage",
+                                                twoExtruderPrinter.and(extruder0FilamentMismatch));
+        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage1",
+                                                twoExtruderPrinter.and(filament1Reqd).and(noFilament1Selected));
+        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
+                                                twoExtruderPrinter.and(filament1Reqd).and(printer.extrudersProperty().get(1).
+                                                filamentLoadedProperty().not()));
+        printButton.getTag().addConditionalText("dialogs.filament1MismatchMessage",
+                                                twoExtruderPrinter.and(filament1Reqd).and(extruder1FilamentMismatch));
     }
 
     /**
