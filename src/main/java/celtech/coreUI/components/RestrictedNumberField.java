@@ -1,16 +1,17 @@
 package celtech.coreUI.components;
 
 import celtech.Lookup;
-import celtech.coreUI.DisplayManager;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -31,6 +32,7 @@ public class RestrictedNumberField extends TextField
     private final IntegerProperty intValue = new SimpleIntegerProperty(-1);
     private final FloatProperty floatValue = new SimpleFloatProperty(-1);
     private final DoubleProperty doubleValue = new SimpleDoubleProperty(-1);
+    private final BooleanProperty allowNegative = new SimpleBooleanProperty(false);
     private Pattern restrictionPattern = Pattern.compile("[0-9]+");
 
     private NumberFormat numberFormatter = null;
@@ -43,6 +45,19 @@ public class RestrictedNumberField extends TextField
 
     private boolean suppressTextToNumberUpdate = false;
 
+    
+    public boolean getAllowNegative() {
+        return allowNegative.get();
+    }
+    
+    public void setAllowNegative(boolean allowNegative) {
+        this.allowNegative.set(allowNegative);
+    }    
+    
+    public BooleanProperty allowNegativeProperty() {
+        return allowNegative;
+    }
+    
     /**
      *
      * @return
@@ -71,6 +86,8 @@ public class RestrictedNumberField extends TextField
     {
         return maxLength;
     }
+    
+    
 
     /**
      *
@@ -112,6 +129,9 @@ public class RestrictedNumberField extends TextField
         } else
         {
             newRestriction = "[0-9]{0," + maxLength.get() + "}";
+        }
+        if (allowNegative.get()) {
+            newRestriction = "-?" + newRestriction;
         }
         restrictionPattern = Pattern.compile(newRestriction);
     }
