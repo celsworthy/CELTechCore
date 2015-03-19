@@ -165,7 +165,8 @@ public class ProjectTab extends Tab
             @Override
             public void handle(DragEvent event)
             {
-                if (ApplicationStatus.getInstance().modeProperty().getValue() == ApplicationMode.LAYOUT)
+                if (ApplicationStatus.getInstance().modeProperty().getValue()
+                    == ApplicationMode.LAYOUT)
                 {
                     if (event.getGestureSource() != basePane)
                     {
@@ -177,10 +178,12 @@ public class ProjectTab extends Tab
                             for (File file : fileList)
                             {
                                 boolean extensionFound = false;
-                                for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    project.getProjectMode()))
+                                for (String extension : ApplicationConfiguration.
+                                    getSupportedFileExtensions(
+                                        project.getProjectMode()))
                                 {
-                                    if (file.getName().toUpperCase().endsWith(extension.toUpperCase()))
+                                    if (file.getName().toUpperCase().endsWith(extension.
+                                        toUpperCase()))
                                     {
                                         extensionFound = true;
                                         break;
@@ -197,12 +200,11 @@ public class ProjectTab extends Tab
                             if (accept)
                             {
                                 event.acceptTransferModes(TransferMode.COPY);
+                                event.consume();
                             }
                         }
                     }
                 }
-
-                event.consume();
             }
         });
 
@@ -212,7 +214,8 @@ public class ProjectTab extends Tab
             {
                 /* the drag-and-drop gesture entered the target */
                 /* show to the user that it is an actual gesture target */
-                if (ApplicationStatus.getInstance().modeProperty().getValue() == ApplicationMode.LAYOUT)
+                if (ApplicationStatus.getInstance().modeProperty().getValue()
+                    == ApplicationMode.LAYOUT)
                 {
                     if (event.getGestureSource() != basePane)
                     {
@@ -224,8 +227,9 @@ public class ProjectTab extends Tab
                             for (File file : fileList)
                             {
                                 boolean extensionFound = false;
-                                for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    project.getProjectMode()))
+                                for (String extension : ApplicationConfiguration.
+                                    getSupportedFileExtensions(
+                                        project.getProjectMode()))
                                 {
                                     if (file.getName().endsWith(extension))
                                     {
@@ -244,11 +248,11 @@ public class ProjectTab extends Tab
                             if (accept)
                             {
                                 basePane.setEffect(new Glow());
+                                event.consume();
                             }
                         }
                     }
                 }
-                event.consume();
             }
         });
 
@@ -268,23 +272,27 @@ public class ProjectTab extends Tab
             @Override
             public void handle(DragEvent event)
             {
-                /* data dropped */
-                steno.debug("onDragDropped");
-                /* if there is a string data on dragboard, read it and use it */
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasFiles())
+                if (event.getGestureTarget() == basePane)
                 {
-                    displayManager.loadExternalModels(db.getFiles(), true);
-                } else
-                {
-                    steno.error("No files in dragboard");
-                }
-                /* let the source know whether the string was successfully 
-                 * transferred and used */
-                event.setDropCompleted(success);
+                    /* data dropped */
+                    steno.info("onDragDropped: " + event.getGestureTarget() + " accepting " + event.
+                        getAcceptingObject());
+                    /* if there is a string data on dragboard, read it and use it */
+                    Dragboard db = event.getDragboard();
+                    boolean success = false;
+                    if (db.hasFiles())
+                    {
+                        displayManager.loadExternalModels(db.getFiles(), true);
+                    } else
+                    {
+                        steno.error("No files in dragboard");
+                    }
+                    /* let the source know whether the string was successfully 
+                     * transferred and used */
+                    event.setDropCompleted(success);
 
-                event.consume();
+                    event.consume();
+                }
             }
         });
 
