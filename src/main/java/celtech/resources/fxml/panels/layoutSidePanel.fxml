@@ -162,22 +162,26 @@
                             <children>
                                 <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="0" />
                                 <Label text="%sidePanel_layout.RotationLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1">
+                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="3">
                                     <children>
                                         <RestrictedNumberField fx:id="scaleTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
                                         <Label text="%misc.percent" />
                                     </children>
                                 </HBox>
-                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="rotationTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" text="-" />
+                                        <RestrictedNumberField fx:id="rotationZTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" styleClass="rotationField" text="-" />
                                         <Label text="%misc.degrees" />
                                     </children>
                                 </HBox>
+                        <RestrictedNumberField fx:id="rotationYTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" styleClass="rotationField" text="-" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <RestrictedNumberField fx:id="rotationXTextField" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" styleClass="rotationField" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                 
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" percentWidth="50.0" />
+                                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" percentWidth="30.0" />
+                        <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                 <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" />
                             </columnConstraints>
                             <padding>

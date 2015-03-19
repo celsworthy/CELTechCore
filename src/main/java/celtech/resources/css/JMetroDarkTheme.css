@@ -2214,3 +2214,8 @@ modal-dialogue{
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 0 0 0 0;
 }
+
+.rotationField {
+    -fx-pref-width: 40;
+    -fx-min-width: 40;
+}

@@ -931,11 +931,22 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
-    /**
-     *
-     * @param rotation
-     */
-    public void rotateSelection(double rotation)
+    public void rotateXSelection(double rotation)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setRotationX(rotation);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+    
+    public void rotateYSelection(double rotation)
     {
         for (ModelContainer model : loadedModels)
         {
@@ -946,21 +957,21 @@ public class ThreeDViewManager
         }
         selectedModelContainers.updateSelectedValues();
 
-        // TODO: multi select rotate should be around the common centre of the multi select
-//            steno.info("Pivot is " + selectionContainer.selectedModelsProperty().get(0).getPivot());
-//            selectionContainer.setRotationY(rotation);
-//            recalculateSelectionBounds(false);
-//        } else
-//        {
-//            for (ModelContainer model : loadedModels)
-//            {
-//                if (model.isSelected())
-//                {
-//                    model.deltaRotateAroundY(rotation);
-//                }
-//            }
-//            selectionContainer.setRotationX(0);
-//        }
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+    
+    public void rotateZSelection(double rotation)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setRotationZ(rotation);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
@@ -1356,7 +1367,7 @@ public class ThreeDViewManager
 //        } else
 //        {
 //            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationY());
-//            rotateSelection(outputAngle + gizmoRotationOffset);
+//            rotateYSelection(outputAngle + gizmoRotationOffset);
 //            return outputAngle;
 //        }
 //    }

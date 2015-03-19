@@ -75,7 +75,13 @@ public class LayoutSidePanelController implements Initializable,
     private RestrictedNumberField yAxisTextField;
 
     @FXML
-    private RestrictedNumberField rotationTextField;
+    private RestrictedNumberField rotationXTextField;
+
+    @FXML
+    private RestrictedNumberField rotationYTextField;
+
+    @FXML
+    private RestrictedNumberField rotationZTextField;
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
@@ -127,8 +133,10 @@ public class LayoutSidePanelController implements Initializable,
         String rotationLabelString = languageBundle.getString(
             "sidePanel_layout.RotationLabel");
 
-        scaleTextField.setText("-");
-        rotationTextField.setText("-");
+        scaleTextField.setText("100");
+        rotationXTextField.setText("0");
+        rotationYTextField.setText("0");
+        rotationZTextField.setText("0");
         widthTextField.setText("-");
         depthTextField.setText("-");
         heightTextField.setText("-");
@@ -183,7 +191,7 @@ public class LayoutSidePanelController implements Initializable,
 
         modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateRotationField(t1);
+            populateRotationYField(t1);
         };
 
         widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
@@ -237,10 +245,22 @@ public class LayoutSidePanelController implements Initializable,
         widthTextField.doubleValueProperty().set(t1.doubleValue());
     }
 
-    private void populateRotationField(Number t1)
+    private void populateRotationXField(Number t1)
     {
-        rotationTextField.doubleValueProperty().set(t1.doubleValue());
-        rotationTextField.setText(String.format(rotationFormat, t1));
+        rotationXTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationXTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    private void populateRotationZField(Number t1)
+    {
+        rotationZTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationZTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    private void populateRotationYField(Number t1)
+    {
+        rotationYTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationYTextField.setText(String.format(rotationFormat, t1));
     }
 
     private void populateScaleField(Number t1)
@@ -287,7 +307,7 @@ public class LayoutSidePanelController implements Initializable,
             }
         );
 
-        rotationTextField.setOnKeyPressed(
+        rotationXTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
 
@@ -301,12 +321,82 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().rotateSelection(
-                                    rotationTextField.getAsDouble());
+                                displayManager.getCurrentlyVisibleViewManager().rotateXSelection(
+                                    rotationXTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting rotation "
-                                    + rotationTextField.getText());
+                                    + rotationXTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        rotationYTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().rotateYSelection(
+                                    rotationYTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting rotation "
+                                    + rotationYTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        rotationZTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().rotateZSelection(
+                                    rotationZTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting rotation "
+                                    + rotationZTextField.getText());
                             }
                             break;
                         case DECIMAL:
@@ -732,7 +822,7 @@ public class LayoutSidePanelController implements Initializable,
     private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
     {
         populateScaleField(selectedModelDetails.getScale().get());
-        populateRotationField(selectedModelDetails.getRotationY().get());
+        populateRotationYField(selectedModelDetails.getRotationY().get());
         populateWidthField(selectedModelDetails.getWidth().get());
         populateHeightField(selectedModelDetails.getHeight().get());
         populateDepthField(selectedModelDetails.getDepth().get());
