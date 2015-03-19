@@ -931,13 +931,13 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
 
-    public void rotateXSelection(double rotation)
+    public void setLeanSelection(double rotation)
     {
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
             {
-                model.setRotationX(rotation);
+                model.setRotationLean(rotation);
             }
         }
         selectedModelContainers.updateSelectedValues();
@@ -946,13 +946,13 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
     
-    public void rotateYSelection(double rotation)
+    public void setTwistSelection(double rotation)
     {
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
             {
-                model.setRotationY(rotation);
+                model.setRotationTwist(rotation);
             }
         }
         selectedModelContainers.updateSelectedValues();
@@ -961,13 +961,13 @@ public class ThreeDViewManager
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
     
-    public void rotateZSelection(double rotation)
+    public void setTurnSelection(double rotation)
     {
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
             {
-                model.setRotationZ(rotation);
+                model.setRotationTurn(rotation);
             }
         }
         selectedModelContainers.updateSelectedValues();
@@ -1362,12 +1362,12 @@ public class ThreeDViewManager
 //        {
 //            gizmoRotationStarted = true;
 //            gizmoStartingRotationAngle = rotationAngle;
-//            gizmoRotationOffset = selectionContainer.getRotationY();
+//            gizmoRotationOffset = selectionContainer.getRotationTwist();
 //            return rotationAngle;
 //        } else
 //        {
-//            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationY());
-//            rotateYSelection(outputAngle + gizmoRotationOffset);
+//            steno.info("Rotating to " + outputAngle + " selRot=" + selectionContainer.getRotationTwist());
+//            setTwistSelection(outputAngle + gizmoRotationOffset);
 //            return outputAngle;
 //        }
 //    }

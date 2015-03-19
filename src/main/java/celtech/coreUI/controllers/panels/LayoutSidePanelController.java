@@ -321,7 +321,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().rotateXSelection(
+                                displayManager.getCurrentlyVisibleViewManager().setLeanSelection(
                                     rotationXTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -356,7 +356,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().rotateYSelection(
+                                displayManager.getCurrentlyVisibleViewManager().setTwistSelection(
                                     rotationYTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
@@ -391,7 +391,7 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().rotateZSelection(
+                                displayManager.getCurrentlyVisibleViewManager().setTurnSelection(
                                     rotationZTextField.getAsDouble());
                             } catch (ParseException ex)
                             {

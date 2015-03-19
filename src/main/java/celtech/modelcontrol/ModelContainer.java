@@ -48,7 +48,6 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -107,9 +106,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Property wrapper around the rotationY.
      */
-    private DoubleProperty preferredRotationY;
-    private DoubleProperty preferredRotationX;
-    private DoubleProperty preferredRotationZ;
+    private DoubleProperty preferredRotationTwist;
+    private DoubleProperty preferredRotationLean;
+    private DoubleProperty preferredRotationTurn;
 
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
@@ -281,9 +280,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         minLayerVisible = new SimpleIntegerProperty(0);
 
         preferredScale = new SimpleDoubleProperty(1);
-        preferredRotationX = new SimpleDoubleProperty(0);
-        preferredRotationY = new SimpleDoubleProperty(0);
-        preferredRotationZ = new SimpleDoubleProperty(0);
+        preferredRotationLean = new SimpleDoubleProperty(0);
+        preferredRotationTwist = new SimpleDoubleProperty(0);
+        preferredRotationTurn = new SimpleDoubleProperty(0);
 
         selectedMarkers = new HashSet<>();
 
@@ -319,7 +318,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
         copy.setScale(this.getScale());
-        copy.setRotationY(this.getRotationY());
+        copy.setRotationTwist(this.getRotationTwist());
         copy.setSnapFaceIndex(snapFaceIndex);
         return copy;
     }
@@ -607,27 +606,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
             transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
             transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
-            transformRotateTwistPreferred.setAngle(preferredRotationY.get());
+            transformRotateTwistPreferred.setAngle(preferredRotationTwist.get());
             transformRotateTwistPreferred.setAxis(Y_AXIS);
-        
         
             // Lean - around Z axis
             transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
             transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
             transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
-            transformRotateLeanPreferred.setAngle(preferredRotationX.get());
+            transformRotateLeanPreferred.setAngle(preferredRotationLean.get());
             transformRotateLeanPreferred.setAxis(Z_AXIS);
-            
-
             
             // Turn - around bed Y axis
             transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
             transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
             transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
-            transformRotateTurnPreferred.setAngle(preferredRotationZ.get());
+            transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
             transformRotateTurnPreferred.setAxis(Y_AXIS);            
-        
-        
     }
 
     /**
@@ -639,9 +633,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return preferredScale.get();
     }
 
-    public void setRotationY(double value)
+    public void setRotationTwist(double value)
     {
-        preferredRotationY.set(value);
+        preferredRotationTwist.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
         dropToBedAndUpdateLastTransformedBounds();
@@ -649,14 +643,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
     }
 
-    public double getRotationY()
+    public double getRotationTwist()
     {
-        return preferredRotationY.get();
+        return preferredRotationTwist.get();
     }
 
-    public void setRotationZ(double value)
+    public void setRotationTurn(double value)
     {
-        preferredRotationZ.set(value);
+        preferredRotationTurn.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
         dropToBedAndUpdateLastTransformedBounds();
@@ -664,14 +658,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
     }
 
-    public double getRotationZ()
+    public double getRotationTurn()
     {
-        return preferredRotationZ.get();
+        return preferredRotationTurn.get();
     }
 
-    public void setRotationX(double value)
+    public void setRotationLean(double value)
     {
-        preferredRotationX.set(value);
+        preferredRotationLean.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
         dropToBedAndUpdateLastTransformedBounds();
@@ -679,9 +673,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
     }
 
-    public double getRotationX()
+    public double getRotationLean()
     {
-        return preferredRotationX.get();
+        return preferredRotationLean.get();
     }
 
     /**
@@ -762,7 +756,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(transformMoveToPreferred.getX());
         out.writeDouble(transformMoveToPreferred.getZ());
         out.writeDouble(getScale());
-        out.writeDouble(getRotationY());
+        out.writeDouble(getRotationTwist());
         out.writeInt(snapFaceIndex);
     }
 
@@ -830,7 +824,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
         setScale(storedScale);
-        setRotationY(storedRotationY);
+        setRotationTwist(storedRotationY);
         if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
             snapToGround(storedSnapFaceIndex);
@@ -1634,7 +1628,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public double getPreferredRotationY()
     {
-        return preferredRotationY.get();
+        return preferredRotationTwist.get();
     }
 
     /**
@@ -1642,13 +1636,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void setPreferredRotationY(double preferredYRotation)
     {
-        this.preferredRotationY.set(preferredYRotation);
-        setRotationY(preferredYRotation);
+        this.preferredRotationTwist.set(preferredYRotation);
+        setRotationTwist(preferredYRotation);
     }
 
     public DoubleProperty preferredRotationYProperty()
     {
-        return preferredRotationY;
+        return preferredRotationTwist;
     }
 
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)

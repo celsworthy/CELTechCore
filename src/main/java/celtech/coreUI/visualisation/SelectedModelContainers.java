@@ -198,7 +198,7 @@ public class SelectedModelContainers
                 height.set(boundModelContainer.getScaledHeight());
                 depth.set(boundModelContainer.getScaledDepth());
                 scale.set(boundModelContainer.getScale());
-                rotationY.set(boundModelContainer.getRotationY());
+                rotationY.set(boundModelContainer.getRotationTwist());
             }
         }
 
