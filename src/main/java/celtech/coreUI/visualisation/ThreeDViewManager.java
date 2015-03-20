@@ -1068,6 +1068,7 @@ public class ThreeDViewManager
         {
             ModelContainer modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
             modelContainer.snapToGround(faceNumber);
+            selectedModelContainers.updateSelectedValues();
             collideModels();
             DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
         }

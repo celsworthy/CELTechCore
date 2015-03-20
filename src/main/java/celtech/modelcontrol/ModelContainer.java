@@ -47,6 +47,8 @@ import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.geometry.Vector;
+import org.apache.commons.math3.geometry.euclidean.threed.Euclidean3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -80,7 +82,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     ModelBounds originalModelBounds;
 
     private Scale transformScalePreferred;
-    private Rotate transformRotateSnapToGround;
     private Translate transformSnapToGroundYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
@@ -215,7 +216,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
-        transformRotateSnapToGround = new Rotate(0, 0, 0);
         transformSnapToGroundYAdjust = new Translate(0, 0, 0);
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
@@ -227,13 +227,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setBedCentreOffsetTransform();
 
         /**
-        * Rotations (which are all around the centre of the model)
-        * must be applied before any translations.
-        */
+         * Rotations (which are all around the centre of the model) must be applied before any
+         * translations.
+         */
         getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
                                transformRotateTurnPreferred, transformRotateLeanPreferred,
-                               transformRotateTwistPreferred, transformRotateSnapToGround);
+                               transformRotateTwistPreferred
+        //            ,                   transformRotateSnapToGround
+        );
         meshGroup.getTransforms().addAll(transformScalePreferred);
 
         originalModelBounds = calculateBounds();
@@ -570,6 +572,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void setSnapFaceIndex(int snapFaceIndex)
     {
+        Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
+
         this.snapFaceIndex = snapFaceIndex;
         if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
@@ -582,16 +586,94 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
             transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
             transformRotateSnapToGround.setAngle(angleDegrees);
+            System.out.println("SNAP ANGLE " + angleDegrees);
+            System.out.println("SNAP AXIS " + axis);
             transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
             transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
             transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
 
+            convertSnapToLeanAndTwist(transformRotateSnapToGround);
+
             dropToBedAndUpdateLastTransformedBounds();
         }
     }
-    
-    private void updateScaleTransform() {
-        
+
+    private void convertSnapToLeanAndTwist(Rotate RS)
+    {
+        /**
+         * First get angle that Y_AXIS is moved through, to give RL (lean rotation)
+         */
+        RS.setPivotX(0);
+        RS.setPivotY(0);
+        RS.setPivotZ(0);
+        Point3D Y_AXIS_PRIME = RS.transform(Y_AXIS);
+        System.out.println("Y PRIME IS " + Y_AXIS_PRIME);
+        Vector3D yPrime = new Vector3D(Y_AXIS_PRIME.getX(), Y_AXIS_PRIME.getY(), Y_AXIS_PRIME.getZ());
+        Vector3D y = new Vector3D(Y_AXIS.getX(), Y_AXIS.getY(), Y_AXIS.getZ());
+        double leanAngle = Vector3D.angle(yPrime, y);
+        System.out.println("LEAN ANGLE:" + Math.toDegrees(leanAngle));
+        setRotationLean(Math.toDegrees(leanAngle));
+
+        /**
+         * RL is Rotation for Lean, RT is Rotation for Twist, RS is Rotation for Snap
+         *
+         * RL * RT = RS => RT = inverse(RL) * RS
+         */
+        try
+        {
+
+            Vector3D RSaxis = new Vector3D(RS.getAxis().getX(), RS.getAxis().getY(),
+                                           RS.getAxis().getZ());
+            Rotation ARS = new Rotation(RSaxis, Math.toRadians(RS.getAngle()));
+            System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
+                + Math.toDegrees(
+                    ARS.getAngle()));
+            // Lean is a rotation about Z
+            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
+            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
+                + Math.toDegrees(
+                    ARLinverse.getAngle()));
+
+            Vector3D yPrimeProjectedOntoXZ = new Vector3D(Y_AXIS_PRIME.getX(), 0,
+                                                          Y_AXIS_PRIME.getZ());
+            Vector3D x = new Vector3D(X_AXIS.getX(), X_AXIS.getY(), X_AXIS.getZ());
+            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, x);
+            setRotationTurn(Math.toDegrees(turnAngle));
+
+            System.out.println("TURN ANGLE: " + Math.toDegrees(turnAngle));
+
+            // Turn is a rotation about Y
+            Rotation ARTNinverse = new Rotation(new Vector3D(0, 1, 0), -turnAngle);
+
+            Rotation ART = ARS.applyTo(ARLinverse).applyTo(ARTNinverse);
+//        Rotation ART = ARTNinverse.applyTo(ARLinverse).applyTo(ARS);
+            System.out.println("TWIST ANGLE: " + Math.toDegrees(ART.getAngle()));
+            System.out.println("TWIST AXIS: " + ART.getAxis());
+
+            
+            // see if twist axis aligns as expected (along y prime, the new model top-bottom axis)
+            double twistAxisMisAlign = Math.toDegrees(Math.acos(ART.getAxis().dotProduct(yPrime)));
+            System.out.println("Twist axis misalign is " + twistAxisMisAlign);
+            
+            
+            double twistAngle = Math.toDegrees(ART.getAngle());
+            if (ART.getAxis().getZ() < 0)
+            {
+                twistAngle += 180;
+            }
+            setRotationTwist(twistAngle);
+
+
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+
+    }
+
+    private void updateScaleTransform()
+    {
+
         transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
         transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
         transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
@@ -602,52 +684,52 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
         notifyShapeChange();
-    }    
+    }
 
     public void setXScale(double scaleFactor)
     {
         preferredXScale.set(scaleFactor);
         updateScaleTransform();
     }
-    
+
     public void setYScale(double scaleFactor)
     {
         preferredYScale.set(scaleFactor);
         updateScaleTransform();
     }
-    
+
     public void setZScale(double scaleFactor)
     {
         preferredZScale.set(scaleFactor);
         updateScaleTransform();
-    }    
+    }
 
     /**
-     * We present the rotations to the user as Lean - Twist - Turn, however in the code
-     * they are applied in the order twist, lean, turn.
+     * We present the rotations to the user as Lean - Twist - Turn, however in the code they are
+     * applied in the order twist, lean, turn.
      */
     private void updateTransformsFromLeanTwistTurnAngles()
     {
-            // Twist - around Y axis
-            transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
-            transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
-            transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
-            transformRotateTwistPreferred.setAngle(preferredRotationTwist.get());
-            transformRotateTwistPreferred.setAxis(Y_AXIS);
-        
-            // Lean - around Z axis
-            transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
-            transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
-            transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
-            transformRotateLeanPreferred.setAngle(preferredRotationLean.get());
-            transformRotateLeanPreferred.setAxis(Z_AXIS);
-            
-            // Turn - around Y axis
-            transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
-            transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
-            transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
-            transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
-            transformRotateTurnPreferred.setAxis(Y_AXIS);            
+        // Twist - around Y axis
+        transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateTwistPreferred.setAngle(preferredRotationTwist.get());
+        transformRotateTwistPreferred.setAxis(Y_AXIS);
+
+        // Lean - around Z axis
+        transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateLeanPreferred.setAngle(preferredRotationLean.get());
+        transformRotateLeanPreferred.setAxis(Z_AXIS);
+
+        // Turn - around Y axis
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
+        transformRotateTurnPreferred.setAxis(Y_AXIS);
     }
 
     /**
@@ -658,16 +740,16 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return preferredXScale.get();
     }
-    
+
     public double getYScale()
     {
         return preferredYScale.get();
     }
-    
+
     public double getZScale()
     {
         return preferredZScale.get();
-    }    
+    }
 
     public void setRotationTwist(double value)
     {
@@ -858,13 +940,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
-        
+
         double storedScaleY = 1d;
         double storedScaleZ = 1d;
         double storedRotationLean = 0d;
         double storedRotationTurn = 0d;
-        
-        if (in.available() > 0) {
+
+        if (in.available() > 0)
+        {
             storedScaleY = in.readDouble();
             storedScaleZ = in.readDouble();
             storedRotationLean = in.readDouble();
@@ -1705,4 +1788,5 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
     }
+
 }
