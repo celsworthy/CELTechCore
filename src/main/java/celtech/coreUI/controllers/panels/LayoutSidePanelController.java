@@ -154,10 +154,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         ResourceBundle languageBundle = Lookup.getLanguageBundle();
         String modelNameLabelString = languageBundle.getString(
             "sidePanel_layout.ModelNameLabel");
-        String scaleLabelString = languageBundle.getString(
-            "sidePanel_layout.ScaleLabel");
-        String rotationLabelString = languageBundle.getString(
-            "sidePanel_layout.RotationLabel");
 
         scaleTextWidthField.setText("100");
         scaleTextHeightField.setText("100");
@@ -171,7 +167,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         xAxisTextField.setText("-");
         yAxisTextField.setText("-");
 
-        setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
+        setUpTableView(modelNameLabelString, languageBundle);
         
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
@@ -340,10 +336,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private void populateScaleZField(Number t1)
     {
-        scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
-        DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
-        String scaleString = myFormatter.format(t1.doubleValue() * 100f);
-        scaleTextField.setText(scaleString);
         if (! inMultiSelectWithFixedAR())
         {
             scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
@@ -373,16 +365,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                                 {
                                     double ratio = scaleFactor / lastScaleRatio;
                                     lastScaleRatio = scaleFactor;
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                    boundProject.scaleXYZRatioSelection(selectionModel.getSelectedModelsSnapshot(),
                                         ratio);
                                     showScaleForXYZ(lastScaleRatio);
                                 } else if (inFixedAR()){
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
-                                        scaleFactor);
+                                    boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                                                              scaleFactor, true);
                                 }
                                 {
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
-                                        scaleFactor);
+                                    boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                                                              scaleFactor, false);
                                 }
                             } catch (ParseException ex)
                             {
@@ -418,18 +410,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                             try
                             {
                                 double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
-                                if (inMultiSelectWithFixedAR())
-                                {
-                                    double ratio = scaleFactor / lastScaleRatio;
-                                    lastScaleRatio = scaleFactor;
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
-                                        ratio);
-                                    showScaleForXYZ(lastScaleRatio);
-                                } else
-                                {
-                                    displayManager.getCurrentlyVisibleViewManager().scaleYSelection(
-                                        scaleFactor);
-                                }
+                                
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "
@@ -463,21 +444,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                boundProject.scaleModels(selectionModel.getSelectedModelsSnapshot(),
-                                    scaleTextField.getAsDouble() / 100.0);
                                 double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
-                                if (inMultiSelectWithFixedAR())
-                                {
-                                    double ratio = scaleFactor / lastScaleRatio;
-                                    lastScaleRatio = scaleFactor;
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
-                                        ratio);
-                                    showScaleForXYZ(lastScaleRatio);
-                                } else
-                                {
-                                    displayManager.getCurrentlyVisibleViewManager().scaleZSelection(
-                                        scaleFactor);
-                                }
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "
@@ -511,8 +478,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().setLeanSelection(
-                                    rotationXTextField.getAsDouble());
+                                boundProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
+                                                               rotationXTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting rotation "
@@ -546,8 +513,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().setTwistSelection(
-                                    rotationYTextField.getAsDouble());
+                               boundProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
+                                                               rotationYTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting rotation "
@@ -581,10 +548,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                boundProject.rotateModels(selectionModel.getSelectedModelsSnapshot(),
-                                    rotationTextField.getAsDouble());
-                                displayManager.getCurrentlyVisibleViewManager().setTurnSelection(
-                                    rotationZTextField.getAsDouble());
+                                boundProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
+                                                               rotationZTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting rotation "
@@ -772,8 +737,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         );
     }
 
-    private void setUpTableView(String modelNameLabelString, String scaleLabelString,
-        String rotationLabelString, ResourceBundle languageBundle)
+    private void setUpTableView(String modelNameLabelString, ResourceBundle languageBundle)
     {
         modelNameColumn.setText(modelNameLabelString);
         modelNameColumn.setCellValueFactory(
@@ -943,7 +907,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
     {
         populateScaleXField(selectedModelDetails.getScaleX().get());
+        populateScaleYField(selectedModelDetails.getScaleY().get());
+        populateScaleZField(selectedModelDetails.getScaleZ().get());
+        populateRotationXField(selectedModelDetails.getRotationLean().get());
         populateRotationYField(selectedModelDetails.getRotationTwist().get());
+        populateRotationZField(selectedModelDetails.getRotationTurn().get());
         populateWidthField(selectedModelDetails.getWidth().get());
         populateHeightField(selectedModelDetails.getHeight().get());
         populateDepthField(selectedModelDetails.getDepth().get());

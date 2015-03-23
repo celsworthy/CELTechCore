@@ -546,12 +546,62 @@ public class Project implements Serializable
         }
     }
 
-    public void scaleModels(Set<ModelContainer> modelContainers, double newScale)
+    /**
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
+     * ratio is not an absolute figure to be applied to the models but a ratio to applied.
+     */
+    public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            model.setXScale(model.getXScale() * ratio);
+            model.setYScale(model.getYScale() * ratio);
+            model.setZScale(model.getZScale() * ratio);
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
+        boolean preserveAspectRatio)
+    {
+        if (preserveAspectRatio)
+        {
+            // this only happens for non-multiselect
+            ModelContainer model = modelContainers.iterator().next();
+            double ratio = newScale / model.getScaleX();
+            scaleXYZRatioSelection(modelContainers, ratio);
+        } else
+        {
+            for (ModelContainer model : modelContainers)
+            {
+                {
+                    model.setXScale(newScale);
+                }
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void scaleYModels(Set<ModelContainer> modelContainers, double newScale)
     {
         for (ModelContainer model : modelContainers)
         {
             {
-                model.setScale(newScale);
+                model.setYScale(newScale);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void scaleZModels(Set<ModelContainer> modelContainers, double newScale)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setZScale(newScale);
             }
         }
         projectModified();
@@ -568,12 +618,36 @@ public class Project implements Serializable
         }
     }
 
-    public void rotateModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)
         {
             {
-                model.setRotationY(rotation);
+                model.setRotationLean(rotation);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setRotationTwist(rotation);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.setRotationTurn(rotation);
             }
         }
         projectModified();

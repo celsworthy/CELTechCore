@@ -1,6 +1,7 @@
 package celtech.coreUI.components;
 
 import celtech.Lookup;
+import celtech.configuration.ApplicationEnvironment;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;

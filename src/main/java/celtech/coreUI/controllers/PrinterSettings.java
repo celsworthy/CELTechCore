@@ -28,7 +28,7 @@ public class PrinterSettings
     private final StringProperty settingsName = new SimpleStringProperty();
     private final ObjectProperty<PrintQualityEnumeration> printQuality
         = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
-    private BooleanProperty dataChanged = new SimpleBooleanProperty(false);
+    private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
     
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
