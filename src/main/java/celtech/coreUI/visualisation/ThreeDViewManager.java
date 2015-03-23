@@ -913,32 +913,18 @@ public class ThreeDViewManager
     }
 
     /**
-     * Scale X, Y and Z 
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
+     * ratio is not an absolute figure to be applied to the models but a ratio to applied.
      */
-    public void scaleXYZSelection(double newScale)
+    public void scaleXYZRatioSelection(double ratio)
     {
         for (ModelContainer model : loadedModels)
         {
             if (selectedModelContainers.isSelected(model))
             {
-                model.setXScale(newScale);
-                model.setYScale(newScale);
-                model.setZScale(newScale);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }    
-    
-    public void scaleXSelection(double newScale)
-    {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.setXScale(newScale);
+                model.setXScale(model.getXScale() * ratio);
+                model.setYScale(model.getYScale() * ratio);
+                model.setZScale(model.getZScale() * ratio);
             }
         }
         selectedModelContainers.updateSelectedValues();
@@ -946,7 +932,31 @@ public class ThreeDViewManager
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
-    
+
+    public void scaleXSelection(double newScale, boolean preserveAspectRatio)
+    {
+        if (preserveAspectRatio)
+        {
+            // this only happens for non-multiselect
+            ModelContainer model = selectedModelContainers.getSelectedModelsSnapshot().iterator().next();
+            double ratio = newScale / model.getScaleX();
+            scaleXYZRatioSelection(ratio);
+        } else
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                if (selectedModelContainers.isSelected(model))
+                {
+                    model.setXScale(newScale);
+                }
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
     public void scaleYSelection(double newScale)
     {
         for (ModelContainer model : loadedModels)
@@ -961,7 +971,7 @@ public class ThreeDViewManager
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
-    
+
     public void scaleZSelection(double newScale)
     {
         for (ModelContainer model : loadedModels)
@@ -975,7 +985,7 @@ public class ThreeDViewManager
 
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
-    }    
+    }
 
     public void setLeanSelection(double rotation)
     {
@@ -991,7 +1001,7 @@ public class ThreeDViewManager
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
-    
+
     public void setTwistSelection(double rotation)
     {
         for (ModelContainer model : loadedModels)
@@ -1006,7 +1016,7 @@ public class ThreeDViewManager
         collideModels();
         DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
     }
-    
+
     public void setTurnSelection(double rotation)
     {
         for (ModelContainer model : loadedModels)

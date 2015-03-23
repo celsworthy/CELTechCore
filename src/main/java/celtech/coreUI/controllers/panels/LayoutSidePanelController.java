@@ -123,6 +123,11 @@ public class LayoutSidePanelController implements Initializable,
 
     private ListChangeListener selectionListener = null;
     private boolean suppressModelDataTableViewNotifications = false;
+    /**
+     * The last scale ratio that was applied to the current selection. This figure is reset to 1.0
+     * when the selection changes.
+     */
+    private double lastScaleRatio = 1.0d;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -298,26 +303,63 @@ public class LayoutSidePanelController implements Initializable,
         rotationYTextField.doubleValueProperty().set(t1.doubleValue());
         rotationYTextField.setText(String.format(rotationFormat, t1));
     }
+    
+    /**
+     * Return if we are in a multi-select and fixed aspect ratio is being applied.
+     */
+    private boolean inMultiSelectWithFixedAR() {
+        return preserveAspectRatio.isSelected() && 
+            (selectionModel.getNumModelsSelectedProperty().get() > 1);
+    }
+    
+    private boolean inMultiSelect() {
+        return selectionModel.getNumModelsSelectedProperty().get() > 1;
+    }    
+    
+    /**
+     * Return if fixed aspect ratio is being applied.
+     */
+    private boolean inFixedAR() {
+        return preserveAspectRatio.isSelected();
+    }    
+    
+    private void showScaleForXYZ(double scaleRatio) {
+        scaleTextWidthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextWidthField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextHeightField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextHeightField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextDepthField.setText(String.format(scaleFormat, scaleRatio * 100));
+    }
 
     private void populateScaleXField(Number t1)
     {
-        scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
-        scaleTextWidthField.setText(String.format(scaleFormat,
-                                                  t1.doubleValue() * 100));
+        if (! inMultiSelectWithFixedAR())
+        {
+            scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextWidthField.setText(String.format(scaleFormat,
+                                                      t1.doubleValue() * 100));
+        }
     }
 
     private void populateScaleYField(Number t1)
     {
-        scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
-        scaleTextHeightField.setText(String.format(scaleFormat,
-                                                   t1.doubleValue() * 100));
+        if (! inMultiSelectWithFixedAR())
+        {
+            scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextHeightField.setText(String.format(scaleFormat,
+                                                       t1.doubleValue() * 100));
+        }
     }
 
     private void populateScaleZField(Number t1)
     {
-        scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
-        scaleTextDepthField.setText(String.format(scaleFormat,
-                                                  t1.doubleValue() * 100));
+        if (! inMultiSelectWithFixedAR())
+        {
+            scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextDepthField.setText(String.format(scaleFormat,
+                                                      t1.doubleValue() * 100));
+        }
     }
 
     private void setUpKeyPressListeners()
@@ -337,11 +379,17 @@ public class LayoutSidePanelController implements Initializable,
                             try
                             {
                                 double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
-                                if (preserveAspectRatio.isSelected())
+                                if (inMultiSelectWithFixedAR())
                                 {
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZSelection(
+                                    double ratio = scaleFactor / lastScaleRatio;
+                                    lastScaleRatio = scaleFactor;
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                        ratio);
+                                    showScaleForXYZ(lastScaleRatio);
+                                } else if (inFixedAR()){
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
                                         scaleFactor);
-                                } else
+                                }
                                 {
                                     displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
                                         scaleFactor);
@@ -380,10 +428,13 @@ public class LayoutSidePanelController implements Initializable,
                             try
                             {
                                 double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
-                                if (preserveAspectRatio.isSelected())
+                                if (inMultiSelectWithFixedAR())
                                 {
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZSelection(
-                                        scaleFactor);
+                                    double ratio = scaleFactor / lastScaleRatio;
+                                    lastScaleRatio = scaleFactor;
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                        ratio);
+                                    showScaleForXYZ(lastScaleRatio);
                                 } else
                                 {
                                     displayManager.getCurrentlyVisibleViewManager().scaleYSelection(
@@ -423,10 +474,13 @@ public class LayoutSidePanelController implements Initializable,
                             try
                             {
                                 double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
-                                if (preserveAspectRatio.isSelected())
+                                if (inMultiSelectWithFixedAR())
                                 {
-                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZSelection(
-                                        scaleFactor);
+                                    double ratio = scaleFactor / lastScaleRatio;
+                                    lastScaleRatio = scaleFactor;
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                        ratio);
+                                    showScaleForXYZ(lastScaleRatio);
                                 } else
                                 {
                                     displayManager.getCurrentlyVisibleViewManager().scaleZSelection(
