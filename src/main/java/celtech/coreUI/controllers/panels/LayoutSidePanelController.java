@@ -31,6 +31,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -88,6 +89,9 @@ public class LayoutSidePanelController implements Initializable,
 
     @FXML
     private RestrictedNumberField rotationZTextField;
+
+    @FXML
+    private ToggleButton preserveAspectRatio;
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
@@ -200,32 +204,32 @@ public class LayoutSidePanelController implements Initializable,
         {
             populateScaleXField(t1);
         };
-        
+
         modelScaleYChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
             populateScaleYField(t1);
         };
-        
+
         modelScaleZChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
             populateScaleZField(t1);
-        };        
+        };
 
         modelLeanChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
             populateRotationXField(t1);
         };
-        
+
         modelTwistChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
             populateRotationYField(t1);
         };
-        
+
         modelTurnChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
             populateRotationZField(t1);
         };
-        
+
         widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
             populateWidthField(t1);
@@ -299,21 +303,21 @@ public class LayoutSidePanelController implements Initializable,
     {
         scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
         scaleTextWidthField.setText(String.format(scaleFormat,
-                                              t1.doubleValue() * 100));
+                                                  t1.doubleValue() * 100));
     }
 
     private void populateScaleYField(Number t1)
     {
         scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
         scaleTextHeightField.setText(String.format(scaleFormat,
-                                              t1.doubleValue() * 100));
+                                                   t1.doubleValue() * 100));
     }
 
     private void populateScaleZField(Number t1)
     {
         scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
         scaleTextDepthField.setText(String.format(scaleFormat,
-                                              t1.doubleValue() * 100));
+                                                  t1.doubleValue() * 100));
     }
 
     private void setUpKeyPressListeners()
@@ -332,8 +336,16 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
-                                    scaleTextWidthField.getAsDouble() / 100.0);
+                                double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
+                                if (preserveAspectRatio.isSelected())
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZSelection(
+                                        scaleFactor);
+                                } else
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
+                                        scaleFactor);
+                                }
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "
@@ -367,8 +379,16 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().scaleYSelection(
-                                    scaleTextHeightField.getAsDouble() / 100.0);
+                                double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
+                                if (preserveAspectRatio.isSelected())
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZSelection(
+                                        scaleFactor);
+                                } else
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleYSelection(
+                                        scaleFactor);
+                                }
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "
@@ -402,8 +422,16 @@ public class LayoutSidePanelController implements Initializable,
                         case TAB:
                             try
                             {
-                                displayManager.getCurrentlyVisibleViewManager().scaleZSelection(
-                                    scaleTextDepthField.getAsDouble() / 100.0);
+                                double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+                                if (preserveAspectRatio.isSelected())
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZSelection(
+                                        scaleFactor);
+                                } else
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleZSelection(
+                                        scaleFactor);
+                                }
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "

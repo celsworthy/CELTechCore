@@ -913,9 +913,25 @@ public class ThreeDViewManager
     }
 
     /**
-     *
-     * @param newScale
+     * Scale X, Y and Z 
      */
+    public void scaleXYZSelection(double newScale)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setXScale(newScale);
+                model.setYScale(newScale);
+                model.setZScale(newScale);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }    
+    
     public void scaleXSelection(double newScale)
     {
         for (ModelContainer model : loadedModels)

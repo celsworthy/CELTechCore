@@ -592,83 +592,92 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
             transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
 
-            convertSnapToLeanAndTwist(transformRotateSnapToGround);
+            convertSnapToLeanAndTwist(result, faceNormal);
 
             dropToBedAndUpdateLastTransformedBounds();
         }
     }
 
-    private void convertSnapToLeanAndTwist(Rotate RS)
+    private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal)
     {
+        System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
+            + Math.toDegrees(
+                ARS.getAngle()));
+
         /**
-         * First get angle that Y_AXIS is moved through, to give RL (lean rotation)
+         * get angle that Y_AXIS is moved through, to give RL (lean rotation)
          */
-        RS.setPivotX(0);
-        RS.setPivotY(0);
-        RS.setPivotZ(0);
-        Point3D Y_AXIS_PRIME = RS.transform(Y_AXIS);
-        System.out.println("Y PRIME IS " + Y_AXIS_PRIME);
-        Vector3D yPrime = new Vector3D(Y_AXIS_PRIME.getX(), Y_AXIS_PRIME.getY(), Y_AXIS_PRIME.getZ());
+        Vector3D yPrime = ARS.applyTo(new Vector3D(0, 1, 0));
+        System.out.println("y prime is " + yPrime);
         Vector3D y = new Vector3D(Y_AXIS.getX(), Y_AXIS.getY(), Y_AXIS.getZ());
         double leanAngle = Vector3D.angle(yPrime, y);
-        System.out.println("LEAN ANGLE:" + Math.toDegrees(leanAngle));
+        System.out.println("Lean angle:" + Math.toDegrees(leanAngle));
         setRotationLean(Math.toDegrees(leanAngle));
+
+        /**
+         * get angle that Z_AXIS is moved through in ZX plane, to get twist
+         */
+        Vector3D Z_AXIS = new Vector3D(0, 0, 1);
+        Vector3D z_prime = ARS.applyTo(Z_AXIS);
+        Vector3D z_prime_in_zxplane = new Vector3D(z_prime.getX(), 0, z_prime.getZ());
+        double twistAngle = new Rotation(Z_AXIS, z_prime_in_zxplane).getAngle();
+        setRotationTwist(Math.toDegrees(twistAngle));
 
         /**
          * RL is Rotation for Lean, RT is Rotation for Twist, RS is Rotation for Snap
          *
          * RL * RT = RS => RT = inverse(RL) * RS
          */
-        try
-        {
-
-            Vector3D RSaxis = new Vector3D(RS.getAxis().getX(), RS.getAxis().getY(),
-                                           RS.getAxis().getZ());
-            Rotation ARS = new Rotation(RSaxis, Math.toRadians(RS.getAngle()));
-            System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
-                + Math.toDegrees(
-                    ARS.getAngle()));
+//        try
+//        {
+//
+//            /**
+//             * Apply lean rotation to surface normal and then find required rotation to make it face
+//             * down. This should be a rotation around y_prime.
+//             */
+//            Rotation ARL = new Rotation(new Vector3D(0, 0, 1), leanAngle);
+//            Vector3D faceNormalPrime = ARL.applyTo(faceNormal);
+//
+//            Rotation twistReqd = new Rotation(faceNormalPrime, new Vector3D(0, -1, 0));
+//            double twistAngle = Math.toDegrees(twistReqd.getAngle());
+//
+//            System.out.println("Twist is " + twistReqd.getAxis() + " " + twistAngle);
+//
+//            setRotationTwist(twistAngle);
             // Lean is a rotation about Z
-            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
-            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
-                + Math.toDegrees(
-                    ARLinverse.getAngle()));
-
-            Vector3D yPrimeProjectedOntoXZ = new Vector3D(Y_AXIS_PRIME.getX(), 0,
-                                                          Y_AXIS_PRIME.getZ());
-            Vector3D x = new Vector3D(X_AXIS.getX(), X_AXIS.getY(), X_AXIS.getZ());
-            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, x);
-            setRotationTurn(Math.toDegrees(turnAngle));
-
-            System.out.println("TURN ANGLE: " + Math.toDegrees(turnAngle));
-
-            // Turn is a rotation about Y
-            Rotation ARTNinverse = new Rotation(new Vector3D(0, 1, 0), -turnAngle);
-
-            Rotation ART = ARS.applyTo(ARLinverse).applyTo(ARTNinverse);
-//        Rotation ART = ARTNinverse.applyTo(ARLinverse).applyTo(ARS);
-            System.out.println("TWIST ANGLE: " + Math.toDegrees(ART.getAngle()));
-            System.out.println("TWIST AXIS: " + ART.getAxis());
-
-            
-            // see if twist axis aligns as expected (along y prime, the new model top-bottom axis)
-            double twistAxisMisAlign = Math.toDegrees(Math.acos(ART.getAxis().dotProduct(yPrime)));
-            System.out.println("Twist axis misalign is " + twistAxisMisAlign);
-            
-            
-            double twistAngle = Math.toDegrees(ART.getAngle());
-            if (ART.getAxis().getZ() < 0)
-            {
-                twistAngle += 180;
-            }
-            setRotationTwist(twistAngle);
-
-
-        } catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-
+//            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
+//            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
+//                + Math.toDegrees(ARLinverse.getAngle()));
+//            Vector3D yPrimeProjectedOntoXZ = new Vector3D(Y_AXIS_PRIME.getX(), 0,
+//                                                          Y_AXIS_PRIME.getZ());
+//            Vector3D x = new Vector3D(X_AXIS.getX(), X_AXIS.getY(), X_AXIS.getZ());
+//            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, x);
+//            setRotationTurn(Math.toDegrees(turnAngle));
+//
+//            System.out.println("TURN ANGLE: " + Math.toDegrees(turnAngle));
+//
+//            // Turn is a rotation about Y
+//            Rotation ARTNinverse = new Rotation(new Vector3D(0, 1, 0), -turnAngle);
+//
+//            Rotation ART = ARS.applyTo(ARLinverse).applyTo(ARTNinverse);
+////        Rotation ART = ARTNinverse.applyTo(ARLinverse).applyTo(ARS);
+//            System.out.println("TWIST ANGLE: " + Math.toDegrees(ART.getAngle()));
+//            System.out.println("TWIST AXIS: " + ART.getAxis());
+//
+//            
+//            // see if twist axis aligns as expected (along y prime, the new model top-bottom axis)
+//            double twistAxisMisAlign = Math.toDegrees(Math.acos(ART.getAxis().dotProduct(yPrime)));
+//            System.out.println("Twist axis misalign is " + twistAxisMisAlign);
+//            double twistAngle = Math.toDegrees(0);
+//            if (ART.getAxis().getZ() < 0)
+//            {
+//                twistAngle += 180;
+//            }
+//            setRotationTwist(twistAngle);
+//        } catch (Exception ex)
+//        {
+//            ex.printStackTrace();
+//        }
     }
 
     private void updateScaleTransform()
