@@ -382,8 +382,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         }
                     } catch (ParseException ex)
                     {
-                        steno.warning("Error converting scale "
-                            + scaleTextWidthField.getText());
+                        steno.warning("Error converting scale " + scaleTextWidthField.getText());
                     }
                     break;
                 case DECIMAL:
@@ -406,11 +405,27 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     try
                     {
                         double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
+                        if (inMultiSelectWithFixedAR())
+                        {
+                            double ratio = scaleFactor / lastScaleRatio;
+                            lastScaleRatio = scaleFactor;
+                            boundProject.scaleXYZRatioSelection(
+                                selectionModel.getSelectedModelsSnapshot(),
+                                ratio);
+                            showScaleForXYZ(lastScaleRatio);
+                        } else if (inFixedAR())
+                        {
+                            boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      scaleFactor, true);
+                        }
+                        {
+                            boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      scaleFactor, false);
+                        }
 
                     } catch (ParseException ex)
                     {
-                        steno.warning("Error converting scale "
-                            + scaleTextHeightField.getText());
+                        steno.warning("Error converting scale " + scaleTextHeightField.getText());
                     }
                     break;
                 case DECIMAL:
@@ -433,10 +448,26 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     try
                     {
                         double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+                        if (inMultiSelectWithFixedAR())
+                        {
+                            double ratio = scaleFactor / lastScaleRatio;
+                            lastScaleRatio = scaleFactor;
+                            boundProject.scaleXYZRatioSelection(
+                                selectionModel.getSelectedModelsSnapshot(),
+                                ratio);
+                            showScaleForXYZ(lastScaleRatio);
+                        } else if (inFixedAR())
+                        {
+                            boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      scaleFactor, true);
+                        }
+                        {
+                            boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      scaleFactor, false);
+                        }
                     } catch (ParseException ex)
                     {
-                        steno.warning("Error converting scale "
-                            + scaleTextDepthField.getText());
+                        steno.warning("Error converting scale " + scaleTextDepthField.getText());
                     }
                     break;
                 case DECIMAL:
@@ -775,6 +806,29 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         boundProject = project;
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        selectionModel.addListener(new SelectedModelContainersListener()
+        {
+
+            @Override
+            public void whenAdded(ModelContainer modelContainer)
+            {
+                lastScaleRatio = 1.0d;
+                if (inMultiSelect())
+                {
+                    showScaleForXYZ(1.0d);
+                }
+            }
+
+            @Override
+            public void whenRemoved(ModelContainer modelContainer)
+            {
+                lastScaleRatio = 1.0d;
+                if (inMultiSelect())
+                {
+                    showScaleForXYZ(1.0d);
+                }
+            }
+        });
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         modelDataTableView.setItems(project.getLoadedModels());

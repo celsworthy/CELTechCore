@@ -548,7 +548,8 @@ public class Project implements Serializable
 
     /**
      * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
-     * ratio is not an absolute figure to be applied to the models but a ratio to applied.
+     * ratio is not an absolute figure to be applied to the models but a ratio to be applied 
+     * to the current scale.
      */
     public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
     {
@@ -584,24 +585,44 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void scaleYModels(Set<ModelContainer> modelContainers, double newScale)
+    public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
+        boolean preserveAspectRatio)
     {
-        for (ModelContainer model : modelContainers)
+        if (preserveAspectRatio)
         {
+            // this only happens for non-multiselect
+            ModelContainer model = modelContainers.iterator().next();
+            double ratio = newScale / model.getScaleX();
+            scaleXYZRatioSelection(modelContainers, ratio);
+        } else
+        {
+            for (ModelContainer model : modelContainers)
             {
-                model.setYScale(newScale);
+                {
+                    model.setYScale(newScale);
+                }
             }
         }
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void scaleZModels(Set<ModelContainer> modelContainers, double newScale)
+    public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
+        boolean preserveAspectRatio)
     {
-        for (ModelContainer model : modelContainers)
+        if (preserveAspectRatio)
         {
+            // this only happens for non-multiselect
+            ModelContainer model = modelContainers.iterator().next();
+            double ratio = newScale / model.getScaleX();
+            scaleXYZRatioSelection(modelContainers, ratio);
+        } else
+        {
+            for (ModelContainer model : modelContainers)
             {
-                model.setZScale(newScale);
+                {
+                    model.setZScale(newScale);
+                }
             }
         }
         projectModified();
