@@ -29,6 +29,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -61,7 +62,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private RestrictedNumberField xAxisTextField;
 
     @FXML
-    private RestrictedNumberField scaleTextField;
+    private RestrictedNumberField scaleTextWidthField;
+
+    @FXML
+    private RestrictedNumberField scaleTextHeightField;
+
+    @FXML
+    private RestrictedNumberField scaleTextDepthField;
 
     @FXML
     private RestrictedNumberField heightTextField;
@@ -70,7 +77,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private RestrictedNumberField yAxisTextField;
 
     @FXML
-    private RestrictedNumberField rotationTextField;
+    private RestrictedNumberField rotationXTextField;
+
+    @FXML
+    private RestrictedNumberField rotationYTextField;
+
+    @FXML
+    private RestrictedNumberField rotationZTextField;
+
+    @FXML
+    private ToggleButton preserveAspectRatio;
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
@@ -83,8 +99,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private SelectedModelContainers selectionModel;
     private SelectedModelContainersListener tableViewSelectionListener = null;
 
-    private ChangeListener<Number> modelScaleChangeListener = null;
-    private ChangeListener<Number> modelRotationChangeListener = null;
+    private ChangeListener<Number> modelScaleXChangeListener = null;
+    private ChangeListener<Number> modelScaleYChangeListener = null;
+    private ChangeListener<Number> modelScaleZChangeListener = null;
+    private ChangeListener<Number> modelLeanChangeListener = null;
+    private ChangeListener<Number> modelTwistChangeListener = null;
+    private ChangeListener<Number> modelTurnChangeListener = null;
     private ChangeListener<Number> widthListener = null;
     private ChangeListener<Number> heightListener = null;
     private ChangeListener<Number> depthListener = null;
@@ -96,6 +116,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private ListChangeListener selectionListener = null;
     private boolean suppressModelDataTableViewNotifications = false;
+    /**
+     * The last scale ratio that was applied to the current selection. This figure is reset to 1.0
+     * when the selection changes.
+     */
+    private double lastScaleRatio = 1.0d;
 
     private MaterialComponent materialComponent0;
     private MaterialComponent materialComponent1;
@@ -134,8 +159,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         String rotationLabelString = languageBundle.getString(
             "sidePanel_layout.RotationLabel");
 
-        scaleTextField.setText("-");
-        rotationTextField.setText("-");
+        scaleTextWidthField.setText("100");
+        scaleTextHeightField.setText("100");
+        scaleTextDepthField.setText("100");
+        rotationXTextField.setText("0");
+        rotationYTextField.setText("0");
+        rotationZTextField.setText("0");
         widthTextField.setText("-");
         depthTextField.setText("-");
         heightTextField.setText("-");
@@ -162,14 +191,34 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private void setUpModelGeometryListeners()
     {
 
-        modelScaleChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        modelScaleXChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateScaleField(t1);
+            populateScaleXField(t1);
         };
 
-        modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        modelScaleYChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateRotationField(t1);
+            populateScaleYField(t1);
+        };
+
+        modelScaleZChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateScaleZField(t1);
+        };
+
+        modelLeanChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateRotationXField(t1);
+        };
+
+        modelTwistChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateRotationYField(t1);
+        };
+
+        modelTurnChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateRotationZField(t1);
         };
 
         widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
@@ -223,23 +272,89 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         widthTextField.doubleValueProperty().set(t1.doubleValue());
     }
 
-    private void populateRotationField(Number t1)
+    private void populateRotationXField(Number t1)
     {
-        rotationTextField.doubleValueProperty().set(t1.doubleValue());
-        rotationTextField.setText(String.format(rotationFormat, t1));
+        rotationXTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationXTextField.setText(String.format(rotationFormat, t1));
     }
 
-    private void populateScaleField(Number t1)
+    private void populateRotationZField(Number t1)
+    {
+        rotationZTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationZTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    private void populateRotationYField(Number t1)
+    {
+        rotationYTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationYTextField.setText(String.format(rotationFormat, t1));
+    }
+    
+    /**
+     * Return if we are in a multi-select and fixed aspect ratio is being applied.
+     */
+    private boolean inMultiSelectWithFixedAR() {
+        return preserveAspectRatio.isSelected() && 
+            (selectionModel.getNumModelsSelectedProperty().get() > 1);
+    }
+    
+    private boolean inMultiSelect() {
+        return selectionModel.getNumModelsSelectedProperty().get() > 1;
+    }    
+    
+    /**
+     * Return if fixed aspect ratio is being applied.
+     */
+    private boolean inFixedAR() {
+        return preserveAspectRatio.isSelected();
+    }    
+    
+    private void showScaleForXYZ(double scaleRatio) {
+        scaleTextWidthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextWidthField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextHeightField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextHeightField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextDepthField.setText(String.format(scaleFormat, scaleRatio * 100));
+    }
+
+    private void populateScaleXField(Number t1)
+    {
+        if (! inMultiSelectWithFixedAR())
+        {
+            scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextWidthField.setText(String.format(scaleFormat,
+                                                      t1.doubleValue() * 100));
+        }
+    }
+
+    private void populateScaleYField(Number t1)
+    {
+        if (! inMultiSelectWithFixedAR())
+        {
+            scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextHeightField.setText(String.format(scaleFormat,
+                                                       t1.doubleValue() * 100));
+        }
+    }
+
+    private void populateScaleZField(Number t1)
     {
         scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
         DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
         String scaleString = myFormatter.format(t1.doubleValue() * 100f);
         scaleTextField.setText(scaleString);
+        if (! inMultiSelectWithFixedAR())
+        {
+            scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextDepthField.setText(String.format(scaleFormat,
+                                                      t1.doubleValue() * 100));
+        }
     }
 
     private void setUpKeyPressListeners()
     {
-        scaleTextField.setOnKeyPressed(
+        scaleTextWidthField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
 
@@ -253,12 +368,26 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                         case TAB:
                             try
                             {
-                                boundProject.scaleModels(selectionModel.getSelectedModelsSnapshot(),
-                                    scaleTextField.getAsDouble() / 100.0);
+                                double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
+                                if (inMultiSelectWithFixedAR())
+                                {
+                                    double ratio = scaleFactor / lastScaleRatio;
+                                    lastScaleRatio = scaleFactor;
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                        ratio);
+                                    showScaleForXYZ(lastScaleRatio);
+                                } else if (inFixedAR()){
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
+                                        scaleFactor);
+                                }
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXSelection(
+                                        scaleFactor);
+                                }
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting scale "
-                                    + scaleTextField.getText());
+                                    + scaleTextWidthField.getText());
                             }
                             break;
                         case DECIMAL:
@@ -274,7 +403,171 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             }
         );
 
-        rotationTextField.setOnKeyPressed(
+        scaleTextHeightField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
+                                if (inMultiSelectWithFixedAR())
+                                {
+                                    double ratio = scaleFactor / lastScaleRatio;
+                                    lastScaleRatio = scaleFactor;
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                        ratio);
+                                    showScaleForXYZ(lastScaleRatio);
+                                } else
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleYSelection(
+                                        scaleFactor);
+                                }
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting scale "
+                                    + scaleTextHeightField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        scaleTextDepthField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                boundProject.scaleModels(selectionModel.getSelectedModelsSnapshot(),
+                                    scaleTextField.getAsDouble() / 100.0);
+                                double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+                                if (inMultiSelectWithFixedAR())
+                                {
+                                    double ratio = scaleFactor / lastScaleRatio;
+                                    lastScaleRatio = scaleFactor;
+                                    displayManager.getCurrentlyVisibleViewManager().scaleXYZRatioSelection(
+                                        ratio);
+                                    showScaleForXYZ(lastScaleRatio);
+                                } else
+                                {
+                                    displayManager.getCurrentlyVisibleViewManager().scaleZSelection(
+                                        scaleFactor);
+                                }
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting scale "
+                                    + scaleTextDepthField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        rotationXTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().setLeanSelection(
+                                    rotationXTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting rotation "
+                                    + rotationXTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        rotationYTextField.setOnKeyPressed(
+            new EventHandler<KeyEvent>()
+            {
+
+                @Override
+                public void handle(KeyEvent t
+                )
+                {
+                    switch (t.getCode())
+                    {
+                        case ENTER:
+                        case TAB:
+                            try
+                            {
+                                displayManager.getCurrentlyVisibleViewManager().setTwistSelection(
+                                    rotationYTextField.getAsDouble());
+                            } catch (ParseException ex)
+                            {
+                                steno.warning("Error converting rotation "
+                                    + rotationYTextField.getText());
+                            }
+                            break;
+                        case DECIMAL:
+                        case BACK_SPACE:
+                        case LEFT:
+                        case RIGHT:
+                            break;
+                        default:
+                            t.consume();
+                            break;
+                    }
+                }
+            }
+        );
+
+        rotationZTextField.setOnKeyPressed(
             new EventHandler<KeyEvent>()
             {
 
@@ -290,10 +583,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                             {
                                 boundProject.rotateModels(selectionModel.getSelectedModelsSnapshot(),
                                     rotationTextField.getAsDouble());
+                                displayManager.getCurrentlyVisibleViewManager().setTurnSelection(
+                                    rotationZTextField.getAsDouble());
                             } catch (ParseException ex)
                             {
                                 steno.warning("Error converting rotation "
-                                    + rotationTextField.getText());
+                                    + rotationZTextField.getText());
                             }
                             break;
                         case DECIMAL:
@@ -598,8 +893,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         selectedModelDetails.getCentreX().addListener(xAxisListener);
         selectedModelDetails.getCentreZ().addListener(yAxisListener);
 
-        selectedModelDetails.getScale().addListener(modelScaleChangeListener);
-        selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
+        selectedModelDetails.getScaleX().addListener(modelScaleXChangeListener);
+        selectedModelDetails.getScaleY().addListener(modelScaleYChangeListener);
+        selectedModelDetails.getScaleZ().addListener(modelScaleZChangeListener);
+        selectedModelDetails.getRotationLean().addListener(modelLeanChangeListener);
+        selectedModelDetails.getRotationTwist().addListener(modelTwistChangeListener);
+        selectedModelDetails.getRotationTurn().addListener(modelTurnChangeListener);
 
         repopulate(selectedModelDetails);
 
@@ -643,8 +942,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      */
     private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
     {
-        populateScaleField(selectedModelDetails.getScale().get());
-        populateRotationField(selectedModelDetails.getRotationY().get());
+        populateScaleXField(selectedModelDetails.getScaleX().get());
+        populateRotationYField(selectedModelDetails.getRotationTwist().get());
         populateWidthField(selectedModelDetails.getWidth().get());
         populateHeightField(selectedModelDetails.getHeight().get());
         populateDepthField(selectedModelDetails.getDepth().get());

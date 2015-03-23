@@ -686,6 +686,131 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     private void deselectModel(ModelContainer pickedModel)
+    /**
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
+     * ratio is not an absolute figure to be applied to the models but a ratio to applied.
+     */
+    public void scaleXYZRatioSelection(double ratio)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setXScale(model.getXScale() * ratio);
+                model.setYScale(model.getYScale() * ratio);
+                model.setZScale(model.getZScale() * ratio);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    public void scaleXSelection(double newScale, boolean preserveAspectRatio)
+    {
+        if (preserveAspectRatio)
+        {
+            // this only happens for non-multiselect
+            ModelContainer model = selectedModelContainers.getSelectedModelsSnapshot().iterator().next();
+            double ratio = newScale / model.getScaleX();
+            scaleXYZRatioSelection(ratio);
+        } else
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                if (selectedModelContainers.isSelected(model))
+                {
+                    model.setXScale(newScale);
+                }
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    public void scaleYSelection(double newScale)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setYScale(newScale);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    public void scaleZSelection(double newScale)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setZScale(newScale);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    public void setLeanSelection(double rotation)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setRotationLean(rotation);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    public void setTwistSelection(double rotation)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setRotationTwist(rotation);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    public void setTurnSelection(double rotation)
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            if (selectedModelContainers.isSelected(model))
+            {
+                model.setRotationTurn(rotation);
+            }
+        }
+        selectedModelContainers.updateSelectedValues();
+
+        collideModels();
+        DisplayManager.getInstance().getCurrentlyVisibleProject().projectModified();
+    }
+
+    /**
+     *
+     * @param pickedModel
+     */
+    public void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())
         {
@@ -728,6 +853,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (modelContainer != null)
         {
             modelContainer.snapToGround(faceNumber);
+            selectedModelContainers.updateSelectedValues();
             collideModels();
             project.projectModified();
         }

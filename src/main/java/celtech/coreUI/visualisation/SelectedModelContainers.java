@@ -200,8 +200,12 @@ public class SelectedModelContainers implements ProjectChangesListener
         private final DoubleProperty centreZ = new SimpleDoubleProperty(-1);
         private final DoubleProperty height = new SimpleDoubleProperty(-1);
         private final DoubleProperty depth = new SimpleDoubleProperty(-1);
-        private final DoubleProperty scale = new SimpleDoubleProperty(-1);
-        private final DoubleProperty rotationY = new SimpleDoubleProperty(-1);
+        private final DoubleProperty scaleX = new SimpleDoubleProperty(-1);
+        private final DoubleProperty scaleY = new SimpleDoubleProperty(-1);
+        private final DoubleProperty scaleZ = new SimpleDoubleProperty(-1);
+        private final DoubleProperty rotationLean = new SimpleDoubleProperty(-1);
+        private final DoubleProperty rotationTwist = new SimpleDoubleProperty(-1);
+        private final DoubleProperty rotationTurn = new SimpleDoubleProperty(-1);
 
         private PrimarySelectedModelDetails()
         {
@@ -227,8 +231,12 @@ public class SelectedModelContainers implements ProjectChangesListener
                 centreZ.set(boundModelContainer.getTransformedCentreZ());
                 height.set(boundModelContainer.getScaledHeight());
                 depth.set(boundModelContainer.getScaledDepth());
-                scale.set(boundModelContainer.getScale());
-                rotationY.set(boundModelContainer.getRotationY());
+                scaleX.set(boundModelContainer.getXScale());
+                scaleY.set(boundModelContainer.getYScale());
+                scaleZ.set(boundModelContainer.getZScale());
+                rotationLean.set(boundModelContainer.getRotationLean());
+                rotationTwist.set(boundModelContainer.getRotationTwist());
+                rotationTurn.set(boundModelContainer.getRotationTurn());
             }
         }
 
@@ -252,15 +260,35 @@ public class SelectedModelContainers implements ProjectChangesListener
             return depth;
         }
 
-        public DoubleProperty getScale()
+        public DoubleProperty getScaleX()
         {
-            return scale;
+            return scaleX;
         }
+        
+        public DoubleProperty getScaleY()
+        {
+            return scaleY;
+        }
+        
+        public DoubleProperty getScaleZ()
+        {
+            return scaleZ;
+        }  
+        
+        public DoubleProperty getRotationLean()
+        {
+            return rotationLean;
+        }        
 
-        public DoubleProperty getRotationY()
+        public DoubleProperty getRotationTwist()
         {
-            return rotationY;
+            return rotationTwist;
         }
+        
+        public DoubleProperty getRotationTurn()
+        {
+            return rotationTurn;
+        }        
     }
 
 }
