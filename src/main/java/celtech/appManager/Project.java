@@ -569,6 +569,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
+            assert(modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getScaleX();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -591,6 +592,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
+            assert(modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getScaleX();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -613,6 +615,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
+            assert(modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getScaleX();
             scaleXYZRatioSelection(modelContainers, ratio);

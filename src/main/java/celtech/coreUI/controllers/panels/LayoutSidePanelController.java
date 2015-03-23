@@ -17,7 +17,9 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -115,6 +117,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private ListChangeListener selectionListener = null;
     private boolean suppressModelDataTableViewNotifications = false;
+    private IntegerProperty numSelectedModels = new SimpleIntegerProperty(0);
     /**
      * The last scale ratio that was applied to the current selection. This figure is reset to 1.0
      * when the selection changes.
@@ -172,6 +175,14 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         setUpKeyPressListeners();
         setupMaterialContainer();
         setupProjectSelectedListener();
+
+        numSelectedModels.addListener(
+            (ObservableValue< ? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                whenNumSelectedModelsChanged();
+            });
+        
+        setFieldsEditable();
     }
 
     private void setupProjectSelectedListener()
@@ -188,17 +199,26 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         modelScaleXChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateScaleXField(t1);
+            if (!inMultiSelect())
+            {
+                populateScaleXField(t1);
+            }
         };
 
         modelScaleYChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateScaleYField(t1);
+            if (!inMultiSelect())
+            {
+                populateScaleYField(t1);
+            }
         };
 
         modelScaleZChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateScaleZField(t1);
+            if (!inMultiSelect())
+            {
+                populateScaleZField(t1);
+            }
         };
 
         modelLeanChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
@@ -785,6 +805,31 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         };
     }
 
+    /**
+     * This updates size and scale fields to be editable or not according to whether we are in a
+     * multi-selection or not.
+     */
+    private void setFieldsEditable()
+    {
+        widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+    }
+
+    private void whenNumSelectedModelsChanged()
+    {
+        lastScaleRatio = 1.0d;
+        if (inMultiSelect())
+        {
+            showScaleForXYZ(1.0d);
+        }
+    }
+
     private void unbindProject(Project project)
     {
         layoutSubmode.removeListener(layoutSubmodeListener);
@@ -806,29 +851,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         boundProject = project;
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
-        selectionModel.addListener(new SelectedModelContainersListener()
-        {
+        numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
 
-            @Override
-            public void whenAdded(ModelContainer modelContainer)
-            {
-                lastScaleRatio = 1.0d;
-                if (inMultiSelect())
-                {
-                    showScaleForXYZ(1.0d);
-                }
-            }
-
-            @Override
-            public void whenRemoved(ModelContainer modelContainer)
-            {
-                lastScaleRatio = 1.0d;
-                if (inMultiSelect())
-                {
-                    showScaleForXYZ(1.0d);
-                }
-            }
-        });
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         modelDataTableView.setItems(project.getLoadedModels());
