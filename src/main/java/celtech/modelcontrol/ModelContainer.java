@@ -906,11 +906,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getXScale());
         out.writeDouble(getRotationTwist());
         out.writeInt(snapFaceIndex);
+        out.writeInt(associateWithExtruderNumber.get());
         out.writeDouble(getYScale());
         out.writeDouble(getZScale());
         out.writeDouble(getRotationLean());
         out.writeDouble(getRotationTurn());
-        out.writeInt(associateWithExtruderNumber.get());
     }
 
     private void readObject(ObjectInputStream in)
@@ -958,19 +958,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
+        
+        double storedScaleY = 1d;
+        double storedScaleZ = 1d;
+        double storedRotationLean = 0d;
+        double storedRotationTurn = 0d;        
         if (in.available() > 0)
         {
             // Introduced in version 1.??
             associateWithExtruderNumber.set(in.readInt());
-        }
-
-        double storedScaleY = 1d;
-        double storedScaleZ = 1d;
-        double storedRotationLean = 0d;
-        double storedRotationTurn = 0d;
-
-        if (in.available() > 0)
-        {
             storedScaleY = in.readDouble();
             storedScaleZ = in.readDouble();
             storedRotationLean = in.readDouble();
@@ -1583,7 +1579,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public double getTotalDepth()
     {
-        double totaldepth = originalModelBounds.getDepth() * preferredXScale.get();
+        double totaldepth = originalModelBounds.getDepth() * preferredZScale.get();
         return totaldepth;
     }
 

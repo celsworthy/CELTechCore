@@ -22,7 +22,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -168,7 +167,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         yAxisTextField.setText("-");
 
         setUpTableView(modelNameLabelString, languageBundle);
-        
+
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
@@ -179,9 +178,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-        {
-            bindProject(newValue);
-        });
+            {
+                bindProject(newValue);
+            });
     }
 
     private void setUpModelGeometryListeners()
@@ -285,393 +284,333 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         rotationYTextField.doubleValueProperty().set(t1.doubleValue());
         rotationYTextField.setText(String.format(rotationFormat, t1));
     }
-    
+
     /**
      * Return if we are in a multi-select and fixed aspect ratio is being applied.
      */
-    private boolean inMultiSelectWithFixedAR() {
-        return preserveAspectRatio.isSelected() && 
-            (selectionModel.getNumModelsSelectedProperty().get() > 1);
+    private boolean inMultiSelectWithFixedAR()
+    {
+        return preserveAspectRatio.isSelected()
+            && (selectionModel.getNumModelsSelectedProperty().get() > 1);
     }
-    
-    private boolean inMultiSelect() {
+
+    private boolean inMultiSelect()
+    {
         return selectionModel.getNumModelsSelectedProperty().get() > 1;
-    }    
-    
+    }
+
     /**
      * Return if fixed aspect ratio is being applied.
      */
-    private boolean inFixedAR() {
+    private boolean inFixedAR()
+    {
         return preserveAspectRatio.isSelected();
-    }    
-    
-    private void showScaleForXYZ(double scaleRatio) {
+    }
+
+    private void showScaleForXYZ(double scaleRatio)
+    {
+        DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+        String scaleString = myFormatter.format(scaleRatio * 100f);
         scaleTextWidthField.doubleValueProperty().set(scaleRatio * 100);
-        scaleTextWidthField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextWidthField.setText(scaleString);
         scaleTextHeightField.doubleValueProperty().set(scaleRatio * 100);
-        scaleTextHeightField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextHeightField.setText(scaleString);
         scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
-        scaleTextDepthField.setText(String.format(scaleFormat, scaleRatio * 100));
+        scaleTextDepthField.setText(scaleString);
     }
 
     private void populateScaleXField(Number t1)
     {
-        if (! inMultiSelectWithFixedAR())
+        if (!inMultiSelectWithFixedAR())
         {
             scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
-            scaleTextWidthField.setText(String.format(scaleFormat,
-                                                      t1.doubleValue() * 100));
+            DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+            String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+            scaleTextWidthField.setText(scaleString);
         }
     }
 
     private void populateScaleYField(Number t1)
     {
-        if (! inMultiSelectWithFixedAR())
+        if (!inMultiSelectWithFixedAR())
         {
             scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
-            scaleTextHeightField.setText(String.format(scaleFormat,
-                                                       t1.doubleValue() * 100));
+            DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+            String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+            scaleTextHeightField.setText(scaleString);
         }
     }
 
     private void populateScaleZField(Number t1)
     {
-        if (! inMultiSelectWithFixedAR())
+        if (!inMultiSelectWithFixedAR())
         {
             scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
-            scaleTextDepthField.setText(String.format(scaleFormat,
-                                                      t1.doubleValue() * 100));
+            DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+            String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+            scaleTextDepthField.setText(scaleString);
         }
     }
 
     private void setUpKeyPressListeners()
     {
-        scaleTextWidthField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        scaleTextWidthField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
-                                if (inMultiSelectWithFixedAR())
-                                {
-                                    double ratio = scaleFactor / lastScaleRatio;
-                                    lastScaleRatio = scaleFactor;
-                                    boundProject.scaleXYZRatioSelection(selectionModel.getSelectedModelsSnapshot(),
-                                        ratio);
-                                    showScaleForXYZ(lastScaleRatio);
-                                } else if (inFixedAR()){
-                                    boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
-                                                              scaleFactor, true);
-                                }
-                                {
-                                    boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
-                                                              scaleFactor, false);
-                                }
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting scale "
-                                    + scaleTextWidthField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
+                        if (inMultiSelectWithFixedAR())
+                        {
+                            double ratio = scaleFactor / lastScaleRatio;
+                            lastScaleRatio = scaleFactor;
+                            boundProject.scaleXYZRatioSelection(
+                                selectionModel.getSelectedModelsSnapshot(),
+                                ratio);
+                            showScaleForXYZ(lastScaleRatio);
+                        } else if (inFixedAR())
+                        {
+                            boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      scaleFactor, true);
+                        }
+                        {
+                            boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      scaleFactor, false);
+                        }
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting scale "
+                            + scaleTextWidthField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        scaleTextHeightField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        scaleTextHeightField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
-                                
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting scale "
-                                    + scaleTextHeightField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
-                    }
-                }
-            }
-        );
+                        double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
 
-        scaleTextDepthField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting scale "
+                            + scaleTextHeightField.getText());
+                    }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
+
+        scaleTextDepthField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting scale "
-                                    + scaleTextDepthField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting scale "
+                            + scaleTextDepthField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        rotationXTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        rotationXTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
-                                                               rotationXTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting rotation "
-                                    + rotationXTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      rotationXTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation "
+                            + rotationXTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        rotationYTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        rotationYTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                               boundProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
-                                                               rotationYTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting rotation "
-                                    + rotationYTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
+                                                       rotationYTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation "
+                            + rotationYTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        rotationZTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        rotationZTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
-                                                               rotationZTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting rotation "
-                                    + rotationZTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      rotationZTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation "
+                            + rotationZTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        widthTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        widthTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
-                                    widthTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting width "
-                                    + widthTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
+                                                       widthTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting width "
+                            + widthTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        heightTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        heightTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
-                                    heightTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting height "
-                                    + heightTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
+                                                        heightTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting height "
+                            + heightTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        depthTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        depthTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
-                                    depthTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.error("Error parsing depth string " + ex
-                                    + " : " + ex.getMessage());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
+                                                       depthTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.error("Error parsing depth string " + ex
+                            + " : " + ex.getMessage());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
         xAxisTextField.setOnKeyPressed(
             (KeyEvent t) ->
@@ -682,7 +621,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     case TAB:
                         try
                         {
-                            boundProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(),
+                            boundProject.translateModelsXTo(
+                                selectionModel.getSelectedModelsSnapshot(),
                                 xAxisTextField.getAsDouble());
                         } catch (ParseException ex)
                         {
@@ -701,40 +641,32 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 }
             });
 
-        yAxisTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        yAxisTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
-                                    yAxisTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.error("Error parsing y translate string "
-                                    + ex + " : " + ex.getMessage());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
+                                                        yAxisTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.error("Error parsing y translate string "
+                            + ex + " : " + ex.getMessage());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
     }
 
     private void setUpTableView(String modelNameLabelString, ResourceBundle languageBundle)
@@ -821,8 +753,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         };
     }
-    
-    private void unbindProject(Project project) {
+
+    private void unbindProject(Project project)
+    {
         layoutSubmode.removeListener(layoutSubmodeListener);
         selectionModel.removeListener(tableViewSelectionListener);
     }
@@ -835,7 +768,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      */
     private void bindProject(final Project project)
     {
-        if (boundProject != null) {
+        if (boundProject != null)
+        {
             unbindProject(boundProject);
         }
         boundProject = project;
@@ -965,19 +899,19 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
     {
-        switch (layoutSubmode.get()) {
+        switch (layoutSubmode.get())
+        {
             case ASSOCIATE_WITH_EXTRUDER0:
                 selectMaterialComponent(materialComponent0);
                 break;
             case ASSOCIATE_WITH_EXTRUDER1:
                 selectMaterialComponent(materialComponent1);
-                break;           
+                break;
             default:
                 materialComponent0.select(false);
                 materialComponent1.select(false);
         }
-       
-    };
 
+    };
 
 }
