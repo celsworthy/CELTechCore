@@ -834,6 +834,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         layoutSubmode.removeListener(layoutSubmodeListener);
         selectionModel.removeListener(tableViewSelectionListener);
+        numSelectedModels.unbind();
     }
 
     /**
