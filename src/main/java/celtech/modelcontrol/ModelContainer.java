@@ -61,6 +61,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 {
 
     private static final long serialVersionUID = 1L;
+    private static int nextModelId = 0;
+    private int modelId;
     private Stenographer steno = null;
     private PrintBed printBed = null;
     private boolean isCollided = false;
@@ -144,7 +146,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshGroup.getChildren().add(meshToAdd);
             numberOfMeshes = 1;
         }
-        
+
         initialise(name);
         initialiseTransforms();
     }
@@ -290,6 +292,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void initialise(String name)
     {
+        modelId = nextModelId;
+        nextModelId += 1;
         material = ApplicationMaterials.getDefaultModelMaterial();
         associateWithExtruderNumber.set(0);
         shapeChangeListeners = new ArrayList<>();
@@ -622,8 +626,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal)
     {
         System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
-            + Math.toDegrees(
-                ARS.getAngle()));
+            + Math.toDegrees(ARS.getAngle()));
 
         /**
          * get angle that Y_AXIS is moved through, to give RL (lean rotation)
@@ -636,7 +639,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationLean(Math.toDegrees(leanAngle));
 
         /**
-         * get angle that Z_AXIS is moved through in ZX plane, to get twist
+         *
          */
         Vector3D Z_AXIS = new Vector3D(0, 0, 1);
         Vector3D z_prime = ARS.applyTo(Z_AXIS);
@@ -665,7 +668,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //            System.out.println("Twist is " + twistReqd.getAxis() + " " + twistAngle);
 //
 //            setRotationTwist(twistAngle);
-            // Lean is a rotation about Z
+        // Lean is a rotation about Z
 //            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
 //            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
 //                + Math.toDegrees(ARLinverse.getAngle()));
@@ -958,11 +961,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
         int storedSnapFaceIndex = in.readInt();
-        
+
         double storedScaleY = 1d;
         double storedScaleZ = 1d;
         double storedRotationLean = 0d;
-        double storedRotationTurn = 0d;        
+        double storedRotationTurn = 0d;
         if (in.available() > 0)
         {
             // Introduced in version 1.??
@@ -1851,5 +1854,33 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             MeshView meshView = (MeshView) mesh;
             meshView.setMaterial(meshMaterial);
         }
+    }
+
+    public class State
+    {
+
+        public int modelId;
+        public double x;
+
+        public State(int modelId, double x)
+        {
+            this.modelId = modelId;
+            this.x = x;
+        }
+
+    }
+
+    public State getState()
+    {
+        return new State(modelId, transformMoveToPreferred.getX());
+    }
+    
+    public void setState(State state)
+    {
+        transformMoveToPreferred.setX(state.x);
+    }    
+    
+    public int getModelId() {
+        return modelId;
     }
 }

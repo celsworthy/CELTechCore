@@ -4,6 +4,7 @@
 package celtech.coreUI;
 
 import celtech.appManager.Project;
+import celtech.appManager.Undo.CommandStack;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -17,11 +18,19 @@ public class ProjectGUIState
     private final SelectedModelContainers selectedModelContainers;
     
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
+    
+    private final CommandStack commandStack;
 
     public ProjectGUIState(Project project)
     {
         selectedModelContainers = new SelectedModelContainers(project);
         layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
+        commandStack = new CommandStack();
+    }
+
+    public CommandStack getCommandStack()
+    {
+        return commandStack;
     }
     
     public SelectedModelContainers getSelectedModelContainers() {

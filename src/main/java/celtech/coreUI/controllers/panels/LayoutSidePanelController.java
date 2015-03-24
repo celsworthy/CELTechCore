@@ -4,6 +4,8 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.appManager.Undo.Command;
+import celtech.appManager.Undo.CommandStack;
 import celtech.configuration.Filament;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -16,8 +18,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Set;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -137,6 +138,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     private AMFOutputConverter outputConverter = new AMFOutputConverter();
+    private CommandStack commandStack;
 
     @FXML
     void outputAMF(ActionEvent event)
@@ -577,34 +579,24 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             }
         });
 
-        xAxisTextField.setOnKeyPressed(
-            (KeyEvent t) ->
+        xAxisTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-                switch (t.getCode())
-                {
-                    case ENTER:
-                    case TAB:
-                        try
-                        {
-                            boundProject.translateModelsXTo(
-                                selectionModel.getSelectedModelsSnapshot(),
-                                xAxisTextField.getAsDouble());
-                        } catch (ParseException ex)
-                        {
-                            steno.error("Error parsing x translate string " + ex
-                                + " : " + ex.getMessage());
-                        }
-                        break;
-                    case DECIMAL:
-                    case BACK_SPACE:
-                    case LEFT:
-                    case RIGHT:
-                        break;
-                    default:
-                        t.consume();
-                        break;
-                }
-            });
+                case ENTER:
+                case TAB:
+                    doUpdateX();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
 
         yAxisTextField.setOnKeyPressed((KeyEvent t) ->
         {
@@ -612,15 +604,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
-                                                        yAxisTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.error("Error parsing y translate string "
-                            + ex + " : " + ex.getMessage());
-                    }
+                    doUpdateZ();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -634,6 +618,97 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         });
     }
 
+    private void doUpdateZ()
+    {
+        try
+        {
+            boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
+                                            yAxisTextField.getAsDouble());
+        } catch (ParseException ex)
+        {
+            steno.error("Error parsing y translate string "
+                + ex + " : " + ex.getMessage());
+        }
+    }
+
+    private void doUpdateX()
+    {
+        try
+        {
+            double newX = xAxisTextField.getAsDouble();
+            doTransformCommand(() ->
+            {
+                boundProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
+            });
+
+        } catch (ParseException ex)
+        {
+            steno.error("Error parsing x translate string " + ex
+                + " : " + ex.getMessage());
+        }
+    }
+
+    /**
+     * A point interface (ie only one method) that takes no arguments and returns void.
+     */
+    public interface NoArgsVoidFunc
+    {
+
+        void run() throws Exception;
+    }
+
+    class TransformCommand extends Command
+    {
+
+        NoArgsVoidFunc func;
+        Set<ModelContainer.State> originalStates;
+        Set<ModelContainer.State> newStates;
+        private final Project project;
+
+        public TransformCommand(Project project, NoArgsVoidFunc func)
+        {
+            this.project = project;
+            this.func = func;
+        }
+
+        @Override
+        public void saveState()
+        {
+            originalStates = project.getModelStates();
+        }
+
+        @Override
+        public void undo()
+        {
+            project.setModelStates(originalStates);
+        }
+
+        @Override
+        public void redo()
+        {
+            if (newStates == null)
+            {
+                try
+                {
+                    func.run();
+                    newStates = project.getModelStates();
+                } catch (Exception ex)
+                {
+                    steno.error("Failed running command " + ex);
+                }
+            } else {
+                project.setModelStates(newStates);
+            }
+        }
+
+    }
+
+    private void doTransformCommand(NoArgsVoidFunc func)
+    {
+        Command command = new TransformCommand(boundProject, func);
+        commandStack.do_(command);
+    }
+
     private void updateDepth()
     {
         try
@@ -642,8 +717,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 ModelContainer modelContainer = getSingleSelection();
                 double ratio = depthTextField.getAsDouble() / modelContainer.getScaledDepth();
+
                 boundProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(), ratio);
+
             } else
             {
                 boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
@@ -915,6 +992,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
+        commandStack = Lookup.getProjectGUIState(project).getCommandStack();
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 

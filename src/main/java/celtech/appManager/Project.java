@@ -756,4 +756,29 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
+    
+     public Set<ModelContainer.State> getModelStates() {
+         Set<ModelContainer.State> modelStates = new HashSet<>();
+         for (ModelContainer model : loadedModels)
+         {
+             modelStates.add(model.getState());
+         }
+         return modelStates;
+     }
+     
+     public void setModelStates(Set<ModelContainer.State> modelStates) {
+         Set<ModelContainer> modelContainers = new HashSet<>();
+         for (ModelContainer.State modelState : modelStates)
+         {
+             for (ModelContainer model : loadedModels)
+             {
+                 if (model.getModelId() == modelState.modelId) {
+                     model.setState(modelState);
+                     modelContainers.add(model);
+                 }
+             }
+         }
+         projectModified();
+         fireWhenModelsTransformed(modelContainers);
+     }
 }
