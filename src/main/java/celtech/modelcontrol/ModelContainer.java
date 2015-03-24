@@ -2,6 +2,7 @@ package celtech.modelcontrol;
 
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
+import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
@@ -35,6 +36,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -57,7 +59,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider
+public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
+    ScreenExtentsProvider
 {
 
     private static final long serialVersionUID = 1L;
@@ -112,7 +115,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private double bedCentreOffsetZ;
     private ModelBounds lastTransformedBounds;
     private SelectionHighlighter selectionHighlighter = null;
-    List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+    private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+    private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
     private Set<Node> selectedMarkers;
 
     /**
@@ -137,7 +141,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshGroup.getChildren().add(meshToAdd);
             numberOfMeshes = 1;
         }
-        
+
         initialise(name);
         initialiseTransforms();
     }
@@ -270,6 +274,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         material = ApplicationMaterials.getDefaultModelMaterial();
         associateWithExtruderNumber.set(0);
         shapeChangeListeners = new ArrayList<>();
+        screenExtentsChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
@@ -1544,6 +1549,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         shapeChangeListeners.add(listener);
     }
 
+    @Override
+    public void removeShapeChangeListener(ShapeChangeListener listener)
+    {
+        shapeChangeListeners.remove(listener);
+    }
+
     /**
      * This method must be called at the end of any operation that changes one or more of the
      * transforms.
@@ -1553,6 +1564,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
             shapeChangeListener.shapeChanged(this);
+        }
+
+        for (ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+        {
+            screenExtentsListener.screenExtentsChanged(this);
         }
     }
 
@@ -1645,5 +1661,77 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             MeshView meshView = (MeshView) mesh;
             meshView.setMaterial(meshMaterial);
         }
+    }
+
+    @Override
+    public void addShapeChangeListener(ScreenExtentsListener listener)
+    {
+        screenExtentsChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeShapeChangeListener(ScreenExtentsListener listener)
+    {
+        screenExtentsChangeListeners.remove(listener);
+    }
+
+    @Override
+    public Point2D getScreenExtents()
+    {
+        
+        double halfWidth = getScaledWidth() / 2;
+        double halfDepth = getScaledDepth() / 2;
+        double halfHeight = getScaledHeight() / 2;
+        double minX = getCentreX() - halfWidth;
+        double maxX = getCentreX() + halfWidth;
+        double minZ = getCentreZ() - halfDepth;
+        double maxZ = getCentreZ() + halfDepth;
+        double minY = getCentreY() - halfHeight;
+        double maxY = getCentreY() + halfHeight;
+        
+        Point2D[] pointarray = new Point2D[4];
+        pointarray[0] = localToScreen(minX, 0, minZ);
+        pointarray[1] = localToScreen(minX, 0, minZ);
+        pointarray[2] = localToScreen(minX, 0, minZ);
+        pointarray[3] = localToScreen(minX, 0, minZ);
+        
+        double xMin = 9999;
+        double xMax = 0;
+        int maxXIndex = -1;
+        int minXIndex = -1;
+        
+        for (int pointCounter = 0; pointCounter < pointarray.length; pointCounter++)
+        {
+            if (pointarray[pointCounter].getX() > xMax)
+            {
+               xMax = pointarray[pointCounter].getX();
+               maxXIndex = pointCounter;
+            }
+            if (pointarray[pointCounter].getX() < xMin)
+            {
+               xMin = pointarray[pointCounter].getX();
+               minXIndex = pointCounter;
+            }
+        }
+        
+        return pointarray[minXIndex];
+    }
+
+    @Override
+    public double getTransformedHeight()
+    {
+        return getScaledHeight();
+    }
+
+    @Override
+    public double getTransformedWidth()
+    {
+        return getScaledWidth();
+    }
+
+    @Override
+    public double getTransformedDepth()
+    {
+        return getScaledDepth();
     }
 }

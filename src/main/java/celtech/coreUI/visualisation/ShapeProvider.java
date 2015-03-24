@@ -30,6 +30,8 @@ public interface ShapeProvider
     public double getCentreZ();
     
     public void addShapeChangeListener(ShapeChangeListener listener);
+
+    public void removeShapeChangeListener(ShapeChangeListener listener);
     
     public interface ShapeChangeListener {
         

@@ -9,8 +9,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
-import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Printer;
@@ -226,6 +226,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void handleMousePressedEvent(MouseEvent event)
     {
+        boolean handleThisEvent = true;
+
         mousePosX = event.getSceneX();
         mousePosY = event.getSceneY();
         mouseOldX = event.getSceneX();
@@ -238,26 +240,42 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             Point3D pickedPoint = pickResult.getIntersectedPoint();
 
             Node intersectedNode = pickResult.getIntersectedNode();
-            ModelContainer modelContainer = null;
-            if (intersectedNode instanceof MeshView)
+
+            if (intersectedNode.getParent() != null)
             {
-                modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
+                if (intersectedNode.getParent().getId() != null)
+                {
+                    if (intersectedNode.getParent().getId().equals(SelectionHighlighter.idString))
+                    {
+                        // Expect the selection highlighter to handle this one...
+                        handleThisEvent = false;
+                    }
+                }
             }
 
-            switch (layoutSubmode.get())
+            if (handleThisEvent)
             {
-                case SNAP_TO_GROUND:
-                    doSnapToGround(modelContainer, pickResult);
-                    break;
-                case ASSOCIATE_WITH_EXTRUDER0:
-                    doAssociateWithExtruder0(modelContainer);
-                    break;
-                case ASSOCIATE_WITH_EXTRUDER1:
-                    doAssociateWithExtruder1(modelContainer);
-                    break;
-                case SELECT:
-                    doSelectTranslateModel(intersectedNode, pickedPoint, event);
-                    break;
+                ModelContainer modelContainer = null;
+                if (intersectedNode instanceof MeshView)
+                {
+                    modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
+                }
+
+                switch (layoutSubmode.get())
+                {
+                    case SNAP_TO_GROUND:
+                        doSnapToGround(modelContainer, pickResult);
+                        break;
+                    case ASSOCIATE_WITH_EXTRUDER0:
+                        doAssociateWithExtruder0(modelContainer);
+                        break;
+                    case ASSOCIATE_WITH_EXTRUDER1:
+                        doAssociateWithExtruder1(modelContainer);
+                        break;
+                    case SELECT:
+                        doSelectTranslateModel(intersectedNode, pickedPoint, event);
+                        break;
+                }
             }
         }
     }
@@ -569,6 +587,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
          * Listen for adding and removing of models from the project
          */
         project.addProjectChangesListener(this);
+
     }
 
     private void goToPreset(CameraPositionPreset preset)
@@ -590,26 +609,32 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         bedOuterMaterial.setSpecularColor(Color.WHITE);
 
-        bedOuterMaterial.setSpecularPower(5.0);
+        bedOuterMaterial.setSpecularPower(
+            5.0);
 
         PhongMaterial bedInnerMaterial = new PhongMaterial(Color.GREY);
 
         bedInnerMaterial.setSpecularColor(Color.WHITE);
 
-        bedInnerMaterial.setSpecularPower(.1);
+        bedInnerMaterial.setSpecularPower(
+            .1);
 
         Group bed = new Group();
-        bed.setId("Bed");
+
+        bed.setId(
+            "Bed");
 
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshes());
+        bed.getChildren()
+            .addAll(bedOuterLoadResult.getModelContainer().getMeshes());
 
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
-        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshes());
+        bed.getChildren()
+            .addAll(bedInnerLoadResult.getModelContainer().getMeshes());
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
             ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
@@ -619,7 +644,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         final Xform roboxLogoTransformNode = new Xform();
 
-        roboxLogoTransformNode.setRotateX(-90);
+        roboxLogoTransformNode.setRotateX(
+            -90);
 
         final double logoSide_mm = 100;
         double logoScale = logoSide_mm / roboxLogoImage.getWidth();
@@ -628,13 +654,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         roboxLogoTransformNode.setTz(logoSide_mm
             + PrintBed.getPrintVolumeCentre().getZ() / 2);
-        roboxLogoTransformNode.setTy(-.25);
+        roboxLogoTransformNode.setTy(
+            -.25);
         roboxLogoTransformNode.setTx(PrintBed.getPrintVolumeCentre().getX() / 2);
-        roboxLogoTransformNode.getChildren().add(roboxLogoView);
-        roboxLogoTransformNode.setId("LogoImage");
+        roboxLogoTransformNode.getChildren()
+            .add(roboxLogoView);
+        roboxLogoTransformNode.setId(
+            "LogoImage");
 
-        bed.getChildren().add(roboxLogoTransformNode);
-        bed.setMouseTransparent(true);
+        bed.getChildren()
+            .add(roboxLogoTransformNode);
+        bed.setMouseTransparent(
+            true);
 
         return bed;
     }
@@ -749,11 +780,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         dragMode.set(value);
     }
 
-    public void associateGizmoOverlayController(GizmoOverlayController controller)
-    {
-//        this.gizmoOverlayController = controller;
-    }
-
     private void checkit(double screenX, double screenY)
     {
         Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
@@ -822,23 +848,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             }
             lastDragPosition = currentDragPosition;
         }
-    }
-
-    public void exitDragFromGizmo()
-    {
-        dragMode.set(DragMode.IDLE);
-    }
-
-    public void enterRotateFromGizmo(MouseEvent event)
-    {
-        translationDragPlane.setTranslateY(0);
-        dragMode.set(DragMode.ROTATE);
-    }
-
-    public void exitRotateFromGizmo()
-    {
-        dragMode.set(DragMode.IDLE);
-        gizmoRotationStarted = false;
     }
 
     private void updateModelColours()

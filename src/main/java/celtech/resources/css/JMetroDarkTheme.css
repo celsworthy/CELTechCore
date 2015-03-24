@@ -2313,8 +2313,8 @@ all inherit from Menu Control's popup-menu. --- */
 }
 
 .filamentLibUpper:error {
-  -fx-text-box-border: red ;
-  -fx-focus-color: red ;
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
 }
 
 .filamentLibLower {
@@ -2353,7 +2353,7 @@ all inherit from Menu Control's popup-menu. --- */
 #printProfileInnerPanel {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 10pt; 
-    
+
 }
 
 #printProfileInnerPanel .tab-pane, .tab-header-background {
@@ -2451,8 +2451,8 @@ all inherit from Menu Control's popup-menu. --- */
 * Settings Inset Panel
 */
 #settingsInsetRoot {
- -fx-background-color: mid_grey_50;
- -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: mid_grey_50;
+    -fx-font-family: 'Source Sans Pro Regular';
 }
 
 
@@ -2468,4 +2468,10 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-max_height: 260;
     -fx-min-height: 260;    
     -fx-background-color: light_grey;
+}
+
+.dimension-label
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 24pt;
 }
