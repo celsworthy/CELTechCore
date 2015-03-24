@@ -1235,7 +1235,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double newScale = height / currentHeight;
 
-        setXScale(newScale);
+        setYScale(newScale);
         notifyShapeChange();
     }
 
@@ -1252,7 +1252,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double newScale = depth / currentDepth;
 
-        setXScale(newScale);
+        setZScale(newScale);
         notifyShapeChange();
     }
 

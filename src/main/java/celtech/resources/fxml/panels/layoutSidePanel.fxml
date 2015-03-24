@@ -11,7 +11,7 @@
 
 <HBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="300.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutSidePanelController">
     <children>  
-        <BorderPane id="border" prefHeight="-1.0" HBox.hgrow="ALWAYS">
+        <BorderPane id="border" fx:id="layoutBorder" prefHeight="-1.0" HBox.hgrow="ALWAYS">
             <top>
                 <VBox id="StatusPanel" layoutY="41.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS">
                     <children>
@@ -119,15 +119,15 @@
                         <Label maxWidth="1.7976931348623157E308" styleClass="sidePanelDivider" text="%sidePanel_layout.PositionLabel" />
                         <GridPane alignment="CENTER" hgap="5.0" vgap="5.0" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                             <children>
-                                <Label text="X Axis" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <Label text="Y Axis" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <Label styleClass="colon" text="X Axis" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <Label styleClass="colon" text="Y Axis" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <RestrictedNumberField allowedDecimalPlaces="1" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
                                 <RestrictedNumberField fx:id="yAxisTextField" allowedDecimalPlaces="1" maxLength="5" prefColumnCount="4" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <Label text="Lean" GridPane.columnIndex="2" />
+                                <Label styleClass="colon" text="Lean" GridPane.columnIndex="2" />
                                 <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" styleClass="rotationField" text="0" GridPane.columnIndex="3" />
-                                <Label text="Twist" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                <Label styleClass="colon" text="Twist" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                                 <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" styleClass="rotationField" text="0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                <Label text="Turn" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                <Label styleClass="colon" text="Turn" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                                 <RestrictedNumberField fx:id="rotationZTextField" allowNegative="true" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="3" styleClass="rotationField" text="0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                             </children>
                             <columnConstraints>
@@ -145,8 +145,8 @@
                         <Label layoutX="15.0" layoutY="174.0" styleClass="sidePanelDivider" text="%sidePanel_layout.SizeLabel" />
                         <GridPane alignment="CENTER" hgap="5.0" vgap="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                             <children>
-                                <Label text="%sidePanel_layout.WidthLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <Label text="%sidePanel_layout.DepthLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <Label styleClass="colon" text="%sidePanel_layout.WidthLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <Label styleClass="colon" text="%sidePanel_layout.DepthLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="1">
                                     <children>
                                         <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" />
@@ -157,7 +157,7 @@
                                         <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                     </children>
                                 </HBox>
-                                <Label text="%sidePanel_layout.HeightLabel" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                <Label styleClass="colon" text="%sidePanel_layout.HeightLabel" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                 <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                     <children>
                                         <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="2" />
@@ -165,18 +165,18 @@
                                 </HBox>
                                 <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="3">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="100" />
+                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" />
                                     </children>
                                 </HBox>
-                                <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                                <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" />
-                                <Label text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                                <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="100" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="100" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                <Label styleClass="colon" text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                <Label styleClass="colon" text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" />
+                                <Label styleClass="colon" text="%sidePanel_layout.ScaleLabel" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                                 <ToggleButton fx:id="preserveAspectRatio" mnemonicParsing="false" prefHeight="80.0" text="ToggleButton" GridPane.columnIndex="4" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS" />
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" percentWidth="25.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
                                 <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" percentWidth="22.0" />
                                 <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" prefWidth="100.0" />
                                 <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

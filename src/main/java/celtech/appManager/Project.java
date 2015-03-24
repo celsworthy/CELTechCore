@@ -571,7 +571,10 @@ public class Project implements Serializable
             // this only happens for non-multiselect
             assert(modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
-            double ratio = newScale / model.getScaleX();
+            System.out.println("current scale " + model.getXScale() + " " + model.getYScale() +
+                " " + model.getZScale());
+            double ratio = newScale / model.getXScale();
+            System.out.println("ScaleX: Preserve AR ratio is " + ratio);
             scaleXYZRatioSelection(modelContainers, ratio);
         } else
         {
@@ -594,7 +597,7 @@ public class Project implements Serializable
             // this only happens for non-multiselect
             assert(modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
-            double ratio = newScale / model.getScaleX();
+            double ratio = newScale / model.getYScale();
             scaleXYZRatioSelection(modelContainers, ratio);
         } else
         {
@@ -617,7 +620,7 @@ public class Project implements Serializable
             // this only happens for non-multiselect
             assert(modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
-            double ratio = newScale / model.getScaleX();
+            double ratio = newScale / model.getZScale();
             scaleXYZRatioSelection(modelContainers, ratio);
         } else
         {

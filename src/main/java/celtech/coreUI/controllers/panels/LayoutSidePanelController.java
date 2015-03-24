@@ -16,6 +16,8 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -34,6 +36,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -94,6 +97,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     @FXML
     private VBox materialContainer;
+
+    @FXML
+    private BorderPane layoutBorder;
 
     private final TableColumn modelNameColumn = new TableColumn();
 
@@ -181,8 +187,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 whenNumSelectedModelsChanged();
             });
-        
+
         setFieldsEditable();
+
+        FXMLUtilities.addColonsToLabels(layoutBorder);
     }
 
     private void setupProjectSelectedListener()
@@ -380,30 +388,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
-                        if (inMultiSelectWithFixedAR())
-                        {
-                            double ratio = scaleFactor / lastScaleRatio;
-                            lastScaleRatio = scaleFactor;
-                            boundProject.scaleXYZRatioSelection(
-                                selectionModel.getSelectedModelsSnapshot(),
-                                ratio);
-                            showScaleForXYZ(lastScaleRatio);
-                        } else if (inFixedAR())
-                        {
-                            boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      scaleFactor, true);
-                        }
-                        {
-                            boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      scaleFactor, false);
-                        }
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting scale " + scaleTextWidthField.getText());
-                    }
+                    updateScaleWidth();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -422,31 +407,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
-                        if (inMultiSelectWithFixedAR())
-                        {
-                            double ratio = scaleFactor / lastScaleRatio;
-                            lastScaleRatio = scaleFactor;
-                            boundProject.scaleXYZRatioSelection(
-                                selectionModel.getSelectedModelsSnapshot(),
-                                ratio);
-                            showScaleForXYZ(lastScaleRatio);
-                        } else if (inFixedAR())
-                        {
-                            boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      scaleFactor, true);
-                        }
-                        {
-                            boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      scaleFactor, false);
-                        }
-
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting scale " + scaleTextHeightField.getText());
-                    }
+                    updateScaleHeight();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -465,30 +426,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
-                        if (inMultiSelectWithFixedAR())
-                        {
-                            double ratio = scaleFactor / lastScaleRatio;
-                            lastScaleRatio = scaleFactor;
-                            boundProject.scaleXYZRatioSelection(
-                                selectionModel.getSelectedModelsSnapshot(),
-                                ratio);
-                            showScaleForXYZ(lastScaleRatio);
-                        } else if (inFixedAR())
-                        {
-                            boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      scaleFactor, true);
-                        }
-                        {
-                            boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      scaleFactor, false);
-                        }
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting scale " + scaleTextDepthField.getText());
-                    }
+                    updateScaleDepth();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -588,15 +526,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
-                                                       widthTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting width "
-                            + widthTextField.getText());
-                    }
+                    updateWidth();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -615,15 +545,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
-                                                        heightTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting height "
-                            + heightTextField.getText());
-                    }
+                    updateHeight();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -642,15 +564,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
-                                                       depthTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.error("Error parsing depth string " + ex
-                            + " : " + ex.getMessage());
-                    }
+                    updateDepth();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -718,6 +632,148 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     break;
             }
         });
+    }
+
+    private void updateDepth()
+    {
+        try
+        {
+            if (inFixedAR())
+            {
+                ModelContainer modelContainer = getSingleSelection();
+                double ratio = depthTextField.getAsDouble() / modelContainer.getScaledDepth();
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(), ratio);
+            } else
+            {
+                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
+                                               depthTextField.getAsDouble());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting height " + heightTextField.getText());
+        }
+    }
+
+    private void updateHeight()
+    {
+        try
+        {
+            if (inFixedAR())
+            {
+                ModelContainer modelContainer = getSingleSelection();
+                double ratio = heightTextField.getAsDouble() / modelContainer.getScaledHeight();
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(), ratio);
+            } else
+            {
+                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
+                                                heightTextField.getAsDouble());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting height " + heightTextField.getText());
+        }
+    }
+
+    private void updateWidth()
+    {
+        try
+        {
+            if (inFixedAR())
+            {
+                ModelContainer modelContainer = getSingleSelection();
+                double ratio = widthTextField.getAsDouble() / modelContainer.getScaledWidth();
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(), ratio);
+            } else
+            {
+                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
+                                               widthTextField.getAsDouble());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting width " + widthTextField.getText());
+        }
+    }
+
+    private ModelContainer getSingleSelection()
+    {
+        assert (selectionModel.getNumModelsSelectedProperty().get() == 1);
+        ModelContainer modelContainer = selectionModel.getSelectedModelsSnapshot().iterator().next();
+        return modelContainer;
+    }
+
+    private void updateScaleDepth()
+    {
+        try
+        {
+            double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+            if (inMultiSelectWithFixedAR())
+            {
+                double ratio = scaleFactor / lastScaleRatio;
+                lastScaleRatio = scaleFactor;
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(),
+                    ratio);
+                showScaleForXYZ(lastScaleRatio);
+            } else
+            {
+                boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
+                                          scaleFactor, inFixedAR());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting scale " + scaleTextDepthField.getText());
+        }
+    }
+
+    private void updateScaleHeight()
+    {
+        try
+        {
+            double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
+            if (inMultiSelectWithFixedAR())
+            {
+                double ratio = scaleFactor / lastScaleRatio;
+                lastScaleRatio = scaleFactor;
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(),
+                    ratio);
+                showScaleForXYZ(lastScaleRatio);
+            } else
+            {
+                boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
+                                          scaleFactor, inFixedAR());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting scale " + scaleTextHeightField.getText());
+        }
+    }
+
+    private void updateScaleWidth()
+    {
+        try
+        {
+            double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
+            if (inMultiSelectWithFixedAR())
+            {
+                double ratio = scaleFactor / lastScaleRatio;
+                lastScaleRatio = scaleFactor;
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(),
+                    ratio);
+                showScaleForXYZ(lastScaleRatio);
+            } else
+            {
+                boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                                          scaleFactor, inFixedAR());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting scale " + scaleTextWidthField.getText());
+        }
     }
 
     private void setUpTableView(String modelNameLabelString, ResourceBundle languageBundle)
@@ -827,6 +883,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         if (inMultiSelect())
         {
             showScaleForXYZ(1.0d);
+        } else if (selectionModel.getNumModelsSelectedProperty().get() == 1)
+        {
+            ModelContainer modelContainer = getSingleSelection();
+            populateScaleXField(modelContainer.getXScale());
+            populateScaleYField(modelContainer.getXScale());
+            populateScaleZField(modelContainer.getZScale());
         }
     }
 
