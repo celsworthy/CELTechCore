@@ -585,7 +585,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    doUpdateX();
+                    updateX();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -604,7 +604,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    doUpdateZ();
+                    updateZ();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -618,12 +618,15 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         });
     }
 
-    private void doUpdateZ()
+    private void updateZ()
     {
         try
         {
-            boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
-                                            yAxisTextField.getAsDouble());
+            double newZ = yAxisTextField.getAsDouble();
+            doTransformCommand(() ->
+            {
+                boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newZ);
+            });
         } catch (ParseException ex)
         {
             steno.error("Error parsing y translate string "
@@ -631,7 +634,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         }
     }
 
-    private void doUpdateX()
+    private void updateX()
     {
         try
         {
@@ -672,9 +675,17 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         }
 
         @Override
-        public void saveState()
+        public void do_()
         {
             originalStates = project.getModelStates();
+            try
+            {
+                func.run();
+                newStates = project.getModelStates();
+            } catch (Exception ex)
+            {
+                steno.error("Failed running command " + ex);
+            }
         }
 
         @Override
@@ -686,19 +697,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         @Override
         public void redo()
         {
-            if (newStates == null)
-            {
-                try
-                {
-                    func.run();
-                    newStates = project.getModelStates();
-                } catch (Exception ex)
-                {
-                    steno.error("Failed running command " + ex);
-                }
-            } else {
-                project.setModelStates(newStates);
-            }
+            project.setModelStates(newStates);
         }
 
     }

@@ -12,17 +12,9 @@ public abstract class Command
 {
     
     /**
-     * Save all necessary information to be able to undo a command.
-     */
-    public abstract void saveState();
-    
-    /**
      * Perform the command.
      */
-    public void do_() {
-        saveState();
-        redo();
-    }
+    public abstract void do_();
     
     /**
      * Undo the command.

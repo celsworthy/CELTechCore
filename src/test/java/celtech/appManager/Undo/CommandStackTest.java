@@ -29,9 +29,10 @@ public class CommandStackTest
         }
         
         @Override
-        public void saveState()
+        public void do_()
         {
             oldI = testModel.i;
+            redo();
         }
 
         @Override

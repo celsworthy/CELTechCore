@@ -1861,23 +1861,28 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         public int modelId;
         public double x;
+        public double z;
 
-        public State(int modelId, double x)
+        public State(int modelId, double x, double z)
         {
             this.modelId = modelId;
             this.x = x;
+            this.z = z;
         }
 
     }
 
     public State getState()
     {
-        return new State(modelId, transformMoveToPreferred.getX());
+        return new State(modelId,
+            transformMoveToPreferred.getX(),
+            transformMoveToPreferred.getZ());
     }
     
     public void setState(State state)
     {
         transformMoveToPreferred.setX(state.x);
+        transformMoveToPreferred.setZ(state.z);
     }    
     
     public int getModelId() {
