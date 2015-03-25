@@ -10,7 +10,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- *
+ * The TransformCommand is a Command that allows x,y and scaleX, scaleY, scaleZ changes
+ * to be undone.
  * @author tony
  */
 class TransformCommand extends Command

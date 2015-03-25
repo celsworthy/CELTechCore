@@ -1862,12 +1862,27 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         public int modelId;
         public double x;
         public double z;
+        public double preferredXScale;
+        public double preferredYScale;
+        public double preferredZScale;
+        public double preferredRotationTwist;
+        public double preferredRotationTurn;
+        public double preferredRotationLean;
 
-        public State(int modelId, double x, double z)
+        public State(int modelId, double x, double z,
+            double preferredXScale, double preferredYScale, double preferredZScale,
+            double preferredRotationTwist, double preferredRotationTurn,
+            double preferredRotationLean)
         {
             this.modelId = modelId;
             this.x = x;
             this.z = z;
+            this.preferredXScale = preferredXScale;
+            this.preferredYScale = preferredYScale;
+            this.preferredZScale = preferredZScale;
+            this.preferredRotationTwist = preferredRotationTwist;
+            this.preferredRotationTurn = preferredRotationTurn;
+            this.preferredRotationLean = preferredRotationLean;
         }
 
     }
@@ -1875,17 +1890,27 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public State getState()
     {
         return new State(modelId,
-            transformMoveToPreferred.getX(),
-            transformMoveToPreferred.getZ());
+                         transformMoveToPreferred.getX(),
+                         transformMoveToPreferred.getZ(),
+                         preferredXScale.get(), preferredYScale.get(), preferredZScale.get(),
+                         preferredRotationTwist.get(), preferredRotationTurn.get(),
+                         preferredRotationLean.get());
     }
-    
+
     public void setState(State state)
     {
         transformMoveToPreferred.setX(state.x);
         transformMoveToPreferred.setZ(state.z);
-    }    
-    
-    public int getModelId() {
+        setXScale(state.preferredXScale);
+        setYScale(state.preferredYScale);
+        setZScale(state.preferredZScale);
+        setRotationLean(state.preferredRotationLean);
+        setRotationTwist(state.preferredRotationTwist);
+        setRotationTurn(state.preferredRotationTurn);
+    }
+
+    public int getModelId()
+    {
         return modelId;
     }
 }
