@@ -24,6 +24,17 @@ public abstract class Command
     /**
      * Redo the command.
      */
-    public abstract void redo();        
+    public abstract void redo();    
+    
+    /**
+     * Can this command be merged with the given command?.
+     */
+    public abstract boolean canMergeWith(Command command);
+    
+    /**
+     * Merge the given command with this command. This command will remain in the stack,
+     * the other command will be deleted.
+     */
+    public abstract void merge(Command command);
     
 }

@@ -57,4 +57,15 @@ class TransformCommand extends Command
         project.setModelStates(newStates);
     }
 
+    @Override
+    public boolean canMergeWith(Command command)
+    {
+        return false;
+    }
+
+    @Override
+    public void merge(Command command)
+    {
+    }
+
 }

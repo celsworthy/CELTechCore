@@ -18,11 +18,11 @@ import libertysystems.stenographer.StenographerFactory;
 public class UndoableProject
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(
+    private final Stenographer steno = StenographerFactory.getStenographer(
         Stenographer.class.getName());
 
     Project project;
-    private CommandStack commandStack;
+    private final CommandStack commandStack;
 
     /**
      * A point interface (ie only one method) that takes no arguments and returns void.
