@@ -161,4 +161,10 @@ public class UndoableProject
         AddModelCommand addModelCommand = new AddModelCommand(project, modelContainer);
         commandStack.do_(addModelCommand);
     }
+    
+    public void deleteModels(Set<ModelContainer> modelContainers)
+    {
+        DeleteModelsCommand deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
+        commandStack.do_(deleteModelCommand);
+    }    
 }

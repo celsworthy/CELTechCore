@@ -6,6 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
@@ -665,6 +666,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             if (currentTab instanceof ProjectTab)
             {
                 Project project = Lookup.getSelectedProjectProperty().get();
+                UndoableProject undoableProject = new UndoableProject(project);
                 switch (event.getCode())
                 {
                     case DELETE:
@@ -672,7 +674,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         Set<ModelContainer> selectedModels
                             = Lookup.getProjectGUIState(project).getSelectedModelContainers().
                             getSelectedModelsSnapshot();
-                        project.deleteModels(selectedModels);
+                        undoableProject.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())
