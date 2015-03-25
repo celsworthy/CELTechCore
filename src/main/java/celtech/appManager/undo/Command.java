@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 CEL UK
  */
-package celtech.appManager.Undo;
+package celtech.appManager.undo;
 
 /**
  * A Command represents an atomic change that can be undone and redone. It can also be merged

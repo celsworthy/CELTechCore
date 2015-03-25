@@ -3,6 +3,8 @@
  */
 package celtech.appManager.Undo;
 
+import celtech.appManager.undo.Command;
+import celtech.appManager.undo.CommandStack;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

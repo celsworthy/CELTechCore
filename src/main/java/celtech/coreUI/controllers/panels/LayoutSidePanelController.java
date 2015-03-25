@@ -4,8 +4,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
-import celtech.appManager.Undo.Command;
-import celtech.appManager.Undo.CommandStack;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.Filament;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -18,7 +17,6 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -52,7 +50,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private Stenographer steno = StenographerFactory.getStenographer(
         LayoutSidePanelController.class.getName());
-    private Project boundProject = null;
+    private Project boundProject;
+    private UndoableProject undoableProject;
 
     @FXML
     private RestrictedNumberField widthTextField;
@@ -138,7 +137,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     private AMFOutputConverter outputConverter = new AMFOutputConverter();
-    private CommandStack commandStack;
 
     @FXML
     void outputAMF(ActionEvent event)
@@ -623,10 +621,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newZ = yAxisTextField.getAsDouble();
-            doTransformCommand(() ->
-            {
-                boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newZ);
-            });
+            undoableProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newZ);
         } catch (ParseException ex)
         {
             steno.error("Error parsing y translate string "
@@ -639,73 +634,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newX = xAxisTextField.getAsDouble();
-            doTransformCommand(() ->
-            {
-                boundProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
-            });
+            undoableProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
 
         } catch (ParseException ex)
         {
             steno.error("Error parsing x translate string " + ex
                 + " : " + ex.getMessage());
         }
-    }
-
-    /**
-     * A point interface (ie only one method) that takes no arguments and returns void.
-     */
-    public interface NoArgsVoidFunc
-    {
-
-        void run() throws Exception;
-    }
-
-    class TransformCommand extends Command
-    {
-
-        NoArgsVoidFunc func;
-        Set<ModelContainer.State> originalStates;
-        Set<ModelContainer.State> newStates;
-        private final Project project;
-
-        public TransformCommand(Project project, NoArgsVoidFunc func)
-        {
-            this.project = project;
-            this.func = func;
-        }
-
-        @Override
-        public void do_()
-        {
-            originalStates = project.getModelStates();
-            try
-            {
-                func.run();
-                newStates = project.getModelStates();
-            } catch (Exception ex)
-            {
-                steno.error("Failed running command " + ex);
-            }
-        }
-
-        @Override
-        public void undo()
-        {
-            project.setModelStates(originalStates);
-        }
-
-        @Override
-        public void redo()
-        {
-            project.setModelStates(newStates);
-        }
-
-    }
-
-    private void doTransformCommand(NoArgsVoidFunc func)
-    {
-        Command command = new TransformCommand(boundProject, func);
-        commandStack.do_(command);
     }
 
     private void updateDepth()
@@ -946,8 +881,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+//        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+//        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
@@ -988,10 +923,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             unbindProject(boundProject);
         }
         boundProject = project;
+        undoableProject = new UndoableProject(project);
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
-        commandStack = Lookup.getProjectGUIState(project).getCommandStack();
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 

@@ -5,7 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
-import celtech.appManager.Undo.CommandStack;
+import celtech.appManager.undo.CommandStack;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
@@ -688,7 +688,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         }
                     case Z:
                         if (event.isControlDown())
-                            System.out.println("UNDO");
                         {
                             CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
                             if (commandStack.getCanUndo().get())
@@ -706,7 +705,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     case Y:
                         if (event.isControlDown())
                         {
-                             System.out.println("REDO");
                             CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
                             if (commandStack.getCanRedo().get())
                             {

@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 CEL UK
  */
-package celtech.appManager.Undo;
+package celtech.appManager.undo;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
