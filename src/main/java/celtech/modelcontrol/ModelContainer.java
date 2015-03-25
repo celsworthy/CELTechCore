@@ -12,6 +12,7 @@ import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -130,13 +131,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private PhongMaterial material;
+    private File modelFile;
+    private String modelPath;
 
     /**
      *
      * @param name
      * @param meshToAdd
      */
-    public ModelContainer(String name, MeshView meshToAdd)
+    public ModelContainer(File modelFile, MeshView meshToAdd)
     {
         super();
         this.getChildren().add(meshGroup);
@@ -147,7 +150,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             numberOfMeshes = 1;
         }
 
-        initialise(name);
+        initialise(modelFile);
         initialiseTransforms();
     }
 
@@ -156,14 +159,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * @param name
      * @param meshes
      */
-    public ModelContainer(String name, ArrayList<MeshView> meshes)
+    public ModelContainer(File modelFile, ArrayList<MeshView> meshes)
     {
         super();
         this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
         meshGroup.getChildren().addAll(meshes);
         numberOfMeshes = meshes.size();
-        initialise(name);
+        initialise(modelFile);
         initialiseTransforms();
     }
 
@@ -173,15 +176,26 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * @param gcodeMeshData
      * @param fileLines
      */
-    public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
+    public ModelContainer(File modelFile, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
     {
         super();
         this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.GCODE;
         numberOfMeshes = 0;
-        initialise(name);
+        initialise(modelFile);
         initialiseTransforms();
         setUpGCodeRelated(gcodeMeshData, fileLines);
+    }
+    
+    public File getModelFile() {
+        return modelFile;
+    }
+    
+    /**
+     * Clear the meshes so as to free memory.
+     */
+    public void clearMeshes() {
+        getChildren().clear();
     }
 
     public void setUseExtruder0Filament(boolean useExtruder0)
@@ -290,8 +304,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    private void initialise(String name)
+    private void initialise(File modelFile)
     {
+        this.modelFile = modelFile;
+        modelPath = modelFile.getAbsolutePath();
         modelId = nextModelId;
         nextModelId += 1;
         material = ApplicationMaterials.getDefaultModelMaterial();
@@ -303,7 +319,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
 
-        modelName = new SimpleStringProperty(name);
+        modelName = new SimpleStringProperty(modelFile.getName());
         selectedGCodeLine = new SimpleIntegerProperty(0);
         linesOfGCode = new SimpleIntegerProperty(0);
         currentLayer = new SimpleIntegerProperty(0);
@@ -320,7 +336,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         selectedMarkers = new HashSet<>();
 
-        this.setId(name);
+        this.setId(modelFile.getName());
     }
 
     /**
@@ -350,7 +366,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         newMeshView.setCullFace(CullFace.BACK);
         newMeshView.setId(this.getMeshView().getId());
 
-        ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
+        ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
         copy.setXScale(this.getXScale());
         copy.setYScale(this.getYScale());
         copy.setZScale(this.getZScale());
@@ -954,7 +970,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshGroup.getChildren().add(newMesh);
         }
 
-        initialise(modelName);
+        initialise(new File(modelName));
 
         double storedX = in.readDouble();
         double storedZ = in.readDouble();
@@ -1538,7 +1554,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshView.setCullFace(CullFace.BACK);
             meshView.setId(getId() + "-" + binCounter);
 
-            ModelContainer modelContainer = new ModelContainer(getModelName(), meshView);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
 
             outputMeshes.add(modelContainer);
         }
@@ -1854,6 +1870,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             MeshView meshView = (MeshView) mesh;
             meshView.setMaterial(meshMaterial);
         }
+    }
+
+    public void addChildNodes(ObservableList<Node> nodes)
+    {
+        getChildren().addAll(nodes);
     }
 
     public class State

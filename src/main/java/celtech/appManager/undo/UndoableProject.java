@@ -155,5 +155,10 @@ public class UndoableProject
             project.translateModelsBy(modelContainers, x, z);
         }, canMerge);
     }
-
+    
+    public void addModel(ModelContainer modelContainer)
+    {
+        AddModelCommand addModelCommand = new AddModelCommand(project, modelContainer);
+        commandStack.do_(addModelCommand);
+    }
 }

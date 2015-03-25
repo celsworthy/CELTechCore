@@ -156,7 +156,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             List<File> fileToLoad = new ArrayList<>();
             fileToLoad.add(firstUsePrintFile);
             ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, fileToLoad, true, false);
+            loader.loadExternalModels(newProject, fileToLoad, false);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                                                    tabDisplay.heightProperty());

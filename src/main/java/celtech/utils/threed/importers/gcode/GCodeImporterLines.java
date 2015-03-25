@@ -221,7 +221,7 @@ public class GCodeImporterLines
         steno.debug("About to add models");
 
         GCodeMeshData gcodeData = new GCodeMeshData(outputMeshes, referencedElements, referencedLayers);
-        ModelContainer container = new ModelContainer(modelFileToLoad, gcodeData, fileLines);
+        ModelContainer container = new ModelContainer(new File(modelFileToLoad), gcodeData, fileLines);
         return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, container);
 
     }

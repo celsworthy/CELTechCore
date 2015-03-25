@@ -678,7 +678,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void translateSelection(double x, double z)
     {
-        System.out.println("translate " + x + " " + z + "  " + justEnteredDragMode);
         undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
                                           ! justEnteredDragMode);
     }

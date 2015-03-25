@@ -147,7 +147,7 @@ public class GCodeImporter
 //            currentProject.setGCodeModelLoaded(fFile.getAbsolutePath());
             steno.debug("Loaded gcode " + fFile.getName());
 
-            ModelContainer modelContainer = new ModelContainer(fFile.getName(), new GCodeMeshData(gcodeParts, referencedElements, referencedLayers), fileLines);
+            ModelContainer modelContainer = new ModelContainer(fFile, new GCodeMeshData(gcodeParts, referencedElements, referencedLayers), fileLines);
 
             // Not sure if we should put the check for oversized GCode in or not...
 //            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
