@@ -1885,6 +1885,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.preferredRotationLean = preferredRotationLean;
         }
 
+        /**
+         * The assignment operator.
+         */
+        public void assignFrom(State fromState)
+        {
+            this.x = fromState.x;
+            this.z = fromState.z;
+            this.preferredXScale = fromState.preferredXScale;
+            this.preferredYScale = fromState.preferredYScale;
+            this.preferredZScale = fromState.preferredZScale;
+            this.preferredRotationTwist = fromState.preferredRotationTwist;
+            this.preferredRotationTurn = fromState.preferredRotationTurn;
+            this.preferredRotationLean = fromState.preferredRotationLean;
+        }
+
     }
 
     public State getState()

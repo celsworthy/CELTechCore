@@ -5,6 +5,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
@@ -136,7 +137,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private Filament extruder0Filament;
     private Filament extruder1Filament;
     private final Project project;
+    private final UndoableProject undoableProject;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
+    private boolean justEnteredDragMode;
 
     private void rotateCameraAroundAxes(double xangle, double yangle)
     {
@@ -279,6 +282,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         scaleDragPlane.setTranslateZ(pickedPoint.getZ());
 
         setDragMode(DragMode.TRANSLATING);
+        justEnteredDragMode = true;
 
         if (intersectedNode instanceof MeshView)
         {
@@ -372,6 +376,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                 {
                     Point3D resultant = pickedDragPlanePoint.subtract(lastDragPosition);
                     translateSelection(resultant.getX(), resultant.getZ());
+                    justEnteredDragMode = false;
                 }
                 lastDragPosition = pickedDragPlanePoint;
             } else
@@ -470,6 +475,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.project = project;
+        this.undoableProject = new UndoableProject(project);
         loadedModels = project.getLoadedModels();
         selectedModelContainers = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -672,17 +678,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void translateSelection(double x, double z)
     {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.translateBy(x, z);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
+        System.out.println("translate " + x + " " + z + "  " + justEnteredDragMode);
+        undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
+                                          ! justEnteredDragMode);
     }
 
     /**

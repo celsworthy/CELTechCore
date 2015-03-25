@@ -11,7 +11,7 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * UndoableProject decorates Project and puts each change into a Command that can be undone.
+ * UndoableProject wraps Project and puts each change into a Command that can be undone.
  *
  * @author tony
  */
@@ -29,15 +29,19 @@ public class UndoableProject
      */
     public interface NoArgsVoidFunc
     {
-
         void run() throws Exception;
     }
 
     private void doTransformCommand(NoArgsVoidFunc func)
     {
-        Command command = new TransformCommand(project, func);
-        commandStack.do_(command);
+        doTransformCommand(func, false);
     }
+    
+    private void doTransformCommand(NoArgsVoidFunc func, boolean canMerge)
+    {
+        Command command = new TransformCommand(project, func, canMerge);
+        commandStack.do_(command);
+    }    
 
     public UndoableProject(Project project)
     {
@@ -119,26 +123,37 @@ public class UndoableProject
             project.resizeModelsWidth(modelContainers, width);
         });
     }
-    
-    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation) {
-                doTransformCommand(() ->
+
+    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        doTransformCommand(() ->
         {
             project.rotateLeanModels(modelContainers, rotation);
         });
     }
-    
-    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation) {
-                doTransformCommand(() ->
+
+    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        doTransformCommand(() ->
         {
             project.rotateTwistModels(modelContainers, rotation);
         });
     }
-    
-    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation) {
-                doTransformCommand(() ->
+
+    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
+    {
+        doTransformCommand(() ->
         {
             project.rotateTurnModels(modelContainers, rotation);
         });
-    }    
+    }
+
+    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z, boolean canMerge)
+    {
+        doTransformCommand(() ->
+        {
+            project.translateModelsBy(modelContainers, x, z);
+        }, canMerge);
+    }
 
 }

@@ -117,7 +117,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private DisplayManager()
     {
-        steno.debug("Starting AutoMaker - intialising display manager...");
+        steno.debug("Starting AutoMaker - initialising display manager...");
         switch (ApplicationConfiguration.getMachineType())
         {
             case LINUX_X64:

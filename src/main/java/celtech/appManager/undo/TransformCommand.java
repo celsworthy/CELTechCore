@@ -5,13 +5,16 @@ package celtech.appManager.undo;
 
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The TransformCommand is a Command that allows x,y and scaleX, scaleY, scaleZ changes
- * to be undone.
+ * The TransformCommand is a Command that allows x,y, scaleX, scaleY, scaleZ,
+ * lean, twist and turn changes to be undone.
+ *
  * @author tony
  */
 class TransformCommand extends Command
@@ -20,15 +23,17 @@ class TransformCommand extends Command
     private Stenographer steno = StenographerFactory.getStenographer(
         TransformCommand.class.getName());
 
-    UndoableProject.NoArgsVoidFunc func;
-    Set<ModelContainer.State> originalStates;
-    Set<ModelContainer.State> newStates;
+    private UndoableProject.NoArgsVoidFunc func;
+    private Set<ModelContainer.State> originalStates;
+    private Set<ModelContainer.State> newStates;
+    private boolean canMerge;
     private final Project project;
 
-    public TransformCommand(Project project, UndoableProject.NoArgsVoidFunc func)
+    public TransformCommand(Project project, UndoableProject.NoArgsVoidFunc func, boolean canMerge)
     {
         this.project = project;
         this.func = func;
+        this.canMerge = canMerge;
     }
 
     @Override
@@ -60,12 +65,55 @@ class TransformCommand extends Command
     @Override
     public boolean canMergeWith(Command command)
     {
-        return false;
+        if (command instanceof TransformCommand)
+        {
+            TransformCommand transformCommand = (TransformCommand) command;
+            return transformCommand.getCanMerge();
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void merge(Command command)
     {
+        if (command instanceof TransformCommand)
+        {
+            TransformCommand transformCommand = (TransformCommand) command;
+            if (transformCommand.getCanMerge())
+            {
+                mergeStates(newStates, transformCommand.newStates);
+            }
+        }
+
     }
 
+    public boolean getCanMerge()
+    {
+        return canMerge;
+    }
+
+    /**
+     * Update states to include the changes in fromStates -> toStates.
+     */
+    private void mergeStates(Set<ModelContainer.State> states, Set<ModelContainer.State> toStates)
+    {
+        Map<Integer, ModelContainer.State> statesById = makeStatesById(states);
+        Map<Integer, ModelContainer.State> toStatesById = makeStatesById(toStates);
+        for (ModelContainer.State state : states)
+        {
+            state.assignFrom(toStatesById.get(state.modelId));
+        }
+
+    }
+
+    private Map<Integer, ModelContainer.State> makeStatesById(Set<ModelContainer.State> states)
+    {
+        Map<Integer, ModelContainer.State> statesById = new HashMap<>();
+        for (ModelContainer.State state : states)
+        {
+            statesById.put(state.modelId, state);
+        }
+        return statesById;
+    }
 }
