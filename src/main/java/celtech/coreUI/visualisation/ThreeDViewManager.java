@@ -163,7 +163,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         bedTranslateXform.setRotateY(yAxisRotation);
         bedTranslateXform.setRotateX(xAxisRotation);
+        
+        notifyModelsOfCameraViewChange();
+    }
 
+    private void notifyModelsOfCameraViewChange()
+    {
+        for (Node node : models.getChildren())
+        {
+            //Relying on only models being here...
+            ModelContainer model = (ModelContainer)node;
+            model.cameraViewOfYouHasChanged();
+        }
     }
 
     private void rotateCameraAroundAxesTo(double xangle, double yangle)
@@ -192,6 +203,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         bedTranslateXform.setRotateY(yAxisRotation);
         bedTranslateXform.setRotateX(xAxisRotation);
 
+        notifyModelsOfCameraViewChange();
     }
 
     private final ChangeListener<DragMode> dragModeListener = new ChangeListener<DragMode>()
@@ -374,6 +386,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * 0.3);  // -
             bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * 0.3);  // -
+            notifyModelsOfCameraViewChange();
         } else if (event.isSecondaryButtonDown())
         {
             rotateCameraAroundAxes(-mouseDeltaY * 2.0, mouseDeltaX * 2.0);
@@ -440,6 +453,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
         }
+        
+        notifyModelsOfCameraViewChange();
     };
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
@@ -449,6 +464,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
+            notifyModelsOfCameraViewChange();
         }
     };
 
@@ -716,7 +732,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         project.projectModified();
     }
 
-    private void deselectModel(ModelContainer pickedModel)
+    /**
+     *
+     * @param pickedModel
+     */
+    public void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())
         {
@@ -759,6 +779,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (modelContainer != null)
         {
             modelContainer.snapToGround(faceNumber);
+            selectedModelContainers.updateSelectedValues();
             collideModels();
             project.projectModified();
         }
@@ -778,21 +799,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void setDragMode(DragMode value)
     {
         dragMode.set(value);
-    }
-
-    private void checkit(double screenX, double screenY)
-    {
-        Point2D screenToLocal = camera.screenToLocal(screenX, screenY);
-//        Point2D localToSceneToScreen = camera.localToScreen(localToScene);
-        steno.debug("screen to local " + screenToLocal);
-
-        Point3D localToScene = camera.localToScene(screenToLocal.getX(), screenToLocal.getY(), 0);
-        steno.debug("Local to scene " + localToScene);
-
-        Point3D correctedBed = bedTranslateXform.sceneToLocal(localToScene);
-        steno.debug("Corrected bed = " + correctedBed);
-
-//        Point3D testPoint = new Point3D(selectionContainer.getCentreX(), selectionContainer.getCentreY(), selectionContainer.getCentreZ());
     }
 
     private double preAnimationCameraXAngle = 0;
@@ -815,38 +821,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             rotateCameraAroundAxesTo(preAnimationCameraXAngle, preAnimationCameraYAngle);
             needToRevertCameraPosition = false;
-        }
-    }
-
-    public void enterDragFromGizmo(DragMode requiredDragMode, MouseEvent event)
-    {
-        Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-        lastDragPosition = null;
-        dragMode.set(requiredDragMode);
-    }
-
-    public void dragFromGizmo(MouseEvent event)
-    {
-        if (dragMode.get() == DragMode.X_CONSTRAINED_TRANSLATE)
-        {
-            Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-            if (lastDragPosition != null)
-            {
-                Point3D resultant = currentDragPosition.subtract(lastDragPosition);
-
-                translateSelection(resultant.getX(), 0);
-            }
-            lastDragPosition = currentDragPosition;
-        } else if (dragMode.get() == DragMode.Z_CONSTRAINED_TRANSLATE)
-        {
-            Point3D currentDragPosition = event.getPickResult().getIntersectedPoint();
-            if (lastDragPosition != null)
-            {
-                Point3D resultant = currentDragPosition.subtract(lastDragPosition);
-
-                translateSelection(0, resultant.getZ());
-            }
-            lastDragPosition = currentDragPosition;
         }
     }
 

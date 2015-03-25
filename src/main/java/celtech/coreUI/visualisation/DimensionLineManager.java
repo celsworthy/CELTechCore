@@ -31,7 +31,7 @@ public class DimensionLineManager
                 public void whenAdded(ModelContainer modelContainer)
                 {
                     DimensionLine newDimensionLine = new DimensionLine(modelContainer);
-                    modelContainer.addShapeChangeListener(newDimensionLine);
+                    modelContainer.addScreenExtentsChangeListener(newDimensionLine);
                     paneToAddDimensionsTo.getChildren().add(newDimensionLine);
                     dimensionLines.put(modelContainer.getId(), newDimensionLine);
                 }
@@ -41,7 +41,7 @@ public class DimensionLineManager
                 {
                     DimensionLine dimensionLineToRemove = dimensionLines.get(modelContainer.
                         getId());
-                    modelContainer.removeShapeChangeListener(dimensionLineToRemove);
+                    modelContainer.removeScreenExtentsChangeListener(dimensionLineToRemove);
                     paneToAddDimensionsTo.getChildren().remove(dimensionLineToRemove);
                     dimensionLines.remove(modelContainer.getId());
                 }

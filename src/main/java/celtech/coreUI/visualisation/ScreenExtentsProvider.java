@@ -1,7 +1,5 @@
 package celtech.coreUI.visualisation;
 
-import javafx.geometry.Point2D;
-
 /**
  *
  * @author Ian
@@ -17,9 +15,9 @@ public interface ScreenExtentsProvider
 
     public double getTransformedDepth();
 
-    public void addShapeChangeListener(ScreenExtentsListener listener);
+    public void addScreenExtentsChangeListener(ScreenExtentsListener listener);
 
-    public void removeShapeChangeListener(ScreenExtentsListener listener);
+    public void removeScreenExtentsChangeListener(ScreenExtentsListener listener);
 
     public interface ScreenExtentsListener
     {

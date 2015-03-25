@@ -2473,5 +2473,22 @@ all inherit from Menu Control's popup-menu. --- */
 .dimension-label
 {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 24pt;
+    -fx-font-size: 18pt;
+    -fx-fill: #16b21d;
+    -fx-text-alignment: center;
+} 
+
+.dimension-line
+{
+    -fx-stroke: #16b21d;
+} 
+
+.dimension-arrow
+{
+    -fx-fill: #16b21d;
+} 
+
+.rotationField {
+    -fx-pref-width: 40;
+    -fx-min-width: 40;
 }

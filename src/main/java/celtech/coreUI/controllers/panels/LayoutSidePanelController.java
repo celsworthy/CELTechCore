@@ -16,22 +16,27 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -61,7 +66,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private RestrictedNumberField xAxisTextField;
 
     @FXML
-    private RestrictedNumberField scaleTextField;
+    private RestrictedNumberField scaleTextWidthField;
+
+    @FXML
+    private RestrictedNumberField scaleTextHeightField;
+
+    @FXML
+    private RestrictedNumberField scaleTextDepthField;
 
     @FXML
     private RestrictedNumberField heightTextField;
@@ -70,7 +81,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private RestrictedNumberField yAxisTextField;
 
     @FXML
-    private RestrictedNumberField rotationTextField;
+    private RestrictedNumberField rotationXTextField;
+
+    @FXML
+    private RestrictedNumberField rotationYTextField;
+
+    @FXML
+    private RestrictedNumberField rotationZTextField;
+
+    @FXML
+    private ToggleButton preserveAspectRatio;
 
     @FXML
     private TableView<ModelContainer> modelDataTableView;
@@ -78,13 +98,20 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     @FXML
     private VBox materialContainer;
 
+    @FXML
+    private BorderPane layoutBorder;
+
     private final TableColumn modelNameColumn = new TableColumn();
 
     private SelectedModelContainers selectionModel;
     private SelectedModelContainersListener tableViewSelectionListener = null;
 
-    private ChangeListener<Number> modelScaleChangeListener = null;
-    private ChangeListener<Number> modelRotationChangeListener = null;
+    private ChangeListener<Number> modelScaleXChangeListener = null;
+    private ChangeListener<Number> modelScaleYChangeListener = null;
+    private ChangeListener<Number> modelScaleZChangeListener = null;
+    private ChangeListener<Number> modelLeanChangeListener = null;
+    private ChangeListener<Number> modelTwistChangeListener = null;
+    private ChangeListener<Number> modelTurnChangeListener = null;
     private ChangeListener<Number> widthListener = null;
     private ChangeListener<Number> heightListener = null;
     private ChangeListener<Number> depthListener = null;
@@ -96,6 +123,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private ListChangeListener selectionListener = null;
     private boolean suppressModelDataTableViewNotifications = false;
+    private IntegerProperty numSelectedModels = new SimpleIntegerProperty(0);
+    /**
+     * The last scale ratio that was applied to the current selection. This figure is reset to 1.0
+     * when the selection changes.
+     */
+    private double lastScaleRatio = 1.0d;
 
     private MaterialComponent materialComponent0;
     private MaterialComponent materialComponent1;
@@ -129,47 +162,86 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         ResourceBundle languageBundle = Lookup.getLanguageBundle();
         String modelNameLabelString = languageBundle.getString(
             "sidePanel_layout.ModelNameLabel");
-        String scaleLabelString = languageBundle.getString(
-            "sidePanel_layout.ScaleLabel");
-        String rotationLabelString = languageBundle.getString(
-            "sidePanel_layout.RotationLabel");
 
-        scaleTextField.setText("-");
-        rotationTextField.setText("-");
+        scaleTextWidthField.setText("100");
+        scaleTextHeightField.setText("100");
+        scaleTextDepthField.setText("100");
+        rotationXTextField.setText("0");
+        rotationYTextField.setText("0");
+        rotationZTextField.setText("0");
         widthTextField.setText("-");
         depthTextField.setText("-");
         heightTextField.setText("-");
         xAxisTextField.setText("-");
         yAxisTextField.setText("-");
 
-        setUpTableView(modelNameLabelString, scaleLabelString, rotationLabelString, languageBundle);
-        
+        setUpTableView(modelNameLabelString, languageBundle);
+
         setUpModelGeometryListeners();
         setUpKeyPressListeners();
         setupMaterialContainer();
         setupProjectSelectedListener();
+
+        numSelectedModels.addListener(
+            (ObservableValue< ? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                whenNumSelectedModelsChanged();
+            });
+
+        setFieldsEditable();
+
+        FXMLUtilities.addColonsToLabels(layoutBorder);
     }
 
     private void setupProjectSelectedListener()
     {
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-        {
-            bindProject(newValue);
-        });
+            {
+                bindProject(newValue);
+            });
     }
 
     private void setUpModelGeometryListeners()
     {
 
-        modelScaleChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        modelScaleXChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateScaleField(t1);
+            if (!inMultiSelect())
+            {
+                populateScaleXField(t1);
+            }
         };
 
-        modelRotationChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        modelScaleYChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
         {
-            populateRotationField(t1);
+            if (!inMultiSelect())
+            {
+                populateScaleYField(t1);
+            }
+        };
+
+        modelScaleZChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            if (!inMultiSelect())
+            {
+                populateScaleZField(t1);
+            }
+        };
+
+        modelLeanChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateRotationXField(t1);
+        };
+
+        modelTwistChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateRotationYField(t1);
+        };
+
+        modelTurnChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        {
+            populateRotationZField(t1);
         };
 
         widthListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
@@ -223,195 +295,287 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         widthTextField.doubleValueProperty().set(t1.doubleValue());
     }
 
-    private void populateRotationField(Number t1)
+    private void populateRotationXField(Number t1)
     {
-        rotationTextField.doubleValueProperty().set(t1.doubleValue());
-        rotationTextField.setText(String.format(rotationFormat, t1));
+        rotationXTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationXTextField.setText(String.format(rotationFormat, t1));
     }
 
-    private void populateScaleField(Number t1)
+    private void populateRotationZField(Number t1)
     {
-        scaleTextField.doubleValueProperty().set(t1.doubleValue() * 100);
+        rotationZTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationZTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    private void populateRotationYField(Number t1)
+    {
+        rotationYTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationYTextField.setText(String.format(rotationFormat, t1));
+    }
+
+    /**
+     * Return if we are in a multi-select and fixed aspect ratio is being applied.
+     */
+    private boolean inMultiSelectWithFixedAR()
+    {
+        return preserveAspectRatio.isSelected()
+            && (selectionModel.getNumModelsSelectedProperty().get() > 1);
+    }
+
+    private boolean inMultiSelect()
+    {
+        return selectionModel.getNumModelsSelectedProperty().get() > 1;
+    }
+
+    /**
+     * Return if fixed aspect ratio is being applied.
+     */
+    private boolean inFixedAR()
+    {
+        return preserveAspectRatio.isSelected();
+    }
+
+    private void showScaleForXYZ(double scaleRatio)
+    {
         DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
-        String scaleString = myFormatter.format(t1.doubleValue() * 100f);
-        scaleTextField.setText(scaleString);
+        String scaleString = myFormatter.format(scaleRatio * 100f);
+        scaleTextWidthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextWidthField.setText(scaleString);
+        scaleTextHeightField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextHeightField.setText(scaleString);
+        scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextDepthField.setText(scaleString);
+    }
+
+    private void populateScaleXField(Number t1)
+    {
+        if (!inMultiSelectWithFixedAR())
+        {
+            scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+            String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+            scaleTextWidthField.setText(scaleString);
+        }
+    }
+
+    private void populateScaleYField(Number t1)
+    {
+        if (!inMultiSelectWithFixedAR())
+        {
+            scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
+            DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+            String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+            scaleTextHeightField.setText(scaleString);
+        }
+    }
+
+    private void populateScaleZField(Number t1)
+    {
+        if (!inMultiSelectWithFixedAR())
+        {
+            scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
+            String scaleString = myFormatter.format(t1.doubleValue() * 100f);
+            scaleTextDepthField.setText(scaleString);
+        }
     }
 
     private void setUpKeyPressListeners()
     {
-        scaleTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        scaleTextWidthField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
-                    {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.scaleModels(selectionModel.getSelectedModelsSnapshot(),
-                                    scaleTextField.getAsDouble() / 100.0);
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting scale "
-                                    + scaleTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
-                    }
-                }
+                case ENTER:
+                case TAB:
+                    updateScaleWidth();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        rotationTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        scaleTextHeightField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
-                    {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.rotateModels(selectionModel.getSelectedModelsSnapshot(),
-                                    rotationTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting rotation "
-                                    + rotationTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
-                    }
-                }
+                case ENTER:
+                case TAB:
+                    updateScaleHeight();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        widthTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        scaleTextDepthField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
-                    {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
-                                    widthTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting width "
-                                    + widthTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
-                    }
-                }
+                case ENTER:
+                case TAB:
+                    updateScaleDepth();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        heightTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        rotationXTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
-                                    heightTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.warning("Error converting height "
-                                    + heightTextField.getText());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      rotationXTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation "
+                            + rotationXTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
 
-        depthTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        rotationYTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
-                                    depthTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.error("Error parsing depth string " + ex
-                                    + " : " + ex.getMessage());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
+                                                       rotationYTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation "
+                            + rotationYTextField.getText());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
+
+        rotationZTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
+            {
+                case ENTER:
+                case TAB:
+                    try
+                    {
+                        boundProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
+                                                      rotationZTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.warning("Error converting rotation "
+                            + rotationZTextField.getText());
+                    }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
+
+        widthTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
+            {
+                case ENTER:
+                case TAB:
+                    updateWidth();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
+
+        heightTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
+            {
+                case ENTER:
+                case TAB:
+                    updateHeight();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
+
+        depthTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
+            {
+                case ENTER:
+                case TAB:
+                    updateDepth();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
 
         xAxisTextField.setOnKeyPressed(
             (KeyEvent t) ->
@@ -422,7 +586,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     case TAB:
                         try
                         {
-                            boundProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(),
+                            boundProject.translateModelsXTo(
+                                selectionModel.getSelectedModelsSnapshot(),
                                 xAxisTextField.getAsDouble());
                         } catch (ParseException ex)
                         {
@@ -441,44 +606,177 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 }
             });
 
-        yAxisTextField.setOnKeyPressed(
-            new EventHandler<KeyEvent>()
+        yAxisTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-
-                @Override
-                public void handle(KeyEvent t
-                )
-                {
-                    switch (t.getCode())
+                case ENTER:
+                case TAB:
+                    try
                     {
-                        case ENTER:
-                        case TAB:
-                            try
-                            {
-                                boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
-                                    yAxisTextField.getAsDouble());
-                            } catch (ParseException ex)
-                            {
-                                steno.error("Error parsing y translate string "
-                                    + ex + " : " + ex.getMessage());
-                            }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
-                            break;
-                        default:
-                            t.consume();
-                            break;
+                        boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
+                                                        yAxisTextField.getAsDouble());
+                    } catch (ParseException ex)
+                    {
+                        steno.error("Error parsing y translate string "
+                            + ex + " : " + ex.getMessage());
                     }
-                }
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
             }
-        );
+        });
     }
 
-    private void setUpTableView(String modelNameLabelString, String scaleLabelString,
-        String rotationLabelString, ResourceBundle languageBundle)
+    private void updateDepth()
+    {
+        try
+        {
+            if (inFixedAR())
+            {
+                ModelContainer modelContainer = getSingleSelection();
+                double ratio = depthTextField.getAsDouble() / modelContainer.getScaledDepth();
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(), ratio);
+            } else
+            {
+                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
+                                               depthTextField.getAsDouble());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting height " + heightTextField.getText());
+        }
+    }
+
+    private void updateHeight()
+    {
+        try
+        {
+            if (inFixedAR())
+            {
+                ModelContainer modelContainer = getSingleSelection();
+                double ratio = heightTextField.getAsDouble() / modelContainer.getScaledHeight();
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(), ratio);
+            } else
+            {
+                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
+                                                heightTextField.getAsDouble());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting height " + heightTextField.getText());
+        }
+    }
+
+    private void updateWidth()
+    {
+        try
+        {
+            if (inFixedAR())
+            {
+                ModelContainer modelContainer = getSingleSelection();
+                double ratio = widthTextField.getAsDouble() / modelContainer.getScaledWidth();
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(), ratio);
+            } else
+            {
+                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
+                                               widthTextField.getAsDouble());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting width " + widthTextField.getText());
+        }
+    }
+
+    private ModelContainer getSingleSelection()
+    {
+        assert (selectionModel.getNumModelsSelectedProperty().get() == 1);
+        ModelContainer modelContainer = selectionModel.getSelectedModelsSnapshot().iterator().next();
+        return modelContainer;
+    }
+
+    private void updateScaleDepth()
+    {
+        try
+        {
+            double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+            if (inMultiSelectWithFixedAR())
+            {
+                double ratio = scaleFactor / lastScaleRatio;
+                lastScaleRatio = scaleFactor;
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(),
+                    ratio);
+                showScaleForXYZ(lastScaleRatio);
+            } else
+            {
+                boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
+                                          scaleFactor, inFixedAR());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting scale " + scaleTextDepthField.getText());
+        }
+    }
+
+    private void updateScaleHeight()
+    {
+        try
+        {
+            double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
+            if (inMultiSelectWithFixedAR())
+            {
+                double ratio = scaleFactor / lastScaleRatio;
+                lastScaleRatio = scaleFactor;
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(),
+                    ratio);
+                showScaleForXYZ(lastScaleRatio);
+            } else
+            {
+                boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
+                                          scaleFactor, inFixedAR());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting scale " + scaleTextHeightField.getText());
+        }
+    }
+
+    private void updateScaleWidth()
+    {
+        try
+        {
+            double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
+            if (inMultiSelectWithFixedAR())
+            {
+                double ratio = scaleFactor / lastScaleRatio;
+                lastScaleRatio = scaleFactor;
+                boundProject.scaleXYZRatioSelection(
+                    selectionModel.getSelectedModelsSnapshot(),
+                    ratio);
+                showScaleForXYZ(lastScaleRatio);
+            } else
+            {
+                boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                                          scaleFactor, inFixedAR());
+            }
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting scale " + scaleTextWidthField.getText());
+        }
+    }
+
+    private void setUpTableView(String modelNameLabelString, ResourceBundle languageBundle)
     {
         modelNameColumn.setText(modelNameLabelString);
         modelNameColumn.setCellValueFactory(
@@ -562,10 +860,43 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         };
     }
-    
-    private void unbindProject(Project project) {
+
+    /**
+     * This updates size and scale fields to be editable or not according to whether we are in a
+     * multi-selection or not.
+     */
+    private void setFieldsEditable()
+    {
+        widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+    }
+
+    private void whenNumSelectedModelsChanged()
+    {
+        lastScaleRatio = 1.0d;
+        if (inMultiSelect())
+        {
+            showScaleForXYZ(1.0d);
+        } else if (selectionModel.getNumModelsSelectedProperty().get() == 1)
+        {
+            ModelContainer modelContainer = getSingleSelection();
+            populateScaleXField(modelContainer.getXScale());
+            populateScaleYField(modelContainer.getXScale());
+            populateScaleZField(modelContainer.getZScale());
+        }
+    }
+
+    private void unbindProject(Project project)
+    {
         layoutSubmode.removeListener(layoutSubmodeListener);
         selectionModel.removeListener(tableViewSelectionListener);
+        numSelectedModels.unbind();
     }
 
     /**
@@ -576,12 +907,15 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      */
     private void bindProject(final Project project)
     {
-        if (boundProject != null) {
+        if (boundProject != null)
+        {
             unbindProject(boundProject);
         }
         boundProject = project;
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
+
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         modelDataTableView.setItems(project.getLoadedModels());
@@ -598,8 +932,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         selectedModelDetails.getCentreX().addListener(xAxisListener);
         selectedModelDetails.getCentreZ().addListener(yAxisListener);
 
-        selectedModelDetails.getScale().addListener(modelScaleChangeListener);
-        selectedModelDetails.getRotationY().addListener(modelRotationChangeListener);
+        selectedModelDetails.getScaleX().addListener(modelScaleXChangeListener);
+        selectedModelDetails.getScaleY().addListener(modelScaleYChangeListener);
+        selectedModelDetails.getScaleZ().addListener(modelScaleZChangeListener);
+        selectedModelDetails.getRotationLean().addListener(modelLeanChangeListener);
+        selectedModelDetails.getRotationTwist().addListener(modelTwistChangeListener);
+        selectedModelDetails.getRotationTurn().addListener(modelTurnChangeListener);
 
         repopulate(selectedModelDetails);
 
@@ -643,8 +981,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      */
     private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
     {
-        populateScaleField(selectedModelDetails.getScale().get());
-        populateRotationField(selectedModelDetails.getRotationY().get());
+        populateScaleXField(selectedModelDetails.getScaleX().get());
+        populateScaleYField(selectedModelDetails.getScaleY().get());
+        populateScaleZField(selectedModelDetails.getScaleZ().get());
+        populateRotationXField(selectedModelDetails.getRotationLean().get());
+        populateRotationYField(selectedModelDetails.getRotationTwist().get());
+        populateRotationZField(selectedModelDetails.getRotationTurn().get());
         populateWidthField(selectedModelDetails.getWidth().get());
         populateHeightField(selectedModelDetails.getHeight().get());
         populateDepthField(selectedModelDetails.getDepth().get());
@@ -698,19 +1040,19 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
     {
-        switch (layoutSubmode.get()) {
+        switch (layoutSubmode.get())
+        {
             case ASSOCIATE_WITH_EXTRUDER0:
                 selectMaterialComponent(materialComponent0);
                 break;
             case ASSOCIATE_WITH_EXTRUDER1:
                 selectMaterialComponent(materialComponent1);
-                break;           
+                break;
             default:
                 materialComponent0.select(false);
                 materialComponent1.select(false);
         }
-       
-    };
 
+    };
 
 }

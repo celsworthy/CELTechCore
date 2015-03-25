@@ -1,12 +1,13 @@
 package celtech.coreUI.visualisation;
 
-import javafx.geometry.Point2D;
 
 /**
  *
  * @author Ian
  */
-class ScreenExtents
+public class ScreenExtents
 {
-    Point2D[] points = new Point2D[4];
+    public Edge[] heightEdges = new Edge[4];
+    public Edge[] widthEdges = new Edge[4];
+    public Edge[] depthEdges = new Edge[4];
 }
