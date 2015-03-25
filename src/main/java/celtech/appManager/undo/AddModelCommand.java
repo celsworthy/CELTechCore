@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.scene.transform.Scale;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -58,7 +59,7 @@ public class AddModelCommand extends Command
             ModelLoadResults modelLoadResults = modelLoaderTask.getValue();
             ModelLoadResult modelLoadResult = modelLoadResults.getResults().get(0);
             ModelContainer loadedModelContainer = modelLoadResult.getModelContainer();
-            modelContainer.addChildNodes(loadedModelContainer.getChildren());
+            modelContainer.addChildNodes(loadedModelContainer.getMeshGroupChildren());
             project.addModel(modelContainer);
         });
         modelLoaderTask.setOnFailed((WorkerStateEvent event) ->

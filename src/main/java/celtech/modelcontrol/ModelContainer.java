@@ -191,11 +191,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelFile;
     }
     
+    public Scale getTransformScale() {
+        return transformScalePreferred;
+    }
+    
     /**
      * Clear the meshes so as to free memory.
      */
     public void clearMeshes() {
-        getChildren().clear();
+        meshGroup.getChildren().clear();
     }
 
     public void setUseExtruder0Filament(boolean useExtruder0)
@@ -1781,11 +1785,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    public double getPreferredScale()
-    {
-        return preferredXScale.get();
-    }
-
     /**
      * @param preferredScale the preferredScale to set
      */
@@ -1874,7 +1873,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void addChildNodes(ObservableList<Node> nodes)
     {
-        getChildren().addAll(nodes);
+        meshGroup.getChildren().addAll(nodes);
+    }
+
+    public ObservableList<Node> getMeshGroupChildren()
+    {
+        return meshGroup.getChildren();
     }
 
     public class State
