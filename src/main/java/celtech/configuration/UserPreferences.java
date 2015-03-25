@@ -165,7 +165,7 @@ public class UserPreferences
             }
             else
             {
-                this.setAdvancedMode(false);
+                this.advancedMode.set(false);
             }
         } else
         {
