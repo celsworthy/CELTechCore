@@ -316,10 +316,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         if (modelContainer != null)
         {
-            modelContainer.setUseExtruder0Filament(false);
-            updateModelColour(modelContainer);
+            undoableProject.setUseExtruder0Filament(modelContainer, false);
             layoutSubmode.set(LayoutSubmode.SELECT);
-            project.projectModified();
         }
     }
 
@@ -327,10 +325,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         if (modelContainer != null)
         {
-            modelContainer.setUseExtruder0Filament(true);
-            updateModelColour(modelContainer);
-            layoutSubmode.set(LayoutSubmode.SELECT);
-            project.projectModified();
+           undoableProject.setUseExtruder0Filament(modelContainer, true);
+           layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -976,6 +972,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
+        updateModelColour(modelContainer);
     }
 
 }

@@ -49,6 +49,8 @@ public class Project implements Serializable
 
     private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
         "RBX-ABS-GR499");
+    
+    private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
@@ -476,7 +478,8 @@ public class Project implements Serializable
     {
         modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            fireWhenModelChanged(modelContainer, "associateWithExtruderNumber");
+            System.out.println("model extruder changed");
+            fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
             modelColourChanged.set(!modelColourChanged.get());
         };
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
@@ -765,6 +768,12 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
+    
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    {
+        modelContainer.setUseExtruder0Filament(useExtruder0);
+        projectModified();
+    }    
 
     public Set<ModelContainer.State> getModelStates()
     {
