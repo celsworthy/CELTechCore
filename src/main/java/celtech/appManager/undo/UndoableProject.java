@@ -35,6 +35,7 @@ public class UndoableProject
 
     private void doTransformCommand(NoArgsVoidFunc func)
     {
+        System.out.println("Do TRANSFORM command");
         doTransformCommand(func, false);
     }
     
