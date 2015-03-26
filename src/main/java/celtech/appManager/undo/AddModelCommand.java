@@ -21,13 +21,15 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class AddModelCommand extends Command
 {
-    
+
     private final Stenographer steno = StenographerFactory.getStenographer(
         AddModelCommand.class.getName());
 
     Project project;
+    // by keeping the ModelContainer we keep the modelId which is essential for subsequent
+    // transform redos to work.
     ModelContainer modelContainer;
-    
+
     public AddModelCommand(Project project, ModelContainer modelContainer)
     {
         this.project = project;
@@ -50,6 +52,7 @@ public class AddModelCommand extends Command
     @Override
     public void redo()
     {
+        //TODO ensure that user does not try to undo/redo while this is still loading
         List<File> modelFiles = new ArrayList<>();
         modelFiles.add(modelContainer.getModelFile());
         ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles, null, true);
@@ -65,8 +68,9 @@ public class AddModelCommand extends Command
         {
             steno.error("Unable to re-add the model");
         });
-        modelLoaderTask.run();
-
+        Thread th = new Thread(modelLoaderTask);
+        th.setDaemon(true);
+        th.start();
     }
 
     @Override

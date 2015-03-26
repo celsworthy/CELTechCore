@@ -8,7 +8,6 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
-import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
@@ -22,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -45,8 +46,10 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -186,19 +189,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         initialiseTransforms();
         setUpGCodeRelated(gcodeMeshData, fileLines);
     }
-    
-    public File getModelFile() {
+
+    public File getModelFile()
+    {
         return modelFile;
     }
-    
-    public Scale getTransformScale() {
+
+    public Scale getTransformScale()
+    {
         return transformScalePreferred;
     }
-    
+
     /**
      * Clear the meshes so as to free memory.
      */
-    public void clearMeshes() {
+    public void clearMeshes()
+    {
         meshGroup.getChildren().clear();
     }
 
@@ -249,6 +255,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             }
         });
         numberOfLayers.set(gcodeMeshData1.getReferencedArrays().size());
+    }
+
+    void printTransforms()
+    {
+        System.out.println("Scale preferred is " + transformScalePreferred);
+        System.out.println("Move to centre is " + transformMoveToCentre);
+        System.out.println("transformSnapToGroundYAdjust is " + transformSnapToGroundYAdjust);
+        System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
+        System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
+        System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
+        System.out.println("transformBedCentre " + transformBedCentre);
+
     }
 
     private void initialiseTransforms()
@@ -615,19 +633,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelName.get();
     }
 
+    Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
+
     public void setSnapFaceIndex(int snapFaceIndex)
     {
-        Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
+        transformRotateSnapToGround = new Rotate(0, 0, 0);
 
         this.snapFaceIndex = snapFaceIndex;
+        System.out.println("face index is " + snapFaceIndex);
         if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
         {
             Vector3D faceNormal = getFaceNormal(snapFaceIndex);
             Vector3D downVector = new Vector3D(0, 1, 0);
 
-            Rotation result = new Rotation(faceNormal, downVector);
-            Vector3D axis = result.getAxis();
-            double angleDegrees = result.getAngle() * RAD_TO_DEG;
+            Rotation requiredRotation = new Rotation(faceNormal, downVector);
+            Vector3D axis = requiredRotation.getAxis();
+            double angleDegrees = Math.toDegrees(requiredRotation.getAngle());
 
             transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
             transformRotateSnapToGround.setAngle(angleDegrees);
@@ -637,41 +658,101 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
             transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
 
-            convertSnapToLeanAndTwist(result, faceNormal);
+            convertSnapToLeanAndTwist(requiredRotation, faceNormal, snapFaceIndex);
 
             dropToBedAndUpdateLastTransformedBounds();
         }
     }
 
-    private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal)
+    private Point3D toPoint3D(Vector3D vector)
     {
-        System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
-            + Math.toDegrees(ARS.getAngle()));
+        return new Point3D(vector.getX(), vector.getY(), vector.getZ());
+    }
 
-        /**
-         * get angle that Y_AXIS is moved through, to give RL (lean rotation)
-         */
-        Vector3D yPrime = ARS.applyTo(new Vector3D(0, 1, 0));
-        System.out.println("y prime is " + yPrime);
-        Vector3D y = new Vector3D(Y_AXIS.getX(), Y_AXIS.getY(), Y_AXIS.getZ());
-        double leanAngle = Vector3D.angle(yPrime, y);
-        System.out.println("Lean angle:" + Math.toDegrees(leanAngle));
-        setRotationLean(Math.toDegrees(leanAngle));
+    Point3D getRotatedFaceNormal(int faceIndex)
+    {
+        Vector3D faceNormal = getFaceNormal(faceIndex);
+        Vector3D faceCentre = getFaceCentre(faceIndex);
 
-        /**
-         *
-         */
-        Vector3D Z_AXIS = new Vector3D(0, 0, 1);
-        Vector3D z_prime = ARS.applyTo(Z_AXIS);
-        Vector3D z_prime_in_zxplane = new Vector3D(z_prime.getX(), 0, z_prime.getZ());
-        double twistAngle = new Rotation(Z_AXIS, z_prime_in_zxplane).getAngle();
-        setRotationTwist(Math.toDegrees(twistAngle));
+        Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
+            toPoint3D(faceCentre));
 
-        /**
-         * RL is Rotation for Lean, RT is Rotation for Twist, RS is Rotation for Snap
-         *
-         * RL * RT = RS => RT = inverse(RL) * RS
-         */
+        Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
+            toPoint3D(faceCentre.add(faceNormal)));
+
+        Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
+        return rotatedFaceNormal;
+    }
+
+    private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal, int snapFaceIndex)
+    {
+        try
+        {
+            System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
+                + Math.toDegrees(ARS.getAngle()));
+
+            /**
+             * get angle that Y is moved through, to give RL (lean rotation).
+             */
+            Vector3D yPrime = ARS.applyTo(new Vector3D(0, -1, 0));
+            System.out.println("y prime is " + yPrime);
+            Vector3D Y = new Vector3D(0, -1, 0);
+            double leanAngle = Vector3D.angle(yPrime, Y);
+            System.out.println("Lean angle:" + Math.toDegrees(leanAngle));
+            setRotationLean(Math.toDegrees(leanAngle));
+            
+            if (Math.abs(leanAngle - 180) < 0.05) {
+                return;
+            }
+
+            /**
+             * Get angle that Y' projected on XZ is rotated around Y, to give RTN (turn rotation).
+             */
+            Vector3D yPrimeProjectedOntoXZ = new Vector3D(yPrime.getX(), 0,
+                                                          yPrime.getZ());
+            Vector3D X = new Vector3D(1, 0, 0);
+            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, X);
+            System.out.println("Turn angle:" + Math.toDegrees(turnAngle));
+            
+            setRotationTurn(Math.toDegrees(turnAngle));
+
+            double minDeviationI = 0;
+            double minDeviation = 1000;
+            for (double i = 0; i < 360; i += 0.5)
+            {
+                setRotationTwist(i);
+                Point3D rotatedFaceNormal = getRotatedFaceNormal(snapFaceIndex);
+                double deviation = rotatedFaceNormal.angle(Y_AXIS);
+                if (deviation < minDeviation) {
+                    minDeviation = deviation;
+                    minDeviationI = i;
+                }
+            }
+            System.out.println("Achieved minimum angle deviation of " + minDeviation + " degrees");
+            setRotationTwist(minDeviationI);
+            
+            System.out.println("Rotation lean is " + preferredRotationLean);
+
+            /**
+             * Now calculate required rotation around Y' to get rotated normal to face down. Project
+             * rotatedNormal onto plane defined by Y' and get angle to X', and subtract angle of
+             * original normal projected onto XZ with X, giving twist.
+             */
+            Transform RLInverse = transformRotateLeanPreferred.createInverse();
+            Transform RTNInverse = transformRotateTurnPreferred.createInverse();
+
+            Transform RTwist = (RLInverse.createConcatenation(RTNInverse)).createConcatenation(
+                transformRotateSnapToGround);
+
+            /**
+             * RL is Rotation for Lean, RT is Rotation for Twist, RS is Rotation for Snap.
+             *
+             * RL * RT = RS => RT = inverse(RL) * RS
+             */
+//        Rotation RL = new Rotation(new Vector3D(0, 0, 1), leanAngle);
+//        RL.(originalModelBounds.getCentreX());
+//        RL.setPivotY(originalModelBounds.getCentreY());
+//        RL.setPivotZ(originalModelBounds.getCentreZ());
 //        try
 //        {
 //
@@ -688,15 +769,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //            System.out.println("Twist is " + twistReqd.getAxis() + " " + twistAngle);
 //
 //            setRotationTwist(twistAngle);
-        // Lean is a rotation about Z
+            // Lean is a rotation about Z
 //            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
 //            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
 //                + Math.toDegrees(ARLinverse.getAngle()));
-//            Vector3D yPrimeProjectedOntoXZ = new Vector3D(Y_AXIS_PRIME.getX(), 0,
-//                                                          Y_AXIS_PRIME.getZ());
-//            Vector3D x = new Vector3D(X_AXIS.getX(), X_AXIS.getY(), X_AXIS.getZ());
-//            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, x);
-//            setRotationTurn(Math.toDegrees(turnAngle));
 //
 //            System.out.println("TURN ANGLE: " + Math.toDegrees(turnAngle));
 //
@@ -722,6 +798,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //        {
 //            ex.printStackTrace();
 //        }
+        } catch (NonInvertibleTransformException ex)
+        {
+            Logger.getLogger(ModelContainer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void updateScaleTransform()
@@ -1627,7 +1707,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Return the face normal for the face of the given index.
      *
      */
-    private Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
+    Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
     {
         MeshView meshView = getMeshView();
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
@@ -1644,6 +1724,24 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         Vector3D faceNormal = result1.crossProduct(result2);
         Vector3D currentVectorNormalised = faceNormal.normalize();
         return currentVectorNormalised;
+    }
+
+    Vector3D getFaceCentre(int faceNumber)
+    {
+        MeshView meshView = getMeshView();
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+        int baseFaceIndex = faceNumber * 6;
+        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
+        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
+        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
+        ObservableFloatArray points = triMesh.getPoints();
+        Vector3D v1 = convertToVector3D(points, v1PointIndex);
+        Vector3D v2 = convertToVector3D(points, v2PointIndex);
+        Vector3D v3 = convertToVector3D(points, v3PointIndex);
+
+        return new Vector3D((v1.getX() + v2.getX() + v3.getX()) / 3.0d,
+                            (v1.getY() + v2.getY() + v3.getY()) / 3.0d,
+                            (v1.getZ() + v2.getZ() + v3.getZ()) / 3.0d);
     }
 
     private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
@@ -1799,28 +1897,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return preferredXScale;
     }
 
-    /**
-     * @return the preferredYRotation
-     */
-    public double getPreferredRotationY()
-    {
-        return preferredRotationTwist.get();
-    }
-
-    /**
-     * @param preferredYRotation the preferredYRotation to set
-     */
-    public void setPreferredRotationY(double preferredYRotation)
-    {
-        this.preferredRotationTwist.set(preferredYRotation);
-        setRotationTwist(preferredYRotation);
-    }
-
-    public DoubleProperty preferredRotationYProperty()
-    {
-        return preferredRotationTwist;
-    }
-
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
@@ -1882,8 +1958,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * State captures the state of all the transforms being applied to this ModelContainer. It
-     * is used as an efficient way of applying Undo and Redo to changes to a Set of ModelContainers.
+     * State captures the state of all the transforms being applied to this ModelContainer. It is
+     * used as an efficient way of applying Undo and Redo to changes to a Set of ModelContainers.
      */
     public class State
     {
