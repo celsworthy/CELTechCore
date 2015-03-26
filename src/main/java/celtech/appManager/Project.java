@@ -424,7 +424,6 @@ public class Project implements Serializable
     public void addModel(ModelContainer modelContainer)
     {
         loadedModels.add(modelContainer);
-        System.out.println("model added");
         projectModified();
         fireWhenModelAdded(modelContainer);
         addModelListeners(modelContainer);

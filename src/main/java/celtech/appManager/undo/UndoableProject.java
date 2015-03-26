@@ -5,6 +5,7 @@ package celtech.appManager.undo;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
+import celtech.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
@@ -166,5 +167,17 @@ public class UndoableProject
     {
         DeleteModelsCommand deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
         commandStack.do_(deleteModelCommand);
+    }    
+    
+    public void setExtruder0Filament(Filament filament)
+    {
+        SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project, filament, 0);
+        commandStack.do_(setExtruderCommand);
+    }
+
+    public void setExtruder1Filament(Filament filament)
+    {
+        SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project, filament, 1);
+        commandStack.do_(setExtruderCommand);
     }    
 }

@@ -448,7 +448,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     try
                     {
                         undoableProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      rotationXTextField.getAsDouble());
+                                                         rotationXTextField.getAsDouble());
                     } catch (ParseException ex)
                     {
                         steno.warning("Error converting rotation "
@@ -475,7 +475,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     try
                     {
                         undoableProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
-                                                       rotationYTextField.getAsDouble());
+                                                          rotationYTextField.getAsDouble());
                     } catch (ParseException ex)
                     {
                         steno.warning("Error converting rotation "
@@ -502,7 +502,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     try
                     {
                         undoableProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      rotationZTextField.getAsDouble());
+                                                         rotationZTextField.getAsDouble());
                     } catch (ParseException ex)
                     {
                         steno.warning("Error converting rotation "
@@ -656,7 +656,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
-                                               depthTextField.getAsDouble());
+                                                  depthTextField.getAsDouble());
             }
         } catch (ParseException ex)
         {
@@ -677,7 +677,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
-                                                heightTextField.getAsDouble());
+                                                   heightTextField.getAsDouble());
             }
         } catch (ParseException ex)
         {
@@ -698,7 +698,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
-                                               widthTextField.getAsDouble());
+                                                  widthTextField.getAsDouble());
             }
         } catch (ParseException ex)
         {
@@ -729,7 +729,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
-                                          scaleFactor, inFixedAR());
+                                             scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
         {
@@ -753,7 +753,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
-                                          scaleFactor, inFixedAR());
+                                             scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
         {
@@ -777,7 +777,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
-                                          scaleFactor, inFixedAR());
+                                             scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
         {
@@ -923,6 +923,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         boundProject = project;
         undoableProject = new UndoableProject(project);
 
+        materialComponent0.setLayoutProject(project);
+        materialComponent1.setLayoutProject(project);
+
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
 
@@ -1019,18 +1022,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         {
             selectMaterialComponent(materialComponent1);
         });
-
-        materialComponent0.getSelectedFilamentProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                boundProject.setExtruder0Filament(newValue);
-            });
-
-        materialComponent1.getSelectedFilamentProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                boundProject.setExtruder1Filament(newValue);
-            });
     }
 
     private void selectMaterialComponent(MaterialComponent materialComponent)
@@ -1040,16 +1031,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         if (materialComponent == materialComponent0)
         {
             layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);
-            materialComponent1.select(false);
         } else
         {
             layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1);
-            materialComponent0.select(false);
         }
     }
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
     {
+        materialComponent0.select(false);
+        materialComponent1.select(false);
         switch (layoutSubmode.get())
         {
             case ASSOCIATE_WITH_EXTRUDER0:
@@ -1058,9 +1049,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             case ASSOCIATE_WITH_EXTRUDER1:
                 selectMaterialComponent(materialComponent1);
                 break;
-            default:
-                materialComponent0.select(false);
-                materialComponent1.select(false);
         }
 
     };

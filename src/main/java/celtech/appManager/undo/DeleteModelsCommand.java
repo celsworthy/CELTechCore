@@ -35,7 +35,6 @@ public class DeleteModelsCommand extends Command
     @Override
     public void undo()
     {
-        System.out.println("Undo delete model, readd " + modelContainers);
         for (ModelContainer modelContainer : modelContainers)
         {
             project.addModel(modelContainer);
