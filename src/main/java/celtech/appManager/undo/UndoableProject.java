@@ -174,16 +174,25 @@ public class UndoableProject
 
     public void setExtruder0Filament(Filament filament)
     {
-        SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
-                                                                                       filament, 0);
-        commandStack.do_(setExtruderCommand);
+        if (filament != project.getExtruder0FilamentProperty().get())
+        {
+            SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
+                                                                                           filament,
+                                                                                           0);
+            commandStack.do_(setExtruderCommand);
+        }
     }
 
     public void setExtruder1Filament(Filament filament)
     {
-        SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
-                                                                                       filament, 1);
-        commandStack.do_(setExtruderCommand);
+        if (filament != project.getExtruder1FilamentProperty().get())
+        {
+            SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
+                                                                                           filament,
+                                                                                           1);
+            commandStack.do_(setExtruderCommand);
+        }
+        
     }
 
     public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)

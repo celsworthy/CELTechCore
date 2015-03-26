@@ -1881,6 +1881,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return meshGroup.getChildren();
     }
 
+    /**
+     * State captures the state of all the transforms being applied to this ModelContainer. It
+     * is used as an efficient way of applying Undo and Redo to changes to a Set of ModelContainers.
+     */
     public class State
     {
 

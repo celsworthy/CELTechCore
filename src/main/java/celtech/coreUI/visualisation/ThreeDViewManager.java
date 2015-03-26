@@ -253,10 +253,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                     doSnapToGround(modelContainer, pickResult);
                     break;
                 case ASSOCIATE_WITH_EXTRUDER0:
-                    doAssociateWithExtruder0(modelContainer);
+                    doAssociateWithExtruder0(modelContainer, true);
                     break;
                 case ASSOCIATE_WITH_EXTRUDER1:
-                    doAssociateWithExtruder1(modelContainer);
+                    doAssociateWithExtruder0(modelContainer, false);
                     break;
                 case SELECT:
                     doSelectTranslateModel(intersectedNode, pickedPoint, event);
@@ -312,20 +312,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    private void doAssociateWithExtruder1(ModelContainer modelContainer)
+    private void doAssociateWithExtruder0(ModelContainer modelContainer, boolean useExtruder0)
     {
         if (modelContainer != null)
         {
-            undoableProject.setUseExtruder0Filament(modelContainer, false);
-            layoutSubmode.set(LayoutSubmode.SELECT);
-        }
-    }
-
-    private void doAssociateWithExtruder0(ModelContainer modelContainer)
-    {
-        if (modelContainer != null)
-        {
-           undoableProject.setUseExtruder0Filament(modelContainer, true);
+           undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
            layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
