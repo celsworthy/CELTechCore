@@ -291,10 +291,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void copyModel(ActionEvent event)
     {
-        for (ModelContainer modelContainer: modelSelection.getSelectedModelsSnapshot())
-        {
-            selectedProject.copyModel(modelContainer);
-        }
+        undoableSelectedProject.copyModels(modelSelection.getSelectedModelsSnapshot());
     }
 
     @FXML

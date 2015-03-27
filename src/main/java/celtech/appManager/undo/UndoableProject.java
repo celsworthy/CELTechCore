@@ -186,6 +186,12 @@ public class UndoableProject
         DeleteModelsCommand deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
         commandStack.do_(deleteModelCommand);
     }
+    
+    public void copyModels(Set<ModelContainer> modelContainers)
+    {
+        CopyModelsCommand copyModelsCommand = new CopyModelsCommand(project, modelContainers);
+        commandStack.do_(copyModelsCommand);
+    }    
 
     public void setExtruder0Filament(Filament filament)
     {
