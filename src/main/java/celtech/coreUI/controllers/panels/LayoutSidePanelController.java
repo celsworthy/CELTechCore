@@ -98,7 +98,7 @@ public class LayoutSidePanelController implements Initializable,
     private ChangeListener<Number> xAxisListener = null;
     private ChangeListener<Number> yAxisListener = null;
 
-    private final String scaleFormat = "%.0f";
+    private final String scaleFormat = "%.1f";
     private final String rotationFormat = "%.0f";
 
     private ListChangeListener selectionListener = null;
@@ -273,14 +273,9 @@ public class LayoutSidePanelController implements Initializable,
                                 steno.warning("Error converting scale "
                                     + scaleTextField.getText());
                             }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
+                            t.consume();
                             break;
                         default:
-                            t.consume();
                             break;
                     }
                 }
@@ -308,14 +303,9 @@ public class LayoutSidePanelController implements Initializable,
                                 steno.warning("Error converting rotation "
                                     + rotationTextField.getText());
                             }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
+                            t.consume();
                             break;
                         default:
-                            t.consume();
                             break;
                     }
                 }
@@ -343,14 +333,9 @@ public class LayoutSidePanelController implements Initializable,
                                 steno.warning("Error converting width "
                                     + widthTextField.getText());
                             }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
+                            t.consume();
                             break;
                         default:
-                            t.consume();
                             break;
                     }
                 }
@@ -378,14 +363,9 @@ public class LayoutSidePanelController implements Initializable,
                                 steno.warning("Error converting height "
                                     + heightTextField.getText());
                             }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
+                            t.consume();
                             break;
                         default:
-                            t.consume();
                             break;
                     }
                 }
@@ -412,14 +392,9 @@ public class LayoutSidePanelController implements Initializable,
                                 steno.error("Error parsing depth string " + ex
                                     + " : " + ex.getMessage());
                             }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
+                            t.consume();
                             break;
                         default:
-                            t.consume();
                             break;
                     }
                 }
@@ -442,14 +417,9 @@ public class LayoutSidePanelController implements Initializable,
                             steno.error("Error parsing x translate string " + ex
                                 + " : " + ex.getMessage());
                         }
-                        break;
-                    case DECIMAL:
-                    case BACK_SPACE:
-                    case LEFT:
-                    case RIGHT:
+                        t.consume();
                         break;
                     default:
-                        t.consume();
                         break;
                 }
             });
@@ -475,14 +445,9 @@ public class LayoutSidePanelController implements Initializable,
                                 steno.error("Error parsing y translate string "
                                     + ex + " : " + ex.getMessage());
                             }
-                            break;
-                        case DECIMAL:
-                        case BACK_SPACE:
-                        case LEFT:
-                        case RIGHT:
+                            t.consume();
                             break;
                         default:
-                            t.consume();
                             break;
                     }
                 }
@@ -523,8 +488,7 @@ public class LayoutSidePanelController implements Initializable,
 
                             if (!empty)
                             {
-                                // Use a SimpleDateFormat or similar in the format method
-                                setText(String.format("%.0f%%", item * 100));
+                                setText(String.format("%.1f%%", item * 100));
                             } else
                             {
                                 setText(null);

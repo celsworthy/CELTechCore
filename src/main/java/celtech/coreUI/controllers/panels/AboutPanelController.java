@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
@@ -16,6 +17,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 /**
  *
@@ -25,7 +28,9 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
 {
 
     private SettingsScreenState settingsScreenState = null;
-
+    private final Clipboard clipboard = Clipboard.getSystemClipboard();
+    private final ClipboardContent content = new ClipboardContent();
+    
     @FXML
     private Label roboxSerialNumber;
 
@@ -39,6 +44,20 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     private void okPressed(ActionEvent event)
     {
         ApplicationStatus.getInstance().returnToLastMode();
+    }
+
+    @FXML
+    private void copyPrinterSerialNumber(ActionEvent event)
+    {
+        content.putString(roboxSerialNumber.getText());
+        clipboard.setContent(content);
+    }
+
+    @FXML
+    private void copyHeadSerialNumber(ActionEvent event)
+    {
+        content.putString(headSerialNumber.getText());
+        clipboard.setContent(content);
     }
 
     @FXML
@@ -58,7 +77,21 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void whenPrinterAdded(Printer printer)
     {
-        roboxSerialNumber.setText(printer.getPrinterIdentity().printerUniqueIDProperty().get());
+        StringBuilder idString = new StringBuilder();
+        PrinterIdentity identity = printer.getPrinterIdentity();
+        idString.append(identity.printermodelProperty().get());
+        idString.append("-");
+        idString.append(identity.printereditionProperty().get());
+        idString.append("-");
+        idString.append(identity.printerweekOfManufactureProperty().get());
+        idString.append(identity.printeryearOfManufactureProperty().get());
+        idString.append("-");
+        idString.append(identity.printerpoNumberProperty().get());
+        idString.append("-");
+        idString.append(identity.printerserialNumberProperty().get());
+        idString.append("-");
+        idString.append(identity.printercheckByteProperty().get());
+        roboxSerialNumber.setText(idString.toString());
     }
 
     @Override
