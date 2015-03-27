@@ -118,7 +118,7 @@ public class GCodeImporterTest
                 + triangleMesh.getFaces().size() + " faces");
 
         GCodeMeshData gcodeData = new GCodeMeshData(outputMeshes, referencedElements, referencedLayers);
-        ModelContainer container = new ModelContainer(modelFileToLoad, gcodeData, fileLines);
+        ModelContainer container = new ModelContainer(new File(modelFileToLoad), gcodeData, fileLines);
         return new ModelLoadResult(false, modelFileToLoad, fFile.getName(), targetProject, container);
 
     }

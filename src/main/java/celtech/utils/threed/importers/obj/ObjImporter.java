@@ -171,7 +171,7 @@ public class ObjImporter
                 meshes.add(buildMeshView(key));
             }
 
-            ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshes);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshes);
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);

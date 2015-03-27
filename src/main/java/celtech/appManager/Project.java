@@ -50,6 +50,8 @@ public class Project implements Serializable
     private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
         "RBX-ABS-GR499");
 
+    private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
+
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -476,7 +478,8 @@ public class Project implements Serializable
     {
         modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            fireWhenModelChanged(modelContainer, "associateWithExtruderNumber");
+            System.out.println("model extruder changed");
+            fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
             modelColourChanged.set(!modelColourChanged.get());
         };
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
@@ -548,8 +551,8 @@ public class Project implements Serializable
 
     /**
      * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
-     * ratio is not an absolute figure to be applied to the models but a ratio to be applied 
-     * to the current scale.
+     * ratio is not an absolute figure to be applied to the models but a ratio to be applied to the
+     * current scale.
      */
     public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
     {
@@ -569,7 +572,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert(modelContainers.size() == 1);
+            assert (modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getXScale();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -592,7 +595,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert(modelContainers.size() == 1);
+            assert (modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getYScale();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -615,7 +618,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert(modelContainers.size() == 1);
+            assert (modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getZScale();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -678,6 +681,15 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    {
+        modelContainer.snapToGround(faceNumber);
+        projectModified();
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(modelContainer);
+        fireWhenModelsTransformed(modelContainers);
+    }
+
     public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
     {
         for (ModelContainer model : modelContainers)
@@ -708,6 +720,18 @@ public class Project implements Serializable
         {
             {
                 model.resizeWidth(width);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateBy(x, z);
             }
         }
         projectModified();
@@ -753,29 +777,38 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
-     public Set<ModelContainer.State> getModelStates() {
-         Set<ModelContainer.State> modelStates = new HashSet<>();
-         for (ModelContainer model : loadedModels)
-         {
-             modelStates.add(model.getState());
-         }
-         return modelStates;
-     }
-     
-     public void setModelStates(Set<ModelContainer.State> modelStates) {
-         Set<ModelContainer> modelContainers = new HashSet<>();
-         for (ModelContainer.State modelState : modelStates)
-         {
-             for (ModelContainer model : loadedModels)
-             {
-                 if (model.getModelId() == modelState.modelId) {
-                     model.setState(modelState);
-                     modelContainers.add(model);
-                 }
-             }
-         }
-         projectModified();
-         fireWhenModelsTransformed(modelContainers);
-     }
+
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    {
+        modelContainer.setUseExtruder0Filament(useExtruder0);
+        projectModified();
+    }
+
+    public Set<ModelContainer.State> getModelStates()
+    {
+        Set<ModelContainer.State> modelStates = new HashSet<>();
+        for (ModelContainer model : loadedModels)
+        {
+            modelStates.add(model.getState());
+        }
+        return modelStates;
+    }
+
+    public void setModelStates(Set<ModelContainer.State> modelStates)
+    {
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        for (ModelContainer.State modelState : modelStates)
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                if (model.getModelId() == modelState.modelId)
+                {
+                    model.setState(modelState);
+                    modelContainers.add(model);
+                }
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
 }

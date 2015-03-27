@@ -5,6 +5,7 @@ package celtech.coreUI.visualisation;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
+import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoadResults;
@@ -30,7 +31,8 @@ public class ModelLoader
      * Mesh Model loading
      */
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
-     
+
+    private boolean undoableMode = false;
 
     public ModelLoader()
     {
@@ -42,10 +44,15 @@ public class ModelLoader
 
     private void whenModelLoadSucceeded()
     {
+       offerShrinkAndAddToProject();
+    }
+
+    private boolean offerShrinkAndAddToProject()
+    {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
         {
-            return;
+            return true;
         }
         ModelLoadResult firstResult = loadResults.getResults().get(0);
         boolean projectIsEmpty = firstResult.getTargetProject().getLoadedModels().isEmpty();
@@ -62,12 +69,12 @@ public class ModelLoader
                     {
                         ModelContainer modelContainer = loadResult.getModelContainer();
                         modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProject().addModel(modelContainer);
+                        addToProject(loadResult, modelContainer);
                     }
                 } else
                 {
                     ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProject().addModel(modelContainer);
+                    addToProject(loadResult, modelContainer);
                 }
             } else
             {
@@ -79,20 +86,16 @@ public class ModelLoader
             Project project = loadResults.getResults().get(0).getTargetProject();
             project.autoLayout();
         }
-
+        return false;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyBooleanProperty modelLoadingProperty()
     {
         return modelLoaderService.runningProperty();
     }
 
     /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. ,
+     * Load each model in modelsToLoad, do not lay them out on the bed.
      *
      * @param project
      * @param modelsToLoad
@@ -103,33 +106,26 @@ public class ModelLoader
     }
 
     /**
-     * Load each model in modelsToLoad and then optionally lay them out on the bed.
-     *
-     * @param project
-     * @param modelsToLoad
-     * @param relayout
-     */
-    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
-    {
-        loadExternalModels(project, modelsToLoad, false, relayout);
-    }
-
-    /**
-     * Load each model in modelsToLoad, do not lay them out on the bed. , If there are already
-     * models loaded in the project then do not relayout even if relayout=true;
+     * Load each model in modelsToLoad, do not lay them out on the bed. If there are already models
+     * loaded in the project then do not relayout even if relayout=true;
      *
      * @param project
      * @param modelsToLoad
      * @param newTab
      * @param relayout
      */
-    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean newTab,
-        boolean relayout)
+    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
     {
         modelLoaderService.reset();
         modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
         modelLoaderService.setProject(project);
         modelLoaderService.start();
+    }
+
+    private void addToProject(ModelLoadResult loadResult, ModelContainer modelContainer)
+    {
+        UndoableProject undoableProject = new UndoableProject(loadResult.getTargetProject());
+        undoableProject.addModel(modelContainer);
     }
 
 }

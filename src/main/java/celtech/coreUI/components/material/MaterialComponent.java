@@ -4,6 +4,8 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
+import celtech.appManager.Project;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
@@ -19,6 +21,7 @@ import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -50,6 +53,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private final static String UNKNOWN = Lookup.i18n("materialComponent.unknown");
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
+    private UndoableProject undoableProject;
 
     public enum ReelType
     {
@@ -199,6 +203,57 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
                         diameter);
+        }
+    }
+
+    /**
+     * In LAYOUT mode this widget is responsible for updating the project filaments directly, and
+     * listening for changes to the project filament.
+     */
+    public void setLayoutProject(Project project)
+    {
+        if (project != null)
+        {
+            this.undoableProject = new UndoableProject(project);
+        }
+        getSelectedFilamentProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                if (extruderNumber == 0)
+                {
+                    undoableProject.setExtruder0Filament(newValue);
+                } else
+                {
+                    undoableProject.setExtruder1Filament(newValue);
+                }
+            });
+
+        ChangeListener<Filament> filamentChangeListener = new ChangeListener<Filament>()
+        {
+
+            @Override
+            public void changed(
+                ObservableValue<? extends Filament> observable, Filament oldValue, Filament filament)
+            {
+                if (filament != null)
+                {
+                    Float remainingFilament = 0f;
+                    Float diameter = 0f;
+                    setMaterial(extruderNumber, filament.getMaterial(),
+                                filament.getFriendlyFilamentName(),
+                                filament.getDisplayColourProperty().get(),
+                                remainingFilament,
+                                diameter);
+                }
+            }
+        };
+
+        if (extruderNumber == 0)
+        {
+            project.getExtruder0FilamentProperty().addListener(filamentChangeListener);
+        } else
+        {
+            project.getExtruder1FilamentProperty().addListener(filamentChangeListener);
         }
     }
 

@@ -5,6 +5,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
@@ -136,7 +137,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private Filament extruder0Filament;
     private Filament extruder1Filament;
     private final Project project;
+    private final UndoableProject undoableProject;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
+    private boolean justEnteredDragMode;
 
     private void rotateCameraAroundAxes(double xangle, double yangle)
     {
@@ -250,10 +253,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                     doSnapToGround(modelContainer, pickResult);
                     break;
                 case ASSOCIATE_WITH_EXTRUDER0:
-                    doAssociateWithExtruder0(modelContainer);
+                    doAssociateWithExtruder0(modelContainer, true);
                     break;
                 case ASSOCIATE_WITH_EXTRUDER1:
-                    doAssociateWithExtruder1(modelContainer);
+                    doAssociateWithExtruder0(modelContainer, false);
                     break;
                 case SELECT:
                     doSelectTranslateModel(intersectedNode, pickedPoint, event);
@@ -279,6 +282,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         scaleDragPlane.setTranslateZ(pickedPoint.getZ());
 
         setDragMode(DragMode.TRANSLATING);
+        justEnteredDragMode = true;
 
         if (intersectedNode instanceof MeshView)
         {
@@ -308,25 +312,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    private void doAssociateWithExtruder1(ModelContainer modelContainer)
+    private void doAssociateWithExtruder0(ModelContainer modelContainer, boolean useExtruder0)
     {
         if (modelContainer != null)
         {
-            modelContainer.setUseExtruder0Filament(false);
-            updateModelColour(modelContainer);
-            layoutSubmode.set(LayoutSubmode.SELECT);
-            project.projectModified();
-        }
-    }
-
-    private void doAssociateWithExtruder0(ModelContainer modelContainer)
-    {
-        if (modelContainer != null)
-        {
-            modelContainer.setUseExtruder0Filament(true);
-            updateModelColour(modelContainer);
-            layoutSubmode.set(LayoutSubmode.SELECT);
-            project.projectModified();
+           undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
+           layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -335,9 +326,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (modelContainer != null)
         {
             int faceNumber = pickResult.getIntersectedFace();
-            snapToGround(modelContainer, faceNumber);
-            collideModels();
-            project.projectModified();
+            undoableProject.snapToGround(modelContainer, faceNumber);
+            modelContainer.snapToGround(faceNumber);
+            layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -372,6 +363,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                 {
                     Point3D resultant = pickedDragPlanePoint.subtract(lastDragPosition);
                     translateSelection(resultant.getX(), resultant.getZ());
+                    justEnteredDragMode = false;
                 }
                 lastDragPosition = pickedDragPlanePoint;
             } else
@@ -470,6 +462,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.project = project;
+        this.undoableProject = new UndoableProject(project);
         loadedModels = project.getLoadedModels();
         selectedModelContainers = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -672,17 +665,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void translateSelection(double x, double z)
     {
-        for (ModelContainer model : loadedModels)
-        {
-            if (selectedModelContainers.isSelected(model))
-            {
-                model.translateBy(x, z);
-            }
-        }
-        selectedModelContainers.updateSelectedValues();
-
-        collideModels();
-        project.projectModified();
+        undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
+                                          ! justEnteredDragMode);
     }
 
     /**
@@ -725,18 +709,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             loadedModels.get(index).setCollision(collidedModels[index]);
         }
-    }
-
-    private void snapToGround(ModelContainer modelContainer, int faceNumber)
-    {
-        if (modelContainer != null)
-        {
-            modelContainer.snapToGround(faceNumber);
-            selectedModelContainers.updateSelectedValues();
-            collideModels();
-            project.projectModified();
-        }
-        layoutSubmode.set(LayoutSubmode.SELECT);
     }
 
     public SubScene getSubScene()
@@ -979,6 +951,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
+        updateModelColour(modelContainer);
     }
 
 }

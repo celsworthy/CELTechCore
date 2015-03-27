@@ -8,10 +8,10 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
-import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import celtech.utils.gcode.representation.GCodeElement;
 import celtech.utils.gcode.representation.GCodeMeshData;
 import celtech.utils.gcode.representation.MovementType;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -49,9 +49,16 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.univariate.BrentOptimizer;
+import org.apache.commons.math3.optim.univariate.SearchInterval;
+import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
+import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 
 /**
  *
@@ -85,7 +92,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     ModelBounds originalModelBounds;
 
     private Scale transformScalePreferred;
-    private Translate transformSnapToGroundYAdjust;
+    private Translate transformPostRotationYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
     private static final Point3D X_AXIS = new Point3D(1, 0, 0);
@@ -98,11 +105,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private Group meshGroup = new Group();
 
-    static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
-    /**
-     * The index of the face that the user has requested face the bed.
-     */
-    private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
     /**
      * Property wrapper around the scale.
      */
@@ -130,13 +132,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private PhongMaterial material;
+    private File modelFile;
 
     /**
      *
      * @param name
      * @param meshToAdd
      */
-    public ModelContainer(String name, MeshView meshToAdd)
+    public ModelContainer(File modelFile, MeshView meshToAdd)
     {
         super();
         this.getChildren().add(meshGroup);
@@ -147,7 +150,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             numberOfMeshes = 1;
         }
 
-        initialise(name);
+        initialise(modelFile);
         initialiseTransforms();
     }
 
@@ -156,14 +159,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * @param name
      * @param meshes
      */
-    public ModelContainer(String name, ArrayList<MeshView> meshes)
+    public ModelContainer(File modelFile, ArrayList<MeshView> meshes)
     {
         super();
         this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
         meshGroup.getChildren().addAll(meshes);
         numberOfMeshes = meshes.size();
-        initialise(name);
+        initialise(modelFile);
         initialiseTransforms();
     }
 
@@ -173,15 +176,33 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * @param gcodeMeshData
      * @param fileLines
      */
-    public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
+    public ModelContainer(File modelFile, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
     {
         super();
         this.getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.GCODE;
         numberOfMeshes = 0;
-        initialise(name);
+        initialise(modelFile);
         initialiseTransforms();
         setUpGCodeRelated(gcodeMeshData, fileLines);
+    }
+
+    public File getModelFile()
+    {
+        return modelFile;
+    }
+
+    public Scale getTransformScale()
+    {
+        return transformScalePreferred;
+    }
+
+    /**
+     * Clear the meshes so as to free memory.
+     */
+    public void clearMeshes()
+    {
+        meshGroup.getChildren().clear();
     }
 
     public void setUseExtruder0Filament(boolean useExtruder0)
@@ -233,10 +254,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         numberOfLayers.set(gcodeMeshData1.getReferencedArrays().size());
     }
 
+    void printTransforms()
+    {
+        System.out.println("Scale preferred is " + transformScalePreferred);
+        System.out.println("Move to centre is " + transformMoveToCentre);
+        System.out.println("transformSnapToGroundYAdjust is " + transformPostRotationYAdjust);
+        System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
+        System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
+        System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
+        System.out.println("transformBedCentre " + transformBedCentre);
+
+    }
+
     private void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
-        transformSnapToGroundYAdjust = new Translate(0, 0, 0);
+        transformPostRotationYAdjust = new Translate(0, 0, 0);
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
@@ -250,7 +283,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * Rotations (which are all around the centre of the model) must be applied before any
          * translations.
          */
-        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
+        getTransforms().addAll(transformPostRotationYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
                                transformRotateTurnPreferred, transformRotateLeanPreferred,
                                transformRotateTwistPreferred
@@ -290,8 +323,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    private void initialise(String name)
+    private void initialise(File modelFile)
     {
+        this.modelFile = modelFile;
         modelId = nextModelId;
         nextModelId += 1;
         material = ApplicationMaterials.getDefaultModelMaterial();
@@ -303,7 +337,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
 
-        modelName = new SimpleStringProperty(name);
+        modelName = new SimpleStringProperty(modelFile.getName());
         selectedGCodeLine = new SimpleIntegerProperty(0);
         linesOfGCode = new SimpleIntegerProperty(0);
         currentLayer = new SimpleIntegerProperty(0);
@@ -320,7 +354,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         selectedMarkers = new HashSet<>();
 
-        this.setId(name);
+        this.setId(modelFile.getName());
     }
 
     /**
@@ -350,23 +384,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         newMeshView.setCullFace(CullFace.BACK);
         newMeshView.setId(this.getMeshView().getId());
 
-        ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
+        ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
         copy.setXScale(this.getXScale());
         copy.setYScale(this.getYScale());
         copy.setZScale(this.getZScale());
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());
-        copy.setSnapFaceIndex(snapFaceIndex);
         copy.setAssociateWithExtruderNumber(associateWithExtruderNumber.get());
         return copy;
     }
 
-    /**
-     *
-     * @param xMove
-     * @param zMove
-     */
     public void translateBy(double xMove, double zMove)
     {
 
@@ -391,11 +419,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return originalModelBounds;
     }
 
-    /**
-     *
-     * @param xPosition
-     * @param zPosition
-     */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
         double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
@@ -466,18 +489,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    /**
-     *
-     */
     public void centreObjectOnBed()
     {
         transformMoveToPreferred.setX(0);
         transformMoveToPreferred.setZ(0);
     }
 
-    /**
-     *
-     */
     public void shrinkToFitBed()
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
@@ -523,10 +540,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    /**
-     *
-     * @param hasCollided
-     */
     public void setCollision(boolean hasCollided)
     {
         this.isCollided = hasCollided;
@@ -572,19 +585,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isCollided()
     {
         return isCollided;
     }
 
-    /**
-     *
-     * @param modelName
-     */
     public void setModelName(String modelName)
     {
         this.modelName.set(modelName);
@@ -597,111 +602,86 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void setSnapFaceIndex(int snapFaceIndex)
     {
-        Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
+        Vector3D faceNormal = getFaceNormal(snapFaceIndex);
+        Vector3D downVector = new Vector3D(0, 1, 0);
 
-        this.snapFaceIndex = snapFaceIndex;
-        if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        Rotation requiredRotation = new Rotation(faceNormal, downVector);
+
+        /**
+         * get angle that Y is moved through, to give RL (lean rotation).
+         */
+        Vector3D yPrime = requiredRotation.applyTo(new Vector3D(0, -1, 0));
+        Vector3D Y = new Vector3D(0, -1, 0);
+        double leanAngle = Vector3D.angle(yPrime, Y);
+        setRotationLean(Math.toDegrees(leanAngle));
+
+        if (Math.abs(leanAngle - 180) < 0.02)
         {
-            Vector3D faceNormal = getFaceNormal(snapFaceIndex);
-            Vector3D downVector = new Vector3D(0, 1, 0);
+            // no twist required, we can stop here
+            return;
+        }
 
-            Rotation result = new Rotation(faceNormal, downVector);
-            Vector3D axis = result.getAxis();
-            double angleDegrees = result.getAngle() * RAD_TO_DEG;
+        // Calculate twist using an optimizer (typically needs less than 30 iterations in
+        // this example)
+        long start = System.nanoTime();
+        BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
+        UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(200),
+                                                           new UnivariateObjectiveFunction(
+                                                               new ApplyTwist(snapFaceIndex)),
+                                                           GoalType.MINIMIZE,
+                                                           new SearchInterval(0, 360));
+        steno.debug("optimiser took " + (int)((System.nanoTime() - start) * 10e-6) + " ms" + " and "
+            + optimizer.getEvaluations() + " evaluations");
+        setRotationTwist(pair.getPoint());
 
-            transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
-            transformRotateSnapToGround.setAngle(angleDegrees);
-            System.out.println("SNAP ANGLE " + angleDegrees);
-            System.out.println("SNAP AXIS " + axis);
-            transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
-            transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
-            transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
+        dropToBedAndUpdateLastTransformedBounds();
+    }
 
-            convertSnapToLeanAndTwist(result, faceNormal);
+    private Point3D toPoint3D(Vector3D vector)
+    {
+        return new Point3D(vector.getX(), vector.getY(), vector.getZ());
+    }
 
-            dropToBedAndUpdateLastTransformedBounds();
+    private class ApplyTwist implements UnivariateFunction
+    {
+
+        Vector3D faceNormal;
+        Vector3D faceCentre;
+
+        public ApplyTwist(int faceIndex)
+        {
+            faceNormal = getFaceNormal(faceIndex);
+            faceCentre = getFaceCentre(faceIndex);
+        }
+
+        Point3D getRotatedFaceNormal()
+        {
+            Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
+                toPoint3D(faceCentre));
+
+            Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
+                toPoint3D(faceCentre.add(faceNormal)));
+
+            Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
+            return rotatedFaceNormal;
+        }
+
+        @Override
+        public double value(double twistDegrees)
+        {
+            // This value function returns how far off the resultant rotated face normal is
+            // from the Y axis. The optimiser tries to minimise this function (i.e. align
+            // rotated face normal with Y).
+            setRotationTwist(twistDegrees);
+            Point3D rotatedFaceNormal = getRotatedFaceNormal();
+            double deviation = rotatedFaceNormal.angle(Y_AXIS);
+            return deviation;
         }
     }
 
-    private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal)
+    private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal, int snapFaceIndex)
     {
-        System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
-            + Math.toDegrees(ARS.getAngle()));
 
-        /**
-         * get angle that Y_AXIS is moved through, to give RL (lean rotation)
-         */
-        Vector3D yPrime = ARS.applyTo(new Vector3D(0, 1, 0));
-        System.out.println("y prime is " + yPrime);
-        Vector3D y = new Vector3D(Y_AXIS.getX(), Y_AXIS.getY(), Y_AXIS.getZ());
-        double leanAngle = Vector3D.angle(yPrime, y);
-        System.out.println("Lean angle:" + Math.toDegrees(leanAngle));
-        setRotationLean(Math.toDegrees(leanAngle));
-
-        /**
-         *
-         */
-        Vector3D Z_AXIS = new Vector3D(0, 0, 1);
-        Vector3D z_prime = ARS.applyTo(Z_AXIS);
-        Vector3D z_prime_in_zxplane = new Vector3D(z_prime.getX(), 0, z_prime.getZ());
-        double twistAngle = new Rotation(Z_AXIS, z_prime_in_zxplane).getAngle();
-        setRotationTwist(Math.toDegrees(twistAngle));
-
-        /**
-         * RL is Rotation for Lean, RT is Rotation for Twist, RS is Rotation for Snap
-         *
-         * RL * RT = RS => RT = inverse(RL) * RS
-         */
-//        try
-//        {
-//
-//            /**
-//             * Apply lean rotation to surface normal and then find required rotation to make it face
-//             * down. This should be a rotation around y_prime.
-//             */
-//            Rotation ARL = new Rotation(new Vector3D(0, 0, 1), leanAngle);
-//            Vector3D faceNormalPrime = ARL.applyTo(faceNormal);
-//
-//            Rotation twistReqd = new Rotation(faceNormalPrime, new Vector3D(0, -1, 0));
-//            double twistAngle = Math.toDegrees(twistReqd.getAngle());
-//
-//            System.out.println("Twist is " + twistReqd.getAxis() + " " + twistAngle);
-//
-//            setRotationTwist(twistAngle);
-        // Lean is a rotation about Z
-//            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
-//            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
-//                + Math.toDegrees(ARLinverse.getAngle()));
-//            Vector3D yPrimeProjectedOntoXZ = new Vector3D(Y_AXIS_PRIME.getX(), 0,
-//                                                          Y_AXIS_PRIME.getZ());
-//            Vector3D x = new Vector3D(X_AXIS.getX(), X_AXIS.getY(), X_AXIS.getZ());
-//            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, x);
-//            setRotationTurn(Math.toDegrees(turnAngle));
-//
-//            System.out.println("TURN ANGLE: " + Math.toDegrees(turnAngle));
-//
-//            // Turn is a rotation about Y
-//            Rotation ARTNinverse = new Rotation(new Vector3D(0, 1, 0), -turnAngle);
-//
-//            Rotation ART = ARS.applyTo(ARLinverse).applyTo(ARTNinverse);
-////        Rotation ART = ARTNinverse.applyTo(ARLinverse).applyTo(ARS);
-//            System.out.println("TWIST ANGLE: " + Math.toDegrees(ART.getAngle()));
-//            System.out.println("TWIST AXIS: " + ART.getAxis());
-//
-//            
-//            // see if twist axis aligns as expected (along y prime, the new model top-bottom axis)
-//            double twistAxisMisAlign = Math.toDegrees(Math.acos(ART.getAxis().dotProduct(yPrime)));
-//            System.out.println("Twist axis misalign is " + twistAxisMisAlign);
-//            double twistAngle = Math.toDegrees(0);
-//            if (ART.getAxis().getZ() < 0)
-//            {
-//                twistAngle += 180;
-//            }
-//            setRotationTwist(twistAngle);
-//        } catch (Exception ex)
-//        {
-//            ex.printStackTrace();
-//        }
     }
 
     private void updateScaleTransform()
@@ -908,7 +888,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(transformMoveToPreferred.getZ());
         out.writeDouble(getXScale());
         out.writeDouble(getRotationTwist());
-        out.writeInt(snapFaceIndex);
+        // not used (was snapFaceIndex)
+        out.writeInt(0);
         out.writeInt(associateWithExtruderNumber.get());
         out.writeDouble(getYScale());
         out.writeDouble(getZScale());
@@ -954,13 +935,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshGroup.getChildren().add(newMesh);
         }
 
-        initialise(modelName);
+        initialise(new File(modelName));
 
         double storedX = in.readDouble();
         double storedZ = in.readDouble();
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
-        int storedSnapFaceIndex = in.readInt();
+        int notUsed = in.readInt();
 
         double storedScaleY = 1d;
         double storedScaleZ = 1d;
@@ -986,13 +967,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationLean(storedRotationLean);
         setRotationTwist(storedRotationTwist);
         setRotationTurn(storedRotationTurn);
-        if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
-        {
-            snapToGround(storedSnapFaceIndex);
-        } else
-        {
-            snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
-        }
 
         notifyShapeChange();
     }
@@ -1538,7 +1512,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshView.setCullFace(CullFace.BACK);
             meshView.setId(getId() + "-" + binCounter);
 
-            ModelContainer modelContainer = new ModelContainer(getModelName(), meshView);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
 
             outputMeshes.add(modelContainer);
         }
@@ -1607,7 +1581,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Return the face normal for the face of the given index.
      *
      */
-    private Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
+    Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
     {
         MeshView meshView = getMeshView();
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
@@ -1626,6 +1600,24 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return currentVectorNormalised;
     }
 
+    Vector3D getFaceCentre(int faceNumber)
+    {
+        MeshView meshView = getMeshView();
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+        int baseFaceIndex = faceNumber * 6;
+        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
+        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
+        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
+        ObservableFloatArray points = triMesh.getPoints();
+        Vector3D v1 = convertToVector3D(points, v1PointIndex);
+        Vector3D v2 = convertToVector3D(points, v2PointIndex);
+        Vector3D v3 = convertToVector3D(points, v3PointIndex);
+
+        return new Vector3D((v1.getX() + v2.getX() + v3.getX()) / 3.0d,
+                            (v1.getY() + v2.getY() + v3.getY()) / 3.0d,
+                            (v1.getZ() + v2.getZ() + v3.getZ()) / 3.0d);
+    }
+
     private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
     {
         Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
@@ -1641,9 +1633,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void dropToBedAndUpdateLastTransformedBounds()
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
-        transformSnapToGroundYAdjust.setY(0);
+        transformPostRotationYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInParent();
-        transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
+        transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
         lastTransformedBounds = calculateBoundsInParent();
     }
 
@@ -1765,11 +1757,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    public double getPreferredScale()
-    {
-        return preferredXScale.get();
-    }
-
     /**
      * @param preferredScale the preferredScale to set
      */
@@ -1782,28 +1769,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public DoubleProperty preferredScaleProperty()
     {
         return preferredXScale;
-    }
-
-    /**
-     * @return the preferredYRotation
-     */
-    public double getPreferredRotationY()
-    {
-        return preferredRotationTwist.get();
-    }
-
-    /**
-     * @param preferredYRotation the preferredYRotation to set
-     */
-    public void setPreferredRotationY(double preferredYRotation)
-    {
-        this.preferredRotationTwist.set(preferredYRotation);
-        setRotationTwist(preferredYRotation);
-    }
-
-    public DoubleProperty preferredRotationYProperty()
-    {
-        return preferredRotationTwist;
     }
 
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
@@ -1856,6 +1821,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
+    public void addChildNodes(ObservableList<Node> nodes)
+    {
+        meshGroup.getChildren().addAll(nodes);
+    }
+
+    public ObservableList<Node> getMeshGroupChildren()
+    {
+        return meshGroup.getChildren();
+    }
+
+    /**
+     * State captures the state of all the transforms being applied to this ModelContainer. It is
+     * used as an efficient way of applying Undo and Redo to changes to a Set of ModelContainers.
+     */
     public class State
     {
 
@@ -1883,6 +1862,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.preferredRotationTwist = preferredRotationTwist;
             this.preferredRotationTurn = preferredRotationTurn;
             this.preferredRotationLean = preferredRotationLean;
+        }
+
+        /**
+         * The assignment operator.
+         */
+        public void assignFrom(State fromState)
+        {
+            this.x = fromState.x;
+            this.z = fromState.z;
+            this.preferredXScale = fromState.preferredXScale;
+            this.preferredYScale = fromState.preferredYScale;
+            this.preferredZScale = fromState.preferredZScale;
+            this.preferredRotationTwist = fromState.preferredRotationTwist;
+            this.preferredRotationTurn = fromState.preferredRotationTurn;
+            this.preferredRotationLean = fromState.preferredRotationLean;
         }
 
     }

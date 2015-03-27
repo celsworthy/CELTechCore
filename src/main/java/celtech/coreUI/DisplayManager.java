@@ -6,6 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
@@ -30,8 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -119,7 +118,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private DisplayManager()
     {
-        steno.debug("Starting AutoMaker - intialising display manager...");
+        steno.debug("Starting AutoMaker - initialising display manager...");
         switch (ApplicationConfiguration.getMachineType())
         {
             case LINUX_X64:
@@ -158,7 +157,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             List<File> fileToLoad = new ArrayList<>();
             fileToLoad.add(firstUsePrintFile);
             ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, fileToLoad, true, false);
+            loader.loadExternalModels(newProject, fileToLoad, false);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                                                    tabDisplay.heightProperty());
@@ -667,6 +666,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             if (currentTab instanceof ProjectTab)
             {
                 Project project = Lookup.getSelectedProjectProperty().get();
+                UndoableProject undoableProject = new UndoableProject(project);
                 switch (event.getCode())
                 {
                     case DELETE:
@@ -674,7 +674,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         Set<ModelContainer> selectedModels
                             = Lookup.getProjectGUIState(project).getSelectedModelContainers().
                             getSelectedModelsSnapshot();
-                        project.deleteModels(selectedModels);
+                        undoableProject.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())
