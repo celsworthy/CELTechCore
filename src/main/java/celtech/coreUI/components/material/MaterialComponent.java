@@ -53,7 +53,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private final static String UNKNOWN = Lookup.i18n("materialComponent.unknown");
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
-    private Project project;
     private UndoableProject undoableProject;
 
     public enum ReelType
@@ -213,7 +212,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
      */
     public void setLayoutProject(Project project)
     {
-        this.project = project;
         if (project != null)
         {
             this.undoableProject = new UndoableProject(project);

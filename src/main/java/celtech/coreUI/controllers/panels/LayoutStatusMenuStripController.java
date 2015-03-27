@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
 import celtech.appManager.PurgeResponse;
+import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
@@ -34,6 +35,8 @@ import java.io.File;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -274,6 +277,38 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
 
         return files;
+    }
+
+    @FXML
+    void undo(ActionEvent event)
+    {
+        CommandStack commandStack = Lookup.getProjectGUIState(selectedProject).getCommandStack();
+        if (commandStack.getCanUndo().get())
+        {
+            try
+            {
+                commandStack.undo();
+            } catch (CommandStack.UndoException ex)
+            {
+                steno.error("Unable to undo: " + ex);
+            }
+        }
+    }
+
+    @FXML
+    void redo(ActionEvent event)
+    {
+        CommandStack commandStack = Lookup.getProjectGUIState(selectedProject).getCommandStack();
+        if (commandStack.getCanRedo().get())
+        {
+            try
+            {
+                commandStack.redo();
+            } catch (CommandStack.UndoException ex)
+            {
+                steno.error("Unable to redo: " + ex);
+            }
+        }
     }
 
     @FXML
