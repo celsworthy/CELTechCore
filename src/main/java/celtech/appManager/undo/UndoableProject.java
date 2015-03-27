@@ -158,6 +158,22 @@ public class UndoableProject
             project.translateModelsBy(modelContainers, x, z);
         }, canMerge);
     }
+    
+    public void autoLayout()
+    {
+        doTransformCommand(() ->
+        {
+            project.autoLayout();
+        });
+    }  
+    
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    {
+        doTransformCommand(() ->
+        {
+            project.snapToGround(modelContainer, faceNumber);
+        });
+    }    
 
     public void addModel(ModelContainer modelContainer)
     {

@@ -300,7 +300,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void autoLayoutModels(ActionEvent event)
     {
-        selectedProject.autoLayout();
+        undoableSelectedProject.autoLayout();
     }
 
     @FXML

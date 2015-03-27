@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -46,10 +44,8 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
-import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -61,7 +57,6 @@ import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.univariate.BrentOptimizer;
 import org.apache.commons.math3.optim.univariate.SearchInterval;
-import org.apache.commons.math3.optim.univariate.SimpleUnivariateValueChecker;
 import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
 import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 
@@ -97,7 +92,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     ModelBounds originalModelBounds;
 
     private Scale transformScalePreferred;
-    private Translate transformSnapToGroundYAdjust;
+    private Translate transformPostRotationYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
     private static final Point3D X_AXIS = new Point3D(1, 0, 0);
@@ -138,7 +133,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private PhongMaterial material;
     private File modelFile;
-    private String modelPath;
 
     /**
      *
@@ -264,7 +258,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         System.out.println("Scale preferred is " + transformScalePreferred);
         System.out.println("Move to centre is " + transformMoveToCentre);
-        System.out.println("transformSnapToGroundYAdjust is " + transformSnapToGroundYAdjust);
+        System.out.println("transformSnapToGroundYAdjust is " + transformPostRotationYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
         System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
         System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
@@ -275,7 +269,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
-        transformSnapToGroundYAdjust = new Translate(0, 0, 0);
+        transformPostRotationYAdjust = new Translate(0, 0, 0);
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
@@ -289,7 +283,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * Rotations (which are all around the centre of the model) must be applied before any
          * translations.
          */
-        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
+        getTransforms().addAll(transformPostRotationYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
                                transformRotateTurnPreferred, transformRotateLeanPreferred,
                                transformRotateTwistPreferred
@@ -332,7 +326,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void initialise(File modelFile)
     {
         this.modelFile = modelFile;
-        modelPath = modelFile.getAbsolutePath();
         modelId = nextModelId;
         nextModelId += 1;
         material = ApplicationMaterials.getDefaultModelMaterial();
@@ -402,11 +395,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return copy;
     }
 
-    /**
-     *
-     * @param xMove
-     * @param zMove
-     */
     public void translateBy(double xMove, double zMove)
     {
 
@@ -431,11 +419,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return originalModelBounds;
     }
 
-    /**
-     *
-     * @param xPosition
-     * @param zPosition
-     */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
         double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
@@ -506,18 +489,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    /**
-     *
-     */
     public void centreObjectOnBed()
     {
         transformMoveToPreferred.setX(0);
         transformMoveToPreferred.setZ(0);
     }
 
-    /**
-     *
-     */
     public void shrinkToFitBed()
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
@@ -563,10 +540,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    /**
-     *
-     * @param hasCollided
-     */
     public void setCollision(boolean hasCollided)
     {
         this.isCollided = hasCollided;
@@ -648,16 +621,16 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             return;
         }
 
-            // Calculate twist using an optimizer (typically needs around 30 - 35 iterations in
+        // Calculate twist using an optimizer (typically needs less than 30 iterations in
         // this example)
-        double start = System.nanoTime();
+        long start = System.nanoTime();
         BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
         UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(200),
                                                            new UnivariateObjectiveFunction(
                                                                new ApplyTwist(snapFaceIndex)),
                                                            GoalType.MINIMIZE,
                                                            new SearchInterval(0, 360));
-        steno.debug("optimiser took " + (System.nanoTime() - start) * 10e-6 + " ms" + " and "
+        steno.debug("optimiser took " + (int)((System.nanoTime() - start) * 10e-6) + " ms" + " and "
             + optimizer.getEvaluations() + " evaluations");
         setRotationTwist(pair.getPoint());
 
@@ -1660,9 +1633,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void dropToBedAndUpdateLastTransformedBounds()
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
-        transformSnapToGroundYAdjust.setY(0);
+        transformPostRotationYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInParent();
-        transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
+        transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
         lastTransformedBounds = calculateBoundsInParent();
     }
 

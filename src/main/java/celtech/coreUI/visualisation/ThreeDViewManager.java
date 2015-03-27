@@ -326,9 +326,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (modelContainer != null)
         {
             int faceNumber = pickResult.getIntersectedFace();
-            snapToGround(modelContainer, faceNumber);
-            collideModels();
-            project.projectModified();
+            undoableProject.snapToGround(modelContainer, faceNumber);
+            modelContainer.snapToGround(faceNumber);
+            layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -709,18 +709,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             loadedModels.get(index).setCollision(collidedModels[index]);
         }
-    }
-
-    private void snapToGround(ModelContainer modelContainer, int faceNumber)
-    {
-        if (modelContainer != null)
-        {
-            modelContainer.snapToGround(faceNumber);
-            selectedModelContainers.updateSelectedValues();
-            collideModels();
-            project.projectModified();
-        }
-        layoutSubmode.set(LayoutSubmode.SELECT);
     }
 
     public SubScene getSubScene()

@@ -49,7 +49,7 @@ public class Project implements Serializable
 
     private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
         "RBX-ABS-GR499");
-    
+
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -681,6 +681,15 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    {
+        modelContainer.snapToGround(faceNumber);
+        projectModified();
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(modelContainer);
+        fireWhenModelsTransformed(modelContainers);
+    }
+
     public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
     {
         for (ModelContainer model : modelContainers)
@@ -768,12 +777,12 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
         modelContainer.setUseExtruder0Filament(useExtruder0);
         projectModified();
-    }    
+    }
 
     public Set<ModelContainer.State> getModelStates()
     {
