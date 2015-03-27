@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
+import celtech.appManager.undo.CommandStack;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
@@ -101,7 +102,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      * Project loading
      */
     private ProjectLoader projectLoader = null;
-    private ProgressDialog modelLoadDialog = null;   
+    private ProgressDialog modelLoadDialog = null;
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
 
@@ -116,7 +117,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private DisplayManager()
     {
-        steno.debug("Starting AutoMaker - intialising display manager...");
+        steno.debug("Starting AutoMaker - initialising display manager...");
         switch (ApplicationConfiguration.getMachineType())
         {
             case LINUX_X64:
@@ -683,6 +684,38 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                                 selectionModel.addModelContainer(modelContainer);
                             }
                         }
+                    case Z:
+                        if (event.isControlDown())
+                        {
+                            CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
+                            if (commandStack.getCanUndo().get())
+                            {
+                                try
+                                {
+                                    commandStack.undo();
+                                } catch (CommandStack.UndoException ex)
+                                {
+                                    steno.debug("cannot undo " + ex);
+                                }
+                            }
+                        }
+                        break;
+                    case Y:
+                        if (event.isControlDown())
+                        {
+                            CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
+                            if (commandStack.getCanRedo().get())
+                            {
+                                try
+                                {
+                                    commandStack.redo();
+                                } catch (CommandStack.UndoException ex)
+                                {
+                                    steno.debug("cannot undo " + ex);
+                                }
+                            }
+                        }       
+                        break;
                     default:
                         break;
                 }

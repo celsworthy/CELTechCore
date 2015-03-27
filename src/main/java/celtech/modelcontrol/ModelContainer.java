@@ -67,6 +67,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 {
 
     private static final long serialVersionUID = 1L;
+    private static int nextModelId = 0;
+    private int modelId;
     private Stenographer steno = null;
     private PrintBed printBed = null;
     private boolean isCollided = false;
@@ -297,6 +299,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void initialise(String name)
     {
+        modelId = nextModelId;
+        nextModelId += 1;
         material = ApplicationMaterials.getDefaultModelMaterial();
         associateWithExtruderNumber.set(0);
         shapeChangeListeners = new ArrayList<>();
@@ -632,8 +636,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal)
     {
         System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
-            + Math.toDegrees(
-                ARS.getAngle()));
+            + Math.toDegrees(ARS.getAngle()));
 
         /**
          * get angle that Y_AXIS is moved through, to give RL (lean rotation)
@@ -646,7 +649,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationLean(Math.toDegrees(leanAngle));
 
         /**
-         * get angle that Z_AXIS is moved through in ZX plane, to get twist
+         *
          */
         Vector3D Z_AXIS = new Vector3D(0, 0, 1);
         Vector3D z_prime = ARS.applyTo(Z_AXIS);
@@ -1966,5 +1969,78 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void cameraViewOfYouHasChanged()
     {
         notifyScreenExtentsChange();
+    }
+    
+    public class State
+    {
+
+        public int modelId;
+        public double x;
+        public double z;
+        public double preferredXScale;
+        public double preferredYScale;
+        public double preferredZScale;
+        public double preferredRotationTwist;
+        public double preferredRotationTurn;
+        public double preferredRotationLean;
+
+        public State(int modelId, double x, double z,
+            double preferredXScale, double preferredYScale, double preferredZScale,
+            double preferredRotationTwist, double preferredRotationTurn,
+            double preferredRotationLean)
+        {
+            this.modelId = modelId;
+            this.x = x;
+            this.z = z;
+            this.preferredXScale = preferredXScale;
+            this.preferredYScale = preferredYScale;
+            this.preferredZScale = preferredZScale;
+            this.preferredRotationTwist = preferredRotationTwist;
+            this.preferredRotationTurn = preferredRotationTurn;
+            this.preferredRotationLean = preferredRotationLean;
+        }
+
+        /**
+         * The assignment operator.
+         */
+        public void assignFrom(State fromState)
+        {
+            this.x = fromState.x;
+            this.z = fromState.z;
+            this.preferredXScale = fromState.preferredXScale;
+            this.preferredYScale = fromState.preferredYScale;
+            this.preferredZScale = fromState.preferredZScale;
+            this.preferredRotationTwist = fromState.preferredRotationTwist;
+            this.preferredRotationTurn = fromState.preferredRotationTurn;
+            this.preferredRotationLean = fromState.preferredRotationLean;
+        }
+
+    }
+
+    public State getState()
+    {
+        return new State(modelId,
+                         transformMoveToPreferred.getX(),
+                         transformMoveToPreferred.getZ(),
+                         preferredXScale.get(), preferredYScale.get(), preferredZScale.get(),
+                         preferredRotationTwist.get(), preferredRotationTurn.get(),
+                         preferredRotationLean.get());
+    }
+
+    public void setState(State state)
+    {
+        transformMoveToPreferred.setX(state.x);
+        transformMoveToPreferred.setZ(state.z);
+        setXScale(state.preferredXScale);
+        setYScale(state.preferredYScale);
+        setZScale(state.preferredZScale);
+        setRotationLean(state.preferredRotationLean);
+        setRotationTwist(state.preferredRotationTwist);
+        setRotationTurn(state.preferredRotationTurn);
+    }
+
+    public int getModelId()
+    {
+        return modelId;
     }
 }

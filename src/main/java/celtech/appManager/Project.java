@@ -548,8 +548,8 @@ public class Project implements Serializable
 
     /**
      * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
-     * ratio is not an absolute figure to be applied to the models but a ratio to be applied 
-     * to the current scale.
+     * ratio is not an absolute figure to be applied to the models but a ratio to be applied to the
+     * current scale.
      */
     public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
     {
@@ -569,12 +569,9 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert(modelContainers.size() == 1);
+            assert (modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
-            System.out.println("current scale " + model.getXScale() + " " + model.getYScale() +
-                " " + model.getZScale());
             double ratio = newScale / model.getXScale();
-            System.out.println("ScaleX: Preserve AR ratio is " + ratio);
             scaleXYZRatioSelection(modelContainers, ratio);
         } else
         {
@@ -595,7 +592,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert(modelContainers.size() == 1);
+            assert (modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getYScale();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -618,7 +615,7 @@ public class Project implements Serializable
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert(modelContainers.size() == 1);
+            assert (modelContainers.size() == 1);
             ModelContainer model = modelContainers.iterator().next();
             double ratio = newScale / model.getZScale();
             scaleXYZRatioSelection(modelContainers, ratio);
@@ -717,6 +714,18 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
+    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateBy(x, z);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
     private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -751,6 +760,34 @@ public class Project implements Serializable
         {
             {
                 model.translateZTo(z);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
+    public Set<ModelContainer.State> getModelStates()
+    {
+        Set<ModelContainer.State> modelStates = new HashSet<>();
+        for (ModelContainer model : loadedModels)
+        {
+            modelStates.add(model.getState());
+        }
+        return modelStates;
+    }
+
+    public void setModelStates(Set<ModelContainer.State> modelStates)
+    {
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        for (ModelContainer.State modelState : modelStates)
+        {
+            for (ModelContainer model : loadedModels)
+            {
+                if (model.getModelId() == modelState.modelId)
+                {
+                    model.setState(modelState);
+                    modelContainers.add(model);
+                }
             }
         }
         projectModified();

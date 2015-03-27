@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.Filament;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -16,8 +17,6 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -51,7 +50,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private Stenographer steno = StenographerFactory.getStenographer(
         LayoutSidePanelController.class.getName());
-    private Project boundProject = null;
+    private Project boundProject;
+    private UndoableProject undoableProject;
 
     @FXML
     private RestrictedNumberField widthTextField;
@@ -447,7 +447,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 case TAB:
                     try
                     {
-                        boundProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
+                        undoableProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
                                                       rotationXTextField.getAsDouble());
                     } catch (ParseException ex)
                     {
@@ -474,7 +474,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 case TAB:
                     try
                     {
-                        boundProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
+                        undoableProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
                                                        rotationYTextField.getAsDouble());
                     } catch (ParseException ex)
                     {
@@ -501,7 +501,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 case TAB:
                     try
                     {
-                        boundProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
+                        undoableProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
                                                       rotationZTextField.getAsDouble());
                     } catch (ParseException ex)
                     {
@@ -577,34 +577,24 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             }
         });
 
-        xAxisTextField.setOnKeyPressed(
-            (KeyEvent t) ->
+        xAxisTextField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
             {
-                switch (t.getCode())
-                {
-                    case ENTER:
-                    case TAB:
-                        try
-                        {
-                            boundProject.translateModelsXTo(
-                                selectionModel.getSelectedModelsSnapshot(),
-                                xAxisTextField.getAsDouble());
-                        } catch (ParseException ex)
-                        {
-                            steno.error("Error parsing x translate string " + ex
-                                + " : " + ex.getMessage());
-                        }
-                        break;
-                    case DECIMAL:
-                    case BACK_SPACE:
-                    case LEFT:
-                    case RIGHT:
-                        break;
-                    default:
-                        t.consume();
-                        break;
-                }
-            });
+                case ENTER:
+                case TAB:
+                    updateX();
+                    break;
+                case DECIMAL:
+                case BACK_SPACE:
+                case LEFT:
+                case RIGHT:
+                    break;
+                default:
+                    t.consume();
+                    break;
+            }
+        });
 
         yAxisTextField.setOnKeyPressed((KeyEvent t) ->
         {
@@ -612,15 +602,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 case ENTER:
                 case TAB:
-                    try
-                    {
-                        boundProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(),
-                                                        yAxisTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.error("Error parsing y translate string "
-                            + ex + " : " + ex.getMessage());
-                    }
+                    updateZ();
                     break;
                 case DECIMAL:
                 case BACK_SPACE:
@@ -634,6 +616,31 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         });
     }
 
+    private void updateZ()
+    {
+        try
+        {
+            double newZ = yAxisTextField.getAsDouble();
+            undoableProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newZ);
+        } catch (ParseException ex)
+        {
+            steno.error("Error parsing y translate string " + ex + " : " + ex.getMessage());
+        }
+    }
+
+    private void updateX()
+    {
+        try
+        {
+            double newX = xAxisTextField.getAsDouble();
+            undoableProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
+
+        } catch (ParseException ex)
+        {
+            steno.error("Error parsing x translate string " + ex + " : " + ex.getMessage());
+        }
+    }
+
     private void updateDepth()
     {
         try
@@ -642,11 +649,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 ModelContainer modelContainer = getSingleSelection();
                 double ratio = depthTextField.getAsDouble() / modelContainer.getScaledDepth();
-                boundProject.scaleXYZRatioSelection(
+
+                undoableProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(), ratio);
+
             } else
             {
-                boundProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
                                                depthTextField.getAsDouble());
             }
         } catch (ParseException ex)
@@ -663,11 +672,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 ModelContainer modelContainer = getSingleSelection();
                 double ratio = heightTextField.getAsDouble() / modelContainer.getScaledHeight();
-                boundProject.scaleXYZRatioSelection(
+                undoableProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(), ratio);
             } else
             {
-                boundProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
                                                 heightTextField.getAsDouble());
             }
         } catch (ParseException ex)
@@ -684,11 +693,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 ModelContainer modelContainer = getSingleSelection();
                 double ratio = widthTextField.getAsDouble() / modelContainer.getScaledWidth();
-                boundProject.scaleXYZRatioSelection(
+                undoableProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(), ratio);
             } else
             {
-                boundProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
                                                widthTextField.getAsDouble());
             }
         } catch (ParseException ex)
@@ -713,13 +722,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 double ratio = scaleFactor / lastScaleRatio;
                 lastScaleRatio = scaleFactor;
-                boundProject.scaleXYZRatioSelection(
+                undoableProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(),
                     ratio);
                 showScaleForXYZ(lastScaleRatio);
             } else
             {
-                boundProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
                                           scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
@@ -737,13 +746,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 double ratio = scaleFactor / lastScaleRatio;
                 lastScaleRatio = scaleFactor;
-                boundProject.scaleXYZRatioSelection(
+                undoableProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(),
                     ratio);
                 showScaleForXYZ(lastScaleRatio);
             } else
             {
-                boundProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
                                           scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
@@ -761,13 +770,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 double ratio = scaleFactor / lastScaleRatio;
                 lastScaleRatio = scaleFactor;
-                boundProject.scaleXYZRatioSelection(
+                undoableProject.scaleXYZRatioSelection(
                     selectionModel.getSelectedModelsSnapshot(),
                     ratio);
                 showScaleForXYZ(lastScaleRatio);
             } else
             {
-                boundProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
                                           scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
@@ -870,8 +879,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+//        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+//        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
@@ -912,6 +921,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             unbindProject(boundProject);
         }
         boundProject = project;
+        undoableProject = new UndoableProject(project);
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
