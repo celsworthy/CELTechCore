@@ -35,8 +35,6 @@ import java.io.File;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -75,6 +73,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
 
     private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
+
+    @FXML
+    private GraphicButtonWithLabel undoButton;
+    
+    @FXML
+    private GraphicButtonWithLabel redoButton;    
 
     @FXML
     private GraphicButtonWithLabel backwardFromSettingsButton;
@@ -859,6 +863,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printerSettings.selectedPrinterProperty().removeListener(printerSettingsListener);
         layoutSubmode.removeListener(layoutSubmodeListener);
         project.removeProjectChangesListener(projectChangesListener);
+        undoButton.disableProperty().unbind();
+        redoButton.disableProperty().unbind();
     }
 
     private void bindProject(Project project)
@@ -873,6 +879,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         layoutSubmode.addListener(layoutSubmodeListener);
         project.addProjectChangesListener(projectChangesListener);
+        
+        undoButton.disableProperty().bind(Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
+        redoButton.disableProperty().bind(Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
 
     }
 
