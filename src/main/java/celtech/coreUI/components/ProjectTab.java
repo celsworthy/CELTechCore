@@ -183,11 +183,10 @@ public class ProjectTab extends Tab
                             {
                                 boolean extensionFound = false;
                                 for (String extension : ApplicationConfiguration.
-                                    getSupportedFileExtensions(
-                                        ProjectMode.MESH))
+                                    getSupportedFileExtensions(ProjectMode.MESH))
                                 {
-                                    if (file.getName().toUpperCase().endsWith(
-                                        extension.toUpperCase()))
+                                    if (file.getName().toUpperCase().endsWith(extension.
+                                        toUpperCase()))
                                     {
                                         extensionFound = true;
                                         break;
@@ -204,12 +203,11 @@ public class ProjectTab extends Tab
                             if (accept)
                             {
                                 event.acceptTransferModes(TransferMode.COPY);
+                                event.consume();
                             }
                         }
                     }
                 }
-
-                event.consume();
             }
         });
 
@@ -233,8 +231,7 @@ public class ProjectTab extends Tab
                             {
                                 boolean extensionFound = false;
                                 for (String extension : ApplicationConfiguration.
-                                    getSupportedFileExtensions(
-                                        ProjectMode.MESH))
+                                    getSupportedFileExtensions(ProjectMode.MESH))
                                 {
                                     if (file.getName().endsWith(extension))
                                     {
@@ -253,11 +250,11 @@ public class ProjectTab extends Tab
                             if (accept)
                             {
                                 basePane.setEffect(new Glow());
+                                event.consume();
                             }
                         }
                     }
                 }
-                event.consume();
             }
         });
 
@@ -272,29 +269,23 @@ public class ProjectTab extends Tab
             }
         });
 
-        basePane.setOnDragDropped(new EventHandler<DragEvent>()
+        basePane.setOnDragDropped((DragEvent event) ->
         {
-            @Override
-            public void handle(DragEvent event)
+            boolean success = false;
+            if (event.getGestureTarget() == basePane)
             {
-                /* data dropped */
-                steno.debug("onDragDropped");
-                /* if there is a string data on dragboard, read it and use it */
                 Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasFiles())
-                {
-                    modelLoader.loadExternalModels(project, db.getFiles(), true);
-                } else
-                {
-                    steno.error("No files in dragboard");
-                }
-                /* let the source know whether the string was successfully
-                 * transferred and used */
-                event.setDropCompleted(success);
-
-                event.consume();
+                modelLoader.loadExternalModels(project, db.getFiles(), true);
+                success = true;
+            } else
+            {
+                steno.error("No files in dragboard");
             }
+            /* let the source know whether the string was successfully
+            * transferred and used */
+            event.setDropCompleted(success);
+            
+            event.consume();
         });
     }
 
