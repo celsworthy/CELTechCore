@@ -53,9 +53,17 @@ import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.univariate.BrentOptimizer;
+import org.apache.commons.math3.optim.univariate.SearchInterval;
+import org.apache.commons.math3.optim.univariate.SimpleUnivariateValueChecker;
+import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
+import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 
 /**
  *
@@ -102,11 +110,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private Group meshGroup = new Group();
 
-    static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
-    /**
-     * The index of the face that the user has requested face the bed.
-     */
-    private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
     /**
      * Property wrapper around the scale.
      */
@@ -395,7 +398,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());
-        copy.setSnapFaceIndex(snapFaceIndex);
         copy.setAssociateWithExtruderNumber(associateWithExtruderNumber.get());
         return copy;
     }
@@ -610,19 +612,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isCollided()
     {
         return isCollided;
     }
 
-    /**
-     *
-     * @param modelName
-     */
     public void setModelName(String modelName)
     {
         this.modelName.set(modelName);
@@ -633,35 +627,41 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelName.get();
     }
 
-    Rotate transformRotateSnapToGround = new Rotate(0, 0, 0);
-
     public void setSnapFaceIndex(int snapFaceIndex)
     {
-        transformRotateSnapToGround = new Rotate(0, 0, 0);
+        Vector3D faceNormal = getFaceNormal(snapFaceIndex);
+        Vector3D downVector = new Vector3D(0, 1, 0);
 
-        this.snapFaceIndex = snapFaceIndex;
-        System.out.println("face index is " + snapFaceIndex);
-        if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        Rotation requiredRotation = new Rotation(faceNormal, downVector);
+
+        /**
+         * get angle that Y is moved through, to give RL (lean rotation).
+         */
+        Vector3D yPrime = requiredRotation.applyTo(new Vector3D(0, -1, 0));
+        Vector3D Y = new Vector3D(0, -1, 0);
+        double leanAngle = Vector3D.angle(yPrime, Y);
+        setRotationLean(Math.toDegrees(leanAngle));
+
+        if (Math.abs(leanAngle - 180) < 0.02)
         {
-            Vector3D faceNormal = getFaceNormal(snapFaceIndex);
-            Vector3D downVector = new Vector3D(0, 1, 0);
-
-            Rotation requiredRotation = new Rotation(faceNormal, downVector);
-            Vector3D axis = requiredRotation.getAxis();
-            double angleDegrees = Math.toDegrees(requiredRotation.getAngle());
-
-            transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
-            transformRotateSnapToGround.setAngle(angleDegrees);
-            System.out.println("SNAP ANGLE " + angleDegrees);
-            System.out.println("SNAP AXIS " + axis);
-            transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
-            transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
-            transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
-
-            convertSnapToLeanAndTwist(requiredRotation, faceNormal, snapFaceIndex);
-
-            dropToBedAndUpdateLastTransformedBounds();
+            // no twist required, we can stop here
+            return;
         }
+
+            // Calculate twist using an optimizer (typically needs around 30 - 35 iterations in
+        // this example)
+        double start = System.nanoTime();
+        BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
+        UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(200),
+                                                           new UnivariateObjectiveFunction(
+                                                               new ApplyTwist(snapFaceIndex)),
+                                                           GoalType.MINIMIZE,
+                                                           new SearchInterval(0, 360));
+        steno.debug("optimiser took " + (System.nanoTime() - start) * 10e-6 + " ms" + " and "
+            + optimizer.getEvaluations() + " evaluations");
+        setRotationTwist(pair.getPoint());
+
+        dropToBedAndUpdateLastTransformedBounds();
     }
 
     private Point3D toPoint3D(Vector3D vector)
@@ -669,139 +669,46 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
     }
 
-    Point3D getRotatedFaceNormal(int faceIndex)
+    private class ApplyTwist implements UnivariateFunction
     {
-        Vector3D faceNormal = getFaceNormal(faceIndex);
-        Vector3D faceCentre = getFaceCentre(faceIndex);
 
-        Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
-            toPoint3D(faceCentre));
+        Vector3D faceNormal;
+        Vector3D faceCentre;
 
-        Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
-            toPoint3D(faceCentre.add(faceNormal)));
+        public ApplyTwist(int faceIndex)
+        {
+            faceNormal = getFaceNormal(faceIndex);
+            faceCentre = getFaceCentre(faceIndex);
+        }
 
-        Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
-        return rotatedFaceNormal;
+        Point3D getRotatedFaceNormal()
+        {
+            Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
+                toPoint3D(faceCentre));
+
+            Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
+                toPoint3D(faceCentre.add(faceNormal)));
+
+            Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
+            return rotatedFaceNormal;
+        }
+
+        @Override
+        public double value(double twistDegrees)
+        {
+            // This value function returns how far off the resultant rotated face normal is
+            // from the Y axis. The optimiser tries to minimise this function (i.e. align
+            // rotated face normal with Y).
+            setRotationTwist(twistDegrees);
+            Point3D rotatedFaceNormal = getRotatedFaceNormal();
+            double deviation = rotatedFaceNormal.angle(Y_AXIS);
+            return deviation;
+        }
     }
 
     private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal, int snapFaceIndex)
     {
-        try
-        {
-            System.out.println("Snap to ground ARS axis, angle " + ARS.getAxis() + " "
-                + Math.toDegrees(ARS.getAngle()));
 
-            /**
-             * get angle that Y is moved through, to give RL (lean rotation).
-             */
-            Vector3D yPrime = ARS.applyTo(new Vector3D(0, -1, 0));
-            System.out.println("y prime is " + yPrime);
-            Vector3D Y = new Vector3D(0, -1, 0);
-            double leanAngle = Vector3D.angle(yPrime, Y);
-            System.out.println("Lean angle:" + Math.toDegrees(leanAngle));
-            setRotationLean(Math.toDegrees(leanAngle));
-            
-            if (Math.abs(leanAngle - 180) < 0.05) {
-                return;
-            }
-
-            /**
-             * Get angle that Y' projected on XZ is rotated around Y, to give RTN (turn rotation).
-             */
-            Vector3D yPrimeProjectedOntoXZ = new Vector3D(yPrime.getX(), 0,
-                                                          yPrime.getZ());
-            Vector3D X = new Vector3D(1, 0, 0);
-            double turnAngle = Vector3D.angle(yPrimeProjectedOntoXZ, X);
-            System.out.println("Turn angle:" + Math.toDegrees(turnAngle));
-            
-            setRotationTurn(Math.toDegrees(turnAngle));
-
-            double minDeviationI = 0;
-            double minDeviation = 1000;
-            for (double i = 0; i < 360; i += 0.5)
-            {
-                setRotationTwist(i);
-                Point3D rotatedFaceNormal = getRotatedFaceNormal(snapFaceIndex);
-                double deviation = rotatedFaceNormal.angle(Y_AXIS);
-                if (deviation < minDeviation) {
-                    minDeviation = deviation;
-                    minDeviationI = i;
-                }
-            }
-            System.out.println("Achieved minimum angle deviation of " + minDeviation + " degrees");
-            setRotationTwist(minDeviationI);
-            
-            System.out.println("Rotation lean is " + preferredRotationLean);
-
-            /**
-             * Now calculate required rotation around Y' to get rotated normal to face down. Project
-             * rotatedNormal onto plane defined by Y' and get angle to X', and subtract angle of
-             * original normal projected onto XZ with X, giving twist.
-             */
-            Transform RLInverse = transformRotateLeanPreferred.createInverse();
-            Transform RTNInverse = transformRotateTurnPreferred.createInverse();
-
-            Transform RTwist = (RLInverse.createConcatenation(RTNInverse)).createConcatenation(
-                transformRotateSnapToGround);
-
-            /**
-             * RL is Rotation for Lean, RT is Rotation for Twist, RS is Rotation for Snap.
-             *
-             * RL * RT = RS => RT = inverse(RL) * RS
-             */
-//        Rotation RL = new Rotation(new Vector3D(0, 0, 1), leanAngle);
-//        RL.(originalModelBounds.getCentreX());
-//        RL.setPivotY(originalModelBounds.getCentreY());
-//        RL.setPivotZ(originalModelBounds.getCentreZ());
-//        try
-//        {
-//
-//            /**
-//             * Apply lean rotation to surface normal and then find required rotation to make it face
-//             * down. This should be a rotation around y_prime.
-//             */
-//            Rotation ARL = new Rotation(new Vector3D(0, 0, 1), leanAngle);
-//            Vector3D faceNormalPrime = ARL.applyTo(faceNormal);
-//
-//            Rotation twistReqd = new Rotation(faceNormalPrime, new Vector3D(0, -1, 0));
-//            double twistAngle = Math.toDegrees(twistReqd.getAngle());
-//
-//            System.out.println("Twist is " + twistReqd.getAxis() + " " + twistAngle);
-//
-//            setRotationTwist(twistAngle);
-            // Lean is a rotation about Z
-//            Rotation ARLinverse = new Rotation(new Vector3D(0, 0, 1), -leanAngle);
-//            System.out.println("ARL inverse axis, angle " + ARLinverse.getAxis() + " "
-//                + Math.toDegrees(ARLinverse.getAngle()));
-//
-//            System.out.println("TURN ANGLE: " + Math.toDegrees(turnAngle));
-//
-//            // Turn is a rotation about Y
-//            Rotation ARTNinverse = new Rotation(new Vector3D(0, 1, 0), -turnAngle);
-//
-//            Rotation ART = ARS.applyTo(ARLinverse).applyTo(ARTNinverse);
-////        Rotation ART = ARTNinverse.applyTo(ARLinverse).applyTo(ARS);
-//            System.out.println("TWIST ANGLE: " + Math.toDegrees(ART.getAngle()));
-//            System.out.println("TWIST AXIS: " + ART.getAxis());
-//
-//            
-//            // see if twist axis aligns as expected (along y prime, the new model top-bottom axis)
-//            double twistAxisMisAlign = Math.toDegrees(Math.acos(ART.getAxis().dotProduct(yPrime)));
-//            System.out.println("Twist axis misalign is " + twistAxisMisAlign);
-//            double twistAngle = Math.toDegrees(0);
-//            if (ART.getAxis().getZ() < 0)
-//            {
-//                twistAngle += 180;
-//            }
-//            setRotationTwist(twistAngle);
-//        } catch (Exception ex)
-//        {
-//            ex.printStackTrace();
-//        }
-        } catch (NonInvertibleTransformException ex)
-        {
-            Logger.getLogger(ModelContainer.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     private void updateScaleTransform()
@@ -1008,7 +915,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(transformMoveToPreferred.getZ());
         out.writeDouble(getXScale());
         out.writeDouble(getRotationTwist());
-        out.writeInt(snapFaceIndex);
+        // not used (was snapFaceIndex)
+        out.writeInt(0);
         out.writeInt(associateWithExtruderNumber.get());
         out.writeDouble(getYScale());
         out.writeDouble(getZScale());
@@ -1060,7 +968,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedZ = in.readDouble();
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
-        int storedSnapFaceIndex = in.readInt();
+        int notUsed = in.readInt();
 
         double storedScaleY = 1d;
         double storedScaleZ = 1d;
@@ -1086,13 +994,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationLean(storedRotationLean);
         setRotationTwist(storedRotationTwist);
         setRotationTurn(storedRotationTurn);
-        if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
-        {
-            snapToGround(storedSnapFaceIndex);
-        } else
-        {
-            snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
-        }
 
         notifyShapeChange();
     }

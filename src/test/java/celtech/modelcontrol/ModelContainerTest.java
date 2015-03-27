@@ -13,9 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javafx.geometry.Point3D;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import static org.junit.Assert.assertEquals;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.univariate.BrentOptimizer;
+import org.apache.commons.math3.optim.univariate.SearchInterval;
+import org.apache.commons.math3.optim.univariate.SimpleUnivariateValueChecker;
+import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
+import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
@@ -26,7 +33,7 @@ import org.junit.Test;
 public class ModelContainerTest extends JavaFXConfiguredTest
 {
 
-    @Test
+//    @Test
     public void testRotationApplication()
     {
 
@@ -58,33 +65,6 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         return modelContainer;
     }
     
-    @Test
-    public void testSnapPyramidToGround() throws InterruptedException, ExecutionException
-    {
-        // this test just needs to get the Lean correct (no twist required)
-        
-        ModelContainer modelContainer = loadSTL("/stl/pyramid.stl");
-        int faceIndex = 4;
-        modelContainer.printTransforms();
-
-//        modelContainer.setSnapFaceIndex(faceIndex); // should set lean to around 117 degrees
-
-        Vector3D faceNormal = modelContainer.getFaceNormal(faceIndex);
-        Vector3D faceCentre = modelContainer.getFaceCentre(faceIndex);
-        System.out.println("face normal is " + faceNormal);
-        System.out.println("face centre is " + faceCentre);
-
-        modelContainer.setRotationLean(90);
-        modelContainer.setRotationTwist(0);
-        modelContainer.setRotationTurn(0);
-        
-        Point3D rotatedFaceNormal = modelContainer.getRotatedFaceNormal(faceIndex);
-
-        System.out.println("rotated face normal  " + rotatedFaceNormal);
-
-        assertEquals(117.0, modelContainer.getRotationLean(), 0.1);
-        fail("");
-    }
     
     private void printRotation(Rotation R)
     {
