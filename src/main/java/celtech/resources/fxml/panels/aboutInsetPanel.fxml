@@ -142,9 +142,9 @@
                                             <children>
                                                 <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1">
                                                     <children>
-                                                        <HBox alignment="CENTER" spacing="3.0">
+                                                        <HBox alignment="CENTER_LEFT" spacing="3.0">
                                                             <children>
-                                                                <Label fx:id="roboxSerialNumber" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="RBX01-??-????-???????-????-?" />
+                                                                <Label fx:id="roboxSerialNumber" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="?" />
                                                                 <GraphicButton fxmlFileName="copyTextButton" onAction="#copyPrinterSerialNumber" styleClassOverride="mini-button" />
                                                             </children>
                                                         </HBox>
@@ -152,9 +152,9 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                                     <children>
-                                                        <HBox alignment="CENTER" spacing="3.0">
+                                                        <HBox alignment="CENTER_LEFT" spacing="3.0">
                                                             <children>
-                                                                <Label fx:id="headSerialNumber" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="RBX-HD-01-NotSet" />
+                                                                <Label fx:id="headSerialNumber" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="?" />
                                                                 <GraphicButton fxmlFileName="copyTextButton" onAction="#copyHeadSerialNumber" styleClassOverride="mini-button" />
                                                             </children>
                                                         </HBox>
