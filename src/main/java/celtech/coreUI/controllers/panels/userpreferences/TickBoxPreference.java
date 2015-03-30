@@ -1,7 +1,6 @@
 package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
-import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
