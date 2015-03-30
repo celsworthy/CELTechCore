@@ -159,14 +159,7 @@ public class UserPreferences
         {
             // Ask the user whether they really want to do this..
             boolean goToAdvancedMode = Lookup.getSystemNotificationHandler().confirmAdvancedMode();
-            if (!goToAdvancedMode)
-            {
-                this.advancedMode.set(true);
-            }
-            else
-            {
-                this.advancedMode.set(false);
-            }
+            this.advancedMode.set(goToAdvancedMode);
         } else
         {
             this.advancedMode.set(advancedMode);
