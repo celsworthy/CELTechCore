@@ -155,7 +155,7 @@ public class UserPreferences
     {
         suppressAdvancedModeListenerCheck = true;
 
-        if (advancedMode && !this.advancedMode.get())
+        if (advancedMode)
         {
             // Ask the user whether they really want to do this..
             boolean goToAdvancedMode = Lookup.getSystemNotificationHandler().confirmAdvancedMode();
