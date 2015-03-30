@@ -600,7 +600,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelName.get();
     }
 
-    public void setSnapFaceIndex(int snapFaceIndex)
+    public void snapToGround(int snapFaceIndex)
     {
         Vector3D faceNormal = getFaceNormal(snapFaceIndex);
         Vector3D downVector = new Vector3D(0, 1, 0);
@@ -1567,14 +1567,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public double getTotalSize()
     {
         return getTotalWidth() + getTotalDepth();
-    }
-
-    public void snapToGround(int faceNumber)
-    {
-        setSnapFaceIndex(faceNumber);
-
-        checkOffBed();
-        notifyShapeChange();
     }
 
     /**
