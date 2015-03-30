@@ -35,6 +35,7 @@ public class UserPreferences
         {
             confirmAdvancedModeChange(newValue);
         }
+        saveSettings();
     };
 
     public String getLanguageTag()
