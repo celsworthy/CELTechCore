@@ -8,6 +8,7 @@ import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
@@ -16,6 +17,7 @@ import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
+import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
@@ -166,6 +168,13 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
             Lookup.getUserPreferences().setFirstUse(false);
         }
+    }
+    
+    public void showAndSelectPrintProfile(SlicerParametersFile printProfile) {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.EXTRAS_MENU);
+        Initializable initializable = insetPanelControllers.get(ApplicationMode.EXTRAS_MENU);
+        ExtrasMenuPanelController controller = (ExtrasMenuPanelController) initializable;
+        controller.showAndSelectPrintProfile(printProfile);
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)

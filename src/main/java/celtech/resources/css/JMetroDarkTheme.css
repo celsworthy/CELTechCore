@@ -2444,6 +2444,7 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-max_height: 260;
     -fx-min-height: 260;    
     -fx-hgap: 20;
+    -fx-vgap: 20;
     -fx-background-color: mid_grey;
 }
 

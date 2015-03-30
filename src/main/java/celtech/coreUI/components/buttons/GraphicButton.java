@@ -1,7 +1,6 @@
 package celtech.coreUI.components.buttons;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.components.HideableTooltip;
 import java.io.IOException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

@@ -647,7 +647,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "copyButton";
+                return "saveAsButton";
             }
 
             @Override
@@ -681,7 +681,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "deleteModelButton";
+                return "deleteButton";
             }
 
             @Override
@@ -715,7 +715,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "lightsButton";
+                return "writeToReel1Button";
             }
 
             @Override
@@ -749,7 +749,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "lightsButton";
+                return "writeToReel2Button";
             }
 
             @Override

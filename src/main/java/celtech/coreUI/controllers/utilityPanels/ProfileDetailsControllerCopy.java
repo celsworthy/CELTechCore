@@ -424,6 +424,10 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
     {
         cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
     }
+    
+    public void setAndSelectPrintProfile(SlicerParametersFile printProfile) {
+        cmbPrintProfile.setValue(printProfile);
+    }
 
     private void selectPrintProfile(SlicerParametersFile printProfile)
     {
@@ -442,6 +446,7 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
         {
             state.set(State.ROBOX);
         }
+        isDirty.set(false);
     }
 
     private void repopulateCmbPrintProfile()

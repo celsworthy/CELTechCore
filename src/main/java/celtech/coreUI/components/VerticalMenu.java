@@ -6,7 +6,9 @@ package celtech.coreUI.components;
 import celtech.coreUI.StandardColours;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -42,27 +44,28 @@ public class VerticalMenu extends VBox
     private Text verticalMenuTitle;
 
     /**
-     * The row number of the next text to be added
+     * The row number of the next text to be added.
      */
     private int nextRowNum = 2;
     private boolean disableNonSelectedItems;
 
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private Set<Item> allItems = new HashSet<>();
+    private Map<Item, Callable<Object>> itemCallbacks = new HashMap<>();
 
     private boolean firstItemInitialised = false;
     private Item firstItem;
-    private Callable firstCallable;
 
     class Item
     {
-
+        String name;
         Text text;
         Rectangle square;
         Boolean predicateEnabled;
 
         public Item(String itemName)
         {
+            name = itemName;
             text = new Text(itemName);
             text.getStyleClass().add("verticalMenuOption");
             square = new Rectangle();
@@ -147,12 +150,12 @@ public class VerticalMenu extends VBox
         Item item = new Item(itemName);
         addRow(verticalMenuGrid, item);
         allItems.add(item);
-        setUpEventHandlersForItem(item, callback);
+        itemCallbacks.put(item, callback);
+        setUpEventHandlersForItem(item);
 
         if (!firstItemInitialised)
         {
             firstItem = item;
-            firstCallable = callback;
             firstItemInitialised = true;
         }
 
@@ -167,11 +170,26 @@ public class VerticalMenu extends VBox
      */
     public void selectFirstItem()
     {
-        selectItem(firstItem, firstCallable);
+        selectItem(firstItem);
+    }
+    
+    /**
+     * Programmatically select the item of the given name. If no item has that name
+     * then do nothing.
+     */
+    public void selectItemOfName(String itemName) {
+        
+        for (Item item : allItems)
+        {
+            if (item.name.equals(itemName)) {
+                deselectSelectedItem();
+                selectItem(item);
+                return;
+            }
+        }
     }
 
-    private void setUpEventHandlersForItem(Item item,
-        Callable<Object> callback)
+    private void setUpEventHandlersForItem(Item item)
     {
         item.square.setVisible(false);
         item.text.setOnMouseEntered((MouseEvent e) ->
@@ -199,13 +217,14 @@ public class VerticalMenu extends VBox
                     selectedItem.deselect();
                 }
 
-                selectItem(item, callback);
+                selectItem(item);
             }
         });
     }
 
-    private void selectItem(Item item, Callable<Object> callback)
+    private void selectItem(Item item)
     {
+        Callable<Object> callback = itemCallbacks.get(item);
         selectedItem = item;
         selectedItem.displayAsSelected();
         try
