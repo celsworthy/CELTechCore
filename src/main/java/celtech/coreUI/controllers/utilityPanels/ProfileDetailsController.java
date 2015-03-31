@@ -425,7 +425,11 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     }
     
     public void setAndSelectPrintProfile(SlicerParametersFile printProfile) {
-        cmbPrintProfile.setValue(printProfile);
+        if (SlicerParametersContainer.getCompleteProfileList().contains(printProfile)) {
+            cmbPrintProfile.setValue(printProfile);
+        } else {
+            cmbPrintProfile.getSelectionModel().selectFirst();
+        }    
     }
 
     private void selectPrintProfile(SlicerParametersFile printProfile)
