@@ -117,6 +117,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
+    private final BooleanProperty canSaveAs = new SimpleBooleanProperty(false);
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private String currentProfileName;
 
@@ -368,6 +369,8 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
 
+        canSaveAs.bind(state.isNotEqualTo(State.NEW));
+        
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
 
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
@@ -1376,6 +1379,17 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         slicerParametersFile.setProfileName("");
         updateWidgets(slicerParametersFile);
     }
+    
+    void whenSaveAsPressed()
+    {
+        state.set(ProfileDetailsController.State.NEW);
+        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(
+            currentProfileName).clone();
+//        slicerParametersFile.setProfileName("XXX");
+        updateWidgets(slicerParametersFile);
+        profileNameField.requestFocus();
+        profileNameField.selectAll();
+    }    
 
     private SlicerParametersFile makeNewSlicerParametersFile()
     {
@@ -1460,12 +1474,12 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
         };
         operationButtons.add(saveButton);
-        ExtrasMenuInnerPanel.OperationButton copyButton = new ExtrasMenuInnerPanel.OperationButton()
+        ExtrasMenuInnerPanel.OperationButton saveAsButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
             {
-                return "genericFirstLetterCapitalised.Copy";
+                return "genericFirstLetterCapitalised.SaveAs";
             }
 
             @Override
@@ -1477,23 +1491,23 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             @Override
             public String getTooltipTextId()
             {
-                return "genericFirstLetterCapitalised.Copy";
+                return "genericFirstLetterCapitalised.SaveAs";
             }
 
             @Override
             public void whenClicked()
             {
-                whenCopyPressed();
+                whenSaveAsPressed();
             }
 
             @Override
             public BooleanProperty whenEnabled()
             {
-                return new SimpleBooleanProperty(true);
+                return canSaveAs;
             }
 
         };
-        operationButtons.add(copyButton);
+        operationButtons.add(saveAsButton);
         ExtrasMenuInnerPanel.OperationButton deleteButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
