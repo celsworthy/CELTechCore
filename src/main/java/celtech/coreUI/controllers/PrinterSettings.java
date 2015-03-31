@@ -124,7 +124,12 @@ public class PrinterSettings
     public String getSettingsName()
     {
         return settingsName.get();
-    }    
+    } 
+    
+    public StringProperty getSettingsNameProperty()
+    {
+        return settingsName;
+    }       
     
     public SlicerParametersFile getSettings() {
         switch (printQuality.get()) {

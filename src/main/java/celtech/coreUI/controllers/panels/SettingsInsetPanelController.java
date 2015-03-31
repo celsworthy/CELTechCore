@@ -66,7 +66,7 @@ public class SettingsInsetPanelController implements Initializable
 
     @FXML
     private VBox nonCustomProfileVBox;
-    
+
     @FXML
     private Label createProfileLabel;
 
@@ -270,9 +270,8 @@ public class SettingsInsetPanelController implements Initializable
     }
 
     /**
-     * Update the profile combo box with the list of user profiles. If there are no user
-     * profiles then hide the combo box and show the 'Please create a custom profile'
-     * message.
+     * Update the profile combo box with the list of user profiles. If there are no user profiles
+     * then hide the combo box and show the 'Please create a custom profile' message.
      */
     private void updateProfileList()
     {
@@ -285,14 +284,21 @@ public class SettingsInsetPanelController implements Initializable
                 getSelectedItem().getProfileName();
         }
 
-        if (SlicerParametersContainer.getUserProfileList().size() > 0) {
+        if (SlicerParametersContainer.getUserProfileList().size() > 0)
+        {
             refreshAndShowProfileCombo(currentSelectionName, currentSelection);
-        } else {
+        } else
+        {
+            if (printerSettings != null)
+            {
+                printerSettings.setSettingsName("");
+            }
             hideProfileCombo();
         }
     }
-    
-    private void hideProfileCombo() {
+
+    private void hideProfileCombo()
+    {
         customProfileChooser.setVisible(false);
         createProfileLabel.setVisible(true);
     }
@@ -311,7 +317,7 @@ public class SettingsInsetPanelController implements Initializable
         for (SlicerParametersFile availableProfile : availableProfiles)
         {
             System.out.println("profile name is " + availableProfile.getProfileName());
-            
+
             if (availableProfile.getProfileName().equals(currentSelectionName))
             {
                 currentSelectionInAvailableProfiles = true;
@@ -397,6 +403,9 @@ public class SettingsInsetPanelController implements Initializable
                 printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
                 printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
                 setupQualityOverrideControls(printerSettings);
+            } else
+            {
+                printerSettings.setSettingsName("");
             }
         }
     }

@@ -61,6 +61,8 @@ public class Project implements Serializable
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private final BooleanProperty modelColourChanged = new SimpleBooleanProperty();
+    private final BooleanProperty canPrint = new SimpleBooleanProperty(true);
+    private final BooleanProperty customSettingsNotChosen = new SimpleBooleanProperty(true);
 
     private final PrinterSettings printerSettings;
 
@@ -83,7 +85,14 @@ public class Project implements Serializable
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 projectModified();
+                fireWhenPrinterSettingsChanged(printerSettings);
             });
+        
+        customSettingsNotChosen.bind(
+            printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
+                .and(printerSettings.getSettingsNameProperty().isEmpty()));
+        // Cannot print if quality is CUSTOM and no custom settings have been chosen
+        canPrint.bind(customSettingsNotChosen.not());
     }
 
     public final void setProjectName(String value)
@@ -438,6 +447,14 @@ public class Project implements Serializable
             projectChangesListener.whenModelAdded(modelContainer);
         }
     }
+    
+    private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenPrinterSettingsChanged(printerSettings);
+        }
+    }    
 
     public void deleteModel(ModelContainer modelContainer)
     {
@@ -492,6 +509,16 @@ public class Project implements Serializable
             modelExtruderNumberListener);
     }
 
+    public BooleanProperty canPrintProperty()
+    {
+        return canPrint;
+    }
+    
+    public BooleanProperty customSettingsNotChosenProperty()
+    {
+        return customSettingsNotChosen;
+    }    
+
     /**
      * ProjectChangesListener allows other objects to observe when models are added or removed etc
      * to the project.
@@ -525,6 +552,12 @@ public class Project implements Serializable
          * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
+        
+        /**
+         * This should be fired whenever the PrinterSettings of the project changes.
+         * @param printerSettings 
+         */
+        void whenPrinterSettingsChanged(PrinterSettings printerSettings);
     }
 
     public void autoLayout()

@@ -11,6 +11,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.GizmoOverlayController;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
@@ -952,6 +953,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
         updateModelColour(modelContainer);
+    }
+
+    @Override
+    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+    {
     }
 
 }
