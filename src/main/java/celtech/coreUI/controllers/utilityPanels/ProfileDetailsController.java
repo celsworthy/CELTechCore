@@ -28,6 +28,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
@@ -48,6 +49,8 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProfileDetailsController implements Initializable, ExtrasMenuInnerPanel
 {
+    
+    private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
 
     enum Fields
     {
@@ -119,6 +122,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
     private final BooleanProperty canSaveAs = new SimpleBooleanProperty(false);
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
+    private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
 
     private final Stenographer steno = StenographerFactory.getStenographer(ProfileDetailsController.class.getName());
@@ -921,6 +925,20 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     private void setupWidgetChangeListeners()
     {
+        profileNameField.textProperty().addListener(
+            (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+            {
+                if (!validateProfileName())
+                {
+                    isNameValid.set(false);
+                    profileNameField.pseudoClassStateChanged(ERROR, true);
+                } else
+                {
+                    isNameValid.set(true);
+                    profileNameField.pseudoClassStateChanged(ERROR, false);
+                }
+            });
+
         //Dirty listeners...
         profileNameField.textProperty().addListener(dirtyStringListener);
 
@@ -1314,7 +1332,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             valid = false;
         } else
         {
-            ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.getUserProfileList();
+            ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.getCompleteProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
                 if (! settings.getProfileName().equals(currentProfileName)
@@ -1385,10 +1403,10 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         state.set(ProfileDetailsController.State.NEW);
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(
             currentProfileName).clone();
-//        slicerParametersFile.setProfileName("XXX");
         updateWidgets(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
+        profileNameField.pseudoClassStateChanged(ERROR, true);
     }    
 
     private SlicerParametersFile makeNewSlicerParametersFile()
