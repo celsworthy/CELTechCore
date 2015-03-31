@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
@@ -65,6 +66,9 @@ public class SettingsInsetPanelController implements Initializable
 
     @FXML
     private VBox nonCustomProfileVBox;
+    
+    @FXML
+    private Label createProfileLabel;
 
     private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
@@ -265,6 +269,11 @@ public class SettingsInsetPanelController implements Initializable
         DisplayManager.getInstance().showAndSelectPrintProfile(customProfileChooser.getValue());
     }
 
+    /**
+     * Update the profile combo box with the list of user profiles. If there are no user
+     * profiles then hide the combo box and show the 'Please create a custom profile'
+     * message.
+     */
     private void updateProfileList()
     {
         SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().
@@ -275,8 +284,26 @@ public class SettingsInsetPanelController implements Initializable
             currentSelectionName = customProfileChooser.getSelectionModel().
                 getSelectedItem().getProfileName();
         }
-        System.out.println("curr sel name is " + currentSelectionName);
 
+        if (SlicerParametersContainer.getUserProfileList().size() > 0) {
+            refreshAndShowProfileCombo(currentSelectionName, currentSelection);
+        } else {
+            hideProfileCombo();
+        }
+    }
+    
+    private void hideProfileCombo() {
+        customProfileChooser.setVisible(false);
+        createProfileLabel.setVisible(true);
+    }
+
+    private void refreshAndShowProfileCombo(String currentSelectionName,
+        SlicerParametersFile currentSelection)
+    {
+        System.out.println("curr sel name is " + currentSelectionName);
+        System.out.println("curr selection is " + currentSelection);
+        createProfileLabel.setVisible(false);
+        customProfileChooser.setVisible(true);
         availableProfiles.clear();
         availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
 
@@ -288,11 +315,13 @@ public class SettingsInsetPanelController implements Initializable
             if (availableProfile.getProfileName().equals(currentSelectionName))
             {
                 currentSelectionInAvailableProfiles = true;
+                currentSelection = availableProfile;
             }
         }
         if (currentSelection != null && currentSelectionInAvailableProfiles)
         {
             System.out.println("XXXA");
+            System.out.println("select " + currentSelection);
             customProfileChooser.getSelectionModel().select(currentSelection);
         } else
         {

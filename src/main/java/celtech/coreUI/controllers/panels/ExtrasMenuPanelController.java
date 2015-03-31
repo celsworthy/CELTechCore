@@ -7,7 +7,7 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.controllers.panels.userpreferences.Preferences;
-import celtech.coreUI.controllers.utilityPanels.ProfileDetailsControllerCopy;
+import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,6 +56,7 @@ public class ExtrasMenuPanelController implements Initializable
     private HBox buttonBoxContainer;
     
     InnerPanelDetails profileDetails;
+    ProfileDetailsController profileDetailsController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -75,6 +76,7 @@ public class ExtrasMenuPanelController implements Initializable
     {
         String profileMenuItemName = Lookup.i18n(profileDetails.innerPanel.getMenuTitle());
         libraryMenu.selectItemOfName(profileMenuItemName);
+        profileDetailsController.setAndSelectPrintProfile(printProfile);
     }
 
     /**
@@ -87,7 +89,7 @@ public class ExtrasMenuPanelController implements Initializable
             ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml",
             new FilamentLibraryPanelController());
         
-        ProfileDetailsControllerCopy profileDetailsController = new ProfileDetailsControllerCopy();
+        profileDetailsController = new ProfileDetailsController();
         profileDetails = loadInnerPanel(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetailsCopy.fxml",
             profileDetailsController);        

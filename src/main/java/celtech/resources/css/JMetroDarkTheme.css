@@ -2456,6 +2456,11 @@ all inherit from Menu Control's popup-menu. --- */
  -fx-font-family: 'Source Sans Pro Regular';
 }
 
+#pleaseCreateProfile {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18px;
+}
+
 
 /**
 * Layout

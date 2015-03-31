@@ -102,6 +102,7 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         basePane.getChildren().addAll(viewManager.getSubScene(), settingsInsetPanel);
+        settingsInsetPanel.setVisible(false);
         AnchorPane.setTopAnchor(settingsInsetPanel, 30.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
 
