@@ -140,7 +140,6 @@ public class ExtrasMenuPanelController implements Initializable
             libraryMenu.addItem(Lookup.i18n(innerPanelDetails.innerPanel.getMenuTitle()), () ->
                             {
                                 openInnerPanel(innerPanelDetails);
-                                return null;
             }, null);
         }
     }

@@ -1468,7 +1468,7 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
             @Override
             public String getFXMLName()
             {
-                return "copyButton";
+                return "saveAsButton";
             }
 
             @Override
@@ -1502,7 +1502,7 @@ public class ProfileDetailsControllerCopy implements Initializable, ExtrasMenuIn
             @Override
             public String getFXMLName()
             {
-                return "deleteModelButton";
+                return "deleteButton";
             }
 
             @Override

@@ -40,27 +40,24 @@ public class CalibrationMenuConfiguration
         }
 
         calibrationMenu.setTitle(Lookup.i18n("calibrationPanel.title"));
-        Callable doOpeningCalibration = () ->
+        VerticalMenu.NoArgsVoidFunc doOpeningCalibration = () ->
         {
             calibrationInsetPanelController.setCalibrationMode(
                 CalibrationMode.NOZZLE_OPENING);
-            return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleOpening"),
                                 doOpeningCalibration, null);
-        Callable doHeightCalibration = () ->
+        VerticalMenu.NoArgsVoidFunc doHeightCalibration = () ->
         {
             calibrationInsetPanelController.setCalibrationMode(
                 CalibrationMode.NOZZLE_HEIGHT);
-            return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleHeight"),
                                 doHeightCalibration, null);
-        Callable doXYAlignmentCalibration = () ->
+        VerticalMenu.NoArgsVoidFunc doXYAlignmentCalibration = () ->
         {
             calibrationInsetPanelController.setCalibrationMode(
                 CalibrationMode.X_AND_Y_OFFSET);
-            return null;
         };
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"),
                                 doXYAlignmentCalibration, null);

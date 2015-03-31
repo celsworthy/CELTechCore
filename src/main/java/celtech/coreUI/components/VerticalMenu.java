@@ -32,6 +32,12 @@ import javafx.scene.text.Text;
 public class VerticalMenu extends VBox
 {
 
+    public interface NoArgsVoidFunc
+    {
+
+        void run() throws Exception;
+    }
+
     private static final int SQUARE_SIZE = 16;
     private static final int ROW_HEIGHT = 50;
 
@@ -51,13 +57,14 @@ public class VerticalMenu extends VBox
 
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private Set<Item> allItems = new HashSet<>();
-    private Map<Item, Callable<Object>> itemCallbacks = new HashMap<>();
+    private Map<Item, NoArgsVoidFunc> itemCallbacks = new HashMap<>();
 
     private boolean firstItemInitialised = false;
     private Item firstItem;
 
     class Item
     {
+
         String name;
         Text text;
         Rectangle square;
@@ -141,10 +148,10 @@ public class VerticalMenu extends VBox
     }
 
     /**
-     * Add a menu item to the menu. If enabledPredicate is not null then it governs
-     * if the item is enabled or not.
+     * Add a menu item to the menu. If enabledPredicate is not null then it governs if the item is
+     * enabled or not.
      */
-    public void addItem(String itemName, Callable<Object> callback,
+    public void addItem(String itemName, NoArgsVoidFunc callback,
         ReadOnlyBooleanProperty enabledPredicate)
     {
         Item item = new Item(itemName);
@@ -172,16 +179,17 @@ public class VerticalMenu extends VBox
     {
         selectItem(firstItem);
     }
-    
+
     /**
-     * Programmatically select the item of the given name. If no item has that name
-     * then do nothing.
+     * Programmatically select the item of the given name. If no item has that name then do nothing.
      */
-    public void selectItemOfName(String itemName) {
-        
+    public void selectItemOfName(String itemName)
+    {
+
         for (Item item : allItems)
         {
-            if (item.name.equals(itemName)) {
+            if (item.name.equals(itemName))
+            {
                 deselectSelectedItem();
                 selectItem(item);
                 return;
@@ -224,12 +232,12 @@ public class VerticalMenu extends VBox
 
     private void selectItem(Item item)
     {
-        Callable<Object> callback = itemCallbacks.get(item);
+        NoArgsVoidFunc callback = itemCallbacks.get(item);
         selectedItem = item;
         selectedItem.displayAsSelected();
         try
         {
-            callback.call();
+            callback.run();
         } catch (Exception ex)
         {
             ex.printStackTrace();
