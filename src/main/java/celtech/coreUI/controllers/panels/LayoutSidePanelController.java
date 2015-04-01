@@ -834,8 +834,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-//        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-//        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
@@ -851,7 +849,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         {
             ModelContainer modelContainer = getSingleSelection();
             populateScaleXField(modelContainer.getXScale());
-            populateScaleYField(modelContainer.getXScale());
+            populateScaleYField(modelContainer.getYScale());
             populateScaleZField(modelContainer.getZScale());
         }
         getInitialValuesOfNumberFields();

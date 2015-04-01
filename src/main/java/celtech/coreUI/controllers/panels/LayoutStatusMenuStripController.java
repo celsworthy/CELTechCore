@@ -689,6 +689,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
+        System.out.println("update conditional text");
+        
         if (printer == null)
         {
             return;
@@ -700,6 +702,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 printer.getPrinterAncillarySystems().doorOpenProperty()
                                                 .and(Lookup.getUserPreferences().
                                                     safetyFeaturesOnProperty()));
+        
+        printButton.getTag().addConditionalText("dialogs.chooseACustomProfile",
+                                                project.customSettingsNotChosenProperty());
 
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
@@ -855,6 +860,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             whenProjectOrSettingsPrinterChange();
         }
+
+        @Override
+        public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+        {
+            whenProjectOrSettingsPrinterChange();
+        }
     };
 
     private void unbindProject(Project project)
@@ -928,6 +939,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             canPrintProject.bind(
                 printer.canPrintProperty()
+                .and(project.canPrintProperty())    
                 .and(printerSettings.getFilament0Property().isNotNull())
                 .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
@@ -950,6 +962,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                 canPrintProject.bind(
                     printer.canPrintProperty()
+                    .and(project.canPrintProperty())    
                     .and(requiredFilamentProperty.isNotNull())
                     .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                         .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
@@ -960,6 +973,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 canPrintProject.bind(
                     printer.canPrintProperty()
+                    .and(project.canPrintProperty())    
                     .and(printerSettings.getFilament0Property().isNotNull())
                     .and(printerSettings.getFilament1Property().isNotNull())
                     .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()

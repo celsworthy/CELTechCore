@@ -5,6 +5,7 @@ package celtech.coreUI.visualisation;
 
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import java.util.HashSet;
 import java.util.Set;
@@ -152,6 +153,11 @@ public class SelectedModelContainers implements ProjectChangesListener
     
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    {
+    }    
+    
+    @Override
+    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
     {
     }    
 

@@ -4,9 +4,10 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.UserPreferences;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.controllers.panels.userpreferences.Preferences;
-import celtech.coreUI.controllers.utilityPanels.ProfileDetailsControllerCopy;
+import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,6 +54,9 @@ public class ExtrasMenuPanelController implements Initializable
 
     @FXML
     private HBox buttonBoxContainer;
+    
+    InnerPanelDetails profileDetails;
+    ProfileDetailsController profileDetailsController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -67,6 +71,13 @@ public class ExtrasMenuPanelController implements Initializable
 
         buildExtras();
     }
+    
+    public void showAndSelectPrintProfile(SlicerParametersFile printProfile)
+    {
+        String profileMenuItemName = Lookup.i18n(profileDetails.innerPanel.getMenuTitle());
+        libraryMenu.selectItemOfName(profileMenuItemName);
+        profileDetailsController.setAndSelectPrintProfile(printProfile);
+    }
 
     /**
      * Define the inner panels to be offered in the main menu. For the future this is configuration
@@ -77,9 +88,11 @@ public class ExtrasMenuPanelController implements Initializable
         loadInnerPanel(
             ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml",
             new FilamentLibraryPanelController());
-        loadInnerPanel(
+        
+        profileDetailsController = new ProfileDetailsController();
+        profileDetails = loadInnerPanel(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetailsCopy.fxml",
-            new ProfileDetailsControllerCopy());        
+            profileDetailsController);        
         UserPreferences userPreferences = Lookup.getUserPreferences();
         loadInnerPanel(
             ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
@@ -90,13 +103,15 @@ public class ExtrasMenuPanelController implements Initializable
             ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
             new PreferencesInnerPanelController("preferences.printing",
                                                 Preferences.createPrintingPreferences(
-                                                    userPreferences)));        
+                                                    userPreferences)));   
+        
+        
     }
 
     /**
      * Load the given inner panel.
      */
-    private void loadInnerPanel(String fxmlLocation, ExtrasMenuInnerPanel extrasMenuInnerPanel)
+    private InnerPanelDetails loadInnerPanel(String fxmlLocation, ExtrasMenuInnerPanel extrasMenuInnerPanel)
     {
         URL fxmlURL = getClass().getResource(fxmlLocation);
         FXMLLoader loader = new FXMLLoader(fxmlURL, resources);
@@ -106,20 +121,13 @@ public class ExtrasMenuPanelController implements Initializable
             Node node = loader.load();
             InnerPanelDetails innerPanelDetails = new InnerPanelDetails(node, extrasMenuInnerPanel);
             this.innerPanelDetails.add(innerPanelDetails);
+            return innerPanelDetails;
         } catch (IOException ex)
         {
             ex.printStackTrace();
             steno.error("Unable to load panel: " + fxmlLocation + " " + ex);
         }
-    }
-
-    /**
-     * Open the given inner panel.
-     */
-    private void doOpenInnerPanel(InnerPanelDetails innerPanel)
-    {
-        insetNodeContainer.getChildren().clear();
-        insetNodeContainer.getChildren().add(innerPanel.node);
+        return null;
     }
 
     /**
@@ -133,11 +141,19 @@ public class ExtrasMenuPanelController implements Initializable
         {
             libraryMenu.addItem(Lookup.i18n(innerPanelDetails.innerPanel.getMenuTitle()), () ->
                             {
-                                doOpenInnerPanel(innerPanelDetails);
-                                Lookup.setExtrasInnerPanel(innerPanelDetails.innerPanel);
-                                return null;
+                                openInnerPanel(innerPanelDetails);
             }, null);
         }
+    }
+    
+    /**
+     * Open the given inner panel.
+     */
+    private void openInnerPanel(InnerPanelDetails innerPanelDetails)
+    {
+        insetNodeContainer.getChildren().clear();
+        insetNodeContainer.getChildren().add(innerPanelDetails.node);
+        Lookup.setExtrasInnerPanel(innerPanelDetails.innerPanel);
     }
 
     @FXML

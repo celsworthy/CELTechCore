@@ -600,7 +600,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelName.get();
     }
 
-    public void setSnapFaceIndex(int snapFaceIndex)
+    /**
+     * Rotate the model in Lean and Twist so that the chosen face is pointing down (ie aligned
+     * with the Y axis). Lean is easy to get, and we then use an optimiser to establish Twist.
+     * @param snapFaceIndex 
+     */
+    public void snapToGround(int snapFaceIndex)
     {
         Vector3D faceNormal = getFaceNormal(snapFaceIndex);
         Vector3D downVector = new Vector3D(0, 1, 0);
@@ -625,7 +630,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         // this example)
         long start = System.nanoTime();
         BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
-        UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(200),
+        UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(70),
                                                            new UnivariateObjectiveFunction(
                                                                new ApplyTwist(snapFaceIndex)),
                                                            GoalType.MINIMIZE,
@@ -645,8 +650,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private class ApplyTwist implements UnivariateFunction
     {
 
-        Vector3D faceNormal;
-        Vector3D faceCentre;
+        final Vector3D faceNormal;
+        final Vector3D faceCentre;
 
         public ApplyTwist(int faceIndex)
         {
@@ -677,11 +682,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             double deviation = rotatedFaceNormal.angle(Y_AXIS);
             return deviation;
         }
-    }
-
-    private void convertSnapToLeanAndTwist(Rotation ARS, Vector3D faceNormal, int snapFaceIndex)
-    {
-
     }
 
     private void updateScaleTransform()
@@ -1567,14 +1567,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public double getTotalSize()
     {
         return getTotalWidth() + getTotalDepth();
-    }
-
-    public void snapToGround(int faceNumber)
-    {
-        setSnapFaceIndex(faceNumber);
-
-        checkOffBed();
-        notifyShapeChange();
     }
 
     /**
