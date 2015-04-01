@@ -6,7 +6,9 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
@@ -15,6 +17,7 @@ import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
+import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
@@ -160,7 +163,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             List<File> fileToLoad = new ArrayList<>();
             fileToLoad.add(firstUsePrintFile);
             ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, fileToLoad, true, false);
+            loader.loadExternalModels(newProject, fileToLoad, false);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                                                    tabDisplay.heightProperty());
@@ -169,6 +172,13 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
             Lookup.getUserPreferences().setFirstUse(false);
         }
+    }
+    
+    public void showAndSelectPrintProfile(SlicerParametersFile printProfile) {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.EXTRAS_MENU);
+        Initializable initializable = insetPanelControllers.get(ApplicationMode.EXTRAS_MENU);
+        ExtrasMenuPanelController controller = (ExtrasMenuPanelController) initializable;
+        controller.showAndSelectPrintProfile(printProfile);
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
@@ -670,6 +680,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             if (currentTab instanceof ProjectTab)
             {
                 Project project = Lookup.getSelectedProjectProperty().get();
+                UndoableProject undoableProject = new UndoableProject(project);
                 switch (event.getCode())
                 {
                     case DELETE:
@@ -677,7 +688,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         Set<ModelContainer> selectedModels
                             = Lookup.getProjectGUIState(project).getSelectedModelContainers().
                             getSelectedModelsSnapshot();
-                        project.deleteModels(selectedModels);
+                        undoableProject.deleteModels(selectedModels);
                         break;
                     case A:
                         if (event.isShortcutDown())

@@ -5,7 +5,6 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
-import celtech.configuration.Filament;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
@@ -47,6 +46,12 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class LayoutSidePanelController implements Initializable, SidePanelManager
 {
+
+    public interface NoArgsVoidFunc
+    {
+
+        void run() throws Exception;
+    }
 
     private Stenographer steno = StenographerFactory.getStenographer(
         LayoutSidePanelController.class.getName());
@@ -137,6 +142,18 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     private AMFOutputConverter outputConverter = new AMFOutputConverter();
+    
+    private double lastScaleWidth;
+    private double lastScaleHeight;
+    private double lastScaleDepth;
+    private double lastRotationX;
+    private double lastRotationY;
+    private double lastRotationZ;
+    private double lastWidth;
+    private double lastHeight;
+    private double lastDepth;
+    private double lastX;
+    private double lastY;
 
     @FXML
     void outputAMF(ActionEvent event)
@@ -164,8 +181,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             "sidePanel_layout.ModelNameLabel");
 
         scaleTextWidthField.setText("100");
+        lastScaleWidth = 100;
         scaleTextHeightField.setText("100");
+        lastScaleHeight = 100;
         scaleTextDepthField.setText("100");
+        lastScaleDepth = 100;
         rotationXTextField.setText("0");
         rotationYTextField.setText("0");
         rotationZTextField.setText("0");
@@ -178,7 +198,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         setUpTableView(modelNameLabelString, languageBundle);
 
         setUpModelGeometryListeners();
-        setUpKeyPressListeners();
+        setUpNumberFieldListeners();
         setupMaterialContainer();
         setupProjectSelectedListener();
 
@@ -273,44 +293,52 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private void populateYAxisField(Number t1)
     {
         yAxisTextField.doubleValueProperty().set(t1.doubleValue());
+        lastY = t1.doubleValue();
     }
 
     private void populateXAxisField(Number t1)
     {
         xAxisTextField.doubleValueProperty().set(t1.doubleValue());
+        lastX = t1.doubleValue();
     }
 
     private void populateDepthField(Number t1)
     {
         depthTextField.doubleValueProperty().set(t1.doubleValue());
+        lastDepth = t1.doubleValue();
     }
 
     private void populateHeightField(Number t1)
     {
         heightTextField.doubleValueProperty().set(t1.doubleValue());
+        lastHeight = t1.doubleValue();
     }
 
     private void populateWidthField(Number t1)
     {
         widthTextField.doubleValueProperty().set(t1.doubleValue());
+        lastWidth = t1.doubleValue();
     }
 
     private void populateRotationXField(Number t1)
     {
         rotationXTextField.doubleValueProperty().set(t1.doubleValue());
         rotationXTextField.setText(String.format(rotationFormat, t1));
+        lastRotationX = t1.doubleValue();
     }
 
     private void populateRotationZField(Number t1)
     {
         rotationZTextField.doubleValueProperty().set(t1.doubleValue());
         rotationZTextField.setText(String.format(rotationFormat, t1));
+        lastRotationZ = t1.doubleValue();
     }
 
     private void populateRotationYField(Number t1)
     {
         rotationYTextField.doubleValueProperty().set(t1.doubleValue());
         rotationYTextField.setText(String.format(rotationFormat, t1));
+        lastRotationY = t1.doubleValue();
     }
 
     /**
@@ -345,6 +373,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         scaleTextHeightField.setText(scaleString);
         scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
         scaleTextDepthField.setText(scaleString);
+        
+        lastScaleWidth = 100.0;
+        lastScaleHeight = 100.0;
+        lastScaleDepth = 100.0;
     }
 
     private void populateScaleXField(Number t1)
@@ -355,6 +387,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
             String scaleString = myFormatter.format(t1.doubleValue() * 100f);
             scaleTextWidthField.setText(scaleString);
+            lastScaleWidth = t1.doubleValue() * 100;
         }
     }
 
@@ -366,6 +399,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
             String scaleString = myFormatter.format(t1.doubleValue() * 100f);
             scaleTextHeightField.setText(scaleString);
+            lastScaleHeight = t1.doubleValue() * 100;
         }
     }
 
@@ -377,240 +411,114 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
             String scaleString = myFormatter.format(t1.doubleValue() * 100f);
             scaleTextDepthField.setText(scaleString);
+            lastScaleDepth = t1.doubleValue() * 100;
         }
     }
 
-    private void setUpKeyPressListeners()
+    private void setUpNumberFieldListeners()
     {
-        scaleTextWidthField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateScaleWidth();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
+        addNumberFieldListener(scaleTextWidthField, this::updateScaleWidth);
+        addNumberFieldListener(scaleTextHeightField, this::updateScaleHeight);
+        addNumberFieldListener(scaleTextDepthField, this::updateScaleDepth);
+        addNumberFieldListener(rotationXTextField, this::updateRotationX);
+        addNumberFieldListener(rotationYTextField, this::updateRotationY);
+        addNumberFieldListener(rotationZTextField, this::updateRotationZ);
+        addNumberFieldListener(widthTextField, this::updateWidth);
+        addNumberFieldListener(heightTextField, this::updateHeight);
+        addNumberFieldListener(depthTextField, this::updateDepth);
+        addNumberFieldListener(xAxisTextField, this::updateX);
+        addNumberFieldListener(yAxisTextField, this::updateZ);
+    }
 
-        scaleTextHeightField.setOnKeyPressed((KeyEvent t) ->
+    private void updateRotationX()
+    {
+        try
         {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateScaleHeight();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
+            double newRotationX = rotationXTextField.getAsDouble();
+            if (newRotationX == lastRotationX) {
+                return;
+            } else {
+                lastRotationX = newRotationX;
             }
-        });
-
-        scaleTextDepthField.setOnKeyPressed((KeyEvent t) ->
+            undoableProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
+                                             rotationXTextField.getAsDouble());
+        } catch (ParseException ex)
         {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateScaleDepth();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
+            steno.warning("Error converting rotation "
+                + rotationXTextField.getText());
+        }
+    }
+
+    private void updateRotationY()
+    {
+        try
+        {
+            double newRotationY = rotationYTextField.getAsDouble();
+            if (newRotationY == lastRotationY) {
+                return;
+            } else {
+                lastRotationY = newRotationY;
             }
-        });
+            undoableProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
+                                              rotationYTextField.getAsDouble());
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting rotation "
+                + rotationYTextField.getText());
+        }
+    }
 
-        rotationXTextField.setOnKeyPressed((KeyEvent t) ->
+    private void updateRotationZ()
+    {
+        try
+        {
+            double newRotationZ = rotationZTextField.getAsDouble();
+            if (newRotationZ == lastRotationZ) {
+                return;
+            } else {
+                lastRotationZ = newRotationZ;
+            }
+            undoableProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
+                                             rotationZTextField.getAsDouble());
+        } catch (ParseException ex)
+        {
+            steno.warning("Error converting rotation "
+                + rotationZTextField.getText());
+        }
+    }
+
+    /**
+     * When focus is lost or ENTER is pressed, run the given function.
+     */
+    private void addNumberFieldListener(RestrictedNumberField textField, NoArgsVoidFunc func)
+    {
+        textField.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                try
+                {
+                    if (!newValue)
+                    {
+                        func.run();
+                    }
+                } catch (Exception ex)
+                {
+                    steno.debug("exception updating number field " + ex);
+                }
+            });
+
+        textField.setOnKeyPressed((KeyEvent t) ->
         {
             switch (t.getCode())
             {
                 case ENTER:
-                case TAB:
                     try
                     {
-                        undoableProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      rotationXTextField.getAsDouble());
-                    } catch (ParseException ex)
+                        func.run();
+                    } catch (Exception ex)
                     {
-                        steno.warning("Error converting rotation "
-                            + rotationXTextField.getText());
+                        steno.debug("exception updating number field " + ex);
                     }
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        rotationYTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    try
-                    {
-                        undoableProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
-                                                       rotationYTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting rotation "
-                            + rotationYTextField.getText());
-                    }
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        rotationZTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    try
-                    {
-                        undoableProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
-                                                      rotationZTextField.getAsDouble());
-                    } catch (ParseException ex)
-                    {
-                        steno.warning("Error converting rotation "
-                            + rotationZTextField.getText());
-                    }
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        widthTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateWidth();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        heightTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateHeight();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        depthTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateDepth();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        xAxisTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateX();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
-                    break;
-            }
-        });
-
-        yAxisTextField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                case TAB:
-                    updateZ();
-                    break;
-                case DECIMAL:
-                case BACK_SPACE:
-                case LEFT:
-                case RIGHT:
-                    break;
-                default:
-                    t.consume();
                     break;
             }
         });
@@ -620,8 +528,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
-            double newZ = yAxisTextField.getAsDouble();
-            undoableProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newZ);
+            double newY = yAxisTextField.getAsDouble();
+            if (newY == lastY) {
+                return;
+            } else {
+                lastY = newY;
+            }
+            undoableProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newY);
         } catch (ParseException ex)
         {
             steno.error("Error parsing y translate string " + ex + " : " + ex.getMessage());
@@ -633,7 +546,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newX = xAxisTextField.getAsDouble();
+            if (newX == lastX) {
+                return;
+            } else {
+                lastX = newX;
+            }
             undoableProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
+            
 
         } catch (ParseException ex)
         {
@@ -645,6 +564,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
+            double newDepth = depthTextField.getAsDouble();
+            if (newDepth == lastDepth) {
+                return;
+            } else {
+                lastDepth = newDepth;
+            }
             if (inFixedAR())
             {
                 ModelContainer modelContainer = getSingleSelection();
@@ -656,7 +581,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
-                                               depthTextField.getAsDouble());
+                                                  depthTextField.getAsDouble());
             }
         } catch (ParseException ex)
         {
@@ -668,6 +593,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
+            double newHeight = heightTextField.getAsDouble();
+            if (newHeight == lastHeight) {
+                return;
+            } else {
+                lastHeight = newHeight;
+            }
             if (inFixedAR())
             {
                 ModelContainer modelContainer = getSingleSelection();
@@ -677,7 +608,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
-                                                heightTextField.getAsDouble());
+                                                   heightTextField.getAsDouble());
             }
         } catch (ParseException ex)
         {
@@ -689,6 +620,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
+            double newWidth = widthTextField.getAsDouble();
+            if (newWidth == lastWidth) {
+                return;
+            } else {
+                lastWidth = newWidth;
+            }
             if (inFixedAR())
             {
                 ModelContainer modelContainer = getSingleSelection();
@@ -698,7 +635,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
-                                               widthTextField.getAsDouble());
+                                                  widthTextField.getAsDouble());
             }
         } catch (ParseException ex)
         {
@@ -717,6 +654,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
+            double newScaleDepth = scaleTextDepthField.getAsDouble();
+            if (newScaleDepth == lastScaleDepth) {
+                return;
+            } else {
+                lastScaleDepth = newScaleDepth;
+            }
             double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
             if (inMultiSelectWithFixedAR())
             {
@@ -729,7 +672,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
-                                          scaleFactor, inFixedAR());
+                                             scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
         {
@@ -741,6 +684,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
+            double newScaleHeight = scaleTextHeightField.getAsDouble();
+            if (newScaleHeight == lastScaleHeight) {
+                return;
+            } else {
+                lastScaleHeight = newScaleHeight;
+            }
             double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
             if (inMultiSelectWithFixedAR())
             {
@@ -753,7 +702,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
-                                          scaleFactor, inFixedAR());
+                                             scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
         {
@@ -765,6 +714,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         try
         {
+            double newScaleWidth = scaleTextWidthField.getAsDouble();
+            if (newScaleWidth == lastScaleWidth) {
+                return;
+            } else {
+                lastScaleWidth = newScaleWidth;
+            }
             double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
             if (inMultiSelectWithFixedAR())
             {
@@ -777,7 +732,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             } else
             {
                 undoableProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
-                                          scaleFactor, inFixedAR());
+                                             scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
         {
@@ -879,8 +834,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-//        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-//        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
@@ -896,9 +849,14 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         {
             ModelContainer modelContainer = getSingleSelection();
             populateScaleXField(modelContainer.getXScale());
-            populateScaleYField(modelContainer.getXScale());
+            populateScaleYField(modelContainer.getYScale());
             populateScaleZField(modelContainer.getZScale());
         }
+        getInitialValuesOfNumberFields();
+    }
+    
+    private void getInitialValuesOfNumberFields() {
+        
     }
 
     private void unbindProject(Project project)
@@ -922,6 +880,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         }
         boundProject = project;
         undoableProject = new UndoableProject(project);
+
+        materialComponent0.setLayoutProject(project);
+        materialComponent1.setLayoutProject(project);
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
@@ -1019,18 +980,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         {
             selectMaterialComponent(materialComponent1);
         });
-
-        materialComponent0.getSelectedFilamentProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                boundProject.setExtruder0Filament(newValue);
-            });
-
-        materialComponent1.getSelectedFilamentProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                boundProject.setExtruder1Filament(newValue);
-            });
     }
 
     private void selectMaterialComponent(MaterialComponent materialComponent)
@@ -1040,16 +989,16 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         if (materialComponent == materialComponent0)
         {
             layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);
-            materialComponent1.select(false);
         } else
         {
             layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1);
-            materialComponent0.select(false);
         }
     }
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
     {
+        materialComponent0.select(false);
+        materialComponent1.select(false);
         switch (layoutSubmode.get())
         {
             case ASSOCIATE_WITH_EXTRUDER0:
@@ -1058,9 +1007,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             case ASSOCIATE_WITH_EXTRUDER1:
                 selectMaterialComponent(materialComponent1);
                 break;
-            default:
-                materialComponent0.select(false);
-                materialComponent1.select(false);
         }
 
     };

@@ -45,7 +45,6 @@ public abstract class CommandInterface extends Thread
     protected Printer printerToUse = null;
     protected String printerFriendlyName = "Robox";
     protected RoboxCommsState commsState = RoboxCommsState.FOUND;
-    protected SerialPort serialPort = null;
     protected PrinterID printerID = new PrinterID();
 
     protected final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();

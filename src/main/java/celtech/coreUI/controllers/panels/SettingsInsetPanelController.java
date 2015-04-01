@@ -5,22 +5,23 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
@@ -66,6 +67,9 @@ public class SettingsInsetPanelController implements Initializable
     @FXML
     private VBox nonCustomProfileVBox;
 
+    @FXML
+    private Label createProfileLabel;
+
     private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
     private final SlicerParametersFile normalSettings = SlicerParametersContainer.
@@ -86,33 +90,39 @@ public class SettingsInsetPanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        setupQualityChooser();
+        try
+        {
+            setupQualityChooser();
 
-        setupCustomProfileChooser();
+            setupCustomProfileChooser();
 
-        nonCustomProfileVBox.visibleProperty()
-            .bind(qualityChooser.valueProperty().isNotEqualTo(
-                    PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+            nonCustomProfileVBox.visibleProperty()
+                .bind(qualityChooser.valueProperty().isNotEqualTo(
+                        PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
-        setupOverrides();
+            setupOverrides();
 
-        Lookup.getSelectedProjectProperty().addListener(
-            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-            {
-                whenProjectChanged(newValue);
-            });
-
-        ApplicationStatus.getInstance().modeProperty().addListener(
-            (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-            {
-                if (newValue == ApplicationMode.SETTINGS)
+            Lookup.getSelectedProjectProperty().addListener(
+                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
                 {
-                    settingsInsetRoot.setVisible(true);
-                } else
+                    whenProjectChanged(newValue);
+                });
+
+            ApplicationStatus.getInstance().modeProperty().addListener(
+                (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
                 {
-                    settingsInsetRoot.setVisible(false);
-                }
-            });
+                    if (newValue == ApplicationMode.SETTINGS)
+                    {
+                        settingsInsetRoot.setVisible(true);
+                    } else
+                    {
+                        settingsInsetRoot.setVisible(false);
+                    }
+                });
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
 
     private void setupQualityChooser()
@@ -159,6 +169,7 @@ public class SettingsInsetPanelController implements Initializable
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
         customProfileChooser.setItems(availableProfiles);
 
+        System.out.println("XXXF");
         updateProfileList();
 
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
@@ -177,12 +188,10 @@ public class SettingsInsetPanelController implements Initializable
         SlicerParametersContainer.getUserProfileList().addListener(
             (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
+                System.out.println("XXXG");
                 updateProfileList();
             });
     }
-
-    private ChangeListener<Filament> filament0Listener;
-    private ChangeListener<Filament> filament1Listener;
 
     private void setupOverrides()
     {
@@ -254,38 +263,76 @@ public class SettingsInsetPanelController implements Initializable
         supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
     }
 
+    @FXML
+    void editPrintProfile(ActionEvent event)
+    {
+        DisplayManager.getInstance().showAndSelectPrintProfile(customProfileChooser.getValue());
+    }
+
+    /**
+     * Update the profile combo box with the list of user profiles. If there are no user profiles
+     * then hide the combo box and show the 'Please create a custom profile' message.
+     */
     private void updateProfileList()
     {
         SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().
             getSelectedItem();
-
-        availableProfiles.clear();
-        availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
-        availableProfiles.add(SlicerParametersContainer.createNewProfile);
-
-        if (currentSelection != null && availableProfiles.contains(currentSelection)
-            && currentSelection != SlicerParametersContainer.createNewProfile)
+        String currentSelectionName = "";
+        if (currentSelection != null)
         {
-            customProfileChooser.getSelectionModel().select(currentSelection);
-        } else if (customProfileChooser.getItems().size() > 1)
+            currentSelectionName = customProfileChooser.getSelectionModel().
+                getSelectedItem().getProfileName();
+        }
+
+        if (SlicerParametersContainer.getUserProfileList().size() > 0)
         {
-            // Only pick the first element if there is something to select
-            // If size == 1 then we only have the Create new filament entry
-            customProfileChooser.getSelectionModel().selectFirst();
+            refreshAndShowProfileCombo(currentSelectionName, currentSelection);
+        } else
+        {
+            if (printerSettings != null)
+            {
+                printerSettings.setSettingsName("");
+            }
+            hideProfileCombo();
         }
     }
 
-    private void selectPrintProfileByName(String profileNameToSave)
+    private void hideProfileCombo()
     {
-        for (SlicerParametersFile settings : availableProfiles)
-        {
+        customProfileChooser.setVisible(false);
+        createProfileLabel.setVisible(true);
+    }
 
-            if (settings.getProfileName() != null && settings.getProfileName().equals(
-                profileNameToSave))
+    private void refreshAndShowProfileCombo(String currentSelectionName,
+        SlicerParametersFile currentSelection)
+    {
+        System.out.println("curr sel name is " + currentSelectionName);
+        System.out.println("curr selection is " + currentSelection);
+        createProfileLabel.setVisible(false);
+        customProfileChooser.setVisible(true);
+        availableProfiles.clear();
+        availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
+
+        boolean currentSelectionInAvailableProfiles = false;
+        for (SlicerParametersFile availableProfile : availableProfiles)
+        {
+            System.out.println("profile name is " + availableProfile.getProfileName());
+
+            if (availableProfile.getProfileName().equals(currentSelectionName))
             {
-                customProfileChooser.getSelectionModel().select(settings);
-                break;
+                currentSelectionInAvailableProfiles = true;
+                currentSelection = availableProfile;
             }
+        }
+        if (currentSelection != null && currentSelectionInAvailableProfiles)
+        {
+            System.out.println("XXXA");
+            System.out.println("select " + currentSelection);
+            customProfileChooser.getSelectionModel().select(currentSelection);
+        } else
+        {
+            System.out.println("XXXB");
+            customProfileChooser.getSelectionModel().selectFirst();
         }
     }
 
@@ -314,6 +361,7 @@ public class SettingsInsetPanelController implements Initializable
                 SlicerParametersFile chosenProfile = SlicerParametersContainer.
                     getSettingsByProfileName(
                         project.getPrinterSettings().getSettingsName());
+                System.out.println("XXXC");
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
@@ -339,6 +387,7 @@ public class SettingsInsetPanelController implements Initializable
                 break;
             case CUSTOM:
                 customProfileVBox.setVisible(true);
+                System.out.println("XXXD");
                 customProfileChooser.getSelectionModel().select(settings);
                 break;
             default:
@@ -354,6 +403,9 @@ public class SettingsInsetPanelController implements Initializable
                 printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
                 printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
                 setupQualityOverrideControls(printerSettings);
+            } else
+            {
+                printerSettings.setSettingsName("");
             }
         }
     }

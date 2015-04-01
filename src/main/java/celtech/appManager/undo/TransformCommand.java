@@ -23,10 +23,10 @@ class TransformCommand extends Command
     private Stenographer steno = StenographerFactory.getStenographer(
         TransformCommand.class.getName());
 
-    private UndoableProject.NoArgsVoidFunc func;
+    private final UndoableProject.NoArgsVoidFunc func;
     private Set<ModelContainer.State> originalStates;
     private Set<ModelContainer.State> newStates;
-    private boolean canMerge;
+    private final boolean canMerge;
     private final Project project;
 
     public TransformCommand(Project project, UndoableProject.NoArgsVoidFunc func, boolean canMerge)
@@ -94,11 +94,10 @@ class TransformCommand extends Command
     }
 
     /**
-     * Update states to include the changes in fromStates -> toStates.
+     * Update states to include the changes in toStates.
      */
     private void mergeStates(Set<ModelContainer.State> states, Set<ModelContainer.State> toStates)
     {
-        Map<Integer, ModelContainer.State> statesById = makeStatesById(states);
         Map<Integer, ModelContainer.State> toStatesById = makeStatesById(toStates);
         for (ModelContainer.State state : states)
         {

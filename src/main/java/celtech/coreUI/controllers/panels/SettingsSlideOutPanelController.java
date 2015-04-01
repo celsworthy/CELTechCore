@@ -94,7 +94,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
      */
     public void updateProfileData(SlicerParametersFile settings)
     {
-        profileDetailsController.updateProfileData(settings);
+//        profileDetailsController.updateProfileData(settings);
     }
 
     /**
@@ -104,7 +104,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     @Override
     public void provideReceiver(PopupCommandReceiver receiver)
     {
-        profileDetailsController.provideReceiver(receiver);
+//        profileDetailsController.provideReceiver(receiver);
     }
 
     /**

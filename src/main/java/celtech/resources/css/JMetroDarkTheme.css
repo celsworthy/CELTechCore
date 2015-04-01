@@ -2392,6 +2392,11 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-padding: 2 2 2 2;
 }
 
+#printProfileName:error {
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
+}
+
 .printProfileGrid {
     -fx-background-color: light_grey;
     -fx-font-family: 'Source Sans Pro Regular';
@@ -2444,6 +2449,7 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-max_height: 260;
     -fx-min-height: 260;    
     -fx-hgap: 20;
+    -fx-vgap: 20;
     -fx-background-color: mid_grey;
 }
 
@@ -2453,6 +2459,11 @@ all inherit from Menu Control's popup-menu. --- */
 #settingsInsetRoot {
     -fx-background-color: mid_grey_50;
     -fx-font-family: 'Source Sans Pro Regular';
+}
+
+#pleaseCreateProfile {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18px;
 }
 
 

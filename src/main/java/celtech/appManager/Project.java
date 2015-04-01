@@ -50,6 +50,8 @@ public class Project implements Serializable
     private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
         "RBX-ABS-GR499");
 
+    private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
+
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -59,6 +61,8 @@ public class Project implements Serializable
     private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
     private final BooleanProperty modelColourChanged = new SimpleBooleanProperty();
+    private final BooleanProperty canPrint = new SimpleBooleanProperty(true);
+    private final BooleanProperty customSettingsNotChosen = new SimpleBooleanProperty(true);
 
     private final PrinterSettings printerSettings;
 
@@ -81,7 +85,14 @@ public class Project implements Serializable
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 projectModified();
+                fireWhenPrinterSettingsChanged(printerSettings);
             });
+        
+        customSettingsNotChosen.bind(
+            printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
+                .and(printerSettings.getSettingsNameProperty().isEmpty()));
+        // Cannot print if quality is CUSTOM and no custom settings have been chosen
+        canPrint.bind(customSettingsNotChosen.not());
     }
 
     public final void setProjectName(String value)
@@ -436,6 +447,14 @@ public class Project implements Serializable
             projectChangesListener.whenModelAdded(modelContainer);
         }
     }
+    
+    private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenPrinterSettingsChanged(printerSettings);
+        }
+    }    
 
     public void deleteModel(ModelContainer modelContainer)
     {
@@ -476,7 +495,8 @@ public class Project implements Serializable
     {
         modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            fireWhenModelChanged(modelContainer, "associateWithExtruderNumber");
+            System.out.println("model extruder changed");
+            fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
             modelColourChanged.set(!modelColourChanged.get());
         };
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
@@ -488,6 +508,16 @@ public class Project implements Serializable
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
             modelExtruderNumberListener);
     }
+
+    public BooleanProperty canPrintProperty()
+    {
+        return canPrint;
+    }
+    
+    public BooleanProperty customSettingsNotChosenProperty()
+    {
+        return customSettingsNotChosen;
+    }    
 
     /**
      * ProjectChangesListener allows other objects to observe when models are added or removed etc
@@ -522,6 +552,12 @@ public class Project implements Serializable
          * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
+        
+        /**
+         * This should be fired whenever the PrinterSettings of the project changes.
+         * @param printerSettings 
+         */
+        void whenPrinterSettingsChanged(PrinterSettings printerSettings);
     }
 
     public void autoLayout()
@@ -678,6 +714,15 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    {
+        modelContainer.snapToGround(faceNumber);
+        projectModified();
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(modelContainer);
+        fireWhenModelsTransformed(modelContainers);
+    }
+
     public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
     {
         for (ModelContainer model : modelContainers)
@@ -764,6 +809,12 @@ public class Project implements Serializable
         }
         projectModified();
         fireWhenModelsTransformed(modelContainers);
+    }
+
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    {
+        modelContainer.setUseExtruder0Filament(useExtruder0);
+        projectModified();
     }
 
     public Set<ModelContainer.State> getModelStates()

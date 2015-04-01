@@ -7,6 +7,8 @@ import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
 import celtech.appManager.PurgeResponse;
+import celtech.appManager.undo.CommandStack;
+import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.Filament;
@@ -71,6 +73,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
 
     private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
+
+    @FXML
+    private GraphicButtonWithLabel undoButton;
+    
+    @FXML
+    private GraphicButtonWithLabel redoButton;    
 
     @FXML
     private GraphicButtonWithLabel backwardFromSettingsButton;
@@ -144,6 +152,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
     private Project selectedProject;
+    private UndoableProject undoableSelectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
     private SelectedModelContainers modelSelection;
     private final ModelLoader modelLoader = new ModelLoader();
@@ -275,6 +284,38 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
 
     @FXML
+    void undo(ActionEvent event)
+    {
+        CommandStack commandStack = Lookup.getProjectGUIState(selectedProject).getCommandStack();
+        if (commandStack.getCanUndo().get())
+        {
+            try
+            {
+                commandStack.undo();
+            } catch (CommandStack.UndoException ex)
+            {
+                steno.error("Unable to undo: " + ex);
+            }
+        }
+    }
+
+    @FXML
+    void redo(ActionEvent event)
+    {
+        CommandStack commandStack = Lookup.getProjectGUIState(selectedProject).getCommandStack();
+        if (commandStack.getCanRedo().get())
+        {
+            try
+            {
+                commandStack.redo();
+            } catch (CommandStack.UndoException ex)
+            {
+                steno.error("Unable to redo: " + ex);
+            }
+        }
+    }
+
+    @FXML
     void addCloudModel(ActionEvent event)
     {
         applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
@@ -283,25 +324,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void deleteModel(ActionEvent event)
     {
-        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
-        {
-            selectedProject.deleteModel(modelContainer);
-        }
+        undoableSelectedProject.deleteModels(modelSelection.getSelectedModelsSnapshot());
     }
 
     @FXML
     void copyModel(ActionEvent event)
     {
-        for (ModelContainer modelContainer : modelSelection.getSelectedModelsSnapshot())
-        {
-            selectedProject.copyModel(modelContainer);
-        }
+        undoableSelectedProject.copyModels(modelSelection.getSelectedModelsSnapshot());
     }
 
     @FXML
     void autoLayoutModels(ActionEvent event)
     {
-        selectedProject.autoLayout();
+        undoableSelectedProject.autoLayout();
     }
 
     @FXML
@@ -634,7 +669,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (newValue != null)
         {
             whenProjectOrSettingsPrinterChange();
-        } else {
+        } else
+        {
             printButton.disableProperty().unbind();
             printButton.setDisable(true);
         }
@@ -653,6 +689,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
+        System.out.println("update conditional text");
+        
         if (printer == null)
         {
             return;
@@ -665,41 +703,51 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 lidOpenProperty()
                                                 .and(Lookup.getUserPreferences().
                                                     safetyFeaturesOnProperty()));
+        
+        printButton.getTag().addConditionalText("dialogs.chooseACustomProfile",
+                                                project.customSettingsNotChosenProperty());
 
-        CanPrintConditionalTextBindings conditionalTextBindings =
-            new CanPrintConditionalTextBindings(project, printer);
+        CanPrintConditionalTextBindings conditionalTextBindings
+            = new CanPrintConditionalTextBindings(project, printer);
         BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        
+
         BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
         BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
         BooleanBinding noFilament0Selected = project.getPrinterSettings().getFilament0Property().isNull();
         BooleanBinding noFilament1Selected = project.getPrinterSettings().getFilament1Property().isNull();
 
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage",
-                                                oneExtruderPrinter.and(filament0Reqd).and(noFilament0Selected));
+                                                oneExtruderPrinter.and(filament0Reqd).and(
+                                                    noFilament0Selected));
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                                oneExtruderPrinter.and(filament0Reqd).and(printer.extrudersProperty().get(0).
-                                                filamentLoadedProperty().not()));
+                                                oneExtruderPrinter.and(filament0Reqd).and(
+                                                    printer.extrudersProperty().get(0).
+                                                    filamentLoadedProperty().not()));
         printButton.getTag().addConditionalText("dialogs.filamentMismatchMessage",
                                                 oneExtruderPrinter.and(extruder0FilamentMismatch));
-    
+
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage0",
-                                                twoExtruderPrinter.and(filament0Reqd).and(noFilament0Selected));
+                                                twoExtruderPrinter.and(filament0Reqd).and(
+                                                    noFilament0Selected));
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
-                                                twoExtruderPrinter.and(filament0Reqd).and(printer.extrudersProperty().get(0).
-                                                filamentLoadedProperty().not()));
+                                                twoExtruderPrinter.and(filament0Reqd).and(
+                                                    printer.extrudersProperty().get(0).
+                                                    filamentLoadedProperty().not()));
         printButton.getTag().addConditionalText("dialogs.filament0MismatchMessage",
                                                 twoExtruderPrinter.and(extruder0FilamentMismatch));
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage1",
-                                                twoExtruderPrinter.and(filament1Reqd).and(noFilament1Selected));
+                                                twoExtruderPrinter.and(filament1Reqd).and(
+                                                    noFilament1Selected));
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
-                                                twoExtruderPrinter.and(filament1Reqd).and(printer.extrudersProperty().get(1).
-                                                filamentLoadedProperty().not()));
+                                                twoExtruderPrinter.and(filament1Reqd).and(
+                                                    printer.extrudersProperty().get(1).
+                                                    filamentLoadedProperty().not()));
         printButton.getTag().addConditionalText("dialogs.filament1MismatchMessage",
-                                                twoExtruderPrinter.and(filament1Reqd).and(extruder1FilamentMismatch));
+                                                twoExtruderPrinter.and(filament1Reqd).and(
+                                                    extruder1FilamentMismatch));
     }
 
     /**
@@ -813,6 +861,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             whenProjectOrSettingsPrinterChange();
         }
+
+        @Override
+        public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+        {
+            whenProjectOrSettingsPrinterChange();
+        }
     };
 
     private void unbindProject(Project project)
@@ -820,6 +874,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printerSettings.selectedPrinterProperty().removeListener(printerSettingsListener);
         layoutSubmode.removeListener(layoutSubmodeListener);
         project.removeProjectChangesListener(projectChangesListener);
+        undoButton.disableProperty().unbind();
+        redoButton.disableProperty().unbind();
     }
 
     private void bindProject(Project project)
@@ -834,6 +890,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         layoutSubmode.addListener(layoutSubmodeListener);
         project.addProjectChangesListener(projectChangesListener);
+        
+        undoButton.disableProperty().bind(Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
+        redoButton.disableProperty().bind(Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
 
     }
 
@@ -855,6 +914,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             unbindProject(selectedProject);
         }
         selectedProject = project;
+        undoableSelectedProject = new UndoableProject(project);
         printerSettings = project.getPrinterSettings();
         currentSettingsPrinter = printerSettings.getSelectedPrinter();
         modelSelection = Lookup.getProjectGUIState(project).getSelectedModelContainers();
@@ -880,6 +940,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             canPrintProject.bind(
                 printer.canPrintProperty()
+                .and(project.canPrintProperty())    
                 .and(printerSettings.getFilament0Property().isNotNull())
                 .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
@@ -902,6 +963,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                 canPrintProject.bind(
                     printer.canPrintProperty()
+                    .and(project.canPrintProperty())    
                     .and(requiredFilamentProperty.isNotNull())
                     .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
                         .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
@@ -912,6 +974,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 canPrintProject.bind(
                     printer.canPrintProperty()
+                    .and(project.canPrintProperty())    
                     .and(printerSettings.getFilament0Property().isNotNull())
                     .and(printerSettings.getFilament1Property().isNotNull())
                     .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()

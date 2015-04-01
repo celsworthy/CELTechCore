@@ -32,11 +32,6 @@ public class SlicerParametersContainer
     private static final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     *
-     */
-    public static final SlicerParametersFile createNewProfile = new SlicerParametersFile();
-
-    /**
      * Return a read-only set of current profile names
      *
      * @return

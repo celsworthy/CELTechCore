@@ -9,6 +9,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.TestPrinter;
+import java.io.File;
 import javafx.beans.binding.BooleanBinding;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -35,7 +36,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     private ModelContainer makeModelContainer(boolean useExtruder0)
     {
         MeshView meshView = new MeshView(new Shape3DRectangle(2, 3));
-        ModelContainer modelContainer = new ModelContainer("testModel", meshView);
+        ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
         modelContainer.setUseExtruder0Filament(useExtruder0);
         return modelContainer;
     }

@@ -10,6 +10,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.controllers.GizmoOverlayController;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.threed.importers.obj.ObjImporter;
@@ -342,25 +344,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    private void doAssociateWithExtruder1(ModelContainer modelContainer)
+    private void doAssociateWithExtruder0(ModelContainer modelContainer, boolean useExtruder0)
     {
         if (modelContainer != null)
         {
-            modelContainer.setUseExtruder0Filament(false);
-            updateModelColour(modelContainer);
-            layoutSubmode.set(LayoutSubmode.SELECT);
-            project.projectModified();
-        }
-    }
-
-    private void doAssociateWithExtruder0(ModelContainer modelContainer)
-    {
-        if (modelContainer != null)
-        {
-            modelContainer.setUseExtruder0Filament(true);
-            updateModelColour(modelContainer);
-            layoutSubmode.set(LayoutSubmode.SELECT);
-            project.projectModified();
+           undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
+           layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -369,9 +358,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (modelContainer != null)
         {
             int faceNumber = pickResult.getIntersectedFace();
-            snapToGround(modelContainer, faceNumber);
-            collideModels();
-            project.projectModified();
+            undoableProject.snapToGround(modelContainer, faceNumber);
+            modelContainer.snapToGround(faceNumber);
+            layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -725,7 +714,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void translateSelection(double x, double z)
     {
-        System.out.println("translate " + x + " " + z + "  " + justEnteredDragMode);
         undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
                                           ! justEnteredDragMode);
     }
@@ -770,18 +758,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             loadedModels.get(index).setCollision(collidedModels[index]);
         }
-    }
-
-    private void snapToGround(ModelContainer modelContainer, int faceNumber)
-    {
-        if (modelContainer != null)
-        {
-            modelContainer.snapToGround(faceNumber);
-            selectedModelContainers.updateSelectedValues();
-            collideModels();
-            project.projectModified();
-        }
-        layoutSubmode.set(LayoutSubmode.SELECT);
     }
 
     public SubScene getSubScene()
@@ -954,6 +930,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    {
+        updateModelColour(modelContainer);
+    }
+
+    @Override
+    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
     {
     }
 

@@ -1,18 +1,11 @@
 package celtech.printerControl.comms;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -26,16 +19,11 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private static RoboxCommsManager instance = null;
     private boolean keepRunning = true;
-    private String roboxDetectorMac = null;
-    private String roboxDetectorLinux = null;
-    private String roboxDetectorWindows = null;
-    private String roboxDetectorCommand = null;
+    
     private final String printerToSearchFor = "Robox";
-
     private final String roboxVendorID = "16D0";
     private final String roboxProductID = "081B";
 
-    private final String notConnectedString = "NOT_CONNECTED";
     private Stenographer steno = null;
     private final List<Printer> dummyPrinters = new ArrayList<>();
     private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
@@ -46,41 +34,17 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private String dummyPrinterPort = "DummyPrinterPort";
 
     private int dummyPrinterCounter = 0;
+    
+    private final DeviceDetector deviceDetector;
 
     private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
-
-        roboxDetectorMac = pathToBinaries + "RoboxDetector.mac.sh";
-        roboxDetectorLinux = pathToBinaries + "RoboxDetector.linux.sh";
-        roboxDetectorWindows = pathToBinaries + "RoboxDetector.exe";
+        
+        deviceDetector = new DeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
 
         this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
-
-        MachineType machineType = ApplicationConfiguration.getMachineType();
-
-        switch (machineType)
-        {
-            case WINDOWS:
-                roboxDetectorCommand = roboxDetectorWindows + " " + roboxVendorID + " "
-                    + roboxProductID;
-                break;
-            case MAC:
-                roboxDetectorCommand = roboxDetectorMac + " " + printerToSearchFor;
-                break;
-            case LINUX_X86:
-            case LINUX_X64:
-                roboxDetectorCommand = roboxDetectorLinux + " " + printerToSearchFor + " "
-                    + roboxVendorID;
-                break;
-            default:
-                steno.error("Unsupported OS - cannot establish comms.");
-                keepRunning = false;
-                break;
-        }
-
-        steno.trace("Robox detector command: " + roboxDetectorCommand);
     }
 
     /**
@@ -116,7 +80,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         while (keepRunning)
         {
 //            steno.info("Looking for printers");
-            String[] activePorts = searchForPrinter();
+            String[] activePorts = deviceDetector.searchForDevice();
 
             if (activePorts != null)
             {
@@ -176,53 +140,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         keepRunning = false;
     }
 
-    /**
-     * Detect any attached Robox printers and return an array of port names
-     *
-     * @return an array of com or dev (e.g. /dev/ttyACM0) names
-     */
-    private String[] searchForPrinter()
-    {
-        StringBuilder outputBuffer = new StringBuilder();
-        List<String> command = new ArrayList<String>();
-        for (String subcommand : roboxDetectorCommand.split(" "))
-        {
-            command.add(subcommand);
-        }
 
-        ProcessBuilder builder = new ProcessBuilder(command);
-        Map<String, String> environ = builder.environment();
-
-        Process process = null;
-
-        try
-        {
-            process = builder.start();
-            InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            while ((line = br.readLine()) != null)
-            {
-                if (line.equalsIgnoreCase(notConnectedString) == false)
-                {
-                    outputBuffer.append(line);
-                }
-            }
-        } catch (IOException ex)
-        {
-            steno.error("Error " + ex);
-        }
-
-        String[] ports = null;
-
-        if (outputBuffer.length() > 0)
-        {
-            ports = outputBuffer.toString().split(" ");
-        }
-
-        return ports;
-    }
 
     /**
      *

@@ -107,6 +107,7 @@ public class ProjectTab extends Tab
 
         dimensionLineManager = new DimensionLineManager(basePane, project);
 
+        settingsInsetPanel.setVisible(false);
         AnchorPane.setTopAnchor(settingsInsetPanel, 30.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
 

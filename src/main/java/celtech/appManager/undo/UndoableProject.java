@@ -5,6 +5,7 @@ package celtech.appManager.undo;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
+import celtech.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
@@ -29,6 +30,7 @@ public class UndoableProject
      */
     public interface NoArgsVoidFunc
     {
+
         void run() throws Exception;
     }
 
@@ -36,12 +38,12 @@ public class UndoableProject
     {
         doTransformCommand(func, false);
     }
-    
+
     private void doTransformCommand(NoArgsVoidFunc func, boolean canMerge)
     {
         Command command = new TransformCommand(project, func, canMerge);
         commandStack.do_(command);
-    }    
+    }
 
     public UndoableProject(Project project)
     {
@@ -148,12 +150,78 @@ public class UndoableProject
         });
     }
 
-    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z, boolean canMerge)
+    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z,
+        boolean canMerge)
     {
         doTransformCommand(() ->
         {
             project.translateModelsBy(modelContainers, x, z);
         }, canMerge);
+    }
+    
+    public void autoLayout()
+    {
+        doTransformCommand(() ->
+        {
+            project.autoLayout();
+        });
+    }  
+    
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    {
+        doTransformCommand(() ->
+        {
+            project.snapToGround(modelContainer, faceNumber);
+        });
+    }    
+
+    public void addModel(ModelContainer modelContainer)
+    {
+        AddModelCommand addModelCommand = new AddModelCommand(project, modelContainer);
+        commandStack.do_(addModelCommand);
+    }
+
+    public void deleteModels(Set<ModelContainer> modelContainers)
+    {
+        DeleteModelsCommand deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
+        commandStack.do_(deleteModelCommand);
+    }
+    
+    public void copyModels(Set<ModelContainer> modelContainers)
+    {
+        CopyModelsCommand copyModelsCommand = new CopyModelsCommand(project, modelContainers);
+        commandStack.do_(copyModelsCommand);
+    }    
+
+    public void setExtruder0Filament(Filament filament)
+    {
+        if (filament != project.getExtruder0FilamentProperty().get())
+        {
+            SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
+                                                                                           filament,
+                                                                                           0);
+            commandStack.do_(setExtruderCommand);
+        }
+    }
+
+    public void setExtruder1Filament(Filament filament)
+    {
+        if (filament != project.getExtruder1FilamentProperty().get())
+        {
+            SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
+                                                                                           filament,
+                                                                                           1);
+            commandStack.do_(setExtruderCommand);
+        }
+        
+    }
+
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    {
+        SetUserExtruder0Command setUserExtruder0Command = new SetUserExtruder0Command(project,
+                                                                                      modelContainer,
+                                                                                      useExtruder0);
+        commandStack.do_(setUserExtruder0Command);
     }
 
 }

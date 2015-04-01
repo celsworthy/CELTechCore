@@ -118,7 +118,7 @@ public class STLImporter
             meshView.setCullFace(CullFace.BACK);
             meshView.setId(modelFile.getName() + "_mesh");
 
-            ModelContainer modelContainer = new ModelContainer(modelFile.getName(), meshView);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
 
             BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
             steno.info("Model bounds are : " + bounds);

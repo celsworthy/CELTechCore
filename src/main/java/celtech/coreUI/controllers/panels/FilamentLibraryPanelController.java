@@ -93,6 +93,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
+    private final BooleanProperty canSaveAs = new SimpleBooleanProperty(false);
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty canWriteToReel1 = new SimpleBooleanProperty(false);
     private final BooleanProperty canWriteToReel2 = new SimpleBooleanProperty(false);
@@ -162,6 +163,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         canSave.bind(isValid.and(isDirty).and(
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
+        
+        canSaveAs.bind(state.isNotEqualTo(State.NEW));
 
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
 
@@ -462,7 +465,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         if (name.equals(""))
         {
             valid = false;
-        } else
+        } else if (currentFilamentID == null || currentFilamentID.startsWith("U"))
         {
             ObservableList<Filament> existingMaterialList = FilamentContainer.getCompleteFilamentList();
             for (Filament existingMaterial : existingMaterialList)
@@ -493,6 +496,17 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         clearWidgets();
         currentFilamentID = null;
     }
+    
+    void whenSaveAsPressed()
+    {
+        state.set(State.NEW);
+        currentFilamentID = null;
+//        Filament filament = getFilament(null);
+        name.requestFocus();
+        name.selectAll();
+        // visually marks name as needing to be changed
+        name.pseudoClassStateChanged(ERROR, true);
+    }    
 
     void whenCopyPressed()
     {
@@ -636,40 +650,40 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         };
         operationButtons.add(saveButton);
-        ExtrasMenuInnerPanel.OperationButton copyButton = new ExtrasMenuInnerPanel.OperationButton()
+        ExtrasMenuInnerPanel.OperationButton saveAsButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
             {
-                return "genericFirstLetterCapitalised.Copy";
+                return "genericFirstLetterCapitalised.SaveAs";
             }
 
             @Override
             public String getFXMLName()
             {
-                return "copyButton";
+                return "saveAsButton";
             }
 
             @Override
             public String getTooltipTextId()
             {
-                return "genericFirstLetterCapitalised.Copy";
+                return "genericFirstLetterCapitalised.SaveAs";
             }
 
             @Override
             public void whenClicked()
             {
-                whenCopyPressed();
+                whenSaveAsPressed();
             }
 
             @Override
             public BooleanProperty whenEnabled()
             {
-                return new SimpleBooleanProperty(true);
+                return canSaveAs;
             }
 
         };
-        operationButtons.add(copyButton);
+        operationButtons.add(saveAsButton);
         ExtrasMenuInnerPanel.OperationButton deleteButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override
@@ -681,7 +695,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "deleteModelButton";
+                return "deleteButton";
             }
 
             @Override
@@ -715,7 +729,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "lightsButton";
+                return "writeToReel1Button";
             }
 
             @Override
@@ -749,7 +763,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             @Override
             public String getFXMLName()
             {
-                return "lightsButton";
+                return "writeToReel2Button";
             }
 
             @Override

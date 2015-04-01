@@ -6,7 +6,6 @@ package celtech.coreUI.components.printerstatus;
 import celtech.Lookup;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
-import celtech.coreUI.controllers.panels.PrinterStatusSidePanelController;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -26,13 +25,13 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * This component houses a square grid of PrinterComponents and is used a printer
- * selector.
+ * This component houses a square grid of PrinterComponents and is used a printer selector.
  *
  * @author tony
  */
 public class PrinterGridComponent extends GridPane implements PrinterListChangesListener
 {
+
     private ObservableList<Printer> connectedPrinters;
     private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
     private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
@@ -185,8 +184,11 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
             PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter.get());
             printerComponent.setSelected(false);
         }
-        PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
-        printerComponent.setSelected(true);
+        if (printer != null)
+        {
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
+            printerComponent.setSelected(true);
+        }
         selectedPrinter.set(printer);
     }
 
@@ -196,7 +198,7 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     private void showEditPrinterDetails(Printer printer)
     {
         Stenographer steno = StenographerFactory.getStenographer(
-                                    PrinterGridComponent.class.getName());
+            PrinterGridComponent.class.getName());
         PrinterColourMap colourMap = PrinterColourMap.getInstance();
         if (printer != null)
         {
@@ -206,9 +208,9 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
                 printerIdentity.printerColourProperty().get()));
             printerIDDialog.
                 setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
-            
+
             boolean okPressed = printerIDDialog.show();
-            
+
             if (okPressed)
             {
                 try

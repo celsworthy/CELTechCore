@@ -15,7 +15,6 @@ public class CommandStackTest
 
     public class TestModel
     {
-
         public int i = 0;
     }
 
@@ -177,6 +176,12 @@ public class CommandStackTest
         // single undo should undo two previous commands which have been merged
         commandStack.undo();
         assertEquals(5, testModel.i);
+        
+        // should be no commands left in stack
+        assertFalse(commandStack.getCanUndo().get());
+        commandStack.redo();
+        // should be no more commands in stack
+        assertFalse(commandStack.getCanRedo().get());
 
 
     }
