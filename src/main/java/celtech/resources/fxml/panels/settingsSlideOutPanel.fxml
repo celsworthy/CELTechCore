@@ -21,7 +21,7 @@
                     <content>
                         <VBox fx:id="profileData" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308">
                             <children>
-                                <fx:include fx:id="profileDetails" source="../utilityPanels/profileDetails.fxml" />
+                                <!--<fx:include fx:id="profileDetails" source="../utilityPanels/profileDetails.fxml" />-->
                             </children>
                         </VBox>
                     </content>

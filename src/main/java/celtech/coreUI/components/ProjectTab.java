@@ -85,7 +85,8 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
-        URL settingsInsetPanelURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "settingsInsetPanel.fxml");
+        URL settingsInsetPanelURL = getClass().getResource(
+            ApplicationConfiguration.fxmlPanelResourcePath + "settingsInsetPanel.fxml");
         FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, Lookup.getLanguageBundle());
         Node settingsInsetPanel = null;
         try
@@ -178,8 +179,9 @@ public class ProjectTab extends Tab
                             for (File file : fileList)
                             {
                                 boolean extensionFound = false;
-                                for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    ProjectMode.MESH))
+                                for (String extension : ApplicationConfiguration.
+                                    getSupportedFileExtensions(
+                                        ProjectMode.MESH))
                                 {
                                     if (file.getName().toUpperCase().endsWith(
                                         extension.toUpperCase()))
@@ -199,12 +201,11 @@ public class ProjectTab extends Tab
                             if (accept)
                             {
                                 event.acceptTransferModes(TransferMode.COPY);
+                                event.consume();
                             }
                         }
                     }
                 }
-
-                event.consume();
             }
         });
 
@@ -227,8 +228,9 @@ public class ProjectTab extends Tab
                             for (File file : fileList)
                             {
                                 boolean extensionFound = false;
-                                for (String extension : ApplicationConfiguration.getSupportedFileExtensions(
-                                    ProjectMode.MESH))
+                                for (String extension : ApplicationConfiguration.
+                                    getSupportedFileExtensions(
+                                        ProjectMode.MESH))
                                 {
                                     if (file.getName().endsWith(extension))
                                     {
@@ -247,11 +249,11 @@ public class ProjectTab extends Tab
                             if (accept)
                             {
                                 basePane.setEffect(new Glow());
+                                event.consume();
                             }
                         }
                     }
                 }
-                event.consume();
             }
         });
 

@@ -352,7 +352,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             lastStateBeforePause = this.printerStatus.get();
                             break;
                         case PAUSED:
-                            if (this.printerStatus.get() != PrinterStatus.PAUSING)
+                            if (this.printerStatus.get() != PrinterStatus.PAUSING
+                            && this.printerStatus.get() != PrinterStatus.LOADING_FILAMENT
+                            && this.printerStatus.get() != PrinterStatus.EJECTING_FILAMENT)
                             {
                                 lastStateBeforePause = this.printerStatus.get();
                             }
@@ -3160,6 +3162,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     if (lastStateBeforeLoadUnload != null)
                                     {
                                         setPrinterStatus(lastStateBeforeLoadUnload);
+                                        lastStateBeforeLoadUnload = null;
                                     } else
                                     {
                                         setPrinterStatus(PrinterStatus.IDLE);

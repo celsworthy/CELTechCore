@@ -18,9 +18,9 @@ public class UserPreferences
 {
 
     private SlicerType slicerType = SlicerType.Cura;
-    private BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
+    private final BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
     private String languageTag = "";
-    private BooleanProperty showTooltips = new SimpleBooleanProperty(true);
+    private final BooleanProperty showTooltips = new SimpleBooleanProperty(true);
     private LogLevel loggingLevel = LogLevel.INFO;
     private final BooleanProperty advancedMode = new SimpleBooleanProperty(false);
     private final BooleanProperty firstUse = new SimpleBooleanProperty(true);
@@ -35,6 +35,7 @@ public class UserPreferences
         {
             confirmAdvancedModeChange(newValue);
         }
+        saveSettings();
     };
 
     public String getLanguageTag()
@@ -122,7 +123,7 @@ public class UserPreferences
 
     public void setAdvancedMode(boolean advancedMode)
     {
-        confirmAdvancedModeChange(advancedMode);
+        this.advancedMode.set(advancedMode);
     }
 
     public BooleanProperty advancedModeProperty()
@@ -138,7 +139,6 @@ public class UserPreferences
     public void setFirstUse(boolean firstUse)
     {
         this.firstUse.set(firstUse);
-        saveSettings();
     }
 
     public BooleanProperty firstUseProperty()
@@ -159,18 +159,12 @@ public class UserPreferences
         {
             // Ask the user whether they really want to do this..
             boolean goToAdvancedMode = Lookup.getSystemNotificationHandler().confirmAdvancedMode();
-            if (goToAdvancedMode)
-            {
-                this.advancedMode.set(true);
-            }
-            else
-            {
-                this.setAdvancedMode(false);
-            }
+            this.advancedMode.set(goToAdvancedMode);
         } else
         {
             this.advancedMode.set(advancedMode);
         }
+        
         suppressAdvancedModeListenerCheck = false;
     }
 }

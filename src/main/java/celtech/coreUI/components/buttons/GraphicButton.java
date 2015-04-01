@@ -15,6 +15,7 @@ public class GraphicButton extends Button
 {
 
     private final StringProperty fxmlFileName = new SimpleStringProperty("");
+    private final StringProperty styleClassOverride = new SimpleStringProperty("");
 
     public GraphicButton()
     {
@@ -38,6 +39,23 @@ public class GraphicButton extends Button
     public StringProperty getFxmlFileNameProperty()
     {
         return fxmlFileName;
+    }
+    
+    public String getStyleClassOverride()
+    {
+        return styleClassOverride.get();
+    }
+
+    public void setStyleClassOverride(String styleClassOverride)
+    {
+        this.styleClassOverride.set(styleClassOverride);
+        getStyleClass().clear();
+        getStyleClass().add(styleClassOverride);
+    }
+
+    public StringProperty getStyleClassOverrideProperty()
+    {
+        return styleClassOverride;
     }
 
     private void loadFXML() throws RuntimeException
