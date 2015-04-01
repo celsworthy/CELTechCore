@@ -921,10 +921,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             {
                 db.getFiles().forEach(file ->
                 {
-                    Project newProject = ProjectManager.loadProject(file);
+                    Project newProject = ProjectManager.loadProject(file.getAbsolutePath());
                     if (newProject != null)
                     {
-                        ProjectTab newProjectTab = new ProjectTab(instance, newProject,
+                        ProjectTab newProjectTab = new ProjectTab(newProject,
                                                                   tabDisplay.widthProperty(),
                                                                   tabDisplay.heightProperty());
                         

@@ -10,7 +10,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
-import celtech.coreUI.controllers.GizmoOverlayController;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
@@ -284,10 +283,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                         doSnapToGround(modelContainer, pickResult);
                         break;
                     case ASSOCIATE_WITH_EXTRUDER0:
-                        doAssociateWithExtruder0(modelContainer);
+                        doAssociateWithExtruder0(modelContainer, true);
                         break;
                     case ASSOCIATE_WITH_EXTRUDER1:
-                        doAssociateWithExtruder1(modelContainer);
+                        doAssociateWithExtruder0(modelContainer, false);
                         break;
                     case SELECT:
                         doSelectTranslateModel(intersectedNode, pickedPoint, event);
