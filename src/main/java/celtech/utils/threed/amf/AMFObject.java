@@ -1,29 +1,25 @@
 package celtech.utils.threed.amf;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import celtech.modelcontrol.ModelContainer;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import java.util.List;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
  *
  * @author Ian
  */
+@JacksonXmlRootElement(localName = "object")
 public class AMFObject
 {
 
     @JacksonXmlProperty(isAttribute = true)
-    private int objectid;
+    private int id;
 
     private Mesh mesh;
 
-    public int getObjectid()
+    public AMFObject(ModelContainer modelContainer, int id)
     {
-        return objectid;
-    }
-
-    public void setObjectid(int objectid)
-    {
-        this.objectid = objectid;
+        this.id = id;
     }
 
     public Mesh getMesh()

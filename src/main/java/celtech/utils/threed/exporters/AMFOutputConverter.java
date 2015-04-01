@@ -4,31 +4,17 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.threed.AMFRepresentation;
-import celtech.utils.threed.amf.AMFObject;
-import celtech.utils.threed.amf.Constellation;
-import celtech.utils.threed.amf.Material;
-import celtech.utils.threed.amf.MaterialColour;
-import celtech.utils.threed.amf.MaterialMetadata;
-import celtech.utils.threed.amf.ConstellationObjectInstance;
-import celtech.utils.threed.amf.Coordinate;
-import celtech.utils.threed.amf.Mesh;
-import celtech.utils.threed.amf.Vertex;
+import static com.ctc.wstx.util.DataUtil.Integer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import javafx.geometry.Point3D;
+import javafx.collections.ObservableFloatArray;
+import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.Transform;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -39,16 +25,105 @@ import libertysystems.stenographer.StenographerFactory;
 public class AMFOutputConverter implements MeshFileOutputConverter
 {
 
-    private File fFile;
+//    private File fFile;
     private Stenographer steno = StenographerFactory.getStenographer(AMFOutputConverter.class.
         getName());
-    ;
-    private Project project = null;
-    private String printJobUUID = null;
-    private String tempModelFilenameWithPath = null;
+//    private Project project = null;
+//    private String printJobUUID = null;
+//    private String tempModelFilenameWithPath = null;
 
     public AMFOutputConverter()
     {
+    }
+
+    void outputModelContainer(ModelContainer modelContainer, int modelId,
+        XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        streamWriter.writeStartElement("object");
+        streamWriter.writeAttribute("id", Integer(modelId).toString());
+        streamWriter.writeStartElement("mesh");
+        outputVertices(modelContainer, streamWriter);
+        outputVolume(modelContainer, streamWriter);
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
+
+        streamWriter.flush();
+    }
+
+    void outputVolume(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        streamWriter.writeStartElement("volume");
+        streamWriter.writeAttribute("materialid", "2");
+
+        for (Node node : modelContainer.getMeshGroupChildren())
+        {
+            if (node instanceof MeshView)
+            {
+                MeshView mesh = (MeshView) node;
+                TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
+
+                ObservableFaceArray faces = triMesh.getFaces();
+                for (int i = 0; i < faces.size(); i += 6)
+                {
+                    outputFace(faces, i, streamWriter);
+                }
+            }
+        }
+        streamWriter.writeEndElement();
+    }
+
+    void outputVertices(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        streamWriter.writeStartElement("vertices");
+
+        for (Node node : modelContainer.getMeshGroupChildren())
+        {
+            if (node instanceof MeshView)
+            {
+                MeshView mesh = (MeshView) node;
+                TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
+
+                ObservableFloatArray points = triMesh.getPoints();
+                for (int i = 0; i < points.size(); i += 3)
+                {
+                    outputVertex(points, i, streamWriter);
+                }
+
+            }
+        }
+        streamWriter.writeEndElement();
+    }
+
+    private void outputFace(ObservableFaceArray faces, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        streamWriter.writeStartElement("triangle");
+        streamWriter.writeStartElement("v1");
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset)));
+        streamWriter.writeEndElement();
+        streamWriter.writeStartElement("v2");
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 2)));
+        streamWriter.writeEndElement();
+        streamWriter.writeStartElement("v3");
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 4)));
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
+    }
+
+    private void outputVertex(ObservableFloatArray points, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        streamWriter.writeStartElement("vertex");
+        streamWriter.writeStartElement("coordinates");
+        streamWriter.writeStartElement("x");
+        streamWriter.writeCharacters(Float.toString(points.get(offset)));
+        streamWriter.writeEndElement();
+        streamWriter.writeStartElement("y");
+        streamWriter.writeCharacters(Float.toString(points.get(offset + 1)));
+        streamWriter.writeEndElement();
+        streamWriter.writeStartElement("z");
+        streamWriter.writeCharacters(Float.toString(points.get(offset + 2)));
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
     }
 
     /**
@@ -57,12 +132,13 @@ public class AMFOutputConverter implements MeshFileOutputConverter
     @Override
     public void outputFile(Project project, String printJobUUID)
     {
-        this.project = project;
-        this.printJobUUID = printJobUUID;
-        tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
+//        this.project = project;
+//        this.printJobUUID = printJobUUID;
+        String tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory()
+            + printJobUUID
             + File.separator + printJobUUID + ApplicationConfiguration.amfTempFileExtension;
 
-        fFile = new File(tempModelFilenameWithPath);
+        File file = new File(tempModelFilenameWithPath);
 
 //        DataOutputStream dataOutput = null;
 //        int totalNumberOfFacets = 0;
@@ -254,49 +330,49 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 //
         ObjectMapper xmlMapper = new XmlMapper();
         AMFRepresentation amfFile = new AMFRepresentation();
-        
-        AMFObject firstObject = new AMFObject();
-        firstObject.setObjectid(1);
-        
-        Mesh m = new Mesh();
-        ArrayList<Vertex> vertices = new ArrayList<>();        
-        Vertex v1 = new Vertex();
-        Coordinate coord1 = new Coordinate();
-        v1.setCoordinate(coord1);
-            
-        
-        vertices.add(v1);
-        m.setVertices(vertices);
-        firstObject.setMesh(m);
-        amfFile.setObject(firstObject);
-        
-        Constellation constellation = new Constellation();
-        ConstellationObjectInstance instance = new ConstellationObjectInstance();
-        ArrayList<ConstellationObjectInstance> instances = new ArrayList<>();
-        instances.add(instance);
-        constellation.setInstance(instances);
-        amfFile.setConstellation(constellation);
-        
-        List<Material> materials = new ArrayList<>();
-        Material matA = new Material();
-        matA.setId(1);
-        MaterialMetadata metadata = new MaterialMetadata();
-        matA.setMetadata(metadata);
-        MaterialColour colour = new MaterialColour();
-        matA.setColor(colour);
-        materials.add(matA);
-
-        Material matB = new Material();
-        matB.setId(2);
-        materials.add(matB);
-        amfFile.setMaterial(materials);
-
-        try
-        {
-            xmlMapper.writeValue(new File("stuff.xml"), amfFile);
-        } catch (IOException ex)
-        {
-            System.out.println("Error writing AMF");
-        }
+//        
+//        AMFObject firstObject = new AMFObject();
+//        firstObject.setObjectid(1);
+//        
+//        Mesh m = new Mesh();
+//        ArrayList<Vertex> vertices = new ArrayList<>();        
+//        Vertex v1 = new Vertex();
+//        Coordinate coord1 = new Coordinate();
+//        v1.setCoordinate(coord1);
+//            
+//        
+//        vertices.add(v1);
+//        m.setVertices(vertices);
+//        firstObject.setMesh(m);
+//        amfFile.setObject(firstObject);
+//        
+//        Constellation constellation = new Constellation();
+//        ConstellationObjectInstance instance = new ConstellationObjectInstance();
+//        ArrayList<ConstellationObjectInstance> instances = new ArrayList<>();
+//        instances.add(instance);
+//        constellation.setInstance(instances);
+//        amfFile.setConstellation(constellation);
+//        
+//        List<Material> materials = new ArrayList<>();
+//        Material matA = new Material();
+//        matA.setId(1);
+//        MaterialMetadata metadata = new MaterialMetadata();
+//        matA.setMetadata(metadata);
+//        MaterialColour colour = new MaterialColour();
+//        matA.setColor(colour);
+//        materials.add(matA);
+//
+//        Material matB = new Material();
+//        matB.setId(2);
+//        materials.add(matB);
+//        amfFile.setMaterial(materials);
+//
+//        try
+//        {
+//            xmlMapper.writeValue(new File("stuff.xml"), amfFile);
+//        } catch (IOException ex)
+//        {
+//            System.out.println("Error writing AMF");
+//        }
     }
 }
