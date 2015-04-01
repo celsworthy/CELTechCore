@@ -492,9 +492,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             printerStatusChangeListener);
 
                         printerOpenImage.visibleProperty().bind(selectedPrinter.
-                            getPrinterAncillarySystems().lidOpenProperty());
+                            getPrinterAncillarySystems().doorOpenProperty());
                         printerClosedImage.visibleProperty().bind(selectedPrinter.
-                            getPrinterAncillarySystems().lidOpenProperty().not());
+                            getPrinterAncillarySystems().doorOpenProperty().not());
 
                     }
 

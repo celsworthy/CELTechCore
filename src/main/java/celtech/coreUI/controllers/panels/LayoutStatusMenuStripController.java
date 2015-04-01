@@ -699,8 +699,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printButton.getTag().removeAllConditionalText();
 
         printButton.getTag().addConditionalText("dialogs.cantPrintDoorIsOpenMessage",
-                                                printer.getPrinterAncillarySystems().
-                                                lidOpenProperty()
+                                                printer.getPrinterAncillarySystems().doorOpenProperty()
                                                 .and(Lookup.getUserPreferences().
                                                     safetyFeaturesOnProperty()));
         
@@ -942,7 +941,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 printer.canPrintProperty()
                 .and(project.canPrintProperty())    
                 .and(printerSettings.getFilament0Property().isNotNull())
-                .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
+                .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                 .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
             );
@@ -965,7 +964,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     printer.canPrintProperty()
                     .and(project.canPrintProperty())    
                     .and(requiredFilamentProperty.isNotNull())
-                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
+                    .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                         .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                     .and(printer.extrudersProperty().get(extruderNumber).
                         filamentLoadedProperty())
@@ -977,7 +976,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     .and(project.canPrintProperty())    
                     .and(printerSettings.getFilament0Property().isNotNull())
                     .and(printerSettings.getFilament1Property().isNotNull())
-                    .and(printer.getPrinterAncillarySystems().lidOpenProperty().not()
+                    .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                         .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                     .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                     .and(printer.extrudersProperty().get(1).filamentLoadedProperty())

@@ -166,7 +166,7 @@ public class DiagnosticPanelController implements Initializable
                 zStopSwitchProperty().asString());
             zPositiveLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
                 zTopStopSwitchProperty().asString());
-            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().lidOpenProperty().
+            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().doorOpenProperty().
                 asString());
             reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
                 reelButtonProperty().asString());

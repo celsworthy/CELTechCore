@@ -2,6 +2,7 @@ package celtech.gcodetranslator;
 
 import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
+import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.MovementEvent;
 import java.util.ArrayList;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
  */
 public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
 {
+
     public boolean containsExtrusionEvents()
     {
         boolean foundExtrusionEvent = false;
@@ -156,7 +158,8 @@ public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
 
         if (startingIndex > 0)
         {
-            ExtrusionTask currentTask = ((ExtrusionEvent) this.get(startingIndex)).getExtrusionTask();
+            ExtrusionTask currentTask = ((ExtrusionEvent) this.get(startingIndex)).
+                getExtrusionTask();
 
             for (int index = startingIndex; index >= 0; index--)
             {
@@ -164,7 +167,8 @@ public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
                 {
                     ExtrusionEvent extrusionEvent = (ExtrusionEvent) this.get(index);
                     if (extrusionEvent.getExtrusionTask() == currentTask
-                        || (currentTask == ExtrusionTask.ExternalPerimeter && extrusionEvent.getExtrusionTask() == ExtrusionTask.Perimeter))
+                        || (currentTask == ExtrusionTask.ExternalPerimeter && extrusionEvent.
+                        getExtrusionTask() == ExtrusionTask.Perimeter))
                     {
                         lastValidExtrusionIndex = index;
                     } else
@@ -175,5 +179,20 @@ public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
             }
         }
         return lastValidExtrusionIndex;
+    }
+
+    protected void insertSubsequentLayerTemperatures()
+    {
+        MCodeEvent subsequentLayerNozzleTemp = new MCodeEvent();
+        subsequentLayerNozzleTemp.setMNumber(104);
+        subsequentLayerNozzleTemp.setComment(
+            "take post layer 1 nozzle temperature from loaded reel - don't wait");
+        add(subsequentLayerNozzleTemp);
+
+        MCodeEvent subsequentLayerBedTemp = new MCodeEvent();
+        subsequentLayerBedTemp.setMNumber(140);
+        subsequentLayerBedTemp.setComment(
+            "take post layer 1 bed temperature from loaded reel - don't wait");
+        add(subsequentLayerBedTemp);
     }
 }

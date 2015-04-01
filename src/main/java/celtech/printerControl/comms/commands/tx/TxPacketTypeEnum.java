@@ -139,7 +139,7 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    SET_REEL_LED_COLOUR((byte) 0xc4, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_REEL_LED_COLOUR((byte) 0xc5, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

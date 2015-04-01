@@ -47,7 +47,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.effect.Glow;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -347,6 +351,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         tabDisplay.setTabMaxHeight(56);
         tabDisplaySelectionModel = tabDisplay.getSelectionModel();
         tabDisplay.getStyleClass().add("main-project-tabPane");
+        configureProjectDragNDrop(tabDisplay);
 
         VBox.setVgrow(tabDisplay, Priority.ALWAYS);
 
@@ -813,5 +818,135 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 }
                 break;
         }
+    }
+
+    private void configureProjectDragNDrop(Node basePane)
+    {
+        basePane.setOnDragOver((DragEvent event) ->
+        {
+            if (event.getGestureSource() != basePane)
+            {
+                Dragboard dragboard = event.getDragboard();
+                if (dragboard.hasFiles())
+                {
+                    List<File> fileList = dragboard.getFiles();
+                    boolean accept = true;
+                    for (File file : fileList)
+                    {
+                        boolean extensionFound = false;
+
+                        if (file.getName().toUpperCase().endsWith(
+                            ApplicationConfiguration.projectFileExtension
+                            .toUpperCase()))
+                        {
+                            extensionFound = true;
+                            break;
+                        }
+
+                        if (!extensionFound)
+                        {
+                            accept = false;
+                            break;
+                        }
+                    }
+
+                    if (accept)
+                    {
+                        event.acceptTransferModes(TransferMode.COPY);
+                    }
+                }
+            }
+
+            event.consume();
+        });
+
+        basePane.setOnDragEntered((DragEvent event) ->
+        {
+            /* the drag-and-drop gesture entered the target */
+            /* show to the user that it is an actual gesture target */
+            if (ApplicationStatus.getInstance().modeProperty().getValue()
+                == ApplicationMode.LAYOUT)
+            {
+                if (event.getGestureSource() != basePane)
+                {
+                    Dragboard dragboard = event.getDragboard();
+                    if (dragboard.hasFiles())
+                    {
+                        List<File> fileList = dragboard.getFiles();
+                        boolean accept = true;
+                        for (File file : fileList)
+                        {
+                            boolean extensionFound = false;
+                            if (file.getName().toUpperCase().endsWith(
+                                ApplicationConfiguration.projectFileExtension
+                                .toUpperCase()))
+                            {
+                                extensionFound = true;
+                                break;
+                            }
+
+                            if (!extensionFound)
+                            {
+                                accept = false;
+                                break;
+                            }
+                        }
+
+                        if (accept)
+                        {
+                            basePane.setEffect(new Glow());
+                        }
+                    }
+                }
+            }
+            event.consume();
+        });
+
+        basePane.setOnDragExited((DragEvent event) ->
+        {
+            /* mouse moved away, remove the graphical cues */
+            basePane.setEffect(null);
+
+            event.consume();
+        });
+
+        basePane.setOnDragDropped((DragEvent event) ->
+        {
+            /* data dropped */
+            steno.debug("onDragDropped");
+            /* if there is a string data on dragboard, read it and use it */
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles())
+            {
+                db.getFiles().forEach(file ->
+                {
+                    Project newProject = ProjectManager.loadProject(file.getAbsolutePath());
+                    if (newProject != null)
+                    {
+                        ProjectTab newProjectTab = new ProjectTab(newProject,
+                                                                  tabDisplay.widthProperty(),
+                                                                  tabDisplay.heightProperty());
+                        
+                        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+                        tabDisplaySelectionModel.select(newProjectTab);
+                        
+                        if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
+                        {
+                            applicationStatus.setMode(ApplicationMode.LAYOUT);
+                        }
+                    }
+                });
+
+            } else
+            {
+                steno.error("No files in dragboard");
+            }
+            /* let the source know whether the string was successfully
+             * transferred and used */
+            event.setDropCompleted(success);
+
+            event.consume();
+        });
     }
 }

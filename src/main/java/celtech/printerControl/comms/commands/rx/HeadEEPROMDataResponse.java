@@ -235,7 +235,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             success = true;
         } catch (UnsupportedEncodingException ex)
         {
-            steno.error("Failed to convert byte array to Printer ID Response");
+            steno.error("Failed to convert byte array to Head EEPROM Response");
         }
 
         return success;

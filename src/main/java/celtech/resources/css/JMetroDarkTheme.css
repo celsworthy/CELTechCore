@@ -331,13 +331,55 @@
 .jog-button:focused {
     -fx-border-width: 0;
 }
+
+/*
+ * Mini button with no text
+ */
+.mini-button {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    /*-fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;*/
+    /*-fx-background-radius: 30;*/
+    -fx-border-color: transparent;
+    -fx-content-display: graphic-only;
+    -fx-opacity: 1.0;
+}
+
+.mini-button:disabled {
+    -fx-background-color: transparent;
+    -fx-padding: -0 -0 -0 -0;
+    /*-fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;*/
+    /*-fx-background-radius: 30;*/
+    -fx-border-color: transparent;
+    -fx-opacity: 0.4;
+}
+
+.mini-button:hover {
+    -fx-background-color: #eaeaea;
+    -fx-padding: -0 -0 -0 -0;
+    /*-fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;*/
+    /*-fx-background-radius: 30;*/
+    -fx-opacity: 1.0;
+}
+
+.mini-button:pressed {
+    -fx-background-color: #d1d1d1;
+    -fx-padding: -0 -0 -0 -0;
+    /*-fx-background-radius: 0;*/
+    /*-fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;*/
+}
+.mini-button:focused {
+    /*-fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;*/
+    -fx-border-color: transparent;
+}
+
 .gizmoControlButton, .gizmoControlButton:hover, .gizmoControlButton:focused {
     -fx-background-color: transparent;
     -fx-padding: 0;
-    /*-fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;*/
-    /*-fx-background-radius: 0;*/
-    /*-fx-font-weight: bold;*/
-    /*-fx-font-size: 1.1em;*/
+/*    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+    -fx-background-radius: 0;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;*/
     -fx-border-color: transparent; 
     -fx-content-display: graphic-only;
 }
@@ -2266,6 +2308,10 @@ all inherit from Menu Control's popup-menu. --- */
     -fx-padding: 0 0 0 0;
 }
 
+.copyable-label, .copyable-label:focused {
+    -fx-background-color: transparent ;
+    -fx-background-insets: 0px ;
+}
 /**
 * Extras inner panels
 */

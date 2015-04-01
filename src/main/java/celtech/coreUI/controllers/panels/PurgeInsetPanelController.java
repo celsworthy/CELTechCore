@@ -340,14 +340,13 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private void installTag(Printer printerToUse, GraphicButtonWithLabel button)
     {
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                           printerToUse.getPrinterAncillarySystems().
-                                           lidOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()));
+                                           printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()));
         button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                            printerToUse.extrudersProperty().get(0).
                                            filamentLoadedProperty().not());
 
         button.disableProperty().bind(printerToUse.canPrintProperty().not()
-            .or(printerToUse.getPrinterAncillarySystems().lidOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()))
+            .or(printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()))
             .or(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
 

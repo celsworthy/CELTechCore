@@ -567,4 +567,10 @@ public interface Printer extends RoboxResponseConsumer
     public boolean doFilamentSlipWhilePrinting(FirmwareError error);
 
     public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
+    
+    /**
+     * This method is intended to be used by commissioning tools and should not be called in normal operation
+     * @param suppress 
+     */
+    public void suppressEEPROMAndSDErrorHandling(boolean suppress);
 }

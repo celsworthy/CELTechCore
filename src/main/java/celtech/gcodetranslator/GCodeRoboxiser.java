@@ -58,42 +58,15 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  *
  * @author Ian
  */
-public class GCodeRoboxiser implements GCodeTranslationEventHandler
+public class GCodeRoboxiser extends GCodeRoboxisingEngine implements GCodeTranslationEventHandler
 {
-
     private final Stenographer steno = StenographerFactory.getStenographer(
         GCodeTranslationEventHandler.class.getName());
-    private GCodeFileParser gcodeParser = new GCodeFileParser();
-
-    private Pattern passThroughPattern = Pattern.compile(
-        "\\b(?:M106 S[0-9.]+|M107|G[0-9]{1,}.*|M[0-9]{2,})(?:[\\s]*;.*)?");
-    private Matcher passThroughMatcher = null;
-
-    private Pattern removePattern = Pattern.compile(
-        "\\b(?:M104 S[0-9.]+(?:\\sT[0-9]+)?|M109 S[0-9.]+(?:\\sT[0-9]+)?|M107)(?:[\\s]*;.*)?");
-    private Matcher removeMatcher = null;
-
-    private boolean initialTemperaturesWritten = false;
-    private boolean subsequentLayersTemperaturesWritten = false;
-
-    private double distanceSoFar = 0;
-    private double totalExtrudedVolume = 0;
-    private double totalXYMovement = 0;
-    private int layer = 0;
-
-    protected ArrayList<NozzleProxy> nozzleProxies = null;
-    protected NozzleProxy currentNozzle = null;
 
     private Tool selectedTool = Tool.Unknown;
-    private double unretractFeedRate = 0;
-    private double currentZHeight = 0;
 
     //Profile variables
     private double startClosingByMM = 2;
-
-    private Vector2D lastPoint = null;
-    private Vector2D nozzleLastOpenedAt = null;
-    private MovementEvent lastProcessedMovementEvent = null;
 
     protected ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
 
@@ -102,8 +75,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
     private int tempNozzleMemory = 0;
     private int nozzleInUse = -1;
-    private int forcedNozzleOnFirstLayer = -1;
-    private boolean nozzleHasBeenForced = false;
     private boolean nozzleHasBeenReinstated = false;
     private static final int POINT_3MM_NOZZLE = 0;
     private static final int POINT_8MM_NOZZLE = 1;
@@ -111,8 +82,6 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private boolean internalClose = true;
     private boolean autoGenerateNozzleChangeEvents = true;
 
-    private double predictedDurationInLayer = 0.0;
-    private double volumeUsed = 0.0;
     private double autoUnretractEValue = 0.0;
     private double autoUnretractDValue = 0.0;
 
@@ -128,106 +97,85 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     private int mixToLayer = 0;
     private int currentMixPoint = 0;
 
-    private GCodeOutputWriter outputWriter;
     private int layerIndex = 0;
-    private List<Integer> layerNumberToLineNumber;
-    private List<Double> layerNumberToDistanceTravelled;
-    private List<Double> layerNumberToPredictedDuration;
     private double distanceSoFarInLayer = 0;
-    private Integer lineNumberOfFirstExtrusion;
-
-    protected SlicerParametersFile currentSettings = null;
-    private int wipeFeedRate_mmPerMin = 0;
 
     // Causes home and return events to be inserted, triggering the camera
     private boolean movieMakerEnabled = false;
 
-    protected SlicerType slicerType;
-
-    // This counter is used to determine when to reselect the nozzle in use
-    // When printing with a single nozzle it is possible for the home to be lost after many closes
-    private int triggerNozzleReselectAfterNCloses = 0;
     private int closeCounter = 0;
 
-    /**
-     *
-     */
-    public GCodeRoboxiser()
-    {
-        gcodeParser.addListener(this);
-    }
-
-    /**
-     *
-     * @param inputFilename
-     * @param outputFilename
-     * @param settings
-     * @param percentProgress
-     * @return
-     */
-    public RoboxiserResult roboxiseFile(String inputFilename,
-        String outputFilename,
-        SlicerParametersFile settings, DoubleProperty percentProgress)
-    {
-        RoboxiserResult result = new RoboxiserResult();
-        result.setSuccess(false);
-
-        if (initialise(settings, outputFilename))
-        {
-            boolean success = false;
-
-            try
-            {
-                SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
-                outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on "
-                    + formatter.format(new Date()) + "\n");
-                outputWriter.
-                    writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
-
-                outputWriter.writeOutput(";\n; Pre print gcode\n");
-                for (String macroLine : GCodeMacros.getMacroContents("before_print"))
-                {
-                    outputWriter.writeOutput(macroLine + "\n");
-                }
-                outputWriter.writeOutput("; End of Pre print gcode\n");
-
-                gcodeParser.parse(inputFilename, percentProgress);
-
-                outputWriter.close();
-
-                steno.info("Finished roboxising " + inputFilename);
-                steno.info("Total extrusion volume " + totalExtrudedVolume + " mm3");
-                steno.info("Total XY movement distance " + totalXYMovement + " mm");
-
-                success = true;
-            } catch (IOException ex)
-            {
-                steno.error("Error roboxising file " + inputFilename);
-            } catch (MacroLoadException ex)
-            {
-                steno.error(
-                    "Error roboxising file - couldn't add before print header due to circular macro reference "
-                    + inputFilename);
-            }
-
-            result.setSuccess(success);
-            /**
-             * TODO: layerNumberToLineNumber uses lines numbers from the GCode file so are a little
-             * less than the line numbers for each layer after roboxisation. As a quick fix for now
-             * set the line number of the last layer to the actual maximum line number.
-             */
-            layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
-                                        getNumberOfLinesOutput());
-            PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-                outputWriter.getNumberOfLinesOutput(),
-                volumeUsed, lineNumberOfFirstExtrusion,
-                layerNumberToLineNumber, layerNumberToPredictedDuration);
-
-            result.setRoboxisedStatistics(roboxisedStatistics);
-        }
-
-        return result;
-    }
+//    /**
+//     *
+//     * @param inputFilename
+//     * @param outputFilename
+//     * @param settings
+//     * @param percentProgress
+//     * @return
+//     */
+//    public RoboxiserResult roboxiseFile(String inputFilename,
+//        String outputFilename,
+//        SlicerParametersFile settings, DoubleProperty percentProgress)
+//    {
+//        RoboxiserResult result = new RoboxiserResult();
+//        result.setSuccess(false);
+//
+//        if (initialise(settings, outputFilename))
+//        {
+//            boolean success = false;
+//
+//            try
+//            {
+//                SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
+//                outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on "
+//                    + formatter.format(new Date()) + "\n");
+//                outputWriter.
+//                    writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
+//
+//                outputWriter.writeOutput(";\n; Pre print gcode\n");
+//                for (String macroLine : GCodeMacros.getMacroContents("before_print"))
+//                {
+//                    outputWriter.writeOutput(macroLine + "\n");
+//                }
+//                outputWriter.writeOutput("; End of Pre print gcode\n");
+//
+//                gcodeParser.parse(inputFilename, percentProgress);
+//
+//                outputWriter.close();
+//
+//                steno.info("Finished roboxising " + inputFilename);
+//                steno.info("Total extrusion volume " + totalExtrudedVolume + " mm3");
+//                steno.info("Total XY movement distance " + totalXYMovement + " mm");
+//
+//                success = true;
+//            } catch (IOException ex)
+//            {
+//                steno.error("Error roboxising file " + inputFilename);
+//            } catch (MacroLoadException ex)
+//            {
+//                steno.error(
+//                    "Error roboxising file - couldn't add before print header due to circular macro reference "
+//                    + inputFilename);
+//            }
+//
+//            result.setSuccess(success);
+//            /**
+//             * TODO: layerNumberToLineNumber uses lines numbers from the GCode file so are a little
+//             * less than the line numbers for each layer after roboxisation. As a quick fix for now
+//             * set the line number of the last layer to the actual maximum line number.
+//             */
+//            layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
+//                                        getNumberOfLinesOutput());
+//            PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
+//                outputWriter.getNumberOfLinesOutput(),
+//                volumeUsed, lineNumberOfFirstExtrusion,
+//                layerNumberToLineNumber, layerNumberToPredictedDuration);
+//
+//            result.setRoboxisedStatistics(roboxisedStatistics);
+//        }
+//
+//        return result;
+//    }
 
     /**
      *
@@ -236,183 +184,12 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
     @Override
     public void unableToParse(String line)
     {
-        try
-        {
-            if ((removeMatcher = removePattern.matcher(line)).matches())
-            {
-                steno.info("Removed " + line);
-                outputWriter.writeOutput("; Removed: " + line);
-            } else if ((passThroughMatcher = passThroughPattern.matcher(line)).matches())
-            {
-                outputWriter.writeOutput(line);
-                outputWriter.newLine();
-            } else
-            {
-                steno.warning("Unable to parse " + line);
-                outputWriter.writeOutput("; >>>ERROR PARSING: " + line);
-                outputWriter.newLine();
-            }
-        } catch (IOException ex)
-        {
-            steno.error("Parse error - " + line);
-        }
-    }
-
-    protected boolean initialise(SlicerParametersFile settings, String outputFilename)
-    {
-        boolean initialised = false;
-
-        currentSettings = settings;
-
-        if (currentSettings.getSlicerOverride() != null)
-        {
-            slicerType = currentSettings.getSlicerOverride();
-        } else
-        {
-            slicerType = Lookup.getUserPreferences().getSlicerType();
-        }
-
-        layerNumberToLineNumber = new ArrayList<>();
-        layerNumberToDistanceTravelled = new ArrayList<>();
-        layerNumberToPredictedDuration = new ArrayList<>();
-        layerNumberToDistanceTravelled.add(0, 0d);
-        layerNumberToPredictedDuration.add(0, 0d);
-        layerNumberToLineNumber.add(0, 0);
-
-        extruderMixPoints.clear();
-
-        extruderMixPoints.add(
-            new ExtruderMix(1, 0, 5));
-        extruderMixPoints.add(
-            new ExtruderMix(0, 1, 30));
-        extruderMixPoints.add(
-            new ExtruderMix(0.5, 0.5, 31));
-        extruderMixPoints.add(
-            new ExtruderMix(0.5, 0.5, 40));
-        extruderMixPoints.add(
-            new ExtruderMix(1, 0, 46));
-
-        if (mixExtruderOutputs
-            && extruderMixPoints.size()
-            >= 2)
-        {
-            ExtruderMix firstMixPoint = extruderMixPoints.get(0);
-            startingEMixValue = firstMixPoint.getEFactor();
-            startingDMixValue = firstMixPoint.getDFactor();
-            mixFromLayer = firstMixPoint.getLayerNumber();
-
-            ExtruderMix secondMixPoint = extruderMixPoints.get(1);
-            endEMixValue = secondMixPoint.getEFactor();
-            endDMixValue = secondMixPoint.getDFactor();
-            mixToLayer = secondMixPoint.getLayerNumber();
-        } else
-        {
-            mixExtruderOutputs = false;
-        }
-
-        predictedDurationInLayer = 0.0;
-
-        lastPoint = new Vector2D(0, 0);
-        nozzleLastOpenedAt = new Vector2D(0, 0);
-
-        initialTemperaturesWritten = false;
-        subsequentLayersTemperaturesWritten = false;
-        distanceSoFar = 0;
-        totalExtrudedVolume = 0;
-        totalXYMovement = 0;
-        layer = 0;
-        unretractFeedRate = 0;
-        currentZHeight = 0;
-
-        forcedNozzleOnFirstLayer = settings.getFirstLayerNozzle();
-
-        nozzleProxies = new ArrayList<NozzleProxy>();
-
-        for (int nozzleIndex = 0; nozzleIndex < settings.getNozzleParameters().size(); nozzleIndex++)
-        {
-            NozzleProxy proxy = new NozzleProxy(settings.getNozzleParameters().get(nozzleIndex));
-            proxy.setNozzleReferenceNumber(nozzleIndex);
-            nozzleProxies.add(proxy);
-        }
-
-        wipeFeedRate_mmPerMin = currentSettings.getPerimeterSpeed_mm_per_s() * 60;
-
-        try
-        {
-            outputWriter = Lookup.getPostProcessorOutputWriterFactory().create(outputFilename);
-            initialised = true;
-        } catch (IOException ex)
-        {
-            steno.error("Failed to initialise post processor");
-            ex.printStackTrace();
-        }
-
-        triggerNozzleReselectAfterNCloses = settings.getMaxClosesBeforeNozzleReselect();
-
-        return initialised;
+        processUnparsedLine(line);
     }
 
     private void resetMeasuringThing()
     {
         distanceSoFar = 0;
-    }
-
-    private void insertInitialTemperatures()
-    {
-        if (initialTemperaturesWritten == false)
-        {
-            MCodeEvent firstLayerBedTemp = new MCodeEvent();
-            firstLayerBedTemp.setMNumber(139);
-            firstLayerBedTemp.setComment(
-                "take 1st layer bed temperature from reel");
-            extrusionBuffer.add(firstLayerBedTemp);
-
-            MCodeEvent waitForBedTemp = new MCodeEvent();
-            waitForBedTemp.setMNumber(190);
-            waitForBedTemp.setComment("wait for bed temperature to be reached");
-            extrusionBuffer.add(waitForBedTemp);
-
-            MCodeEvent firstLayerNozzleTemp = new MCodeEvent();
-            firstLayerNozzleTemp.setMNumber(103);
-            firstLayerNozzleTemp.setComment(
-                "take 1st layer nozzle temperature from loaded reel");
-            extrusionBuffer.add(firstLayerNozzleTemp);
-
-            MCodeEvent waitForNozzleTemp = new MCodeEvent();
-            waitForNozzleTemp.setMNumber(109);
-            waitForNozzleTemp.setComment(
-                "wait for nozzle temperature to be reached");
-            extrusionBuffer.add(waitForNozzleTemp);
-
-            MCodeEvent ambientTemp = new MCodeEvent();
-            ambientTemp.setMNumber(170);
-            ambientTemp.setComment("take ambient temperature from loaded reel");
-            extrusionBuffer.add(ambientTemp);
-
-            initialTemperaturesWritten = true;
-        }
-    }
-
-    private void insertSubsequentLayerTemperatures()
-    {
-        if (((slicerType == SlicerType.Slic3r && layer == 1)
-            || (slicerType == SlicerType.Cura && layer == 1))
-            && subsequentLayersTemperaturesWritten == false)
-        {
-            MCodeEvent subsequentLayerNozzleTemp = new MCodeEvent();
-            subsequentLayerNozzleTemp.setMNumber(104);
-            subsequentLayerNozzleTemp.setComment(
-                "take post layer 1 nozzle temperature from loaded reel - don't wait");
-            extrusionBuffer.add(subsequentLayerNozzleTemp);
-
-            MCodeEvent subsequentLayerBedTemp = new MCodeEvent();
-            subsequentLayerBedTemp.setMNumber(140);
-            subsequentLayerBedTemp.setComment(
-                "take post layer 1 bed temperature from loaded reel - don't wait");
-            extrusionBuffer.add(subsequentLayerBedTemp);
-
-            subsequentLayersTemperaturesWritten = true;
-        }
     }
 
     /**
@@ -637,8 +414,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             handleForcedNozzleAtLayerChange();
 
-            insertSubsequentLayerTemperatures();
-
+            insertTemperatureCommandsIfRequired();
+            
             layer++;
 
             handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent,
@@ -653,8 +430,8 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
 
             handleForcedNozzleAtLayerChange();
 
-            insertSubsequentLayerTemperatures();
-
+            insertTemperatureCommandsIfRequired();
+            
             layer++;
 
             handleMovieMakerAtLayerChange(relativeMoveEvent, moveUpEvent, absoluteMoveEvent,
@@ -779,13 +556,26 @@ public class GCodeRoboxiser implements GCodeTranslationEventHandler
                 outputWriter.writeOutput("; End of Post print gcode\n");
             } catch (IOException ex)
             {
-                throw new PostProcessingError("IO Error whilst writing post-print gcode to file: " + ex.getMessage());
+                throw new PostProcessingError("IO Error whilst writing post-print gcode to file: "
+                    + ex.getMessage());
             } catch (MacroLoadException ex)
             {
-                throw new PostProcessingError("Error whilst writing post-print gcode to file - couldn't add after print footer due to circular macro reference");
+                throw new PostProcessingError(
+                    "Error whilst writing post-print gcode to file - couldn't add after print footer due to circular macro reference");
             }
 
             writeEventToFile(event);
+        }
+    }
+
+    private void insertTemperatureCommandsIfRequired()
+    {
+        if (((slicerType == SlicerType.Slic3r && layer == 1)
+            || (slicerType == SlicerType.Cura && layer == 1))
+            && subsequentLayersTemperaturesWritten == false)
+        {
+            extrusionBuffer.insertSubsequentLayerTemperatures();
+            subsequentLayersTemperaturesWritten = true;
         }
     }
 
