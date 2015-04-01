@@ -3,10 +3,11 @@
  */
 package celtech.utils.threed.exporters;
 
+import celtech.JavaFXConfiguredTest;
+import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.StringWriter;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -21,17 +22,59 @@ import org.junit.Test;
  *
  * @author tony
  */
-public class AMFOutputConverterTest
+public class AMFOutputConverterTest extends JavaFXConfiguredTest
 {
 
     private ModelContainer makeModelContainer(boolean useExtruder0)
     {
-        MeshView meshView = new MeshView(new Shape3DRectangle(2, 3));
+        MeshView meshView = new MeshView(new ShapePyramid(2, 3));
         ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
         modelContainer.setUseExtruder0Filament(useExtruder0);
         return modelContainer;
     }
 
+    @Test
+    public void testOutputProjectWithOnePyramid() throws XMLStreamException
+    {
+        Project project = new Project();
+        ModelContainer modelContainer = makeModelContainer(true);
+        project.addModel(modelContainer);
+
+        AMFOutputConverter outputConverter = new AMFOutputConverter();
+        XMLOutputFactory factory = XMLOutputFactory.newInstance();
+        StringWriter stringWriter = new StringWriter();
+        XMLStreamWriter writer = factory.createXMLStreamWriter(stringWriter);
+
+        outputConverter.outputProject(project, writer);
+
+        String xmlOutput = stringWriter.toString();
+        System.out.println(xmlOutput);
+
+        String expectedOutput = "<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n"
+            + "<amf unit=\"inch\" version=\"1.1\">\n"
+            + "<object id=\"1\">\n" + "    <mesh>\n" + "      <vertices>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.5</x><y>0.5</y><z>1.0</z></coordinates></vertex>\n"
+            + "      </vertices>\n" + "      <volume materialid=\"2\">\n"
+            + "        <triangle><v1>2</v1><v2>1</v2><v3>0</v3></triangle>\n"
+            + "        <triangle><v1>0</v1><v2>1</v2><v3>4</v3></triangle>\n"
+            + "        <triangle><v1>4</v1><v2>1</v2><v3>2</v3></triangle>\n"
+            + "        <triangle><v1>0</v1><v2>4</v2><v3>2</v3></triangle>\n" + "      </volume>\n"
+            + "    </mesh>\n" + "  </object>\n" + " "
+            + "  <material id=\"2\">\n"
+            + "    <color><r>0.1</r><g>0.1</g><b>0.1</b></color>\n"
+            + "  </material>\n"
+            + "  <material id=\"3\">\n"
+            + "    <color><r>0.0</r><g>0.9</g><b>0.9</b><a>0.5</a></color>\n"
+            + "  </material>\n"
+            + "</amf>";
+
+        assertEquals(removeWhitespace(expectedOutput), removeWhitespace(xmlOutput));
+    }
+    
     @Test
     public void testOutputOnePyramid() throws JsonProcessingException, XMLStreamException
     {
@@ -61,10 +104,11 @@ public class AMFOutputConverterTest
         assertEquals(removeWhitespace(expectedOutput), removeWhitespace(xmlOutput));
     }
 
-    class Shape3DRectangle extends TriangleMesh
+
+    class ShapePyramid extends TriangleMesh
     {
 
-        public Shape3DRectangle(float Width, float Height)
+        public ShapePyramid(float Width, float Height)
         {
             float[] points =
             {
@@ -79,7 +123,7 @@ public class AMFOutputConverterTest
                 1, 1, // idx t0
                 1, 0, // idx t1
                 0, 1, // idx t2
-                0, 0,  // idx t3
+                0, 0, // idx t3
                 0.5f, 0.5f  // idx t4
             };
 

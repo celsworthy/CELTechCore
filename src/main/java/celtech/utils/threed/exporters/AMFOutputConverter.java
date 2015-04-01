@@ -4,10 +4,10 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.threed.AMFRepresentation;
-import static com.ctc.wstx.util.DataUtil.Integer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.File;
+import java.util.Optional;
 import javafx.collections.ObservableFloatArray;
 import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
@@ -25,22 +25,69 @@ import libertysystems.stenographer.StenographerFactory;
 public class AMFOutputConverter implements MeshFileOutputConverter
 {
 
-//    private File fFile;
     private Stenographer steno = StenographerFactory.getStenographer(AMFOutputConverter.class.
         getName());
-//    private Project project = null;
-//    private String printJobUUID = null;
-//    private String tempModelFilenameWithPath = null;
 
-    public AMFOutputConverter()
+    void outputProject(Project project, XMLStreamWriter streamWriter) throws XMLStreamException
     {
+        streamWriter.writeStartDocument();
+        streamWriter.writeStartElement("amf");
+        streamWriter.writeAttribute("unit", "inch");
+        streamWriter.writeAttribute("version", "1.1");
+        for (ModelContainer modelContainer : project.getLoadedModels())
+        {
+            outputModelContainer(modelContainer, 1, streamWriter);
+        }
+        outputMaterials(project, streamWriter);
+        streamWriter.writeEndElement();
+        streamWriter.writeEndDocument();
+        streamWriter.flush();
+        streamWriter.close();
+    }
+
+    void outputMaterials(Project project, XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        outputMaterial(project, 2, 0.1f, 0.1f, 0.1f, streamWriter);
+        outputMaterial(project, 3, 0f, 0.9f, 0.9f, Optional.of(0.5f), streamWriter);
+    }
+
+    void outputMaterial(Project project, int materialId, float r, float g, float b,
+        XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        outputMaterial(project, 2, 0.1f, 0.1f, 0.1f, Optional.empty(), streamWriter);
+    }
+
+    void outputMaterial(Project project, int materialId, float r, float g, float b,
+        Optional<Float> a,
+        XMLStreamWriter streamWriter) throws XMLStreamException
+    {
+        streamWriter.writeStartElement("material");
+        streamWriter.writeAttribute("id", Integer.toString(materialId));
+        streamWriter.writeStartElement("color");
+        streamWriter.writeStartElement("r");
+        streamWriter.writeCharacters(Float.toString(r));
+        streamWriter.writeEndElement();
+        streamWriter.writeStartElement("g");
+        streamWriter.writeCharacters(Float.toString(g));
+        streamWriter.writeEndElement();
+        streamWriter.writeStartElement("b");
+        streamWriter.writeCharacters(Float.toString(b));
+        streamWriter.writeEndElement();
+        if (a.isPresent())
+        {
+            streamWriter.writeStartElement("a");
+            streamWriter.writeCharacters(Float.toString(a.get()));
+            streamWriter.writeEndElement();
+        }
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
     }
 
     void outputModelContainer(ModelContainer modelContainer, int modelId,
         XMLStreamWriter streamWriter) throws XMLStreamException
     {
         streamWriter.writeStartElement("object");
-        streamWriter.writeAttribute("id", Integer(modelId).toString());
+        streamWriter.writeAttribute("id", Integer.toString(modelId));
         streamWriter.writeStartElement("mesh");
         outputVertices(modelContainer, streamWriter);
         outputVolume(modelContainer, streamWriter);
@@ -375,4 +422,5 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 //            System.out.println("Error writing AMF");
 //        }
     }
+
 }
