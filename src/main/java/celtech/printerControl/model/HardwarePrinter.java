@@ -210,6 +210,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final String secondExtruderLetter = "D";
     private final int secondExtruderNumber = 1;
 
+    private boolean suppressEEPROMAndSDErrorHandling = false;
+
     /*
      * Error handling
      */
@@ -2971,6 +2973,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
+    @Override
+    public void suppressEEPROMAndSDErrorHandling(boolean suppress)
+    {
+        suppressEEPROMAndSDErrorHandling = suppress;
+    }
+
     class RoboxEventProcessor implements Runnable
     {
 
@@ -3076,15 +3084,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerAncillarySystems.ZStopSwitch.set(statusResponse.iszSwitchStatus());
                     printerAncillarySystems.ZTopStopSwitch.set(statusResponse.isTopZSwitchStatus());
                     printerAncillarySystems.bAxisHome.set(statusResponse.isNozzleSwitchStatus());
-                    printerAncillarySystems.lidOpen.set(statusResponse.isLidSwitchStatus());
-                    printerAncillarySystems.reelButton.set(statusResponse.isReelButtonStatus());
+                    printerAncillarySystems.doorOpen.set(statusResponse.isDoorOpen());
+                    printerAncillarySystems.reelButton.set(statusResponse.isReelButtonPressed());
                     printerAncillarySystems.feedRateMultiplier.set(statusResponse.
                         getFeedRateMultiplier());
                     printerAncillarySystems.whyAreWeWaitingProperty.set(
                         statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
+                    printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
 
-                    if (!statusResponse.isSDCardPresent())
+                    if (!statusResponse.isSDCardPresent() && !suppressEEPROMAndSDErrorHandling)
                     {
                         Lookup.getSystemNotificationHandler().showNoSDCardDialog();
                     }
@@ -3296,102 +3305,125 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                     HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
 
-                    if (Head.isTypeCodeValid(headResponse.getTypeCode()))
+                    if (!suppressEEPROMAndSDErrorHandling)
                     {
-                        // Might be unrecognised but correct format for a Robox head type code
-
-                        if (Head.isTypeCodeInDatabase(headResponse.getTypeCode()))
+                        if (Head.isTypeCodeValid(headResponse.getTypeCode()))
                         {
-                            if (head.get() == null)
+                            // Might be unrecognised but correct format for a Robox head type code
+
+                            if (Head.isTypeCodeInDatabase(headResponse.getTypeCode()))
                             {
-                                // No head attached to model
-                                Head newHead = Head.createHead(headResponse);
-                                head.set(newHead);
+                                if (head.get() == null)
+                                {
+                                    // No head attached to model
+                                    Head newHead = Head.createHead(headResponse);
+                                    head.set(newHead);
+                                } else
+                                {
+                                    // Head already attached to model
+                                    head.get().updateFromEEPROMData(headResponse);
+                                }
+
+                                // Check to see if the data is in bounds
+                                // Suppress the check if we are calibrating, since out of bounds data is used during this operation
+                                if (!headIntegrityChecksInhibited)
+                                {
+                                    RepairResult result = head.get().bringDataInBounds();
+
+                                    switch (result)
+                                    {
+                                        case REPAIRED_WRITE_ONLY:
+                                            try
+                                            {
+                                                writeHeadEEPROM(head.get());
+                                                steno.info(
+                                                    "Automatically updated head data - no calibration required");
+                                                Lookup.getSystemNotificationHandler().
+                                                    showHeadUpdatedNotification();
+                                            } catch (RoboxCommsException ex)
+                                            {
+                                                steno.error("Error updating head after repair "
+                                                    + ex.
+                                                    getMessage());
+                                            }
+                                            break;
+                                        case REPAIRED_WRITE_AND_RECALIBRATE:
+                                            try
+                                            {
+                                                writeHeadEEPROM(head.get());
+                                                Lookup.getSystemNotificationHandler().
+                                                    showCalibrationDialogue();
+                                                steno.info(
+                                                    "Automatically updated head data - calibration suggested");
+                                            } catch (RoboxCommsException ex)
+                                            {
+                                                steno.error("Error updating head after repair "
+                                                    + ex.
+                                                    getMessage());
+                                            }
+                                            break;
+                                    }
+                                }
                             } else
                             {
-                                // Head already attached to model
-                                head.get().updateFromEEPROMData(headResponse);
-                            }
-
-                            // Check to see if the data is in bounds
-                            // Suppress the check if we are calibrating, since out of bounds data is used during this operation
-                            if (!headIntegrityChecksInhibited)
-                            {
-                                RepairResult result = head.get().bringDataInBounds();
-
-                                switch (result)
-                                {
-                                    case REPAIRED_WRITE_ONLY:
-                                        try
-                                        {
-                                            writeHeadEEPROM(head.get());
-                                            steno.info(
-                                                "Automatically updated head data - no calibration required");
-                                            Lookup.getSystemNotificationHandler().
-                                                showHeadUpdatedNotification();
-                                        } catch (RoboxCommsException ex)
-                                        {
-                                            steno.error("Error updating head after repair " + ex.
-                                                getMessage());
-                                        }
-                                        break;
-                                    case REPAIRED_WRITE_AND_RECALIBRATE:
-                                        try
-                                        {
-                                            writeHeadEEPROM(head.get());
-                                            Lookup.getSystemNotificationHandler().
-                                                showCalibrationDialogue();
-                                            steno.info(
-                                                "Automatically updated head data - calibration suggested");
-                                        } catch (RoboxCommsException ex)
-                                        {
-                                            steno.error("Error updating head after repair " + ex.
-                                                getMessage());
-                                        }
-                                        break;
-                                }
+                                // We don't recognise the head but it seems to be valid
+                                Lookup.getSystemNotificationHandler().showHeadNotRecognisedDialog(
+                                    printerIdentity.printerFriendlyName.get());
+                                steno.error("Head with type code: " + headResponse.getTypeCode()
+                                    + " attached. Not in database so ignoring...");
                             }
                         } else
                         {
-                            // We don't recognise the head but it seems to be valid
-                            Lookup.getSystemNotificationHandler().showHeadNotRecognisedDialog(
-                                printerIdentity.printerFriendlyName.get());
-                            steno.error("Head with type code: " + headResponse.getTypeCode()
-                                + " attached. Not in database so ignoring...");
+                            if (!suppressEEPROMAndSDErrorHandling)
+                            {
+                                // Either not set or type code doesn't match Robox head type code
+                                Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog(
+                                    (TaskResponse<HeadFile> taskResponse) ->
+                                    {
+                                        HeadFile chosenHeadFile = taskResponse.getReturnedObject();
+
+                                        if (chosenHeadFile != null)
+                                        {
+                                            Head chosenHead = new Head(chosenHeadFile);
+                                            chosenHead.allocateRandomID();
+                                            head.set(chosenHead);
+                                            steno.info("Reprogrammed head as " + chosenHeadFile.
+                                                getName()
+                                                + " with ID " + head.get().uniqueID.get());
+                                            try
+                                            {
+                                                writeHeadEEPROM(head.get());
+                                                Lookup.getSystemNotificationHandler().
+                                                showCalibrationDialogue();
+                                                steno.info(
+                                                    "Automatically updated head data - calibration suggested");
+                                            } catch (RoboxCommsException ex)
+                                            {
+                                                steno.error("Error updating head after repair "
+                                                    + ex.
+                                                    getMessage());
+                                            }
+                                        } else
+                                        {
+                                            //Force the head prompt - we must have been cancelled
+                                            lastHeadEEPROMState = EEPROMState.NOT_PRESENT;
+                                        }
+                                    });
+                            }
                         }
                     } else
                     {
-                        // Either not set or type code doesn't match Robox head type code
-                        Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog(
-                            (TaskResponse<HeadFile> taskResponse) ->
-                            {
-                                HeadFile chosenHeadFile = taskResponse.getReturnedObject();
-
-                                if (chosenHeadFile != null)
-                                {
-                                    Head chosenHead = new Head(chosenHeadFile);
-                                    chosenHead.allocateRandomID();
-                                    head.set(chosenHead);
-                                    steno.info("Reprogrammed head as " + chosenHeadFile.getName()
-                                        + " with ID " + head.get().uniqueID.get());
-                                    try
-                                    {
-                                        writeHeadEEPROM(head.get());
-                                        Lookup.getSystemNotificationHandler().
-                                        showCalibrationDialogue();
-                                        steno.info(
-                                            "Automatically updated head data - calibration suggested");
-                                    } catch (RoboxCommsException ex)
-                                    {
-                                        steno.error("Error updating head after repair " + ex.
-                                            getMessage());
-                                    }
-                                } else
-                                {
-                                    //Force the head prompt - we must have been cancelled
-                                    lastHeadEEPROMState = EEPROMState.NOT_PRESENT;
-                                }
-                            });
+                        // We've been asked to suppress EEPROM error handling - load the data anyway
+                        if (head.get() == null)
+                        {
+                            // No head attached to model
+                            Head newHead = Head.createHead(headResponse);
+                            head.set(newHead);
+                        } else
+                        {
+                            // Head already attached to model
+                            head.get().updateFromEEPROMData(headResponse);
+                        }
                     }
                     break;
 

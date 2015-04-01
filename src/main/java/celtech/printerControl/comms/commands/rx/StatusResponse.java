@@ -84,8 +84,8 @@ public class StatusResponse extends RoboxRxPacket
     private boolean filament1SwitchStatus = false;
     private boolean filament2SwitchStatus = false;
     private boolean nozzleSwitchStatus = false;
-    private boolean lidSwitchStatus = false;
-    private boolean reelButtonStatus = false;
+    private boolean doorOpen = false;
+    private boolean reelButtonPressed = false;
     private boolean EIndexStatus = false;
     private boolean DIndexStatus = false;
     private boolean topZSwitchStatus = false;
@@ -233,18 +233,18 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public boolean isLidSwitchStatus()
+    public boolean isDoorOpen()
     {
-        return lidSwitchStatus;
+        return doorOpen;
     }
 
     /**
      *
      * @return
      */
-    public boolean isReelButtonStatus()
+    public boolean isReelButtonPressed()
     {
-        return reelButtonStatus;
+        return reelButtonPressed;
     }
 
     /**
@@ -637,16 +637,6 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzleSwitchStatus = nozzleSwitchStatus;
     }
 
-    public void setLidSwitchStatus(boolean lidSwitchStatus)
-    {
-        this.lidSwitchStatus = lidSwitchStatus;
-    }
-
-    public void setReelButtonStatus(boolean reelButtonStatus)
-    {
-        this.reelButtonStatus = reelButtonStatus;
-    }
-
     public void setEIndexStatus(boolean EIndexStatus)
     {
         this.EIndexStatus = EIndexStatus;
@@ -911,10 +901,10 @@ public class StatusResponse extends RoboxRxPacket
             this.nozzleSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
-            this.lidSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
+            this.doorOpen = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
-            this.reelButtonStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
+            this.reelButtonPressed = (byteData[byteOffset] & 1) > 0 ? false : true;
             byteOffset += 1;
 
             this.EIndexStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
@@ -1289,9 +1279,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Nozzle switch status: " + isNozzleSwitchStatus());
         outputString.append("\n");
-        outputString.append("Lid switch status: " + isLidSwitchStatus());
+        outputString.append("Door open: " + isDoorOpen());
         outputString.append("\n");
-        outputString.append("Reel button status: " + isReelButtonStatus());
+        outputString.append("Reel button pressed: " + isReelButtonPressed());
         outputString.append("\n");
         outputString.append("E index status: " + isEIndexStatus());
         outputString.append("\n");

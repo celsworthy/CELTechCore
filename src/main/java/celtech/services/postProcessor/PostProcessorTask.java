@@ -2,6 +2,9 @@ package celtech.services.postProcessor;
 
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.GCodeRoboxiser;
+import celtech.gcodetranslator.GCodeRoboxiser2;
+import celtech.gcodetranslator.GCodeRoboxisingEngine;
+import celtech.gcodetranslator.GCodeTranslationEventHandler;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.model.Printer;
@@ -44,19 +47,14 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         updateMessage("");
         updateProgress(0, 100);
 
-        GCodeRoboxiser roboxiser = new GCodeRoboxiser();
+        GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
         PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID);
         String gcodeFileToProcess = printJob.getGCodeFileLocation();
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
 
-        taskProgress.addListener(new ChangeListener<Number>()
+        taskProgress.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable,
-                Number oldValue, Number newValue)
-            {
-                updateProgress(newValue.doubleValue(), 100.0);
-            }
+            updateProgress(newValue.doubleValue(), 100.0);
         });
 
         RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
