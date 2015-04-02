@@ -209,7 +209,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         linkGraphic = new GraphicButton("linkButton").getGraphic();
         unlinkGraphic = new GraphicButton("unlinkButton").getGraphic();
-        preserveAspectRatio.setGraphic(unlinkGraphic);
+        preserveAspectRatio.setSelected(true);
         preserveAspectRatio.selectedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {

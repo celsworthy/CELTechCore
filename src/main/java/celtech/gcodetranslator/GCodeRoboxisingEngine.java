@@ -43,7 +43,7 @@ public abstract class GCodeRoboxisingEngine
     protected double totalExtrudedVolume = 0;
     protected double totalXYMovement = 0;
 
-    protected Integer lineNumberOfFirstExtrusion;
+    protected int lineNumberOfFirstExtrusion = -1;
     protected List<Integer> layerNumberToLineNumber;
     protected List<Double> layerNumberToDistanceTravelled;
     protected List<Double> layerNumberToPredictedDuration;
@@ -135,8 +135,9 @@ public abstract class GCodeRoboxisingEngine
              */
             layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
                                         getNumberOfLinesOutput());
+            int numLines = outputWriter.getNumberOfLinesOutput();
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-                outputWriter.getNumberOfLinesOutput(),
+                numLines,
                 volumeUsed, lineNumberOfFirstExtrusion,
                 layerNumberToLineNumber, layerNumberToPredictedDuration);
 

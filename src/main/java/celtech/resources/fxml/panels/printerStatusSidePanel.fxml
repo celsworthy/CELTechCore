@@ -114,35 +114,25 @@
                             </children>
                         </HBox>
                         <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
-                  <HBox alignment="CENTER">
-                     <children>
-                              <PrinterGridComponent fx:id="printerGridComponent" styleClass="printerGrid" />
-                     </children>
-                  </HBox>
+                        <HBox alignment="CENTER">
+                            <children>
+                                <PrinterGridComponent fx:id="printerGridComponent" styleClass="printerGrid" />
+                            </children>
+                        </HBox>
                         <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
                         <HBox alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
-                     <children>
-                        <VBox fx:id="materialContainer" alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" spacing="36.0" styleClass="statusPanelChild">
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                           <padding>
-                              <Insets left="10.0" />
-                           </padding></VBox>
-                     </children></HBox>
-                        <HBox fx:id="speedSliderHBox" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" translateX="20.0">
                             <children>
-                                <Label text="%printerStatus.printSpeedMultiplierLabel" textAlignment="RIGHT" />
-                                <Slider fx:id="speedMultiplierSlider" blockIncrement="0.1" majorTickUnit="0.5" max="1.5" min="0.5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0">
+                                <VBox fx:id="materialContainer" alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" spacing="36.0" styleClass="statusPanelChild">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
                                     <padding>
-                                        <Insets left="20.0" right="20.0" />
+                                        <Insets left="10.0" />
                                     </padding>
-                                </Slider>
+                                </VBox>
                             </children>
-                            <padding>
-                                <Insets top="5.0" />
-                            </padding>
-                        </HBox>                 
+                        </HBox>
+                                  
                         <VBox fx:id="temperatureVBox" alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" styleClass="sidePanelVBox">
                             <BorderPane.margin>
                                 <Insets top="5.0" />

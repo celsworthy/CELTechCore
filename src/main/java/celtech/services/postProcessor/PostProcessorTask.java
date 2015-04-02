@@ -2,17 +2,16 @@ package celtech.services.postProcessor;
 
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.GCodeRoboxiser;
-import celtech.gcodetranslator.GCodeRoboxiser2;
 import celtech.gcodetranslator.GCodeRoboxisingEngine;
-import celtech.gcodetranslator.GCodeTranslationEventHandler;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.model.Printer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -20,18 +19,14 @@ import javafx.concurrent.Task;
  */
 public class PostProcessorTask extends Task<GCodePostProcessingResult>
 {
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        PostProcessorTask.class.getName());
 
     private String printJobUUID = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
 
-    /**
-     *
-     * @param printJobUUID
-     * @param settings
-     * @param printerToUse
-     */
     public PostProcessorTask(String printJobUUID, SlicerParametersFile settings,
         Printer printerToUse)
     {
@@ -44,6 +39,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     @Override
     protected GCodePostProcessingResult call() throws Exception
     {
+        try {
         updateMessage("");
         updateProgress(0, 100);
 
@@ -63,8 +59,14 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
 
         GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
             printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
-
         return postProcessingResult;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            steno.error("Error in post processing");
+        }
+        return null;
+
+        
     }
 
 }

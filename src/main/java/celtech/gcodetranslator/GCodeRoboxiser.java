@@ -1,10 +1,6 @@
 package celtech.gcodetranslator;
 
-import celtech.configuration.slicer.NozzleParameters;
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.events.CommentEvent;
 import celtech.gcodetranslator.events.EndOfFileEvent;
 import celtech.gcodetranslator.events.ExtrusionEvent;
@@ -30,24 +26,12 @@ import celtech.utils.Math.MathUtils;
 import static celtech.utils.Math.MathUtils.EQUAL;
 import static celtech.utils.Math.MathUtils.MORE_THAN;
 import static celtech.utils.Math.MathUtils.compareDouble;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
@@ -248,7 +232,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine implements GCodeTransl
 
         if (event instanceof ExtrusionEvent)
         {
-            if (lineNumberOfFirstExtrusion == null)
+            if (lineNumberOfFirstExtrusion == -1)
             {
                 lineNumberOfFirstExtrusion = event.getLinesSoFar();
             }

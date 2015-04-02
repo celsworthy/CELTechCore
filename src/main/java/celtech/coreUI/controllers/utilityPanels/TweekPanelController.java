@@ -1,36 +1,19 @@
 package celtech.coreUI.controllers.utilityPanels;
 
-import celtech.CoreTest;
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.MaterialType;
-import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.popups.PopupCommandReceiver;
-import celtech.coreUI.controllers.popups.PopupCommandTransmitter;
+import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.ResourceBundle;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ComboBox;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.control.textfield.CustomTextField;
 
 /**
  * FXML Controller class
@@ -39,19 +22,87 @@ import org.controlsfx.control.textfield.CustomTextField;
  */
 public class TweekPanelController implements Initializable
 {
-    
-    private final Stenographer steno = StenographerFactory.getStenographer(TweekPanelController.class.getName());
-    
+
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        TweekPanelController.class.getName());
+
+    @FXML
+    private Slider speedMultiplierSlider;
+
+    @FXML
+    private HBox speedSliderHBox;
+
+    private Printer selectedPrinter;
+
+    private final ChangeListener<Number> feedRateChangeListener
+        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            speedMultiplierSlider.setValue(newValue.doubleValue());
+        };
+
+    private final ChangeListener<Number> speedMultiplierListener
+        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            try
+            {
+                selectedPrinter.changeFeedRateMultiplier(newValue.doubleValue());
+            } catch (PrinterException ex)
+            {
+                steno.error("Error setting feed rate multiplier - " + ex.getMessage());
+            }
+        };
+
     /**
      * Initialises the controller class.
-     *
-     * @param url
-     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-       
+        speedSliderHBox.setVisible(false);
+
+        Lookup.getCurrentlySelectedPrinterProperty().addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+            {
+                whenPrinterSelected(newValue);
+            });
+    }
+
+    private void whenPrinterSelected(Printer printer)
+    {
+        if (selectedPrinter != null)
+        {
+            unbindPrinter(selectedPrinter);
+        }
+
+        if (printer != null)
+        {
+            selectedPrinter = printer;
+            bindPrinter(printer);
+        }
+    }
+
+    private void bindPrinter(Printer printer)
+    {
+        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
+        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(
+            PrinterStatus.PRINTING));
+        speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
+            feedRateMultiplierProperty().get());
+        speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
+
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
+            feedRateChangeListener);
+    }
+
+    private void unbindPrinter(Printer printer)
+    {
+        speedSliderHBox.visibleProperty().unbind();
+        speedSliderHBox.setVisible(false);
+        speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
+
+        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(
+            feedRateChangeListener);
+
     }
 
 }

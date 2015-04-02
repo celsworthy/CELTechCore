@@ -3,18 +3,15 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
-import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -24,7 +21,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -70,12 +66,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label legendAmbient;
     
     @FXML
-    private Slider speedMultiplierSlider;
-    
-    @FXML
-    private HBox speedSliderHBox;
-    
-    @FXML
     private PrinterGridComponent printerGridComponent;
     
     private Printer previousSelectedPrinter = null;
@@ -105,24 +95,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     };
     
-    private final ChangeListener<Number> speedMultiplierListener = 
-        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        try
-        {
-            selectedPrinter.get().changeFeedRateMultiplier(newValue.doubleValue());
-        } catch (PrinterException ex)
-        {
-            steno.error("Error setting feed rate multiplier - " + ex.getMessage());
-        }
-    };
-    
-    private final ChangeListener<Number> feedRateChangeListener = 
-        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        speedMultiplierSlider.setValue(newValue.doubleValue());
-    };
-
     /**
      * Initialises the controller class.
      *
@@ -133,8 +105,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void initialize(URL url, ResourceBundle rb)
     {
         chartManager = new ChartManager(temperatureChart);
-        
-        speedSliderHBox.setVisible(false);
         
         selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
         selectedPrinter.addListener(
@@ -214,16 +184,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setLegendLabels(legendNozzle, legendBed, legendAmbient);
         chartManager.bindPrinter(printer);
         
-        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
-        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING));
-        speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
-            feedRateMultiplierProperty().get());
-        speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
-        
         bindMaterialContainer(printer);
-        
-        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
-            feedRateChangeListener);
     }
 
     private void bindMaterialContainer(Printer printer)
@@ -254,13 +215,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         
         currentAmbientTemperatureHistory = null;
         chartManager.unbindPrinter();
-        
-        speedSliderHBox.visibleProperty().unbind();
-        speedSliderHBox.setVisible(false);
-        speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
-        
-        printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(
-            feedRateChangeListener);
         
         unbindMaterialContainer();
     }
