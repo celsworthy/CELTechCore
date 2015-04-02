@@ -173,8 +173,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Lookup.getUserPreferences().setFirstUse(false);
         }
     }
-    
-    public void showAndSelectPrintProfile(SlicerParametersFile printProfile) {
+
+    public void showAndSelectPrintProfile(SlicerParametersFile printProfile)
+    {
         ApplicationStatus.getInstance().setMode(ApplicationMode.EXTRAS_MENU);
         Initializable initializable = insetPanelControllers.get(ApplicationMode.EXTRAS_MENU);
         ExtrasMenuPanelController controller = (ExtrasMenuPanelController) initializable;
@@ -685,56 +686,79 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     case DELETE:
                     case BACK_SPACE:
-                        Set<ModelContainer> selectedModels
-                            = Lookup.getProjectGUIState(project).getSelectedModelContainers().
-                            getSelectedModelsSnapshot();
-                        undoableProject.deleteModels(selectedModels);
+                        deleteSelectedModels(project, undoableProject);
                         break;
                     case A:
                         if (event.isShortcutDown())
                         {
-                            SelectedModelContainers selectionModel
-                                = Lookup.getProjectGUIState(project).getSelectedModelContainers();
-                            for (ModelContainer modelContainer : project.getLoadedModels())
-                            {
-                                selectionModel.addModelContainer(modelContainer);
-                            }
+                            selectAllModels(project);
                         }
+                        break;
                     case Z:
-                        if (event.isControlDown())
+                        if (event.isShortcutDown() && (!event.isShiftDown()))
                         {
-                            CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
-                            if (commandStack.getCanUndo().get())
-                            {
-                                try
-                                {
-                                    commandStack.undo();
-                                } catch (CommandStack.UndoException ex)
-                                {
-                                    steno.debug("cannot undo " + ex);
-                                }
-                            }
+                            undoCommand(project);
+                        } else if (event.isShortcutDown() && event.isShiftDown()) {
+                            redoCommand(project);
                         }
                         break;
                     case Y:
-                        if (event.isControlDown())
+                        if (event.isShortcutDown())
                         {
-                            CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
-                            if (commandStack.getCanRedo().get())
-                            {
-                                try
-                                {
-                                    commandStack.redo();
-                                } catch (CommandStack.UndoException ex)
-                                {
-                                    steno.debug("cannot undo " + ex);
-                                }
-                            }
-                        }       
+                            redoCommand(project);
+                        }
                         break;
                     default:
                         break;
                 }
+            }
+        }
+    }
+
+    private void selectAllModels(Project project)
+    {
+        SelectedModelContainers selectionModel
+            = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        for (ModelContainer modelContainer : project.getLoadedModels())
+        {
+            selectionModel.addModelContainer(modelContainer);
+        }
+    }
+
+    private void deleteSelectedModels(Project project, UndoableProject undoableProject)
+    {
+        Set<ModelContainer> selectedModels
+            = Lookup.getProjectGUIState(project).getSelectedModelContainers().
+                getSelectedModelsSnapshot();
+        undoableProject.deleteModels(selectedModels);
+    }
+
+    private void undoCommand(Project project)
+    {
+        CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
+        if (commandStack.getCanUndo().get())
+        {
+            try
+            {
+                commandStack.undo();
+            } catch (CommandStack.UndoException ex)
+            {
+                steno.debug("cannot undo " + ex);
+            }
+        }
+    }
+
+    private void redoCommand(Project project)
+    {
+        CommandStack commandStack = Lookup.getProjectGUIState(project).getCommandStack();
+        if (commandStack.getCanRedo().get())
+        {
+            try
+            {
+                commandStack.redo();
+            } catch (CommandStack.UndoException ex)
+            {
+                steno.debug("cannot undo " + ex);
             }
         }
     }
@@ -927,10 +951,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         ProjectTab newProjectTab = new ProjectTab(newProject,
                                                                   tabDisplay.widthProperty(),
                                                                   tabDisplay.heightProperty());
-                        
+
                         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
                         tabDisplaySelectionModel.select(newProjectTab);
-                        
+
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                         {
                             applicationStatus.setMode(ApplicationMode.LAYOUT);

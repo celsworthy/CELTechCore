@@ -23,6 +23,12 @@ public class GraphicButton extends Button
         getStyleClass().add("graphic-button");
         setPickOnBounds(false);
     }
+    
+    public GraphicButton(String fxmlFileName) {
+        setFxmlFileName(fxmlFileName);
+        getStyleClass().add("graphic-button");
+        setPickOnBounds(false);
+    }
 
     public String getFxmlFileName()
     {

@@ -681,8 +681,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             selectedModelContainers.removeModelContainer(pickedModel);
         }
     }
+    
+    private void collideModels() {
+        // stub this out at Chris' request until it is more precise
+    }
 
-    private void collideModels()
+    private void collideModelsOld()
     {
         boolean[] collidedModels = new boolean[loadedModels.size()];
 

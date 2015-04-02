@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
@@ -26,12 +27,14 @@ import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
+import static javafx.scene.input.KeyCode.ENTER;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -142,7 +145,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     private AMFOutputConverter outputConverter = new AMFOutputConverter();
-    
+
     private double lastScaleWidth;
     private double lastScaleHeight;
     private double lastScaleDepth;
@@ -154,6 +157,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private double lastDepth;
     private double lastX;
     private double lastY;
+
+    private Node linkGraphic;
+    private Node unlinkGraphic;
 
     @FXML
     void outputAMF(ActionEvent event)
@@ -180,6 +186,54 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         String modelNameLabelString = languageBundle.getString(
             "sidePanel_layout.ModelNameLabel");
 
+        initialiseTextFieldValues();
+
+        setUpTableView(modelNameLabelString, languageBundle);
+
+        setUpModelGeometryListeners();
+        setUpNumberFieldListeners();
+        setupMaterialContainer();
+        setupProjectSelectedListener();
+        setFieldsEditable();
+        setUpNumSelectedModelsListener();
+        setUpAspectRatioListener(rb);
+
+        FXMLUtilities.addColonsToLabels(layoutBorder);
+    }
+
+    /**
+     * Change the preserve aspect ration icon to linked / unlinked according to whether it
+     * is selected or not.
+     */
+    private void setUpAspectRatioListener(ResourceBundle rb)
+    {
+        linkGraphic = new GraphicButton("linkButton").getGraphic();
+        unlinkGraphic = new GraphicButton("unlinkButton").getGraphic();
+        preserveAspectRatio.setGraphic(unlinkGraphic);
+        preserveAspectRatio.selectedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                if (newValue)
+                {
+                    preserveAspectRatio.setGraphic(linkGraphic);
+                } else
+                {
+                    preserveAspectRatio.setGraphic(unlinkGraphic);
+                }
+            });
+    }
+    
+    private void setUpNumSelectedModelsListener()
+    {
+        numSelectedModels.addListener(
+            (ObservableValue< ? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                whenNumSelectedModelsChanged();
+            });
+    }
+
+    private void initialiseTextFieldValues()
+    {
         scaleTextWidthField.setText("100");
         lastScaleWidth = 100;
         scaleTextHeightField.setText("100");
@@ -194,23 +248,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         heightTextField.setText("-");
         xAxisTextField.setText("-");
         yAxisTextField.setText("-");
-
-        setUpTableView(modelNameLabelString, languageBundle);
-
-        setUpModelGeometryListeners();
-        setUpNumberFieldListeners();
-        setupMaterialContainer();
-        setupProjectSelectedListener();
-
-        numSelectedModels.addListener(
-            (ObservableValue< ? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                whenNumSelectedModelsChanged();
-            });
-
-        setFieldsEditable();
-
-        FXMLUtilities.addColonsToLabels(layoutBorder);
     }
 
     private void setupProjectSelectedListener()
@@ -373,7 +410,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         scaleTextHeightField.setText(scaleString);
         scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
         scaleTextDepthField.setText(scaleString);
-        
+
         lastScaleWidth = 100.0;
         lastScaleHeight = 100.0;
         lastScaleDepth = 100.0;
@@ -435,9 +472,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newRotationX = rotationXTextField.getAsDouble();
-            if (newRotationX == lastRotationX) {
+            if (newRotationX == lastRotationX)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastRotationX = newRotationX;
             }
             undoableProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
@@ -454,9 +493,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newRotationY = rotationYTextField.getAsDouble();
-            if (newRotationY == lastRotationY) {
+            if (newRotationY == lastRotationY)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastRotationY = newRotationY;
             }
             undoableProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
@@ -473,9 +514,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newRotationZ = rotationZTextField.getAsDouble();
-            if (newRotationZ == lastRotationZ) {
+            if (newRotationZ == lastRotationZ)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastRotationZ = newRotationZ;
             }
             undoableProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
@@ -529,9 +572,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newY = yAxisTextField.getAsDouble();
-            if (newY == lastY) {
+            if (newY == lastY)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastY = newY;
             }
             undoableProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newY);
@@ -546,13 +591,14 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newX = xAxisTextField.getAsDouble();
-            if (newX == lastX) {
+            if (newX == lastX)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastX = newX;
             }
             undoableProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
-            
 
         } catch (ParseException ex)
         {
@@ -565,9 +611,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newDepth = depthTextField.getAsDouble();
-            if (newDepth == lastDepth) {
+            if (newDepth == lastDepth)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastDepth = newDepth;
             }
             if (inFixedAR())
@@ -594,9 +642,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newHeight = heightTextField.getAsDouble();
-            if (newHeight == lastHeight) {
+            if (newHeight == lastHeight)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastHeight = newHeight;
             }
             if (inFixedAR())
@@ -621,9 +671,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newWidth = widthTextField.getAsDouble();
-            if (newWidth == lastWidth) {
+            if (newWidth == lastWidth)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastWidth = newWidth;
             }
             if (inFixedAR())
@@ -655,9 +707,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newScaleDepth = scaleTextDepthField.getAsDouble();
-            if (newScaleDepth == lastScaleDepth) {
+            if (newScaleDepth == lastScaleDepth)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastScaleDepth = newScaleDepth;
             }
             double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
@@ -685,9 +739,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newScaleHeight = scaleTextHeightField.getAsDouble();
-            if (newScaleHeight == lastScaleHeight) {
+            if (newScaleHeight == lastScaleHeight)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastScaleHeight = newScaleHeight;
             }
             double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
@@ -715,9 +771,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         try
         {
             double newScaleWidth = scaleTextWidthField.getAsDouble();
-            if (newScaleWidth == lastScaleWidth) {
+            if (newScaleWidth == lastScaleWidth)
+            {
                 return;
-            } else {
+            } else
+            {
                 lastScaleWidth = newScaleWidth;
             }
             double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
@@ -854,9 +912,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         }
         getInitialValuesOfNumberFields();
     }
-    
-    private void getInitialValuesOfNumberFields() {
-        
+
+    private void getInitialValuesOfNumberFields()
+    {
+
     }
 
     private void unbindProject(Project project)
