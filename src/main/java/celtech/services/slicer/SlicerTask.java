@@ -7,8 +7,9 @@ import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.visualisation.exporters.STLOutputConverter;
+import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
+import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,6 +71,9 @@ public class SlicerTask extends Task<SliceResult>
 
         STLOutputConverter outputConverter = new STLOutputConverter(project, printJobUUID);
         outputConverter.outputSTLFile();
+
+        AMFOutputConverter amfOutputConverter = new AMFOutputConverter();
+        amfOutputConverter.outputFile(project, printJobUUID);
 
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();

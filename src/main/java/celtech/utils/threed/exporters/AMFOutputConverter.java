@@ -4,12 +4,20 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import javafx.collections.ObservableFloatArray;
 import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import libertysystems.stenographer.Stenographer;
@@ -170,9 +178,6 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeEndElement();
     }
 
-    /**
-     *
-     */
     @Override
     public void outputFile(Project project, String printJobUUID)
     {
@@ -180,9 +185,101 @@ public class AMFOutputConverter implements MeshFileOutputConverter
             + printJobUUID
             + File.separator + printJobUUID + ApplicationConfiguration.amfTempFileExtension;
 
-        File file = new File(tempModelFilenameWithPath);
+        try
+        {
+            FileWriter fileWriter = new FileWriter(tempModelFilenameWithPath);
+            XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+            XMLStreamWriter xmlStreamWriter
+                = xmlOutputFactory.createXMLStreamWriter(fileWriter);
 
+            PrettyPrintHandler handler = new PrettyPrintHandler(xmlStreamWriter);
+            XMLStreamWriter prettyPrintWriter = (XMLStreamWriter) Proxy.newProxyInstance(
+                XMLStreamWriter.class.getClassLoader(),
+                new Class[]
+                {
+                    XMLStreamWriter.class
+                },
+                handler);
 
+            outputProject(project, prettyPrintWriter);
+            xmlStreamWriter.flush();
+            xmlStreamWriter.close();
+        } catch (IOException ex)
+        {
+            steno.error("Unable to write AMF file to given path: " + ex);
+        } catch (XMLStreamException ex)
+        {
+            steno.error("Unable to write AMF file: " + ex);
+        }
+
+    }
+
+    class PrettyPrintHandler implements InvocationHandler
+    {
+
+        private final XMLStreamWriter target;
+        private int depth = 0;
+        private final Map<Integer, Boolean> hasChildElement = new HashMap<Integer, Boolean>();
+        private static final String INDENT_CHAR = " ";
+        private static final String LINEFEED_CHAR = "\n";
+
+        public PrettyPrintHandler(XMLStreamWriter target)
+        {
+            this.target = target;
+        }
+
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+        {
+            String m = method.getName();
+
+            // Needs to be BEFORE the actual event, so that for instance the
+            // sequence writeStartElem, writeAttr, writeStartElem, writeEndElem, writeEndElem
+            // is correctly handled
+            if ("writeStartElement".equals(m))
+            {
+                // update state of parent node
+                if (depth > 0)
+                {
+                    hasChildElement.put(depth - 1, true);
+                }
+                // reset state of current node
+                hasChildElement.put(depth, false);
+                // indent for current depth
+                target.writeCharacters(LINEFEED_CHAR);
+                target.writeCharacters(repeat(depth, INDENT_CHAR));
+                depth++;
+            } else if ("writeEndElement".equals(m))
+            {
+                depth--;
+                if (hasChildElement.get(depth) == true)
+                {
+                    target.writeCharacters(LINEFEED_CHAR);
+                    target.writeCharacters(repeat(depth, INDENT_CHAR));
+                }
+            } else if ("writeEmptyElement".equals(m))
+            {
+                // update state of parent node
+                if (depth > 0)
+                {
+                    hasChildElement.put(depth - 1, true);
+                }
+                // indent for current depth
+                target.writeCharacters(LINEFEED_CHAR);
+                target.writeCharacters(repeat(depth, INDENT_CHAR));
+            }
+            method.invoke(target, args);
+            return null;
+        }
+
+        private String repeat(int d, String s)
+        {
+            String _s = "";
+            while (d-- > 0)
+            {
+                _s += s;
+            }
+            return _s;
+        }
     }
 
 }

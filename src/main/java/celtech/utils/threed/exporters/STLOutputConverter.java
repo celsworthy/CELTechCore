@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package celtech.coreUI.visualisation.exporters;
+package celtech.utils.threed.exporters;
 
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
