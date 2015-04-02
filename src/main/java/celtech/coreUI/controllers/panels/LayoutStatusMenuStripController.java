@@ -76,9 +76,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     @FXML
     private GraphicButtonWithLabel undoButton;
-    
+
     @FXML
-    private GraphicButtonWithLabel redoButton;    
+    private GraphicButtonWithLabel redoButton;
 
     @FXML
     private GraphicButtonWithLabel backwardFromSettingsButton;
@@ -690,7 +690,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
         System.out.println("update conditional text");
-        
+
         if (printer == null)
         {
             return;
@@ -702,7 +702,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 printer.getPrinterAncillarySystems().doorOpenProperty()
                                                 .and(Lookup.getUserPreferences().
                                                     safetyFeaturesOnProperty()));
-        
+
         printButton.getTag().addConditionalText("dialogs.chooseACustomProfile",
                                                 project.customSettingsNotChosenProperty());
 
@@ -889,16 +889,24 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         layoutSubmode.addListener(layoutSubmodeListener);
         project.addProjectChangesListener(projectChangesListener);
-        
-        undoButton.disableProperty().bind(Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
-        redoButton.disableProperty().bind(Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
+
+        undoButton.disableProperty().bind(
+            Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
+        redoButton.disableProperty().bind(
+            Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
 
     }
 
     private void whenProjectOrSettingsPrinterChange()
     {
-        updateCanPrintProjectBindings(currentSettingsPrinter, selectedProject);
-        updatePrintButtonConditionalText(currentSettingsPrinter, selectedProject);
+        try
+        {
+            updateCanPrintProjectBindings(currentSettingsPrinter, selectedProject);
+            updatePrintButtonConditionalText(currentSettingsPrinter, selectedProject);
+        } catch (Exception ex)
+        {
+            steno.warning("Error updating can print or print button conditionals: " + ex);
+        }
     }
 
     /**
@@ -939,7 +947,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             canPrintProject.bind(
                 printer.canPrintProperty()
-                .and(project.canPrintProperty())    
+                .and(project.canPrintProperty())
                 .and(printerSettings.getFilament0Property().isNotNull())
                 .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
@@ -962,7 +970,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                 canPrintProject.bind(
                     printer.canPrintProperty()
-                    .and(project.canPrintProperty())    
+                    .and(project.canPrintProperty())
                     .and(requiredFilamentProperty.isNotNull())
                     .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                         .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
@@ -973,7 +981,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 canPrintProject.bind(
                     printer.canPrintProperty()
-                    .and(project.canPrintProperty())    
+                    .and(project.canPrintProperty())
                     .and(printerSettings.getFilament0Property().isNotNull())
                     .and(printerSettings.getFilament1Property().isNotNull())
                     .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()

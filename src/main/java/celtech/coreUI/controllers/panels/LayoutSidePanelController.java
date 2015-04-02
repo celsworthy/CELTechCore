@@ -202,7 +202,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     }
 
     /**
-     * Change the preserve aspect ration icon to linked / unlinked according to whether it
+     * Change the preserve aspect ratio icon to linked / unlinked according to whether it
      * is selected or not.
      */
     private void setUpAspectRatioListener(ResourceBundle rb)

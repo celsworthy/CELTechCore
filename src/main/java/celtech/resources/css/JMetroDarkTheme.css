@@ -2027,7 +2027,7 @@ modal-dialogue{
     -fx-padding: 0 10 0 10;
 }
 
-// Copied from caspian.css for detailed combo box styling
+// ===== Copied from caspian.css for detailed combo box styling =====
 /* -------------- CODE FOR THE NON-EDITABLE COMBO-BOX -------------- */
 
 /* ------- MAIN BUTTON ------- */
@@ -2074,14 +2074,7 @@ modal-dialogue{
     -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
     -fx-shape: "M 0 0 h 7 l -3.5 4 z";
 }
-
-/* ------- POPUP MENU ------- */
-/* --- .combo-box .popup-menu, .combo-box .menu-item, .combo-box .popup-menu .menu-item-radio
-all inherit from Menu Control's popup-menu. --- */
-
-
-
-
+//===================== End Copy ===========================
 
 /**
 * Preferences
@@ -2095,12 +2088,12 @@ all inherit from Menu Control's popup-menu. --- */
 
 .preferenceLabel {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 20px;
+    -fx-font-size: 15pt;
 }
 
 .preferenceControl {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 16px;
+    -fx-font-size: 12pt;
 
 }
 
@@ -2204,7 +2197,7 @@ all inherit from Menu Control's popup-menu. --- */
 
 .splashCopyright
 {
-    -fx-font-family: SourceSansPro-Light;
+    -fx-font-family: 'Source Sans Pro Light';
     -fx-font-size: 12pt;
     -fx-fill: white;
     -fx-text-alignment: left;
@@ -2212,7 +2205,7 @@ all inherit from Menu Control's popup-menu. --- */
 
 .splashVersion
 {
-    -fx-font-family: SourceSansPro-Light;
+    -fx-font-family: 'Source Sans Pro Light';
     -fx-font-size: 12pt;
     -fx-fill: white;
     -fx-text-alignment: right;
