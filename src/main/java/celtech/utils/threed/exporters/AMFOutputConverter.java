@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javafx.collections.ObservableFloatArray;
+import javafx.geometry.Point3D;
 import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
@@ -142,7 +143,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                 ObservableFloatArray points = triMesh.getPoints();
                 for (int i = 0; i < points.size(); i += 3)
                 {
-                    outputVertex(points, i, streamWriter);
+                    outputVertex(modelContainer, points, i, streamWriter);
                     numVertices++;
                 }
 
@@ -167,18 +168,23 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeEndElement();
     }
 
-    private void outputVertex(ObservableFloatArray points, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    private void outputVertex(ModelContainer modelContainer, ObservableFloatArray points, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
     {
+        Point3D transformedVertex = modelContainer.
+                                transformMeshToRealWorldCoordinates(
+                                    points.get(offset),
+                                    points.get(offset + 1),
+                                    points.get(offset + 2));
         streamWriter.writeStartElement("vertex");
         streamWriter.writeStartElement("coordinates");
         streamWriter.writeStartElement("x");
-        streamWriter.writeCharacters(Float.toString(points.get(offset)));
+        streamWriter.writeCharacters(Float.toString((float) transformedVertex.getX()));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("y");
-        streamWriter.writeCharacters(Float.toString(points.get(offset + 1)));
+        streamWriter.writeCharacters(Float.toString((float) transformedVertex.getZ()));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("z");
-        streamWriter.writeCharacters(Float.toString(points.get(offset + 2)));
+        streamWriter.writeCharacters(Float.toString((float) -transformedVertex.getY()));
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();

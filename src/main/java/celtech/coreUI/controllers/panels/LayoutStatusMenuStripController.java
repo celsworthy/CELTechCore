@@ -689,7 +689,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
-        System.out.println("update conditional text");
+        steno.debug("update conditional text");
 
         if (printer == null)
         {
@@ -937,6 +937,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void updateCanPrintProjectBindings(Printer printer, Project project)
     {
+        if (project.getLoadedModels().size() == 0) {
+            printButton.disableProperty().unbind();
+            printButton.setDisable(true);
+        }
         PrinterSettings printerSettings = project.getPrinterSettings();
         if (project == null || printer == null)
         {

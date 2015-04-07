@@ -11,6 +11,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * The CommandStack is a stack of Commands that has an index into the current stack position. When
@@ -20,6 +22,9 @@ import javafx.collections.ObservableList;
  */
 public class CommandStack
 {
+    
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        CommandStack.class.getName());
 
     private BooleanProperty canUndo = new SimpleBooleanProperty();
     private BooleanProperty canRedo = new SimpleBooleanProperty();
@@ -49,7 +54,7 @@ public class CommandStack
 
     public void do_(Command command)
     {
-        System.out.println("Do COMMAND " + command);
+        steno.debug("Do COMMAND " + command);
         clearEndOfList();
         commands.add(command);
         command.do_();
