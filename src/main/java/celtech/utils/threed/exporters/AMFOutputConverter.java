@@ -37,12 +37,17 @@ public class AMFOutputConverter implements MeshFileOutputConverter
     {
         streamWriter.writeStartDocument();
         streamWriter.writeStartElement("amf");
-        streamWriter.writeAttribute("unit", "inch");
+        streamWriter.writeAttribute("unit", "millimeter");
         streamWriter.writeAttribute("version", "1.1");
+        streamWriter.writeStartElement("object");
+        streamWriter.writeAttribute("id", Integer.toString(0));
+        streamWriter.writeStartElement("mesh");
         for (ModelContainer modelContainer : project.getLoadedModels())
         {
             outputModelContainer(modelContainer, 1, streamWriter);
         }
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
         outputMaterials(project, streamWriter);
         streamWriter.writeEndElement();
         streamWriter.writeEndDocument();
@@ -91,13 +96,10 @@ public class AMFOutputConverter implements MeshFileOutputConverter
     void outputModelContainer(ModelContainer modelContainer, int modelId,
         XMLStreamWriter streamWriter) throws XMLStreamException
     {
-        streamWriter.writeStartElement("object");
-        streamWriter.writeAttribute("id", Integer.toString(modelId));
-        streamWriter.writeStartElement("mesh");
+       
+        
         outputVertices(modelContainer, streamWriter);
         outputVolume(modelContainer, streamWriter);
-        streamWriter.writeEndElement();
-        streamWriter.writeEndElement();
 
         streamWriter.flush();
     }
@@ -192,6 +194,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
             XMLStreamWriter xmlStreamWriter
                 = xmlOutputFactory.createXMLStreamWriter(fileWriter);
 
+            // Ugly code off internet follows==
             PrettyPrintHandler handler = new PrettyPrintHandler(xmlStreamWriter);
             XMLStreamWriter prettyPrintWriter = (XMLStreamWriter) Proxy.newProxyInstance(
                 XMLStreamWriter.class.getClassLoader(),
@@ -200,6 +203,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                     XMLStreamWriter.class
                 },
                 handler);
+            //=================================
 
             outputProject(project, prettyPrintWriter);
             xmlStreamWriter.flush();
@@ -214,6 +218,10 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 
     }
 
+    /**
+     * This could be much simpler if it just wrapped the interface, but it was free off the 
+     * internet so I can't argue... It pretty-prints the XML.
+     */
     class PrettyPrintHandler implements InvocationHandler
     {
 
