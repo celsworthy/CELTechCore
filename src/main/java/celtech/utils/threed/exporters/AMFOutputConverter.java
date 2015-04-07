@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javafx.collections.ObservableFloatArray;
+import javafx.geometry.Point3D;
 import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
@@ -35,14 +36,30 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 
     void outputProject(Project project, XMLStreamWriter streamWriter) throws XMLStreamException
     {
+        Map<ModelContainer, Integer> vertexOffsetForModels = new HashMap<>();
+        
         streamWriter.writeStartDocument();
         streamWriter.writeStartElement("amf");
-        streamWriter.writeAttribute("unit", "inch");
+        streamWriter.writeAttribute("unit", "millimeter");
         streamWriter.writeAttribute("version", "1.1");
+        streamWriter.writeStartElement("object");
+        streamWriter.writeAttribute("id", Integer.toString(0));
+        streamWriter.writeStartElement("mesh");
+        int vertexOffset = 0;
+        streamWriter.writeStartElement("vertices");
         for (ModelContainer modelContainer : project.getLoadedModels())
         {
-            outputModelContainer(modelContainer, 1, streamWriter);
+            vertexOffsetForModels.put(modelContainer, vertexOffset);
+            int numVerticesWritten = outputVertices(modelContainer, streamWriter);
+            vertexOffset += numVerticesWritten;
         }
+        streamWriter.writeEndElement();
+        for (ModelContainer modelContainer : project.getLoadedModels())
+        {
+            outputVolume(modelContainer, vertexOffsetForModels.get(modelContainer), streamWriter);
+        }
+        streamWriter.writeEndElement();
+        streamWriter.writeEndElement();
         outputMaterials(project, streamWriter);
         streamWriter.writeEndElement();
         streamWriter.writeEndDocument();
@@ -88,21 +105,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeEndElement();
     }
 
-    void outputModelContainer(ModelContainer modelContainer, int modelId,
-        XMLStreamWriter streamWriter) throws XMLStreamException
-    {
-        streamWriter.writeStartElement("object");
-        streamWriter.writeAttribute("id", Integer.toString(modelId));
-        streamWriter.writeStartElement("mesh");
-        outputVertices(modelContainer, streamWriter);
-        outputVolume(modelContainer, streamWriter);
-        streamWriter.writeEndElement();
-        streamWriter.writeEndElement();
-
-        streamWriter.flush();
-    }
-
-    void outputVolume(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
+    void outputVolume(ModelContainer modelContainer, int vertexOffset, XMLStreamWriter streamWriter) throws XMLStreamException
     {
         streamWriter.writeStartElement("volume");
         streamWriter.writeAttribute("materialid", "2");
@@ -117,17 +120,19 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                 ObservableFaceArray faces = triMesh.getFaces();
                 for (int i = 0; i < faces.size(); i += 6)
                 {
-                    outputFace(faces, i, streamWriter);
+                    outputFace(faces, i, vertexOffset, streamWriter);
                 }
             }
         }
         streamWriter.writeEndElement();
     }
 
-    void outputVertices(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
+    /**
+     * Write out the vertices and return the number of vertices written.
+     */
+    int outputVertices(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
     {
-        streamWriter.writeStartElement("vertices");
-
+        int numVertices = 0;
         for (Node node : modelContainer.getMeshGroupChildren())
         {
             if (node instanceof MeshView)
@@ -138,41 +143,48 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                 ObservableFloatArray points = triMesh.getPoints();
                 for (int i = 0; i < points.size(); i += 3)
                 {
-                    outputVertex(points, i, streamWriter);
+                    outputVertex(modelContainer, points, i, streamWriter);
+                    numVertices++;
                 }
 
             }
         }
-        streamWriter.writeEndElement();
+        
+        return numVertices;
     }
 
-    private void outputFace(ObservableFaceArray faces, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    private void outputFace(ObservableFaceArray faces, int offset, int vertexOffset, XMLStreamWriter streamWriter) throws XMLStreamException
     {
         streamWriter.writeStartElement("triangle");
         streamWriter.writeStartElement("v1");
-        streamWriter.writeCharacters(Integer.toString(faces.get(offset)));
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset) + vertexOffset));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("v2");
-        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 2)));
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 2) + vertexOffset));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("v3");
-        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 4)));
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 4) + vertexOffset));
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();
     }
 
-    private void outputVertex(ObservableFloatArray points, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    private void outputVertex(ModelContainer modelContainer, ObservableFloatArray points, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
     {
+        Point3D transformedVertex = modelContainer.
+                                transformMeshToRealWorldCoordinates(
+                                    points.get(offset),
+                                    points.get(offset + 1),
+                                    points.get(offset + 2));
         streamWriter.writeStartElement("vertex");
         streamWriter.writeStartElement("coordinates");
         streamWriter.writeStartElement("x");
-        streamWriter.writeCharacters(Float.toString(points.get(offset)));
+        streamWriter.writeCharacters(Float.toString((float) transformedVertex.getX()));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("y");
-        streamWriter.writeCharacters(Float.toString(points.get(offset + 1)));
+        streamWriter.writeCharacters(Float.toString((float) transformedVertex.getZ()));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("z");
-        streamWriter.writeCharacters(Float.toString(points.get(offset + 2)));
+        streamWriter.writeCharacters(Float.toString((float) -transformedVertex.getY()));
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();
@@ -192,6 +204,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
             XMLStreamWriter xmlStreamWriter
                 = xmlOutputFactory.createXMLStreamWriter(fileWriter);
 
+            // Ugly code off internet follows==
             PrettyPrintHandler handler = new PrettyPrintHandler(xmlStreamWriter);
             XMLStreamWriter prettyPrintWriter = (XMLStreamWriter) Proxy.newProxyInstance(
                 XMLStreamWriter.class.getClassLoader(),
@@ -200,6 +213,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                     XMLStreamWriter.class
                 },
                 handler);
+            //=================================
 
             outputProject(project, prettyPrintWriter);
             xmlStreamWriter.flush();
@@ -214,6 +228,10 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 
     }
 
+    /**
+     * This could be much simpler if it just wrapped the interface, but it was free off the 
+     * internet so I can't argue... It pretty-prints the XML.
+     */
     class PrettyPrintHandler implements InvocationHandler
     {
 

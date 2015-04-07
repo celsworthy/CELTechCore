@@ -26,37 +26,22 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class STLOutputConverter
+public class STLOutputConverter implements MeshFileOutputConverter
 {
 
-    private File fFile;
     private Stenographer steno = null;
-    private Project project = null;
-    private String printJobUUID = null;
-    private String tempModelFilenameWithPath = null;
 
-    /**
-     *
-     * @param project
-     * @param printJobUUID
-     */
-    public STLOutputConverter(Project project, String printJobUUID)
+    public STLOutputConverter()
     {
         steno = StenographerFactory.getStenographer(this.getClass().getName());
-
-        this.project = project;
-        this.printJobUUID = printJobUUID;
-        tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
-            + File.separator + printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-
-        fFile = new File(tempModelFilenameWithPath);
     }
 
-    /**
-     *
-     */
-    public void outputSTLFile()
+    public void outputFile(Project project, String printJobUUID)
     {
+        String tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
+            + File.separator + printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+
+        File fFile = new File(tempModelFilenameWithPath);
         final short blankSpace = (short) 0;
 
         try

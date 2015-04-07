@@ -51,8 +51,8 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
         System.out.println(xmlOutput);
 
         String expectedOutput = "<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n"
-            + "<amf unit=\"inch\" version=\"1.1\">\n"
-            + "<object id=\"1\">\n" + "    <mesh>\n" + "      <vertices>\n"
+            + "<amf unit=\"millimeter\" version=\"1.1\">\n"
+            + "<object id=\"0\">\n" + "    <mesh>\n" + "      <vertices>\n"
             + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
             + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
             + "        <vertex><coordinates><x>0.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
@@ -74,7 +74,7 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
 
         assertEquals(removeWhitespace(expectedOutput), removeWhitespace(xmlOutput));
     }
-    
+
     @Test
     public void testOutputOnePyramid() throws JsonProcessingException, XMLStreamException
     {
@@ -84,11 +84,17 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
         XMLOutputFactory factory = XMLOutputFactory.newInstance();
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter writer = factory.createXMLStreamWriter(stringWriter);
-        outputConverter.outputModelContainer(modelContainer, 1, writer);
+        writer.writeStartElement("mesh");
+        writer.writeStartElement("vertices");
+        outputConverter.outputVertices(modelContainer, writer);
+        writer.writeEndElement();
+        outputConverter.outputVolume(modelContainer, 0, writer);
+        writer.writeEndElement();
+        writer.flush();
         String xmlOutput = stringWriter.toString();
         System.out.println(xmlOutput);
 
-        String expectedOutput = "<object id=\"1\">\n" + "    <mesh>\n" + "      <vertices>\n"
+        String expectedOutput = "    <mesh>\n" + "      <vertices>\n"
             + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
             + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
             + "        <vertex><coordinates><x>0.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
@@ -99,11 +105,10 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
             + "        <triangle><v1>0</v1><v2>1</v2><v3>4</v3></triangle>\n"
             + "        <triangle><v1>4</v1><v2>1</v2><v3>2</v3></triangle>\n"
             + "        <triangle><v1>0</v1><v2>4</v2><v3>2</v3></triangle>\n" + "      </volume>\n"
-            + "    </mesh>\n" + "  </object>";
+            + "    </mesh>\n";
 
         assertEquals(removeWhitespace(expectedOutput), removeWhitespace(xmlOutput));
     }
-
 
     class ShapePyramid extends TriangleMesh
     {
@@ -139,6 +144,61 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
             this.getTexCoords().setAll(texCoords);
             this.getFaces().setAll(faces);
         }
+    }
+
+    @Test
+    public void testOutputProjectWithTwoPyramids() throws XMLStreamException
+    {
+        Project project = new Project();
+        ModelContainer modelContainer = makeModelContainer(true);
+        ModelContainer modelContainer2 = makeModelContainer(true);
+        project.addModel(modelContainer);
+        project.addModel(modelContainer2);
+
+        AMFOutputConverter outputConverter = new AMFOutputConverter();
+        XMLOutputFactory factory = XMLOutputFactory.newInstance();
+        StringWriter stringWriter = new StringWriter();
+        XMLStreamWriter writer = factory.createXMLStreamWriter(stringWriter);
+
+        outputConverter.outputProject(project, writer);
+
+        String xmlOutput = stringWriter.toString();
+        System.out.println(xmlOutput);
+
+        String expectedOutput = "<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n"
+            + "<amf unit=\"millimeter\" version=\"1.1\">\n"
+            + "<object id=\"0\">\n" + "    <mesh>\n" + "      <vertices>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.5</x><y>0.5</y><z>1.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.5</x><y>0.5</y><z>1.0</z></coordinates></vertex>\n"            
+            + "      </vertices>\n" + 
+              "       <volume materialid=\"2\">\n"
+            + "        <triangle><v1>2</v1><v2>1</v2><v3>0</v3></triangle>\n"
+            + "        <triangle><v1>0</v1><v2>1</v2><v3>4</v3></triangle>\n"
+            + "        <triangle><v1>4</v1><v2>1</v2><v3>2</v3></triangle>\n"
+            + "        <triangle><v1>0</v1><v2>4</v2><v3>2</v3></triangle>\n" + "      </volume>\n"
+            + "       <volume materialid=\"2\">\n"
+            + "        <triangle><v1>7</v1><v2>6</v2><v3>5</v3></triangle>\n"
+            + "        <triangle><v1>5</v1><v2>6</v2><v3>9</v3></triangle>\n"
+            + "        <triangle><v1>9</v1><v2>6</v2><v3>7</v3></triangle>\n"
+            + "        <triangle><v1>5</v1><v2>9</v2><v3>7</v3></triangle>\n" + "      </volume>\n"
+            + "    </mesh>\n" + "  </object>\n" + " "
+            + "  <material id=\"2\">\n"
+            + "    <color><r>0.1</r><g>0.1</g><b>0.1</b></color>\n"
+            + "  </material>\n"
+            + "  <material id=\"3\">\n"
+            + "    <color><r>0.0</r><g>0.9</g><b>0.9</b><a>0.5</a></color>\n"
+            + "  </material>\n"
+            + "</amf>";
+
+        assertEquals(removeWhitespace(expectedOutput), removeWhitespace(xmlOutput));
     }
 
 }

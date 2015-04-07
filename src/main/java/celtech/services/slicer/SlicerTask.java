@@ -10,6 +10,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import celtech.utils.threed.exporters.AMFOutputConverter;
+import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class SlicerTask extends Task<SliceResult>
         this.settings = settings;
         this.printerToUse = printerToUse;
 
-        tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+        tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
         tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
     }
 
@@ -69,10 +70,10 @@ public class SlicerTask extends Task<SliceResult>
         updateMessage("Preparing model for conversion");
         updateProgress(0, 100);
 
-        STLOutputConverter outputConverter = new STLOutputConverter(project, printJobUUID);
-        outputConverter.outputSTLFile();
+        MeshFileOutputConverter outputConverter = new STLOutputConverter();
+        outputConverter.outputFile(project, printJobUUID);
 
-        AMFOutputConverter amfOutputConverter = new AMFOutputConverter();
+        MeshFileOutputConverter amfOutputConverter = new AMFOutputConverter();
         amfOutputConverter.outputFile(project, printJobUUID);
 
         MachineType machineType = ApplicationConfiguration.getMachineType();

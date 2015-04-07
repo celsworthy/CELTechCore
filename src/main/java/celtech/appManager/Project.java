@@ -495,7 +495,6 @@ public class Project implements Serializable
     {
         modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            System.out.println("model extruder changed");
             fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
             modelColourChanged.set(!modelColourChanged.get());
         };

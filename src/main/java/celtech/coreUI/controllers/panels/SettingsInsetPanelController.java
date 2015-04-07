@@ -169,7 +169,6 @@ public class SettingsInsetPanelController implements Initializable
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
         customProfileChooser.setItems(availableProfiles);
 
-        System.out.println("XXXF");
         updateProfileList();
 
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
@@ -188,7 +187,6 @@ public class SettingsInsetPanelController implements Initializable
         SlicerParametersContainer.getUserProfileList().addListener(
             (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
-                System.out.println("XXXG");
                 updateProfileList();
             });
     }
@@ -306,8 +304,6 @@ public class SettingsInsetPanelController implements Initializable
     private void refreshAndShowProfileCombo(String currentSelectionName,
         SlicerParametersFile currentSelection)
     {
-        System.out.println("curr sel name is " + currentSelectionName);
-        System.out.println("curr selection is " + currentSelection);
         createProfileLabel.setVisible(false);
         customProfileChooser.setVisible(true);
         availableProfiles.clear();
@@ -316,7 +312,6 @@ public class SettingsInsetPanelController implements Initializable
         boolean currentSelectionInAvailableProfiles = false;
         for (SlicerParametersFile availableProfile : availableProfiles)
         {
-            System.out.println("profile name is " + availableProfile.getProfileName());
 
             if (availableProfile.getProfileName().equals(currentSelectionName))
             {
@@ -326,12 +321,9 @@ public class SettingsInsetPanelController implements Initializable
         }
         if (currentSelection != null && currentSelectionInAvailableProfiles)
         {
-            System.out.println("XXXA");
-            System.out.println("select " + currentSelection);
             customProfileChooser.getSelectionModel().select(currentSelection);
         } else
         {
-            System.out.println("XXXB");
             customProfileChooser.getSelectionModel().selectFirst();
         }
     }
@@ -361,7 +353,6 @@ public class SettingsInsetPanelController implements Initializable
                 SlicerParametersFile chosenProfile = SlicerParametersContainer.
                     getSettingsByProfileName(
                         project.getPrinterSettings().getSettingsName());
-                System.out.println("XXXC");
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
@@ -387,7 +378,6 @@ public class SettingsInsetPanelController implements Initializable
                 break;
             case CUSTOM:
                 customProfileVBox.setVisible(true);
-                System.out.println("XXXD");
                 customProfileChooser.getSelectionModel().select(settings);
                 break;
             default:
