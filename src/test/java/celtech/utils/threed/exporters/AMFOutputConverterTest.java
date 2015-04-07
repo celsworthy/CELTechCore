@@ -85,7 +85,10 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter writer = factory.createXMLStreamWriter(stringWriter);
         writer.writeStartElement("mesh");
-        outputConverter.outputModelContainer(modelContainer, 1, writer);
+        writer.writeStartElement("vertices");
+        outputConverter.outputVertices(modelContainer, writer);
+        writer.writeEndElement();
+        outputConverter.outputVolume(modelContainer, 0, writer);
         writer.writeEndElement();
         writer.flush();
         String xmlOutput = stringWriter.toString();

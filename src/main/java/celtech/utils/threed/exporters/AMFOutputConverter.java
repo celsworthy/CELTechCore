@@ -35,6 +35,8 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 
     void outputProject(Project project, XMLStreamWriter streamWriter) throws XMLStreamException
     {
+        Map<ModelContainer, Integer> vertexOffsetForModels = new HashMap<>();
+        
         streamWriter.writeStartDocument();
         streamWriter.writeStartElement("amf");
         streamWriter.writeAttribute("unit", "millimeter");
@@ -42,9 +44,18 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeStartElement("object");
         streamWriter.writeAttribute("id", Integer.toString(0));
         streamWriter.writeStartElement("mesh");
+        int vertexOffset = 0;
+        streamWriter.writeStartElement("vertices");
         for (ModelContainer modelContainer : project.getLoadedModels())
         {
-            outputModelContainer(modelContainer, 1, streamWriter);
+            vertexOffsetForModels.put(modelContainer, vertexOffset);
+            int numVerticesWritten = outputVertices(modelContainer, streamWriter);
+            vertexOffset += numVerticesWritten;
+        }
+        streamWriter.writeEndElement();
+        for (ModelContainer modelContainer : project.getLoadedModels())
+        {
+            outputVolume(modelContainer, vertexOffsetForModels.get(modelContainer), streamWriter);
         }
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();
@@ -93,18 +104,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeEndElement();
     }
 
-    void outputModelContainer(ModelContainer modelContainer, int modelId,
-        XMLStreamWriter streamWriter) throws XMLStreamException
-    {
-       
-        
-        outputVertices(modelContainer, streamWriter);
-        outputVolume(modelContainer, streamWriter);
-
-        streamWriter.flush();
-    }
-
-    void outputVolume(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
+    void outputVolume(ModelContainer modelContainer, int vertexOffset, XMLStreamWriter streamWriter) throws XMLStreamException
     {
         streamWriter.writeStartElement("volume");
         streamWriter.writeAttribute("materialid", "2");
@@ -119,17 +119,19 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                 ObservableFaceArray faces = triMesh.getFaces();
                 for (int i = 0; i < faces.size(); i += 6)
                 {
-                    outputFace(faces, i, streamWriter);
+                    outputFace(faces, i, vertexOffset, streamWriter);
                 }
             }
         }
         streamWriter.writeEndElement();
     }
 
-    void outputVertices(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
+    /**
+     * Write out the vertices and return the number of vertices written.
+     */
+    int outputVertices(ModelContainer modelContainer, XMLStreamWriter streamWriter) throws XMLStreamException
     {
-        streamWriter.writeStartElement("vertices");
-
+        int numVertices = 0;
         for (Node node : modelContainer.getMeshGroupChildren())
         {
             if (node instanceof MeshView)
@@ -141,24 +143,26 @@ public class AMFOutputConverter implements MeshFileOutputConverter
                 for (int i = 0; i < points.size(); i += 3)
                 {
                     outputVertex(points, i, streamWriter);
+                    numVertices++;
                 }
 
             }
         }
-        streamWriter.writeEndElement();
+        
+        return numVertices;
     }
 
-    private void outputFace(ObservableFaceArray faces, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    private void outputFace(ObservableFaceArray faces, int offset, int vertexOffset, XMLStreamWriter streamWriter) throws XMLStreamException
     {
         streamWriter.writeStartElement("triangle");
         streamWriter.writeStartElement("v1");
-        streamWriter.writeCharacters(Integer.toString(faces.get(offset)));
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset) + vertexOffset));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("v2");
-        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 2)));
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 2) + vertexOffset));
         streamWriter.writeEndElement();
         streamWriter.writeStartElement("v3");
-        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 4)));
+        streamWriter.writeCharacters(Integer.toString(faces.get(offset + 4) + vertexOffset));
         streamWriter.writeEndElement();
         streamWriter.writeEndElement();
     }
