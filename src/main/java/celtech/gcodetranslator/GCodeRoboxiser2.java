@@ -8,7 +8,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class GCodeRoboxiser2 extends GCodeRoboxisingEngine implements GCodeTranslationEventHandler
+public class GCodeRoboxiser2 extends GCodeRoboxisingEngine
 {
     private final Stenographer steno = StenographerFactory.getStenographer(
         GCodeRoboxiser2.class.getName());

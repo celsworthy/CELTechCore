@@ -23,7 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  *
  * @author Ian
  */
-public abstract class GCodeRoboxisingEngine
+public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHandler
 {
 
     private final Stenographer steno = StenographerFactory
@@ -73,6 +73,11 @@ public abstract class GCodeRoboxisingEngine
     protected int triggerNozzleReselectAfterNCloses = 0;
 
     protected int wipeFeedRate_mmPerMin = 0;
+
+    public GCodeRoboxisingEngine()
+    {
+        gcodeParser.addListener(this);
+    }
 
     /**
      *

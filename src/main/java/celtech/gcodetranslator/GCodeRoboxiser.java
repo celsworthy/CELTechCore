@@ -42,7 +42,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  *
  * @author Ian
  */
-public class GCodeRoboxiser extends GCodeRoboxisingEngine implements GCodeTranslationEventHandler
+public class GCodeRoboxiser extends GCodeRoboxisingEngine
 {
     private final Stenographer steno = StenographerFactory.getStenographer(
         GCodeTranslationEventHandler.class.getName());
