@@ -12,7 +12,6 @@ import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
 import celtech.modelcontrol.ModelContainer;
-import celtech.utils.threed.exporters.AMFOutputConverter;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -24,7 +23,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -144,8 +142,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private MaterialComponent selectedMaterialComponent;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
-    private AMFOutputConverter outputConverter = new AMFOutputConverter();
-
     private double lastScaleWidth;
     private double lastScaleHeight;
     private double lastScaleDepth;
@@ -160,12 +156,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private Node linkGraphic;
     private Node unlinkGraphic;
-
-    @FXML
-    void outputAMF(ActionEvent event)
-    {
-        outputConverter.outputFile(boundProject, "Blargle");
-    }
 
     @FXML
     void changeToSettings(MouseEvent event)

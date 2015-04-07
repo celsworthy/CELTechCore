@@ -9,9 +9,8 @@ import celtech.appManager.Project;
 public interface MeshFileOutputConverter
 {
     /**
-     *
-     * @param project
-     * @param printJobUUID
+     * Output the stl or amf file for the given project to the file indicated by the project
+     * job UUID.
      */
     void outputFile(Project project, String printJobUUID);
 }

@@ -30,6 +30,7 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
         MeshView meshView = new MeshView(new ShapePyramid(2, 3));
         ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
         modelContainer.setUseExtruder0Filament(useExtruder0);
+//        modelContainer.translateBy(-105, -75);
         return modelContainer;
     }
 
@@ -79,6 +80,7 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
     public void testOutputOnePyramid() throws JsonProcessingException, XMLStreamException
     {
         ModelContainer modelContainer = makeModelContainer(true);
+        
         AMFOutputConverter outputConverter = new AMFOutputConverter();
 
         XMLOutputFactory factory = XMLOutputFactory.newInstance();
@@ -97,9 +99,9 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
         String expectedOutput = "    <mesh>\n" + "      <vertices>\n"
             + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
             + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>0.0</z></coordinates></vertex>\n"
-            + "        <vertex><coordinates><x>0.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
-            + "        <vertex><coordinates><x>1.0</x><y>1.0</y><z>0.0</z></coordinates></vertex>\n"
-            + "        <vertex><coordinates><x>0.5</x><y>0.5</y><z>1.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.0</x><y>0.0</y><z>-1.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>1.0</x><y>0.0</y><z>-1.0</z></coordinates></vertex>\n"
+            + "        <vertex><coordinates><x>0.5</x><y>1.0</y><z>-0.5</z></coordinates></vertex>\n"
             + "      </vertices>\n" + "      <volume materialid=\"2\">\n"
             + "        <triangle><v1>2</v1><v2>1</v2><v3>0</v3></triangle>\n"
             + "        <triangle><v1>0</v1><v2>1</v2><v3>4</v3></triangle>\n"

@@ -33,8 +33,6 @@ public class SlicerTask extends Task<SliceResult>
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
-    private String tempModelFilename = null;
-    private String tempGcodeFilename = null;
 
     /**
      *
@@ -53,14 +51,37 @@ public class SlicerTask extends Task<SliceResult>
         this.settings = settings;
         this.printerToUse = printerToUse;
 
-        tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
-        tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
     }
 
     @Override
     protected SliceResult call() throws Exception
     {
         boolean succeeded = false;
+
+        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
+        if (settings.getSlicerOverride() != null)
+        {
+            slicerType = settings.getSlicerOverride();
+        }
+
+        String tempModelFilename;
+//        if (slicerType == SlicerType.Cura)
+//        {
+//            tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
+//            MeshFileOutputConverter amfOutputConverter = new AMFOutputConverter();
+//            amfOutputConverter.outputFile(project, printJobUUID);
+//        } else
+//        {
+//            tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+//            MeshFileOutputConverter outputConverter = new STLOutputConverter();
+//            outputConverter.outputFile(project, printJobUUID);
+//        }
+
+        tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+        MeshFileOutputConverter outputConverter = new STLOutputConverter();
+        outputConverter.outputFile(project, printJobUUID);
+
+        String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
 
         String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
             + File.separator;
@@ -70,16 +91,9 @@ public class SlicerTask extends Task<SliceResult>
         updateMessage("Preparing model for conversion");
         updateProgress(0, 100);
 
-        MeshFileOutputConverter outputConverter = new STLOutputConverter();
-        outputConverter.outputFile(project, printJobUUID);
-
-        MeshFileOutputConverter amfOutputConverter = new AMFOutputConverter();
-        amfOutputConverter.outputFile(project, printJobUUID);
-
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
 
-        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         String windowsSlicerCommand = "";
         String macSlicerCommand = "";
         String linuxSlicerCommand = "";
@@ -87,11 +101,6 @@ public class SlicerTask extends Task<SliceResult>
         String combinedConfigSection = "";
         String verboseOutputCommand = "";
         String progressOutputCommand = "";
-
-        if (settings.getSlicerOverride() != null)
-        {
-            slicerType = settings.getSlicerOverride();
-        }
 
         switch (slicerType)
         {
