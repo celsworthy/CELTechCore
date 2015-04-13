@@ -9,7 +9,6 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
-import celtech.utils.threed.exporters.AMFOutputConverter;
 import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
