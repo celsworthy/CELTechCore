@@ -615,72 +615,44 @@ public class PrintEngine implements ControllableService
             }
         }
 
-//        if (project.getProjectMode() == ProjectMode.MESH)
-//        {
-            //Write out the slicer config
-            SlicerType slicerTypeToUse = null;
-            if (settings.getSlicerOverride() != null)
-            {
-                slicerTypeToUse = settings.getSlicerOverride();
-            } else
-            {
-                slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
-            }
+        //Write out the slicer config
+        SlicerType slicerTypeToUse = null;
+        if (settings.getSlicerOverride() != null)
+        {
+            slicerTypeToUse = settings.getSlicerOverride();
+        } else
+        {
+            slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
+        }
 
-            SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
-                slicerTypeToUse);
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            slicerTypeToUse);
 
-            //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-            Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-            configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()
-                + ApplicationConfiguration.xPrintOffset),
-                                        (float) (centreOfPrintedObject.getZ()
-                                        + ApplicationConfiguration.yPrintOffset));
-            configWriter.generateConfigForSlicer(settings,
-                                                 printJobDirectoryName
-                                                 + File.separator
-                                                 + printUUID
-                                                 + ApplicationConfiguration.printProfileFileExtension);
+        //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+        configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()
+            + ApplicationConfiguration.xPrintOffset),
+                                    (float) (centreOfPrintedObject.getZ()
+                                    + ApplicationConfiguration.yPrintOffset));
+        configWriter.generateConfigForSlicer(settings,
+                                             printJobDirectoryName
+                                             + File.separator
+                                             + printUUID
+                                             + ApplicationConfiguration.printProfileFileExtension);
 
-            associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
-            slicerService.reset();
-            slicerService.setProject(project);
-            slicerService.setSettings(settings);
-            slicerService.setPrintJobUUID(printUUID);
-            slicerService.setPrinterToUse(associatedPrinter);
-            slicerService.start();
+        associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
+        slicerService.reset();
+        slicerService.setProject(project);
+        slicerService.setSettings(settings);
+        slicerService.setPrintJobUUID(printUUID);
+        slicerService.setPrinterToUse(associatedPrinter);
+        slicerService.start();
 
-            printJobsAgainstProjects.put(printUUID, project);
+        printJobsAgainstProjects.put(printUUID, project);
 
-            // Do we need to slice?
-            acceptedPrintRequest = true;
-//        } else if (project.getProjectMode() == ProjectMode.GCODE)
-//        {
-//            String printjobFilename = ApplicationConfiguration.
-//                getPrintSpoolDirectory() + printUUID + File.separator
-//                + printUUID + ApplicationConfiguration.gcodeTempFileExtension;
-//            String fileToCopyname = project.getGCodeFilename();
-//            File printjobFile = new File(printjobFilename);
-//            File fileToCopy = new File(fileToCopyname);
-//            try
-//            {
-//                Files.copy(fileToCopy.toPath(), printjobFile.toPath(),
-//                           StandardCopyOption.REPLACE_EXISTING);
-//                associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
-//
-//                gcodePrintService.reset();
-//                gcodePrintService.setCurrentPrintJobID(printUUID);
-//                gcodePrintService.setModelFileToPrint(printjobFilename);
-//                gcodePrintService.setPrinterToUse(associatedPrinter);
-//                gcodePrintService.start();
-//                acceptedPrintRequest = true;
-//            } catch (IOException ex)
-//            {
-//                steno.error(
-//                    "Error whilst preparing for print. Can't copy "
-//                    + fileToCopyname + " to " + printjobFilename);
-//            }
-//        }
+        // Do we need to slice?
+        acceptedPrintRequest = true;
+
         return acceptedPrintRequest;
     }
 

@@ -2524,3 +2524,12 @@ modal-dialogue{
     -fx-pref-width: 40;
     -fx-min-width: 40;
 }
+
+/**
+* TimeCostInsetPanel
+*/
+
+#timeCostInsetRoot {
+    -fx-background-color: mid_grey_50;
+    -fx-font-family: 'Source Sans Pro Regular';
+}

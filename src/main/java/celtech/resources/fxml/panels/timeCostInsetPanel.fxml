@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.printerstatus.*?>
+<?import celtech.coreUI.components.material.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import jfxtras.styles.jmetro8.*?>
+
+<HBox id="timeCostInsetRoot" fx:id="timeCostInsetRoot" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.TimeCostInsetPanelController">
+   <children>
+      <GridPane>
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Time" GridPane.columnIndex="1" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Weight" GridPane.columnIndex="2" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Cost" GridPane.columnIndex="3" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Draft" GridPane.rowIndex="1" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Normal" GridPane.rowIndex="2" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Fine" GridPane.rowIndex="3" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Custom" GridPane.rowIndex="4" />
+            <Label fx:id="lblDraftTime" text="..." GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="lblNormalTime" text="..." GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label fx:id="lblFineTime" text="..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label fx:id="lblCustomTime" text="..." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label fx:id="lblDraftWeight" text="..." GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Label fx:id="lblNormalWeight" text="..." GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Label fx:id="lblFineWeight" text="..." GridPane.columnIndex="2" GridPane.rowIndex="3" />
+            <Label fx:id="lblCustomWeight" text="..." GridPane.columnIndex="2" GridPane.rowIndex="4" />
+            <Label fx:id="lblDraftCost" text="..." GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <Label fx:id="lblNormalCost" text="..." GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <Label fx:id="lblFineCost" text="..." GridPane.columnIndex="3" GridPane.rowIndex="3" />
+            <Label fx:id="lblCustomCost" text="..." GridPane.columnIndex="3" GridPane.rowIndex="4" />
+         </children>
+      </GridPane>
+   </children>
+</HBox>
