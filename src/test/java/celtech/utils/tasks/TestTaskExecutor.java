@@ -1,5 +1,7 @@
 package celtech.utils.tasks;
 
+import javafx.concurrent.Task;
+
 /**
  *
  * @author Ian
@@ -62,5 +64,11 @@ public class TestTaskExecutor implements TaskExecutor
                 ex.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void runTaskAsDaemon(Task task)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

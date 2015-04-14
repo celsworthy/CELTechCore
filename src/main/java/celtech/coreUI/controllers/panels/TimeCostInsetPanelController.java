@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -137,31 +138,25 @@ public class TimeCostInsetPanelController implements Initializable
      * Update the time, cost and weight fields for the given profile and fields. Long running
      * calculations must be performed in a background thread.
      */
-    private void updateFieldsForProfile(Project project, SlicerParametersFile draftSettings,
+    private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
         Label lblDraftTime, Label lblDraftWeight, Label lblDraftCost)
     {
         lblDraftTime.setText("...");
         lblDraftWeight.setText("...");
         lblDraftCost.setText("...");
 
-        GetTimeWeightCostTask getDetails = new GetTimeWeightCostTask(project, fineSettings);
+        GetTimeWeightCostTask updateDetails = new GetTimeWeightCostTask(project, settings,
+                                                                        lblDraftTime, lblDraftWeight,
+                                                                        lblDraftCost);
 
-        getDetails.setOnSucceeded((WorkerStateEvent event) ->
-        {
-            TimeWeightCost timeWeightCost = getDetails.getValue();
-            lblDraftTime.setText(String.valueOf(timeWeightCost.timeSeconds));
-            lblDraftWeight.setText(String.valueOf(timeWeightCost.weightGrams));
-            lblDraftCost.setText(String.valueOf(timeWeightCost.costPence));
-        });
-
-        getDetails.setOnFailed((WorkerStateEvent event) ->
+        updateDetails.setOnFailed((WorkerStateEvent event) ->
         {
             lblDraftTime.setText("NA");
             lblDraftWeight.setText(String.valueOf("NA"));
             lblDraftCost.setText(String.valueOf("NA"));
         });
 
-        Thread th = new Thread(getDetails);
+        Thread th = new Thread(updateDetails);
         th.setDaemon(true);
         th.start();
 
@@ -175,43 +170,84 @@ public class TimeCostInsetPanelController implements Initializable
         double costPence = 0;
     }
 
-    class GetTimeWeightCostTask extends Task<TimeWeightCost>
+    class GetTimeWeightCostTask extends Task<Void>
     {
 
         private final Project project;
         private final SlicerParametersFile settings;
+        private final Label lblTime;
+        private final Label lblWeight;
+        private final Label lblCost;
 
-        public GetTimeWeightCostTask(Project project, SlicerParametersFile settings)
+        public GetTimeWeightCostTask(Project project, SlicerParametersFile settings,
+            Label lblTime, Label lblWeight, Label lblCost)
         {
             this.project = project;
             this.settings = settings;
+            this.lblTime = lblTime;
+            this.lblWeight = lblWeight;
+            this.lblCost = lblCost;
+        }
+
+        private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
+        {
+            double duration = printJobStatistics.getLayerNumberToPredictedDuration().stream().mapToDouble(
+                Double::doubleValue).sum();
+
+            lblTime.setText(String.valueOf(duration));
+            lblWeight.setText(String.valueOf(-1));
+            lblCost.setText(String.valueOf(-1));
         }
 
         @Override
-        protected TimeWeightCost call() throws Exception
+        protected Void call() throws Exception
         {
             try
             {
                 SlicerTask slicerTask = makeSlicerTask(project, settings);
-                slicerTask.run();
-                SliceResult sliceResult = slicerTask.getValue();
+                slicerTask.setOnSucceeded((WorkerStateEvent event) ->
+                {
+                    try
+                    {
+                        SliceResult sliceResult = slicerTask.getValue();
 
-                PostProcessorTask postProcessorTask = new PostProcessorTask(
-                    sliceResult.getPrintJobUUID(),
-                    settings, null);
-                postProcessorTask.run();
-                GCodePostProcessingResult result = postProcessorTask.getValue();
-                PrintJobStatistics printJobStatistics = result.getRoboxiserResult().getPrintJobStatistics();
-                double duration = printJobStatistics.getLayerNumberToPredictedDuration().get(
-                    printJobStatistics.getNumberOfLines());
-                TimeWeightCost timeWeightCost = new TimeWeightCost();
-                timeWeightCost.timeSeconds = duration;
-                return timeWeightCost;
+                        PostProcessorTask postProcessorTask = new PostProcessorTask(
+                            sliceResult.getPrintJobUUID(),
+                            settings, null);
+                        postProcessorTask.setOnSucceeded((WorkerStateEvent event1) ->
+                        {
+                            try
+                            {
+                                GCodePostProcessingResult result = postProcessorTask.getValue();
+                                PrintJobStatistics printJobStatistics = result.getRoboxiserResult().getPrintJobStatistics();
+
+                                updateFieldsForStatistics(printJobStatistics);
+
+                            } catch (Exception ex)
+                            {
+                                ex.printStackTrace();
+                            }
+                        });
+                        postProcessorTask.setOnFailed((WorkerStateEvent event1) ->
+                        {
+                            lblDraftTime.setText("NA");
+                            lblDraftWeight.setText("NA");
+                            lblDraftCost.setText("NA");
+                        });
+                        Lookup.getTaskExecutor().runTaskAsDaemon(postProcessorTask);
+                    } catch (Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+
+                });
+                Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
+
             } catch (Exception ex)
             {
                 ex.printStackTrace();
-                return null;
             }
+            return null;
         }
 
         private SlicerTask makeSlicerTask(Project project, SlicerParametersFile settings)
