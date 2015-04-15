@@ -143,7 +143,7 @@ public class PrinterUtils
             {
                 Thread.sleep(100);
 
-                if (cancellable != null && cancellable.cancelled)
+                if (cancellable != null && cancellable.cancelled.get())
                 {
                     failed = true;
                     break;
@@ -241,7 +241,7 @@ public class PrinterUtils
                 Thread.sleep(100);
                 response = printerToCheck.transmitStatusRequest();
 
-                if (cancellable != null && cancellable.cancelled)
+                if (cancellable != null && cancellable.cancelled.get())
                 {
                     failed = true;
                     break;
@@ -341,7 +341,7 @@ public class PrinterUtils
                     || temperatureProperty.get() > maxTemp))
                 {
                     if (task != null && task.isCancelled() || (cancellable != null
-                        && cancellable.cancelled))
+                        && cancellable.cancelled.get()))
                     {
                         break;
                     }

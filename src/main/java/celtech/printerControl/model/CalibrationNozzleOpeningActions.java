@@ -9,7 +9,6 @@ import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
@@ -46,7 +45,7 @@ public class CalibrationNozzleOpeningActions
     public CalibrationNozzleOpeningActions(Printer printer)
     {
         this.printer = printer;
-        cancellable.cancelled = false;
+        cancellable.cancelled.set(false);
         nozzlePosition.addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
@@ -391,7 +390,7 @@ public class CalibrationNozzleOpeningActions
 
     public void cancel() throws RoboxCommsException
     {
-        cancellable.cancelled = true;
+        cancellable.cancelled.set(true);
         try
         {
             // wait for any current actions to respect cancelled flag

@@ -34,7 +34,7 @@ public class CalibrationXAndYActions
     public CalibrationXAndYActions(Printer printer)
     {
         this.printer = printer;
-        cancellable.cancelled = false;
+        cancellable.cancelled.set(false);
         
         printerErrorHandler = new CalibrationXYErrorHandler(printer, cancellable);
     }
@@ -85,7 +85,7 @@ public class CalibrationXAndYActions
 
     public void cancel() throws PrinterException, RoboxCommsException
     {
-        cancellable.cancelled = true;
+        cancellable.cancelled.set(true);
         try
         {
             // wait for any current actions to respect cancelled flag

@@ -44,7 +44,7 @@ public class CalibrationNozzleHeightActions
     public CalibrationNozzleHeightActions(Printer printer)
     {
         this.printer = printer;
-        cancellable.cancelled = false;
+        cancellable.cancelled.set(false);
         zco.addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
@@ -291,7 +291,7 @@ public class CalibrationNozzleHeightActions
 
     public void cancel() throws PrinterException, RoboxCommsException, CalibrationException
     {
-        cancellable.cancelled = true;
+        cancellable.cancelled.set(true);
         try
         {
             // wait for any current actions to respect cancelled flag

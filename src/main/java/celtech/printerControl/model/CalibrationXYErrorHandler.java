@@ -4,13 +4,11 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -87,7 +85,7 @@ public class CalibrationXYErrorHandler
         {
             errorOccurred = true;
             lastError = error;
-            cancellable.cancelled = true;
+            cancellable.cancelled.set(true);
         }
     };
 

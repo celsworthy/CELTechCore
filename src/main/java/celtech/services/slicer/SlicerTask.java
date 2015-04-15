@@ -32,15 +32,8 @@ public class SlicerTask extends Task<SliceResult>
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
+    Process slicerProcess = null;
 
-    /**
-     *
-     * @param printJobUUID
-     * @param project
-     * @param printQuality
-     * @param settings
-     * @param printerToUse
-     */
     public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality,
         SlicerParametersFile settings, Printer printerToUse)
     {
@@ -56,6 +49,12 @@ public class SlicerTask extends Task<SliceResult>
     protected SliceResult call() throws Exception
     {
         boolean succeeded = false;
+        
+        if (isCancelled()) {
+            return null;
+        }
+        
+        steno.info("slice " + project + " "  + settings.getProfileName());
 
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         if (settings.getSlicerOverride() != null)
@@ -64,17 +63,6 @@ public class SlicerTask extends Task<SliceResult>
         }
 
         String tempModelFilename;
-//        if (slicerType == SlicerType.Cura)
-//        {
-//            tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
-//            MeshFileOutputConverter amfOutputConverter = new AMFOutputConverter();
-//            amfOutputConverter.outputFile(project, printJobUUID);
-//        } else
-//        {
-//            tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-//            MeshFileOutputConverter outputConverter = new STLOutputConverter();
-//            outputConverter.outputFile(project, printJobUUID);
-//        }
 
         tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
         MeshFileOutputConverter outputConverter = new STLOutputConverter();
@@ -205,6 +193,10 @@ public class SlicerTask extends Task<SliceResult>
             default:
                 steno.error("Couldn't determine how to run slicer");
         }
+        
+        if (isCancelled()) {
+            return null;
+        }
 
         if (commands.size() > 0)
         {
@@ -215,8 +207,6 @@ public class SlicerTask extends Task<SliceResult>
                 steno.debug("Set working directory (Non-Windows) to " + workingDirectory);
                 slicerProcessBuilder.directory(new File(workingDirectory));
             }
-
-            Process slicerProcess = null;
 
             try
             {

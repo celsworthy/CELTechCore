@@ -36,7 +36,7 @@ class CalibrationOpeningErrorHandler
     TaskExecutor.NoArgsVoidFunc retryHandler = null;
     TaskExecutor.NoArgsVoidFunc abortHandler = () ->
     {
-        cancellable.cancelled = true;
+        cancellable.cancelled.set(true);
         throw new CalibrationException("An error occurred with the printer");
     };
 
@@ -81,7 +81,7 @@ class CalibrationOpeningErrorHandler
             steno.info("Discarded error " + error.name() + " during calibration");
         } else
         {
-            cancellable.cancelled = true;
+            cancellable.cancelled.set(true);
             errorOccurred = true;
             lastError = error;
         }
@@ -112,14 +112,14 @@ class CalibrationOpeningErrorHandler
                     false, false, false, true);
             if (!choice.isPresent())
             {
-                cancellable.cancelled = true;
+                cancellable.cancelled.set(true);
                 abortHandler.run();
                 return;
             }
             switch (choice.get())
             {
                 case OK:
-                    cancellable.cancelled = true;
+                    cancellable.cancelled.set(true);
                     abortHandler.run();
                     break;
             }

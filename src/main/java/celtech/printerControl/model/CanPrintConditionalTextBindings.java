@@ -94,7 +94,7 @@ public class CanPrintConditionalTextBindings
                     {
                         steno.debug("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
-                        System.out.println("project fil 0 is " + usedFilament + " " + usedFilament.getFilamentID());
+                        steno.debug("project fil 0 is " + usedFilament + " " + usedFilament.getFilamentID());
                         if (usedFilament.equals(printerFilament))
                         {
                             steno.debug("used filament 0 matches printer filament 0");

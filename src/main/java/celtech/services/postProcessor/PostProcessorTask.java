@@ -26,7 +26,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
-
+    
     public PostProcessorTask(String printJobUUID, SlicerParametersFile settings,
         Printer printerToUse)
     {
