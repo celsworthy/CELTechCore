@@ -127,10 +127,9 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
                 steno.error("Error roboxising file " + inputFilename);
             } catch (MacroLoadException ex)
             {
-                ex.printStackTrace();
                 steno.error(
                     "Error roboxising file - couldn't add before print header due to circular macro reference "
-                    + inputFilename);
+                    + inputFilename + " " + ex);
             }
 
             result.setSuccess(success);

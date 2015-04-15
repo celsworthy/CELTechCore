@@ -135,6 +135,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private RestrictedNumberField filamentDiameter;
+    
+    @FXML
+    private RestrictedNumberField costGBPPerKG;    
 
     @FXML
     private RestrictedNumberField feedRateMultiplier;
@@ -270,6 +273,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         bedTemperature.intValueProperty().set(0);
         firstLayerNozzleTemperature.intValueProperty().set(0);
         nozzleTemperature.intValueProperty().set(0);
+        costGBPPerKG.floatValueProperty().set(0);
 //        colour.setValue(filament.getDisplayColour());
         isDirty.set(false);
     }
@@ -302,6 +306,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         firstLayerNozzleTemperature.textProperty().addListener(dirtyStringListener);
         nozzleTemperature.textProperty().addListener(dirtyStringListener);
         ambientTemperature.textProperty().addListener(dirtyStringListener);
+        costGBPPerKG.textProperty().addListener(dirtyStringListener);
     }
 
     private void setupWidgetEditableBindings()
@@ -318,6 +323,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.disableProperty().bind(isEditable.not());
         nozzleTemperature.disableProperty().bind(isEditable.not());
         ambientTemperature.disableProperty().bind(isEditable.not());
+        costGBPPerKG.disableProperty().bind(isEditable.not());
     }
 
     private void showHelpText(Fields field)
@@ -423,6 +429,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         firstLayerNozzleTemperature.intValueProperty().set(filament.getFirstLayerNozzleTemperature());
         nozzleTemperature.intValueProperty().set(filament.getNozzleTemperature());
         colour.setValue(filament.getDisplayColour());
+        costGBPPerKG.floatValueProperty().set(filament.getCostGBPPerKG());
         isDirty.set(false);
     }
 
@@ -449,6 +456,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 firstLayerNozzleTemperature.getAsInt(),
                 nozzleTemperature.getAsInt(),
                 colour.getValue(),
+                costGBPPerKG.getAsFloat(),
                 false);
         } catch (ParseException ex)
         {

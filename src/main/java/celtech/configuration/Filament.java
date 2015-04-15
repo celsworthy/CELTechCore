@@ -44,25 +44,10 @@ public class Filament implements Serializable, Cloneable
     private ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
     private final FloatProperty remainingFilament = new SimpleFloatProperty(
         ApplicationConfiguration.mmOfFilamentOnAReel);
+    private final FloatProperty costGBPPerKG = new SimpleFloatProperty(20f);
 
     private static final float epsilon = 0.0001f;
 
-    /**
-     *
-     * @param friendlyFilamentName
-     * @param material
-     * @param reelID
-     * @param diameter
-     * @param filamentMultiplier
-     * @param feedRateMultiplier
-     * @param requiredAmbientTemperature
-     * @param requiredFirstLayerBedTemperature
-     * @param requiredBedTemperature
-     * @param requiredFirstLayerNozzleTemperature
-     * @param requiredNozzleTemperature
-     * @param displayColour
-     * @param mutable
-     */
     public Filament(
         String friendlyFilamentName,
         MaterialType material,
@@ -76,6 +61,7 @@ public class Filament implements Serializable, Cloneable
         int requiredFirstLayerNozzleTemperature,
         int requiredNozzleTemperature,
         Color displayColour,
+        float costGBPPerKG,
         boolean mutable)
     {
         this.friendlyFilamentName.set(friendlyFilamentName);
@@ -90,6 +76,7 @@ public class Filament implements Serializable, Cloneable
         this.requiredFirstLayerNozzleTemperature.set(requiredFirstLayerNozzleTemperature);
         this.requiredNozzleTemperature.set(requiredNozzleTemperature);
         this.displayColour.set(displayColour);
+        this.costGBPPerKG.set(costGBPPerKG);
         this.mutable.set(mutable);
     }
 
@@ -527,6 +514,32 @@ public class Filament implements Serializable, Cloneable
 
         return friendlyFilamentName.get();
     }
+    
+    /**
+     * Return the weight of a given length of this material, in grammes.
+     */
+    public double getWeightForLength(double lengthMetres) {
+        double densityKGM3 = material.get().getDensity() * 1000d;
+        double crossSectionM2 = Math.PI * diameter.get() * diameter.get() / 4d * 1e-6;
+        return lengthMetres * crossSectionM2 * densityKGM3 * 1000d;
+    }
+    
+    /**
+     * Return the weight of a given volume of this material, in grammes.
+     */
+    public double getWeightForVolume(double volumeCubicMetres) {
+        double densityKGM3 = material.get().getDensity() * 1000d;
+        return volumeCubicMetres * densityKGM3 * 1000d;
+    }    
+    
+    /**
+     * Return the cost in GBP of a given volume of this material.
+     */
+    public double getCostForVolume(double volumeCubicMetres) {
+        double densityKGM3 = material.get().getDensity() * 1000d;
+        double weight = volumeCubicMetres * densityKGM3;
+        return weight * costGBPPerKG.get();
+    }        
 
     /**
      *
@@ -570,6 +583,7 @@ public class Filament implements Serializable, Cloneable
                                       this.getFirstLayerNozzleTemperature(),
                                       this.getNozzleTemperature(),
                                       this.getDisplayColour(),
+                                      this.getCostGBPPerKG(),
                                       this.isMutable()
         );
 
@@ -818,4 +832,9 @@ public class Filament implements Serializable, Cloneable
 //            steno.error("Error from triggered read of Reel EEPROM");
 //        }
 //    }
+
+    public float getCostGBPPerKG()
+    {
+        return costGBPPerKG.get();
+    }
 }

@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -25,7 +26,6 @@ import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -109,6 +109,10 @@ public class TimeCostInsetPanelController implements Initializable
                         timeCostInsetRoot.setVisible(false);
                     }
                 });
+            
+            if (Lookup.getSelectedProjectProperty().get() != null) {
+                updateFields(Lookup.getSelectedProjectProperty().get());
+            }
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -132,6 +136,8 @@ public class TimeCostInsetPanelController implements Initializable
     private void updateFields(Project project)
     {
         updateFieldsForProfile(project, draftSettings, lblDraftTime, lblDraftWeight, lblDraftCost);
+        updateFieldsForProfile(project, normalSettings, lblNormalTime, lblNormalWeight, lblNormalCost);
+        updateFieldsForProfile(project, fineSettings, lblFineTime, lblFineWeight, lblFineCost);
     }
 
     /**
@@ -139,35 +145,27 @@ public class TimeCostInsetPanelController implements Initializable
      * calculations must be performed in a background thread.
      */
     private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
-        Label lblDraftTime, Label lblDraftWeight, Label lblDraftCost)
+        Label lblTime, Label lblWeight, Label lblCost)
     {
-        lblDraftTime.setText("...");
-        lblDraftWeight.setText("...");
-        lblDraftCost.setText("...");
+        lblTime.setText("...");
+        lblWeight.setText("...");
+        lblCost.setText("...");
 
         GetTimeWeightCostTask updateDetails = new GetTimeWeightCostTask(project, settings,
-                                                                        lblDraftTime, lblDraftWeight,
-                                                                        lblDraftCost);
+                                                                        lblTime, lblWeight,
+                                                                        lblCost);
 
         updateDetails.setOnFailed((WorkerStateEvent event) ->
         {
-            lblDraftTime.setText("NA");
-            lblDraftWeight.setText(String.valueOf("NA"));
-            lblDraftCost.setText(String.valueOf("NA"));
+            lblTime.setText("NA");
+            lblWeight.setText(String.valueOf("NA"));
+            lblCost.setText(String.valueOf("NA"));
         });
 
         Thread th = new Thread(updateDetails);
         th.setDaemon(true);
         th.start();
 
-    }
-
-    class TimeWeightCost
-    {
-
-        double timeSeconds = 0;
-        double weightGrams = 0;
-        double costPence = 0;
     }
 
     class GetTimeWeightCostTask extends Task<Void>
@@ -189,14 +187,28 @@ public class TimeCostInsetPanelController implements Initializable
             this.lblCost = lblCost;
         }
 
+        /**
+         * Update the time/cost/weight fields based on the given statistics.
+         */
         private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
         {
             double duration = printJobStatistics.getLayerNumberToPredictedDuration().stream().mapToDouble(
                 Double::doubleValue).sum();
 
-            lblTime.setText(String.valueOf(duration));
-            lblWeight.setText(String.valueOf(-1));
-            lblCost.setText(String.valueOf(-1));
+            String formattedDuration = formatDuration(duration);
+            
+            double volumeUsed = printJobStatistics.getVolumeUsed();
+            //TODO make work with dual extruders
+            Filament filament = project.getPrinterSettings().getFilament0();
+            double weight = filament.getWeightForVolume(volumeUsed * 1e-9);
+            String formattedWeight = formatWeight(weight);
+            
+            double costGBP = filament.getCostForVolume(volumeUsed * 1e-9);
+            String formattedCost = formatCost(costGBP);
+            
+            lblTime.setText(formattedDuration);
+            lblWeight.setText(formattedWeight);
+            lblCost.setText(formattedCost);
         }
 
         @Override
@@ -250,6 +262,9 @@ public class TimeCostInsetPanelController implements Initializable
             return null;
         }
 
+        /**
+         * Set up a print job directory etc and return a SlicerTask based on it.
+         */
         private SlicerTask makeSlicerTask(Project project, SlicerParametersFile settings)
         {
             //Create the print job directory
@@ -288,6 +303,35 @@ public class TimeCostInsetPanelController implements Initializable
                                   settings, null);
 
         }
+
+        /**
+         * Take the duration in seconds and return a string in the format H MM.
+         */
+        private String formatDuration(double duration)
+        {
+            int SECONDS_PER_HOUR = 3600;
+            int numHours = (int) (duration / SECONDS_PER_HOUR);
+            int numMinutes = (int) ((duration - (numHours * SECONDS_PER_HOUR)) / 60);
+            return String.format("%sh %sm", numHours, numMinutes);
+        }
+        
+        /**
+         * Take the weight in grammes and return a string in the format NNNg.
+         */
+        private String formatWeight(double weight)
+        {
+            return String.format("%sg", (int) weight);
+        }   
+        
+        /**
+         * Take the cost in pounds and return a string in the format $1.43.
+         */
+        private String formatCost(double cost)
+        {
+            int numPounds = (int) cost;
+            int numPence = (int) (cost - (numPounds * 100));
+            return String.format("£%s.%02d", numPounds, numPence);
+        }        
 
     }
 
