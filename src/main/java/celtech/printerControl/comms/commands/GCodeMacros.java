@@ -18,8 +18,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeMacros
 {
 
-    private static final String safetyFeaturesOnDirectory = "Safety_Features_On";
-    private static final String safetyFeaturesOffDirectory = "Safety_Features_Off";
+    private static final String safetyFeaturesOnDirectory = "Safety_Features_ON";
+    private static final String safetyFeaturesOffDirectory = "Safety_Features_OFF";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.
         getName());
