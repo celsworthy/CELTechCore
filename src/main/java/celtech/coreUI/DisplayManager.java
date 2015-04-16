@@ -174,24 +174,19 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             if (loadResult != null)
             {
+                boolean shrinkModel = false;
                 if (loadResult.isModelTooLarge())
                 {
-                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
+                    shrinkModel = Lookup.getSystemNotificationHandler().
                         showModelTooBigDialog(loadResult.getModelFilename());
-
-                    if (shrinkModel)
-                    {
-                        ModelContainer modelContainer = loadResult.getModelContainer();
-                        modelContainer.shrinkToFitBed();
-                        loadResult.getTargetProjectTab().addModelContainer(
-                            loadResult.getFullFilename(), modelContainer);
-                    }
-                } else
-                {
-                    ModelContainer modelContainer = loadResult.getModelContainer();
-                    loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(),
-                                                                       modelContainer);
                 }
+                ModelContainer modelContainer = loadResult.getModelContainer();
+                if (shrinkModel)
+                {
+                    modelContainer.shrinkToFitBed();
+                }
+                loadResult.getTargetProjectTab().addModelContainer(loadResult.getFullFilename(),
+                                                                   modelContainer);
             } else
             {
                 steno.error("Error whilst attempting to load model");
@@ -1154,10 +1149,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         ProjectTab newProjectTab = new ProjectTab(instance, newProject,
                                                                   tabDisplay.widthProperty(),
                                                                   tabDisplay.heightProperty());
-                        
+
                         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
                         tabDisplaySelectionModel.select(newProjectTab);
-                        
+
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                         {
                             applicationStatus.setMode(ApplicationMode.LAYOUT);

@@ -541,7 +541,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkButton shrinkChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.ShrinkModelToFit"));
                 ChoiceLinkButton dontShrinkChoice = choiceLinkDialogBox.addChoiceLink(
-                    Lookup.i18n("dialogs.ModelTooLargeNo"));
+                    Lookup.i18n("dialogs.dontShrink"));
 
                 Optional<ChoiceLinkButton> shrinkResponse = choiceLinkDialogBox.
                     getUserInput();
