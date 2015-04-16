@@ -29,7 +29,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
     private final HashMap<String, Printer> activePrinters = new HashMap<>();
     private boolean suppressPrinterIDChecks = false;
-    private int sleepBetweenStatusChecks = 1000;
+    private int sleepBetweenStatusChecksMS = 1000;
 
     private String dummyPrinterPort = "DummyPrinterPort";
 
@@ -104,7 +104,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
                         Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
                                                                  this, port, suppressPrinterIDChecks,
-                                                                 sleepBetweenStatusChecks));
+                                                                 sleepBetweenStatusChecksMS));
                         pendingPrinters.put(port, newPrinter);
                     }
                 }
@@ -199,7 +199,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                                                   new DummyPrinterCommandInterface(this,
                                                                                    actualPrinterPort,
                                                                                    suppressPrinterIDChecks,
-                                                                                   sleepBetweenStatusChecks,
+                                                                                   sleepBetweenStatusChecksMS,
                                                                                    "DP "
                                                                                    + dummyPrinterCounter));
         pendingPrinters.put(actualPrinterPort, nullPrinter);
@@ -214,5 +214,14 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public List<Printer> getDummyPrinters()
     {
         return dummyPrinters;
+    }
+    
+    /**
+     * 
+     * @param milliseconds 
+     */
+    public void setSleepBetweenStatusChecks(int milliseconds)
+    {
+        sleepBetweenStatusChecksMS = milliseconds;
     }
 }
