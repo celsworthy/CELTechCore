@@ -20,7 +20,7 @@ public class UserPreferenceFile
     private LogLevel loggingLevel = LogLevel.INFO;
     private boolean advancedMode = false;
     private boolean firstUse = true;
-    private boolean detectLoadedFilament = false;
+    private boolean detectLoadedFilament = true;
 
     public String getLanguageTag()
     {
