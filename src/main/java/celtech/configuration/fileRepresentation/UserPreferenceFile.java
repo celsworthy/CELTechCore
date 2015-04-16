@@ -20,6 +20,7 @@ public class UserPreferenceFile
     private LogLevel loggingLevel = LogLevel.INFO;
     private boolean advancedMode = false;
     private boolean firstUse = true;
+    private boolean detectLoadedFilament = false;
 
     public String getLanguageTag()
     {
@@ -85,11 +86,20 @@ public class UserPreferenceFile
     {
         return firstUse;
     }
+    
+    public boolean isDetectLoadedFilament() {
+        return detectLoadedFilament;
+    }
 
     public void setFirstUse(boolean value)
     {
         this.firstUse = value;
     }
+    
+    public void setDetectLoadedFilament(boolean value)
+    {
+        this.detectLoadedFilament = value;
+    }    
 
     public void populateFromSettings(UserPreferences userPreferences)
     {
@@ -100,5 +110,6 @@ public class UserPreferenceFile
         setLoggingLevel(userPreferences.getLoggingLevel());
         setAdvancedMode(userPreferences.isAdvancedMode());
         setFirstUse(userPreferences.isFirstUse());
+        setDetectLoadedFilament(userPreferences.getDetectLoadedFilament());
     }
 }

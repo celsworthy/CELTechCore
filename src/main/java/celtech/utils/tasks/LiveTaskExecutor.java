@@ -1,6 +1,5 @@
 package celtech.utils.tasks;
 
-import celtech.printerControl.model.HardwarePrinter;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -13,7 +12,7 @@ public class LiveTaskExecutor implements TaskExecutor
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        HardwarePrinter.class.getName());
+        LiveTaskExecutor.class.getName());
 
     @Override
     public void runOnGUIThread(Runnable runnable)

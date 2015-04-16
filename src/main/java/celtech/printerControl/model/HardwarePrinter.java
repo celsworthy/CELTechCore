@@ -20,7 +20,6 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.PurgeRequiredException;
 import celtech.printerControl.comms.CommandInterface;
 import celtech.printerControl.comms.PrinterStatusConsumer;
-import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -215,12 +214,40 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      */
     private final Map<ErrorConsumer, List<FirmwareError>> errorConsumers = new WeakHashMap<>();
     private boolean processErrors = false;
+    private final FilamentLoadedGetter filamentLoadedGetter;
+
+    /**
+     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to
+     * override the detection of whether a filament is loaded or not on a given extruder.
+     */
+    public interface FilamentLoadedGetter
+    {
+        public boolean getFilamentLoaded(StatusResponse statusResponse, int extruderNumber);
+    }
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
         CommandInterface commandInterface)
     {
+        // The default FilamentLoadedGetter just checks the data in the statusResponse
+        this(printerStatusConsumer, commandInterface,
+             (StatusResponse statusResponse, int extruderNumber) ->
+             {
+                 if (extruderNumber == 1)
+                 {
+                     return statusResponse.isFilament1SwitchStatus();
+                 } else
+                 {
+                     return statusResponse.isFilament2SwitchStatus();
+                 }
+             });
+    }
+
+    public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
+        CommandInterface commandInterface, FilamentLoadedGetter filamentLoadedGetter)
+    {
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
+        this.filamentLoadedGetter = filamentLoadedGetter;
 
         macroType.addListener(new ChangeListener<MacroType>()
         {
@@ -2963,9 +2990,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Extruders
                      */
+                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 1);
+                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 2);
+
                     //TODO configure properly for multiple extruders
-                    extruders.get(firstExtruderNumber).filamentLoaded.set(statusResponse.
-                        isFilament1SwitchStatus());
+                    extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
                     extruders.get(firstExtruderNumber).indexWheelState.set(statusResponse.
                         isEIndexStatus());
                     extruders.get(firstExtruderNumber).isFitted.set(statusResponse.
@@ -2974,8 +3003,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         getEFilamentDiameter());
                     extruders.get(firstExtruderNumber).extrusionMultiplier.set(statusResponse.
                         getEFilamentMultiplier());
-                    extruders.get(secondExtruderNumber).filamentLoaded.set(statusResponse.
-                        isFilament2SwitchStatus());
+
+                    extruders.get(secondExtruderNumber).filamentLoaded.set(filament2Loaded);
                     extruders.get(secondExtruderNumber).indexWheelState.set(statusResponse.
                         isDIndexStatus());
                     extruders.get(secondExtruderNumber).isFitted.set(statusResponse.

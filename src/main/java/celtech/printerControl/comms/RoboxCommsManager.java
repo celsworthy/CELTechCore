@@ -3,6 +3,8 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
+import celtech.configuration.UserPreferences;
+import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import java.io.BufferedReader;
@@ -138,9 +140,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                         // We need to connect!
                         steno.info("Adding new printer on " + port);
 
-                        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
-                                                                 this, port, suppressPrinterIDChecks,
-                                                                 sleepBetweenStatusChecks));
+                        Printer newPrinter = makeHardwarePrinter(port);
                         pendingPrinters.put(port, newPrinter);
                     }
                 }
@@ -154,6 +154,34 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
             }
         }
 
+    }
+
+    private Printer makeHardwarePrinter(String port)
+    {
+        final UserPreferences userPreferences = Lookup.getUserPreferences();
+        HardwarePrinter.FilamentLoadedGetter filamentLoadedGetter = 
+            (StatusResponse statusResponse, int extruderNumber) ->
+        {
+            if (! userPreferences.getDetectLoadedFilament())
+            {
+                // if this preference has been selected then always say that the filament
+                // has been detected as loaded.
+                return true;
+            } else
+            {
+                if (extruderNumber == 1)
+                {
+                    return statusResponse.isFilament1SwitchStatus();
+                } else
+                {
+                    return statusResponse.isFilament2SwitchStatus();
+                }
+            }
+        };
+        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
+                                                 this, port, suppressPrinterIDChecks,
+                                                 sleepBetweenStatusChecks), filamentLoadedGetter);
+        return newPrinter;
     }
 
     /**

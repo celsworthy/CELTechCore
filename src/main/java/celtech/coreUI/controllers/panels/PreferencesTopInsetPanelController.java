@@ -109,8 +109,12 @@ public class PreferencesTopInsetPanelController implements Initializable
         List<Preference> preferences = new ArrayList<>();
 
         Preference slicerTypePref = new SlicerTypePreference(userPreferences);
+        Preference overrideFilamentLoadedDetection = 
+            new TickBoxPreference((userPreferences.detectLoadedFilamentProperty()),
+                "preferences.detectLoadedFilament");
 
         preferences.add(slicerTypePref);
+        preferences.add(overrideFilamentLoadedDetection);
 
         return preferences;
     }
