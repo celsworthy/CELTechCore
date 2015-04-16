@@ -15,8 +15,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * PrinterSettings represents the choices made by the user for a project on the
- * Settings panel. It is serialised with the project.
+ * PrinterSettings represents the choices made by the user for a project on the Settings panel. It
+ * is serialised with the project.
+ *
  * @author Ian Hudson @ Liberty Systems Limited
  */
 public class PrinterSettings
@@ -29,7 +30,7 @@ public class PrinterSettings
     private final ObjectProperty<PrintQualityEnumeration> printQuality
         = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
     private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
-    
+
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
@@ -38,20 +39,22 @@ public class PrinterSettings
     {
         settingsName.set(ApplicationConfiguration.draftSettingsProfileName);
         SlicerParametersFile draftParametersFile = SlicerParametersContainer.getSettingsByProfileName(
-                    ApplicationConfiguration.draftSettingsProfileName);
+            ApplicationConfiguration.draftSettingsProfileName);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
         printSupportOverride = draftParametersFile.getGenerateSupportMaterial();
     }
 
-    private void toggleDataChanged() {
+    private void toggleDataChanged()
+    {
         dataChanged.set(dataChanged.not().get());
     }
-    
-    public ReadOnlyBooleanProperty getDataChanged() {
+
+    public ReadOnlyBooleanProperty getDataChanged()
+    {
         return dataChanged;
     }
-    
+
     public void setSelectedPrinter(Printer value)
     {
         selectedPrinter.set(value);
@@ -69,14 +72,22 @@ public class PrinterSettings
 
     public void setFilament0(Filament filament)
     {
-        selectedFilament0.set(filament);
-        toggleDataChanged();
+        if (selectedFilament0.get() != filament)
+        {
+            selectedFilament0.set(filament);
+            System.out.println("F0 changed");
+            toggleDataChanged();
+        }
     }
 
     public void setFilament1(Filament filament)
     {
-        selectedFilament1.set(filament);
-        toggleDataChanged();
+        if (selectedFilament1.get() != filament)
+        {
+            selectedFilament1.set(filament);
+            System.out.println("F1 changed");
+            toggleDataChanged();
+        }
     }
 
     public Filament getFilament0()
@@ -101,8 +112,12 @@ public class PrinterSettings
 
     public void setPrintQuality(PrintQualityEnumeration value)
     {
-        printQuality.set(value);
-        toggleDataChanged();
+        if (printQuality.get() != value)
+        {
+            printQuality.set(value);
+            System.out.println("quality changed");
+            toggleDataChanged();
+        }
     }
 
     public PrintQualityEnumeration getPrintQuality()
@@ -117,34 +132,40 @@ public class PrinterSettings
 
     public void setSettingsName(String settingsName)
     {
-        this.settingsName.set(settingsName);
-        toggleDataChanged();
+        if (! this.settingsName.get().equals(settingsName))
+        {
+            this.settingsName.set(settingsName);
+            System.out.println("settings name changed");
+            toggleDataChanged();
+        }
     }
-    
+
     public String getSettingsName()
     {
         return settingsName.get();
-    } 
-    
+    }
+
     public StringProperty getSettingsNameProperty()
     {
         return settingsName;
-    }       
-    
-    public SlicerParametersFile getSettings() {
-        switch (printQuality.get()) {
+    }
+
+    public SlicerParametersFile getSettings()
+    {
+        switch (printQuality.get())
+        {
             case DRAFT:
                 return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
                     ApplicationConfiguration.draftSettingsProfileName));
-            case NORMAL:  
+            case NORMAL:
                 return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
                     ApplicationConfiguration.normalSettingsProfileName));
-            case FINE:  
+            case FINE:
                 return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
-                    ApplicationConfiguration.fineSettingsProfileName));   
-            case CUSTOM:  
-                return SlicerParametersContainer.getSettingsByProfileName(settingsName.get());  
-                
+                    ApplicationConfiguration.fineSettingsProfileName));
+            case CUSTOM:
+                return SlicerParametersContainer.getSettingsByProfileName(settingsName.get());
+
         }
         throw new RuntimeException("Unknown print quality");
     }
@@ -154,7 +175,7 @@ public class PrinterSettings
      */
     private SlicerParametersFile applyOverrides(SlicerParametersFile settingsByProfileName)
     {
-        SlicerParametersFile profileCopy =  settingsByProfileName.clone();
+        SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
         profileCopy.setGenerateSupportMaterial(printSupportOverride);
@@ -168,8 +189,12 @@ public class PrinterSettings
 
     public void setBrimOverride(int brimOverride)
     {
-        this.brimOverride = brimOverride;
-        toggleDataChanged();
+        if (this.brimOverride != brimOverride)
+        {
+            this.brimOverride = brimOverride;
+            System.out.println("brim changed");
+            toggleDataChanged();
+        }
     }
 
     public float getFillDensityOverride()
@@ -179,8 +204,12 @@ public class PrinterSettings
 
     public void setFillDensityOverride(float fillDensityOverride)
     {
-        this.fillDensityOverride = fillDensityOverride;
-        toggleDataChanged();
+        if (this.fillDensityOverride != fillDensityOverride)
+        {
+            this.fillDensityOverride = fillDensityOverride;
+            System.out.println("fill density changed");
+            toggleDataChanged();
+        }
     }
 
     public boolean getPrintSupportOverride()
@@ -190,7 +219,11 @@ public class PrinterSettings
 
     public void setPrintSupportOverride(boolean printSupportOverride)
     {
-        this.printSupportOverride = printSupportOverride;
-        toggleDataChanged();
-    }    
+        if (this.printSupportOverride != printSupportOverride)
+        {
+            this.printSupportOverride = printSupportOverride;
+            System.out.println("support changed");
+            toggleDataChanged();
+        }
+    }
 }

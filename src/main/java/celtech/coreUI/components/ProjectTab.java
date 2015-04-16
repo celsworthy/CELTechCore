@@ -85,27 +85,23 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
-        URL settingsInsetPanelURL = getClass().getResource(
-            ApplicationConfiguration.fxmlPanelResourcePath + "settingsInsetPanel.fxml");
-        FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, Lookup.getLanguageBundle());
-        Node settingsInsetPanel = null;
-        try
-        {
-            settingsInsetPanel = loader.load();
-        } catch (IOException ex)
-        {
-            steno.error("Unable to load settings inset panel: " + ex);
-        }
+        Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml");
+        Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml");
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
 
         setupDragHandlers();
 
-        basePane.getChildren().addAll(viewManager.getSubScene(), settingsInsetPanel);
+        basePane.getChildren().addAll(viewManager.getSubScene(), timeCostInsetPanel,
+                                      settingsInsetPanel);
         settingsInsetPanel.setVisible(false);
-        AnchorPane.setTopAnchor(settingsInsetPanel, 30.0);
+        timeCostInsetPanel.setVisible(false);
+        AnchorPane.setTopAnchor(timeCostInsetPanel, 30.0);
+        AnchorPane.setRightAnchor(timeCostInsetPanel, 30.0);
+        AnchorPane.setTopAnchor(settingsInsetPanel, 210.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
+        
 
         this.setContent(basePane);
 
@@ -113,6 +109,22 @@ public class ProjectTab extends Tab
 
         setupNameFields();
 
+    }
+
+    private Node loadInsetPanel(String innerPanelFXMLName)
+    {
+        URL settingsInsetPanelURL = getClass().getResource(
+            ApplicationConfiguration.fxmlPanelResourcePath + innerPanelFXMLName);
+        FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, Lookup.getLanguageBundle());
+        Node insetPanel = null;
+        try
+        {
+            insetPanel = loader.load();
+        } catch (IOException ex)
+        {
+            steno.error("Unable to load inset panel: " + innerPanelFXMLName + "  " + ex);
+        }
+        return insetPanel;
     }
 
     private void setupNameFields()

@@ -41,12 +41,13 @@ public class FilamentContainer
     private static final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
 
     public static final Filament createNewFilament = new Filament(null, null, null,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, false);
+                                                                  0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, 0, false);
 
     private static final String nameProperty = "name";
     private static final String materialProperty = "material";
     private static final String reelIDProperty = "reelID";
     private static final String diameterProperty = "diameter_mm";
+    private static final String costGBPPerKGProperty = "cost_gbp_per_kg";
     private static final String filamentMultiplierProperty = "filament_multiplier";
     private static final String feedRateMultiplierProperty = "feed_rate_multiplier";
     private static final String ambientTempProperty = "ambient_temperature_C";
@@ -115,6 +116,7 @@ public class FilamentContainer
                 String firstLayerNozzleTempString = filamentProperties.getProperty(firstLayerNozzleTempProperty).trim();
                 String nozzleTempString = filamentProperties.getProperty(nozzleTempProperty).trim();
                 String displayColourString = filamentProperties.getProperty(displayColourProperty).trim();
+                String costGBPPerKGString = filamentProperties.getProperty(costGBPPerKGProperty).trim();
 
                 if (name != null
                     && material != null
@@ -140,6 +142,7 @@ public class FilamentContainer
                         int firstLayerNozzleTemp = Integer.valueOf(firstLayerNozzleTempString);
                         int nozzleTemp = Integer.valueOf(nozzleTempString);
                         Color colour = Color.web(displayColourString);
+                        float costGBPPerKG = Float.valueOf(costGBPPerKGString);
                         MaterialType selectedMaterial = MaterialType.valueOf(material);
 
                         Filament newFilament = new Filament(
@@ -155,6 +158,7 @@ public class FilamentContainer
                             firstLayerNozzleTemp,
                             nozzleTemp,
                             colour,
+                            costGBPPerKG,
                             filamentsAreMutable);
 
                         filamentList.add(newFilament);
@@ -166,7 +170,7 @@ public class FilamentContainer
                     }
 
                 }
-            } catch (IOException ex)
+            } catch (Exception ex)
             {
                 steno.error("Error loading filament " + filamentFile.getAbsolutePath());
             }
@@ -231,6 +235,7 @@ public class FilamentContainer
             {
                 filamentProperties.setProperty(reelIDProperty, filament.getFilamentID());
             }
+            filamentProperties.setProperty(costGBPPerKGProperty, floatConverter.format(filament.getCostGBPPerKG()));
             filamentProperties.setProperty(diameterProperty, floatConverter.format(filament.getDiameter()));
             filamentProperties.setProperty(filamentMultiplierProperty, floatConverter.format(filament.getFilamentMultiplier()));
             filamentProperties.setProperty(feedRateMultiplierProperty, floatConverter.format(filament.getFeedRateMultiplier()));

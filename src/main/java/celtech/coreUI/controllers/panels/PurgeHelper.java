@@ -131,7 +131,7 @@ public class PurgeHelper
         switch (state)
         {
             case IDLE:
-                if (cancellable.cancelled)
+                if (cancellable.cancelled.get())
                 {
                     setState(PurgeState.FAILED);
                     return;
@@ -175,14 +175,14 @@ public class PurgeHelper
                     steno.error("Error during purge operation");
                     setState(PurgeState.FAILED);
                 }
-                if (cancellable.cancelled)
+                if (cancellable.cancelled.get())
                 {
                     setState(PurgeState.FAILED);
                 }
                 break;
 
             case RUNNING_PURGE:
-                if (cancellable.cancelled)
+                if (cancellable.cancelled.get())
                 {
                     setState(PurgeState.FAILED);
                     return;
@@ -200,7 +200,7 @@ public class PurgeHelper
                 break;
 
             case HEATING:
-                if (cancellable.cancelled)
+                if (cancellable.cancelled.get())
                 {
                     setState(PurgeState.FAILED);
                     return;
@@ -218,7 +218,7 @@ public class PurgeHelper
                 break;
 
             case FINISHED:
-                if (cancellable.cancelled)
+                if (cancellable.cancelled.get())
                 {
                     setState(PurgeState.FAILED);
                     return;

@@ -15,43 +15,45 @@
     <columnConstraints>
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="45.0" />
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="15.0" />
-      <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="10.0" percentWidth="40.0" prefWidth="100.0" />
+        <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="10.0" percentWidth="40.0" prefWidth="100.0" />
     </columnConstraints>
     <rowConstraints>
         <RowConstraints />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
-      <RowConstraints />
-      <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
-      <RowConstraints />
-      <RowConstraints />
-      <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
     </rowConstraints>
     <children>
         <Label styleClass="colon" text="%sidePanel_settings.MaterialName" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <Label styleClass="colon" text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <Label styleClass="colon" text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <Label styleClass="colon" text="%sidePanel_settings.filamentDiameterLabel" GridPane.rowIndex="13" />
-        <Label styleClass="colon" text="%sidePanel_settings.filamentMultiplierLabel" GridPane.rowIndex="14" />
-        <Label styleClass="colon" text="%sidePanel_settings.extrusionRateMultiplierLabel" GridPane.rowIndex="15" />
-        <Label styleClass="colon" text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="8" />
-        <Label styleClass="colon" text="%sidePanel_settings.bedTemp" GridPane.rowIndex="7" />
-        <Label styleClass="colon" text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="9" />
-        <Label styleClass="colon" text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="10" />
-        <Label styleClass="colon" text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+        <Label styleClass="colon" text="%sidePanel_settings.filamentDiameterLabel" GridPane.rowIndex="14" />
+        <Label styleClass="colon" text="%sidePanel_settings.filamentMultiplierLabel" GridPane.rowIndex="15" />
+        <Label styleClass="colon" text="%sidePanel_settings.extrusionRateMultiplierLabel" GridPane.rowIndex="16" />
+        <Label styleClass="colon" text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="9" />
+        <Label styleClass="colon" text="%sidePanel_settings.bedTemp" GridPane.rowIndex="8" />
+        <Label styleClass="colon" text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="10" />
+        <Label styleClass="colon" text="%sidePanel_settings.nozzleTemp" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+        <Label styleClass="colon" text="%sidePanel_settings.ambientTemp" GridPane.columnIndex="0" GridPane.rowIndex="12" />
                       
         <TextField fx:id="name" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" />
+        <RestrictedNumberField fx:id="costGBPPerKG" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6" />
         <ComboBox fx:id="material" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
             <styleClass>
                 <String fx:value="cmbCleanCombo" />
@@ -64,7 +66,7 @@
                 <String fx:value="filamentLibUpper" />
             </styleClass>
         </ColorPicker>
-        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="13"> 
+        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="14"> 
             <children>
                 <RestrictedNumberField fx:id="filamentDiameter" allowedDecimalPlaces="2" maxLength="4" prefColumnCount="4">
                     <styleClass>
@@ -75,19 +77,19 @@
                 <Label text="%misc.mm" />
             </children>
         </HBox>
-        <RestrictedNumberField fx:id="filamentMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="14">
+        <RestrictedNumberField fx:id="filamentMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="15">
             <styleClass>
                 <String fx:value="materialNumbers" />
                 <String fx:value="filamentLibLower" />
             </styleClass>
         </RestrictedNumberField>
-        <RestrictedNumberField fx:id="feedRateMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="15">
+        <RestrictedNumberField fx:id="feedRateMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="16">
             <styleClass>
                 <String fx:value="materialNumbers" />
                 <String fx:value="filamentLibLower" />
             </styleClass>
         </RestrictedNumberField>
-        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="8"> 
+        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="9"> 
             <children>
                 <RestrictedNumberField fx:id="firstLayerBedTemperature" maxLength="3" prefColumnCount="4">
                     <styleClass>
@@ -98,7 +100,7 @@
                 <Label text="%misc.degreesC" />
             </children>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="7"> 
+        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="8"> 
             <children>
                 <RestrictedNumberField fx:id="bedTemperature" maxLength="3" prefColumnCount="4">
                     <styleClass>
@@ -109,7 +111,7 @@
                 <Label text="%misc.degreesC" />
             </children>
         </HBox>
-        <HBox alignment="CENTER_LEFT" fillHeight="false" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="9"> 
+        <HBox alignment="CENTER_LEFT" fillHeight="false" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="10"> 
             <children>
                 <RestrictedNumberField fx:id="firstLayerNozzleTemperature" maxLength="3" prefColumnCount="4">
                     <styleClass>
@@ -120,7 +122,7 @@
                 <Label text="%misc.degreesC" />
             </children>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="10"> 
+        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="11"> 
             <children>
                 <RestrictedNumberField fx:id="nozzleTemperature" maxLength="3" prefColumnCount="4">
                     <styleClass>
@@ -131,7 +133,7 @@
                 <Label text="%misc.degreesC" />
             </children>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="11"> 
+        <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="12"> 
             <children>
                 <RestrictedNumberField fx:id="ambientTemperature" maxLength="3" prefColumnCount="4">
                     <styleClass>
@@ -145,10 +147,11 @@
         <ComboBox id="cmbLibraryFilament" fx:id="cmbFilament" prefWidth="150.0" styleClass="cmbCleanCombo" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" />
         <Label styleClass="colon" text="%reelPanel.filamentID" GridPane.rowIndex="2" />
         <TextField fx:id="filamentID" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
-        <Label alignment="CENTER" styleClass="filamentLibTitle" text="Temperature" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
-        <Label alignment="CENTER" styleClass="filamentLibTitle" text="Filament" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="12" />
-      <Label alignment="CENTER" styleClass="filamentLibTitle" text="Identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-      <TextArea id="helpText" fx:id="helpText" editable="false" GridPane.columnSpan="2147483647" GridPane.rowIndex="16" />
+        <Label alignment="CENTER" styleClass="filamentLibTitle" text="%reelPanel.temperature" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
+        <Label alignment="CENTER" styleClass="filamentLibTitle" text="%genericFirstLetterCapitalised.Filament" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="13" />
+        <Label alignment="CENTER" styleClass="filamentLibTitle" text="%filamentLibrary.identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+        <TextArea id="helpText" fx:id="helpText" editable="false" GridPane.columnSpan="2147483647" GridPane.rowIndex="17" />
+        <Label styleClass="colon" text="%filamentLibrary.costGBPPerKG" GridPane.rowIndex="6" />
     </children>
     <padding>
         <Insets left="35.0" right="5.0" top="15.0" />

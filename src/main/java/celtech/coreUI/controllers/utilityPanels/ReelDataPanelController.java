@@ -161,6 +161,7 @@ public class ReelDataPanelController implements Initializable, PrinterListChange
             Integer.valueOf(reelFirstLayerNozzleTemperature.getText()),
             Integer.valueOf(reelNozzleTemperature.getText()),
             reelDisplayColor.getValue(),
+            0,
             true);
         newFilament.setRemainingFilament(remainingFilament);
         return newFilament;

@@ -275,6 +275,7 @@ public class MaterialDetailsController implements Initializable, PopupCommandTra
                     firstLayerNozzleTemperature.getAsInt(),
                     nozzleTemperature.getAsInt(),
                     colour.getValue(),
+                0,
                     isMutable.get()
             );
         } catch (ParseException ex)
