@@ -2981,6 +2981,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         suppressEEPROMAndSDErrorHandling = suppress;
     }
 
+    @Override
+    public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
+    {
+        TemperatureAndPWMData data = null;
+        try
+        {
+            String response = transmitDirectGCode("M105", false);
+            data = new TemperatureAndPWMData();
+            data.populateFromPrinterData(response);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when requesting temperature and PWM data");
+            throw new PrinterException("Error when requesting temperature and PWM data");
+        }
+        
+        return data;
+    }
+
     class RoboxEventProcessor implements Runnable
     {
 

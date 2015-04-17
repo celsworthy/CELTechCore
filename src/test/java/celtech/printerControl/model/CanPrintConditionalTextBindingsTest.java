@@ -86,179 +86,179 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         return project;
     }    
 
-    /**
-     * One printer extruder, PURPLE. One model on extruder 0. Project setting PURPLE, WHITE.
-     */
-    @Test
-    public void testOneExtruderOneModelExtruder0_1()
-    {
-
-        Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeOneExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertFalse(filament1Reqd.get());
-    }
-
-    /**
-     * One printer extruder, PURPLE. One model on extruder 0. Project setting GREEN, WHITE.
-     */
-    @Test
-    public void testOneExtruderOneModelExtruder0_2()
-    {
-
-        Project project = makeOneModelProject(GREEN, WHITE);
-        Printer printer = makeOneExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-
-        assertTrue(extruder0FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertFalse(filament1Reqd.get());
-    }
-
-    /**
-     * One printer extruder, PURPLE. One model on extruder 1. Project setting PURPLE, WHITE.
-     */
-    @Test
-    public void testOneExtruderOneModelExtruder1_1()
-    {
-
-        Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeOneExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        project.getLoadedModels().get(0).setUseExtruder0Filament(false);
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertTrue(extruder0FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertFalse(filament1Reqd.get());
-    }
-
-    /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 1. Project setting PURPLE, WHITE.
-     */
-    @Test
-    public void testTwoExtruderOneModelExtruder1_1()
-    {
-
-        Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        project.getLoadedModels().get(0).setUseExtruder0Filament(false);
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        // filament 0 not required because model is not on extruder 0
-        assertFalse(extruder0FilamentMismatch.get());
-        assertFalse(filament0Reqd.get());
-        assertTrue(filament1Reqd.get());
-    }
-
-    /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0. Project setting PURPLE, WHITE.
-     */
-    @Test
-    public void testTwoExtruderOneModelExtruder0_1()
-    {
-
-        Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertFalse(filament1Reqd.get());
-    }
-    
-    /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
-     * Project setting PURPLE, WHITE.
-     */
-    @Test
-    public void testTwoExtruderTwoModels_1()
-    {
-
-        Project project = makeTwoModelProject(PURPLE, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
-        assertFalse(extruder1FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertTrue(filament1Reqd.get());
-    }    
-    
-    /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
-     * Project setting GREEN, WHITE.
-     */
-    @Test
-    public void testTwoExtruderTwoModels_2()
-    {
-
-        Project project = makeTwoModelProject(GREEN, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertTrue(extruder0FilamentMismatch.get());
-        assertFalse(extruder1FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertTrue(filament1Reqd.get());
-    }      
-    
-    /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
-     * Project setting PURPLE, GREEN.
-     */
-    @Test
-    public void testTwoExtruderTwoModels_3()
-    {
-
-        Project project = makeTwoModelProject(PURPLE, GREEN);
-        Printer printer = makeTwoExtruderPrinter();
-        CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
-
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
-        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
-        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
-        assertTrue(extruder1FilamentMismatch.get());
-        assertTrue(filament0Reqd.get());
-        assertTrue(filament1Reqd.get());
-    }     
+//    /**
+//     * One printer extruder, PURPLE. One model on extruder 0. Project setting PURPLE, WHITE.
+//     */
+//    @Test
+//    public void testOneExtruderOneModelExtruder0_1()
+//    {
+//
+//        Project project = makeOneModelProject(PURPLE, WHITE);
+//        Printer printer = makeOneExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        assertFalse(extruder0FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertFalse(filament1Reqd.get());
+//    }
+//
+//    /**
+//     * One printer extruder, PURPLE. One model on extruder 0. Project setting GREEN, WHITE.
+//     */
+//    @Test
+//    public void testOneExtruderOneModelExtruder0_2()
+//    {
+//
+//        Project project = makeOneModelProject(GREEN, WHITE);
+//        Printer printer = makeOneExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//
+//        assertTrue(extruder0FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertFalse(filament1Reqd.get());
+//    }
+//
+//    /**
+//     * One printer extruder, PURPLE. One model on extruder 1. Project setting PURPLE, WHITE.
+//     */
+//    @Test
+//    public void testOneExtruderOneModelExtruder1_1()
+//    {
+//
+//        Project project = makeOneModelProject(PURPLE, WHITE);
+//        Printer printer = makeOneExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        project.getLoadedModels().get(0).setUseExtruder0Filament(false);
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        assertTrue(extruder0FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertFalse(filament1Reqd.get());
+//    }
+//
+//    /**
+//     * Two printer extruders, PURPLE, WHITE. One model on extruder 1. Project setting PURPLE, WHITE.
+//     */
+//    @Test
+//    public void testTwoExtruderOneModelExtruder1_1()
+//    {
+//
+//        Project project = makeOneModelProject(PURPLE, WHITE);
+//        Printer printer = makeTwoExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        project.getLoadedModels().get(0).setUseExtruder0Filament(false);
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        // filament 0 not required because model is not on extruder 0
+//        assertFalse(extruder0FilamentMismatch.get());
+//        assertFalse(filament0Reqd.get());
+//        assertTrue(filament1Reqd.get());
+//    }
+//
+//    /**
+//     * Two printer extruders, PURPLE, WHITE. One model on extruder 0. Project setting PURPLE, WHITE.
+//     */
+//    @Test
+//    public void testTwoExtruderOneModelExtruder0_1()
+//    {
+//
+//        Project project = makeOneModelProject(PURPLE, WHITE);
+//        Printer printer = makeTwoExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        assertFalse(extruder0FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertFalse(filament1Reqd.get());
+//    }
+//    
+//    /**
+//     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
+//     * Project setting PURPLE, WHITE.
+//     */
+//    @Test
+//    public void testTwoExtruderTwoModels_1()
+//    {
+//
+//        Project project = makeTwoModelProject(PURPLE, WHITE);
+//        Printer printer = makeTwoExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        assertFalse(extruder0FilamentMismatch.get());
+//        assertFalse(extruder1FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertTrue(filament1Reqd.get());
+//    }    
+//    
+//    /**
+//     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
+//     * Project setting GREEN, WHITE.
+//     */
+//    @Test
+//    public void testTwoExtruderTwoModels_2()
+//    {
+//
+//        Project project = makeTwoModelProject(GREEN, WHITE);
+//        Printer printer = makeTwoExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        assertTrue(extruder0FilamentMismatch.get());
+//        assertFalse(extruder1FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertTrue(filament1Reqd.get());
+//    }      
+//    
+//    /**
+//     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
+//     * Project setting PURPLE, GREEN.
+//     */
+//    @Test
+//    public void testTwoExtruderTwoModels_3()
+//    {
+//
+//        Project project = makeTwoModelProject(PURPLE, GREEN);
+//        Printer printer = makeTwoExtruderPrinter();
+//        CanPrintConditionalTextBindings conditionalTextBindings
+//            = new CanPrintConditionalTextBindings(project, printer);
+//
+//        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
+//        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
+//        BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
+//        BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
+//        assertFalse(extruder0FilamentMismatch.get());
+//        assertTrue(extruder1FilamentMismatch.get());
+//        assertTrue(filament0Reqd.get());
+//        assertTrue(filament1Reqd.get());
+//    }     
 
     class Shape3DRectangle extends TriangleMesh
     {

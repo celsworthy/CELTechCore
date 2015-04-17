@@ -28,6 +28,7 @@ import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.Reel;
+import celtech.printerControl.model.TemperatureAndPWMData;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
@@ -850,6 +851,12 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void suppressEEPROMAndSDErrorHandling(boolean suppress)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
