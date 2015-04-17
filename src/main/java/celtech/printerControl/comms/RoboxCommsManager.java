@@ -1,6 +1,8 @@
 package celtech.printerControl.comms;
 
 import celtech.Lookup;
+import celtech.configuration.UserPreferences;
+import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.HardwarePrinter;
 import celtech.printerControl.model.Printer;
 import java.util.ArrayList;
@@ -126,7 +128,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         {
             if (! userPreferences.getDetectLoadedFilament())
             {
-                // if this preference has been selected then always say that the filament
+                // if this preference has been deselected then always say that the filament
                 // has been detected as loaded.
                 return true;
             } else
