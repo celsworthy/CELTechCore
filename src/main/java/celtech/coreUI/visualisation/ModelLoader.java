@@ -44,7 +44,7 @@ public class ModelLoader
 
     private void whenModelLoadSucceeded()
     {
-       offerShrinkAndAddToProject();
+        offerShrinkAndAddToProject();
     }
 
     private boolean offerShrinkAndAddToProject()
@@ -60,22 +60,18 @@ public class ModelLoader
         {
             if (loadResult != null)
             {
+                boolean shrinkModel = false;
                 if (loadResult.isModelTooLarge())
                 {
-                    boolean shrinkModel = Lookup.getSystemNotificationHandler().
+                    shrinkModel = Lookup.getSystemNotificationHandler().
                         showModelTooBigDialog(loadResult.getModelFilename());
-
-                    if (shrinkModel)
-                    {
-                        ModelContainer modelContainer = loadResult.getModelContainer();
-                        modelContainer.shrinkToFitBed();
-                        addToProject(loadResult, modelContainer);
-                    }
-                } else
-                {
-                    ModelContainer modelContainer = loadResult.getModelContainer();
-                    addToProject(loadResult, modelContainer);
                 }
+                ModelContainer modelContainer = loadResult.getModelContainer();
+                if (shrinkModel)
+                {
+                    modelContainer.shrinkToFitBed();
+                }
+                addToProject(loadResult, modelContainer);
             } else
             {
                 steno.error("Error whilst attempting to load model");
