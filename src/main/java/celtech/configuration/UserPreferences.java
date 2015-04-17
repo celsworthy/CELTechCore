@@ -24,6 +24,7 @@ public class UserPreferences
     private LogLevel loggingLevel = LogLevel.INFO;
     private final BooleanProperty advancedMode = new SimpleBooleanProperty(false);
     private final BooleanProperty firstUse = new SimpleBooleanProperty(true);
+    private final BooleanProperty detectLoadedFilament = new SimpleBooleanProperty(true);
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         saveSettings();
@@ -57,10 +58,12 @@ public class UserPreferences
         this.loggingLevel = userPreferenceFile.getLoggingLevel();
         this.advancedMode.set(userPreferenceFile.isAdvancedMode());
         this.firstUse.set(userPreferenceFile.isFirstUse());
+        this.detectLoadedFilament.set(userPreferenceFile.isDetectLoadedFilament());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
         firstUse.addListener(booleanChangeListener);
+        detectLoadedFilament.addListener(booleanChangeListener);
     }
 
     public SlicerType getSlicerType()
@@ -145,6 +148,21 @@ public class UserPreferences
     {
         return firstUse;
     }
+    
+    public boolean getDetectLoadedFilament()
+    {
+        return detectLoadedFilament.get();
+    }
+
+    public void setDetectLoadedFilament(boolean firstUse)
+    {
+        this.detectLoadedFilament.set(firstUse);
+    }
+
+    public BooleanProperty detectLoadedFilamentProperty()
+    {
+        return detectLoadedFilament;
+    }    
 
     private void saveSettings()
     {

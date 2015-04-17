@@ -26,9 +26,13 @@ public class Preferences
 
         Preference safetyFeaturesOnPref = new TickBoxPreference(userPreferences.
             safetyFeaturesOnProperty(), "preferences.safetyFeaturesOn");
+        
+        Preference detectFilamentLoadedPref = new TickBoxPreference(userPreferences.
+            detectLoadedFilamentProperty(), "preferences.detectLoadedFilament");
 
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
+        preferences.add(detectFilamentLoadedPref);
 
         return preferences;
     }

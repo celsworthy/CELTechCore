@@ -5,7 +5,6 @@ import celtech.appManager.errorHandling.SystemErrorHandlerOptions;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.PrinterIDDialog;
@@ -541,7 +540,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkButton shrinkChoice = choiceLinkDialogBox.addChoiceLink(
                     Lookup.i18n("dialogs.ShrinkModelToFit"));
                 ChoiceLinkButton dontShrinkChoice = choiceLinkDialogBox.addChoiceLink(
-                    Lookup.i18n("dialogs.ModelTooLargeNo"));
+                    Lookup.i18n("dialogs.dontShrink"));
 
                 Optional<ChoiceLinkButton> shrinkResponse = choiceLinkDialogBox.
                     getUserInput();

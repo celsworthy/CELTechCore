@@ -243,6 +243,7 @@ public class SlicerTask extends Task<SliceResult>
                 steno.error("Exception whilst running slicer: " + ex);
             } catch (InterruptedException ex)
             {
+                System.out.println("KILLING slicer");
                 steno.warning("Interrupted whilst waiting for slicer to complete");
                 if (slicerProcess != null)
                 {

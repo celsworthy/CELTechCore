@@ -20,11 +20,12 @@ import celtech.services.slicer.SlicerTask;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
-import javafx.concurrent.Task;
+import java.io.IOException;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -49,6 +50,8 @@ public class GetTimeWeightCost
     private PostProcessorTask postProcessorTask;
     private final Runnable whenComplete;
 
+    File printJobDirectory;
+
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
     {
@@ -69,10 +72,17 @@ public class GetTimeWeightCost
 
         slicerTask = makeSlicerTask(project, settings);
 
+        slicerTask.setOnFailed((WorkerStateEvent event) ->
+        {
+            clearPrintJobDirectory();
+        });
+
         slicerTask.setOnCancelled((WorkerStateEvent event) ->
         {
-            if (postProcessorTask != null)
+            clearPrintJobDirectory();
+            if (postProcessorTask != null && postProcessorTask.isRunning())
             {
+                System.out.println("Cancelling post processor task");
                 postProcessorTask.cancel();
             }
             lblTime.setText("Cancelled");
@@ -97,6 +107,7 @@ public class GetTimeWeightCost
                         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().getPrintJobStatistics();
 
                         updateFieldsForStatistics(printJobStatistics);
+                        clearPrintJobDirectory();
 
                         if (whenComplete != null)
                         {
@@ -108,8 +119,10 @@ public class GetTimeWeightCost
                         ex.printStackTrace();
                     }
                 });
+                
                 postProcessorTask.setOnFailed((WorkerStateEvent event1) ->
                 {
+                    clearPrintJobDirectory();
                     lblTime.setText("NA");
                     lblWeight.setText("NA");
                     lblCost.setText("NA");
@@ -123,8 +136,29 @@ public class GetTimeWeightCost
                 ex.printStackTrace();
             }
         });
+        
+        slicerTask.setOnCancelled((WorkerStateEvent event) ->
+        {
+            lblTime.setText("cancelled");
+            lblWeight.setText("cancelled");
+            lblCost.setText("cancelled");
+        });
+
+        Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
 
         return slicerTask;
+    }
+
+    private void clearPrintJobDirectory()
+    {
+        try
+        {
+            FileUtils.deleteDirectory(printJobDirectory);
+        } catch (IOException ex)
+        {
+            steno.error("Could not delete directory " + printJobDirectory.getAbsolutePath() + " "
+                + ex);
+        }
     }
 
     /**
@@ -160,7 +194,7 @@ public class GetTimeWeightCost
         String printUUID = SystemUtils.generate16DigitID();
         String printJobDirectoryName = ApplicationConfiguration.
             getPrintSpoolDirectory() + printUUID;
-        File printJobDirectory = new File(printJobDirectoryName);
+        printJobDirectory = new File(printJobDirectoryName);
         printJobDirectory.mkdirs();
 
         //Write out the slicer config
@@ -218,7 +252,7 @@ public class GetTimeWeightCost
     private String formatCost(double cost)
     {
         int numPounds = (int) cost;
-        int numPence = (int) (cost - (numPounds * 100));
+        int numPence = (int) ((cost - numPounds) * 100);
         return String.format("£%s.%02d", numPounds, numPence);
     }
 

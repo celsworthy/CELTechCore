@@ -14,9 +14,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -179,34 +176,64 @@ public class TimeCostInsetPanelController implements Initializable
         }
     }
 
+    private SlicerTask draftSlicerTask;
+    private SlicerTask normalSlicerTask;
+    private SlicerTask fineSlicerTask;
+
     /**
      * Update the time, cost and weight fields. Long running calculations must be performed in a
-     * background thread.
+     * background thread. Run draft, normal and fine sequentially to avoid flooding the CPU(s).
      */
     private void updateFields(Project project)
     {
+        lblDraftTime.setText("...");
+        lblNormalTime.setText("...");
+        lblFineTime.setText("...");
+        lblDraftWeight.setText("...");
+        lblNormalWeight.setText("...");
+        lblFineWeight.setText("...");
+        lblDraftCost.setText("...");
+        lblNormalCost.setText("...");
+        lblFineCost.setText("...");
+
+        if (draftSlicerTask != null && draftSlicerTask.isRunning())
+        {
+            System.out.println("CANCEL draft");
+            draftSlicerTask.cancel();
+        }
+        if (normalSlicerTask != null && normalSlicerTask.isRunning())
+        {
+            System.out.println("CANCEL normal");
+            normalSlicerTask.cancel();
+        }
+        if (fineSlicerTask != null && fineSlicerTask.isRunning())
+        {
+            System.out.println("CANCEL fine");
+            fineSlicerTask.cancel();
+        }
+
         Runnable runNormal = () ->
         {
             Runnable runFine = () ->
             {
-                updateFieldsForProfile(project, fineSettings, lblFineTime,
-                                       lblFineWeight,
-                                       lblFineCost, null);
+                fineSlicerTask = updateFieldsForProfile(project, fineSettings, lblFineTime,
+                                                        lblFineWeight,
+                                                        lblFineCost, null);
             };
-            updateFieldsForProfile(project, normalSettings, lblNormalTime,
-                                   lblNormalWeight,
-                                   lblNormalCost, (Runnable) runFine);
+            normalSlicerTask = updateFieldsForProfile(project, normalSettings, lblNormalTime,
+                                                      lblNormalWeight,
+                                                      lblNormalCost, (Runnable) runFine);
         };
-        updateFieldsForProfile(project, draftSettings, lblDraftTime,
-                               lblDraftWeight,
-                               lblDraftCost, runNormal);
+        draftSlicerTask = updateFieldsForProfile(project, draftSettings, lblDraftTime,
+                                                 lblDraftWeight,
+                                                 lblDraftCost, runNormal);
     }
 
     /**
      * Update the time, cost and weight fields for the given profile and fields. Long running
      * calculations must be performed in a background thread.
      */
-    private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
+    private SlicerTask updateFieldsForProfile(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
     {
         lblTime.setText("working");
@@ -217,14 +244,7 @@ public class TimeCostInsetPanelController implements Initializable
                                                                 lblTime, lblWeight,
                                                                 lblCost, whenComplete);
         SlicerTask slicerTask = updateDetails.setupSlicerTask();
-        slicerTask.setOnCancelled((WorkerStateEvent event) ->
-        {
-            lblTime.setText("cancelled");
-            lblWeight.setText("cancelled");
-            lblCost.setText("cancelled");
-        });
-
-        Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
+        return slicerTask;
 
     }
 
