@@ -172,7 +172,7 @@ public class FilamentContainer
                 }
             } catch (Exception ex)
             {
-                steno.error("Error loading filament " + filamentFile.getAbsolutePath());
+                steno.error("Error loading filament " + filamentFile.getAbsolutePath() + " " + ex);
             }
         }
 
