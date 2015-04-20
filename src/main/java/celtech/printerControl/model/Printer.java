@@ -191,6 +191,8 @@ public interface Printer extends RoboxResponseConsumer
     public float getYDelta() throws PrinterException;
     public void probeZ();
     public float getZDelta() throws PrinterException;
+    
+    public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException;
 
     public void levelGantry();
 
