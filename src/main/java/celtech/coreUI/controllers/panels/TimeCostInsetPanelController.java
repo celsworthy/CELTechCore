@@ -263,7 +263,7 @@ public class TimeCostInsetPanelController implements Initializable
 
     private void cancelTask(SlicerTask slicerTask)
     {
-        if (slicerTask != null && (! slicerTask.isDone() || slicerTask.isCancelled()))
+        if (slicerTask != null && ! (slicerTask.isDone() || slicerTask.isCancelled()))
         {
             System.out.println("CANCEL " + slicerTask);
             slicerTask.cancel();
