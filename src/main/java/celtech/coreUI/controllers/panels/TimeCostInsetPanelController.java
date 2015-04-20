@@ -236,21 +236,10 @@ public class TimeCostInsetPanelController implements Initializable
             System.out.println("fine status " + fineSlicerTask.getState().name());
         }
         
-        if (draftSlicerTask != null && draftSlicerTask.isRunning())
-        {
-            System.out.println("CANCEL draft");
-            draftSlicerTask.cancel();
-        }
-        if (normalSlicerTask != null && normalSlicerTask.isRunning())
-        {
-            System.out.println("CANCEL normal");
-            normalSlicerTask.cancel();
-        }
-        if (fineSlicerTask != null && fineSlicerTask.isRunning())
-        {
-            System.out.println("CANCEL fine");
-            fineSlicerTask.cancel();
-        }
+        cancelTask(draftSlicerTask);
+        cancelTask(normalSlicerTask);
+        cancelTask(fineSlicerTask);
+
     }
 
     /**
@@ -270,6 +259,15 @@ public class TimeCostInsetPanelController implements Initializable
         SlicerTask slicerTask = updateDetails.setupAndRunSlicerTask();
         return slicerTask;
 
+    }
+
+    private void cancelTask(SlicerTask slicerTask)
+    {
+        if (slicerTask != null && (! slicerTask.isDone() || slicerTask.isCancelled()))
+        {
+            System.out.println("CANCEL " + slicerTask);
+            slicerTask.cancel();
+        }
     }
 
 }

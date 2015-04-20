@@ -44,7 +44,7 @@ public class Filament implements Serializable, Cloneable
     private ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
     private final FloatProperty remainingFilament = new SimpleFloatProperty(
         ApplicationConfiguration.mmOfFilamentOnAReel);
-    private final FloatProperty costGBPPerKG = new SimpleFloatProperty(20f);
+    private final FloatProperty costGBPPerKG = new SimpleFloatProperty(35f);
 
 
     public Filament(
