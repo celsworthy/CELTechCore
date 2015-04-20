@@ -24,6 +24,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -240,6 +241,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                     selectFilament(newValue);
                 }
             });
+        
+        FilamentContainer.getUserFilamentList().addListener(
+            (ListChangeListener.Change<? extends Filament> c) ->
+        {
+            repopulateCmbFilament();
+        });
     }
 
     private void repopulateCmbFilament()
