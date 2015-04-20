@@ -94,6 +94,7 @@ public class TimeCostInsetPanelController implements Initializable
                     } else
                     {
                         timeCostInsetRoot.setVisible(false);
+                        cancelRunningTimeCostTasks();
                     }
                     
                 });
@@ -202,21 +203,7 @@ public class TimeCostInsetPanelController implements Initializable
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
 
-        if (draftSlicerTask != null && draftSlicerTask.isRunning())
-        {
-            System.out.println("CANCEL draft");
-            draftSlicerTask.cancel();
-        }
-        if (normalSlicerTask != null && normalSlicerTask.isRunning())
-        {
-            System.out.println("CANCEL normal");
-            normalSlicerTask.cancel();
-        }
-        if (fineSlicerTask != null && fineSlicerTask.isRunning())
-        {
-            System.out.println("CANCEL fine");
-            fineSlicerTask.cancel();
-        }
+        cancelRunningTimeCostTasks();
 
         Runnable runNormal = () ->
         {
@@ -235,6 +222,37 @@ public class TimeCostInsetPanelController implements Initializable
                                                  lblDraftCost, runNormal);
     }
 
+    private void cancelRunningTimeCostTasks()
+    {
+        System.out.println("Cancel any running time tasks");
+        System.out.println("slicer tasks " + draftSlicerTask + " " + normalSlicerTask + " " + fineSlicerTask);
+        if (draftSlicerTask != null ) {
+            System.out.println("draft status " + draftSlicerTask.getState().name());
+        }
+        if (normalSlicerTask != null ) {
+            System.out.println("normal status " + normalSlicerTask.getState().name());
+        }
+        if (fineSlicerTask != null ) {
+            System.out.println("fine status " + fineSlicerTask.getState().name());
+        }
+        
+        if (draftSlicerTask != null && draftSlicerTask.isRunning())
+        {
+            System.out.println("CANCEL draft");
+            draftSlicerTask.cancel();
+        }
+        if (normalSlicerTask != null && normalSlicerTask.isRunning())
+        {
+            System.out.println("CANCEL normal");
+            normalSlicerTask.cancel();
+        }
+        if (fineSlicerTask != null && fineSlicerTask.isRunning())
+        {
+            System.out.println("CANCEL fine");
+            fineSlicerTask.cancel();
+        }
+    }
+
     /**
      * Update the time, cost and weight fields for the given profile and fields. Long running
      * calculations must be performed in a background thread.
@@ -249,7 +267,7 @@ public class TimeCostInsetPanelController implements Initializable
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                                                                 lblTime, lblWeight,
                                                                 lblCost, whenComplete);
-        SlicerTask slicerTask = updateDetails.setupSlicerTask();
+        SlicerTask slicerTask = updateDetails.setupAndRunSlicerTask();
         return slicerTask;
 
     }

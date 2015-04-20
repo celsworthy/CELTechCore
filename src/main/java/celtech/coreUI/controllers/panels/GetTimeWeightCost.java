@@ -64,7 +64,7 @@ public class GetTimeWeightCost
 
     }
 
-    public SlicerTask setupSlicerTask()
+    public SlicerTask setupAndRunSlicerTask()
     {
 
         steno.info("launch time cost process for project " + project + " and settings "
@@ -144,8 +144,9 @@ public class GetTimeWeightCost
             lblCost.setText("cancelled");
         });
 
+        System.out.println("run slicer task");
         Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
-
+        System.out.println("return slicer task " + slicerTask);
         return slicerTask;
     }
 
