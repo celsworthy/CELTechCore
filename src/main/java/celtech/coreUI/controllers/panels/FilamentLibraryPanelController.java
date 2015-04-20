@@ -38,6 +38,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -54,7 +55,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         NAME("name"), COLOUR("colour"), AMBIENT_TEMP("ambientTemp"), MATERIAL("material"),
         DIAMETER("diameter"), MULTIPLIER("multiplier"), FEED_RATE_MULTIPLIER("feedRateMultiplier"),
         FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"),
-        FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp");
+        FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp"),
+        COST_GBP_PER_KG("costGBPPerKG");
 
         private final String helpTextId;
 
@@ -296,7 +298,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             });
 
         name.textProperty().addListener(dirtyStringListener);
-        colour.valueProperty().asString().addListener(dirtyStringListener);
+        colour.valueProperty().addListener(
+            (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+        {
+            isDirty.set(true);
+        });
         material.valueProperty().addListener(dirtyMaterialTypeListener);
         filamentDiameter.textProperty().addListener(dirtyStringListener);
         filamentMultiplier.textProperty().addListener(dirtyStringListener);
@@ -388,6 +394,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 showHelpText(Fields.AMBIENT_TEMP);
             });
+        costGBPPerKG.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.COST_GBP_PER_KG);
+            });        
     }
 
     private final ChangeListener<String> dirtyStringListener

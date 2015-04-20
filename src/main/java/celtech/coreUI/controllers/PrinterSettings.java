@@ -173,7 +173,7 @@ public class PrinterSettings
     /**
      * Standard profiles must have the overrides applied.
      */
-    private SlicerParametersFile applyOverrides(SlicerParametersFile settingsByProfileName)
+    public SlicerParametersFile applyOverrides(SlicerParametersFile settingsByProfileName)
     {
         SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);

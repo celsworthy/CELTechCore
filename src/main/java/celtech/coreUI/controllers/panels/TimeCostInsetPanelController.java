@@ -90,10 +90,12 @@ public class TimeCostInsetPanelController implements Initializable
                     if (newValue == ApplicationMode.SETTINGS)
                     {
                         timeCostInsetRoot.setVisible(true);
+                        updateFields(Lookup.getSelectedProjectProperty().get());
                     } else
                     {
                         timeCostInsetRoot.setVisible(false);
                     }
+                    
                 });
 
             if (Lookup.getSelectedProjectProperty().get() != null)
@@ -186,6 +188,10 @@ public class TimeCostInsetPanelController implements Initializable
      */
     private void updateFields(Project project)
     {
+        if (ApplicationStatus.getInstance().modeProperty().get() != ApplicationMode.SETTINGS) {
+            return;
+        }
+        
         lblDraftTime.setText("...");
         lblNormalTime.setText("...");
         lblFineTime.setText("...");

@@ -10,6 +10,7 @@ import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -3291,21 +3292,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
-//                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
-//                    {
-                    // Might be unrecognised but correct format for a Robox head type code
+                    if (! FilamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID())) {
+                        // unrecognised reel
+                        saveUnknownFilamentToDatabase(reelResponse);
+                    }
+                    
+                    Reel reel;
                     if (!reels.containsKey(reelResponse.getReelNumber()))
                     {
-                        Reel newReel = new Reel();
-                        newReel.updateFromEEPROMData(reelResponse);
-                        reels.put(reelResponse.getReelNumber(), newReel);
+                        reel = new Reel();
+                        reel.updateFromEEPROMData(reelResponse);
+                        reels.put(reelResponse.getReelNumber(), reel);
                     } else
                     {
-                        reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(
-                            reelResponse);
+                        reel = reels.get(reelResponse.getReelNumber());
+                        reel.updateFromEEPROMData(reelResponse);
                     }
 
-                    if (Reel.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    if (FilamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
                         // Check to see if the data is in bounds
                         RepairResult result = reels.get(reelResponse.getReelNumber()).
@@ -3329,7 +3333,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 break;
                         }
                     }
-//                    }
                     break;
 
                 case HEAD_EEPROM_DATA:
@@ -3554,6 +3557,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             break;
                     }
                 }
+            }
+        }
+
+        /**
+         * If the filament is not a Robox filament then update the database with the filament
+         * details, if it is an unknown Robox filament then add it to the database in memory
+         * but do not save it to disk.
+         * @param reelResponse 
+         */
+        private void saveUnknownFilamentToDatabase(ReelEEPROMDataResponse reelResponse)
+        {
+            Filament filament = new Filament(reelResponse);
+            if (filament.isMutable()) {
+                FilamentContainer.saveFilament(filament);
+            } else {
+                FilamentContainer.addFilamentToUserFilamentList(filament);
             }
         }
     };

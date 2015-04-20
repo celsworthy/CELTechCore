@@ -279,6 +279,38 @@ public class FilamentContainer
         FileUtils.deleteQuietly(filamentToDelete);
         loadFilamentData();
     }
+    
+    public static boolean isFilamentIDValid(String filamentID)
+    {
+        boolean filamentIDIsValid = false;
+
+        if (filamentID != null
+            && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
+            || filamentID.matches("^U.*")))
+        {
+            filamentIDIsValid = true;
+        }
+
+        return filamentIDIsValid;
+    }    
+    
+    public static boolean isFilamentIDInDatabase(String filamentID)
+    {
+        if (instance == null)
+        {
+            instance = new FilamentContainer();
+        }
+        
+        boolean filamentIDIsInDatabase = false;
+
+        if (filamentID != null
+            && getFilamentByID(filamentID) != null)
+        {
+            filamentIDIsInDatabase = true;
+        }
+
+        return filamentIDIsInDatabase;
+    }    
 
     /**
      *
@@ -318,6 +350,18 @@ public class FilamentContainer
             }
         }
         return returnedFilament;
+    }
+    
+    /**
+     * Add the filament to the user filament list but do not save it to disk.
+     */
+    public static void addFilamentToUserFilamentList(Filament filament)
+    {
+        if (instance == null)
+        {
+            instance = new FilamentContainer();
+        }
+        userFilamentList.add(filament);
     }
 
     /**

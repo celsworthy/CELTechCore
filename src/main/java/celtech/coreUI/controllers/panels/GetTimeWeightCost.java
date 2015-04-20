@@ -190,6 +190,9 @@ public class GetTimeWeightCost
      */
     private SlicerTask makeSlicerTask(Project project, SlicerParametersFile settings)
     {
+        
+        settings = project.getPrinterSettings().applyOverrides(settings);
+        
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
         String printJobDirectoryName = ApplicationConfiguration.
