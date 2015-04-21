@@ -3,8 +3,9 @@
  */
 package celtech.printerControl.model.calibration;
 
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.Transitions;
 import celtech.printerControl.model.CalibrationNozzleOpeningActions;
-import celtech.services.calibration.NozzleOpeningCalibrationState;
 import javafx.beans.property.ReadOnlyFloatProperty;
 
 /**

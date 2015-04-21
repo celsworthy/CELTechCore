@@ -1,4 +1,4 @@
-package celtech.services.calibration;
+package celtech.printerControl.model.calibration;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;

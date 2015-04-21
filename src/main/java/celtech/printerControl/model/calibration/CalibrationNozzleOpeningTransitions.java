@@ -1,14 +1,14 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.services.calibration;
+package celtech.printerControl.model.calibration;
 
-import celtech.printerControl.model.calibration.Transitions;
+import celtech.printerControl.model.Transitions;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.CalibrationNozzleOpeningActions;
-import celtech.printerControl.model.calibration.ArrivalAction;
-import celtech.printerControl.model.calibration.StateTransitionManager;
-import celtech.printerControl.model.calibration.StateTransition;
+import celtech.printerControl.model.ArrivalAction;
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.StateTransition;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

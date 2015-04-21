@@ -248,7 +248,7 @@ public class GetTimeWeightCost
     }
 
     /**
-     * Take the cost in pounds and return a string in the format $1.43.
+     * Take the cost in pounds and return a string in the format £1.43.
      */
     private String formatCost(double cost)
     {

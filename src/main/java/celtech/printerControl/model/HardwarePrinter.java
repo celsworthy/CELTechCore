@@ -64,9 +64,9 @@ import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
-import celtech.services.calibration.CalibrationNozzleHeightTransitions;
-import celtech.services.calibration.CalibrationNozzleOpeningTransitions;
-import celtech.services.calibration.CalibrationXAndYTransitions;
+import celtech.printerControl.model.calibration.CalibrationNozzleHeightTransitions;
+import celtech.printerControl.model.calibration.CalibrationNozzleOpeningTransitions;
+import celtech.printerControl.model.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -2828,6 +2828,21 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             = new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions, actions);
         return calibrationHeightManager;
     }
+    
+    @Override
+    public PurgeStateTransitionManager startPurge() throws PrinterException
+    {
+        if (!canPurgeHead.get())
+        {
+            throw new PrinterException("Purge not permitted");
+        }
+       PurgeActions actions = new PurgeActions(this);
+       PurgeTransitions purgeTransitions = new PurgeTransitions(
+            actions);
+        PurgeStateTransitionManager purgeManager
+            = new PurgeStateTransitionManager(purgeTransitions, actions);
+        return purgeManager;
+    }    
 
     @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException

@@ -5,7 +5,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
-import celtech.printerControl.model.calibration.StateTransitionManager;
+import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import java.net.URL;
 import java.util.ResourceBundle;

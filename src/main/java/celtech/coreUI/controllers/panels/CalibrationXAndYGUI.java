@@ -3,10 +3,10 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.printerControl.model.calibration.StateTransitionManager;
-import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.printerControl.model.calibration.StateTransition;
-import celtech.services.calibration.CalibrationXAndYState;
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.StateTransitionManager.GUIName;
+import celtech.printerControl.model.StateTransition;
+import celtech.printerControl.model.calibration.CalibrationXAndYState;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
