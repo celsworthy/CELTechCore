@@ -54,10 +54,31 @@ public class FilamentContainer
     private static final String firstLayerNozzleTempProperty = "first_layer_nozzle_temperature_C";
     private static final String nozzleTempProperty = "nozzle_temperature_C";
     private static final String displayColourProperty = "display_colour";
+    
+    public interface FilamentDatabaseChangesListener {
+        public void whenFilamentChanges(String filamentId);
+    }
+    
+    private List<FilamentDatabaseChangesListener> filamentDatabaseChangesListeners = new ArrayList<>();
 
     public FilamentContainer()
     {
         loadFilamentData();
+    }
+    
+    public void addFilamentDatabaseChangesListener(FilamentDatabaseChangesListener listener) {
+        filamentDatabaseChangesListeners.add(listener);
+    }
+    
+    public void removeFilamentDatabaseChangesListener(FilamentDatabaseChangesListener listener) {
+        filamentDatabaseChangesListeners.remove(listener);
+    }    
+    
+    private void notifyFilamentDatabaseChangesListeners(String filamentId) {
+        for (FilamentDatabaseChangesListener listener : filamentDatabaseChangesListeners)
+        {
+            listener.whenFilamentChanges(filamentId);
+        }
     }
 
     public static String constructFilePath(Filament filament)
@@ -259,6 +280,7 @@ public class FilamentContainer
         {
             steno.error("Error whilst storing filament file " + filament.getFileName() + " " + ex);
         }
+        notifyFilamentDatabaseChangesListeners(filament.getFilamentID());
         return success;
     }
 

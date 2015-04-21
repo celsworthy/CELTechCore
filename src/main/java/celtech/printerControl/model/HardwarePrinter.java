@@ -84,6 +84,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -99,7 +101,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -119,7 +120,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final Stenographer steno = StenographerFactory.getStenographer(
         HardwarePrinter.class.getName());
     private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
-    
+
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
     protected ObjectProperty<MacroType> macroType = new SimpleObjectProperty<>(null);
@@ -221,11 +222,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final FilamentLoadedGetter filamentLoadedGetter;
 
     /**
-     * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to
-     * override the detection of whether a filament is loaded or not on a given extruder.
+     * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to override
+     * the detection of whether a filament is loaded or not on a given extruder.
      */
     public interface FilamentLoadedGetter
     {
+
         public boolean getFilamentLoaded(StatusResponse statusResponse, int extruderNumber);
     }
 
@@ -253,12 +255,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         this.commandInterface = commandInterface;
         this.filamentLoadedGetter = filamentLoadedGetter;
 
-        macroType.addListener(new ChangeListener<MacroType>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends MacroType> observable, MacroType oldValue,
-                MacroType newValue)
+        macroType.addListener(
+            (ObservableValue<? extends MacroType> observable, MacroType oldValue, MacroType newValue) ->
             {
                 if (newValue != null)
                 {
@@ -267,12 +265,29 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 {
                     macroIsInterruptible.set(false);
                 }
-            }
-        });
+            });
 
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
 
+        setupBindings();
+        setupFilamentDatabaseChangeListeners();
+
+        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        systemNotificationManager = Lookup.getSystemNotificationHandler();
+
+        printEngine = new PrintEngine(this);
+        setPrinterStatus(PrinterStatus.IDLE);
+
+        commandInterface.setPrinter(this);
+        commandInterface.start();
+    }
+
+    private void setupBindings()
+    {
         extruders.stream().forEach(extruder -> extruder.canEject
             .bind((printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED)))
@@ -333,18 +348,31 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
         canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED));
+    }
 
-        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
-        threeDPformatter.setMaximumFractionDigits(3);
-        threeDPformatter.setGroupingUsed(false);
-
-        systemNotificationManager = Lookup.getSystemNotificationHandler();
-
-        printEngine = new PrintEngine(this);
-        setPrinterStatus(PrinterStatus.IDLE);
-
-        commandInterface.setPrinter(this);
-        commandInterface.start();
+    /**
+     * If the filament details change for a filament currently on a reel, then the reel
+     * should be immediately updated with the new details.
+     */
+    private void setupFilamentDatabaseChangeListeners()
+    {
+        filamentContainer.addFilamentDatabaseChangesListener((String filamentId) ->
+        {
+            for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
+            {
+                if (posReel.getValue().filamentIDProperty().get().equals(filamentId)) {
+                    try
+                    {
+                        steno.debug("Update reel with updated filament data");
+                        transmitWriteReelEEPROM(posReel.getKey(), filamentContainer.getFilamentByID(
+                            filamentId));
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Unable to program reel with update filament of id: " + filamentId);
+                    }
+                }
+            }
+        });
     }
 
     // Don't call this from anywhere but Print Engine!
@@ -3024,7 +3052,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when requesting temperature and PWM data");
             throw new PrinterException("Error when requesting temperature and PWM data");
         }
-        
+
         return data;
     }
 
@@ -3150,8 +3178,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Extruders
                      */
-                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 1);
-                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 2);
+                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
+                                                                                     1);
+                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
+                                                                                     2);
 
                     //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
@@ -3311,11 +3341,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
-                    if (! filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID())) {
+                    if (!filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    {
                         // unrecognised reel
                         saveUnknownFilamentToDatabase(reelResponse);
                     }
-                    
+
                     Reel reel;
                     if (!reels.containsKey(reelResponse.getReelNumber()))
                     {
@@ -3581,16 +3612,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         /**
          * If the filament is not a Robox filament then update the database with the filament
-         * details, if it is an unknown Robox filament then add it to the database in memory
-         * but do not save it to disk.
-         * @param reelResponse 
+         * details, if it is an unknown Robox filament then add it to the database in memory but do
+         * not save it to disk.
+         *
+         * @param reelResponse
          */
         private void saveUnknownFilamentToDatabase(ReelEEPROMDataResponse reelResponse)
         {
             Filament filament = new Filament(reelResponse);
-            if (filament.isMutable()) {
+            if (filament.isMutable())
+            {
                 filamentContainer.saveFilament(filament);
-            } else {
+            } else
+            {
                 filamentContainer.addFilamentToUserFilamentList(filament);
             }
         }
