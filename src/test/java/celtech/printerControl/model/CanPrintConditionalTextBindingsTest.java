@@ -4,19 +4,15 @@
 package celtech.printerControl.model;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.TestPrinter;
 import java.io.File;
-import javafx.beans.binding.BooleanBinding;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
-import org.junit.Test;
 
 public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
 {
@@ -28,9 +24,9 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     @Before
     public void setupFilaments()
     {
-        PURPLE = FilamentContainer.getFilamentByID("RBX-ABS-PP156");
-        WHITE = FilamentContainer.getFilamentByID("RBX-ABS-WH169");
-        GREEN = FilamentContainer.getFilamentByID("RBX-ABS-GR499");
+        PURPLE = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
+        WHITE = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-WH169");
+        GREEN = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
     }
 
     private ModelContainer makeModelContainer(boolean useExtruder0)

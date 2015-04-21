@@ -54,7 +54,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private final static String UNKNOWN = Lookup.i18n("materialComponent.unknown");
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
     private UndoableProject undoableProject;
-
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    
     public enum ReelType
     {
 
@@ -301,7 +302,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         repopulateCmbMaterials();
 
-        FilamentContainer.getUserFilamentList().addListener(
+        filamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
                 repopulateCmbMaterials();
@@ -336,11 +337,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         try
         {
-            allFilaments.addAll(FilamentContainer.getAppFilamentList());
+            allFilaments.addAll(filamentContainer.getAppFilamentList());
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
-                allFilaments.addAll(FilamentContainer.getUserFilamentList());
-                userFilaments.addAll(FilamentContainer.getUserFilamentList());
+                allFilaments.addAll(filamentContainer.getUserFilamentList());
+                userFilaments.addAll(filamentContainer.getUserFilamentList());
             }
         } catch (NoClassDefFoundError exception)
         {
@@ -427,7 +428,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             materialRemainingContainer.setVisible(true);
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
-            Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
+            Filament filament = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
         } else
         {
@@ -454,7 +455,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
-            Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
+            Filament filament = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
         } else
         {

@@ -111,6 +111,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
     private ObservableList<Filament> comboItems;
     private final ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
 
     @FXML
     private ComboBox<Filament> cmbFilament;
@@ -240,7 +241,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 }
             });
 
-        FilamentContainer.getUserFilamentList().addListener(
+        filamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
                 repopulateCmbFilament();
@@ -252,10 +253,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         try
         {
             allFilaments.clear();
-            allFilaments.addAll(FilamentContainer.getAppFilamentList().sorted(
+            allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
                 (Filament o1, Filament o2)
                 -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
-            allFilaments.addAll(FilamentContainer.getUserFilamentList().sorted(
+            allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
                 (Filament o1, Filament o2)
                 -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             comboItems = FXCollections.observableArrayList(allFilaments);
@@ -491,7 +492,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             valid = false;
         } else if (currentFilamentID == null || currentFilamentID.startsWith("U"))
         {
-            ObservableList<Filament> existingMaterialList = FilamentContainer.getCompleteFilamentList();
+            ObservableList<Filament> existingMaterialList = filamentContainer.getCompleteFilamentList();
             for (Filament existingMaterial : existingMaterialList)
             {
                 if ((!existingMaterial.getFilamentID().equals(currentFilamentID))
@@ -509,9 +510,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         assert (state.get() != State.ROBOX);
         Filament filament = getFilament(currentFilamentID);
-        FilamentContainer.saveFilament(filament);
+        filamentContainer.saveFilament(filament);
         repopulateCmbFilament();
-        cmbFilament.setValue(FilamentContainer.getFilamentByID(filament.getFilamentID()));
+        cmbFilament.setValue(filamentContainer.getFilamentByID(filament.getFilamentID()));
     }
 
     void whenNewPressed()
@@ -543,16 +544,16 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         String newName = DeDuplicator.suggestNonDuplicateName(filament.getFriendlyFilamentName(),
                                                               allCurrentNames);
         filament.setFriendlyFilamentName(newName);
-        FilamentContainer.saveFilament(filament);
+        filamentContainer.saveFilament(filament);
         repopulateCmbFilament();
-        cmbFilament.setValue(FilamentContainer.getFilamentByID(filament.getFilamentID()));
+        cmbFilament.setValue(filamentContainer.getFilamentByID(filament.getFilamentID()));
     }
 
     void whenDeletePressed()
     {
         if (state.get() != State.NEW)
         {
-            FilamentContainer.deleteFilament(FilamentContainer.getFilamentByID(currentFilamentID));
+            filamentContainer.deleteFilament(filamentContainer.getFilamentByID(currentFilamentID));
         }
         repopulateCmbFilament();
         clearWidgets();

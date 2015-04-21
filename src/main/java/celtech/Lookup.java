@@ -9,6 +9,7 @@ import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.ApplicationEnvironment;
 import celtech.configuration.Languages;
 import celtech.configuration.UserPreferences;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
@@ -81,6 +82,11 @@ public class Lookup
      */
     private static final ObjectProperty<ExtrasMenuInnerPanel> extrasMenuInnerPanel = new SimpleObjectProperty<>();
 
+    /**
+     * The database of known filaments.
+     */
+    private static FilamentContainer filamentContainer;
+    
     public static Languages getLanguages()
     {
         return languages;
@@ -92,6 +98,10 @@ public class Lookup
     public static ApplicationEnvironment getApplicationEnvironment()
     {
         return applicationEnvironment;
+    }
+    
+    public static FilamentContainer getFilamentContainer() {
+        return filamentContainer;
     }
 
     public static String i18n(String stringId)
@@ -179,6 +189,8 @@ public class Lookup
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.debug("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
+        
+        filamentContainer = new FilamentContainer();
 
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();
 

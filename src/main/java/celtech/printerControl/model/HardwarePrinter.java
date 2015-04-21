@@ -118,7 +118,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         HardwarePrinter.class.getName());
-
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
     protected ObjectProperty<MacroType> macroType = new SimpleObjectProperty<>(null);
@@ -3310,7 +3311,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
-                    if (! FilamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID())) {
+                    if (! filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID())) {
                         // unrecognised reel
                         saveUnknownFilamentToDatabase(reelResponse);
                     }
@@ -3327,7 +3328,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         reel.updateFromEEPROMData(reelResponse);
                     }
 
-                    if (FilamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    if (filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
                         // Check to see if the data is in bounds
                         RepairResult result = reels.get(reelResponse.getReelNumber()).
@@ -3588,9 +3589,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             Filament filament = new Filament(reelResponse);
             if (filament.isMutable()) {
-                FilamentContainer.saveFilament(filament);
+                filamentContainer.saveFilament(filament);
             } else {
-                FilamentContainer.addFilamentToUserFilamentList(filament);
+                filamentContainer.addFilamentToUserFilamentList(filament);
             }
         }
     };

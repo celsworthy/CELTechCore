@@ -76,7 +76,7 @@ public class MaterialChoiceListCell extends ListCell<Filament>
     private void addContent(Filament filament)
     {
         setText(null);
-        if (filament == FilamentContainer.createNewFilament)
+        if (filament == Lookup.getFilamentContainer().createNewFilament)
         {
             setGraphic(createNewFilamentLabel);
         } else

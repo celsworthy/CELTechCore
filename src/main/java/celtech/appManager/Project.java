@@ -47,8 +47,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 public class Project implements Serializable
 {
 
-    private static final Filament DEFAULT_FILAMENT = FilamentContainer.getFilamentByID(
-        "RBX-ABS-GR499");
+    private Filament DEFAULT_FILAMENT;
 
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
@@ -68,11 +67,14 @@ public class Project implements Serializable
 
     private final StringProperty projectNameProperty;
     private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
 
     private boolean suppressProjectChanged = false;
 
     public Project()
     {
+        DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
+        
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
@@ -142,7 +144,7 @@ public class Project implements Serializable
             String filamentID1 = projectFile.getExtruder1FilamentID();
             if (!filamentID0.equals("NULL"))
             {
-                Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
+                Filament filament0 = filamentContainer.getFilamentByID(filamentID0);
                 if (filament0 != null)
                 {
                     extruder0Filament.set(filament0);
@@ -150,7 +152,7 @@ public class Project implements Serializable
             }
             if (!filamentID1.equals("NULL"))
             {
-                Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
+                Filament filament1 = filamentContainer.getFilamentByID(filamentID1);
                 if (filament1 != null)
                 {
                     extruder1Filament.set(filament1);
@@ -411,12 +413,12 @@ public class Project implements Serializable
             if (printer.reelsProperty().containsKey(0))
             {
                 String filamentID = printer.reelsProperty().get(0).filamentIDProperty().get();
-                extruder0Filament.set(FilamentContainer.getFilamentByID(filamentID));
+                extruder0Filament.set(filamentContainer.getFilamentByID(filamentID));
             }
             if (printer.reelsProperty().containsKey(1))
             {
                 String filamentID = printer.reelsProperty().get(1).filamentIDProperty().get();
-                extruder1Filament.set(FilamentContainer.getFilamentByID(filamentID));
+                extruder1Filament.set(filamentContainer.getFilamentByID(filamentID));
             }
         }
     }
