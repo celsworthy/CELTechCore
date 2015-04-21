@@ -2533,3 +2533,19 @@ modal-dialogue{
     -fx-background-color: mid_grey_50;
     -fx-font-family: 'Source Sans Pro Regular';
 }
+
+.timeCostIcons {
+    -fx-fill: robox_blue;
+}
+
+.timeCostIcons Rectangle  {
+    -fx-fill: robox_blue;
+}
+
+.timeCostIcons Circle {
+    -fx-fill: robox_blue;
+}
+
+.timeCostIcons SVGPath {
+    -fx-fill: robox_blue;
+}
