@@ -138,9 +138,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private RestrictedNumberField filamentDiameter;
-    
+
     @FXML
-    private RestrictedNumberField costGBPPerKG;    
+    private RestrictedNumberField costGBPPerKG;
 
     @FXML
     private RestrictedNumberField feedRateMultiplier;
@@ -169,7 +169,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         canSave.bind(isValid.and(isDirty).and(
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
-        
+
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
 
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
@@ -203,8 +203,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
     }
 
-
-
     private void updateWriteToReelBindings()
     {
         canWriteToReel1.unbind();
@@ -212,9 +210,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         if (currentPrinter.get() != null)
         {
             canWriteToReel1.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0).and(isDirty.not()));
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0));
             canWriteToReel2.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1).and(isDirty.not()));
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1));
         } else
         {
             canWriteToReel1.set(false);
@@ -241,12 +239,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                     selectFilament(newValue);
                 }
             });
-        
+
         FilamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
-        {
-            repopulateCmbFilament();
-        });
+            {
+                repopulateCmbFilament();
+            });
     }
 
     private void repopulateCmbFilament()
@@ -307,9 +305,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.textProperty().addListener(dirtyStringListener);
         colour.valueProperty().addListener(
             (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
-        {
-            isDirty.set(true);
-        });
+            {
+                isDirty.set(true);
+            });
         material.valueProperty().addListener(dirtyMaterialTypeListener);
         filamentDiameter.textProperty().addListener(dirtyStringListener);
         filamentMultiplier.textProperty().addListener(dirtyStringListener);
@@ -405,7 +403,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.COST_GBP_PER_KG);
-            });        
+            });
     }
 
     private final ChangeListener<String> dirtyStringListener
@@ -522,7 +520,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         clearWidgets();
         currentFilamentID = null;
     }
-    
+
     void whenSaveAsPressed()
     {
         state.set(State.NEW);
@@ -532,7 +530,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.selectAll();
         // visually marks name as needing to be changed
         name.pseudoClassStateChanged(ERROR, true);
-    }    
+    }
 
     void whenCopyPressed()
     {
@@ -565,6 +563,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         try
         {
+            if (isEditable.get())
+            {
+                whenSavePressed();
+            }
             currentPrinter.get().transmitWriteReelEEPROM(0, cmbFilament.getValue());
         } catch (RoboxCommsException ex)
         {
@@ -576,6 +578,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         try
         {
+            if (isEditable.get())
+            {
+                whenSavePressed();
+            }
             currentPrinter.get().transmitWriteReelEEPROM(1, cmbFilament.getValue());
         } catch (RoboxCommsException ex)
         {

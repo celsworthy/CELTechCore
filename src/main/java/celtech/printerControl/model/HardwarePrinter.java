@@ -220,7 +220,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final FilamentLoadedGetter filamentLoadedGetter;
 
     /**
-     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to
+     * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to
      * override the detection of whether a filament is loaded or not on a given extruder.
      */
     public interface FilamentLoadedGetter
