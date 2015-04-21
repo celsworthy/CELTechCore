@@ -173,11 +173,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
         attachedReels[reelNumber] = null;
     }
 
-    private boolean attachReel(String filamentName, int reelNumber) throws NumberFormatException
+    private boolean attachReel(String filamentId, int reelNumber) throws NumberFormatException
     {
         boolean success = false;
 
-        Filament filament = FilamentContainer.getFilamentByID(filamentName);
+        Filament filament = FilamentContainer.getFilamentByID(filamentId);
         if (filament != null && reelNumber >= 0 && reelNumber <= 2)
         {
             switch (reelNumber)
