@@ -13,7 +13,6 @@ public enum PurgeState
     PURGING,
     FINISHED,
     CANCELLED,
-    DONE,
     FAILED;
     
 }
