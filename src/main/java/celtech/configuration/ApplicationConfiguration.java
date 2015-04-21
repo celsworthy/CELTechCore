@@ -722,7 +722,6 @@ public class ApplicationConfiguration
             dirHandle.mkdirs();
         }
 
-        System.out.println("User filament dir retrurns " + userFilamentFileDirectory);
         return userFilamentFileDirectory;
     }
 

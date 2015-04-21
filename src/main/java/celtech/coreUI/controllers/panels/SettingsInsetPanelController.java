@@ -180,6 +180,8 @@ public class SettingsInsetPanelController implements Initializable
                     == PrintQualityEnumeration.CUSTOM)
                     {
                         printerSettings.setSettingsName(newValue.getProfileName());
+                    } else if (printerSettings != null) {
+                        steno.error("custom profile chosen but quality not CUSTOM");
                     }
                 }
             });

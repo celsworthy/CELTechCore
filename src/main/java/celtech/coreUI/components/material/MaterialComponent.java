@@ -55,7 +55,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
     private UndoableProject undoableProject;
     private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
-    
+
     public enum ReelType
     {
 
@@ -305,7 +305,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         filamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
-                repopulateCmbMaterials();
+                if (filamentContainer.getUserFilamentList().size() > 0)
+                {
+                    // it's very important not to call this with an empty FilamentContainer
+                    // filament list as project filament selections then get cleared.
+                    repopulateCmbMaterials();
+                }
             });
 
         cmbMaterials.valueProperty().addListener(
@@ -331,6 +336,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     private void repopulateCmbMaterials()
     {
+
+        Object currentValue = cmbMaterials.getValue();
+        String currentFilamentId = "";
+        if (currentValue instanceof Filament)
+        {
+            currentFilamentId = ((Filament) currentValue).getFilamentID();
+        }
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
         ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
@@ -359,6 +371,36 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
         comboItems = FXCollections.observableArrayList(filamentsList);
         cmbMaterials.setItems(comboItems);
+
+        reselectFilamentId(currentFilamentId);
+
+    }
+
+    /**
+     * Set the combo box selection to the filament of the given id, or to the first filament in the
+     * list if filamentId is empty.
+     *
+     * @param filamentId
+     */
+    private void reselectFilamentId(String filamentId)
+    {
+        boolean filamentFound = false;
+        for (Object comboItem : comboItems)
+        {
+            if (comboItem instanceof Filament)
+            {
+                if (((Filament) comboItem).getFilamentID().equals(filamentId))
+                {
+                    cmbMaterials.setValue(comboItem);
+                    filamentFound = true;
+                    break;
+                }
+            }
+        }
+        if (!filamentFound && comboItems.size() > 0)
+        {
+            cmbMaterials.setValue(comboItems.get(0));
+        }
     }
 
     public void whenMaterialSelected(ActionEvent actionEvent)

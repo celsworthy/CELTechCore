@@ -67,7 +67,7 @@ public class GetTimeWeightCost
     public SlicerTask setupAndRunSlicerTask()
     {
 
-        steno.info("launch time cost process for project " + project + " and settings "
+        steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
         slicerTask = makeSlicerTask(project, settings);
@@ -82,7 +82,6 @@ public class GetTimeWeightCost
             clearPrintJobDirectory();
             if (postProcessorTask != null && postProcessorTask.isRunning())
             {
-                System.out.println("Cancelling post processor task");
                 postProcessorTask.cancel();
             }
             lblTime.setText("Cancelled");
@@ -144,9 +143,7 @@ public class GetTimeWeightCost
             lblCost.setText("cancelled");
         });
 
-        System.out.println("run slicer task");
         Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
-        System.out.println("return slicer task " + slicerTask);
         return slicerTask;
     }
 

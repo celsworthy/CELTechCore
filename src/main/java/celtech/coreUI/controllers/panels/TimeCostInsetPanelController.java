@@ -224,22 +224,9 @@ public class TimeCostInsetPanelController implements Initializable
 
     private void cancelRunningTimeCostTasks()
     {
-        System.out.println("Cancel any running time tasks");
-        System.out.println("slicer tasks " + draftSlicerTask + " " + normalSlicerTask + " " + fineSlicerTask);
-        if (draftSlicerTask != null ) {
-            System.out.println("draft status " + draftSlicerTask.getState().name());
-        }
-        if (normalSlicerTask != null ) {
-            System.out.println("normal status " + normalSlicerTask.getState().name());
-        }
-        if (fineSlicerTask != null ) {
-            System.out.println("fine status " + fineSlicerTask.getState().name());
-        }
-        
         cancelTask(draftSlicerTask);
         cancelTask(normalSlicerTask);
         cancelTask(fineSlicerTask);
-
     }
 
     /**
@@ -265,7 +252,6 @@ public class TimeCostInsetPanelController implements Initializable
     {
         if (slicerTask != null && ! (slicerTask.isDone() || slicerTask.isCancelled()))
         {
-            System.out.println("CANCEL " + slicerTask);
             slicerTask.cancel();
         }
     }

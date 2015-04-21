@@ -99,9 +99,7 @@ public class FilamentContainer
         appFilamentList.addAll(filaments);
         completeFilamentList.addAll(filaments);
         
-        System.out.println("FC make file for " + ApplicationConfiguration.getUserFilamentDirectory());
         File userFilamentDirHandle = new File(ApplicationConfiguration.getUserFilamentDirectory());
-        System.out.println("Filament Container ingest: dir exists: " + userFilamentDirHandle.exists());
         File[] userfilaments = userFilamentDirHandle.listFiles(new FilamentFileFilter());
         filaments = ingestFilaments(userfilaments, true);
         completeFilamentList.addAll(filaments);

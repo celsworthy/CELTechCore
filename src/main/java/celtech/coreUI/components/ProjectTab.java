@@ -102,7 +102,6 @@ public class ProjectTab extends Tab
         AnchorPane.setTopAnchor(settingsInsetPanel, 220.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
         
-
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);

@@ -41,7 +41,7 @@ public class Filament implements Serializable, Cloneable
     private final IntegerProperty requiredBedTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty requiredFirstLayerNozzleTemperature = new SimpleIntegerProperty(0);
     private final IntegerProperty requiredNozzleTemperature = new SimpleIntegerProperty(0);
-    private ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
+    private final ObjectProperty<Color> displayColour = new SimpleObjectProperty<>();
     private final FloatProperty remainingFilament = new SimpleFloatProperty(
         ApplicationConfiguration.mmOfFilamentOnAReel);
     private final FloatProperty costGBPPerKG = new SimpleFloatProperty(35f);
