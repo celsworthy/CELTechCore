@@ -349,11 +349,17 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         try
         {
-            allFilaments.addAll(filamentContainer.getAppFilamentList());
+            allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
-                allFilaments.addAll(filamentContainer.getUserFilamentList());
-                userFilaments.addAll(filamentContainer.getUserFilamentList());
+                allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
         } catch (NoClassDefFoundError exception)
         {
