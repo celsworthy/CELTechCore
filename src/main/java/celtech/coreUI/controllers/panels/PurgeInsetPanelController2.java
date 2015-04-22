@@ -185,6 +185,7 @@ public class PurgeInsetPanelController2 implements Initializable
         namesToButtons.put(StateTransitionManager.GUIName.RETRY, repeatButton);
         namesToButtons.put(StateTransitionManager.GUIName.START, startPurgeButton);
         namesToButtons.put(StateTransitionManager.GUIName.BACK, backButton);
+        namesToButtons.put(StateTransitionManager.GUIName.COMPLETE, okButton);
     }
 
     private void showAppropriateButtons(PurgeState state)
@@ -198,6 +199,7 @@ public class PurgeInsetPanelController2 implements Initializable
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
+                steno.debug("show button " + namesToButtons.get(allowedTransition.getGUIName()));
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
             }
         }
@@ -218,12 +220,13 @@ public class PurgeInsetPanelController2 implements Initializable
 
     public void setState(PurgeState state)
     {
+        steno.debug("go to state " + state);
         showAppropriateButtons(state);
         purgeStatus.setText(state.getStepTitle());
+        purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
         switch (state)
         {
             case IDLE:
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
             case INITIALISING:
                 break;
@@ -237,19 +240,18 @@ public class PurgeInsetPanelController2 implements Initializable
                 purgeDetailsGrid.setVisible(true);
                 break;
             case HEATING:
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
             case RUNNING_PURGE:
                 purgeProgressBar.setVisible(true);
                 diagramContainer.setVisible(true);
                 break;
             case FINISHED:
-                okButton.setVisible(true);
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 diagramContainer.setVisible(true);
                 break;
+            case DONE:
+                closeWindow(null);
+                break;
             case FAILED:
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 break;
         }
     }

@@ -115,8 +115,7 @@ public class PurgeActions
         printer.setNozzleTargetTemperature(purgeTemperature);
         printer.goToTargetNozzleTemperature();
         //TODO modify to support multiple heaters
-        boolean extruderHeatFailed = PrinterUtils.
-            waitUntilTemperatureIsReached(
+        boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
                 printer.headProperty().get().getNozzleHeaters().get(0).
                 nozzleTemperatureProperty(),
                 null, purgeTemperature, 5, 300, cancellable);

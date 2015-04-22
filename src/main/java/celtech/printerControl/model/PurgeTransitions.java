@@ -48,17 +48,17 @@ public class PurgeTransitions implements Transitions
                                             PurgeState.FAILED));
 
         // INITIALISING
-        transitions.add(new StateTransition(PurgeState.IDLE,
+        transitions.add(new StateTransition(PurgeState.INITIALISING,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.CONFIRM_TEMPERATURE,
-             () ->
+                                            () ->
                                             {
                                                 actions.doInitialiseAction();
                                             },
                                             PurgeState.FAILED));
 
         // CONFIRM_TEMPERATURE
-        transitions.add(new StateTransition(PurgeState.IDLE,
+        transitions.add(new StateTransition(PurgeState.CONFIRM_TEMPERATURE,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.HEATING,
                                             () ->
@@ -68,7 +68,7 @@ public class PurgeTransitions implements Transitions
                                             PurgeState.FAILED));
 
         // HEATING
-        transitions.add(new StateTransition(PurgeState.IDLE,
+        transitions.add(new StateTransition(PurgeState.HEATING,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.RUNNING_PURGE,
                                             () ->
@@ -78,16 +78,22 @@ public class PurgeTransitions implements Transitions
                                             PurgeState.FAILED));
 
         // RUNNING_PURGE
-        transitions.add(new StateTransition(PurgeState.IDLE,
+        transitions.add(new StateTransition(PurgeState.RUNNING_PURGE,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.FINISHED,
                                             PurgeState.FAILED));
         
+        // FINISHED (OK)
+        transitions.add(new StateTransition(PurgeState.FINISHED,
+                                            StateTransitionManager.GUIName.COMPLETE,
+                                            PurgeState.DONE,
+                                            PurgeState.FAILED));        
+
         // FINISHED (RETRY)
         transitions.add(new StateTransition(PurgeState.FINISHED,
                                             StateTransitionManager.GUIName.RETRY,
                                             PurgeState.INITIALISING,
-                                            PurgeState.FAILED));        
+                                            PurgeState.FAILED));
     }
 
     @Override
