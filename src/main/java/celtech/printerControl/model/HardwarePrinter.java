@@ -326,7 +326,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT)
                     .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT)
-                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))))));
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING)
+                            .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)))))));
 
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
@@ -349,8 +350,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     /**
-     * If the filament details change for a filament currently on a reel, then the reel
-     * should be immediately updated with the new details.
+     * If the filament details change for a filament currently on a reel, then the reel should be
+     * immediately updated with the new details.
      */
     private void setupFilamentDatabaseChangeListeners()
     {
@@ -358,15 +359,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
             {
-                if (posReel.getValue().filamentIDProperty().get().equals(filamentId)) {
+                if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
+                {
                     try
                     {
                         steno.debug("Update reel with updated filament data");
                         transmitWriteReelEEPROM(posReel.getKey(), filamentContainer.getFilamentByID(
-                            filamentId));
+                                                filamentId));
                     } catch (RoboxCommsException ex)
                     {
-                        steno.error("Unable to program reel with update filament of id: " + filamentId);
+                        steno.error("Unable to program reel with update filament of id: "
+                            + filamentId);
                     }
                 }
             }
@@ -618,7 +621,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.warning("Failed to write purge temperature");
         }
     }
-  
+
     /*
      * Print
      */
@@ -2718,7 +2721,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             = new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions, actions);
         return calibrationHeightManager;
     }
-    
+
     @Override
     public PurgeStateTransitionManager startPurge() throws PrinterException
     {
@@ -2726,13 +2729,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Purge not permitted");
         }
-       PurgeActions actions = new PurgeActions(this);
-       PurgeTransitions purgeTransitions = new PurgeTransitions(
+        PurgeActions actions = new PurgeActions(this);
+        PurgeTransitions purgeTransitions = new PurgeTransitions(
             actions);
         PurgeStateTransitionManager purgeManager
             = new PurgeStateTransitionManager(purgeTransitions, actions);
         return purgeManager;
-    }    
+    }
 
     @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException

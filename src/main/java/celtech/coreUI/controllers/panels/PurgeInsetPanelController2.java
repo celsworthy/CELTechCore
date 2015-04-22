@@ -10,6 +10,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PurgeState;
@@ -30,6 +31,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -222,6 +224,7 @@ public class PurgeInsetPanelController2 implements Initializable
     public void setState(PurgeState state)
     {
         steno.debug("go to state " + state);
+        steno.debug("printer status is " + printer.printerStatusProperty().get());
         showAppropriateButtons(state);
         purgeStatus.setText(state.getStepTitle());
         purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
@@ -256,7 +259,7 @@ public class PurgeInsetPanelController2 implements Initializable
                 break;
             case CANCELLED:
                 closeWindow(null);
-                break;                
+                break;
         }
     }
 
@@ -307,26 +310,28 @@ public class PurgeInsetPanelController2 implements Initializable
         }
         this.printer = printer;
         setupPrintProgressListeners(printer);
-        
+
         this.purgeFilament = purgeFilament;
 
         installTag(printer, startPurgeButton);
         installTag(printer, proceedButton);
     }
 
-    private void installTag(Printer printerToUse, GraphicButtonWithLabel button)
+    private void installTag(Printer printer, GraphicButtonWithLabel button)
     {
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                           printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(
+                                           printer.getPrinterAncillarySystems().doorOpenProperty().and(
                                                Lookup.getUserPreferences().safetyFeaturesOnProperty()));
         button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                           printerToUse.extrudersProperty().get(0).
+                                           printer.extrudersProperty().get(0).
                                            filamentLoadedProperty().not());
 
-        button.disableProperty().bind(printerToUse.canPrintProperty().not()
-            .or(printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(
+        button.disableProperty().bind(Bindings.and(
+            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.PURGING_HEAD),
+            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE))
+            .or(printer.getPrinterAncillarySystems().doorOpenProperty().and(
                     Lookup.getUserPreferences().safetyFeaturesOnProperty()))
-            .or(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().not()));
+            .or(printer.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
 
     public void purge(Printer printer)
