@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.printerControl.model.calibration;
+package celtech.printerControl.model;
 
 import java.util.Map;
 import java.util.Set;

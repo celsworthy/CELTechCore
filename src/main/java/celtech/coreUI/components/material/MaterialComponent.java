@@ -54,6 +54,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private final static String UNKNOWN = Lookup.i18n("materialComponent.unknown");
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
     private UndoableProject undoableProject;
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
 
     public enum ReelType
     {
@@ -301,10 +302,15 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         repopulateCmbMaterials();
 
-        FilamentContainer.getUserFilamentList().addListener(
+        filamentContainer.getUserFilamentList().addListener(
             (ListChangeListener.Change<? extends Filament> c) ->
             {
-                repopulateCmbMaterials();
+                if (filamentContainer.getUserFilamentList().size() > 0)
+                {
+                    // it's very important not to call this with an empty FilamentContainer
+                    // filament list as project filament selections then get cleared.
+                    repopulateCmbMaterials();
+                }
             });
 
         cmbMaterials.valueProperty().addListener(
@@ -331,16 +337,29 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private void repopulateCmbMaterials()
     {
 
+        Object currentValue = cmbMaterials.getValue();
+        String currentFilamentId = "";
+        if (currentValue instanceof Filament)
+        {
+            currentFilamentId = ((Filament) currentValue).getFilamentID();
+        }
+
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
         ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
 
         try
         {
-            allFilaments.addAll(FilamentContainer.getAppFilamentList());
+            allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
-                allFilaments.addAll(FilamentContainer.getUserFilamentList());
-                userFilaments.addAll(FilamentContainer.getUserFilamentList());
+                allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
         } catch (NoClassDefFoundError exception)
         {
@@ -358,6 +377,36 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
         comboItems = FXCollections.observableArrayList(filamentsList);
         cmbMaterials.setItems(comboItems);
+
+        reselectFilamentId(currentFilamentId);
+
+    }
+
+    /**
+     * Set the combo box selection to the filament of the given id, or to the first filament in the
+     * list if filamentId is empty.
+     *
+     * @param filamentId
+     */
+    private void reselectFilamentId(String filamentId)
+    {
+        boolean filamentFound = false;
+        for (Object comboItem : comboItems)
+        {
+            if (comboItem instanceof Filament)
+            {
+                if (((Filament) comboItem).getFilamentID().equals(filamentId))
+                {
+                    cmbMaterials.setValue(comboItem);
+                    filamentFound = true;
+                    break;
+                }
+            }
+        }
+        if (!filamentFound && comboItems.size() > 0)
+        {
+            cmbMaterials.setValue(comboItems.get(0));
+        }
     }
 
     public void whenMaterialSelected(ActionEvent actionEvent)
@@ -427,7 +476,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             materialRemainingContainer.setVisible(true);
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
-            Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
+            Filament filament = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
         } else
         {
@@ -454,7 +503,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
-            Filament filament = FilamentContainer.getFilamentByID(reel.filamentIDProperty().get());
+            Filament filament = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
         } else
         {

@@ -98,8 +98,6 @@ public class TestSlicerService extends AbstractSlicerService
     class TestSlicerTask extends SlicerTask
     {
 
-        private FilamentContainer filament = null;
-
         public TestSlicerTask(String printJobUUID, Project project,
                 PrintQualityEnumeration printQuality, SlicerParametersFile settings,
                 Printer printerToUse)
@@ -122,7 +120,7 @@ public class TestSlicerService extends AbstractSlicerService
             URL pyramidGCodeURL = this.getClass().getResource("/pyramid.gcode");
             Path sourceFilePath = Paths.get(pyramidGCodeURL.toURI());
             Files.copy(sourceFilePath, destinationFilePath);
-            return new SliceResult(printJobUUID, project, filament, printQuality, settings,
+            return new SliceResult(printJobUUID, project, printQuality, settings,
                                    printerToUse, true);
         }
     }

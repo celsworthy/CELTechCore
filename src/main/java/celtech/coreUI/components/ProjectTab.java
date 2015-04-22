@@ -99,10 +99,9 @@ public class ProjectTab extends Tab
         timeCostInsetPanel.setVisible(false);
         AnchorPane.setTopAnchor(timeCostInsetPanel, 30.0);
         AnchorPane.setRightAnchor(timeCostInsetPanel, 30.0);
-        AnchorPane.setTopAnchor(settingsInsetPanel, 210.0);
+        AnchorPane.setTopAnchor(settingsInsetPanel, 220.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
         
-
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);

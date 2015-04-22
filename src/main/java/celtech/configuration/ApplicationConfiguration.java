@@ -59,9 +59,9 @@ public class ApplicationConfiguration
      *
      */
     public static final String fxmlPanelResourcePath = resourcePath + "fxml/panels/";
-    
+
     public static final String fxmlDiagramsResourcePath = resourcePath + "fxml/diagrams/";
-    
+
     public static final String fxmlButtonsResourcePath = resourcePath + "fxml/buttons/";
 
     /**
@@ -98,7 +98,7 @@ public class ApplicationConfiguration
      *
      */
     private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
-    
+
     private static final String dialogsCSSFile = cssResourcePath + "dialogsOverride.css";
 
     /**
@@ -118,7 +118,8 @@ public class ApplicationConfiguration
 
     public static final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 210;
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(ApplicationConfiguration.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        ApplicationConfiguration.class.getName());
     private static Configuration configuration = null;
     private static String applicationInstallDirectory = null;
 
@@ -149,7 +150,8 @@ public class ApplicationConfiguration
      */
     public static final String projectFileExtension = ".robox";
     public static final String projectModelsFileExtension = ".models";
-    private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst("\\.", "");
+    private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst(
+        "\\.", "");
 
     /**
      *
@@ -211,7 +213,7 @@ public class ApplicationConfiguration
     private static final String commonFileDirectoryPath = "CEL Robox" + File.separator;
 
     private static String myMiniFactoryDownloadsDirectory = null;
-    
+
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";
 
@@ -358,8 +360,9 @@ public class ApplicationConfiguration
     private static boolean autoRepairReels = true;
 
     /**
-     * These variables are used to position the head correctly over the bed The actual travel of the mechanical system is not the same as the theoretical travel (to allow for door opening positions
-     * etc)
+     * These variables are used to position the head correctly over the bed The actual travel of the
+     * mechanical system is not the same as the theoretical travel (to allow for door opening
+     * positions etc)
      */
     public static final int xPrintOffset = 6;
     public static final int yPrintOffset = 6;
@@ -434,7 +437,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                    "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -442,10 +446,12 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationName = configuration.getFilenameString(applicationConfigComponent, "ApplicationName", null);
+                applicationName = configuration.getFilenameString(applicationConfigComponent,
+                                                                  "ApplicationName", null);
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't determine application name - the application will not run correctly");
+                steno.error(
+                    "Couldn't determine application name - the application will not run correctly");
             }
         }
         return applicationName;
@@ -464,7 +470,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                    "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -472,11 +479,13 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationShortName = configuration.getFilenameString(applicationConfigComponent, "ApplicationShortName", null);
+                applicationShortName = configuration.getFilenameString(applicationConfigComponent,
+                                                                       "ApplicationShortName", null);
                 steno.debug("Application short name = " + applicationShortName);
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't determine application short name - the application will not run correctly");
+                steno.error(
+                    "Couldn't determine application short name - the application will not run correctly");
             }
         }
         return applicationShortName;
@@ -496,7 +505,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                    "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -504,7 +514,9 @@ public class ApplicationConfiguration
         {
             try
             {
-                String fakeAppDirectory = configuration.getFilenameString(applicationConfigComponent, "FakeInstallDirectory", null);
+                String fakeAppDirectory = configuration.getFilenameString(applicationConfigComponent,
+                                                                          "FakeInstallDirectory",
+                                                                          null);
                 if (fakeAppDirectory == null)
                 {
                     try
@@ -517,10 +529,12 @@ public class ApplicationConfiguration
                         applicationInstallDirectory = actualPath;
                     } catch (URISyntaxException ex)
                     {
-                        steno.error("URI Syntax Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
+                        steno.error(
+                            "URI Syntax Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
                     } catch (IOException ex)
                     {
-                        steno.error("IO Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
+                        steno.error(
+                            "IO Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
                     }
                 } else
                 {
@@ -528,7 +542,8 @@ public class ApplicationConfiguration
                 }
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                    "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
         return applicationInstallDirectory;
@@ -570,7 +585,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                    "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -580,14 +596,16 @@ public class ApplicationConfiguration
         {
             if (getMachineType() == MachineType.WINDOWS)
             {
-                RegistryKey regKey = new RegistryKey(RootKey.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
+                RegistryKey regKey = new RegistryKey(RootKey.HKEY_CURRENT_USER,
+                                                     "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
 
                 if (regKey.exists())
                 {
                     if (regKey.hasValue(regValueToUse))
                     {
                         RegistryValue value = regKey.getValue(regValueToUse);
-                        userStorageDirectory = value.getStringValue() + "\\" + commonFileDirectoryPath;
+                        userStorageDirectory = value.getStringValue() + "\\"
+                            + commonFileDirectoryPath;
                     }
                 }
             }
@@ -598,11 +616,14 @@ public class ApplicationConfiguration
             {
                 try
                 {
-                    userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null) + commonFileDirectoryPath;
+                    userStorageDirectory = configuration.getFilenameString(
+                        applicationConfigComponent, userStorageDirectoryComponent, null)
+                        + commonFileDirectoryPath;
                     steno.debug("User storage directory = " + userStorageDirectory);
                 } catch (ConfigNotLoadedException ex)
                 {
-                    steno.error("Couldn't determine user storage location - the application will not run correctly");
+                    steno.error(
+                        "Couldn't determine user storage location - the application will not run correctly");
                 }
             }
         }
@@ -622,7 +643,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                    "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -630,11 +652,13 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null);
+                applicationStorageDirectory = configuration.getFilenameString(
+                    applicationConfigComponent, applicationStorageDirectoryComponent, null);
                 steno.debug("Application storage directory = " + applicationStorageDirectory);
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't determine application storage location - the application will not run correctly");
+                steno.error(
+                    "Couldn't determine application storage location - the application will not run correctly");
             }
         }
         return applicationStorageDirectory;
@@ -669,7 +693,8 @@ public class ApplicationConfiguration
     {
         if (printFileSpoolDirectory == null)
         {
-            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath + File.separator;
+            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath
+                + File.separator;
 
             File dirHandle = new File(printFileSpoolDirectory);
 
@@ -688,16 +713,13 @@ public class ApplicationConfiguration
      */
     public static String getUserFilamentDirectory()
     {
-        if (userFilamentFileDirectory == null)
+        userFilamentFileDirectory = getUserStorageDirectory() + filamentDirectoryPath + '/';
+
+        File dirHandle = new File(userFilamentFileDirectory);
+
+        if (!dirHandle.exists())
         {
-            userFilamentFileDirectory = getUserStorageDirectory() + filamentDirectoryPath + '/';
-
-            File dirHandle = new File(userFilamentFileDirectory);
-
-            if (!dirHandle.exists())
-            {
-                dirHandle.mkdirs();
-            }
+            dirHandle.mkdirs();
         }
 
         return userFilamentFileDirectory;
@@ -739,7 +761,8 @@ public class ApplicationConfiguration
     {
         if (userPrintProfileFileDirectory == null)
         {
-            userPrintProfileFileDirectory = getUserStorageDirectory() + printProfileDirectoryPath + '/';
+            userPrintProfileFileDirectory = getUserStorageDirectory() + printProfileDirectoryPath
+                + '/';
 
             File dirHandle = new File(userPrintProfileFileDirectory);
 
@@ -760,7 +783,8 @@ public class ApplicationConfiguration
     {
         if (printProfileFileDirectory == null)
         {
-            printProfileFileDirectory = getCommonApplicationDirectory() + printProfileDirectoryPath + '/';
+            printProfileFileDirectory = getCommonApplicationDirectory() + printProfileDirectoryPath
+                + '/';
         }
 
         return printProfileFileDirectory;
@@ -826,7 +850,8 @@ public class ApplicationConfiguration
 
         if (applicationLanguageRaw == null)
         {
-            applicationLanguageRaw = installationProperties.getProperty("language").replaceAll("_", "-");
+            applicationLanguageRaw = installationProperties.getProperty("language").replaceAll("_",
+                                                                                               "-");
         }
 
         return applicationLanguageRaw;
@@ -934,7 +959,8 @@ public class ApplicationConfiguration
 
         try
         {
-            File inputFile = new File(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+            File inputFile = new File(getApplicationStorageDirectory() + getApplicationName()
+                + ".properties");
             if (inputFile.exists())
             {
                 input = new FileInputStream(inputFile);
@@ -984,7 +1010,8 @@ public class ApplicationConfiguration
             loadApplicationMemoryProperties();
         }
 
-        String directory = applicationMemoryProperties.getProperty(fileMemoryItem + whichProperty.name());
+        String directory = applicationMemoryProperties.getProperty(fileMemoryItem
+            + whichProperty.name());
 
         return directory;
     }
@@ -1015,7 +1042,8 @@ public class ApplicationConfiguration
 
         if (applicationMemoryProperties.getProperty(userLocaleItem) != null)
         {
-            localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(userLocaleItem));
+            localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(
+                userLocaleItem));
         } else
         {
             localeToReturn = Locale.forLanguageTag(getApplicationInstallationLanguage());
@@ -1048,7 +1076,8 @@ public class ApplicationConfiguration
 
         try
         {
-            output = new FileOutputStream(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+            output = new FileOutputStream(getApplicationStorageDirectory() + getApplicationName()
+                + ".properties");
 
             applicationMemoryProperties.save(output, getApplicationName() + " runtime properties");
         } catch (IOException ex)
@@ -1070,7 +1099,8 @@ public class ApplicationConfiguration
     }
 
     /**
-     * This method supplies the application-specific download directory component for updates It is a hack and should be removed...
+     * This method supplies the application-specific download directory component for updates It is
+     * a hack and should be removed...
      *
      * @param applicationName
      * @return
@@ -1111,18 +1141,18 @@ public class ApplicationConfiguration
     {
         autoRepairReels = value;
     }
-    
+
     public static String getMainCSSFile()
     {
         return ApplicationConfiguration.class.getResource(mainCSSFile).toExternalForm();
     }
-    
+
     public static String getDialogsCSSFile()
     {
         return ApplicationConfiguration.class.getResource(dialogsCSSFile).toExternalForm();
-    }    
-    
-     /**
+    }
+
+    /**
      *
      * @return
      */
@@ -1142,7 +1172,7 @@ public class ApplicationConfiguration
 
         return myMiniFactoryDownloadsDirectory;
     }
-    
+
     public static String getApplicationModelDirectory()
     {
         return getCommonApplicationDirectory().concat(modelStorageDirectoryPath).concat("/");

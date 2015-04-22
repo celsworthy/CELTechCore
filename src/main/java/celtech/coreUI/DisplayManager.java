@@ -19,6 +19,7 @@ import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
+import celtech.coreUI.controllers.panels.PurgeInsetPanelController2;
 import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
@@ -793,6 +794,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
     }
+    public PurgeInsetPanelController2 getPurgeInsetPanelController2()
+    {
+        return (PurgeInsetPanelController2) insetPanelControllers.get(ApplicationMode.PURGE2);
+    }    
 
     /**
      * This is fired when the main window or one of the internal windows may have changed size.

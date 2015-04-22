@@ -117,7 +117,7 @@
                                                 <String fx:value="aboutBodyTextRegular" />
                                             </styleClass>
                                         </Text>
-                                        <Text layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ian Hudson, Ben Willcocks and Tony Lynch" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <Text layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ian Hudson, Ben Willcocks and Tony Abdulhaq Lynch" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                             <styleClass>
                                                 <String fx:value="aboutBodyText" />
                                                 <String fx:value="blue-inset-panel-text" />

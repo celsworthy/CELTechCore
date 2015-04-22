@@ -5,6 +5,7 @@ package celtech;
 
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
+import static celtech.configuration.ApplicationConfiguration.filamentDirectoryPath;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.gcodetranslator.TestGCodeOutputWriter;
 import celtech.utils.tasks.TestTaskExecutor;
@@ -35,21 +36,33 @@ public class JavaFXConfiguredTest
 
         testProperties.setProperty("language", "UK");
         URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/InstallDir/AutoMaker/");
-        String userStorageFolder = temporaryUserStorageFolder.getRoot().getAbsolutePath()
+        String userStorageFolderPath = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(
             testProperties,
             applicationInstallURL.getFile(),
-            userStorageFolder);
-        Lookup.setupDefaultValues();
+            userStorageFolderPath);
+        
+        File userStorageDir = new File(userStorageFolderPath);
+        
+        System.out.println("USD: " + userStorageFolderPath + " exists: " + userStorageDir.exists());
 
-        new File(userStorageFolder
+        File filamentDir = new File(userStorageFolderPath
+            + ApplicationConfiguration.filamentDirectoryPath
+            + File.separator);
+        filamentDir.mkdirs();
+        
+         System.out.println("Filament: " + filamentDir.getAbsolutePath() + " exists: " + filamentDir.exists());
+
+        new File(userStorageFolderPath
             + ApplicationConfiguration.printSpoolStorageDirectoryPath
-            + File.separator).mkdir();
+            + File.separator).mkdirs();
 
-        new File(userStorageFolder
+        new File(userStorageFolderPath
             + ApplicationConfiguration.projectFileDirectoryPath
-            + File.separator).mkdir();
+            + File.separator).mkdirs();
+
+        Lookup.setupDefaultValues();
 
         // force initialisation
         URL configURL = JavaFXConfiguredTest.class.getResource("/AutoMaker.configFile.xml");
@@ -74,18 +87,24 @@ public class JavaFXConfiguredTest
         }
     }
 
+    public static boolean startedJFX = false;
+
     @BeforeClass
     public static void initJFX()
     {
-        Thread t = new Thread("JavaFX Init Thread")
+        if (!startedJFX)
         {
-            public void run()
+            Thread t = new Thread("JavaFX Init Thread")
             {
-                Application.launch(AsNonApp.class, new String[0]);
-            }
-        };
-        t.setDaemon(true);
-        t.start();
+                public void run()
+                {
+                    Application.launch(AsNonApp.class, new String[0]);
+                }
+            };
+            t.setDaemon(true);
+            t.start();
+            startedJFX = true;
+        }
     }
 
 }

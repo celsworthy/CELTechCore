@@ -24,6 +24,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -38,6 +39,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -54,7 +56,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         NAME("name"), COLOUR("colour"), AMBIENT_TEMP("ambientTemp"), MATERIAL("material"),
         DIAMETER("diameter"), MULTIPLIER("multiplier"), FEED_RATE_MULTIPLIER("feedRateMultiplier"),
         FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"),
-        FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp");
+        FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp"),
+        COST_GBP_PER_KG("costGBPPerKG");
 
         private final String helpTextId;
 
@@ -108,6 +111,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
     private ObservableList<Filament> comboItems;
     private final ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
 
     @FXML
     private ComboBox<Filament> cmbFilament;
@@ -135,9 +139,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private RestrictedNumberField filamentDiameter;
-    
+
     @FXML
-    private RestrictedNumberField costGBPPerKG;    
+    private RestrictedNumberField costGBPPerKG;
 
     @FXML
     private RestrictedNumberField feedRateMultiplier;
@@ -166,7 +170,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         canSave.bind(isValid.and(isDirty).and(
             state.isEqualTo(State.NEW).
             or(state.isEqualTo(State.CUSTOM))));
-        
+
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
 
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
@@ -200,8 +204,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
     }
 
-
-
     private void updateWriteToReelBindings()
     {
         canWriteToReel1.unbind();
@@ -209,9 +211,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         if (currentPrinter.get() != null)
         {
             canWriteToReel1.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0).and(isDirty.not()));
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0));
             canWriteToReel2.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1).and(isDirty.not()));
+                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1));
         } else
         {
             canWriteToReel1.set(false);
@@ -238,6 +240,12 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                     selectFilament(newValue);
                 }
             });
+
+        filamentContainer.getUserFilamentList().addListener(
+            (ListChangeListener.Change<? extends Filament> c) ->
+            {
+                repopulateCmbFilament();
+            });
     }
 
     private void repopulateCmbFilament()
@@ -245,10 +253,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         try
         {
             allFilaments.clear();
-            allFilaments.addAll(FilamentContainer.getAppFilamentList().sorted(
+            allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
                 (Filament o1, Filament o2)
                 -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
-            allFilaments.addAll(FilamentContainer.getUserFilamentList().sorted(
+            allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
                 (Filament o1, Filament o2)
                 -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             comboItems = FXCollections.observableArrayList(allFilaments);
@@ -296,7 +304,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             });
 
         name.textProperty().addListener(dirtyStringListener);
-        colour.valueProperty().asString().addListener(dirtyStringListener);
+        colour.valueProperty().addListener(
+            (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+            {
+                isDirty.set(true);
+            });
         material.valueProperty().addListener(dirtyMaterialTypeListener);
         filamentDiameter.textProperty().addListener(dirtyStringListener);
         filamentMultiplier.textProperty().addListener(dirtyStringListener);
@@ -388,6 +400,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 showHelpText(Fields.AMBIENT_TEMP);
             });
+        costGBPPerKG.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.COST_GBP_PER_KG);
+            });
     }
 
     private final ChangeListener<String> dirtyStringListener
@@ -475,7 +492,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             valid = false;
         } else if (currentFilamentID == null || currentFilamentID.startsWith("U"))
         {
-            ObservableList<Filament> existingMaterialList = FilamentContainer.getCompleteFilamentList();
+            ObservableList<Filament> existingMaterialList = filamentContainer.getCompleteFilamentList();
             for (Filament existingMaterial : existingMaterialList)
             {
                 if ((!existingMaterial.getFilamentID().equals(currentFilamentID))
@@ -493,9 +510,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         assert (state.get() != State.ROBOX);
         Filament filament = getFilament(currentFilamentID);
-        FilamentContainer.saveFilament(filament);
+        filamentContainer.saveFilament(filament);
         repopulateCmbFilament();
-        cmbFilament.setValue(FilamentContainer.getFilamentByID(filament.getFilamentID()));
+        cmbFilament.setValue(filamentContainer.getFilamentByID(filament.getFilamentID()));
     }
 
     void whenNewPressed()
@@ -504,7 +521,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         clearWidgets();
         currentFilamentID = null;
     }
-    
+
     void whenSaveAsPressed()
     {
         state.set(State.NEW);
@@ -514,7 +531,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.selectAll();
         // visually marks name as needing to be changed
         name.pseudoClassStateChanged(ERROR, true);
-    }    
+    }
 
     void whenCopyPressed()
     {
@@ -527,16 +544,16 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         String newName = DeDuplicator.suggestNonDuplicateName(filament.getFriendlyFilamentName(),
                                                               allCurrentNames);
         filament.setFriendlyFilamentName(newName);
-        FilamentContainer.saveFilament(filament);
+        filamentContainer.saveFilament(filament);
         repopulateCmbFilament();
-        cmbFilament.setValue(FilamentContainer.getFilamentByID(filament.getFilamentID()));
+        cmbFilament.setValue(filamentContainer.getFilamentByID(filament.getFilamentID()));
     }
 
     void whenDeletePressed()
     {
         if (state.get() != State.NEW)
         {
-            FilamentContainer.deleteFilament(FilamentContainer.getFilamentByID(currentFilamentID));
+            filamentContainer.deleteFilament(filamentContainer.getFilamentByID(currentFilamentID));
         }
         repopulateCmbFilament();
         clearWidgets();
@@ -547,6 +564,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         try
         {
+            if (isEditable.get())
+            {
+                whenSavePressed();
+            }
             currentPrinter.get().transmitWriteReelEEPROM(0, cmbFilament.getValue());
         } catch (RoboxCommsException ex)
         {
@@ -558,6 +579,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         try
         {
+            if (isEditable.get())
+            {
+                whenSavePressed();
+            }
             currentPrinter.get().transmitWriteReelEEPROM(1, cmbFilament.getValue());
         } catch (RoboxCommsException ex)
         {

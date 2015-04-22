@@ -1,5 +1,6 @@
 package celtech.printerControl.comms;
 
+import celtech.Lookup;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
@@ -111,7 +112,7 @@ public class TestCommandInterface extends CommandInterface
             } else if (request.getMessageData().startsWith(attachReelCommand))
             {
                 String filamentName = request.getMessageData().replaceAll(attachReelCommand, "");
-                Filament filament = FilamentContainer.getFilamentByID(filamentName);
+                Filament filament = Lookup.getFilamentContainer().getFilamentByID(filamentName);
                 if (filament != null)
                 {
                     currentStatus.setReel0EEPROMState(EEPROMState.PROGRAMMED);

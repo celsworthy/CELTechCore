@@ -1,10 +1,9 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.printerControl.model.calibration;
+package celtech.printerControl.model;
 
 import celtech.utils.tasks.TaskExecutor;
-import java.util.concurrent.Callable;
 
 /**
  * ArrivalAction represents an action to be called (when a state is arrived at).

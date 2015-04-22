@@ -64,10 +64,10 @@ public class GetTimeWeightCost
 
     }
 
-    public SlicerTask setupSlicerTask()
+    public SlicerTask setupAndRunSlicerTask()
     {
 
-        steno.info("launch time cost process for project " + project + " and settings "
+        steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
         slicerTask = makeSlicerTask(project, settings);
@@ -82,7 +82,6 @@ public class GetTimeWeightCost
             clearPrintJobDirectory();
             if (postProcessorTask != null && postProcessorTask.isRunning())
             {
-                System.out.println("Cancelling post processor task");
                 postProcessorTask.cancel();
             }
             lblTime.setText("Cancelled");
@@ -145,7 +144,6 @@ public class GetTimeWeightCost
         });
 
         Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
-
         return slicerTask;
     }
 
@@ -190,6 +188,9 @@ public class GetTimeWeightCost
      */
     private SlicerTask makeSlicerTask(Project project, SlicerParametersFile settings)
     {
+        
+        settings = project.getPrinterSettings().applyOverrides(settings);
+        
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
         String printJobDirectoryName = ApplicationConfiguration.
@@ -247,7 +248,7 @@ public class GetTimeWeightCost
     }
 
     /**
-     * Take the cost in pounds and return a string in the format $1.43.
+     * Take the cost in pounds and return a string in the format £1.43.
      */
     private String formatCost(double cost)
     {

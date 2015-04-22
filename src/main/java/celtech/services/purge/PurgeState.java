@@ -138,4 +138,9 @@ public enum PurgeState
             return Lookup.i18n(stepInstructionResource + suffix);
         }
     }
+
+    public boolean showCancelButton()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

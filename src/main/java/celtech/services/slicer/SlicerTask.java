@@ -5,7 +5,6 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
@@ -28,7 +27,6 @@ public class SlicerTask extends Task<SliceResult>
         getName());
     private String printJobUUID = null;
     private Project project = null;
-    private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
@@ -243,7 +241,6 @@ public class SlicerTask extends Task<SliceResult>
                 steno.error("Exception whilst running slicer: " + ex);
             } catch (InterruptedException ex)
             {
-                System.out.println("KILLING slicer");
                 steno.warning("Interrupted whilst waiting for slicer to complete");
                 if (slicerProcess != null)
                 {
@@ -255,7 +252,7 @@ public class SlicerTask extends Task<SliceResult>
             steno.error("Couldn't run autoupdate - no commands for OS ");
         }
 
-        return new SliceResult(printJobUUID, project, filament, printQuality, settings, printerToUse,
+        return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
                                succeeded);
     }
 

@@ -10,6 +10,7 @@ import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -63,9 +64,9 @@ import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
-import celtech.services.calibration.CalibrationNozzleHeightTransitions;
-import celtech.services.calibration.CalibrationNozzleOpeningTransitions;
-import celtech.services.calibration.CalibrationXAndYTransitions;
+import celtech.printerControl.model.calibration.CalibrationNozzleHeightTransitions;
+import celtech.printerControl.model.calibration.CalibrationNozzleOpeningTransitions;
+import celtech.printerControl.model.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -98,7 +99,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -117,6 +117,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         HardwarePrinter.class.getName());
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
 
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
@@ -226,8 +227,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     /**
-     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to override the
-     * detection of whether a filament is loaded or not on a given extruder.
+     * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to override
+     * the detection of whether a filament is loaded or not on a given extruder.
      */
     public interface FilamentLoadedGetter
     {
@@ -261,12 +262,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         metaStatus = new PrinterMetaStatus(this);
 
-        macroType.addListener(new ChangeListener<MacroType>()
-        {
-            @Override
-            public void changed(
-                ObservableValue<? extends MacroType> observable, MacroType oldValue,
-                MacroType newValue)
+        macroType.addListener(
+            (ObservableValue<? extends MacroType> observable, MacroType oldValue, MacroType newValue) ->
             {
                 if (newValue != null)
                 {
@@ -275,12 +272,29 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 {
                     macroIsInterruptible.set(false);
                 }
-            }
-        });
+            });
 
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
 
+        setupBindings();
+        setupFilamentDatabaseChangeListeners();
+
+        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+        threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setGroupingUsed(false);
+
+        systemNotificationManager = Lookup.getSystemNotificationHandler();
+
+        printEngine = new PrintEngine(this);
+        setPrinterStatus(PrinterStatus.IDLE);
+
+        commandInterface.setPrinter(this);
+        commandInterface.start();
+    }
+
+    private void setupBindings()
+    {
         extruders.stream().forEach(extruder -> extruder.canEject
             .bind((printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED)))
@@ -321,7 +335,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT)
                     .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT)
-                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))))));
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING)
+                            .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)))))));
 
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
@@ -341,18 +356,33 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
         canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED));
+    }
 
-        threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
-        threeDPformatter.setMaximumFractionDigits(3);
-        threeDPformatter.setGroupingUsed(false);
-
-        systemNotificationManager = Lookup.getSystemNotificationHandler();
-
-        printEngine = new PrintEngine(this);
-        setPrinterStatus(PrinterStatus.IDLE);
-
-        commandInterface.setPrinter(this);
-        commandInterface.start();
+    /**
+     * If the filament details change for a filament currently on a reel, then the reel should be
+     * immediately updated with the new details.
+     */
+    private void setupFilamentDatabaseChangeListeners()
+    {
+        filamentContainer.addFilamentDatabaseChangesListener((String filamentId) ->
+        {
+            for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
+            {
+                if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
+                {
+                    try
+                    {
+                        steno.debug("Update reel with updated filament data");
+                        transmitWriteReelEEPROM(posReel.getKey(), filamentContainer.getFilamentByID(
+                                                filamentId));
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Unable to program reel with update filament of id: "
+                            + filamentId);
+                    }
+                }
+            }
+        });
     }
 
     // Don't call this from anywhere but Print Engine!
@@ -599,114 +629,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.warning("Failed to write purge temperature");
         }
-    }
-
-    @Override
-    public void prepareToPurgeHead(TaskResponder responder) throws PrinterException
-    {
-        if (!canPurgeHead.get())
-        {
-            throw new PrinterException("Purge not permitted");
-        }
-
-        setPrinterStatus(PrinterStatus.PURGING_HEAD);
-
-        final Cancellable cancellable = new Cancellable();
-
-        new Thread(() ->
-        {
-            boolean success = doPurgeHeadActivity(cancellable);
-
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success,
-                                                        "Head Prepared for Purge");
-
-        }, "Preparing for purge").start();
-    }
-
-    /*
-     * Purging
-     */
-    private HeadEEPROMDataResponse headDataPrePurge = null;
-
-//    protected boolean doPrepareToPurgeHeadActivity(Cancellable cancellable)
-//    {
-//        boolean success = false;
-//
-//        try
-//        {
-//            headDataPrePurge = readHeadEEPROM();
-//
-//            float nozzleTemperature = 0;
-//
-//            // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
-//            PrinterSettings settingsScreenState = PrinterSettings.getInstance();
-//
-//            Filament settingsFilament = settingsScreenState.getFilament0();
-//
-//            if (settingsFilament != null)
-//            {
-//                nozzleTemperature = settingsFilament.getNozzleTemperature();
-//            } else
-//            {
-//                //TODO Update for multiple reels
-//                nozzleTemperature = reels.get(0).nozzleTemperature.floatValue();
-//            }
-//
-//            float temperatureDifference = nozzleTemperature
-//                - headDataPrePurge.getLastFilamentTemperature();
-//            setPurgeTemperature(nozzleTemperature);
-//
-//            success = true;
-//        } catch (RoboxCommsException ex)
-//        {
-//            // Success is already false..
-//        }
-//        return success;
-//    }
-    @Override
-    public void setPurgeTemperature(float purgeTemperature)
-    {
-        // Force the purge temperature to remain between 180 and max temp in head degrees
-        purgeTemperatureProperty.set((int) Math.min(headDataPrePurge.getMaximumTemperature(),
-                                                    Math.max(180.0, purgeTemperature)));
-    }
-
-    @Override
-    public void purgeHead(TaskResponder responder) throws PrinterException
-    {
-        if (printerStatus.get() != PrinterStatus.PURGING_HEAD)
-        {
-            throw new PrinterException("Purge not permitted");
-        }
-
-        final Cancellable cancellable = new Cancellable();
-
-        new Thread(() ->
-        {
-            boolean success = doPurgeHeadActivity(cancellable);
-
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Head Purged");
-
-            setPrinterStatus(PrinterStatus.IDLE);
-
-        }, "Purging head").start();
-    }
-
-    protected boolean doPurgeHeadActivity(Cancellable cancellable)
-    {
-        boolean success = false;
-
-        try
-        {
-            executeMacroWithoutPurgeCheck("Purge Material");
-            PrinterUtils.waitOnMacroFinished(this, cancellable);
-            success = true;
-        } catch (PrinterException ex)
-        {
-            // success is already false...
-        }
-
-        return success;
     }
 
     /*
@@ -2810,6 +2732,21 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public PurgeStateTransitionManager startPurge() throws PrinterException
+    {
+        if (!canPurgeHead.get())
+        {
+            throw new PrinterException("Purge not permitted");
+        }
+        PurgeActions actions = new PurgeActions(this);
+        PurgeTransitions purgeTransitions = new PurgeTransitions(
+            actions);
+        PurgeStateTransitionManager purgeManager
+            = new PurgeStateTransitionManager(purgeTransitions, actions);
+        return purgeManager;
+    }
+
+    @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException
     {
         if (!canCalibrateNozzleOpening.get())
@@ -3321,21 +3258,25 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
-//                    if (Reel.isFilamentIDValid(reelResponse.getReelFilamentID()))
-//                    {
-                    // Might be unrecognised but correct format for a Robox head type code
-                    if (!reels.containsKey(reelResponse.getReelNumber()))
+                    if (!filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
-                        Reel newReel = new Reel();
-                        newReel.updateFromEEPROMData(reelResponse);
-                        reels.put(reelResponse.getReelNumber(), newReel);
-                    } else
-                    {
-                        reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(
-                            reelResponse);
+                        // unrecognised reel
+                        saveUnknownFilamentToDatabase(reelResponse);
                     }
 
-                    if (Reel.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    Reel reel;
+                    if (!reels.containsKey(reelResponse.getReelNumber()))
+                    {
+                        reel = new Reel();
+                        reel.updateFromEEPROMData(reelResponse);
+                        reels.put(reelResponse.getReelNumber(), reel);
+                    } else
+                    {
+                        reel = reels.get(reelResponse.getReelNumber());
+                        reel.updateFromEEPROMData(reelResponse);
+                    }
+
+                    if (filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
                         // Check to see if the data is in bounds
                         RepairResult result = reels.get(reelResponse.getReelNumber()).
@@ -3359,7 +3300,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 break;
                         }
                     }
-//                    }
                     break;
 
                 case HEAD_EEPROM_DATA:
@@ -3584,6 +3524,25 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             break;
                     }
                 }
+            }
+        }
+
+        /**
+         * If the filament is not a Robox filament then update the database with the filament
+         * details, if it is an unknown Robox filament then add it to the database in memory but do
+         * not save it to disk.
+         *
+         * @param reelResponse
+         */
+        private void saveUnknownFilamentToDatabase(ReelEEPROMDataResponse reelResponse)
+        {
+            Filament filament = new Filament(reelResponse);
+            if (filament.isMutable())
+            {
+                filamentContainer.saveFilament(filament);
+            } else
+            {
+                filamentContainer.addFilamentToUserFilamentList(filament);
             }
         }
     };

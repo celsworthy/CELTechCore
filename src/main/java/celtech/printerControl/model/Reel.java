@@ -36,6 +36,7 @@ public class Reel implements RepairableComponent
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(Reel.class.getName());
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
     protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     protected final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     protected final StringProperty filamentID = new SimpleStringProperty();
@@ -272,7 +273,7 @@ public class Reel implements RepairableComponent
 
         RepairResult result = RepairResult.NO_REPAIR_NECESSARY;
 
-        Filament referenceFilamentData = FilamentContainer.getFilamentByID(filamentID.get());
+        Filament referenceFilamentData = filamentContainer.getFilamentByID(filamentID.get());
         if (referenceFilamentData != null)
         {
             if (ambientTemperature.get() != referenceFilamentData.getAmbientTemperature())
@@ -360,7 +361,7 @@ public class Reel implements RepairableComponent
     @Override
     public void resetToDefaults()
     {
-        Filament referenceFilament = FilamentContainer.getFilamentByID(filamentID.get());
+        Filament referenceFilament = filamentContainer.getFilamentByID(filamentID.get());
         if (referenceFilament != null)
         {
             updateContents(referenceFilament);
@@ -376,30 +377,4 @@ public class Reel implements RepairableComponent
     {
     }
 
-    public static boolean isFilamentIDValid(String filamentID)
-    {
-        boolean filamentIDIsValid = false;
-
-        if (filamentID != null
-            && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
-            || filamentID.matches("^U.*")))
-        {
-            filamentIDIsValid = true;
-        }
-
-        return filamentIDIsValid;
-    }
-
-    public static boolean isFilamentIDInDatabase(String filamentID)
-    {
-        boolean filamentIDIsInDatabase = false;
-
-        if (filamentID != null
-            && FilamentContainer.getFilamentByID(filamentID) != null)
-        {
-            filamentIDIsInDatabase = true;
-        }
-
-        return filamentIDIsInDatabase;
-    }
 }

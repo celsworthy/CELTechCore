@@ -75,7 +75,6 @@ public class PrinterSettings
         if (selectedFilament0.get() != filament)
         {
             selectedFilament0.set(filament);
-            System.out.println("F0 changed");
             toggleDataChanged();
         }
     }
@@ -85,7 +84,6 @@ public class PrinterSettings
         if (selectedFilament1.get() != filament)
         {
             selectedFilament1.set(filament);
-            System.out.println("F1 changed");
             toggleDataChanged();
         }
     }
@@ -115,7 +113,6 @@ public class PrinterSettings
         if (printQuality.get() != value)
         {
             printQuality.set(value);
-            System.out.println("quality changed");
             toggleDataChanged();
         }
     }
@@ -135,7 +132,6 @@ public class PrinterSettings
         if (! this.settingsName.get().equals(settingsName))
         {
             this.settingsName.set(settingsName);
-            System.out.println("settings name changed");
             toggleDataChanged();
         }
     }
@@ -173,7 +169,7 @@ public class PrinterSettings
     /**
      * Standard profiles must have the overrides applied.
      */
-    private SlicerParametersFile applyOverrides(SlicerParametersFile settingsByProfileName)
+    public SlicerParametersFile applyOverrides(SlicerParametersFile settingsByProfileName)
     {
         SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);
@@ -192,7 +188,6 @@ public class PrinterSettings
         if (this.brimOverride != brimOverride)
         {
             this.brimOverride = brimOverride;
-            System.out.println("brim changed");
             toggleDataChanged();
         }
     }
@@ -207,7 +202,6 @@ public class PrinterSettings
         if (this.fillDensityOverride != fillDensityOverride)
         {
             this.fillDensityOverride = fillDensityOverride;
-            System.out.println("fill density changed");
             toggleDataChanged();
         }
     }
@@ -222,7 +216,6 @@ public class PrinterSettings
         if (this.printSupportOverride != printSupportOverride)
         {
             this.printSupportOverride = printSupportOverride;
-            System.out.println("support changed");
             toggleDataChanged();
         }
     }

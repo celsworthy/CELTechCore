@@ -3,8 +3,9 @@
  */
 package celtech.printerControl.model.calibration;
 
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.Transitions;
 import celtech.printerControl.model.CalibrationNozzleHeightActions;
-import celtech.services.calibration.NozzleOffsetCalibrationState;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 
 /**

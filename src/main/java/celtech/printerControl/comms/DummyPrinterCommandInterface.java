@@ -1,10 +1,10 @@
 package celtech.printerControl.comms;
 
+import celtech.Lookup;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.HeaterMode;
 import celtech.configuration.PauseStatus;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -173,11 +173,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
         attachedReels[reelNumber] = null;
     }
 
-    private boolean attachReel(String filamentName, int reelNumber) throws NumberFormatException
+    private boolean attachReel(String filamentId, int reelNumber) throws NumberFormatException
     {
         boolean success = false;
 
-        Filament filament = FilamentContainer.getFilamentByID(filamentName);
+        Filament filament = Lookup.getFilamentContainer().getFilamentByID(filamentId);
         if (filament != null && reelNumber >= 0 && reelNumber <= 2)
         {
             switch (reelNumber)

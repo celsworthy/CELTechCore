@@ -28,6 +28,7 @@ import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
 import celtech.printerControl.model.PrinterMetaStatus;
+import celtech.printerControl.model.PurgeStateTransitionManager;
 import celtech.printerControl.model.Reel;
 import celtech.printerControl.model.TemperatureAndPWMData;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
@@ -229,12 +230,6 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void prepareToPurgeHead(TaskResponder responder) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void printProject(Project project, Filament filament,
         PrintQualityEnumeration printQuality, SlicerParametersFile settings)
     {
@@ -249,12 +244,6 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void purgeHead(TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -351,12 +340,6 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void setNozzleTargetTemperature(int targetTemperature)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setPurgeTemperature(float purgeTemperature)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -868,4 +851,9 @@ public class CommandInterfaceTestPrinter implements Printer
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public PurgeStateTransitionManager startPurge() throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

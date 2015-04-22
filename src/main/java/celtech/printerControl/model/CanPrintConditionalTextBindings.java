@@ -51,6 +51,7 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
+                try {
                 steno.debug("Recompute conditional text reqd binding");
                 boolean filamentMismatch = true;
 
@@ -99,8 +100,10 @@ public class CanPrintConditionalTextBindings
                     {
                         steno.debug("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
-                        steno.debug("project fil 0 is " + usedFilament + " "
-                            + usedFilament.getFilamentID());
+                        steno.debug("project fil 0 is " + usedFilament);
+                        if (usedFilament != null) {
+                            steno.debug("project fil 0 id is " + usedFilament.getFilamentID());
+                        }
                         if (usedFilament.equals(printerFilament))
                         {
                             steno.debug("used filament 0 matches printer filament 0");
@@ -115,6 +118,10 @@ public class CanPrintConditionalTextBindings
                 }
                 steno.debug("mismatch on 0 detected: " + filamentMismatch);
                 return filamentMismatch;
+                } catch (Exception ex) {
+                    steno.error("Error computing conditional text bindings " + ex);
+                    return false;
+                }
             }
         };
 

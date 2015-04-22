@@ -352,9 +352,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
     public void purge(Printer printerToUse)
     {
-
         bindPrinter(printerToUse, null);
-
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
     }
 
