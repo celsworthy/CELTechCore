@@ -1,9 +1,6 @@
 package celtech.coreUI.keycommands;
 
-import celtech.printerControl.comms.RoboxCommsManager;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
@@ -49,8 +46,7 @@ public class HiddenKey
 
             for (String commandSequence : commandSequences)
             {
-                if (commandSequence.equals(hiddenCommandKeyBuffer + event.
-                    getCharacter()))
+                if (commandSequence.equals(hiddenCommandKeyBuffer + event.getCharacter()))
                 {
                     hiddenCommandKeyBuffer = "";
                     triggerListeners(commandSequence);

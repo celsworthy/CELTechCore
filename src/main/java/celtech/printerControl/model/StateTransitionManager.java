@@ -41,9 +41,11 @@ import libertysystems.stenographer.StenographerFactory;
 public class StateTransitionManager<StateType>
 {
 
+    /**
+     * An enum of GUI type transitions. Any number of new values can be freely added.
+     */
     public enum GUIName
     {
-
         START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, A_BUTTON, B_BUTTON, AUTO;
     }
 
