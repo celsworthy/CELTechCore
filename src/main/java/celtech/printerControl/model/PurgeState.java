@@ -11,6 +11,7 @@ import celtech.Lookup;
  */
 public enum PurgeState
 {
+
     IDLE("purgeMaterial.explanation", true),
     INITIALISING("purgeMaterial.temperatureInstruction", true),
     CONFIRM_TEMPERATURE("purgeMaterial.temperatureInstruction", true),
@@ -29,9 +30,16 @@ public enum PurgeState
         this.stepTitleResource = stepTitleResource;
         this.showCancel = showCancel;
     }
-    
-    public String getStepTitle() {
-        return Lookup.i18n(stepTitleResource);
+
+    public String getStepTitle()
+    {
+        if (stepTitleResource != "")
+        {
+            return Lookup.i18n(stepTitleResource);
+        } else
+        {
+            return "";
+        }
     }
 
     public boolean showCancelButton()

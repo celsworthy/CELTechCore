@@ -254,6 +254,9 @@ public class PurgeInsetPanelController2 implements Initializable
                 break;
             case FAILED:
                 break;
+            case CANCELLED:
+                closeWindow(null);
+                break;                
         }
     }
 

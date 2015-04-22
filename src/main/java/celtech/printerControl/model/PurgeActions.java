@@ -64,6 +64,8 @@ public class PurgeActions
 
     public void doInitialiseAction() throws RoboxCommsException
     {
+        
+        printer.setPrinterStatus(PrinterStatus.PURGING_HEAD);
 
         printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();
@@ -116,9 +118,9 @@ public class PurgeActions
         printer.goToTargetNozzleTemperature();
         //TODO modify to support multiple heaters
         boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
-                printer.headProperty().get().getNozzleHeaters().get(0).
-                nozzleTemperatureProperty(),
-                null, purgeTemperature, 5, 300, cancellable);
+            printer.headProperty().get().getNozzleHeaters().get(0).
+            nozzleTemperatureProperty(),
+            null, purgeTemperature, 5, 300, cancellable);
 
         if (extruderHeatFailed)
         {
@@ -158,17 +160,14 @@ public class PurgeActions
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
-        resetPrinter();
         try
         {
-            if (printer.canCancelProperty().get())
-            {
-                printer.cancel(null);
-            }
+            printer.cancel(null);
         } catch (PrinterException ex)
         {
-            steno.error("Failed to cancel print - " + ex.getMessage());
+            steno.error("Failed to cancel purge print - " + ex.getMessage());
         }
+        resetPrinter();
         deregisterPrinterErrorHandler();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
@@ -224,8 +223,9 @@ public class PurgeActions
     {
         purgeTemperature = newPurgeTemperature;
     }
-    
-    public void setPurgeFilament(Filament filament) {
+
+    public void setPurgeFilament(Filament filament)
+    {
         purgeFilament = filament;
     }
 
