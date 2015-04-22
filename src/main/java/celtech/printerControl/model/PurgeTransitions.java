@@ -51,6 +51,10 @@ public class PurgeTransitions implements Transitions
         transitions.add(new StateTransition(PurgeState.IDLE,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.CONFIRM_TEMPERATURE,
+             () ->
+                                            {
+                                                actions.doInitialiseAction();
+                                            },
                                             PurgeState.FAILED));
 
         // CONFIRM_TEMPERATURE

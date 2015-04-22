@@ -63,16 +63,16 @@ public class PurgeInsetPanelController2 implements Initializable
     private Bounds diagramBounds;
     private Pane diagramNode;
     private ResourceBundle resources;
-    
+
     PurgeStateTransitionManager transitionManager;
-    
+
     Map<StateTransitionManager.GUIName, Region> namesToButtons = new HashMap<>();
 
-    private final ChangeListener<Number> purgeTempEntryListener = 
-        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        transitionManager.setPurgeTemperature(newValue.intValue());
-    };
+    private final ChangeListener<Number> purgeTempEntryListener
+        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            transitionManager.setPurgeTemperature(newValue.intValue());
+        };
 
     @FXML
     private VBox diagramContainer;
@@ -146,7 +146,7 @@ public class PurgeInsetPanelController2 implements Initializable
     @FXML
     void closeWindow(ActionEvent event)
     {
-        
+
         ApplicationStatus.getInstance().returnToLastMode();
 
         if (project != null)
@@ -163,9 +163,9 @@ public class PurgeInsetPanelController2 implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         this.resources = resources;
-        
+
         populateNamesToButtons();
-        
+
         purgeProgressBar.setTargetLegend("");
         purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
         purgeProgressBar.setTargetValue("");
@@ -178,15 +178,15 @@ public class PurgeInsetPanelController2 implements Initializable
         addDiagramMoveScaleListeners();
 
     }
-    
+
     private void populateNamesToButtons()
     {
         namesToButtons.put(StateTransitionManager.GUIName.NEXT, proceedButton);
         namesToButtons.put(StateTransitionManager.GUIName.RETRY, repeatButton);
         namesToButtons.put(StateTransitionManager.GUIName.START, startPurgeButton);
         namesToButtons.put(StateTransitionManager.GUIName.BACK, backButton);
-    }    
-    
+    }
+
     private void showAppropriateButtons(PurgeState state)
     {
         hideAllButtons();
@@ -201,8 +201,8 @@ public class PurgeInsetPanelController2 implements Initializable
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
             }
         }
-    }    
-    
+    }
+
     private void hideAllButtons()
     {
         cancelPurgeButton.setVisible(false);
@@ -210,7 +210,11 @@ public class PurgeInsetPanelController2 implements Initializable
         repeatButton.setVisible(false);
         startPurgeButton.setVisible(false);
         backButton.setVisible(false);
-    }    
+        purgeProgressBar.setVisible(false);
+        okButton.setVisible(false);
+        purgeDetailsGrid.setVisible(false);
+        diagramContainer.setVisible(false);
+    }
 
     public void setState(PurgeState state)
     {
@@ -219,22 +223,11 @@ public class PurgeInsetPanelController2 implements Initializable
         switch (state)
         {
             case IDLE:
-              
-                purgeDetailsGrid.setVisible(false);
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-                diagramContainer.setVisible(false);
                 break;
             case INITIALISING:
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
-                diagramContainer.setVisible(false);
                 break;
             case CONFIRM_TEMPERATURE:
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
                 lastMaterialTemperature.setText(String.valueOf(
                     transitionManager.getLastMaterialTemperature()));
                 currentMaterialTemperature.setText(String.valueOf(
@@ -242,39 +235,21 @@ public class PurgeInsetPanelController2 implements Initializable
                 purgeTemperature.setText(String.valueOf(transitionManager.getPurgeTemperature()));
                 purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
-                diagramContainer.setVisible(false);
                 break;
             case HEATING:
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-                diagramContainer.setVisible(false);
                 break;
             case RUNNING_PURGE:
                 purgeProgressBar.setVisible(true);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
                 diagramContainer.setVisible(true);
                 break;
             case FINISHED:
-                purgeProgressBar.setVisible(false);
                 okButton.setVisible(true);
-                purgeDetailsGrid.setVisible(false);
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 diagramContainer.setVisible(true);
                 break;
             case FAILED:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(true);
-                cancelPurgeButton.setVisible(false);
-                proceedButton.setVisible(false);
-                repeatButton.setVisible(false);
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
                 purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-                diagramContainer.setVisible(false);
                 break;
         }
     }
@@ -334,13 +309,15 @@ public class PurgeInsetPanelController2 implements Initializable
     private void installTag(Printer printerToUse, GraphicButtonWithLabel button)
     {
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                           printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()));
+                                           printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(
+                                               Lookup.getUserPreferences().safetyFeaturesOnProperty()));
         button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                                            printerToUse.extrudersProperty().get(0).
                                            filamentLoadedProperty().not());
 
         button.disableProperty().bind(printerToUse.canPrintProperty().not()
-            .or(printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()))
+            .or(printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(
+                    Lookup.getUserPreferences().safetyFeaturesOnProperty()))
             .or(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
 
@@ -349,10 +326,19 @@ public class PurgeInsetPanelController2 implements Initializable
         bindPrinter(printer, null);
 
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE2);
-        
+
         try
         {
             transitionManager = printer.startPurge();
+            transitionManager.stateGUITProperty().addListener(new ChangeListener()
+            {
+                @Override
+                public void changed(ObservableValue observable, Object oldValue, Object newValue)
+                {
+                    setState((PurgeState) newValue);
+                }
+            });
+            setState(PurgeState.IDLE);
         } catch (PrinterException ex)
         {
             steno.error("Error starting purge: " + ex);
