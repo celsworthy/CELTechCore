@@ -224,5 +224,9 @@ public class PurgeActions
     {
         purgeTemperature = newPurgeTemperature;
     }
+    
+    public void setPurgeFilament(Filament filament) {
+        purgeFilament = filament;
+    }
 
 }

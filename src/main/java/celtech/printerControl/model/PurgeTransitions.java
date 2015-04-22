@@ -49,7 +49,7 @@ public class PurgeTransitions implements Transitions
 
         // INITIALISING
         transitions.add(new StateTransition(PurgeState.INITIALISING,
-                                            StateTransitionManager.GUIName.NEXT,
+                                            StateTransitionManager.GUIName.AUTO,
                                             PurgeState.CONFIRM_TEMPERATURE,
                                             () ->
                                             {
@@ -61,33 +61,33 @@ public class PurgeTransitions implements Transitions
         transitions.add(new StateTransition(PurgeState.CONFIRM_TEMPERATURE,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.HEATING,
+                                            PurgeState.FAILED));
+
+        // HEATING
+        transitions.add(new StateTransition(PurgeState.HEATING,
+                                            StateTransitionManager.GUIName.AUTO,
+                                            PurgeState.RUNNING_PURGE,
                                             () ->
                                             {
                                                 actions.doHeatingAction();
                                             },
                                             PurgeState.FAILED));
 
-        // HEATING
-        transitions.add(new StateTransition(PurgeState.HEATING,
-                                            StateTransitionManager.GUIName.NEXT,
-                                            PurgeState.RUNNING_PURGE,
+        // RUNNING_PURGE
+        transitions.add(new StateTransition(PurgeState.RUNNING_PURGE,
+                                            StateTransitionManager.GUIName.AUTO,
+                                            PurgeState.FINISHED,
                                             () ->
                                             {
                                                 actions.doRunPurgeAction();
                                             },
                                             PurgeState.FAILED));
 
-        // RUNNING_PURGE
-        transitions.add(new StateTransition(PurgeState.RUNNING_PURGE,
-                                            StateTransitionManager.GUIName.NEXT,
-                                            PurgeState.FINISHED,
-                                            PurgeState.FAILED));
-        
         // FINISHED (OK)
         transitions.add(new StateTransition(PurgeState.FINISHED,
                                             StateTransitionManager.GUIName.COMPLETE,
                                             PurgeState.DONE,
-                                            PurgeState.FAILED));        
+                                            PurgeState.FAILED));
 
         // FINISHED (RETRY)
         transitions.add(new StateTransition(PurgeState.FINISHED,

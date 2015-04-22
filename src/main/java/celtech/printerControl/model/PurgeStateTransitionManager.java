@@ -3,6 +3,8 @@
  */
 package celtech.printerControl.model;
 
+import celtech.configuration.Filament;
+
 /**
  *
  * @author tony
@@ -34,6 +36,10 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
     public int getPurgeTemperature()
     {
         return actions.getPurgeTemperature();
+    }
+    
+    public void setPurgeFilament(Filament filament) {
+        actions.setPurgeFilament(filament);
     }
     
 }

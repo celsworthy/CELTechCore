@@ -112,6 +112,7 @@ public class PurgeInsetPanelController2 implements Initializable
 
     @FXML
     protected LargeProgress purgeProgressBar;
+    private Filament purgeFilament;
 
     @FXML
     void start(ActionEvent event)
@@ -303,6 +304,8 @@ public class PurgeInsetPanelController2 implements Initializable
         }
         this.printer = printer;
         setupPrintProgressListeners(printer);
+        
+        this.purgeFilament = purgeFilament;
 
         installTag(printer, startPurgeButton);
         installTag(printer, proceedButton);
@@ -332,6 +335,7 @@ public class PurgeInsetPanelController2 implements Initializable
         try
         {
             transitionManager = printer.startPurge();
+            transitionManager.setPurgeFilament(purgeFilament);
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
             {
                 @Override
@@ -405,19 +409,15 @@ public class PurgeInsetPanelController2 implements Initializable
         double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
         double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
         double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
-//        requiredScale = Math.min(requiredScale, 1.3d);
-        steno.debug("Scale is " + requiredScale);
+
         diagramNode.setScaleX(requiredScale);
         diagramNode.setScaleY(requiredScale);
 
         diagramNode.setPrefWidth(0);
         diagramNode.setPrefHeight(0);
 
-        double scaledDiagramWidth = diagramWidth * requiredScale;
-
         double xTranslate = 0;
         double yTranslate = 0;
-//        
         xTranslate += availableWidth / 2.0 - diagramWidth / 2.0;
         yTranslate -= availableHeight;
 
