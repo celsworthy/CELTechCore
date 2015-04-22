@@ -13,8 +13,7 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
 
     public PurgeStateTransitionManager(Transitions<PurgeState> transitions, PurgeActions actions)
     {
-        super(transitions, PurgeState.IDLE,
-              PurgeState.CANCELLED);
+        super(transitions, PurgeState.IDLE, PurgeState.CANCELLED);
         this.actions = actions;
     }
     

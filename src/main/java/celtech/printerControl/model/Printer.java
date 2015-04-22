@@ -239,8 +239,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public void pause() throws PrinterException;
 
-    public void prepareToPurgeHead(TaskResponder responder) throws PrinterException;
-
     /**
      *
      * @param project
@@ -257,8 +255,6 @@ public interface Printer extends RoboxResponseConsumer
 
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket);
-
-    public void purgeHead(TaskResponder responder) throws PrinterException;
 
     /**
      *
@@ -362,8 +358,6 @@ public interface Printer extends RoboxResponseConsumer
     public void setNozzleFirstLayerTargetTemperature(int targetTemperature);
 
     public void setNozzleTargetTemperature(int targetTemperature);
-
-    public void setPurgeTemperature(float purgeTemperature);
 
     /**
      *

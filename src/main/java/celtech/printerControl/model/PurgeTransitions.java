@@ -44,14 +44,46 @@ public class PurgeTransitions implements Transitions
         // IDLE
         transitions.add(new StateTransition(PurgeState.IDLE,
                                             StateTransitionManager.GUIName.START,
-                                            PurgeState.PURGING,
+                                            PurgeState.INITIALISING,
                                             PurgeState.FAILED));
 
-        // PURGING
-        transitions.add(new StateTransition(PurgeState.PURGING,
+        // INITIALISING
+        transitions.add(new StateTransition(PurgeState.IDLE,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            PurgeState.CONFIRM_TEMPERATURE,
+                                            PurgeState.FAILED));
+
+        // CONFIRM_TEMPERATURE
+        transitions.add(new StateTransition(PurgeState.IDLE,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            PurgeState.HEATING,
+                                            () ->
+                                            {
+                                                actions.doHeatingAction();
+                                            },
+                                            PurgeState.FAILED));
+
+        // HEATING
+        transitions.add(new StateTransition(PurgeState.IDLE,
+                                            StateTransitionManager.GUIName.NEXT,
+                                            PurgeState.RUNNING_PURGE,
+                                            () ->
+                                            {
+                                                actions.doRunPurgeAction();
+                                            },
+                                            PurgeState.FAILED));
+
+        // RUNNING_PURGE
+        transitions.add(new StateTransition(PurgeState.IDLE,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.FINISHED,
                                             PurgeState.FAILED));
+        
+        // FINISHED (RETRY)
+        transitions.add(new StateTransition(PurgeState.FINISHED,
+                                            StateTransitionManager.GUIName.RETRY,
+                                            PurgeState.INITIALISING,
+                                            PurgeState.FAILED));        
     }
 
     @Override

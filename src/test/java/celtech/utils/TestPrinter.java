@@ -332,12 +332,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void prepareToPurgeHead(TaskResponder responder) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void printProject(Project project, Filament filament,
         PrintQualityEnumeration printQuality, SlicerParametersFile settings)
     {
@@ -352,12 +346,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void purgeHead(TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -454,12 +442,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void setNozzleTargetTemperature(int targetTemperature)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setPurgeTemperature(float purgeTemperature)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -84,8 +84,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
@@ -620,115 +618,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.warning("Failed to write purge temperature");
         }
     }
-
-    @Override
-    public void prepareToPurgeHead(TaskResponder responder) throws PrinterException
-    {
-        if (!canPurgeHead.get())
-        {
-            throw new PrinterException("Purge not permitted");
-        }
-
-        setPrinterStatus(PrinterStatus.PURGING_HEAD);
-
-        final Cancellable cancellable = new Cancellable();
-
-        new Thread(() ->
-        {
-            boolean success = doPurgeHeadActivity(cancellable);
-
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success,
-                                                        "Head Prepared for Purge");
-
-        }, "Preparing for purge").start();
-    }
-
-    /*
-     * Purging
-     */
-    private HeadEEPROMDataResponse headDataPrePurge = null;
-
-//    protected boolean doPrepareToPurgeHeadActivity(Cancellable cancellable)
-//    {
-//        boolean success = false;
-//
-//        try
-//        {
-//            headDataPrePurge = readHeadEEPROM();
-//
-//            float nozzleTemperature = 0;
-//
-//            // The nozzle should be heated to a temperature halfway between the last temperature stored on the head and the current required temperature stored on the reel
-//            PrinterSettings settingsScreenState = PrinterSettings.getInstance();
-//
-//            Filament settingsFilament = settingsScreenState.getFilament0();
-//
-//            if (settingsFilament != null)
-//            {
-//                nozzleTemperature = settingsFilament.getNozzleTemperature();
-//            } else
-//            {
-//                //TODO Update for multiple reels
-//                nozzleTemperature = reels.get(0).nozzleTemperature.floatValue();
-//            }
-//
-//            float temperatureDifference = nozzleTemperature
-//                - headDataPrePurge.getLastFilamentTemperature();
-//            setPurgeTemperature(nozzleTemperature);
-//
-//            success = true;
-//        } catch (RoboxCommsException ex)
-//        {
-//            // Success is already false..
-//        }
-//        return success;
-//    }
-    @Override
-    public void setPurgeTemperature(float purgeTemperature)
-    {
-        // Force the purge temperature to remain between 180 and max temp in head degrees
-        purgeTemperatureProperty.set((int) Math.min(headDataPrePurge.getMaximumTemperature(),
-                                                    Math.max(180.0, purgeTemperature)));
-    }
-
-    @Override
-    public void purgeHead(TaskResponder responder) throws PrinterException
-    {
-        if (printerStatus.get() != PrinterStatus.PURGING_HEAD)
-        {
-            throw new PrinterException("Purge not permitted");
-        }
-
-        final Cancellable cancellable = new Cancellable();
-
-        new Thread(() ->
-        {
-            boolean success = doPurgeHeadActivity(cancellable);
-
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Head Purged");
-
-            setPrinterStatus(PrinterStatus.IDLE);
-
-        }, "Purging head").start();
-    }
-
-    protected boolean doPurgeHeadActivity(Cancellable cancellable)
-    {
-        boolean success = false;
-
-        try
-        {
-            executeMacroWithoutPurgeCheck("Purge Material");
-            PrinterUtils.waitOnMacroFinished(this, cancellable);
-            success = true;
-        } catch (PrinterException ex)
-        {
-            // success is already false...
-        }
-
-        return success;
-    }
-
+  
     /*
      * Print
      */
