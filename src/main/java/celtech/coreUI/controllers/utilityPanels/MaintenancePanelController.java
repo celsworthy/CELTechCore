@@ -203,6 +203,12 @@ public class MaintenancePanelController implements Initializable
     {
         DisplayManager.getInstance().getPurgeInsetPanelController().purge(connectedPrinter);
     }
+    
+    @FXML
+    void purge2(ActionEvent event)
+    {
+        DisplayManager.getInstance().getPurgeInsetPanelController2().purge(connectedPrinter);
+    }    
 
     /**
      * Initializes the controller class.

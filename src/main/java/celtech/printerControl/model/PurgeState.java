@@ -3,6 +3,8 @@
  */
 package celtech.printerControl.model;
 
+import celtech.Lookup;
+
 /**
  *
  * @author tony
@@ -24,6 +26,15 @@ public enum PurgeState
     private PurgeState(String stepTitleResource)
     {
         this.stepTitleResource = stepTitleResource;
+    }
+    
+    public String getStepTitle() {
+        return Lookup.i18n(stepTitleResource);
+    }
+
+    public boolean showCancelButton()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
