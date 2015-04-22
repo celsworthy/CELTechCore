@@ -298,7 +298,10 @@
                 </JogButton>
             </children>
         </StackPane>
-        <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" >
+    <children> 
+        <LargeProgress fx:id="newProgressBar"/>
+        <!--        <VBox id="VBox" fx:id="progressGroup" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="500.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
                 <GridPane maxWidth="503.0" prefHeight="90.0" prefWidth="503.0">
                     <columnConstraints>
@@ -354,6 +357,8 @@
                 <StackPane id="StackPane" />
                 <StackPane id="StackPane" />
             </children>
+        </VBox>-->
+    </children>
         </VBox>
         <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
             <children>

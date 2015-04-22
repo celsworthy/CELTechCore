@@ -9,6 +9,7 @@ import celtech.Lookup;
 public enum PrinterStatus
 {
     IDLE("printerStatus.idle"),
+    HEATING("printerStatus.heating"),
     SLICING("printerStatus.slicing"),
     POST_PROCESSING("printerStatus.postProcessing"),
     SENDING_TO_PRINTER("printerStatus.sendingToPrinter"),

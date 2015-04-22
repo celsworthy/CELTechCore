@@ -31,6 +31,7 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
+import celtech.printerControl.model.PrinterMetaStatus;
 import celtech.printerControl.model.Reel;
 import celtech.printerControl.model.TemperatureAndPWMData;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
@@ -953,6 +954,12 @@ public class TestPrinter implements Printer
 
     @Override
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PrinterMetaStatus getPrinterMetaStatus()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

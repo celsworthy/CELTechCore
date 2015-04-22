@@ -575,4 +575,6 @@ public interface Printer extends RoboxResponseConsumer
      * @param suppress 
      */
     public void suppressEEPROMAndSDErrorHandling(boolean suppress);
+    
+    public PrinterMetaStatus getPrinterMetaStatus();
 }

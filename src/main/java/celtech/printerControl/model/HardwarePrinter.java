@@ -120,6 +120,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
+    private final PrinterMetaStatus metaStatus;
     protected ObjectProperty<MacroType> macroType = new SimpleObjectProperty<>(null);
     protected BooleanProperty macroIsInterruptible = new SimpleBooleanProperty(false);
 
@@ -218,12 +219,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private boolean processErrors = false;
     private final FilamentLoadedGetter filamentLoadedGetter;
 
+    @Override
+    public PrinterMetaStatus getPrinterMetaStatus()
+    {
+        return metaStatus;
+    }
+
     /**
-     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to
-     * override the detection of whether a filament is loaded or not on a given extruder.
+     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to override the
+     * detection of whether a filament is loaded or not on a given extruder.
      */
     public interface FilamentLoadedGetter
     {
+
         public boolean getFilamentLoaded(StatusResponse statusResponse, int extruderNumber);
     }
 
@@ -250,6 +258,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
         this.filamentLoadedGetter = filamentLoadedGetter;
+
+        metaStatus = new PrinterMetaStatus(this);
 
         macroType.addListener(new ChangeListener<MacroType>()
         {
@@ -3022,7 +3032,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when requesting temperature and PWM data");
             throw new PrinterException("Error when requesting temperature and PWM data");
         }
-        
+
         return data;
     }
 
@@ -3148,8 +3158,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Extruders
                      */
-                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 1);
-                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 2);
+                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
+                                                                                     1);
+                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
+                                                                                     2);
 
                     //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
