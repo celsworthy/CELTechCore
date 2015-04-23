@@ -8,10 +8,6 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
-import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.SimpleCancellable;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -19,12 +15,11 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class PurgeActions
+public class PurgeActions extends StateTransitionActions
 {
 
     public class PurgeException extends Exception
     {
-
         public PurgeException(String message)
         {
             super(message);
@@ -35,9 +30,7 @@ public class PurgeActions
         PurgeActions.class.getName());
 
     private final Printer printer;
-    private Cancellable userCancellable;
-    private Cancellable errorCancellable;
-    private Cancellable userOrErrorCancellable;
+
     private PurgePrinterErrorHandler printerErrorHandler;
 
     private HeadEEPROMDataResponse savedHeadData;
@@ -99,62 +92,6 @@ public class PurgeActions
                                                    savedHeadData.
                                                    getLastFilamentTemperature()
                                                    + (temperatureDifference / 2)));
-
-    }
-
-    class OredCancellable implements Cancellable
-    {
-
-        Cancellable cancellable1;
-        Cancellable cancellable2;
-        Cancellable cancellable = new SimpleCancellable();
-
-        public OredCancellable(Cancellable cancellable1, Cancellable cancellable2)
-        {
-            this.cancellable1 = cancellable1;
-            this.cancellable2 = cancellable2;
-
-            if (cancellable1 != null)
-            {
-                cancellable1.cancelled().addListener(
-                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                    {
-                        updateCancellable();
-                    });
-            }
-
-            if (cancellable2 != null)
-            {
-                cancellable2.cancelled().addListener(
-                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                    {
-                        updateCancellable();
-                    });
-            }
-        }
-
-        private void updateCancellable()
-        {
-            if (cancellable1 == null && cancellable2.cancelled().get())
-            {
-                cancellable.cancelled().set(true);
-            } else if (cancellable2 == null && cancellable1.cancelled().get())
-            {
-                cancellable.cancelled().set(true);
-            } else if (cancellable1.cancelled().get() || cancellable2.cancelled().get())
-            {
-                cancellable.cancelled().set(true);
-            } else
-            {
-                cancellable.cancelled().set(false);
-            }
-        }
-
-        @Override
-        public BooleanProperty cancelled()
-        {
-            return cancellable.cancelled();
-        }
 
     }
 
@@ -245,21 +182,6 @@ public class PurgeActions
         }
     }
 
-    private void cancel() throws RoboxCommsException, PrinterException
-    {
-        deregisterPrinterErrorHandler();
-        userCancellable.cancelled().set(true);
-        try
-        {
-            // wait for any current actions to respect cancelled flag
-            Thread.sleep(500);
-        } catch (InterruptedException ex)
-        {
-            steno.warning("interrupted during wait of cancel");
-        }
-        doFailedAction();
-    }
-
     private void switchHeatersAndHeadLightOff() throws PrinterException
     {
         printer.switchAllNozzleHeatersOff();
@@ -291,46 +213,43 @@ public class PurgeActions
         purgeFilament = filament;
     }
 
-    void setUserCancellable(Cancellable cancellable)
+    @Override
+    void whenUserCancelDetected()
     {
-        this.userCancellable = cancellable;
-        setUserOrErrorCancellable();
-        cancellable.cancelled().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                try
-                {
-                    cancel();
-                } catch (RoboxCommsException | PrinterException ex)
-                {
-                    steno.error("Error cancelling purge: " + ex);
-                }
-            });
+        try
+        {
+            cancelOngoingActionAndResetPrinter();
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error cancelling purge: " + ex);
+        }
     }
-
-    private void setUserOrErrorCancellable()
+    
+    @Override
+    void whenErrorDetected()
     {
-        userOrErrorCancellable = new OredCancellable(userCancellable, errorCancellable);
-    }
-
-    void setErrorCancellable(Cancellable errorCancellable)
+        try
+        {
+            cancelOngoingActionAndResetPrinter();
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error cancelling purge: " + ex);
+        }
+    }    
+    
+    private void cancelOngoingActionAndResetPrinter() throws RoboxCommsException, PrinterException
     {
-        this.errorCancellable = errorCancellable;
-        setUserOrErrorCancellable();
-        errorCancellable.cancelled().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                try
-                {
-                    if (printer.canCancelProperty().get())
-                    {
-                        printer.cancel(null);
-                    }
-                } catch (PrinterException ex)
-                {
-                    steno.error("Failed to cancel purge print - " + ex.getMessage());
-                }
-            });
-    }
+        deregisterPrinterErrorHandler();
+        try
+        {
+            // wait for any current actions to respect cancelled flag
+            Thread.sleep(500);
+        } catch (InterruptedException ex)
+        {
+            steno.warning("interrupted during wait of cancel");
+        }
+        doFailedAction();
+    }    
 
+    
 }
