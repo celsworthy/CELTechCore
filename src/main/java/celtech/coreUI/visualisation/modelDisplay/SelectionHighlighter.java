@@ -1,19 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.visualisation.modelDisplay;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
+import javafx.event.ActionEvent;
+import javafx.scene.AmbientLight;
 import javafx.scene.Group;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -22,6 +23,8 @@ import javafx.scene.shape.DrawMode;
 public class SelectionHighlighter extends Group implements ShapeProvider.ShapeChangeListener
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        SelectionHighlighter.class.getName());
     public static final String idString = "selectionHighlighter";
 
     private final PhongMaterial greenMaterial = new PhongMaterial(Color.LIMEGREEN);
@@ -37,19 +40,21 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     private final double cornerBracketLength = 5;
 
+    private final ScaleControls scaleControls;
+    
     /**
      *
      * @param modelContainer
      */
     public SelectionHighlighter(final ModelContainer modelContainer)
     {
-
         this.setId(idString);
-
+        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "genericIlluminationMap.png").toExternalForm());
+        greenMaterial.setSelfIlluminationMap(illuminationMap);
         buildSelectionBox();
 
+        scaleControls = new ScaleControls(this);
         modelContainer.addShapeChangeListener(this);
-
     }
 
     private void buildSelectionBox()
@@ -74,6 +79,8 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
                              selectionBoxBackLeftTop, selectionBoxBackRightTop,
                              selectionBoxFrontLeftBottom, selectionBoxFrontRightBottom,
                              selectionBoxFrontLeftTop, selectionBoxFrontRightTop);
+        
+//        selectionBoxFrontRightTop.getChildren().add(ambientLight);
 
     }
 
@@ -122,6 +129,8 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         selectionBoxFrontRightTop.setTx(maxX);
         selectionBoxFrontRightTop.setTy(minY);
 
+        //Place the scale boxes
+        scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
     }
 
     private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate)
@@ -159,4 +168,5 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
         return selectionCornerTransform;
     }
+
 }

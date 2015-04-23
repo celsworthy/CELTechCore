@@ -2518,7 +2518,25 @@ modal-dialogue{
     -fx-max_height: 260;
     -fx-min-height: 260;    
     -fx-background-color: light_grey;
-}   
+}
+
+.dimension-label
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18pt;
+    -fx-fill: #16b21d;
+    -fx-text-alignment: center;
+} 
+
+.dimension-line
+{
+    -fx-stroke: #16b21d;
+} 
+
+.dimension-arrow
+{
+    -fx-fill: #16b21d;
+} 
 
 .rotationField {
     -fx-pref-width: 40;

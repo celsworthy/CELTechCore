@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.visualisation.DimensionLineManager;
 import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -52,6 +53,7 @@ public class ProjectTab extends Tab
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
     private final ModelLoader modelLoader = new ModelLoader();
+    private DimensionLineManager dimensionLineManager = null;
 
     public ProjectTab(
         ReadOnlyDoubleProperty tabDisplayWidthProperty,
@@ -73,7 +75,6 @@ public class ProjectTab extends Tab
     private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty,
         ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-
         setOnCloseRequest((Event t) ->
         {
             steno.debug("Beginning project save");
@@ -95,13 +96,15 @@ public class ProjectTab extends Tab
 
         basePane.getChildren().addAll(viewManager.getSubScene(), timeCostInsetPanel,
                                       settingsInsetPanel);
+        dimensionLineManager = new DimensionLineManager(basePane, project);
+
         settingsInsetPanel.setVisible(false);
         timeCostInsetPanel.setVisible(false);
         AnchorPane.setTopAnchor(timeCostInsetPanel, 30.0);
         AnchorPane.setRightAnchor(timeCostInsetPanel, 30.0);
         AnchorPane.setTopAnchor(settingsInsetPanel, 220.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
-        
+
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);
@@ -279,16 +282,15 @@ public class ProjectTab extends Tab
             }
         });
 
-        basePane.setOnDragDropped(new EventHandler<DragEvent>()
+        basePane.setOnDragDropped((DragEvent event) ->
         {
-            @Override
-            public void handle(DragEvent event)
+            boolean success = false;
+            if (event.getGestureTarget() == basePane)
             {
                 /* data dropped */
                 steno.debug("onDragDropped");
                 /* if there is a string data on dragboard, read it and use it */
                 Dragboard db = event.getDragboard();
-                boolean success = false;
                 if (db.hasFiles())
                 {
                     modelLoader.loadExternalModels(project, db.getFiles(), true);
@@ -302,6 +304,11 @@ public class ProjectTab extends Tab
 
                 event.consume();
             }
+            /* let the source know whether the string was successfully
+             * transferred and used */
+            event.setDropCompleted(success);
+
+            event.consume();
         });
     }
 

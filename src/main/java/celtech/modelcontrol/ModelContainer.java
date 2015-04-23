@@ -2,6 +2,10 @@ package celtech.modelcontrol;
 
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
+import celtech.coreUI.visualisation.CameraViewChangeListener;
+import celtech.coreUI.visualisation.Edge;
+import celtech.coreUI.visualisation.ScreenExtents;
+import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
@@ -35,6 +39,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -64,7 +69,8 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider
+public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
+    ScreenExtentsProvider, CameraViewChangeListener
 {
 
     private static final long serialVersionUID = 1L;
@@ -123,7 +129,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private double bedCentreOffsetZ;
     private ModelBounds lastTransformedBounds;
     private SelectionHighlighter selectionHighlighter = null;
-    List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+    private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+    private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
     private Set<Node> selectedMarkers;
 
     /**
@@ -320,7 +327,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         lastTransformedBounds = calculateBoundsInParent();
 
         notifyShapeChange();
-
+        notifyScreenExtentsChange();
     }
 
     private void initialise(File modelFile)
@@ -331,6 +338,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         material = ApplicationMaterials.getDefaultModelMaterial();
         associateWithExtruderNumber.set(0);
         shapeChangeListeners = new ArrayList<>();
+        screenExtentsChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
@@ -432,6 +440,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateLastTransformedBoundsForTranslateByZ(deltaZPosition);
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -475,6 +484,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -697,6 +707,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     public void setXScale(double scaleFactor)
@@ -772,6 +783,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     public double getRotationTwist()
@@ -787,6 +799,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     public double getRotationTurn()
@@ -802,6 +815,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         dropToBedAndUpdateLastTransformedBounds();
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     public double getRotationLean()
@@ -969,6 +983,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationTurn(storedRotationTurn);
 
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     private void readObjectNoData()
@@ -1198,6 +1213,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newScale = width / originalWidth;
         setXScale(newScale);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -1214,6 +1230,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         setYScale(newScale);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -1231,6 +1248,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         setZScale(newScale);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -1261,6 +1279,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateLastTransformedBoundsForTranslateByX(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -1291,6 +1310,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateLastTransformedBoundsForTranslateByZ(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     private void checkOffBed()
@@ -1701,18 +1721,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         getChildren().add(selectionHighlighter);
         selectedMarkers.add(selectionHighlighter);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
         lastTransformedBounds.translateX(deltaCentreX);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
     {
         lastTransformedBounds.translateZ(deltaCentreZ);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     private void showSelectedMarkers()
@@ -1735,6 +1758,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void addShapeChangeListener(ShapeChangeListener listener)
     {
         shapeChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeShapeChangeListener(ShapeChangeListener listener)
+    {
+        shapeChangeListeners.remove(listener);
     }
 
     /**
@@ -1813,6 +1842,91 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
+    @Override
+    public void addScreenExtentsChangeListener(ScreenExtentsListener listener)
+    {
+        screenExtentsChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeScreenExtentsChangeListener(ScreenExtentsListener listener)
+    {
+        screenExtentsChangeListeners.remove(listener);
+    }
+
+    private void notifyScreenExtentsChange()
+    {
+        for (ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+        {
+            screenExtentsListener.screenExtentsChanged(this);
+        }
+    }
+
+    @Override
+    public ScreenExtents getScreenExtents()
+    {
+        double halfWidth = getScaledWidth() / 2;
+        double halfDepth = getScaledDepth() / 2;
+        double halfHeight = getScaledHeight() / 2;
+        double minX = getCentreX() - halfWidth;
+        double maxX = getCentreX() + halfWidth;
+        double minZ = getCentreZ() - halfDepth;
+        double maxZ = getCentreZ() + halfDepth;
+        double minY = getCentreY() - halfHeight;
+        double maxY = getCentreY() + halfHeight;
+
+        Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
+        Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
+        Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
+        Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
+        Point2D frontLeftTop = localToScreen(minX, minY, minZ);
+        Point2D frontRightTop = localToScreen(maxX, minY, minZ);
+        Point2D backLeftTop = localToScreen(minX, minY, maxZ);
+        Point2D backRightTop = localToScreen(maxX, minY, maxZ);
+
+        ScreenExtents extents = new ScreenExtents();
+        extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
+        extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
+        extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
+        extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
+
+        extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
+        extents.widthEdges[1] = new Edge(frontLeftTop, frontRightTop);
+        extents.widthEdges[2] = new Edge(backLeftBottom, backRightBottom);
+        extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
+
+        extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
+        extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
+        extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
+        extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
+
+        return extents;
+    }
+
+    @Override
+    public double getTransformedHeight()
+    {
+        return getScaledHeight();
+    }
+
+    @Override
+    public double getTransformedWidth()
+    {
+        return getScaledWidth();
+    }
+
+    @Override
+    public double getTransformedDepth()
+    {
+        return getScaledDepth();
+    }
+
+    @Override
+    public void cameraViewOfYouHasChanged()
+    {
+        notifyScreenExtentsChange();
+    }
+    
     public void addChildNodes(ObservableList<Node> nodes)
     {
         meshGroup.getChildren().addAll(nodes);
