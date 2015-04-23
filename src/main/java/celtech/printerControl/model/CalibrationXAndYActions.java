@@ -35,6 +35,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
         this.printer = printer;
 
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
+        printerErrorHandler.registerForPrinterErrors();
     }
 
     public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException

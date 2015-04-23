@@ -2173,6 +2173,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         //TODO modify for multiple heaters
         try
         {
+            steno.debug("Turn off nozzle heater");
             transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
         } catch (RoboxCommsException ex)
         {

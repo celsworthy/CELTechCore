@@ -54,6 +54,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                 });
             });
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
+        printerErrorHandler.registerForPrinterErrors();
     }
 
     public void doInitialiseAndHeatNozzleAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException

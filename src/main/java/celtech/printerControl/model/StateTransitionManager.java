@@ -92,15 +92,19 @@ public class StateTransitionManager<StateType>
     private final ObjectProperty<StateType> stateGUIT;
 
     /**
-     * userCancellable is set when the user requests a cancellation. It was cause the state machine
-     * to go to the cancelledState.
+     * userCancellable is set from the {@link #cancel() cancel method} when the user requests a cancellation. It will cause the state machine
+     * to go to the cancelledState. It is usually triggered by the user clicking the cancel button.
+     * The StateTransitionActions instance should always be listening to this and should stop
+     * any ongoing actions if cancelled is set to true.
      */
     private final Cancellable userCancellable = new SimpleCancellable();
 
     /**
      * errorCancellable is set programmatically when a fatal error occurs outside of the normal flow
      * of transitions (e.g a printer error). It will cause the state machine to go to the
-     * failedState.
+     * failedState. it is usually set by a printer error consumer.
+     * The StateTransitionActions instance should always be listening to this and should stop
+     * any ongoing actions if cancelled is set to true.
      */
     private final Cancellable errorCancellable = new SimpleCancellable();
 
