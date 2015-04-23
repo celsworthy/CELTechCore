@@ -75,6 +75,7 @@ import celtech.utils.Math.MathUtils;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import celtech.utils.tasks.TaskResponder;
 import celtech.utils.tasks.TaskResponse;
 import java.text.DecimalFormat;
@@ -542,7 +543,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Head remove not permitted");
         }
 
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {
@@ -691,7 +692,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         setPrinterStatus(PrinterStatus.CANCELLING);
 
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {
@@ -946,7 +947,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
         TaskResponder responder)
     {
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {
@@ -970,7 +971,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void callbackWhenNotBusy(TaskResponder responder)
     {
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {
@@ -1756,7 +1757,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         setPrinterStatus(PrinterStatus.OPENING_DOOR);
 
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {
@@ -1798,7 +1799,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         setPrinterStatus(PrinterStatus.OPENING_DOOR);
 
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {
@@ -2455,7 +2456,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 + extruderNumber);
         }
 
-        final Cancellable cancellable = new Cancellable();
+        final Cancellable cancellable = new SimpleCancellable();
 
         new Thread(() ->
         {

@@ -9,6 +9,8 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -35,6 +37,7 @@ public class PurgeActions
     private final Printer printer;
     private Cancellable userCancellable;
     private Cancellable errorCancellable;
+    private Cancellable userOrErrorCancellable;
     private PurgePrinterErrorHandler printerErrorHandler;
 
     private HeadEEPROMDataResponse savedHeadData;
@@ -99,6 +102,62 @@ public class PurgeActions
 
     }
 
+    class OredCancellable implements Cancellable
+    {
+
+        Cancellable cancellable1;
+        Cancellable cancellable2;
+        Cancellable cancellable = new SimpleCancellable();
+
+        public OredCancellable(Cancellable cancellable1, Cancellable cancellable2)
+        {
+            this.cancellable1 = cancellable1;
+            this.cancellable2 = cancellable2;
+
+            if (cancellable1 != null)
+            {
+                cancellable1.cancelled().addListener(
+                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                    {
+                        updateCancellable();
+                    });
+            }
+
+            if (cancellable2 != null)
+            {
+                cancellable2.cancelled().addListener(
+                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                    {
+                        updateCancellable();
+                    });
+            }
+        }
+
+        private void updateCancellable()
+        {
+            if (cancellable1 == null && cancellable2.cancelled().get())
+            {
+                cancellable.cancelled().set(true);
+            } else if (cancellable2 == null && cancellable1.cancelled().get())
+            {
+                cancellable.cancelled().set(true);
+            } else if (cancellable1.cancelled().get() || cancellable2.cancelled().get())
+            {
+                cancellable.cancelled().set(true);
+            } else
+            {
+                cancellable.cancelled().set(false);
+            }
+        }
+
+        @Override
+        public BooleanProperty cancelled()
+        {
+            return cancellable.cancelled();
+        }
+
+    }
+
     void doHeatingAction() throws InterruptedException, PurgeException
     {
         //Set the bed to 90 degrees C
@@ -107,7 +166,7 @@ public class PurgeActions
         printer.goToTargetBedTemperature();
         boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.getPrinterAncillarySystems().bedTemperatureProperty(), null,
-            desiredBedTemperature, 5, 600, userCancellable);
+            desiredBedTemperature, 5, 600, userOrErrorCancellable);
 
         if (bedHeatFailed)
         {
@@ -120,7 +179,7 @@ public class PurgeActions
         boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.headProperty().get().getNozzleHeaters().get(0).
             nozzleTemperatureProperty(),
-            null, purgeTemperature, 5, 300, userCancellable);
+            null, purgeTemperature, 5, 300, userOrErrorCancellable);
 
         if (extruderHeatFailed)
         {
@@ -131,7 +190,7 @@ public class PurgeActions
     void doRunPurgeAction() throws PrinterException
     {
         printer.executeMacro("Purge Material");
-        PrinterUtils.waitOnMacroFinished(printer, userCancellable);
+        PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
     }
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException
@@ -162,7 +221,10 @@ public class PurgeActions
     {
         try
         {
-            printer.cancel(null);
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
         } catch (PrinterException ex)
         {
             steno.error("Failed to cancel purge print - " + ex.getMessage());
@@ -186,7 +248,7 @@ public class PurgeActions
     private void cancel() throws RoboxCommsException, PrinterException
     {
         deregisterPrinterErrorHandler();
-        userCancellable.cancelled.set(true);
+        userCancellable.cancelled().set(true);
         try
         {
             // wait for any current actions to respect cancelled flag
@@ -232,7 +294,8 @@ public class PurgeActions
     void setUserCancellable(Cancellable cancellable)
     {
         this.userCancellable = cancellable;
-        cancellable.cancelled.addListener(
+        setUserOrErrorCancellable();
+        cancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 try
@@ -245,15 +308,24 @@ public class PurgeActions
             });
     }
 
+    private void setUserOrErrorCancellable()
+    {
+        userOrErrorCancellable = new OredCancellable(userCancellable, errorCancellable);
+    }
+
     void setErrorCancellable(Cancellable errorCancellable)
     {
         this.errorCancellable = errorCancellable;
-        errorCancellable.cancelled.addListener(
+        setUserOrErrorCancellable();
+        errorCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 try
                 {
-                    printer.cancel(null);
+                    if (printer.canCancelProperty().get())
+                    {
+                        printer.cancel(null);
+                    }
                 } catch (PrinterException ex)
                 {
                     steno.error("Failed to cancel purge print - " + ex.getMessage());

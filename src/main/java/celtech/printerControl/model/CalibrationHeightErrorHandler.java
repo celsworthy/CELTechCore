@@ -36,7 +36,7 @@ class CalibrationHeightErrorHandler
     TaskExecutor.NoArgsVoidFunc retryHandler = null;
     TaskExecutor.NoArgsVoidFunc abortHandler = () ->
     {
-        cancellable.cancelled.set(true);
+        cancellable.cancelled().set(true);
         throw new CalibrationException("An error occurred with the printer");
     };
 
@@ -79,7 +79,7 @@ class CalibrationHeightErrorHandler
         {
             steno.info(error.name() + " occurred during height calibration");
 
-            cancellable.cancelled.set(true);
+            cancellable.cancelled().set(true);
             errorOccurred = true;
             lastError = error;
         }
@@ -110,14 +110,14 @@ class CalibrationHeightErrorHandler
                     false, false, false, true);
             if (!choice.isPresent())
             {
-                cancellable.cancelled.set(true);
+                cancellable.cancelled().set(true);
                 abortHandler.run();
                 return;
             }
             switch (choice.get())
             {
                 case OK:
-                    cancellable.cancelled.set(true);
+                    cancellable.cancelled().set(true);
                     abortHandler.run();
                     break;
             }

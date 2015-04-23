@@ -65,20 +65,23 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
         currentPrinter.bind(printerGrid.getSelectedPrinter());
         currentPrinter.addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-        {
-            if (previouslySelectedPrinter != null)
             {
-                unbindPrinter(previouslySelectedPrinter);
-            }
-            previouslySelectedPrinter = currentPrinter.get();
-            
-            if (printerSettings != null)
-            {
-                printerSettings.setSelectedPrinter(currentPrinter.get());
-            }
-            bindPrinter(currentPrinter.get());
-            configureMaterialComponents(currentPrinter.get());
-        });
+                if (previouslySelectedPrinter != null)
+                {
+                    unbindPrinter(previouslySelectedPrinter);
+                }
+                previouslySelectedPrinter = currentPrinter.get();
+
+                if (printerSettings != null)
+                {
+                    printerSettings.setSelectedPrinter(currentPrinter.get());
+                }
+                if (currentPrinter.get() != null)
+                {
+                    bindPrinter(currentPrinter.get());
+                    configureMaterialComponents(currentPrinter.get());
+                }
+            });
 
         Lookup.getSelectedProjectProperty().addListener(
             (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
@@ -260,7 +263,7 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         currentProject = project;
         printerSettings = project.getPrinterSettings();
-       
+
         if (printerSettings.getSelectedPrinter() == null && currentPrinter.get() != null)
         {
             printerSettings.setSelectedPrinter(currentPrinter.get());
@@ -271,7 +274,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         setupFilamentListeners();
     }
-
 
     @Override
     public void whenPrinterAdded(Printer printer)

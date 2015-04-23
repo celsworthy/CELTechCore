@@ -58,7 +58,7 @@ public class PurgePrinterErrorHandlerOrig
      */
     private void notifyUserErrorHasOccurredAndAbortIfNotSlip(FirmwareError error)
     {
-        if (! cancellable.cancelled.get())
+        if (! cancellable.cancelled().get())
         {
             if (error == FirmwareError.B_POSITION_LOST)
             {
@@ -115,7 +115,7 @@ public class PurgePrinterErrorHandlerOrig
     {
         try
         {
-            cancellable.cancelled.set(true);
+            cancellable.cancelled().set(true);
             if (printer.canCancelProperty().get())
             {
                 printer.cancel(null);

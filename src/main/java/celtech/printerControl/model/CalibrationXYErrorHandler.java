@@ -85,7 +85,7 @@ public class CalibrationXYErrorHandler
         {
             errorOccurred = true;
             lastError = error;
-            cancellable.cancelled.set(true);
+            cancellable.cancelled().set(true);
         }
     };
 

@@ -13,6 +13,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -40,12 +41,12 @@ public class CalibrationNozzleOpeningActions
     private final FloatProperty bPositionGUIT = new SimpleFloatProperty();
 
     private final CalibrationOpeningErrorHandler printerErrorHandler;
-    private final Cancellable cancellable = new Cancellable();
+    private final Cancellable cancellable = new SimpleCancellable();
 
     public CalibrationNozzleOpeningActions(Printer printer)
     {
         this.printer = printer;
-        cancellable.cancelled.set(false);
+        cancellable.cancelled().set(false);
         nozzlePosition.addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
@@ -390,7 +391,7 @@ public class CalibrationNozzleOpeningActions
 
     public void cancel() throws RoboxCommsException
     {
-        cancellable.cancelled.set(true);
+        cancellable.cancelled().set(true);
         try
         {
             // wait for any current actions to respect cancelled flag

@@ -10,6 +10,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -29,20 +30,20 @@ public class CalibrationXAndYActions
     private int yOffset = 0;
     private final CalibrationXYErrorHandler printerErrorHandler;
 
-    private final Cancellable cancellable = new Cancellable();
+    private final Cancellable cancellable = new SimpleCancellable();
 
     public CalibrationXAndYActions(Printer printer)
     {
         this.printer = printer;
-        cancellable.cancelled.set(false);
-        
+        cancellable.cancelled().set(false);
+
         printerErrorHandler = new CalibrationXYErrorHandler(printer, cancellable);
     }
 
     public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
         printerErrorHandler.registerForPrinterErrors();
-        
+
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
         printerErrorHandler.checkIfPrinterErrorHasOccurred();
@@ -51,7 +52,8 @@ public class CalibrationXAndYActions
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
 //        Thread.sleep(3000);
-        printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat("rbx_test_xy-offset-1_roboxised.gcode"), false);
+        printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat(
+            "rbx_test_xy-offset-1_roboxised.gcode"), false);
         PrinterUtils.waitOnMacroFinished(printer, cancellable);
         // keep bed temp up to keep remaining part on the bed
 //        printer.goToTargetBedTemperature();
@@ -85,7 +87,7 @@ public class CalibrationXAndYActions
 
     public void cancel() throws PrinterException, RoboxCommsException
     {
-        cancellable.cancelled.set(true);
+        cancellable.cancelled().set(true);
         try
         {
             // wait for any current actions to respect cancelled flag
@@ -97,7 +99,10 @@ public class CalibrationXAndYActions
         try
         {
             steno.debug("Cancelling macro");
-            printer.cancel(null);
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
         } catch (PrinterException ex)
         {
             steno.error("Cannot cancel print: " + ex);

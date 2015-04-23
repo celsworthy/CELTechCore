@@ -14,6 +14,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import java.util.ArrayList;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -37,13 +38,13 @@ public class CalibrationNozzleHeightActions
     private final DoubleProperty zco = new SimpleDoubleProperty();
     private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
-    private final Cancellable cancellable = new Cancellable();
+    private final Cancellable cancellable = new SimpleCancellable();
     private final CalibrationHeightErrorHandler printerErrorHandler;
 
     public CalibrationNozzleHeightActions(Printer printer)
     {
         this.printer = printer;
-        cancellable.cancelled.set(false);
+        cancellable.cancelled().set(false);
         zco.addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
@@ -290,7 +291,7 @@ public class CalibrationNozzleHeightActions
 
     public void cancel() throws PrinterException, RoboxCommsException, CalibrationException
     {
-        cancellable.cancelled.set(true);
+        cancellable.cancelled().set(true);
         try
         {
             // wait for any current actions to respect cancelled flag

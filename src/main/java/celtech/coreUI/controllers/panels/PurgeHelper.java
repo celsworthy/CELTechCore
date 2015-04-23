@@ -12,6 +12,7 @@ import celtech.services.purge.PurgeState;
 import celtech.services.purge.PurgeStepResult;
 import celtech.services.purge.PurgeTask;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import java.util.ArrayList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -42,7 +43,7 @@ public class PurgeHelper
     private int purgeTemperature = 0;
 
     private final PurgePrinterErrorHandlerOrig printerErrorHandler;
-    private final Cancellable cancellable = new Cancellable();
+    private final Cancellable cancellable = new SimpleCancellable();
 
     private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
     {
@@ -130,7 +131,7 @@ public class PurgeHelper
         switch (state)
         {
             case IDLE:
-                if (cancellable.cancelled.get())
+                if (cancellable.cancelled().get())
                 {
                     setState(PurgeState.FAILED);
                     return;
@@ -174,14 +175,14 @@ public class PurgeHelper
                     steno.error("Error during purge operation");
                     setState(PurgeState.FAILED);
                 }
-                if (cancellable.cancelled.get())
+                if (cancellable.cancelled().get())
                 {
                     setState(PurgeState.FAILED);
                 }
                 break;
 
             case RUNNING_PURGE:
-                if (cancellable.cancelled.get())
+                if (cancellable.cancelled().get())
                 {
                     setState(PurgeState.FAILED);
                     return;
@@ -199,7 +200,7 @@ public class PurgeHelper
                 break;
 
             case HEATING:
-                if (cancellable.cancelled.get())
+                if (cancellable.cancelled().get())
                 {
                     setState(PurgeState.FAILED);
                     return;
@@ -217,7 +218,7 @@ public class PurgeHelper
                 break;
 
             case FINISHED:
-                if (cancellable.cancelled.get())
+                if (cancellable.cancelled().get())
                 {
                     setState(PurgeState.FAILED);
                     return;

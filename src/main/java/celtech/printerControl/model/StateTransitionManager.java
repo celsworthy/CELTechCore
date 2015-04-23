@@ -5,6 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.HashSet;
 import java.util.Map;
@@ -77,14 +78,14 @@ public class StateTransitionManager<StateType>
      * userCancellable is set when the user requests a cancellation. It was cause the state machine
      * to go to the cancelledState.
      */
-    private final Cancellable userCancellable = new Cancellable();
+    private final Cancellable userCancellable = new SimpleCancellable();
 
     /**
      * errorCancellable is set programmatically when a fatal error occurs outside of the normal flow
      * of transitions (e.g a printer error). It will cause the state machine to go to the
      * failedState.
      */
-    private final Cancellable errorCancellable = new Cancellable();
+    private final Cancellable errorCancellable = new SimpleCancellable();
 
     /**
      * Return the current state as a property. This variable is only updated on the GUI thread.
@@ -120,12 +121,12 @@ public class StateTransitionManager<StateType>
                         stateGUIT.set(state.get());
                 });
             });
-        userCancellable.cancelled.addListener(
+        userCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 setState(cancelledState);
             });
-        errorCancellable.cancelled.addListener(
+        errorCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 // errorCancellable will often be called when not on the GUI thread
@@ -243,7 +244,7 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc goToNextState = () ->
             {
-                if (!userCancellable.cancelled.get() && ! errorCancellable.cancelled.get())
+                if (!userCancellable.cancelled().get() && ! errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.toState);
                 }
@@ -251,7 +252,7 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
-                if (!userCancellable.cancelled.get() && ! errorCancellable.cancelled.get())
+                if (!userCancellable.cancelled().get() && ! errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.transitionFailedState);
                 }
@@ -285,7 +286,7 @@ public class StateTransitionManager<StateType>
      */
     public void cancel()
     {
-        userCancellable.cancelled.set(true);
+        userCancellable.cancelled().set(true);
     }
 
     public Cancellable getCancellable()

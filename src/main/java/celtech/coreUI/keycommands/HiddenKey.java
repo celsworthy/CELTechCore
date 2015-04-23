@@ -67,7 +67,7 @@ public class HiddenKey
 
     private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
     {
-        steno.debug("Got character [" + event.getCharacter() + "] " + event.getCode());
+        steno.debug("Got character [" + event.getCharacter() + "]");
 
         if (parameterCaptureInProgress)
         {
