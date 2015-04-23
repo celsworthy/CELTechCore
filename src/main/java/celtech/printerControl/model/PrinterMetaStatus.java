@@ -46,7 +46,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
     private final StringProperty legendProperty = new SimpleStringProperty("");
     private final DoubleProperty currentStatusValue = new SimpleDoubleProperty(0);
     private final DoubleProperty currentStatusValueTarget = new SimpleDoubleProperty(0);
-    private final BooleanProperty targetValueVisibleProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty targetValueValidProperty = new SimpleBooleanProperty(false);
 
     public PrinterMetaStatus(Printer printer)
     {
@@ -78,14 +78,15 @@ public class PrinterMetaStatus implements PrinterListChangesListener
                 bindProgressForHeating();
                 break;
             case PRINTING:
-                bindProgressForPrinting();
+            case SLICING:
+            case POST_PROCESSING:
+                bindProgressToPrintEngineProgress();
                 break;
             case EXECUTING_MACRO:
                 bindProgressForMacro();
 //                statusStringProperty.set(printer.getPrintEngine().)
             default:
-                unbindProgress();
-                statusStringProperty.set(tempStatus.getI18nString());
+                bindProgressDefaultCase();
                 break;
         }
 
@@ -187,16 +188,16 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         }
         currentStatusValue.bind(heater.nozzleTemperature);
         legendProperty.set(Lookup.i18n("misc.degreesC"));
-        targetValueVisibleProperty.set(true);
+        targetValueValidProperty.set(true);
     }
 
-    private void bindProgressForPrinting()
+    private void bindProgressToPrintEngineProgress()
     {
         unbindProgress();
         currentStatusValueTarget.set(100);
         currentStatusValue.bind(printer.getPrintEngine().progressProperty());
         legendProperty.set("");
-        targetValueVisibleProperty.set(false);
+        targetValueValidProperty.set(false);
     }
 
     private void bindProgressForMacro()
@@ -205,14 +206,22 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         currentStatusValueTarget.set(100);
         currentStatusValue.bind(printer.getPrintEngine().progressProperty());
         legendProperty.set("");
-        targetValueVisibleProperty.set(false);
+        targetValueValidProperty.set(false);
+    }
+
+    private void bindProgressDefaultCase()
+    {
+        unbindProgress();
+        currentStatusValue.bind(printer.getPrintEngine().progressProperty());
+        legendProperty.set("");
+        targetValueValidProperty.set(false);
     }
 
     private void unbindProgress()
     {
         currentStatusValue.unbind();
         currentStatusValueTarget.unbind();
-        targetValueVisibleProperty.set(false);
+        targetValueValidProperty.set(false);
     }
 
     public ReadOnlyStringProperty legendProperty()
@@ -220,8 +229,8 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         return legendProperty;
     }
 
-    public ReadOnlyBooleanProperty targetValueVisibleProperty()
+    public ReadOnlyBooleanProperty targetValueValidProperty()
     {
-        return targetValueVisibleProperty;
+        return targetValueValidProperty;
     }
 }

@@ -26,27 +26,28 @@
         </VBox>
     </right>
     <center>
-      <StackPane>
-         <children>
-              <HBox id="largeProgressBarBack" fx:id="largeProgressBarBack" alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="38.0" prefWidth="300.0" BorderPane.alignment="CENTER">
-               <BorderPane.margin>
-                  <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
-               </BorderPane.margin>
-               <children>
-                  <Rectangle id="largeProgressBarInner" fx:id="largeProgressBarInner" arcHeight="5.0" arcWidth="5.0" height="32.0" stroke="BLACK" strokeType="INSIDE" width="150.0">
-<HBox.margin>
-<Insets />
-</HBox.margin></Rectangle>
-               </children>
-<StackPane.margin>
-<Insets />
-</StackPane.margin>
-            </HBox>
-            <Label id="largeProgressCurrentValue" fx:id="largeProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="23%" />
-         </children>
-         <BorderPane.margin>
-            <Insets left="30.0" right="30.0" />
-         </BorderPane.margin>
-      </StackPane>
+        <StackPane fx:id="progressBarElement">
+            <children>
+                <HBox id="largeProgressBarBack" fx:id="largeProgressBarBack" alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="38.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+                    <BorderPane.margin>
+                        <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
+                    </BorderPane.margin>
+                    <children>
+                        <Rectangle id="largeProgressBarInner" fx:id="largeProgressBarInner" arcHeight="5.0" arcWidth="5.0" height="32.0" stroke="BLACK" strokeType="INSIDE" width="150.0">
+                            <HBox.margin>
+                                <Insets />
+                            </HBox.margin>
+                        </Rectangle>
+                    </children>
+                    <StackPane.margin>
+                        <Insets />
+                    </StackPane.margin>
+                </HBox>
+                <Label id="largeProgressCurrentValue" fx:id="largeProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="23%" />
+            </children>
+            <BorderPane.margin>
+                <Insets left="30.0" right="30.0" />
+            </BorderPane.margin>
+        </StackPane>
     </center>
 </fx:root>

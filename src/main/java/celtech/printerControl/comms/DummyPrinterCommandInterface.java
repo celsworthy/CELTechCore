@@ -76,7 +76,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private String printerName;
 
     private static String NOTHING_PRINTING_JOB_ID = "\0000";
-    private String printJobID = NOTHING_PRINTING_JOB_ID;
+    private static String printJobID = NOTHING_PRINTING_JOB_ID;
     protected int printJobLineNo = 0;
 
     private static int ROOM_TEMPERATURE = 20;
