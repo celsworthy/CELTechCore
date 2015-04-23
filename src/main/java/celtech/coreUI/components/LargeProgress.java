@@ -3,10 +3,12 @@
  */
 package celtech.coreUI.components;
 
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterMetaStatus;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -18,6 +20,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 
 /**
@@ -43,14 +46,23 @@ public class LargeProgress extends BorderPane
     private Label largeProgressCurrentValue;
 
     @FXML
+    private StackPane progressBarElement;
+
+    @FXML
     private Label largeTargetLegend;
 
     private DoubleProperty progressProperty = new SimpleDoubleProperty(0);
     private double progress = 0;
+    private Optional<PrinterMetaStatus> printerMetaStatus = Optional.empty();
 
     private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         setProgress(newValue.doubleValue());
+    };
+
+    private ChangeListener<PrinterStatus> statusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
+    {
+        redraw();
     };
 
     public LargeProgress()
@@ -112,6 +124,22 @@ public class LargeProgress extends BorderPane
 
     private void redraw()
     {
+        if (printerMetaStatus.isPresent())
+        {
+            switch (printerMetaStatus.get().printerStatusProperty().get())
+            {
+                case PRINTING:
+                case SLICING:
+                case POST_PROCESSING:
+                case EXECUTING_MACRO:
+                    progressBarElement.setVisible(true);
+                    break;
+                default:
+                    progressBarElement.setVisible(false);
+                    break;
+            }
+        }
+
         double progressBackWidth = largeProgressBarBack.getWidth();
         double barWidth = progressBackWidth * progress;
         largeProgressBarInner.setWidth(barWidth);
@@ -139,14 +167,20 @@ public class LargeProgress extends BorderPane
 
     public void bindToPrinter(PrinterMetaStatus printerMetaStatus)
     {
+        this.printerMetaStatus = Optional.of(printerMetaStatus);
         unbindProgress();
-        
-        largeProgressDescription.textProperty().bind(printerMetaStatus.printerStatusProperty().asString());
-        largeTargetValue.textProperty().bind(printerMetaStatus.currentStatusValueProperty().asString("%.1f"));
-        largeTargetValue.visibleProperty().bind(printerMetaStatus.targetValueVisibleProperty());
+
+        largeProgressDescription.textProperty().bind(printerMetaStatus.printerStatusProperty().
+            asString());
+        largeTargetValue.textProperty().bind(printerMetaStatus.currentStatusValueTargetProperty().
+            asString("%.0f"));
+        largeTargetValue.visibleProperty().bind(printerMetaStatus.targetValueValidProperty());
         largeTargetLegend.textProperty().bind(printerMetaStatus.legendProperty());
+        largeProgressCurrentValue.textProperty().bind(
+            printerMetaStatus.currentStatusValueProperty().multiply(100).asString("%.0f%%"));
         progressProperty.bind(printerMetaStatus.currentStatusValueProperty());
         progressProperty.addListener(progressChangeListener);
+        printerMetaStatus.printerStatusProperty().addListener(statusChangeListener);
     }
 
     public void unbindProgress()
@@ -154,7 +188,13 @@ public class LargeProgress extends BorderPane
         largeProgressDescription.textProperty().unbind();
         largeTargetValue.textProperty().unbind();
         largeTargetValue.visibleProperty().unbind();
+        largeProgressCurrentValue.textProperty().unbind();
         progressProperty.removeListener(progressChangeListener);
         progressProperty.unbind();
+        if (printerMetaStatus.isPresent())
+        {
+            printerMetaStatus.get().printerStatusProperty().removeListener(statusChangeListener);
+            printerMetaStatus = Optional.empty();
+        }
     }
 }
