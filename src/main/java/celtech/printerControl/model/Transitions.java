@@ -27,9 +27,5 @@ public interface Transitions<StateType>
      * @return 
      */
     public Map<StateType, ArrivalAction<StateType>> getArrivals();
-    /**
-     * This should stop any currently running actions (if required).
-     * @throws Exception 
-     */
-    public void cancel() throws Exception;
+
 }

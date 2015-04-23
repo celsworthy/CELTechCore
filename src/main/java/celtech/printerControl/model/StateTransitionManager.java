@@ -4,6 +4,8 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
+import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,14 +35,20 @@ import libertysystems.stenographer.StenographerFactory;
  * <p>
  * The GUI can allow the user to cancel the whole process (even during a long-running transition) by
  * calling the {@link #cancel() cancel} method. The StateTransitionManager will then move to the
- * cancelledState state. If it is desired to run an action on the cancel then it should be
- * implemented in the {@link Transitions} class.
+ * cancelledState state.
+ * </p>
+ * <p>
+ * All StateTransitionManager methods should be called from the GUI thread. All actions are run in a
+ * new thread.
  *
  * @author tony
  */
 public class StateTransitionManager<StateType>
 {
 
+    /**
+     * An enum of GUI type transitions. Any number of new values can be freely added.
+     */
     public enum GUIName
     {
 
@@ -62,19 +70,22 @@ public class StateTransitionManager<StateType>
      */
     private final ObjectProperty<StateType> state;
     /**
-    * A copy of {@link #state} this is only updated in the GUI thread
-    */
-    private final ObjectProperty<StateType> stateGUIT;
-    /**
-     * The state to go to if {@link cancel() cancel} is called.
+     * A copy of {@link #state} this is only updated in the GUI thread
      */
-    private final StateType cancelledState;
+    private final ObjectProperty<StateType> stateGUIT;
 
     /**
-     * When {@link #cancel()} is called, this is set to true. When this is true the state will not
-     * be moved on to any other state.
+     * userCancellable is set when the user requests a cancellation. It was cause the state machine
+     * to go to the cancelledState.
      */
-    private boolean cancelCalled = false;
+    private final Cancellable userCancellable = new SimpleCancellable();
+
+    /**
+     * errorCancellable is set programmatically when a fatal error occurs outside of the normal flow
+     * of transitions (e.g a printer error). It will cause the state machine to go to the
+     * failedState.
+     */
+    private final Cancellable errorCancellable = new SimpleCancellable();
 
     /**
      * Return the current state as a property. This variable is only updated on the GUI thread.
@@ -86,29 +97,56 @@ public class StateTransitionManager<StateType>
         return stateGUIT;
     }
 
+    /**
+     * Construct a StateTransitionManager.
+     *
+     * @param transitions The valid transitions.
+     * @param initialState The initial state that the machine will start in.
+     * @param cancelledState The state to go to if {@link cancel() cancel} is called.
+     * @param failedState The state to go to if {@link #errorCancellable} is set.
+     */
     public StateTransitionManager(Transitions<StateType> transitions, StateType initialState,
-        StateType cancelledState)
+        StateType cancelledState, StateType failedState)
     {
         this.transitions = transitions;
         this.allowedTransitions = transitions.getTransitions();
-        this.cancelledState = cancelledState;
         this.arrivals = transitions.getArrivals();
         state = new SimpleObjectProperty<>(initialState);
         stateGUIT = new SimpleObjectProperty<>(initialState);
-        state.addListener((ObservableValue<? extends StateType> observable, StateType oldValue, StateType newValue) ->
-        {
-            Lookup.getTaskExecutor().runOnGUIThread(() -> {stateGUIT.set(state.get());});
-        });
+        state.addListener(
+            (ObservableValue<? extends StateType> observable, StateType oldValue, StateType newValue) ->
+            {
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                    {
+                        stateGUIT.set(state.get());
+                });
+            });
+        userCancellable.cancelled().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                setState(cancelledState);
+            });
+        errorCancellable.cancelled().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                // errorCancellable will often be called when not on the GUI thread
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                    {
+                        setState(failedState);
+                });
+
+            });
     }
-    
+
     /**
      * Get the transitions that can be followed from the current {@link #state}.
      *
      * @return
      */
-    public Set<StateTransition<StateType>> getTransitions() {
+    public Set<StateTransition<StateType>> getTransitions()
+    {
         return getTransitions(state.get());
-    }    
+    }
 
     public Set<StateTransition<StateType>> getTransitions(StateType state)
     {
@@ -178,8 +216,8 @@ public class StateTransitionManager<StateType>
     /**
      * Follow the {@link StateTransition} associated with this GUIName. If there is an action
      * declared then call it. If the action succeeds (or if there is no action) then move to the
-     * toState of the relevant {@link StateTransition}. If the action fails (i.e. throws an exception) then
-     * move to the {@link StateTransition#transitionFailedState}.
+     * toState of the relevant {@link StateTransition}. If the action fails (i.e. throws an
+     * exception) then move to the {@link StateTransition#transitionFailedState}.
      *
      * @param guiName
      */
@@ -191,11 +229,11 @@ public class StateTransitionManager<StateType>
         if (stateTransition == null)
         {
             throw new RuntimeException("No transition found from state " + state.get()
-                + " for action " + guiName + " for " + this) ;
+                + " for action " + guiName + " for " + this);
         }
-        
+
         steno.debug("Follow transition " + guiName + " " + stateTransition.fromState + " "
-            + stateTransition.toState);        
+            + stateTransition.toState);
 
         if (stateTransition.action == null)
         {
@@ -206,7 +244,7 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc goToNextState = () ->
             {
-                if (!cancelCalled)
+                if (!userCancellable.cancelled().get() && ! errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.toState);
                 }
@@ -214,12 +252,12 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
-                 if (!cancelCalled)
+                if (!userCancellable.cancelled().get() && ! errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.transitionFailedState);
                 }
             };
-            
+
             String taskName = String.format("State transition from %s to %s",
                                             stateTransition.fromState, stateTransition.toState);
 
@@ -243,21 +281,22 @@ public class StateTransitionManager<StateType>
     }
 
     /**
-     * Move to the {@link cancelledState}. Also call the cancel() method of {@link #transitions},
-     * which might for instance cause any current long-running action to be stopped.
+     * Move to the {@link cancelledState}. Any actions tied to active state transitions should be
+     * listening to changes on this userCancellable and stop themselves.
      */
     public void cancel()
     {
-        cancelCalled = true;
-        try
-        {
-            transitions.cancel();
-        } catch (Exception ex)
-        {
-            ex.printStackTrace();
-            steno.error("Error doing cancelled action " + ex);
-        }
-        setState(cancelledState);
+        userCancellable.cancelled().set(true);
+    }
+
+    public Cancellable getCancellable()
+    {
+        return userCancellable;
+    }
+
+    public Cancellable getErrorCancellable()
+    {
+        return errorCancellable;
     }
 
 }

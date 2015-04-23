@@ -127,10 +127,4 @@ public class CalibrationXAndYTransitions implements Transitions
         return arrivals;
     }
 
-    @Override
-    public void cancel() throws Exception
-    {
-        actions.cancel();
-    }
-
 }

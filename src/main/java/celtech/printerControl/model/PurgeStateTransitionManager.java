@@ -15,8 +15,10 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
 
     public PurgeStateTransitionManager(Transitions<PurgeState> transitions, PurgeActions actions)
     {
-        super(transitions, PurgeState.IDLE, PurgeState.CANCELLED);
+        super(transitions, PurgeState.IDLE, PurgeState.CANCELLED, PurgeState.FAILED);
         this.actions = actions;
+        actions.setUserCancellable(getCancellable());
+        actions.setErrorCancellable(getErrorCancellable());
     }
     
     public void setPurgeTemperature(int purgeTemperature) {

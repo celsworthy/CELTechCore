@@ -3,10 +3,6 @@
  */
 package celtech.printerControl.model;
 
-import celtech.printerControl.model.ArrivalAction;
-import celtech.printerControl.model.StateTransition;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.Transitions;
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
 import celtech.utils.tasks.TaskExecutor;
@@ -223,13 +219,6 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         {
             return arrivals;
         }
-
-        @Override
-        public void cancel() throws Exception
-        {
-            actions.cancel();
-        }
-
     }
 
     public class TestStateTransitionManager extends StateTransitionManager
@@ -239,7 +228,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
 
         public TestStateTransitionManager(Transitions transitions, TestActions actions)
         {
-            super(transitions, TestState.IDLE, TestState.CANCELLED);
+            super(transitions, TestState.IDLE, TestState.CANCELLED, TestState.FAILED);
             this.actions = actions;
         }
 

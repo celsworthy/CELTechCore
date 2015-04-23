@@ -21,7 +21,7 @@ public class NozzleHeightStateTransitionManager extends StateTransitionManager<N
         CalibrationNozzleHeightActions actions)
     {
         super(transitions, NozzleOffsetCalibrationState.IDLE,
-              NozzleOffsetCalibrationState.CANCELLED);
+              NozzleOffsetCalibrationState.CANCELLED, NozzleOffsetCalibrationState.FAILED);
         this.actions = actions;
     }
 

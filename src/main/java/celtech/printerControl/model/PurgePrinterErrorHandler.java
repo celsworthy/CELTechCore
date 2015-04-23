@@ -1,15 +1,12 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.services.purge;
+package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.events.ErrorConsumer;
-import celtech.printerControl.model.CalibrationXAndYActions;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +15,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The PurgePrinterErrorHandler listens for printer errors and if they occur then cause the user to
- * get a Continue/Abort dialog.
+ * The PurgePrinterErrorHandlerOrig listens for printer errors and if they occur then cause the user
+ * to get a Continue/Abort dialog.
  *
  * @author tony
  */
@@ -30,13 +27,12 @@ public class PurgePrinterErrorHandler
         CalibrationXAndYActions.class.getName());
 
     private final Printer printer;
-    private final Cancellable cancellable;
-    private boolean errorDialogIsOnDisplay = false;
+    private final Cancellable errorCancellable;
 
-    public PurgePrinterErrorHandler(Printer printer, Cancellable cancellable)
+    public PurgePrinterErrorHandler(Printer printer, Cancellable errorCancellable)
     {
         this.printer = printer;
-        this.cancellable = cancellable;
+        this.errorCancellable = errorCancellable;
     }
 
     ErrorConsumer errorConsumer = (FirmwareError error) ->
@@ -58,7 +54,7 @@ public class PurgePrinterErrorHandler
      */
     private void notifyUserErrorHasOccurredAndAbortIfNotSlip(FirmwareError error)
     {
-        if (! cancellable.cancelled.get())
+        if (!errorCancellable.cancelled().get())
         {
             if (error == FirmwareError.B_POSITION_LOST)
             {
@@ -113,17 +109,7 @@ public class PurgePrinterErrorHandler
 
     private void cancelPurge()
     {
-        try
-        {
-            cancellable.cancelled.set(true);
-            if (printer.canCancelProperty().get())
-            {
-                printer.cancel(null);
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Cannot cancel print (in purge): " + ex);
-        }
+        errorCancellable.cancelled().set(true);
     }
 
     public void deregisterForPrinterErrors()

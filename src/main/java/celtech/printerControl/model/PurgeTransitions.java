@@ -94,6 +94,12 @@ public class PurgeTransitions implements Transitions
                                             StateTransitionManager.GUIName.RETRY,
                                             PurgeState.INITIALISING,
                                             PurgeState.FAILED));
+        
+        // FAILED(OK)
+        transitions.add(new StateTransition(PurgeState.FAILED,
+                                            StateTransitionManager.GUIName.COMPLETE,
+                                            PurgeState.DONE,
+                                            PurgeState.DONE));        
     }
 
     @Override
@@ -106,12 +112,6 @@ public class PurgeTransitions implements Transitions
     public Map getArrivals()
     {
         return arrivals;
-    }
-
-    @Override
-    public void cancel() throws Exception
-    {
-        actions.cancel();
     }
 
 }

@@ -7,9 +7,7 @@ import celtech.configuration.Filament;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.services.purge.PurgePrinterErrorHandler;
 import celtech.utils.PrinterUtils;
-import celtech.utils.tasks.Cancellable;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -17,12 +15,11 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class PurgeActions
+public class PurgeActions extends StateTransitionActions
 {
 
     public class PurgeException extends Exception
     {
-
         public PurgeException(String message)
         {
             super(message);
@@ -33,7 +30,7 @@ public class PurgeActions
         PurgeActions.class.getName());
 
     private final Printer printer;
-    private final Cancellable cancellable = new Cancellable();
+
     private PurgePrinterErrorHandler printerErrorHandler;
 
     private HeadEEPROMDataResponse savedHeadData;
@@ -64,10 +61,9 @@ public class PurgeActions
 
     public void doInitialiseAction() throws RoboxCommsException
     {
-        
         printer.setPrinterStatus(PrinterStatus.PURGING_HEAD);
 
-        printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
+        printerErrorHandler = new PurgePrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
 
         // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
@@ -107,7 +103,7 @@ public class PurgeActions
         printer.goToTargetBedTemperature();
         boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.getPrinterAncillarySystems().bedTemperatureProperty(), null,
-            desiredBedTemperature, 5, 600, cancellable);
+            desiredBedTemperature, 5, 600, userOrErrorCancellable);
 
         if (bedHeatFailed)
         {
@@ -120,7 +116,7 @@ public class PurgeActions
         boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.headProperty().get().getNozzleHeaters().get(0).
             nozzleTemperatureProperty(),
-            null, purgeTemperature, 5, 300, cancellable);
+            null, purgeTemperature, 5, 300, userOrErrorCancellable);
 
         if (extruderHeatFailed)
         {
@@ -131,7 +127,7 @@ public class PurgeActions
     void doRunPurgeAction() throws PrinterException
     {
         printer.executeMacro("Purge Material");
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
     }
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException
@@ -162,7 +158,10 @@ public class PurgeActions
     {
         try
         {
-            printer.cancel(null);
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
         } catch (PrinterException ex)
         {
             steno.error("Failed to cancel purge print - " + ex.getMessage());
@@ -181,21 +180,6 @@ public class PurgeActions
         {
             steno.error("Error deregistering printer handler");
         }
-    }
-
-    public void cancel() throws RoboxCommsException, PrinterException
-    {
-        deregisterPrinterErrorHandler();
-        cancellable.cancelled.set(true);
-        try
-        {
-            // wait for any current actions to respect cancelled flag
-            Thread.sleep(500);
-        } catch (InterruptedException ex)
-        {
-            steno.warning("interrupted during wait of cancel");
-        }
-        doFailedAction();
     }
 
     private void switchHeatersAndHeadLightOff() throws PrinterException
@@ -229,4 +213,43 @@ public class PurgeActions
         purgeFilament = filament;
     }
 
+    @Override
+    void whenUserCancelDetected()
+    {
+        try
+        {
+            cancelOngoingActionAndResetPrinter();
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error cancelling purge: " + ex);
+        }
+    }
+    
+    @Override
+    void whenErrorDetected()
+    {
+        try
+        {
+            cancelOngoingActionAndResetPrinter();
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error cancelling purge: " + ex);
+        }
+    }    
+    
+    private void cancelOngoingActionAndResetPrinter() throws RoboxCommsException, PrinterException
+    {
+        deregisterPrinterErrorHandler();
+        try
+        {
+            // wait for any current actions to respect cancelled flag
+            Thread.sleep(500);
+        } catch (InterruptedException ex)
+        {
+            steno.warning("interrupted during wait of cancel");
+        }
+        doFailedAction();
+    }    
+
+    
 }

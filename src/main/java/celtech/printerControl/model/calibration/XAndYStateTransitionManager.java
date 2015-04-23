@@ -19,7 +19,8 @@ public class XAndYStateTransitionManager extends StateTransitionManager<Calibrat
     public XAndYStateTransitionManager(Transitions transitions,
         CalibrationXAndYActions actions)
     {
-        super(transitions, CalibrationXAndYState.IDLE, CalibrationXAndYState.CANCELLED);
+        super(transitions, CalibrationXAndYState.IDLE, CalibrationXAndYState.CANCELLED,
+                                                       CalibrationXAndYState.FAILED);
         this.actions = actions;
     }
 
