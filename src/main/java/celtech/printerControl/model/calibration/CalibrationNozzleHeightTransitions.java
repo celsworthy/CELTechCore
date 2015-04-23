@@ -181,11 +181,4 @@ public class CalibrationNozzleHeightTransitions implements Transitions
     {
         return arrivals;
     }
-
-    @Override
-    public void cancel() throws Exception
-    {
-        actions.cancel();
-    }
-
 }

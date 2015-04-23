@@ -290,10 +290,4 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
         return arrivals;
     }
 
-    @Override
-    public void cancel() throws RoboxCommsException
-    {
-        actions.cancel();
-    }
-
 }

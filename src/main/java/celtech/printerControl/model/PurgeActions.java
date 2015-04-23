@@ -10,6 +10,7 @@ import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.services.purge.PurgePrinterErrorHandler;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -33,7 +34,8 @@ public class PurgeActions
         PurgeActions.class.getName());
 
     private final Printer printer;
-    private final Cancellable cancellable = new Cancellable();
+    private Cancellable userCancellable;
+    private Cancellable errorCancellable;
     private PurgePrinterErrorHandler printerErrorHandler;
 
     private HeadEEPROMDataResponse savedHeadData;
@@ -64,10 +66,9 @@ public class PurgeActions
 
     public void doInitialiseAction() throws RoboxCommsException
     {
-        
         printer.setPrinterStatus(PrinterStatus.PURGING_HEAD);
 
-        printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
+        printerErrorHandler = new PurgePrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
 
         // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
@@ -107,7 +108,7 @@ public class PurgeActions
         printer.goToTargetBedTemperature();
         boolean bedHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.getPrinterAncillarySystems().bedTemperatureProperty(), null,
-            desiredBedTemperature, 5, 600, cancellable);
+            desiredBedTemperature, 5, 600, userCancellable);
 
         if (bedHeatFailed)
         {
@@ -120,7 +121,7 @@ public class PurgeActions
         boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.headProperty().get().getNozzleHeaters().get(0).
             nozzleTemperatureProperty(),
-            null, purgeTemperature, 5, 300, cancellable);
+            null, purgeTemperature, 5, 300, userCancellable);
 
         if (extruderHeatFailed)
         {
@@ -131,7 +132,7 @@ public class PurgeActions
     void doRunPurgeAction() throws PrinterException
     {
         printer.executeMacro("Purge Material");
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        PrinterUtils.waitOnMacroFinished(printer, userCancellable);
     }
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException
@@ -186,7 +187,7 @@ public class PurgeActions
     public void cancel() throws RoboxCommsException, PrinterException
     {
         deregisterPrinterErrorHandler();
-        cancellable.cancelled.set(true);
+        userCancellable.cancelled.set(true);
         try
         {
             // wait for any current actions to respect cancelled flag
@@ -227,6 +228,38 @@ public class PurgeActions
     public void setPurgeFilament(Filament filament)
     {
         purgeFilament = filament;
+    }
+
+    void setUserCancellable(Cancellable cancellable)
+    {
+        this.userCancellable = cancellable;
+        cancellable.cancelled.addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                try
+                {
+                    cancel();
+                } catch (RoboxCommsException | PrinterException ex)
+                {
+                    steno.error("Error cancelling purge: " + ex);
+                }
+            });
+    }
+
+    void setErrorCancellable(Cancellable errorCancellable)
+    {
+        this.errorCancellable = errorCancellable;
+        errorCancellable.cancelled.addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                try
+                {
+                    printer.cancel(null);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Failed to cancel purge print - " + ex.getMessage());
+                }
+            });
     }
 
 }

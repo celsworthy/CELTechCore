@@ -4,7 +4,6 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.Filament;
-import celtech.utils.tasks.Cancellable;
 
 /**
  *
@@ -13,12 +12,13 @@ import celtech.utils.tasks.Cancellable;
 public class PurgeStateTransitionManager extends StateTransitionManager<PurgeState>
 {
     private final PurgeActions actions;
-    private final Cancellable cancellable = new Cancellable();
 
     public PurgeStateTransitionManager(Transitions<PurgeState> transitions, PurgeActions actions)
     {
-        super(transitions, PurgeState.IDLE, PurgeState.CANCELLED);
+        super(transitions, PurgeState.IDLE, PurgeState.CANCELLED, PurgeState.FAILED);
         this.actions = actions;
+        actions.setUserCancellable(getCancellable());
+        actions.setErrorCancellable(getErrorCancellable());
     }
     
     public void setPurgeTemperature(int purgeTemperature) {
