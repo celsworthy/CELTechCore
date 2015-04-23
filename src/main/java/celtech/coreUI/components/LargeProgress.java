@@ -3,8 +3,14 @@
  */
 package celtech.coreUI.components;
 
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterMetaStatus;
 import java.io.IOException;
 import java.net.URL;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,7 +35,7 @@ public class LargeProgress extends BorderPane
 
     @FXML
     private Label largeTargetValue;
-    
+
     @FXML
     private Label largeProgressDescription;
 
@@ -39,7 +45,13 @@ public class LargeProgress extends BorderPane
     @FXML
     private Label largeTargetLegend;
 
+    private DoubleProperty progressProperty = new SimpleDoubleProperty(0);
     private double progress = 0;
+
+    private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        setProgress(newValue.doubleValue());
+    };
 
     public LargeProgress()
     {
@@ -82,12 +94,14 @@ public class LargeProgress extends BorderPane
     {
         largeTargetValue.setText(targetValue);
     }
-    
-    public void setProgressDescription(String progressDescription) {
+
+    public void setProgressDescription(String progressDescription)
+    {
         largeProgressDescription.setText(progressDescription);
     }
-    
-    public void setTargetLegend(String targetLegend) {
+
+    public void setTargetLegend(String targetLegend)
+    {
         largeTargetLegend.setText(targetLegend);
     }
 
@@ -106,13 +120,15 @@ public class LargeProgress extends BorderPane
         double barEndXPosition = largeProgressBarInner.getLayoutX()
             + largeProgressBarInner.boundsInParentProperty().get().getWidth();
         double barStartXPosition = largeProgressBarInner.getLayoutX();
-        double currentValueWidth = largeProgressCurrentValue.boundsInParentProperty().get().getWidth();
+        double currentValueWidth = largeProgressCurrentValue.boundsInParentProperty().get().
+            getWidth();
         int OFFSET_FROM_PROGRESS_BAR_RHS = 10;  // px
         double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth
             - OFFSET_FROM_PROGRESS_BAR_RHS;
-        
+
         double leftmostValuePositionAllowed = barStartXPosition + 2;
-        if (requiredCurrentValueXPosition < leftmostValuePositionAllowed) {
+        if (requiredCurrentValueXPosition < leftmostValuePositionAllowed)
+        {
             requiredCurrentValueXPosition = leftmostValuePositionAllowed;
         }
 
@@ -121,4 +137,24 @@ public class LargeProgress extends BorderPane
         largeProgressCurrentValue.setTranslateX(requiredTranslate);
     }
 
+    public void bindToPrinter(PrinterMetaStatus printerMetaStatus)
+    {
+        unbindProgress();
+        
+        largeProgressDescription.textProperty().bind(printerMetaStatus.printerStatusProperty().asString());
+        largeTargetValue.textProperty().bind(printerMetaStatus.currentStatusValueProperty().asString("%.1f"));
+        largeTargetValue.visibleProperty().bind(printerMetaStatus.targetValueVisibleProperty());
+        largeTargetLegend.textProperty().bind(printerMetaStatus.legendProperty());
+        progressProperty.bind(printerMetaStatus.currentStatusValueProperty());
+        progressProperty.addListener(progressChangeListener);
+    }
+
+    public void unbindProgress()
+    {
+        largeProgressDescription.textProperty().unbind();
+        largeTargetValue.textProperty().unbind();
+        largeTargetValue.visibleProperty().unbind();
+        progressProperty.removeListener(progressChangeListener);
+        progressProperty.unbind();
+    }
 }

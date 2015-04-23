@@ -121,6 +121,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
+    private final PrinterMetaStatus metaStatus;
     protected ObjectProperty<MacroType> macroType = new SimpleObjectProperty<>(null);
     protected BooleanProperty macroIsInterruptible = new SimpleBooleanProperty(false);
 
@@ -219,6 +220,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private boolean processErrors = false;
     private final FilamentLoadedGetter filamentLoadedGetter;
 
+    @Override
+    public PrinterMetaStatus getPrinterMetaStatus()
+    {
+        return metaStatus;
+    }
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to override
      * the detection of whether a filament is loaded or not on a given extruder.
@@ -252,6 +259,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
         this.filamentLoadedGetter = filamentLoadedGetter;
+
+        metaStatus = new PrinterMetaStatus(this);
 
         macroType.addListener(
             (ObservableValue<? extends MacroType> observable, MacroType oldValue, MacroType newValue) ->
