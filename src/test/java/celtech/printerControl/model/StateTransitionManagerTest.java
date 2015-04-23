@@ -5,6 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
+import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskExecutor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +38,15 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     public void setUp()
     {
         super.setUp();
-        TestActions actions = new TestActions();
-        Transitions transitions = new TestTransitions(actions);
-        manager = new TestStateTransitionManager(transitions, actions);
+        
+       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+            Cancellable errorCancellable)
+            -> new TestActions(userCancellable, errorCancellable);
+
+        StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
+            -> new TestTransitions((TestActions) actions);          
+        
+        manager = new TestStateTransitionManager(actionsFactory, transitionsFactory);
 
     }
 
@@ -114,11 +121,16 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         assertEquals(43, manager.getX());
     }
 
-    static class TestActions
+    static class TestActions extends StateTransitionActions
     {
 
         int x = 0;
         boolean cancelled = false;
+
+        private TestActions(Cancellable userCancellable, Cancellable errorCancellable)
+        {
+            super(userCancellable, errorCancellable);
+        }
 
         private void doAction1()
         {
@@ -144,6 +156,16 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         private void cancel()
         {
             cancelled = true;
+        }
+
+        @Override
+        void whenUserCancelDetected()
+        {
+        }
+
+        @Override
+        void whenErrorDetected()
+        {
         }
     }
 
@@ -224,22 +246,20 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     public class TestStateTransitionManager extends StateTransitionManager
     {
 
-        private final TestActions actions;
-
-        public TestStateTransitionManager(Transitions transitions, TestActions actions)
+        public TestStateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
+        TransitionsFactory transitionsFactory)
         {
-            super(transitions, TestState.IDLE, TestState.CANCELLED, TestState.FAILED);
-            this.actions = actions;
+            super(stateTransitionActionsFactory, transitionsFactory, TestState.IDLE, TestState.CANCELLED, TestState.FAILED);
         }
 
         public int getX()
         {
-            return actions.x;
+            return ((TestActions) actions).x;
         }
 
         public boolean isCancelled()
         {
-            return actions.cancelled;
+            return ((TestActions) actions).cancelled;
         }
 
     }

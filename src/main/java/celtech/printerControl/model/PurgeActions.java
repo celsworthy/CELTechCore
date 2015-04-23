@@ -8,6 +8,7 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
+import celtech.utils.tasks.Cancellable;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -47,8 +48,9 @@ public class PurgeActions extends StateTransitionActions
      */
     private Filament purgeFilament;
 
-    PurgeActions(Printer printer)
+    PurgeActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
+        super(userCancellable, errorCancellable);
         this.printer = printer;
     }
 

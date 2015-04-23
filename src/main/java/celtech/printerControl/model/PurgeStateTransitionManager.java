@@ -6,42 +6,44 @@ package celtech.printerControl.model;
 import celtech.configuration.Filament;
 
 /**
+ * The PurgeStateTransitionManager manages state and transitions between different states, and also
+ * functions as the data transfer interface between the StateActions instance and the GUI.
  *
  * @author tony
  */
 public class PurgeStateTransitionManager extends StateTransitionManager<PurgeState>
 {
-    private final PurgeActions actions;
 
-    public PurgeStateTransitionManager(Transitions<PurgeState> transitions, PurgeActions actions)
+    public PurgeStateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
+        TransitionsFactory transitionsFactory)
     {
-        super(transitions, PurgeState.IDLE, PurgeState.CANCELLED, PurgeState.FAILED);
-        this.actions = actions;
-        actions.setUserCancellable(getCancellable());
-        actions.setErrorCancellable(getErrorCancellable());
+        super(stateTransitionActionsFactory, transitionsFactory, PurgeState.IDLE,
+              PurgeState.CANCELLED, PurgeState.FAILED);
     }
-    
-    public void setPurgeTemperature(int purgeTemperature) {
-        actions.setPurgeTemperature(purgeTemperature);
+
+    public void setPurgeTemperature(int purgeTemperature)
+    {
+        ((PurgeActions) actions).setPurgeTemperature(purgeTemperature);
     }
 
     public int getLastMaterialTemperature()
     {
-        return actions.getLastMaterialTemperature();
+        return ((PurgeActions) actions).getLastMaterialTemperature();
     }
 
     public int getCurrentMaterialTemperature()
     {
-        return actions.getCurrentMaterialTemperature();
+        return ((PurgeActions) actions).getCurrentMaterialTemperature();
     }
 
     public int getPurgeTemperature()
     {
-        return actions.getPurgeTemperature();
+        return ((PurgeActions) actions).getPurgeTemperature();
     }
-    
-    public void setPurgeFilament(Filament filament) {
-        actions.setPurgeFilament(filament);
+
+    public void setPurgeFilament(Filament filament)
+    {
+        ((PurgeActions) actions).setPurgeFilament(filament);
     }
-    
+
 }

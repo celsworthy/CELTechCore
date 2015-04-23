@@ -22,6 +22,9 @@ import libertysystems.stenographer.StenographerFactory;
  * other. Transitions ({@link StateTransition}) can have actions which will be called when the
  * transition is followed.
  * <p>
+ * It also functions as the data transfer interface between the StateActions instance and the GUI.
+ * GUIs therefore only need to deal with the StateTransitionManager.
+ * </p><p>
  * GUIs should call {@link #getTransitions() getTransitions} and for each transition returned there
  * is a GUIName. This indicates which transitions are available to the user e.g. Next, Back, Retry,
  * Up.
@@ -46,6 +49,19 @@ import libertysystems.stenographer.StenographerFactory;
 public class StateTransitionManager<StateType>
 {
 
+    public interface StateTransitionActionsFactory
+    {
+
+        public StateTransitionActions makeStateTransitionActions(Cancellable userCancellable,
+            Cancellable errorCancellable);
+    }
+
+    public interface TransitionsFactory
+    {
+
+        public Transitions makeTransition(StateTransitionActions actions);
+    }
+
     /**
      * An enum of GUI type transitions. Any number of new values can be freely added.
      */
@@ -57,8 +73,9 @@ public class StateTransitionManager<StateType>
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         StateTransitionManager.class.getName());
+    
+    protected StateTransitionActions actions;
 
-    Transitions<StateType> transitions;
     Set<StateTransition<StateType>> allowedTransitions;
     /**
      * The actions {@link ArrivalAction} to perform when given states are arrived at.
@@ -75,15 +92,19 @@ public class StateTransitionManager<StateType>
     private final ObjectProperty<StateType> stateGUIT;
 
     /**
-     * userCancellable is set when the user requests a cancellation. It was cause the state machine
-     * to go to the cancelledState.
+     * userCancellable is set from the {@link #cancel() cancel method} when the user requests a cancellation. It will cause the state machine
+     * to go to the cancelledState. It is usually triggered by the user clicking the cancel button.
+     * The StateTransitionActions instance should always be listening to this and should stop
+     * any ongoing actions if cancelled is set to true.
      */
     private final Cancellable userCancellable = new SimpleCancellable();
 
     /**
      * errorCancellable is set programmatically when a fatal error occurs outside of the normal flow
      * of transitions (e.g a printer error). It will cause the state machine to go to the
-     * failedState.
+     * failedState. it is usually set by a printer error consumer.
+     * The StateTransitionActions instance should always be listening to this and should stop
+     * any ongoing actions if cancelled is set to true.
      */
     private final Cancellable errorCancellable = new SimpleCancellable();
 
@@ -100,17 +121,24 @@ public class StateTransitionManager<StateType>
     /**
      * Construct a StateTransitionManager.
      *
-     * @param transitions The valid transitions.
+     * @param stateTransitionActionsFactory
+     * @param transitionsFactory
      * @param initialState The initial state that the machine will start in.
      * @param cancelledState The state to go to if {@link cancel() cancel} is called.
      * @param failedState The state to go to if {@link #errorCancellable} is set.
      */
-    public StateTransitionManager(Transitions<StateType> transitions, StateType initialState,
+    public StateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
+        TransitionsFactory transitionsFactory, StateType initialState,
         StateType cancelledState, StateType failedState)
     {
-        this.transitions = transitions;
+        actions = stateTransitionActionsFactory.makeStateTransitionActions(
+            userCancellable,
+            errorCancellable);
+        Transitions<StateType> transitions = transitionsFactory.makeTransition(actions);
+
         this.allowedTransitions = transitions.getTransitions();
         this.arrivals = transitions.getArrivals();
+
         state = new SimpleObjectProperty<>(initialState);
         stateGUIT = new SimpleObjectProperty<>(initialState);
         state.addListener(
@@ -121,6 +149,7 @@ public class StateTransitionManager<StateType>
                         stateGUIT.set(state.get());
                 });
             });
+
         userCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -134,7 +163,6 @@ public class StateTransitionManager<StateType>
                     {
                         setState(failedState);
                 });
-
             });
     }
 
@@ -244,7 +272,7 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc goToNextState = () ->
             {
-                if (!userCancellable.cancelled().get() && ! errorCancellable.cancelled().get())
+                if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.toState);
                 }
@@ -252,7 +280,7 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
-                if (!userCancellable.cancelled().get() && ! errorCancellable.cancelled().get())
+                if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.transitionFailedState);
                 }
@@ -287,16 +315,6 @@ public class StateTransitionManager<StateType>
     public void cancel()
     {
         userCancellable.cancelled().set(true);
-    }
-
-    public Cancellable getCancellable()
-    {
-        return userCancellable;
-    }
-
-    public Cancellable getErrorCancellable()
-    {
-        return errorCancellable;
     }
 
 }

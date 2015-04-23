@@ -2173,6 +2173,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         //TODO modify for multiple heaters
         try
         {
+            steno.debug("Turn off nozzle heater");
             transmitDirectGCode(GCodeConstants.switchNozzleHeaterOff, false);
         } catch (RoboxCommsException ex)
         {
@@ -2709,11 +2710,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        CalibrationXAndYActions actions = new CalibrationXAndYActions(this);
-        CalibrationXAndYTransitions calibrationXAndYTransitions = new CalibrationXAndYTransitions(
-            actions);
+        
+       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+            Cancellable errorCancellable)
+            -> new CalibrationXAndYActions(HardwarePrinter.this, userCancellable,
+                                                   errorCancellable);
+
+        StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
+            -> new CalibrationXAndYTransitions((CalibrationXAndYActions) actions);
+        
+
         XAndYStateTransitionManager calibrationAlignmentManager
-            = new XAndYStateTransitionManager(calibrationXAndYTransitions, actions);
+            = new XAndYStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationAlignmentManager;
     }
 
@@ -2724,11 +2732,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        CalibrationNozzleHeightActions actions = new CalibrationNozzleHeightActions(this);
-        CalibrationNozzleHeightTransitions calibrationNozzleHeightTransitions = new CalibrationNozzleHeightTransitions(
-            actions);
+        
+       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+            Cancellable errorCancellable)
+            -> new CalibrationNozzleHeightActions(HardwarePrinter.this, userCancellable,
+                                                   errorCancellable);
+
+        StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
+            -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);        
+        
         NozzleHeightStateTransitionManager calibrationHeightManager
-            = new NozzleHeightStateTransitionManager(calibrationNozzleHeightTransitions, actions);
+            = new NozzleHeightStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationHeightManager;
     }
 
@@ -2739,11 +2753,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Purge not permitted");
         }
-        PurgeActions actions = new PurgeActions(this);
-        PurgeTransitions purgeTransitions = new PurgeTransitions(
-            actions);
+
+        StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+            Cancellable errorCancellable)
+            -> new PurgeActions(HardwarePrinter.this, userCancellable, errorCancellable);
+
+        StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
+            -> new PurgeTransitions((PurgeActions) actions);
+
         PurgeStateTransitionManager purgeManager
-            = new PurgeStateTransitionManager(purgeTransitions, actions);
+            = new PurgeStateTransitionManager(actionsFactory, transitionsFactory);
         return purgeManager;
     }
 
@@ -2754,12 +2773,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        CalibrationNozzleOpeningActions actions = new CalibrationNozzleOpeningActions(this);
-        CalibrationNozzleOpeningTransitions calibrationNozzleOpeningTransitions = new CalibrationNozzleOpeningTransitions(
-            actions);
+
+        StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+            Cancellable errorCancellable)
+            -> new CalibrationNozzleOpeningActions(HardwarePrinter.this, userCancellable,
+                                                   errorCancellable);
+
+        StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
+            -> new CalibrationNozzleOpeningTransitions((CalibrationNozzleOpeningActions) actions);
+
         NozzleOpeningStateTransitionManager calibrationOpeningManager
-            = new NozzleOpeningStateTransitionManager(
-                calibrationNozzleOpeningTransitions, actions);
+            = new NozzleOpeningStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationOpeningManager;
     }
 

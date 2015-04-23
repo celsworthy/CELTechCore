@@ -4,7 +4,6 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.Transitions;
 import celtech.printerControl.model.CalibrationNozzleHeightActions;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 
@@ -15,19 +14,16 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 public class NozzleHeightStateTransitionManager extends StateTransitionManager<NozzleOffsetCalibrationState>
 {
 
-    private final CalibrationNozzleHeightActions actions;
-
-    public NozzleHeightStateTransitionManager(Transitions transitions,
-        CalibrationNozzleHeightActions actions)
+    public NozzleHeightStateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
+        TransitionsFactory transitionsFactory)
     {
-        super(transitions, NozzleOffsetCalibrationState.IDLE,
+        super(stateTransitionActionsFactory, transitionsFactory, NozzleOffsetCalibrationState.IDLE,
               NozzleOffsetCalibrationState.CANCELLED, NozzleOffsetCalibrationState.FAILED);
-        this.actions = actions;
     }
 
     public ReadOnlyDoubleProperty getZcoProperty()
     {
-        return actions.getZcoGUITProperty();
+        return ((CalibrationNozzleHeightActions) actions).getZcoGUITProperty();
     }
 
 }
