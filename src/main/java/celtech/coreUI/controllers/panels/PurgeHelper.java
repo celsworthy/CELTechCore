@@ -7,7 +7,7 @@ import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
-import celtech.services.purge.PurgePrinterErrorHandler;
+import celtech.services.purge.PurgePrinterErrorHandlerOrig;
 import celtech.services.purge.PurgeState;
 import celtech.services.purge.PurgeStepResult;
 import celtech.services.purge.PurgeTask;
@@ -41,7 +41,7 @@ public class PurgeHelper
     private int currentDisplayTemperature = 0;
     private int purgeTemperature = 0;
 
-    private final PurgePrinterErrorHandler printerErrorHandler;
+    private final PurgePrinterErrorHandlerOrig printerErrorHandler;
     private final Cancellable cancellable = new Cancellable();
 
     private final EventHandler<WorkerStateEvent> failedTaskHandler = (WorkerStateEvent event) ->
@@ -72,7 +72,7 @@ public class PurgeHelper
     {
         this.printerToUse = printer;
         this.purgeFilament = purgeFilament;
-        printerErrorHandler = new PurgePrinterErrorHandler(printer, cancellable);
+        printerErrorHandler = new PurgePrinterErrorHandlerOrig(printer, cancellable);
         printerErrorHandler.registerForPrinterErrors();
         
     }

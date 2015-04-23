@@ -94,6 +94,12 @@ public class PurgeTransitions implements Transitions
                                             StateTransitionManager.GUIName.RETRY,
                                             PurgeState.INITIALISING,
                                             PurgeState.FAILED));
+        
+        // FAILED(OK)
+        transitions.add(new StateTransition(PurgeState.FAILED,
+                                            StateTransitionManager.GUIName.COMPLETE,
+                                            PurgeState.DONE,
+                                            PurgeState.DONE));        
     }
 
     @Override

@@ -7,7 +7,6 @@ import celtech.configuration.Filament;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.services.purge.PurgePrinterErrorHandler;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import javafx.beans.value.ObservableValue;
@@ -184,7 +183,7 @@ public class PurgeActions
         }
     }
 
-    public void cancel() throws RoboxCommsException, PrinterException
+    private void cancel() throws RoboxCommsException, PrinterException
     {
         deregisterPrinterErrorHandler();
         userCancellable.cancelled.set(true);

@@ -18,12 +18,12 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The PurgePrinterErrorHandler listens for printer errors and if they occur then cause the user to
- * get a Continue/Abort dialog.
+ * The PurgePrinterErrorHandlerOrig listens for printer errors and if they occur then cause the user to
+ get a Continue/Abort dialog.
  *
  * @author tony
  */
-public class PurgePrinterErrorHandler
+public class PurgePrinterErrorHandlerOrig
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -33,7 +33,7 @@ public class PurgePrinterErrorHandler
     private final Cancellable cancellable;
     private boolean errorDialogIsOnDisplay = false;
 
-    public PurgePrinterErrorHandler(Printer printer, Cancellable cancellable)
+    public PurgePrinterErrorHandlerOrig(Printer printer, Cancellable cancellable)
     {
         this.printer = printer;
         this.cancellable = cancellable;

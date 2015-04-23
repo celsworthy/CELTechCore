@@ -22,10 +22,52 @@ public class HiddenKey
     private String hiddenCommandKeyBuffer = "";
     private String parameterCaptureBuffer = "";
     private boolean parameterCaptureInProgress = false;
+    
+    private final EventHandler<KeyEvent> hiddenErrorCommandEventHandler = (KeyEvent event) ->
+    {
+
+        switch (event.getCode())
+        {
+            case DIGIT1:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:", "DEFAULT");
+                }
+                break;
+            case DIGIT2:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:", "ATTACH EXTRUDER 1");
+                }
+                break;                
+            case B:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger B_STUCK
+                    triggerListeners("dummy:", "ERROR B_STUCK");
+                }
+                break;
+            case E:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger E_FILAMENT_SLIP
+                    triggerListeners("dummy:", "ERROR E_FILAMENT_SLIP");
+                }
+                break;    
+            case D:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger D_FILAMENT_SLIP
+                    triggerListeners("dummy:", "ERROR D_FILAMENT_SLIP");
+                }
+                break;                 
+
+        }
+    };
 
     private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
     {
-        steno.debug("Got character " + event.getCharacter());
+        steno.debug("Got character [" + event.getCharacter() + "] " + event.getCode());
 
         if (parameterCaptureInProgress)
         {
@@ -105,6 +147,7 @@ public class HiddenKey
         if (!captureKeys)
         {
             scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+            scene.addEventHandler(KeyEvent.KEY_PRESSED, hiddenErrorCommandEventHandler);
             captureKeys = true;
         }
     }
