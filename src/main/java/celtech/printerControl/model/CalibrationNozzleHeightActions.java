@@ -14,7 +14,6 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.SimpleCancellable;
 import java.util.ArrayList;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -27,7 +26,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class CalibrationNozzleHeightActions
+public class CalibrationNozzleHeightActions extends StateTransitionActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -38,13 +37,12 @@ public class CalibrationNozzleHeightActions
     private final DoubleProperty zco = new SimpleDoubleProperty();
     private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
-    private final Cancellable cancellable = new SimpleCancellable();
-    private final CalibrationHeightErrorHandler printerErrorHandler;
+    private final CalibrationPrinterErrorHandler printerErrorHandler;
 
-    public CalibrationNozzleHeightActions(Printer printer)
+    public CalibrationNozzleHeightActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
+        super(userCancellable, errorCancellable);
         this.printer = printer;
-        cancellable.cancelled().set(false);
         zco.addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
@@ -55,7 +53,7 @@ public class CalibrationNozzleHeightActions
                         zcoGUIT.set(zco.get());
                 });
             });
-        printerErrorHandler = new CalibrationHeightErrorHandler(printer, cancellable);
+        printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
     }
 
     public void doInitialiseAndHeatNozzleAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException
@@ -65,12 +63,9 @@ public class CalibrationNozzleHeightActions
         zco.set(0);
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         savedHeadData = printer.readHeadEEPROM();
         clearZOffsetsOnHead();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
         heatNozzle();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
 
     }
 
@@ -102,7 +97,7 @@ public class CalibrationNozzleHeightActions
     {
         printer.goToTargetNozzleTemperature();
         printer.executeMacro("Home_all");
-        if (PrinterUtils.waitOnMacroFinished(printer, cancellable) == false)
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable) == false)
         {
             printer.goToTargetNozzleTemperature();
             printer.goToZPosition(50);
@@ -117,7 +112,7 @@ public class CalibrationNozzleHeightActions
                 PrinterUtils.waitUntilTemperatureIsReached(
                     nozzleHeater.nozzleTemperatureProperty(), null,
                     nozzleHeater
-                    .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300, cancellable);
+                    .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
             } else
             {
                 NozzleHeater nozzleHeater = printer.headProperty().get()
@@ -125,9 +120,9 @@ public class CalibrationNozzleHeightActions
                 PrinterUtils.waitUntilTemperatureIsReached(
                     nozzleHeater.nozzleTemperatureProperty(), null,
                     nozzleHeater
-                    .nozzleTargetTemperatureProperty().get(), 5, 300, cancellable);
+                    .nozzleTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
             }
-            if (PrinterUtils.waitOnBusy(printer, cancellable) == false)
+            if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable) == false)
             {
                 printer.switchOnHeadLEDs();
             } else
@@ -143,15 +138,12 @@ public class CalibrationNozzleHeightActions
     public void doHomeZAction() throws CalibrationException
     {
         printer.homeZ();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doLiftHeadAction() throws PrinterException, CalibrationException
     {
         printer.switchToAbsoluteMoveMode();
         printer.goToZPosition(30);
-//        printer.goToOpenDoorPosition(null);
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doMeasureZDifferenceAction() throws PrinterException, CalibrationException
@@ -165,30 +157,25 @@ public class CalibrationNozzleHeightActions
 
         // Level the gantry - manual rather than using the macro
         printer.goToXYPosition(30.0, 75.0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.homeZ();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.goToZPosition(5.0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.goToXYPosition(190.0, 75.0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.homeZ();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.goToZPosition(5.0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.levelGantry();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.goToXYPosition(105.0, 75.0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.homeZ();
-        PrinterUtils.waitOnBusy(printer, cancellable);
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.goToZPosition(5.0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
 
         ArrayList<Float> t0Deltas = new ArrayList<>();
         t0Deltas.add(0f);
@@ -201,9 +188,9 @@ public class CalibrationNozzleHeightActions
             int nozzleTo = ((flipFlop == false) ? 1 : 0);
 
             printer.selectNozzle(nozzleTo);
-            PrinterUtils.waitOnBusy(printer, cancellable);
+            PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
             printer.probeZ();
-            PrinterUtils.waitOnBusy(printer, cancellable);
+            PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
             float deltaValue = printer.getZDelta();
 
             if (nozzleTo == 0)
@@ -215,7 +202,6 @@ public class CalibrationNozzleHeightActions
             }
             steno.info("Delta from " + nozzleFrom + " to " + nozzleTo + " -> " + deltaValue);
             flipFlop = !flipFlop;
-            printerErrorHandler.checkIfPrinterErrorHasOccurred();
         }
 
         printer.selectNozzle(0);
@@ -233,19 +219,17 @@ public class CalibrationNozzleHeightActions
         steno.info("Average Z Offset was " + zDifference);
 
         printer.selectNozzle(0);
-        PrinterUtils.waitOnBusy(printer, cancellable);
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         if (!success)
         {
             throw new CalibrationException("ZCO could not be established");
         }
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doIncrementZAction() throws CalibrationException
     {
         zco.set(zco.get() + 0.05);
         printer.goToZPosition(zco.get());
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doDecrementZAction() throws CalibrationException
@@ -256,7 +240,6 @@ public class CalibrationNozzleHeightActions
             zco.set(0);
         }
         printer.goToZPosition(zco.get());
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doFinishedAction() throws PrinterException, RoboxCommsException
@@ -285,13 +268,11 @@ public class CalibrationNozzleHeightActions
     {
         printer.switchToAbsoluteMoveMode();
         printer.goToXYZPosition(105, 150, 25);
-        PrinterUtils.waitOnBusy(printer, cancellable);
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
     }
 
-    public void cancel() throws PrinterException, RoboxCommsException, CalibrationException
+    private void cancelOngoingActionAndResetPrinter() 
     {
-        cancellable.cancelled().set(true);
         try
         {
             // wait for any current actions to respect cancelled flag
@@ -300,7 +281,13 @@ public class CalibrationNozzleHeightActions
         {
             steno.info("interrupted during wait of cancel");
         }
-        doFailedAction();
+        try
+        {
+            doFailedAction();
+        } catch (CalibrationException | RoboxCommsException | PrinterException ex)
+        {
+           steno.error("Error cancelling calibration: " + ex);
+        } 
     }
 
     private void switchHeatersAndHeadLightOff() throws PrinterException
@@ -355,6 +342,19 @@ public class CalibrationNozzleHeightActions
     public ReadOnlyDoubleProperty getZcoGUITProperty()
     {
         return zcoGUIT;
+    }
+
+    @Override
+    void whenUserCancelDetected()
+    {
+        cancelOngoingActionAndResetPrinter();
+
+    }
+
+    @Override
+    void whenErrorDetected()
+    {
+        cancelOngoingActionAndResetPrinter();
     }
 
 }

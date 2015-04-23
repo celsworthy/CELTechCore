@@ -114,7 +114,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         assertEquals(43, manager.getX());
     }
 
-    static class TestActions
+    static class TestActions extends StateTransitionActions
     {
 
         int x = 0;
@@ -144,6 +144,16 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         private void cancel()
         {
             cancelled = true;
+        }
+
+        @Override
+        void whenUserCancelDetected()
+        {
+        }
+
+        @Override
+        void whenErrorDetected()
+        {
         }
     }
 
@@ -228,7 +238,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
 
         public TestStateTransitionManager(Transitions transitions, TestActions actions)
         {
-            super(transitions, TestState.IDLE, TestState.CANCELLED, TestState.FAILED);
+            super(actions, transitions, TestState.IDLE, TestState.CANCELLED, TestState.FAILED);
             this.actions = actions;
         }
 

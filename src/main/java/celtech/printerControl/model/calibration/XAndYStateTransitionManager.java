@@ -4,7 +4,6 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.Transitions;
 import celtech.printerControl.model.CalibrationXAndYActions;
 
 /**
@@ -14,23 +13,20 @@ import celtech.printerControl.model.CalibrationXAndYActions;
 public class XAndYStateTransitionManager extends StateTransitionManager<CalibrationXAndYState>
 {
 
-    private final CalibrationXAndYActions actions;
-
-    public XAndYStateTransitionManager(Transitions transitions,
-        CalibrationXAndYActions actions)
+    public XAndYStateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
+        TransitionsFactory transitionsFactory)
     {
-        super(transitions, CalibrationXAndYState.IDLE, CalibrationXAndYState.CANCELLED,
+        super(stateTransitionActionsFactory, transitionsFactory, CalibrationXAndYState.IDLE, CalibrationXAndYState.CANCELLED,
                                                        CalibrationXAndYState.FAILED);
-        this.actions = actions;
     }
 
     public void setXOffset(String xOffset)
     {
-        actions.setXOffset(xOffset);
+        ((CalibrationXAndYActions) actions).setXOffset(xOffset);
     }
 
     public void setYOffset(int yOffset)
     {
-        actions.setYOffset(yOffset);
+        ((CalibrationXAndYActions) actions).setYOffset(yOffset);
     }
 }

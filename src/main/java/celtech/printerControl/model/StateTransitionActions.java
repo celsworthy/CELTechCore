@@ -16,8 +16,16 @@ public abstract class StateTransitionActions
     Cancellable userCancellable;
     Cancellable errorCancellable;
     Cancellable userOrErrorCancellable;
+
+    public StateTransitionActions(Cancellable userCancellable, Cancellable errorCancellable)
+    {
+        setUserCancellable(userCancellable);
+        setErrorCancellable(errorCancellable);
+    }
     
-void setUserCancellable(Cancellable cancellable)
+    
+    
+    void setUserCancellable(Cancellable cancellable)
     {
         // userCancellable is set when the user requests a cancel. The state machine also detects
         // this condition and goes to CANCELLED, so we only need to stop

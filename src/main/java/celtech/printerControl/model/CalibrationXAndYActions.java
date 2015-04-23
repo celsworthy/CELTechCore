@@ -10,7 +10,6 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.SimpleCancellable;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -18,7 +17,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class CalibrationXAndYActions
+public class CalibrationXAndYActions extends StateTransitionActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -28,16 +27,14 @@ public class CalibrationXAndYActions
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
-    private final CalibrationXYErrorHandler printerErrorHandler;
+    private final CalibrationPrinterErrorHandler printerErrorHandler;
 
-    private final Cancellable cancellable = new SimpleCancellable();
-
-    public CalibrationXAndYActions(Printer printer)
+    public CalibrationXAndYActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
+        super(userCancellable, errorCancellable);
         this.printer = printer;
-        cancellable.cancelled().set(false);
 
-        printerErrorHandler = new CalibrationXYErrorHandler(printer, cancellable);
+        printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
     }
 
     public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
@@ -46,7 +43,6 @@ public class CalibrationXAndYActions
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
         savedHeadData = printer.readHeadEEPROM();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
@@ -54,10 +50,9 @@ public class CalibrationXAndYActions
 //        Thread.sleep(3000);
         printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat(
             "rbx_test_xy-offset-1_roboxised.gcode"), false);
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
+        PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
         // keep bed temp up to keep remaining part on the bed
 //        printer.goToTargetBedTemperature();
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException, CalibrationException
@@ -65,8 +60,7 @@ public class CalibrationXAndYActions
         saveSettings();
 //        Thread.sleep(3000);
         printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"), false);
-        PrinterUtils.waitOnMacroFinished(printer, cancellable);
-        printerErrorHandler.checkIfPrinterErrorHasOccurred();
+        PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
     }
 
     public void doFinishedAction() throws PrinterException
@@ -85,9 +79,8 @@ public class CalibrationXAndYActions
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    public void cancel() throws PrinterException, RoboxCommsException
+    public void cancelOngoingActionAndResetPrinter()
     {
-        cancellable.cancelled().set(true);
         try
         {
             // wait for any current actions to respect cancelled flag
@@ -107,7 +100,13 @@ public class CalibrationXAndYActions
         {
             steno.error("Cannot cancel print: " + ex);
         }
-        doFailedAction();
+        try
+        {
+            doFailedAction();
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error in cancelling calibration: " + ex);
+        } 
     }
 
     private void switchHeatersOffAndRaiseHead() throws PrinterException
@@ -226,6 +225,19 @@ public class CalibrationXAndYActions
     public void setYOffset(int yOffset)
     {
         this.yOffset = yOffset;
+    }
+
+    @Override
+    void whenUserCancelDetected()
+    {
+        cancelOngoingActionAndResetPrinter();
+
+    }
+
+    @Override
+    void whenErrorDetected()
+    {
+        cancelOngoingActionAndResetPrinter();
     }
 
 }
