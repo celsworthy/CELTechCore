@@ -186,13 +186,13 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
                 format("%.2f", screenExtentsProvider.getTransformedDepth()));
 
             Edge depthEdge = extents.depthEdges[0];
-//            for (int edgeIndex = 1; edgeIndex < extents.depthEdges.length; edgeIndex++)
-//            {
-//                if (extents.depthEdges[edgeIndex].getFirstPoint().getZ() > depthEdge.getFirstPoint().getY())
-//                {
-//                    depthEdge = extents.depthEdges[edgeIndex];
-//                }
-//            }
+            for (int edgeIndex = 1; edgeIndex < extents.depthEdges.length; edgeIndex++)
+            {
+                if (extents.depthEdges[edgeIndex].getFirstPoint().getX() < depthEdge.getFirstPoint().getX())
+                {
+                    depthEdge = extents.depthEdges[edgeIndex];
+                }
+            }
 
             Point2D backHorizontalPoint = null;
             Point2D frontHorizontalPoint = null;
