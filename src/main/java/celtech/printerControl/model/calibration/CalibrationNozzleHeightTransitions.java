@@ -10,24 +10,17 @@ import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransition;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
  * @author tony
  */
-public class CalibrationNozzleHeightTransitions implements Transitions
+public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffsetCalibrationState>
 {
-
-    CalibrationNozzleHeightActions actions;
-    Set<StateTransition<NozzleOffsetCalibrationState>> transitions;
-    Map<NozzleOffsetCalibrationState, ArrivalAction<NozzleOffsetCalibrationState>> arrivals;
-    StateTransitionManager manager;
 
     public CalibrationNozzleHeightTransitions(CalibrationNozzleHeightActions actions)
     {
-        this.actions = actions;
+        
         arrivals = new HashMap<>();
 
         arrivals.put(NozzleOffsetCalibrationState.FINISHED,
@@ -170,15 +163,5 @@ public class CalibrationNozzleHeightTransitions implements Transitions
                                             NozzleOffsetCalibrationState.IDLE,
                                             NozzleOffsetCalibrationState.DONE));
 
-    }
-
-    public Set<StateTransition<NozzleOffsetCalibrationState>> getTransitions()
-    {
-        return transitions;
-    }
-
-    public Map<NozzleOffsetCalibrationState, ArrivalAction<NozzleOffsetCalibrationState>> getArrivals()
-    {
-        return arrivals;
     }
 }

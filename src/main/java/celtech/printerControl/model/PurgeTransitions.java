@@ -5,24 +5,18 @@ package celtech.printerControl.model;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
  * @author tony
  */
-public class PurgeTransitions implements Transitions
+public class PurgeTransitions extends Transitions<PurgeState>
 {
-
-    Set<StateTransition<PurgeState>> transitions;
-    Map<PurgeState, ArrivalAction<PurgeState>> arrivals;
-    private final PurgeActions actions;
-
+    /**
+     * In the constructor we must populate the arrivals and transitions.
+     */
     PurgeTransitions(PurgeActions actions)
     {
-        this.actions = actions;
-
         arrivals = new HashMap<>();
 
         arrivals.put(PurgeState.FINISHED,
@@ -41,13 +35,13 @@ public class PurgeTransitions implements Transitions
 
         transitions = new HashSet<>();
 
-        // IDLE
+        // IDLE -> INITIALISING
         transitions.add(new StateTransition(PurgeState.IDLE,
                                             StateTransitionManager.GUIName.START,
                                             PurgeState.INITIALISING,
                                             PurgeState.FAILED));
 
-        // INITIALISING
+        // INITIALISING -> CONFIRM_TEMPERATURE
         transitions.add(new StateTransition(PurgeState.INITIALISING,
                                             StateTransitionManager.GUIName.AUTO,
                                             PurgeState.CONFIRM_TEMPERATURE,
@@ -57,13 +51,13 @@ public class PurgeTransitions implements Transitions
                                             },
                                             PurgeState.FAILED));
 
-        // CONFIRM_TEMPERATURE
+        // CONFIRM_TEMPERATURE -> HEATING
         transitions.add(new StateTransition(PurgeState.CONFIRM_TEMPERATURE,
                                             StateTransitionManager.GUIName.NEXT,
                                             PurgeState.HEATING,
                                             PurgeState.FAILED));
 
-        // HEATING
+        // HEATING -> RUNNING_PURGE
         transitions.add(new StateTransition(PurgeState.HEATING,
                                             StateTransitionManager.GUIName.AUTO,
                                             PurgeState.RUNNING_PURGE,
@@ -73,7 +67,7 @@ public class PurgeTransitions implements Transitions
                                             },
                                             PurgeState.FAILED));
 
-        // RUNNING_PURGE
+        // RUNNING_PURGE -> FINISHED
         transitions.add(new StateTransition(PurgeState.RUNNING_PURGE,
                                             StateTransitionManager.GUIName.AUTO,
                                             PurgeState.FINISHED,
@@ -83,35 +77,23 @@ public class PurgeTransitions implements Transitions
                                             },
                                             PurgeState.FAILED));
 
-        // FINISHED (OK)
+        // FINISHED (OK) -> DONE
         transitions.add(new StateTransition(PurgeState.FINISHED,
                                             StateTransitionManager.GUIName.COMPLETE,
                                             PurgeState.DONE,
                                             PurgeState.FAILED));
 
-        // FINISHED (RETRY)
+        // FINISHED (RETRY) -> INITIALISING
         transitions.add(new StateTransition(PurgeState.FINISHED,
                                             StateTransitionManager.GUIName.RETRY,
                                             PurgeState.INITIALISING,
                                             PurgeState.FAILED));
         
-        // FAILED(OK)
+        // FAILED(OK) -> DONE
         transitions.add(new StateTransition(PurgeState.FAILED,
                                             StateTransitionManager.GUIName.COMPLETE,
                                             PurgeState.DONE,
                                             PurgeState.DONE));        
-    }
-
-    @Override
-    public Set getTransitions()
-    {
-        return transitions;
-    }
-
-    @Override
-    public Map getArrivals()
-    {
-        return arrivals;
     }
 
 }

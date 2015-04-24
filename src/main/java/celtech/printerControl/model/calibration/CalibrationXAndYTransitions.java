@@ -10,25 +10,17 @@ import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransition;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
  * @author tony
  */
-public class CalibrationXAndYTransitions implements Transitions
+public class CalibrationXAndYTransitions extends Transitions<CalibrationXAndYState>
 {
-
-    CalibrationXAndYActions actions;
-    Set<StateTransition<CalibrationXAndYState>> transitions;
-    Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> arrivals;
-    StateTransitionManager manager;
 
     public CalibrationXAndYTransitions(CalibrationXAndYActions actions)
     {
-        this.actions = actions;
-        transitions = new HashSet<>();
+        
         arrivals = new HashMap<>();
 
         arrivals.put(CalibrationXAndYState.FINISHED,
@@ -44,6 +36,8 @@ public class CalibrationXAndYTransitions implements Transitions
                              actions.doFailedAction();
                      },
                                          CalibrationXAndYState.DONE));
+        
+        transitions = new HashSet<>();
 
         // IDLE
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
@@ -114,17 +108,4 @@ public class CalibrationXAndYTransitions implements Transitions
                                             CalibrationXAndYState.DONE));
 
     }
-
-    @Override
-    public Set<StateTransition<CalibrationXAndYState>> getTransitions()
-    {
-        return transitions;
-    }
-
-    @Override
-    public Map<CalibrationXAndYState, ArrivalAction<CalibrationXAndYState>> getArrivals()
-    {
-        return arrivals;
-    }
-
 }

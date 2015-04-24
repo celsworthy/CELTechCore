@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.LargeProgress;
@@ -26,7 +25,6 @@ import celtech.printerControl.model.StateTransition;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
 import celtech.services.slicer.PrintQualityEnumeration;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,13 +34,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
-import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -62,9 +55,7 @@ public class PurgeInsetPanelController2 implements Initializable
     private Project project = null;
     private Printer printer = null;
     private double printPercent;
-    private Bounds diagramBounds;
-    private Pane diagramNode;
-    private ResourceBundle resources;
+    private DiagramHandler diagramHandler;
 
     PurgeStateTransitionManager transitionManager;
 
@@ -165,8 +156,6 @@ public class PurgeInsetPanelController2 implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        this.resources = resources;
-
         populateNamesToButtons();
 
         purgeProgressBar.setTargetLegend("");
@@ -175,11 +164,9 @@ public class PurgeInsetPanelController2 implements Initializable
 
         startPurgeButton.installTag();
         proceedButton.installTag();
-
-        loadDiagram();
-        resizeDiagram();
-        addDiagramMoveScaleListeners();
-
+        
+        diagramHandler = new DiagramHandler(diagramContainer, resources);
+        diagramHandler.initialise();
     }
 
     private void populateNamesToButtons()
@@ -191,9 +178,11 @@ public class PurgeInsetPanelController2 implements Initializable
         namesToButtons.put(StateTransitionManager.GUIName.COMPLETE, okButton);
     }
 
+    /**
+     * According to the available transitions, show the appropriate buttons.
+     */
     private void showAppropriateButtons(PurgeState state)
     {
-        hideAllButtons();
         if (state.showCancelButton())
         {
             cancelPurgeButton.setVisible(true);
@@ -202,7 +191,6 @@ public class PurgeInsetPanelController2 implements Initializable
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
-                steno.debug("show button " + namesToButtons.get(allowedTransition.getGUIName()));
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
             }
         }
@@ -225,6 +213,7 @@ public class PurgeInsetPanelController2 implements Initializable
     {
         steno.debug("go to state " + state);
         steno.debug("printer status is " + printer.printerStatusProperty().get());
+        hideAllButtons();
         showAppropriateButtons(state);
         purgeStatus.setText(state.getStepTitle());
         purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
@@ -358,80 +347,5 @@ public class PurgeInsetPanelController2 implements Initializable
             steno.error("Error starting purge: " + ex);
         }
     }
-
-    private Bounds getBoundsOfNotYetDisplayedNode(Pane loadedDiagramNode)
-    {
-        Group group = new Group(loadedDiagramNode);
-        Scene scene = new Scene(group);
-        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
-        group.applyCss();
-        group.layout();
-        Bounds bounds = loadedDiagramNode.getLayoutBounds();
-        return bounds;
-    }
-
-    private void addDiagramMoveScaleListeners()
-    {
-
-        diagramContainer.widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeDiagram();
-            });
-
-        diagramContainer.heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeDiagram();
-            });
-
-    }
-
-    private void loadDiagram()
-    {
-        URL fxmlFileName = getClass().getResource(
-            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge_simplified.fxml");
-        try
-        {
-            FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
-            diagramNode = loader.load();
-            diagramBounds = getBoundsOfNotYetDisplayedNode(diagramNode);
-            diagramContainer.getChildren().clear();
-            diagramContainer.getChildren().add(diagramNode);
-
-        } catch (IOException ex)
-        {
-            ex.printStackTrace();
-            steno.error("Could not load diagram: " + fxmlFileName);
-        }
-    }
-
-    private void resizeDiagram()
-    {
-        double diagramWidth = diagramBounds.getWidth();
-        double diagramHeight = diagramBounds.getHeight();
-
-        double availableWidth = diagramContainer.getWidth();
-        double availableHeight = diagramContainer.getHeight();
-
-        double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
-        double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
-        double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
-
-        diagramNode.setScaleX(requiredScale);
-        diagramNode.setScaleY(requiredScale);
-
-        diagramNode.setPrefWidth(0);
-        diagramNode.setPrefHeight(0);
-
-        double xTranslate = 0;
-        double yTranslate = 0;
-        xTranslate += availableWidth / 2.0 - diagramWidth / 2.0;
-        yTranslate -= availableHeight;
-
-        diagramNode.setTranslateX(xTranslate);
-        diagramNode.setTranslateY(yTranslate);
-
-    }
-
+    
 }

@@ -4,36 +4,23 @@
 package celtech.printerControl.model.calibration;
 
 import celtech.printerControl.model.Transitions;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.CalibrationNozzleOpeningActions;
 import celtech.printerControl.model.ArrivalAction;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransition;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
  * @author tony
  */
-public class CalibrationNozzleOpeningTransitions implements Transitions
+public class CalibrationNozzleOpeningTransitions extends Transitions<NozzleOpeningCalibrationState>
 {
-
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleOpeningTransitions.class.getName());
-
-    CalibrationNozzleOpeningActions actions;
-    Set<StateTransition<NozzleOpeningCalibrationState>> transitions;
-    Map<NozzleOpeningCalibrationState, ArrivalAction<NozzleOpeningCalibrationState>> arrivals;
-    StateTransitionManager manager;
 
     public CalibrationNozzleOpeningTransitions(CalibrationNozzleOpeningActions actions)
     {
-        this.actions = actions;
+        
         arrivals = new HashMap<>();
 
         arrivals.put(NozzleOpeningCalibrationState.T0_EXTRUDING,
@@ -276,18 +263,6 @@ public class CalibrationNozzleOpeningTransitions implements Transitions
                                             StateTransitionManager.GUIName.RETRY,
                                             NozzleOpeningCalibrationState.IDLE,
                                             NozzleOpeningCalibrationState.DONE));        
-    }
-
-    @Override
-    public Set<StateTransition<NozzleOpeningCalibrationState>> getTransitions()
-    {
-        return transitions;
-    }
-
-    @Override
-    public Map<NozzleOpeningCalibrationState, ArrivalAction<NozzleOpeningCalibrationState>> getArrivals()
-    {
-        return arrivals;
     }
 
 }

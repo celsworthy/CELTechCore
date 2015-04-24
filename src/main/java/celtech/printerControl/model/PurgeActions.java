@@ -220,7 +220,7 @@ public class PurgeActions extends StateTransitionActions
     {
         try
         {
-            cancelOngoingActionAndResetPrinter();
+            abortOngoingPrintAndResetPrinter();
         } catch (RoboxCommsException | PrinterException ex)
         {
             steno.error("Error cancelling purge: " + ex);
@@ -232,14 +232,14 @@ public class PurgeActions extends StateTransitionActions
     {
         try
         {
-            cancelOngoingActionAndResetPrinter();
+            abortOngoingPrintAndResetPrinter();
         } catch (RoboxCommsException | PrinterException ex)
         {
             steno.error("Error cancelling purge: " + ex);
         }
     }    
     
-    private void cancelOngoingActionAndResetPrinter() throws RoboxCommsException, PrinterException
+    private void abortOngoingPrintAndResetPrinter() throws RoboxCommsException, PrinterException
     {
         deregisterPrinterErrorHandler();
         try
