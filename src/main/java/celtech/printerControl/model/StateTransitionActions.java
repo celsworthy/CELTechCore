@@ -23,9 +23,7 @@ public abstract class StateTransitionActions
         setErrorCancellable(errorCancellable);
     }
     
-    
-    
-    void setUserCancellable(Cancellable cancellable)
+    final void setUserCancellable(Cancellable cancellable)
     {
         // userCancellable is set when the user requests a cancel. The state machine also detects
         // this condition and goes to CANCELLED, so we only need to stop
@@ -44,7 +42,7 @@ public abstract class StateTransitionActions
         userOrErrorCancellable = new OredCancellable(userCancellable, errorCancellable);
     }
 
-    void setErrorCancellable(Cancellable errorCancellable)
+    final void setErrorCancellable(Cancellable errorCancellable)
     {
         // errorCancellable is set when an out-of-band error occurs such as a printer fault. The
         // state machine will also detect this state and go to FAILED, so we only need to stop

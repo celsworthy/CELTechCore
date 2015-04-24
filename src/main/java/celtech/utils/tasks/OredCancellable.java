@@ -8,8 +8,9 @@ import javafx.beans.value.ObservableValue;
 
 /**
  * OredCancellable takes two input cancellables and ORs them to look like one cancellable. It
- * gives cancelled of true if either cancellable.cancelled is true. Input cancellables of null
+ * gives cancelled of true if any cancellable.cancelled is true. Input cancellables of null
  * are ignored but at least one of the cancellables must be non-null.
+ * //TODO should also implement SimpleCancellable.or() so that chaining is possible
  * @author tony
  */
 public  class OredCancellable implements Cancellable
