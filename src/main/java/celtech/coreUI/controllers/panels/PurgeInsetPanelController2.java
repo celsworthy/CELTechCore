@@ -341,7 +341,7 @@ public class PurgeInsetPanelController2 implements Initializable
                     setState((PurgeState) newValue);
                 }
             });
-            setState(PurgeState.IDLE);
+            transitionManager.start();
         } catch (PrinterException ex)
         {
             steno.error("Error starting purge: " + ex);

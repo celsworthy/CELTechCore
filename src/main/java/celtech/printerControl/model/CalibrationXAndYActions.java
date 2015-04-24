@@ -37,6 +37,14 @@ public class CalibrationXAndYActions extends StateTransitionActions
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
     }
+    
+    @Override
+    public void initialise()
+    {
+        savedHeadData = null;
+        xOffset = 0;
+        yOffset = 0;
+    }
 
     public void doSaveHead() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
@@ -232,7 +240,6 @@ public class CalibrationXAndYActions extends StateTransitionActions
     void whenUserCancelDetected()
     {
         cancelOngoingActionAndResetPrinter();
-
     }
 
     @Override
@@ -241,4 +248,8 @@ public class CalibrationXAndYActions extends StateTransitionActions
         cancelOngoingActionAndResetPrinter();
     }
 
+    @Override
+    void resetAfterCancelOrError()
+    {
+    }
 }

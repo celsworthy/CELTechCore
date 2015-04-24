@@ -67,12 +67,13 @@ public class StateTransitionManager<StateType>
      */
     public enum GUIName
     {
+
         START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, A_BUTTON, B_BUTTON, AUTO;
     }
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         StateTransitionManager.class.getName());
-    
+
     protected StateTransitionActions actions;
 
     Set<StateTransition<StateType>> allowedTransitions;
@@ -91,21 +92,28 @@ public class StateTransitionManager<StateType>
     private final ObjectProperty<StateType> stateGUIT;
 
     /**
-     * userCancellable is set from the {@link #cancel() cancel method} when the user requests a cancellation. It will cause the state machine
-     * to go to the cancelledState. It is usually triggered by the user clicking the cancel button.
-     * The StateTransitionActions instance should always be listening to this and should stop
-     * any ongoing actions if cancelled is set to true.
+     * userCancellable is set from the {@link #cancel() cancel method} when the user requests a
+     * cancellation. It will cause the state machine to go to the cancelledState. It is usually
+     * triggered by the user clicking the cancel button. The StateTransitionActions instance should
+     * always be listening to this and should stop any ongoing actions if cancelled is set to true.
      */
     private final Cancellable userCancellable = new SimpleCancellable();
 
     /**
      * errorCancellable is set programmatically when a fatal error occurs outside of the normal flow
      * of transitions (e.g a printer error). It will cause the state machine to go to the
-     * failedState. it is usually set by a printer error consumer.
-     * The StateTransitionActions instance should always be listening to this and should stop
-     * any ongoing actions if cancelled is set to true.
+     * failedState. it is usually set by a printer error consumer. The StateTransitionActions
+     * instance should always be listening to this and should stop any ongoing actions if cancelled
+     * is set to true.
      */
     private final Cancellable errorCancellable = new SimpleCancellable();
+
+    private final StateType cancelledState;
+    private final StateType failedState;
+    private final StateType initialState;
+
+    private boolean userCancelRequested = false;
+    private boolean errorCancelRequested = false;
 
     /**
      * Return the current state as a property. This variable is only updated on the GUI thread.
@@ -137,6 +145,9 @@ public class StateTransitionManager<StateType>
 
         this.allowedTransitions = transitions.getTransitions();
         this.arrivals = transitions.getArrivals();
+        this.cancelledState = cancelledState;
+        this.failedState = failedState;
+        this.initialState = initialState;
 
         state = new SimpleObjectProperty<>(initialState);
         stateGUIT = new SimpleObjectProperty<>(initialState);
@@ -152,17 +163,24 @@ public class StateTransitionManager<StateType>
         userCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                setState(cancelledState);
+                userCancelRequested();
             });
         errorCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                // errorCancellable will often be called when not on the GUI thread
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        setState(failedState);
-                });
+                errorCancelRequested();
             });
+    }
+    
+    /**
+     * Initialise all variables and set state to the initial state. The intention is that the
+     * state machine can be restarted at any time.
+     */
+    public void start() {
+        userCancellable.cancelled().set(false);
+        errorCancellable.cancelled().set(false);
+        actions.initialise();
+        setState(initialState);
     }
 
     /**
@@ -274,6 +292,8 @@ public class StateTransitionManager<StateType>
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.toState);
+                } else {
+                    actions.resetAfterCancelOrError();
                 }
             };
 
@@ -281,6 +301,9 @@ public class StateTransitionManager<StateType>
             {
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
+                    setState(stateTransition.transitionFailedState);
+                } else {
+                    actions.resetAfterCancelOrError();
                     setState(stateTransition.transitionFailedState);
                 }
             };
@@ -308,12 +331,26 @@ public class StateTransitionManager<StateType>
     }
 
     /**
-     * Move to the {@link cancelledState}. Any actions tied to active state transitions should be
-     * listening to changes on this userCancellable and stop themselves.
+     * Try to cancel any ongoing transition then move to the {@link cancelledState}. Any actions
+     * tied to active state transitions should either be listening to changes on this
+     * userCancellable and stop themselves, or StateTransitionActions.whenUserCancelDetected should
+     * stop them instead.
      */
     public void cancel()
     {
         userCancellable.cancelled().set(true);
+    }
+
+    private void userCancelRequested()
+    {
+        userCancelRequested = true;
+//        setState(cancelledState);
+    }
+
+    private void errorCancelRequested()
+    {
+        errorCancelRequested = true;
+//        setState(failedState);
     }
 
 }

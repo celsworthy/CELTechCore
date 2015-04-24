@@ -58,6 +58,13 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
     }
+    
+    @Override
+    public void initialise()
+    {
+        nozzle0BOffset = 0;
+        nozzle1BOffset = 0;
+    }    
 
     public void doHeatingAction() throws RoboxCommsException, PrinterException, InterruptedException, CalibrationException
     {
@@ -503,5 +510,10 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     void whenErrorDetected()
     {
         cancelOngoingActionAndResetPrinter();
+    }
+
+    @Override
+    void resetAfterCancelOrError()
+    {
     }
 }

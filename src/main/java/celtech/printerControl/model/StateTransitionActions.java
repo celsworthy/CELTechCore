@@ -13,6 +13,7 @@ import javafx.beans.value.ObservableValue;
  */
 public abstract class StateTransitionActions
 {
+
     Cancellable userCancellable;
     Cancellable errorCancellable;
     Cancellable userOrErrorCancellable;
@@ -23,6 +24,11 @@ public abstract class StateTransitionActions
         setErrorCancellable(errorCancellable);
     }
     
+    /**
+     * Initialise any variables so as to restart.
+     */
+    public abstract void initialise();
+
     final void setUserCancellable(Cancellable cancellable)
     {
         // userCancellable is set when the user requests a cancel. The state machine also detects
@@ -33,6 +39,8 @@ public abstract class StateTransitionActions
         cancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
+                // this is run immediately after the cancel. An ongoing transition may continue
+                // to run after this has been called. See resetAfterCancelOrError.
                 whenUserCancelDetected();
             });
     }
@@ -52,11 +60,31 @@ public abstract class StateTransitionActions
         errorCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
+                // this is run immediately after the error. An ongoing transition may continue
+                // to run after this has been called. See resetAfterCancelOrError.
                 whenErrorDetected();
             });
     }
 
+    /**
+     * whenUserCancelDetected is called immediately after StateTransitionManager.cancel is called.
+     * This is typically used to abort any ongoing print.
+     */
     abstract void whenUserCancelDetected();
+
+    /**
+     * whenErrorDetected is called immediately after errorCancellable.cancelled() is set to true.
+     * This is typically used to abort any ongoing print.
+     */
     abstract void whenErrorDetected();
-    
+
+    /**
+     * resetAfterCancelOrError is called after a userCancel or errorCancel, but not until any
+     * running transition is stopped. If there is no running transition then it is called
+     * immediately after whenUserCancelDetected or whenErrorDetected. It is intended to allow a
+     * clear-up after the last transition has been cancelled / aborted and after it (the transition)
+     * has fully stopped.
+     */
+    abstract void resetAfterCancelOrError();
+
 }

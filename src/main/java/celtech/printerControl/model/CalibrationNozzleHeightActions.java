@@ -39,7 +39,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     private double zDifference;
     private final CalibrationPrinterErrorHandler printerErrorHandler;
 
-    public CalibrationNozzleHeightActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
+    public CalibrationNozzleHeightActions(Printer printer, Cancellable userCancellable,
+        Cancellable errorCancellable)
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
@@ -57,10 +58,17 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         printerErrorHandler.registerForPrinterErrors();
     }
 
+    @Override
+    public void initialise()
+    {
+        savedHeadData = null;
+        zco.set(0);
+    }
+
     public void doInitialiseAndHeatNozzleAction() throws InterruptedException, PrinterException, RoboxCommsException, CalibrationException
     {
         printerErrorHandler.registerForPrinterErrors();
-        
+
         zco.set(0);
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
@@ -113,7 +121,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                 PrinterUtils.waitUntilTemperatureIsReached(
                     nozzleHeater.nozzleTemperatureProperty(), null,
                     nozzleHeater
-                    .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
+                    .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300,
+                    userOrErrorCancellable);
             } else
             {
                 NozzleHeater nozzleHeater = printer.headProperty().get()
@@ -257,7 +266,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         restoreHeadData();
         switchHeatersAndHeadLightOff();
         doBringBedToFrontAndRaiseHead();
-        steno.info("Am cancelling... with printer status " + printer.printerStatusProperty().get() + " " + printer.macroTypeProperty().get());
+        steno.info("Am cancelling... with printer status " + printer.printerStatusProperty().get()
+            + " " + printer.macroTypeProperty().get());
         if (printer.canCancelProperty().get())
         {
             printer.cancel(null);
@@ -272,7 +282,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
     }
 
-    private void cancelOngoingActionAndResetPrinter() 
+    private void cancelOngoingActionAndResetPrinter()
     {
         try
         {
@@ -287,8 +297,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
             doFailedAction();
         } catch (CalibrationException | RoboxCommsException | PrinterException ex)
         {
-           steno.error("Error cancelling calibration: " + ex);
-        } 
+            steno.error("Error cancelling calibration: " + ex);
+        }
     }
 
     private void switchHeatersAndHeadLightOff() throws PrinterException
@@ -356,6 +366,11 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     void whenErrorDetected()
     {
         cancelOngoingActionAndResetPrinter();
+    }
+
+    @Override
+    void resetAfterCancelOrError()
+    {
     }
 
 }

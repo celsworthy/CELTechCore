@@ -46,6 +46,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
             -> new TestTransitions((TestActions) actions);          
         
         manager = new TestStateTransitionManager(actionsFactory, transitionsFactory);
+        manager.start();
 
     }
 
@@ -130,6 +131,12 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         {
             super(userCancellable, errorCancellable);
         }
+        
+        @Override
+        public void initialise()
+        {
+            int x = 0;
+        }        
 
         private void doAction1()
         {
@@ -164,6 +171,11 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
 
         @Override
         void whenErrorDetected()
+        {
+        }
+
+        @Override
+        void resetAfterCancelOrError()
         {
         }
     }

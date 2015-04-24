@@ -21,6 +21,7 @@ public class PurgeActions extends StateTransitionActions
 
     public class PurgeException extends Exception
     {
+
         public PurgeException(String message)
         {
             super(message);
@@ -53,6 +54,15 @@ public class PurgeActions extends StateTransitionActions
         super(userCancellable, errorCancellable);
         this.printer = printer;
     }
+    
+    @Override
+    public void initialise()
+    {
+        reelNozzleTemperature = 0;
+        lastDisplayTemperature = 0;
+        currentDisplayTemperature = 0;
+        savedHeadData = null;
+    }    
 
     private void resetPrinter() throws PrinterException
     {
@@ -158,16 +168,7 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
-        try
-        {
-            if (printer.canCancelProperty().get())
-            {
-                printer.cancel(null);
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to cancel purge print - " + ex.getMessage());
-        }
+        abortOngoingPrint();
         resetPrinter();
         deregisterPrinterErrorHandler();
         printer.setPrinterStatus(PrinterStatus.IDLE);
@@ -218,40 +219,41 @@ public class PurgeActions extends StateTransitionActions
     @Override
     void whenUserCancelDetected()
     {
-        try
-        {
-            abortOngoingPrintAndResetPrinter();
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Error cancelling purge: " + ex);
-        }
+        abortOngoingPrint();
     }
-    
+
     @Override
     void whenErrorDetected()
     {
-        try
-        {
-            abortOngoingPrintAndResetPrinter();
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Error cancelling purge: " + ex);
-        }
-    }    
-    
-    private void abortOngoingPrintAndResetPrinter() throws RoboxCommsException, PrinterException
-    {
-        deregisterPrinterErrorHandler();
-        try
-        {
-            // wait for any current actions to respect cancelled flag
-            Thread.sleep(500);
-        } catch (InterruptedException ex)
-        {
-            steno.warning("interrupted during wait of cancel");
-        }
-        doFailedAction();
-    }    
+        abortOngoingPrint();
+    }
 
-    
+    @Override
+    void resetAfterCancelOrError()
+    {
+        try
+        {
+            resetPrinter();
+            deregisterPrinterErrorHandler();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error reseting printer");
+        }
+        printer.setPrinterStatus(PrinterStatus.IDLE);
+    }
+
+    private void abortOngoingPrint()
+    {
+        try
+        {
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to abort purge print - " + ex.getMessage());
+        }
+    }
+
 }
