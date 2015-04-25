@@ -26,6 +26,7 @@ public class SlicerTask extends Task<SliceResult>
     private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.
         getName());
     private String printJobUUID = null;
+    private String printJobDirectory;
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
@@ -36,6 +37,21 @@ public class SlicerTask extends Task<SliceResult>
         SlicerParametersFile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
+        this.printJobDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator;
+        this.project = project;
+        this.printQuality = printQuality;
+        this.settings = settings;
+        this.printerToUse = printerToUse;
+
+    }
+
+    public SlicerTask(String printJobUUID,
+        String printJobDirectory,
+        Project project, PrintQualityEnumeration printQuality,
+        SlicerParametersFile settings, Printer printerToUse)
+    {
+        this.printJobUUID = printJobUUID;
+        this.printJobDirectory = printJobDirectory;
         this.project = project;
         this.printQuality = printQuality;
         this.settings = settings;
@@ -47,12 +63,13 @@ public class SlicerTask extends Task<SliceResult>
     protected SliceResult call() throws Exception
     {
         boolean succeeded = false;
-        
-        if (isCancelled()) {
+
+        if (isCancelled())
+        {
             return null;
         }
-        
-        steno.info("slice " + project + " "  + settings.getProfileName());
+
+        steno.info("slice " + project + " " + settings.getProfileName());
 
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         if (settings.getSlicerOverride() != null)
@@ -64,12 +81,10 @@ public class SlicerTask extends Task<SliceResult>
 
         tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
         MeshFileOutputConverter outputConverter = new STLOutputConverter();
-        outputConverter.outputFile(project, printJobUUID);
+        outputConverter.outputFile(project, printJobUUID, printJobDirectory);
 
         String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
 
-        String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
-            + File.separator;
         String configFile = printJobUUID + ApplicationConfiguration.printProfileFileExtension;
 
         updateTitle("Slicer");
@@ -118,7 +133,7 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("/S");
                 commands.add("/C");
                 commands.add("\"pushd \""
-                    + workingDirectory
+                    + printJobDirectory
                     + "\" && "
                     + windowsSlicerCommand
                     + " "
@@ -138,7 +153,7 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("/S");
                 commands.add("/C");
                 commands.add("\"pushd \""
-                    + workingDirectory
+                    + printJobDirectory
                     + "\" && "
                     + windowsSlicerCommand
                     + " "
@@ -191,8 +206,9 @@ public class SlicerTask extends Task<SliceResult>
             default:
                 steno.error("Couldn't determine how to run slicer");
         }
-        
-        if (isCancelled()) {
+
+        if (isCancelled())
+        {
             return null;
         }
 
@@ -202,8 +218,8 @@ public class SlicerTask extends Task<SliceResult>
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
             if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95)
             {
-                steno.debug("Set working directory (Non-Windows) to " + workingDirectory);
-                slicerProcessBuilder.directory(new File(workingDirectory));
+                steno.debug("Set working directory (Non-Windows) to " + printJobDirectory);
+                slicerProcessBuilder.directory(new File(progressOutputCommand));
             }
 
             try

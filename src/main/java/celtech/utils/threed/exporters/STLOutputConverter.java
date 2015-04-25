@@ -36,10 +36,18 @@ public class STLOutputConverter implements MeshFileOutputConverter
         steno = StenographerFactory.getStenographer(this.getClass().getName());
     }
 
+    @Override
     public void outputFile(Project project, String printJobUUID)
     {
-        String tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
-            + File.separator + printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+        outputFile(project, printJobUUID, ApplicationConfiguration.getPrintSpoolDirectory()
+                   + printJobUUID + File.separator);
+    }
+
+    @Override
+    public void outputFile(Project project, String printJobUUID, String printJobDirectory)
+    {
+        String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+            + ApplicationConfiguration.stlTempFileExtension;
 
         File fFile = new File(tempModelFilenameWithPath);
         final short blankSpace = (short) 0;
@@ -98,7 +106,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                     ObservableFaceArray faceArray = triangles.getFaces();
                     ObservableFloatArray pointArray = triangles.getPoints();
                     int numberOfFacets = faceArray.size() / 6;
-                    
+
                     for (int facetNumber = 0; facetNumber < numberOfFacets; facetNumber++)
                     {
                         dataBuffer.rewind();

@@ -50,7 +50,9 @@ public class GetTimeWeightCost
     private PostProcessorTask postProcessorTask;
     private final Runnable whenComplete;
 
-    File printJobDirectory;
+    private final String temporaryDirectory;
+
+    private File printJobDirectory;
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
@@ -62,6 +64,10 @@ public class GetTimeWeightCost
         this.settings = settings;
         this.whenComplete = whenComplete;
 
+        this.temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
+            + ApplicationConfiguration.timeAndCostFileSubpath
+            + settings.getProfileName()
+            + File.separator;
     }
 
     public SlicerTask setupAndRunSlicerTask()
@@ -96,7 +102,9 @@ public class GetTimeWeightCost
                 SliceResult sliceResult = slicerTask.getValue();
 
                 postProcessorTask = new PostProcessorTask(
-                    sliceResult.getPrintJobUUID(), settings, null);
+                    sliceResult.getPrintJobUUID(),
+                    temporaryDirectory,
+                    settings, null);
 
                 postProcessorTask.setOnSucceeded((WorkerStateEvent event1) ->
                 {
@@ -204,10 +212,7 @@ public class GetTimeWeightCost
         settings = project.getPrinterSettings().applyOverrides(settings);
 
         //Create the print job directory
-        String printUUID = SystemUtils.generate16DigitID();
-        String printJobDirectoryName = ApplicationConfiguration.
-            getPrintSpoolDirectory() + printUUID;
-        printJobDirectory = new File(printJobDirectoryName);
+        printJobDirectory = new File(temporaryDirectory);
         printJobDirectory.mkdirs();
 
         //Write out the slicer config
@@ -230,12 +235,14 @@ public class GetTimeWeightCost
                                     (float) (centreOfPrintedObject.getZ()
                                     + ApplicationConfiguration.yPrintOffset));
         configWriter.generateConfigForSlicer(settings,
-                                             printJobDirectoryName
-                                             + File.separator
-                                             + printUUID
+                                             temporaryDirectory
+                                             + settings.getProfileName()
                                              + ApplicationConfiguration.printProfileFileExtension);
 
-        return new SlicerTask(printUUID, project, PrintQualityEnumeration.DRAFT,
+        return new SlicerTask(settings.getProfileName(),
+                              temporaryDirectory,
+                              project,
+                              PrintQualityEnumeration.DRAFT,
                               settings, null);
 
     }

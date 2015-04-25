@@ -97,6 +97,11 @@ public class ApplicationConfiguration
     /**
      *
      */
+    public static final String timeAndCostFileSubpath = "TimeCostTemp/";
+
+    /**
+     *
+     */
     private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
 
     private static final String dialogsCSSFile = cssResourcePath + "dialogsOverride.css";

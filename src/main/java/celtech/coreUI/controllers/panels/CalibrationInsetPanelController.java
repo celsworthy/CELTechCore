@@ -435,7 +435,7 @@ public class CalibrationInsetPanelController implements Initializable,
             String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
             calibrationProgressTemp.setCurrentValue(currentTempStr);
             calibrationProgressTemp.setTargetValue(targetTempStr);
-            calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
+            calibrationProgressTemp.setProgressPercent((currentExtruderTemperature / targetTemperature) * 100);
         }
     }
 
@@ -461,7 +461,7 @@ public class CalibrationInsetPanelController implements Initializable,
             String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
             calibrationProgressPrint.setCurrentValue(currentPrintPercentStr);
 //            calibrationProgressPrint.setTargetValue(targetETCStr);
-            calibrationProgressPrint.setProgress(printPercent);
+            calibrationProgressPrint.setProgressPercent(printPercent);
         }
     }
 
@@ -507,7 +507,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void bindPrinter(Printer printer)
     {
-        calibrationProgressTemp.setProgress(0);
+        calibrationProgressTemp.setProgressPercent(0);
         Head newHead = printer.headProperty().get();
         if (newHead != null)
         {
