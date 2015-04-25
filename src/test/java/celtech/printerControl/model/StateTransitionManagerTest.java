@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javafx.beans.value.ObservableValue;
 import static org.junit.Assert.assertEquals;
@@ -169,16 +168,11 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         }
     }
 
-    public class TestTransitions implements Transitions
+    public class TestTransitions extends Transitions<TestState>
     {
-
-        TestActions actions;
-        Set<StateTransition<TestState>> transitions;
-        Map<TestState, ArrivalAction<TestState>> arrivals;
 
         public TestTransitions(TestActions actions)
         {
-            this.actions = actions;
             transitions = new HashSet<>();
             transitions.add(new StateTransition(TestState.IDLE,
                                                 StateTransitionManager.GUIName.NEXT,
@@ -228,18 +222,6 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
                          actions.doDoneAction();
             }, TestState.FAILED));
 
-        }
-
-        @Override
-        public Set getTransitions()
-        {
-            return transitions;
-        }
-
-        @Override
-        public Map getArrivals()
-        {
-            return arrivals;
         }
     }
 
