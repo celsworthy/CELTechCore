@@ -19,7 +19,7 @@ public class DimensionLineManager
 
     private final Pane paneToAddDimensionsTo;
     private final Project associatedProject;
-    private final Map<String, List<DimensionLine>> dimensionLines = new HashMap<>();
+    private final Map<ModelContainer, List<DimensionLine>> dimensionLines = new HashMap<>();
 
     public DimensionLineManager(Pane paneToAddDimensionsTo, Project project)
     {
@@ -34,38 +34,39 @@ public class DimensionLineManager
                 public void whenAdded(ModelContainer modelContainer)
                 {
                     ArrayList<DimensionLine> lineList = new ArrayList<>();
-                    DimensionLine verticalDimension = new DimensionLine(modelContainer,
-                                                                        LineDirection.VERTICAL);
+                    DimensionLine verticalDimension = new DimensionLine();
                     modelContainer.addScreenExtentsChangeListener(verticalDimension);
                     paneToAddDimensionsTo.getChildren().add(verticalDimension);
+                    verticalDimension.initialise(modelContainer,
+                                                 LineDirection.VERTICAL);
                     lineList.add(verticalDimension);
 
-                    DimensionLine horizontalDimension = new DimensionLine(modelContainer,
-                                                                          LineDirection.HORIZONTAL);
+                    DimensionLine horizontalDimension = new DimensionLine();
                     modelContainer.addScreenExtentsChangeListener(horizontalDimension);
                     paneToAddDimensionsTo.getChildren().add(horizontalDimension);
+                    horizontalDimension.initialise(modelContainer, LineDirection.HORIZONTAL);
                     lineList.add(horizontalDimension);
 
-                    DimensionLine frontBackDimension = new DimensionLine(modelContainer,
-                                                                          LineDirection.FORWARD_BACK);
+                    DimensionLine frontBackDimension = new DimensionLine();
                     modelContainer.addScreenExtentsChangeListener(frontBackDimension);
                     paneToAddDimensionsTo.getChildren().add(frontBackDimension);
+                    frontBackDimension.initialise(modelContainer, LineDirection.FORWARD_BACK);
                     lineList.add(frontBackDimension);
-                    
-                    dimensionLines.put(modelContainer.getId(), lineList);
+
+                    dimensionLines.put(modelContainer, lineList);
                 }
 
                 @Override
                 public void whenRemoved(ModelContainer modelContainer)
                 {
                     List<DimensionLine> dimensionLinesToRemove = dimensionLines
-                    .get(modelContainer.getId());
+                    .get(modelContainer);
                     dimensionLinesToRemove.forEach(line ->
                         {
                             modelContainer.removeScreenExtentsChangeListener(line);
                             paneToAddDimensionsTo.getChildren().remove(line);
                     });
-                    dimensionLines.remove(modelContainer.getId());
+                    dimensionLines.remove(modelContainer);
                 }
             });
     }

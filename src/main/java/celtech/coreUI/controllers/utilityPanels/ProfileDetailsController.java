@@ -49,7 +49,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProfileDetailsController implements Initializable, ExtrasMenuInnerPanel
 {
-    
+
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
 
     enum Fields
@@ -125,7 +125,8 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ProfileDetailsController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        ProfileDetailsController.class.getName());
 
     @FXML
     private VBox container;
@@ -325,16 +326,28 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     @FXML
     private TextArea helpText;
 
+    /**
+     * **************************************************************************
+     */
+    // Retain a temporary parameters file so that non-GUI variables are retained.
+    private SlicerParametersFile temporarySettingsFile = null;
+    /**
+     * **************************************************************************
+     */
+
     private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
 
-    private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.observableArrayList();
+    private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.
+        observableArrayList();
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
         "0.3mm", "0.8mm");
-    private final ObservableList<FillPattern> fillPatternOptions = FXCollections.observableArrayList(
-        FillPattern.values());
+    private final ObservableList<FillPattern> fillPatternOptions = FXCollections.
+        observableArrayList(
+            FillPattern.values());
 
-    private final ObservableList<SupportPattern> supportPatternOptions = FXCollections.observableArrayList(
-        SupportPattern.values());
+    private final ObservableList<SupportPattern> supportPatternOptions = FXCollections.
+        observableArrayList(
+            SupportPattern.values());
 
     private final ChangeListener<String> dirtyStringListener
         = (ObservableValue<? extends String> ov, String t, String t1) ->
@@ -374,7 +387,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             or(state.isEqualTo(State.CUSTOM))));
 
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
-        
+
         canDelete.bind(state.isNotEqualTo(State.ROBOX));
 
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
@@ -430,13 +443,16 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     {
         cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
     }
-    
-    public void setAndSelectPrintProfile(SlicerParametersFile printProfile) {
-        if (SlicerParametersContainer.getCompleteProfileList().contains(printProfile)) {
+
+    public void setAndSelectPrintProfile(SlicerParametersFile printProfile)
+    {
+        if (SlicerParametersContainer.getCompleteProfileList().contains(printProfile))
+        {
             cmbPrintProfile.setValue(printProfile);
-        } else {
+        } else
+        {
             cmbPrintProfile.getSelectionModel().selectFirst();
-        }    
+        }
     }
 
     private void selectPrintProfile(SlicerParametersFile printProfile)
@@ -446,7 +462,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             return;
         }
         currentProfileName = printProfile.getProfileName();
-        updateWidgets(printProfile);
+        updateWidgetsFromSettingsFile(printProfile);
         boolean isStandardProfile = SlicerParametersContainer.applicationProfileListContainsProfile(
             printProfile.getProfileName());
         if (!isStandardProfile)
@@ -571,7 +587,8 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             {
                 float currentInfillWidth = infillExtrusionWidth.floatValueProperty().get();
                 float currentSolidInfillWidth = solidInfillExtrusionWidth.floatValueProperty().get();
-                float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().get();
+                float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().
+                get();
                 switch (newValue.intValue())
                 {
                     case 0:
@@ -1062,7 +1079,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         nozzlePartialOpen1.textProperty().addListener(dirtyStringListener);
     }
 
-    private void updateWidgets(SlicerParametersFile parametersFile)
+    private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
     {
 
         profileNameField.setText(parametersFile.getProfileName());
@@ -1227,7 +1244,15 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     private SlicerParametersFile getPrintProfile()
     {
-        SlicerParametersFile settingsToUpdate = makeNewSlicerParametersFile();
+        SlicerParametersFile settingsToUpdate = null;
+
+        if (temporarySettingsFile != null)
+        {
+            settingsToUpdate = temporarySettingsFile;
+        } else
+        {
+            settingsToUpdate = makeNewSlicerParametersFile();
+        }
         settingsToUpdate.setSlicerOverride(slicerChooser.getValue().getSlicerType());
         settingsToUpdate.setProfileName(profileNameField.getText());
         // Extrusion tab
@@ -1260,7 +1285,8 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
         settingsToUpdate.setSupportExtrusionWidth_mm(
             supportExtrusionWidth.floatValueProperty().get());
-        settingsToUpdate.setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
+        settingsToUpdate.
+            setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.setSupportInterfaceNozzle(
             supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
@@ -1276,7 +1302,8 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         settingsToUpdate.setSupportPattern(supportPattern.valueProperty().get());
         settingsToUpdate.setSupportPatternSpacing_mm(
             supportPatternSpacing.floatValueProperty().get());
-        settingsToUpdate.setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
+        settingsToUpdate.
+            setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
 
         //Speed tab
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
@@ -1332,10 +1359,11 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             valid = false;
         } else
         {
-            ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.getCompleteProfileList();
+            ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.
+                getCompleteProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
-                if (! settings.getProfileName().equals(currentProfileName)
+                if (!settings.getProfileName().equals(currentProfileName)
                     && settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
@@ -1384,6 +1412,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             return;
         }
         SlicerParametersFile parametersFile = getPrintProfile();
+        temporarySettingsFile = null;
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
@@ -1395,22 +1424,25 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         state.set(ProfileDetailsController.State.NEW);
         SlicerParametersFile slicerParametersFile = makeNewSlicerParametersFile();
         slicerParametersFile.setProfileName("");
-        updateWidgets(slicerParametersFile);
+        updateWidgetsFromSettingsFile(slicerParametersFile);
     }
-    
+
     void whenSaveAsPressed()
     {
         state.set(ProfileDetailsController.State.NEW);
-        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(
-            currentProfileName).clone();
-        updateWidgets(slicerParametersFile);
+        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
+            getSettingsByProfileName(
+                currentProfileName).clone();
+        temporarySettingsFile = slicerParametersFile;
+        updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
         profileNameField.pseudoClassStateChanged(ERROR, true);
-    }    
+    }
 
     private SlicerParametersFile makeNewSlicerParametersFile()
     {
+        // WARNING - THIS WILL GIVE EMPTY VALUES FOR SOME PARAMETERS - USE WITH CAUTION!!!! //
         SlicerParametersFile slicerParametersFile = new SlicerParametersFile();
         slicerParametersFile.setNozzleParameters(new ArrayList<>());
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());

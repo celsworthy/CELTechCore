@@ -445,6 +445,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             break;
                     }
 
+                    if (printerStatus == PrinterStatus.LOADING_FILAMENT)
+                    {
+                        Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
+
+                    } else
+                    {
+                        Lookup.getSystemNotificationHandler().hideKeepPushingFilamentNotification();
+                    }
+
                     if (okToChangeState)
                     {
                         this.printerStatus.set(printerStatus);
@@ -2710,15 +2719,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        
-       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+
+        StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
             Cancellable errorCancellable)
             -> new CalibrationXAndYActions(HardwarePrinter.this, userCancellable,
-                                                   errorCancellable);
+                                           errorCancellable);
 
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
             -> new CalibrationXAndYTransitions((CalibrationXAndYActions) actions);
-        
 
         XAndYStateTransitionManager calibrationAlignmentManager
             = new XAndYStateTransitionManager(actionsFactory, transitionsFactory);
@@ -2732,15 +2740,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        
-       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+
+        StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
             Cancellable errorCancellable)
             -> new CalibrationNozzleHeightActions(HardwarePrinter.this, userCancellable,
-                                                   errorCancellable);
+                                                  errorCancellable);
 
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
-            -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);        
-        
+            -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);
+
         NozzleHeightStateTransitionManager calibrationHeightManager
             = new NozzleHeightStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationHeightManager;
@@ -3124,6 +3132,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                                                      1);
                     boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
                                                                                      2);
+
+                    if (filament1Loaded && printerStatus.get() == PrinterStatus.LOADING_FILAMENT)
+                    {
+                        Lookup.getSystemNotificationHandler().hideKeepPushingFilamentNotification();
+                    }
 
                     //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);

@@ -52,7 +52,7 @@ public class LargeProgress extends BorderPane
     private Label largeTargetLegend;
 
     private DoubleProperty progressProperty = new SimpleDoubleProperty(0);
-    private double progress = 0;
+    private double progressPercent = 0;
     private Optional<PrinterMetaStatus> printerMetaStatus = Optional.empty();
 
     private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -95,9 +95,9 @@ public class LargeProgress extends BorderPane
 
     public void setProgress(double progress)
     {
-        if (progress != this.progress)
+        if (progress != this.progressPercent)
         {
-            this.progress = progress;
+            this.progressPercent = progress;
             redraw();
         }
     }
@@ -132,6 +132,7 @@ public class LargeProgress extends BorderPane
                 case SLICING:
                 case POST_PROCESSING:
                 case EXECUTING_MACRO:
+                case SENDING_TO_PRINTER:
                     progressBarElement.setVisible(true);
                     break;
                 default:
@@ -139,9 +140,11 @@ public class LargeProgress extends BorderPane
                     break;
             }
         }
+        
+        double normalisedProgress = progressPercent / 100;
 
         double progressBackWidth = largeProgressBarBack.getWidth();
-        double barWidth = progressBackWidth * progress;
+        double barWidth = progressBackWidth * normalisedProgress;
         largeProgressBarInner.setWidth(barWidth);
 
         // place currentValue in correct place on progress bar (just to the left of RHS of the bar)
@@ -167,9 +170,9 @@ public class LargeProgress extends BorderPane
 
     public void bindToPrinter(PrinterMetaStatus printerMetaStatus)
     {
-        this.printerMetaStatus = Optional.of(printerMetaStatus);
         unbindProgress();
 
+        this.printerMetaStatus = Optional.of(printerMetaStatus);
         largeProgressDescription.textProperty().bind(printerMetaStatus.printerStatusProperty().
             asString());
         largeTargetValue.textProperty().bind(printerMetaStatus.currentStatusValueTargetProperty().
@@ -177,7 +180,7 @@ public class LargeProgress extends BorderPane
         largeTargetValue.visibleProperty().bind(printerMetaStatus.targetValueValidProperty());
         largeTargetLegend.textProperty().bind(printerMetaStatus.legendProperty());
         largeProgressCurrentValue.textProperty().bind(
-            printerMetaStatus.currentStatusValueProperty().multiply(100).asString("%.0f%%"));
+        printerMetaStatus.currentStatusValueProperty().asString("%.0f%%"));
         progressProperty.bind(printerMetaStatus.currentStatusValueProperty());
         progressProperty.addListener(progressChangeListener);
         printerMetaStatus.printerStatusProperty().addListener(statusChangeListener);

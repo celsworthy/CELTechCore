@@ -76,7 +76,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private String printerName;
 
     private static String NOTHING_PRINTING_JOB_ID = "\0000";
-    private static String printJobID = NOTHING_PRINTING_JOB_ID;
+    private String printJobID = NOTHING_PRINTING_JOB_ID;
     protected int printJobLineNo = 0;
 
     private static int ROOM_TEMPERATURE = 20;
@@ -605,6 +605,8 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 getExpectedResponse());
         } else if (messageToWrite instanceof InitiatePrint)
         {
+            printJobID = messageToWrite.getMessageData();
+            steno.debug("Dummy printer asked to initiate print " + printJobID);
             currentStatus.setRunningPrintJobID(printJobID);
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                 getExpectedResponse());

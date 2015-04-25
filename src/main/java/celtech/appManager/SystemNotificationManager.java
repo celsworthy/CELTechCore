@@ -111,4 +111,7 @@ public interface SystemNotificationManager
     public void askUserToClearBed();
     
     public boolean confirmAdvancedMode();
+    
+    public void showKeepPushingFilamentNotification();
+    public void hideKeepPushingFilamentNotification();
 }
