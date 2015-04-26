@@ -891,6 +891,39 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException
+    {
+        if (!canRunMacro.get())
+        {
+            throw new PrintActionUnavailableException("Execute GCode not available");
+        }
+
+        if (monitorForErrors)
+        {
+            registerErrorConsumerAllErrors(this);
+        }
+
+        macroType.set(MacroType.GCODE_PRINT);
+
+        boolean jobAccepted = false;
+
+        try
+        {
+            jobAccepted = printEngine.printGCodeFile(fileName, true);
+        } catch (MacroPrintException ex)
+        {
+            steno.error("Failed to print GCode file " + fileName + " : " + ex.getMessage());
+        }
+
+        if (!jobAccepted)
+        {
+            macroType.set(null);
+            throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
+                + printerStatus.get().name());
+        }
+    }
+
+    @Override
     public final void executeMacro(String macroName) throws PrinterException
     {
         steno.debug("Request to run macro: " + macroName);
