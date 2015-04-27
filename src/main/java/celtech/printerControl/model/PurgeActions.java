@@ -9,8 +9,6 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -56,7 +54,7 @@ public class PurgeActions extends StateTransitionActions
         super(userCancellable, errorCancellable);
         this.printer = printer;
     }
-    
+
     @Override
     public void initialise()
     {
@@ -64,7 +62,7 @@ public class PurgeActions extends StateTransitionActions
         lastDisplayTemperature = 0;
         currentDisplayTemperature = 0;
         savedHeadData = null;
-    }    
+    }
 
     private void resetPrinter() throws PrinterException
     {
@@ -81,7 +79,7 @@ public class PurgeActions extends StateTransitionActions
         {
             steno.error("Wait interrupted");
         }
-        
+
     }
 
     public void doInitialiseAction() throws RoboxCommsException
@@ -230,18 +228,29 @@ public class PurgeActions extends StateTransitionActions
     }
 
     @Override
+    /**
+     * This is run immediately after the user presses the cancel button.
+     */
     void whenUserCancelDetected()
     {
         abortAnyOngoingPrint();
     }
 
     @Override
+    /**
+     * This is run immediately after the printer error is detected.
+     */
     void whenErrorDetected()
     {
         abortAnyOngoingPrint();
     }
 
     @Override
+    /**
+     * This is run after a Cancel or Error but not until any ongoing Action has completed / stopped. We
+     * reset the printer here and not at the time of error/cancel detection because if done
+     * immediately the ongoing Action could undo the effects of the reset.
+     */ 
     void resetAfterCancelOrError()
     {
         try

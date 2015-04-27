@@ -303,28 +303,6 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    private void resetPrinter() throws PrinterException, CalibrationException
-    {
-        printerErrorHandler.deregisterForPrinterErrors();
-        switchHeatersAndHeadLightOff();
-        doBringBedToFrontAndRaiseHead();
-        PrinterUtils.waitOnBusy(printer, (Cancellable) null);
-    }
-
-    private void abortAnyOngoingPrint()
-    {
-        try
-        {
-            if (printer.canCancelProperty().get())
-            {
-                printer.cancel(null);
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to abort print - " + ex.getMessage());
-        }
-    }
-
     public void doBringBedToFrontAndRaiseHead() throws PrinterException, CalibrationException
     {
         printer.switchToAbsoluteMoveMode();
@@ -344,6 +322,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         {
             try
             {
+                steno.debug("Restore head data");
                 printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                                 savedHeadData.getUniqueID(),
                                                 savedHeadData.getMaximumTemperature(),
@@ -413,13 +392,35 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     {
         try
         {
-            steno.debug("Restore head data");
             restoreHeadData();
             resetPrinter();
         } catch (CalibrationException | PrinterException ex)
         {
             steno.error("Error cancelling: " + ex);
         }
+        printer.setPrinterStatus(PrinterStatus.IDLE);
     }
+    
+    private void resetPrinter() throws PrinterException, CalibrationException
+    {
+        printerErrorHandler.deregisterForPrinterErrors();
+        switchHeatersAndHeadLightOff();
+        doBringBedToFrontAndRaiseHead();
+        PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+    }
+
+    private void abortAnyOngoingPrint()
+    {
+        try
+        {
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to abort print - " + ex.getMessage());
+        }
+    }    
 
 }

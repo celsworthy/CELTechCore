@@ -90,7 +90,7 @@ public abstract class StateTransitionActions
 
     /**
      * resetAfterCancelOrError is called after a userCancel or errorCancel, but not until any
-     * running transition is stopped. If there is no running transition then it is called
+     * running transition / arrival is stopped. If there is no running transition then it is called
      * immediately after whenUserCancelDetected or whenErrorDetected. It is intended to allow a
      * clear-up after the last transition has been cancelled / aborted and after it (the transition)
      * has fully stopped.

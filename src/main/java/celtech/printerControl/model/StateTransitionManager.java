@@ -294,7 +294,7 @@ public class StateTransitionManager<StateType>
                 steno.error("Error processing reset after cancel / error");
             }
             // we need to clear the error detection flag otherwise the last error will be
-            // "redetected".
+            // "redetected" on the next state change / transition.
             errorCancellable.cancelled().set(false);
             setState(nextState);
         }).start();
