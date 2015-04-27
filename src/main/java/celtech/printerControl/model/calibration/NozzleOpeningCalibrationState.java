@@ -51,6 +51,8 @@ public enum NozzleOpeningCalibrationState
 
     FINISHED("calibrationPanel.calibrationSucceededMessage", "Nozzle Opening Illustrations_Step 10.fxml"),
     
+    CANCELLING("", ""),
+    
     CANCELLED("", ""),
     
     DONE("", ""),

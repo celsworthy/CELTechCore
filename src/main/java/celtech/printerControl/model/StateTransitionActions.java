@@ -27,7 +27,7 @@ public abstract class StateTransitionActions
         setUserCancellable(userCancellable);
         setErrorCancellable(errorCancellable);
     }
-    
+
     /**
      * Initialise any variables so as to restart.
      */
@@ -45,7 +45,10 @@ public abstract class StateTransitionActions
             {
                 // this is run immediately after the cancel. An ongoing transition may continue
                 // to run after this has been called. See resetAfterCancelOrError.
-                whenUserCancelDetected();
+                if (newValue)
+                {
+                    whenUserCancelDetected();
+                }
             });
     }
 
@@ -66,7 +69,10 @@ public abstract class StateTransitionActions
             {
                 // this is run immediately after the error. An ongoing transition may continue
                 // to run after this has been called. See resetAfterCancelOrError.
-                whenErrorDetected();
+                if (newValue)
+                {
+                    whenErrorDetected();
+                }
             });
     }
 

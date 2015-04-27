@@ -28,7 +28,7 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
     enum TestState
     {
 
-        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, DONE, FAILED, CANCELLED;
+        IDLE, PRINT_CIRCLE, GET_Y_OFFSET, DONE, FAILED, CANCELLING, CANCELLED;
     }
 
     TestStateTransitionManager manager;
@@ -243,7 +243,8 @@ public class StateTransitionManagerTest extends JavaFXConfiguredTest
         public TestStateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
         TransitionsFactory transitionsFactory)
         {
-            super(stateTransitionActionsFactory, transitionsFactory, TestState.IDLE, TestState.CANCELLED, TestState.FAILED);
+            super(stateTransitionActionsFactory, transitionsFactory, TestState.IDLE, 
+                                   TestState.CANCELLING, TestState.CANCELLED, TestState.FAILED);
         }
 
         public int getX()

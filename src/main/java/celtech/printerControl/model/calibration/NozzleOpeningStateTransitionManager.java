@@ -19,7 +19,7 @@ public class NozzleOpeningStateTransitionManager extends StateTransitionManager<
         TransitionsFactory transitionsFactory)
     {
         super(stateTransitionActionsFactory, transitionsFactory, NozzleOpeningCalibrationState.IDLE,
-              NozzleOpeningCalibrationState.CANCELLED,
+              NozzleOpeningCalibrationState.CANCELLING, NozzleOpeningCalibrationState.CANCELLED,
               NozzleOpeningCalibrationState.FAILED);
     }
 

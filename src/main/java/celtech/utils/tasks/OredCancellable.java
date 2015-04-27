@@ -52,7 +52,8 @@ public  class OredCancellable implements Cancellable
             } else if (cancellable2 == null && cancellable1.cancelled().get())
             {
                 cancellable.cancelled().set(true);
-            } else if (cancellable1.cancelled().get() || cancellable2.cancelled().get())
+            } else if ((cancellable1 != null && cancellable1.cancelled().get()) || 
+                (cancellable2 != null && cancellable2.cancelled().get()))
             {
                 cancellable.cancelled().set(true);
             } else

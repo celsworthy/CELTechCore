@@ -111,6 +111,7 @@ public class StateTransitionManager<StateType>
      */
     private final Cancellable errorCancellable = new SimpleCancellable();
 
+    private final StateType cancellingState;
     private final StateType cancelledState;
     private final StateType failedState;
     private final StateType initialState;
@@ -133,11 +134,12 @@ public class StateTransitionManager<StateType>
      * @param stateTransitionActionsFactory
      * @param transitionsFactory
      * @param initialState The initial state that the machine will start in.
-     * @param cancelledState The state to go to if {@link cancel() cancel} is called.
+     * @param cancellingState The state to go to if {@link cancel() cancel} is called.
+     * @param cancelledState The state to go to after CANCELLING is complete.
      * @param failedState The state to go to if {@link #errorCancellable} is set.
      */
     public StateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
-        TransitionsFactory transitionsFactory, StateType initialState,
+        TransitionsFactory transitionsFactory, StateType initialState, StateType cancellingState,
         StateType cancelledState, StateType failedState)
     {
         actions = stateTransitionActionsFactory.makeStateTransitionActions(
@@ -147,6 +149,7 @@ public class StateTransitionManager<StateType>
 
         this.allowedTransitions = transitions.getTransitions();
         this.arrivals = transitions.getArrivals();
+        this.cancellingState = cancellingState;
         this.cancelledState = cancelledState;
         this.failedState = failedState;
         this.initialState = initialState;
@@ -165,12 +168,18 @@ public class StateTransitionManager<StateType>
         userCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                userCancelRequested();
+                if (newValue)
+                {
+                    userCancelRequested();
+                }
             });
         errorCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                errorCancelRequested();
+                if (newValue)
+                {
+                    errorCancelRequested();
+                }
             });
     }
 
@@ -235,18 +244,22 @@ public class StateTransitionManager<StateType>
 
             TaskExecutor.NoArgsVoidFunc nullAction = () ->
             {
+                steno.debug("Arrived at action completed");
                 runningAction = false;
                 if (errorCancellable.cancelled().get())
                 {
+                    steno.debug("Error detected during arrival processing");
                     doCancelOrErrorDetectedAndGotoState(arrival.failedState);
                 } else if (userCancellable.cancelled().get())
                 {
+                    steno.debug("Cancel detected during arrival processing");
                     doCancelOrErrorDetectedAndGotoState(cancelledState);
                 }
             };
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
+                steno.debug("Arrived at action FAILED");
                 runningAction = false;
                 if (arrival.failedState != null)
                 {
@@ -280,6 +293,9 @@ public class StateTransitionManager<StateType>
             {
                 steno.error("Error processing reset after cancel / error");
             }
+            // we need to clear the error detection flag otherwise the last error will be
+            // "redetected".
+            errorCancellable.cancelled().set(false);
             setState(nextState);
         }).start();
 
@@ -350,12 +366,13 @@ public class StateTransitionManager<StateType>
                     setState(stateTransition.toState);
                 } else
                 {
-                    steno.debug("Error or Cancel detected during transition action");
                     if (errorCancellable.cancelled().get())
                     {
+                        steno.debug("Error detected during transition action");
                         doCancelOrErrorDetectedAndGotoState(getFailedState(stateTransition));
                     } else if (userCancellable.cancelled().get())
                     {
+                        steno.debug("Cancel detected during transition action");
                         doCancelOrErrorDetectedAndGotoState(cancelledState);
                     }
                 }
@@ -410,8 +427,10 @@ public class StateTransitionManager<StateType>
 
     private void userCancelRequested()
     {
+        setState(cancellingState);
         if (!runningAction)
         {
+            steno.debug("Cancel detected out of transition go straight to cancelling/ed state");
             doCancelOrErrorDetectedAndGotoState(cancelledState);
         }
     }
@@ -420,7 +439,8 @@ public class StateTransitionManager<StateType>
     {
         if (!runningAction)
         {
-            doCancelOrErrorDetectedAndGotoState(cancelledState);
+            steno.debug("Error detected out of transition go straight to failed state");
+            doCancelOrErrorDetectedAndGotoState(failedState);
         }
     }
 

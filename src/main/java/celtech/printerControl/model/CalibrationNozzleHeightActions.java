@@ -403,6 +403,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     @Override
     void whenErrorDetected()
     {
+        printerErrorHandler.deregisterForPrinterErrors();
         restoreHeadData();
         abortAnyOngoingPrint();
     }

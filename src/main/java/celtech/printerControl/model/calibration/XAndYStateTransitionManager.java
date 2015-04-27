@@ -16,8 +16,9 @@ public class XAndYStateTransitionManager extends StateTransitionManager<Calibrat
     public XAndYStateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
         TransitionsFactory transitionsFactory)
     {
-        super(stateTransitionActionsFactory, transitionsFactory, CalibrationXAndYState.IDLE, CalibrationXAndYState.CANCELLED,
-                                                       CalibrationXAndYState.FAILED);
+        super(stateTransitionActionsFactory, transitionsFactory, CalibrationXAndYState.IDLE, 
+                      CalibrationXAndYState.CANCELLING, CalibrationXAndYState.CANCELLED,
+                      CalibrationXAndYState.FAILED);
     }
 
     public void setXOffset(String xOffset)

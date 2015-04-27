@@ -18,7 +18,7 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
         TransitionsFactory transitionsFactory)
     {
         super(stateTransitionActionsFactory, transitionsFactory, PurgeState.IDLE,
-              PurgeState.CANCELLED, PurgeState.FAILED);
+              PurgeState.CANCELLING, PurgeState.CANCELLED, PurgeState.FAILED);
     }
 
     public void setPurgeTemperature(int purgeTemperature)

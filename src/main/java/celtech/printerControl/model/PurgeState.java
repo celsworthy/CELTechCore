@@ -19,6 +19,7 @@ public enum PurgeState
     RUNNING_PURGE("purgeMaterial.inProgress", true),
     FINISHED("purgeMaterial.purgeComplete", false),
     CANCELLED("", false),
+    CANCELLING("", false),
     DONE("", false),
     FAILED("purgeMaterial.failed", false);
 

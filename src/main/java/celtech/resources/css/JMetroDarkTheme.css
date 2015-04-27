@@ -1005,6 +1005,12 @@
     -fx-font-size: 18px;
 }
 
+.resettingPrinter {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 48px;
+    -fx-fill: white;
+}
+
 /**
 * Reel and Material
 */
