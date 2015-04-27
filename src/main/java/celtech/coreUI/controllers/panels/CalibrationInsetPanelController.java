@@ -143,7 +143,7 @@ public class CalibrationInsetPanelController implements Initializable,
     private BorderPane topBorderPane;
 
     @FXML
-    private Pane topPane;
+    private VBox topPane;
 
     @FXML
     private VBox diagramContainer;

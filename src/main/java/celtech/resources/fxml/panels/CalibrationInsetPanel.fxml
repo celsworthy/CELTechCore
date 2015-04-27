@@ -11,7 +11,7 @@
 <?import celtech.coreUI.components.*?>
 <?import celtech.coreUI.components.buttons.* ?>
 
-<Pane fx:id="topPane" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
+<VBox fx:id="topPane" pickOnBounds="false" VBox.vgrow="ALWAYS" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
         <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
             <center>
@@ -127,4 +127,4 @@
             </top>
         </BorderPane>
     </children>
-</Pane>
+</VBox>
