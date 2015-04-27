@@ -9,7 +9,7 @@ import java.util.Optional;
  *
  * @author Ian
  */
-public enum NozzleOffsetCalibrationState
+public enum NozzleHeightCalibrationState
 {
 
     IDLE("calibrationPanel.readyToBeginNozzleOffsetCalibration",
@@ -28,13 +28,14 @@ public enum NozzleOffsetCalibrationState
     FINISHED("calibrationPanel.calibrationSucceededMessage",
              "Nozzle Height Illustrations_Step 9.fxml"),
     FAILED("calibrationPanel.nozzleCalibrationFailed", "Nozzle Height Illustrations_Failure.fxml"),
+    CANCELLING("", ""),
     CANCELLED("", ""),
     DONE("", "");
 
     private final String stepTitleResource;
     private final String diagramName;
 
-    private NozzleOffsetCalibrationState(String stepTitleResource, String diagramName)
+    private NozzleHeightCalibrationState(String stepTitleResource, String diagramName)
     {
         this.stepTitleResource = stepTitleResource;
         this.diagramName = diagramName;
@@ -44,7 +45,7 @@ public enum NozzleOffsetCalibrationState
      * Return if the cancel button should be show for this state.
      */
     public boolean showCancelButton() {
-        return (this != IDLE && this != FAILED && this != FINISHED);
+        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLED);
     }
 
     public Optional<URL> getDiagramFXMLFileName()

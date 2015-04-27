@@ -96,7 +96,7 @@ public class CalibrationXAndYGUI
 //            case PRINT_CIRCLE_CHECK:
 //                stepNo = 3;
 //                break;
-            case DONE:
+            case CANCELLED:
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FINISHED:

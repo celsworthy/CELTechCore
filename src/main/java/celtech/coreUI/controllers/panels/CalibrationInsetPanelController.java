@@ -16,7 +16,7 @@ import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.calibration.CalibrationXAndYState;
-import celtech.printerControl.model.calibration.NozzleOffsetCalibrationState;
+import celtech.printerControl.model.calibration.NozzleHeightCalibrationState;
 import celtech.printerControl.model.calibration.NozzleOpeningCalibrationState;
 import celtech.utils.PrinterListChangesListener;
 import java.io.IOException;
@@ -225,18 +225,12 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             steno.error("Error cancelling calibration: " + ex);
         }
-        cancelCalibrationAction();
     }
 
     @FXML
     void retryCalibration(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.RETRY);
-    }
-
-    public void cancelCalibrationAction()
-    {
-        setCalibrationMode(CalibrationMode.CHOICE);
     }
 
     protected void hideAllInputControlsExceptStepNumber()
@@ -610,7 +604,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 }
             }
             calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
-            calibrationNozzleHeightGUI.setState(NozzleOffsetCalibrationState.IDLE);
+            calibrationNozzleHeightGUI.setState(NozzleHeightCalibrationState.IDLE);
             break;
 
             case X_AND_Y_OFFSET:
@@ -700,7 +694,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (printer == currentPrinter)
         {
-            cancelCalibrationAction();
+            setCalibrationMode(CalibrationMode.CHOICE);
         }
     }
 
@@ -718,7 +712,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (printer == currentPrinter)
         {
-            cancelCalibrationAction();
+            setCalibrationMode(CalibrationMode.CHOICE);
         }
     }
 

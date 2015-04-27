@@ -81,6 +81,9 @@ public class PurgeInsetPanelController2 implements Initializable
 
     @FXML
     private Text currentMaterialTemperature;
+    
+    @FXML
+    private Text resettingPrinter;    
 
     @FXML
     private GridPane purgeDetailsGrid;
@@ -191,6 +194,7 @@ public class PurgeInsetPanelController2 implements Initializable
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
+                steno.debug("show button " + allowedTransition.getGUIName());
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
             }
         }
@@ -215,6 +219,8 @@ public class PurgeInsetPanelController2 implements Initializable
         steno.debug("printer status is " + printer.printerStatusProperty().get());
         hideAllButtons();
         showAppropriateButtons(state);
+        resettingPrinter.setVisible(false);
+        purgeStatus.setVisible(true);
         purgeStatus.setText(state.getStepTitle());
         purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
         switch (state)
@@ -245,6 +251,10 @@ public class PurgeInsetPanelController2 implements Initializable
                 closeWindow(null);
                 break;
             case FAILED:
+                break;
+            case CANCELLING:
+                resettingPrinter.setVisible(true);
+                purgeStatus.setVisible(false);
                 break;
             case CANCELLED:
                 closeWindow(null);
@@ -341,6 +351,7 @@ public class PurgeInsetPanelController2 implements Initializable
                     setState((PurgeState) newValue);
                 }
             });
+            transitionManager.start();
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
         {

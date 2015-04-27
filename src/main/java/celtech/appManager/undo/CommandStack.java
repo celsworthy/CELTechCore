@@ -26,8 +26,13 @@ public class CommandStack
     private static final Stenographer steno = StenographerFactory.getStenographer(
         CommandStack.class.getName());
 
-    private BooleanProperty canUndo = new SimpleBooleanProperty();
-    private BooleanProperty canRedo = new SimpleBooleanProperty();
+    private final BooleanProperty canUndo = new SimpleBooleanProperty();
+    private final BooleanProperty canRedo = new SimpleBooleanProperty();
+    private final ObservableList<Command> commands;
+    /**
+     * The position of the last command to be performed.
+     */
+    private final IntegerProperty index = new SimpleIntegerProperty(-1);
 
     public class UndoException extends Exception
     {
@@ -44,13 +49,6 @@ public class CommandStack
         canUndo.bind(index.greaterThan(-1));
         canRedo.bind(Bindings.size(commands).greaterThan(index.add(1)));
     }
-
-    private ObservableList<Command> commands;
-
-    /**
-     * The position of the last command to be performed.
-     */
-    private IntegerProperty index = new SimpleIntegerProperty(-1);
 
     public void do_(Command command)
     {

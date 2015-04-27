@@ -127,7 +127,7 @@ public class CalibrationNozzleOpeningGUI
             case FINISHED:
                 controller.calibrationMenu.reset();
                 break;
-            case DONE:    
+            case CANCELLED:    
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FAILED:

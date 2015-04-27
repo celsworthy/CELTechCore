@@ -27,7 +27,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
@@ -119,8 +118,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private SelectedModelContainers selectedModelContainers = null;
 
     private long lastAnimationTrigger = 0;
-
-    private boolean gizmoRotationStarted = false;
 
     private final AnimationTimer settingsScreenAnimationTimer = new AnimationTimer()
     {
@@ -358,7 +355,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             int faceNumber = pickResult.getIntersectedFace();
             undoableProject.snapToGround(modelContainer, faceNumber);
-            modelContainer.snapToGround(faceNumber);
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }

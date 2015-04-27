@@ -38,7 +38,10 @@ import libertysystems.stenographer.StenographerFactory;
  * <p>
  * The GUI can allow the user to cancel the whole process (even during a long-running transition) by
  * calling the {@link #cancel() cancel} method. The StateTransitionManager will then move to the
- * cancelledState state.
+ * cancelledState state, after allowing any ongoing transition/arrival to complete. Actions should
+ * listen for user/error states and terminate themselves early in that case {
+ *
+ * @see StateTransitionActions#userOrErrorCancellable}.
  * </p>
  * <p>
  * All StateTransitionManager methods should be called from the GUI thread. All actions are run in a
@@ -67,12 +70,13 @@ public class StateTransitionManager<StateType>
      */
     public enum GUIName
     {
+
         START, CANCEL, BACK, NEXT, RETRY, COMPLETE, YES, NO, UP, DOWN, A_BUTTON, B_BUTTON, AUTO;
     }
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         StateTransitionManager.class.getName());
-    
+
     protected StateTransitionActions actions;
 
     Set<StateTransition<StateType>> allowedTransitions;
@@ -91,21 +95,28 @@ public class StateTransitionManager<StateType>
     private final ObjectProperty<StateType> stateGUIT;
 
     /**
-     * userCancellable is set from the {@link #cancel() cancel method} when the user requests a cancellation. It will cause the state machine
-     * to go to the cancelledState. It is usually triggered by the user clicking the cancel button.
-     * The StateTransitionActions instance should always be listening to this and should stop
-     * any ongoing actions if cancelled is set to true.
+     * userCancellable is set from the {@link #cancel() cancel method} when the user requests a
+     * cancellation. It will cause the state machine to go to the cancelledState. It is usually
+     * triggered by the user clicking the cancel button. The StateTransitionActions instance should
+     * always be listening to this and should stop any ongoing actions if cancelled is set to true.
      */
     private final Cancellable userCancellable = new SimpleCancellable();
 
     /**
      * errorCancellable is set programmatically when a fatal error occurs outside of the normal flow
      * of transitions (e.g a printer error). It will cause the state machine to go to the
-     * failedState. it is usually set by a printer error consumer.
-     * The StateTransitionActions instance should always be listening to this and should stop
-     * any ongoing actions if cancelled is set to true.
+     * failedState. it is usually set by a printer error consumer. The StateTransitionActions
+     * instance should always be listening to this and should stop any ongoing actions if cancelled
+     * is set to true.
      */
     private final Cancellable errorCancellable = new SimpleCancellable();
+
+    private final StateType cancellingState;
+    private final StateType cancelledState;
+    private final StateType failedState;
+    private final StateType initialState;
+
+    private boolean runningAction;
 
     /**
      * Return the current state as a property. This variable is only updated on the GUI thread.
@@ -123,11 +134,12 @@ public class StateTransitionManager<StateType>
      * @param stateTransitionActionsFactory
      * @param transitionsFactory
      * @param initialState The initial state that the machine will start in.
-     * @param cancelledState The state to go to if {@link cancel() cancel} is called.
+     * @param cancellingState The state to go to if {@link cancel() cancel} is called.
+     * @param cancelledState The state to go to after CANCELLING is complete.
      * @param failedState The state to go to if {@link #errorCancellable} is set.
      */
     public StateTransitionManager(StateTransitionActionsFactory stateTransitionActionsFactory,
-        TransitionsFactory transitionsFactory, StateType initialState,
+        TransitionsFactory transitionsFactory, StateType initialState, StateType cancellingState,
         StateType cancelledState, StateType failedState)
     {
         actions = stateTransitionActionsFactory.makeStateTransitionActions(
@@ -137,6 +149,10 @@ public class StateTransitionManager<StateType>
 
         this.allowedTransitions = transitions.getTransitions();
         this.arrivals = transitions.getArrivals();
+        this.cancellingState = cancellingState;
+        this.cancelledState = cancelledState;
+        this.failedState = failedState;
+        this.initialState = initialState;
 
         state = new SimpleObjectProperty<>(initialState);
         stateGUIT = new SimpleObjectProperty<>(initialState);
@@ -152,17 +168,32 @@ public class StateTransitionManager<StateType>
         userCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                setState(cancelledState);
+                if (newValue)
+                {
+                    userCancelRequested();
+                }
             });
         errorCancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                // errorCancellable will often be called when not on the GUI thread
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        setState(failedState);
-                });
+                if (newValue)
+                {
+                    errorCancelRequested();
+                }
             });
+    }
+
+    /**
+     * Initialise all variables and set state to the initial state. The intention is that the state
+     * machine can be restarted at any time.
+     */
+    public void start()
+    {
+        userCancellable.cancelled().set(false);
+        errorCancellable.cancelled().set(false);
+        runningAction = false;
+        actions.initialise();
+        setState(initialState);
     }
 
     /**
@@ -207,16 +238,36 @@ public class StateTransitionManager<StateType>
 
         if (arrivals.containsKey(state))
         {
+            runningAction = true;
 
             ArrivalAction<StateType> arrival = arrivals.get(state);
 
             TaskExecutor.NoArgsVoidFunc nullAction = () ->
             {
+                steno.debug("Arrived at action completed");
+                runningAction = false;
+                if (errorCancellable.cancelled().get())
+                {
+                    steno.debug("Error detected during arrival processing");
+                    doCancelOrErrorDetectedAndGotoState(arrival.failedState);
+                } else if (userCancellable.cancelled().get())
+                {
+                    steno.debug("Cancel detected during arrival processing");
+                    doCancelOrErrorDetectedAndGotoState(cancelledState);
+                }
             };
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
-                setState(arrival.failedState);
+                steno.debug("Arrived at action FAILED");
+                runningAction = false;
+                if (arrival.failedState != null)
+                {
+                    setState(arrival.failedState);
+                } else
+                {
+                    setState(failedState);
+                }
             };
 
             String taskName = String.format("State arrival at %s", state);
@@ -224,6 +275,30 @@ public class StateTransitionManager<StateType>
             Lookup.getTaskExecutor().runAsTask(arrival.action, nullAction,
                                                gotToFailedState, taskName);
         }
+    }
+
+    /**
+     * doCancelOrErrorDetected is called after an error or cancel. If the error/cancel occurred
+     * during a transition or arrival then the transition/arrival is allowed to complete before this
+     * is called. Finish by going to the given state.
+     */
+    private void doCancelOrErrorDetectedAndGotoState(StateType nextState)
+    {
+        new Thread(() ->
+        {
+            try
+            {
+                actions.resetAfterCancelOrError();
+            } catch (Exception ex)
+            {
+                steno.error("Error processing reset after cancel / error");
+            }
+            // we need to clear the error detection flag otherwise the last error will be
+            // "redetected" on the next state change / transition.
+            errorCancellable.cancelled().set(false);
+            setState(nextState);
+        }).start();
+
     }
 
     private StateTransition getTransitionForGUIName(GUIName guiName)
@@ -238,6 +313,18 @@ public class StateTransitionManager<StateType>
             }
         }
         return foundTransition;
+    }
+
+    private StateType getFailedState(StateTransition<StateType> stateTransition)
+    {
+        if (stateTransition.transitionFailedState != null)
+        {
+            return stateTransition.transitionFailedState;
+        } else
+        {
+            return failedState;
+        }
+
     }
 
     /**
@@ -269,19 +356,39 @@ public class StateTransitionManager<StateType>
         } else
         {
 
+            runningAction = true;
+
             TaskExecutor.NoArgsVoidFunc goToNextState = () ->
             {
+                runningAction = false;
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.toState);
+                } else
+                {
+                    if (errorCancellable.cancelled().get())
+                    {
+                        steno.debug("Error detected during transition action");
+                        doCancelOrErrorDetectedAndGotoState(getFailedState(stateTransition));
+                    } else if (userCancellable.cancelled().get())
+                    {
+                        steno.debug("Cancel detected during transition action");
+                        doCancelOrErrorDetectedAndGotoState(cancelledState);
+                    }
                 }
             };
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
+                runningAction = false;
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
-                    setState(stateTransition.transitionFailedState);
+                    setState(getFailedState(stateTransition));
+                } else
+                {
+                    // if there is a cancel during a fail then we only process failed action and do
+                    // not call doCancelOrErrorDetected.
+                    setState(failedState);
                 }
             };
 
@@ -308,12 +415,33 @@ public class StateTransitionManager<StateType>
     }
 
     /**
-     * Move to the {@link cancelledState}. Any actions tied to active state transitions should be
-     * listening to changes on this userCancellable and stop themselves.
+     * Try to cancel any ongoing transition then move to the {@link cancelledState}. Any actions
+     * tied to active state transitions / arrivals should either be listening to changes on this
+     * userCancellable and stop themselves, or StateTransitionActions.whenUserCancelDetected should
+     * stop them instead.
      */
     public void cancel()
     {
         userCancellable.cancelled().set(true);
+    }
+
+    private void userCancelRequested()
+    {
+        setState(cancellingState);
+        if (!runningAction)
+        {
+            steno.debug("Cancel detected out of transition go straight to cancelling/ed state");
+            doCancelOrErrorDetectedAndGotoState(cancelledState);
+        }
+    }
+
+    private void errorCancelRequested()
+    {
+        if (!runningAction)
+        {
+            steno.debug("Error detected out of transition go straight to failed state");
+            doCancelOrErrorDetectedAndGotoState(failedState);
+        }
     }
 
 }

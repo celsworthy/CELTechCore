@@ -21,6 +21,7 @@ public class PurgeActions extends StateTransitionActions
 
     public class PurgeException extends Exception
     {
+
         public PurgeException(String message)
         {
             super(message);
@@ -54,11 +55,31 @@ public class PurgeActions extends StateTransitionActions
         this.printer = printer;
     }
 
+    @Override
+    public void initialise()
+    {
+        reelNozzleTemperature = 0;
+        lastDisplayTemperature = 0;
+        currentDisplayTemperature = 0;
+        savedHeadData = null;
+    }
+
     private void resetPrinter() throws PrinterException
     {
         printer.gotoNozzlePosition(0);
         printer.switchBedHeaterOff();
         switchHeatersAndHeadLightOff();
+        PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+        try
+        {
+            // wait for above actions to complete so that AutoMaker does not return
+            // to Status page until cancel/reset is complete
+            Thread.sleep(2000);
+        } catch (InterruptedException ex)
+        {
+            steno.error("Wait interrupted");
+        }
+
     }
 
     public void doInitialiseAction() throws RoboxCommsException
@@ -158,16 +179,7 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
-        try
-        {
-            if (printer.canCancelProperty().get())
-            {
-                printer.cancel(null);
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Failed to cancel purge print - " + ex.getMessage());
-        }
+        abortAnyOngoingPrint();
         resetPrinter();
         deregisterPrinterErrorHandler();
         printer.setPrinterStatus(PrinterStatus.IDLE);
@@ -216,42 +228,54 @@ public class PurgeActions extends StateTransitionActions
     }
 
     @Override
+    /**
+     * This is run immediately after the user presses the cancel button.
+     */
     void whenUserCancelDetected()
     {
-        try
-        {
-            abortOngoingPrintAndResetPrinter();
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Error cancelling purge: " + ex);
-        }
+        abortAnyOngoingPrint();
     }
-    
+
     @Override
+    /**
+     * This is run immediately after the printer error is detected.
+     */
     void whenErrorDetected()
     {
-        try
-        {
-            abortOngoingPrintAndResetPrinter();
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Error cancelling purge: " + ex);
-        }
-    }    
-    
-    private void abortOngoingPrintAndResetPrinter() throws RoboxCommsException, PrinterException
-    {
-        deregisterPrinterErrorHandler();
-        try
-        {
-            // wait for any current actions to respect cancelled flag
-            Thread.sleep(500);
-        } catch (InterruptedException ex)
-        {
-            steno.warning("interrupted during wait of cancel");
-        }
-        doFailedAction();
-    }    
+        abortAnyOngoingPrint();
+    }
 
-    
+    @Override
+    /**
+     * This is run after a Cancel or Error but not until any ongoing Action has completed / stopped. We
+     * reset the printer here and not at the time of error/cancel detection because if done
+     * immediately the ongoing Action could undo the effects of the reset.
+     */ 
+    void resetAfterCancelOrError()
+    {
+        try
+        {
+            resetPrinter();
+            deregisterPrinterErrorHandler();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error reseting printer");
+        }
+        printer.setPrinterStatus(PrinterStatus.IDLE);
+    }
+
+    private void abortAnyOngoingPrint()
+    {
+        try
+        {
+            if (printer.canCancelProperty().get())
+            {
+                printer.cancel(null);
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Failed to abort purge print - " + ex.getMessage());
+        }
+    }
+
 }
