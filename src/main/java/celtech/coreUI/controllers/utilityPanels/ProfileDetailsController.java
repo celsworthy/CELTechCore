@@ -1081,6 +1081,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
     {
+        temporarySettingsFile = parametersFile;
 
         profileNameField.setText(parametersFile.getProfileName());
         SlicerType slicerType = parametersFile.getSlicerOverride();
@@ -1412,7 +1413,6 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
             return;
         }
         SlicerParametersFile parametersFile = getPrintProfile();
-        temporarySettingsFile = null;
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
@@ -1433,7 +1433,6 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
             getSettingsByProfileName(
                 currentProfileName).clone();
-        temporarySettingsFile = slicerParametersFile;
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();

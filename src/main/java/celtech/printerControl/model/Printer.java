@@ -586,4 +586,6 @@ public interface Printer extends RoboxResponseConsumer
     public void suppressEEPROMAndSDErrorHandling(boolean suppress);
     
     public PrinterMetaStatus getPrinterMetaStatus();
+
+    public void transferGCodeFileToPrinter(String string);
 }

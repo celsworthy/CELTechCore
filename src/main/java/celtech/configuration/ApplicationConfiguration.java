@@ -155,6 +155,7 @@ public class ApplicationConfiguration
      */
     public static final String projectFileExtension = ".robox";
     public static final String projectModelsFileExtension = ".models";
+    public static final String demoPrintFilename = "demoPrint.gcode";
     private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst(
         "\\.", "");
 

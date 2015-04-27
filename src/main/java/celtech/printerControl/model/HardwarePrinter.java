@@ -227,6 +227,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return metaStatus;
     }
 
+    @Override
+    public void transferGCodeFileToPrinter(String string)
+    {
+    }
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to override
      * the detection of whether a filament is loaded or not on a given extruder.
