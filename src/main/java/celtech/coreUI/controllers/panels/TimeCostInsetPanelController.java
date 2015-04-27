@@ -124,14 +124,14 @@ public class TimeCostInsetPanelController implements Initializable
             @Override
             public void whenModelAdded(ModelContainer modelContainer)
             {
-                steno.info("model added");
+                steno.debug("model added");
                 updateFields(project);
             }
 
             @Override
             public void whenModelRemoved(ModelContainer modelContainer)
             {
-                steno.info("model removed");
+                steno.debug("model removed");
                 updateFields(project);
             }
 
@@ -143,21 +143,21 @@ public class TimeCostInsetPanelController implements Initializable
             @Override
             public void whenModelsTransformed(Set<ModelContainer> modelContainers)
             {
-                steno.info("model transformed");
+                steno.debug("model transformed");
                 updateFields(project);
             }
 
             @Override
             public void whenModelChanged(ModelContainer modelContainer, String propertyName)
             {
-                steno.info("model changed");
+                steno.debug("model changed");
                 updateFields(project);
             }
 
             @Override
             public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
             {
-                steno.info("printer settings changed");
+                steno.debug("printer settings changed");
                 updateFields(project);
             }
         };

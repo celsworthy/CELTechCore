@@ -236,9 +236,12 @@ public class StateTransitionManager<StateType>
             TaskExecutor.NoArgsVoidFunc nullAction = () ->
             {
                 runningAction = false;
-                if (userCancellable.cancelled().get() || errorCancellable.cancelled().get())
+                if (errorCancellable.cancelled().get())
                 {
-                    doCancelOrErrorDetected();
+                    doCancelOrErrorDetectedAndGotoState(arrival.failedState);
+                } else if (userCancellable.cancelled().get())
+                {
+                    doCancelOrErrorDetectedAndGotoState(cancelledState);
                 }
             };
 
@@ -264,18 +267,22 @@ public class StateTransitionManager<StateType>
     /**
      * doCancelOrErrorDetected is called after an error or cancel. If the error/cancel occurred
      * during a transition or arrival then the transition/arrival is allowed to complete before this
-     * is called.
+     * is called. Finish by going to the given state.
      */
-    private void doCancelOrErrorDetected()
+    private void doCancelOrErrorDetectedAndGotoState(StateType nextState)
     {
-        try
+        new Thread(() ->
         {
-            actions.resetAfterCancelOrError();
-        } catch (Exception ex)
-        {
-            steno.error("Error processing reset after cancel / error");
-        }
-        setState(cancelledState);
+            try
+            {
+                actions.resetAfterCancelOrError();
+            } catch (Exception ex)
+            {
+                steno.error("Error processing reset after cancel / error");
+            }
+            setState(nextState);
+        }).start();
+
     }
 
     private StateTransition getTransitionForGUIName(GUIName guiName)
@@ -290,6 +297,18 @@ public class StateTransitionManager<StateType>
             }
         }
         return foundTransition;
+    }
+
+    private StateType getFailedState(StateTransition<StateType> stateTransition)
+    {
+        if (stateTransition.transitionFailedState != null)
+        {
+            return stateTransition.transitionFailedState;
+        } else
+        {
+            return failedState;
+        }
+
     }
 
     /**
@@ -331,8 +350,14 @@ public class StateTransitionManager<StateType>
                     setState(stateTransition.toState);
                 } else
                 {
-                    steno.debug("Cancel detected during transition action");
-                    doCancelOrErrorDetected();
+                    steno.debug("Error or Cancel detected during transition action");
+                    if (errorCancellable.cancelled().get())
+                    {
+                        doCancelOrErrorDetectedAndGotoState(getFailedState(stateTransition));
+                    } else if (userCancellable.cancelled().get())
+                    {
+                        doCancelOrErrorDetectedAndGotoState(cancelledState);
+                    }
                 }
             };
 
@@ -341,13 +366,7 @@ public class StateTransitionManager<StateType>
                 runningAction = false;
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
-                    if (stateTransition.transitionFailedState != null)
-                    {
-                        setState(stateTransition.transitionFailedState);
-                    } else
-                    {
-                        setState(failedState);
-                    }
+                    setState(getFailedState(stateTransition));
                 } else
                 {
                     // if there is a cancel during a fail then we only process failed action and do
@@ -393,7 +412,7 @@ public class StateTransitionManager<StateType>
     {
         if (!runningAction)
         {
-            doCancelOrErrorDetected();
+            doCancelOrErrorDetectedAndGotoState(cancelledState);
         }
     }
 
@@ -401,7 +420,7 @@ public class StateTransitionManager<StateType>
     {
         if (!runningAction)
         {
-            doCancelOrErrorDetected();
+            doCancelOrErrorDetectedAndGotoState(cancelledState);
         }
     }
 

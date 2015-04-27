@@ -52,71 +52,71 @@ public class CanPrintConditionalTextBindings
             protected boolean computeValue()
             {
                 try {
-                steno.debug("Recompute conditional text reqd binding");
+                //steno.debug("Recompute conditional text reqd binding");
                 boolean filamentMismatch = true;
 
                 Filament printerFilament = project.getPrinterSettings().getFilament0Property().get();
                 if (printerFilament != null)
                 {
-                    steno.debug("printer settings fil 0 is" + printerFilament + " "
-                        + printerFilament.getFilamentID());
+                    //steno.debug("printer settings fil 0 is" + printerFilament + " "
+                   //     + printerFilament.getFilamentID());
                 }
                 Set<Integer> usedExtruders = project.getUsedExtruders();
 
                 if (!printer.extrudersProperty().get(1).isFittedProperty().get())
                 {
                     // only one extruder on the printer
-                    steno.debug("One Extruder Only");
-                    steno.debug("Printer Settings filament 0 is "
-                        + project.getPrinterSettings().getFilament0Property());
+                    //steno.debug("One Extruder Only");
+                    //steno.debug("Printer Settings filament 0 is "
+                     //   + project.getPrinterSettings().getFilament0Property());
 
                     if (usedExtruders.contains(0))
                     {
-                        steno.debug("extruder 0 is being used");
+                        //steno.debug("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            steno.debug("used filament 0 matches printer filament 0");
+                            //steno.debug("used filament 0 matches printer filament 0");
                             filamentMismatch = false;
                         }
                     }
 
                     if (usedExtruders.contains(1))
                     {
-                        steno.debug("extruder 1 is being used");
+                        //steno.debug("extruder 1 is being used");
                         Filament usedFilament = project.getExtruder1FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            steno.debug(
-                                "used filament 1 matches printer filament 0 for single extruder printer");
+                            //steno.debug(
+                             //   "used filament 1 matches printer filament 0 for single extruder printer");
                             filamentMismatch = false;
                         }
                     }
                 } else
                 {
-                    steno.debug("Two extruders");
+                    //steno.debug("Two extruders");
                     // two extruders on printer, just check extruder 0
                     if (usedExtruders.contains(0))
                     {
-                        steno.debug("extruder 0 is being used");
+                        //steno.debug("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
-                        steno.debug("project fil 0 is " + usedFilament);
+                        //steno.debug("project fil 0 is " + usedFilament);
                         if (usedFilament != null) {
-                            steno.debug("project fil 0 id is " + usedFilament.getFilamentID());
+                            //steno.debug("project fil 0 id is " + usedFilament.getFilamentID());
                         }
                         if (usedFilament.equals(printerFilament))
                         {
-                            steno.debug("used filament 0 matches printer filament 0");
+                            //steno.debug("used filament 0 matches printer filament 0");
                             filamentMismatch = false;
                         }
                     } else
                     {
-                        steno.debug("Extruder 0 not being used");
+                        //steno.debug("Extruder 0 not being used");
                         filamentMismatch = false;
                     }
 
                 }
-                steno.debug("mismatch on 0 detected: " + filamentMismatch);
+                //steno.debug("mismatch on 0 detected: " + filamentMismatch);
                 return filamentMismatch;
                 } catch (Exception ex) {
                     steno.error("Error computing conditional text bindings " + ex);
@@ -149,24 +149,24 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                steno.debug("Recompute conditional text reqd binding (1)");
+                //steno.debug("Recompute conditional text reqd binding (1)");
                 boolean filamentMismatch = true;
                 Filament printerFilament = project.getPrinterSettings().getFilament1Property().get();
                 Set<Integer> usedExtruders = project.getUsedExtruders();
 
                 if (usedExtruders.contains(1))
                 {
-                    steno.debug("extruder 1 is being used");
+                    //steno.debug("extruder 1 is being used");
                     Filament usedFilament = project.getExtruder1FilamentProperty().get();
-                    steno.debug("printer 1 filament " + printerFilament);
-                    steno.debug("project 1 filament " + usedFilament);
+                    //steno.debug("printer 1 filament " + printerFilament);
+                    //steno.debug("project 1 filament " + usedFilament);
                     if (usedFilament.equals(printerFilament))
                     {
-                        steno.debug("used filament 1 matches printer filament 1");
+                        //steno.debug("used filament 1 matches printer filament 1");
                         filamentMismatch = false;
                     }
                 }
-                steno.debug("mismatch on 1 detected: " + filamentMismatch);
+                //steno.debug("mismatch on 1 detected: " + filamentMismatch);
                 return filamentMismatch;
             }
         };

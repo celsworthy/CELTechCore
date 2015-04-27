@@ -9,6 +9,8 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -69,6 +71,17 @@ public class PurgeActions extends StateTransitionActions
         printer.gotoNozzlePosition(0);
         printer.switchBedHeaterOff();
         switchHeatersAndHeadLightOff();
+        PrinterUtils.waitOnBusy(printer, (Cancellable) null);
+        try
+        {
+            // wait for above actions to complete so that AutoMaker does not return
+            // to Status page until cancel/reset is complete
+            Thread.sleep(2000);
+        } catch (InterruptedException ex)
+        {
+            steno.error("Wait interrupted");
+        }
+        
     }
 
     public void doInitialiseAction() throws RoboxCommsException
@@ -168,7 +181,7 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
-        abortOngoingPrint();
+        abortAnyOngoingPrint();
         resetPrinter();
         deregisterPrinterErrorHandler();
         printer.setPrinterStatus(PrinterStatus.IDLE);
@@ -219,13 +232,13 @@ public class PurgeActions extends StateTransitionActions
     @Override
     void whenUserCancelDetected()
     {
-        abortOngoingPrint();
+        abortAnyOngoingPrint();
     }
 
     @Override
     void whenErrorDetected()
     {
-        abortOngoingPrint();
+        abortAnyOngoingPrint();
     }
 
     @Override
@@ -242,7 +255,7 @@ public class PurgeActions extends StateTransitionActions
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    private void abortOngoingPrint()
+    private void abortAnyOngoingPrint()
     {
         try
         {

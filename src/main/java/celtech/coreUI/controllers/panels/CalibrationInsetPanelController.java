@@ -225,18 +225,12 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             steno.error("Error cancelling calibration: " + ex);
         }
-        cancelCalibrationAction();
     }
 
     @FXML
     void retryCalibration(ActionEvent event)
     {
         stateManager.followTransition(StateTransitionManager.GUIName.RETRY);
-    }
-
-    public void cancelCalibrationAction()
-    {
-        setCalibrationMode(CalibrationMode.CHOICE);
     }
 
     protected void hideAllInputControlsExceptStepNumber()
@@ -700,7 +694,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (printer == currentPrinter)
         {
-            cancelCalibrationAction();
+            setCalibrationMode(CalibrationMode.CHOICE);
         }
     }
 
@@ -718,7 +712,7 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (printer == currentPrinter)
         {
-            cancelCalibrationAction();
+            setCalibrationMode(CalibrationMode.CHOICE);
         }
     }
 

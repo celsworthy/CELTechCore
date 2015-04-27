@@ -44,7 +44,7 @@ public enum NozzleOffsetCalibrationState
      * Return if the cancel button should be show for this state.
      */
     public boolean showCancelButton() {
-        return (this != IDLE && this != FAILED && this != FINISHED);
+        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLED);
     }
 
     public Optional<URL> getDiagramFXMLFileName()
