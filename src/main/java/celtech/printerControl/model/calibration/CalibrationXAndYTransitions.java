@@ -46,13 +46,11 @@ public class CalibrationXAndYTransitions extends Transitions<CalibrationXAndYSta
                                             () ->
                                             {
                                                 actions.doSaveHead();
-                                            },
-                                            CalibrationXAndYState.FAILED));
+                                            }));
 
         transitions.add(new StateTransition(CalibrationXAndYState.IDLE,
                                             StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.DONE));
 
         // PRINT PATTERN
         transitions.add(new StateTransition(CalibrationXAndYState.PRINT_PATTERN,
@@ -61,14 +59,12 @@ public class CalibrationXAndYTransitions extends Transitions<CalibrationXAndYSta
                                             () ->
                                             {
                                                 actions.doPrintPattern();
-                                            },
-                                            CalibrationXAndYState.FAILED));
+                                            }));
 
         // GET Y OFFSET
         transitions.add(new StateTransition(CalibrationXAndYState.GET_Y_OFFSET,
                                             StateTransitionManager.GUIName.NEXT,
-                                            CalibrationXAndYState.FINISHED,
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.FINISHED));
 
 //        // PRINT CIRCLE
 //        transitions.add(new StateTransition(CalibrationXAndYState.PRINT_CIRCLE,
@@ -93,8 +89,7 @@ public class CalibrationXAndYTransitions extends Transitions<CalibrationXAndYSta
         // FINISHED
         transitions.add(new StateTransition(CalibrationXAndYState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
-                                            CalibrationXAndYState.DONE,
-                                            CalibrationXAndYState.FAILED));
+                                            CalibrationXAndYState.DONE));
 
         // FAILED
         transitions.add(new StateTransition(CalibrationXAndYState.FAILED,

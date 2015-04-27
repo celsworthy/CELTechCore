@@ -16,6 +16,10 @@ public abstract class StateTransitionActions
 
     Cancellable userCancellable;
     Cancellable errorCancellable;
+    /**
+     * userOrErrorCancellable is an OR of userCancellable and errorCancellable. Actions should
+     * listen to this and stop if cancelled goes to true.
+     */
     Cancellable userOrErrorCancellable;
 
     public StateTransitionActions(Cancellable userCancellable, Cancellable errorCancellable)

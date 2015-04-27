@@ -38,8 +38,7 @@ public class PurgeTransitions extends Transitions<PurgeState>
         // IDLE -> INITIALISING
         transitions.add(new StateTransition(PurgeState.IDLE,
                                             StateTransitionManager.GUIName.START,
-                                            PurgeState.INITIALISING,
-                                            PurgeState.FAILED));
+                                            PurgeState.INITIALISING));
 
         // INITIALISING -> CONFIRM_TEMPERATURE
         transitions.add(new StateTransition(PurgeState.INITIALISING,
@@ -48,14 +47,12 @@ public class PurgeTransitions extends Transitions<PurgeState>
                                             () ->
                                             {
                                                 actions.doInitialiseAction();
-                                            },
-                                            PurgeState.FAILED));
+                                            }));
 
         // CONFIRM_TEMPERATURE -> HEATING
         transitions.add(new StateTransition(PurgeState.CONFIRM_TEMPERATURE,
                                             StateTransitionManager.GUIName.NEXT,
-                                            PurgeState.HEATING,
-                                            PurgeState.FAILED));
+                                            PurgeState.HEATING));
 
         // HEATING -> RUNNING_PURGE
         transitions.add(new StateTransition(PurgeState.HEATING,
@@ -64,8 +61,7 @@ public class PurgeTransitions extends Transitions<PurgeState>
                                             () ->
                                             {
                                                 actions.doHeatingAction();
-                                            },
-                                            PurgeState.FAILED));
+                                            }));
 
         // RUNNING_PURGE -> FINISHED
         transitions.add(new StateTransition(PurgeState.RUNNING_PURGE,
@@ -74,20 +70,17 @@ public class PurgeTransitions extends Transitions<PurgeState>
                                             () ->
                                             {
                                                 actions.doRunPurgeAction();
-                                            },
-                                            PurgeState.FAILED));
+                                            }));
 
         // FINISHED (OK) -> DONE
         transitions.add(new StateTransition(PurgeState.FINISHED,
                                             StateTransitionManager.GUIName.COMPLETE,
-                                            PurgeState.DONE,
-                                            PurgeState.FAILED));
+                                            PurgeState.DONE));
 
         // FINISHED (RETRY) -> INITIALISING
         transitions.add(new StateTransition(PurgeState.FINISHED,
                                             StateTransitionManager.GUIName.RETRY,
-                                            PurgeState.INITIALISING,
-                                            PurgeState.FAILED));
+                                            PurgeState.INITIALISING));
         
         // FAILED(OK) -> DONE
         transitions.add(new StateTransition(PurgeState.FAILED,

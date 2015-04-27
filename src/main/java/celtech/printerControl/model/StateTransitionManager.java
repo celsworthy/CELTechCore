@@ -38,7 +38,10 @@ import libertysystems.stenographer.StenographerFactory;
  * <p>
  * The GUI can allow the user to cancel the whole process (even during a long-running transition) by
  * calling the {@link #cancel() cancel} method. The StateTransitionManager will then move to the
- * cancelledState state.
+ * cancelledState state, after allowing any ongoing transition/arrival to complete. Actions should
+ * listen for user/error states and terminate themselves early in that case {
+ *
+ * @see StateTransitionActions#userOrErrorCancellable}.
  * </p>
  * <p>
  * All StateTransitionManager methods should be called from the GUI thread. All actions are run in a
@@ -233,12 +236,22 @@ public class StateTransitionManager<StateType>
             TaskExecutor.NoArgsVoidFunc nullAction = () ->
             {
                 runningAction = false;
+                if (userCancellable.cancelled().get() || errorCancellable.cancelled().get())
+                {
+                    doCancelOrErrorDetected();
+                }
             };
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
                 runningAction = false;
-                setState(arrival.failedState);
+                if (arrival.failedState != null)
+                {
+                    setState(arrival.failedState);
+                } else
+                {
+                    setState(failedState);
+                }
             };
 
             String taskName = String.format("State arrival at %s", state);
@@ -246,6 +259,23 @@ public class StateTransitionManager<StateType>
             Lookup.getTaskExecutor().runAsTask(arrival.action, nullAction,
                                                gotToFailedState, taskName);
         }
+    }
+
+    /**
+     * doCancelOrErrorDetected is called after an error or cancel. If the error/cancel occurred
+     * during a transition or arrival then the transition/arrival is allowed to complete before this
+     * is called.
+     */
+    private void doCancelOrErrorDetected()
+    {
+        try
+        {
+            actions.resetAfterCancelOrError();
+        } catch (Exception ex)
+        {
+            steno.error("Error processing reset after cancel / error");
+        }
+        setState(cancelledState);
     }
 
     private StateTransition getTransitionForGUIName(GUIName guiName)
@@ -301,8 +331,8 @@ public class StateTransitionManager<StateType>
                     setState(stateTransition.toState);
                 } else
                 {
-                    actions.resetAfterCancelOrError();
-                    setState(cancelledState);
+                    steno.debug("Cancel detected during transition action");
+                    doCancelOrErrorDetected();
                 }
             };
 
@@ -311,10 +341,17 @@ public class StateTransitionManager<StateType>
                 runningAction = false;
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
-                    setState(stateTransition.transitionFailedState);
+                    if (stateTransition.transitionFailedState != null)
+                    {
+                        setState(stateTransition.transitionFailedState);
+                    } else
+                    {
+                        setState(failedState);
+                    }
                 } else
                 {
-                    actions.resetAfterCancelOrError();
+                    // if there is a cancel during a fail then we only process failed action and do
+                    // not call doCancelOrErrorDetected.
                     setState(failedState);
                 }
             };
@@ -343,7 +380,7 @@ public class StateTransitionManager<StateType>
 
     /**
      * Try to cancel any ongoing transition then move to the {@link cancelledState}. Any actions
-     * tied to active state transitions should either be listening to changes on this
+     * tied to active state transitions / arrivals should either be listening to changes on this
      * userCancellable and stop themselves, or StateTransitionActions.whenUserCancelDetected should
      * stop them instead.
      */
@@ -356,7 +393,7 @@ public class StateTransitionManager<StateType>
     {
         if (!runningAction)
         {
-            actions.resetAfterCancelOrError();
+            doCancelOrErrorDetected();
         }
     }
 
@@ -364,7 +401,7 @@ public class StateTransitionManager<StateType>
     {
         if (!runningAction)
         {
-            actions.resetAfterCancelOrError();
+            doCancelOrErrorDetected();
         }
     }
 

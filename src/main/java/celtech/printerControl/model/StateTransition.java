@@ -55,6 +55,18 @@ public class StateTransition<T>
         this(fromState, guiName, toState, null, failedState);
     }    
     
+    public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
+        T toState, TaskExecutor.NoArgsVoidFunc action)
+    {
+        this(fromState, guiName, toState, action, null);
+    }
+    
+    public StateTransition(T fromState, StateTransitionManager.GUIName guiName, 
+        T toState)
+    {
+        this(fromState, guiName, toState, null, null);
+    }       
+    
     public GUIName getGUIName() {
         return guiName;
     }

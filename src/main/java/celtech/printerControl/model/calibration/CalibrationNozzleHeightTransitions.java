@@ -42,19 +42,16 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
         // IDLE
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.IDLE,
                                             StateTransitionManager.GUIName.START,
-                                            NozzleOffsetCalibrationState.INITIALISING,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.INITIALISING));
 
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.IDLE,
                                             StateTransitionManager.GUIName.BACK,
-                                            NozzleOffsetCalibrationState.DONE,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.DONE));
 
         // INITIALISING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INITIALISING,
                                             StateTransitionManager.GUIName.NEXT,
-                                            NozzleOffsetCalibrationState.HEATING,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.HEATING));
 
         // HEATING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEATING,
@@ -63,14 +60,12 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doInitialiseAndHeatNozzleAction();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         // HEAD_CLEAN_CHECK
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.HEAD_CLEAN_CHECK,
                                             StateTransitionManager.GUIName.NEXT,
-                                            NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE));
 
         // MEASURE_Z_DIFFERENCE
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.MEASURE_Z_DIFFERENCE,
@@ -79,8 +74,7 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doMeasureZDifferenceAction();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         // INSERT_PAPER 
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INSERT_PAPER,
@@ -89,8 +83,7 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doHomeZAction();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         // PROBING
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
@@ -99,8 +92,7 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doLiftHeadAction();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.PROBING,
                                             StateTransitionManager.GUIName.UP,
@@ -108,8 +100,7 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doIncrementZAction();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.INCREMENT_Z,
                                             StateTransitionManager.GUIName.AUTO,
@@ -122,13 +113,11 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doDecrementZAction();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.DECREMENT_Z,
                                             StateTransitionManager.GUIName.AUTO,
-                                            NozzleOffsetCalibrationState.PROBING,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.PROBING));
 
         // BRING_BED_FORWARD
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.BRING_BED_FORWARD,
@@ -137,20 +126,17 @@ public class CalibrationNozzleHeightTransitions extends Transitions<NozzleOffset
                                             () ->
                                             {
                                                 actions.doBringBedToFrontAndRaiseHead();
-                                            },
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            }));
 
         // REPLACE_PEI_BED
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.REPLACE_PEI_BED,
                                             StateTransitionManager.GUIName.NEXT,
-                                            NozzleOffsetCalibrationState.FINISHED,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.FINISHED));
 
         // FINISHED
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.FINISHED,
                                             StateTransitionManager.GUIName.BACK,
-                                            NozzleOffsetCalibrationState.DONE,
-                                            NozzleOffsetCalibrationState.FAILED));
+                                            NozzleOffsetCalibrationState.DONE));
 
         // FAILED
         transitions.add(new StateTransition(NozzleOffsetCalibrationState.FAILED,
