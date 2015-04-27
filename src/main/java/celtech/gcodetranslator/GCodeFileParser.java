@@ -1,7 +1,5 @@
 package celtech.gcodetranslator;
 
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.gcodetranslator.events.BlankLineEvent;
 import celtech.gcodetranslator.events.CommentEvent;
@@ -60,8 +58,9 @@ public class GCodeFileParser
      *
      * @param inputfilename
      * @param percentProgress
+     * @param slicerType
      */
-    public void parse(String inputfilename, DoubleProperty percentProgress)
+    public void parse(final String inputfilename, DoubleProperty percentProgress, final SlicerType slicerType)
     {
         File inputFile = new File(inputfilename);
 
@@ -71,7 +70,6 @@ public class GCodeFileParser
 
         ArrayList<String> lineRepository = new ArrayList<>();
 
-        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         ExtrusionTask currentExtrusionTask = null;
 
         try

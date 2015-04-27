@@ -113,7 +113,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
                 }
                 outputWriter.writeOutput("; End of Pre print gcode\n");
 
-                gcodeParser.parse(inputFilename, percentProgress);
+                gcodeParser.parse(inputFilename, percentProgress, slicerType);
 
                 outputWriter.close();
 
@@ -166,7 +166,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
         {
             slicerType = Lookup.getUserPreferences().getSlicerType();
         }
-
+        
         layerNumberToLineNumber = new ArrayList<>();
         layerNumberToDistanceTravelled = new ArrayList<>();
         layerNumberToPredictedDuration = new ArrayList<>();
