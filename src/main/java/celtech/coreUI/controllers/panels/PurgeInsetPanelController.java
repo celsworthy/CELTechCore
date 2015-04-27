@@ -295,7 +295,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         {
             String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
             purgeProgressBar.setCurrentValue(currentPrintPercentStr);
-            purgeProgressBar.setProgress(printPercent);
+            purgeProgressBar.setProgressPercent(printPercent);
         }
     }
 

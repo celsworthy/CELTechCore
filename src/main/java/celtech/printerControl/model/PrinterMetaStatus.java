@@ -18,6 +18,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -26,11 +28,14 @@ import javafx.beans.value.ObservableValue;
 public class PrinterMetaStatus implements PrinterListChangesListener
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(PrinterMetaStatus.class.
+        getName());
     // Precedence:
     // Heating
     // Printing
     private final Printer printer;
-    private final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty<>(
+        PrinterStatus.IDLE);
     private Head attachedHead = null;
     private final ChangeListener<HeaterMode> heaterModeListener = (ObservableValue<? extends HeaterMode> observable, HeaterMode oldValue, HeaterMode newValue) ->
     {
@@ -80,11 +85,12 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             case PRINTING:
             case SLICING:
             case POST_PROCESSING:
-                bindProgressToPrintEngineProgress();
-                break;
             case EXECUTING_MACRO:
-                bindProgressForMacro();
-//                statusStringProperty.set(printer.getPrintEngine().)
+                bindProgressToPrimaryPrintEnginePercent();
+                break;
+            case SENDING_TO_PRINTER:
+                bindProgressToSecondaryPrintEnginePercent();
+                break;
             default:
                 bindProgressDefaultCase();
                 break;
@@ -191,20 +197,20 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         targetValueValidProperty.set(true);
     }
 
-    private void bindProgressToPrintEngineProgress()
+    private void bindProgressToPrimaryPrintEnginePercent()
     {
         unbindProgress();
         currentStatusValueTarget.set(100);
-        currentStatusValue.bind(printer.getPrintEngine().progressProperty());
+        currentStatusValue.bind(printer.getPrintEngine().progressProperty().multiply(100));
         legendProperty.set("");
         targetValueValidProperty.set(false);
     }
 
-    private void bindProgressForMacro()
+    private void bindProgressToSecondaryPrintEnginePercent()
     {
         unbindProgress();
         currentStatusValueTarget.set(100);
-        currentStatusValue.bind(printer.getPrintEngine().progressProperty());
+        currentStatusValue.bind(printer.getPrintEngine().secondaryProgressProperty().multiply(100));
         legendProperty.set("");
         targetValueValidProperty.set(false);
     }

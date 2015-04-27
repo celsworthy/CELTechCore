@@ -305,6 +305,19 @@ public interface Printer extends RoboxResponseConsumer
      * handling (e.g. auto reduction of print speed)
      * @throws PrinterException
      */
+    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException;
+
+    /**
+     * This method 'prints' a GCode file. A print job is created and the printer will manage
+     * extrusion dynamically. The printer will register as an error handler for the duration of the
+     * 'print'.
+     *
+     * @see executeMacro executeMacro - if you wish to run a macro rather than execute a print job
+     * @param fileName
+     * @param monitorForErrors Indicates whether the printer should automatically manage error
+     * handling (e.g. auto reduction of print speed)
+     * @throws PrinterException
+     */
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
 
     /**

@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 
-<fx:root id="largeProgressContainer" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root id="largeProgressContainer" prefHeight="101" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <left>
         <Label id="largeProgressLabel" fx:id="largeProgressDescription" text="HEATING..." BorderPane.alignment="CENTER">
             <BorderPane.margin>

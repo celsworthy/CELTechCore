@@ -143,7 +143,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      *
-     * @param name
+     * @param modelFile
      * @param meshToAdd
      */
     public ModelContainer(File modelFile, MeshView meshToAdd)
@@ -611,9 +611,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Rotate the model in Lean and Twist so that the chosen face is pointing down (ie aligned
-     * with the Y axis). Lean is easy to get, and we then use an optimiser to establish Twist.
-     * @param snapFaceIndex 
+     * Rotate the model in Lean and Twist so that the chosen face is pointing down (ie aligned with
+     * the Y axis). Lean is easy to get, and we then use an optimiser to establish Twist.
+     *
+     * @param snapFaceIndex
      */
     public void snapToGround(int snapFaceIndex)
     {
@@ -645,7 +646,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                                                new ApplyTwist(snapFaceIndex)),
                                                            GoalType.MINIMIZE,
                                                            new SearchInterval(0, 360));
-        steno.debug("optimiser took " + (int)((System.nanoTime() - start) * 10e-6) + " ms" + " and "
+        steno.debug("optimiser took " + (int) ((System.nanoTime() - start) * 10e-6) + " ms"
+            + " and "
             + optimizer.getEvaluations() + " evaluations");
         setRotationTwist(pair.getPoint());
 
@@ -1891,8 +1893,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
 
         extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
-        extents.widthEdges[1] = new Edge(frontLeftTop, frontRightTop);
-        extents.widthEdges[2] = new Edge(backLeftBottom, backRightBottom);
+        extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
+        extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
         extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
 
         extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
@@ -1926,7 +1928,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         notifyScreenExtentsChange();
     }
-    
+
     public void addChildNodes(ObservableList<Node> nodes)
     {
         meshGroup.getChildren().addAll(nodes);

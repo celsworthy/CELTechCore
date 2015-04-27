@@ -228,6 +228,12 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 
     }
 
+    @Override
+    public void outputFile(Project project, String printJobUUID, String printJobDirectory)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     /**
      * This could be much simpler if it just wrapped the interface, but it was free off the 
      * internet so I can't argue... It pretty-prints the XML.

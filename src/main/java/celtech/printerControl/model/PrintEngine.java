@@ -307,11 +307,14 @@ public class PrintEngine implements ControllableService
                     associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
                     //Remove the print job from disk
                     String printjobFilename = ApplicationConfiguration.
-                        getPrintSpoolDirectory() + result.getPrintJobID();
-                    File directoryToDelete = new File(printjobFilename);
+                        getApplicationStorageDirectory()
+                        + ApplicationConfiguration.macroFileSubpath
+                        + File.separator
+                        + result.getPrintJobID();
+                    File fileToDelete = new File(printjobFilename);
                     try
                     {
-                        FileDeleteStrategy.FORCE.delete(directoryToDelete);
+                        FileDeleteStrategy.FORCE.delete(fileToDelete);
                     } catch (IOException ex)
                     {
                         steno.error(
@@ -939,12 +942,14 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
-        String printUUID = createPrintJobDirectory();
+        //Create the print job directory
+        String printUUID = SystemUtils.generate16DigitID();
+        String printJobDirectoryName = ApplicationConfiguration.getApplicationStorageDirectory()
+            + ApplicationConfiguration.macroFileSubpath;
+        File printJobDirectory = new File(printJobDirectoryName);
+        printJobDirectory.mkdirs();
 
-        tidyPrintSpoolDirectory();
-
-        String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory()
-            + printUUID + File.separator + printUUID
+        String printjobFilename = printJobDirectoryName + printUUID
             + ApplicationConfiguration.gcodeTempFileExtension;
 
         File printjobFile = new File(printjobFilename);

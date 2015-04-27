@@ -445,6 +445,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             break;
                     }
 
+                    if (printerStatus == PrinterStatus.LOADING_FILAMENT)
+                    {
+                        Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
+
+                    } else
+                    {
+                        Lookup.getSystemNotificationHandler().hideKeepPushingFilamentNotification();
+                    }
+
                     if (okToChangeState)
                     {
                         this.printerStatus.set(printerStatus);
@@ -854,6 +863,39 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         if (mustPurgeHead.get())
         {
             throw new PurgeRequiredException("Cannot execute GCode - purge required");
+        }
+
+        if (monitorForErrors)
+        {
+            registerErrorConsumerAllErrors(this);
+        }
+
+        macroType.set(MacroType.GCODE_PRINT);
+
+        boolean jobAccepted = false;
+
+        try
+        {
+            jobAccepted = printEngine.printGCodeFile(fileName, true);
+        } catch (MacroPrintException ex)
+        {
+            steno.error("Failed to print GCode file " + fileName + " : " + ex.getMessage());
+        }
+
+        if (!jobAccepted)
+        {
+            macroType.set(null);
+            throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
+                + printerStatus.get().name());
+        }
+    }
+
+    @Override
+    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException
+    {
+        if (!canRunMacro.get())
+        {
+            throw new PrintActionUnavailableException("Execute GCode not available");
         }
 
         if (monitorForErrors)
@@ -2710,15 +2752,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        
-       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+
+        StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
             Cancellable errorCancellable)
             -> new CalibrationXAndYActions(HardwarePrinter.this, userCancellable,
-                                                   errorCancellable);
+                                           errorCancellable);
 
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
             -> new CalibrationXAndYTransitions((CalibrationXAndYActions) actions);
-        
 
         XAndYStateTransitionManager calibrationAlignmentManager
             = new XAndYStateTransitionManager(actionsFactory, transitionsFactory);
@@ -2732,15 +2773,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-        
-       StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
+
+        StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
             Cancellable errorCancellable)
             -> new CalibrationNozzleHeightActions(HardwarePrinter.this, userCancellable,
-                                                   errorCancellable);
+                                                  errorCancellable);
 
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
-            -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);        
-        
+            -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);
+
         NozzleHeightStateTransitionManager calibrationHeightManager
             = new NozzleHeightStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationHeightManager;
@@ -3131,6 +3172,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                                                      1);
                     boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
                                                                                      2);
+
+                    if (filament1Loaded && printerStatus.get() == PrinterStatus.LOADING_FILAMENT)
+                    {
+                        Lookup.getSystemNotificationHandler().hideKeepPushingFilamentNotification();
+                    }
 
                     //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);

@@ -50,7 +50,9 @@ public class GetTimeWeightCost
     private PostProcessorTask postProcessorTask;
     private final Runnable whenComplete;
 
-    File printJobDirectory;
+    private final String temporaryDirectory;
+
+    private File printJobDirectory;
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
@@ -62,6 +64,10 @@ public class GetTimeWeightCost
         this.settings = settings;
         this.whenComplete = whenComplete;
 
+        this.temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
+            + ApplicationConfiguration.timeAndCostFileSubpath
+            + settings.getProfileName()
+            + File.separator;
     }
 
     public SlicerTask setupAndRunSlicerTask()
@@ -96,14 +102,17 @@ public class GetTimeWeightCost
                 SliceResult sliceResult = slicerTask.getValue();
 
                 postProcessorTask = new PostProcessorTask(
-                    sliceResult.getPrintJobUUID(), settings, null);
+                    sliceResult.getPrintJobUUID(),
+                    temporaryDirectory,
+                    settings, null);
 
                 postProcessorTask.setOnSucceeded((WorkerStateEvent event1) ->
                 {
                     try
                     {
                         GCodePostProcessingResult result = postProcessorTask.getValue();
-                        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().getPrintJobStatistics();
+                        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
+                            getPrintJobStatistics();
 
                         updateFieldsForStatistics(printJobStatistics);
                         clearPrintJobDirectory();
@@ -118,7 +127,7 @@ public class GetTimeWeightCost
                         ex.printStackTrace();
                     }
                 });
-                
+
                 postProcessorTask.setOnFailed((WorkerStateEvent event1) ->
                 {
                     clearPrintJobDirectory();
@@ -135,7 +144,7 @@ public class GetTimeWeightCost
                 ex.printStackTrace();
             }
         });
-        
+
         slicerTask.setOnCancelled((WorkerStateEvent event) ->
         {
             lblTime.setText("cancelled");
@@ -164,23 +173,34 @@ public class GetTimeWeightCost
      */
     private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
     {
-        double duration = printJobStatistics.getLayerNumberToPredictedDuration().stream().mapToDouble(
-            Double::doubleValue).sum();
+        double duration = printJobStatistics.getLayerNumberToPredictedDuration().stream().
+            mapToDouble(
+                Double::doubleValue).sum();
 
         String formattedDuration = formatDuration(duration);
 
         double volumeUsed = printJobStatistics.getVolumeUsed();
         //TODO make work with dual extruders
         Filament filament = project.getPrinterSettings().getFilament0();
-        double weight = filament.getWeightForVolume(volumeUsed * 1e-9);
-        String formattedWeight = formatWeight(weight);
-
-        double costGBP = filament.getCostForVolume(volumeUsed * 1e-9);
-        String formattedCost = formatCost(costGBP);
 
         lblTime.setText(formattedDuration);
-        lblWeight.setText(formattedWeight);
-        lblCost.setText(formattedCost);
+
+        if (filament != null)
+        {
+            double weight = filament.getWeightForVolume(volumeUsed * 1e-9);
+            String formattedWeight = formatWeight(weight);
+
+            double costGBP = filament.getCostForVolume(volumeUsed * 1e-9);
+            String formattedCost = formatCost(costGBP);
+
+            lblWeight.setText(formattedWeight);
+            lblCost.setText(formattedCost);
+        } else
+        {
+            // If there is no filament loaded...
+            lblWeight.setText("?");
+            lblCost.setText("?");
+        }
     }
 
     /**
@@ -188,14 +208,11 @@ public class GetTimeWeightCost
      */
     private SlicerTask makeSlicerTask(Project project, SlicerParametersFile settings)
     {
-        
+
         settings = project.getPrinterSettings().applyOverrides(settings);
-        
+
         //Create the print job directory
-        String printUUID = SystemUtils.generate16DigitID();
-        String printJobDirectoryName = ApplicationConfiguration.
-            getPrintSpoolDirectory() + printUUID;
-        printJobDirectory = new File(printJobDirectoryName);
+        printJobDirectory = new File(temporaryDirectory);
         printJobDirectory.mkdirs();
 
         //Write out the slicer config
@@ -218,12 +235,14 @@ public class GetTimeWeightCost
                                     (float) (centreOfPrintedObject.getZ()
                                     + ApplicationConfiguration.yPrintOffset));
         configWriter.generateConfigForSlicer(settings,
-                                             printJobDirectoryName
-                                             + File.separator
-                                             + printUUID
+                                             temporaryDirectory
+                                             + settings.getProfileName()
                                              + ApplicationConfiguration.printProfileFileExtension);
 
-        return new SlicerTask(printUUID, project, PrintQualityEnumeration.DRAFT,
+        return new SlicerTask(settings.getProfileName(),
+                              temporaryDirectory,
+                              project,
+                              PrintQualityEnumeration.DRAFT,
                               settings, null);
 
     }
