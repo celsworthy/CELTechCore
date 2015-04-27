@@ -191,6 +191,7 @@ public class PurgeInsetPanelController2 implements Initializable
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
+                steno.debug("show button " + allowedTransition.getGUIName());
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
             }
         }
@@ -342,6 +343,7 @@ public class PurgeInsetPanelController2 implements Initializable
                 }
             });
             transitionManager.start();
+            setState(PurgeState.IDLE);
         } catch (PrinterException ex)
         {
             steno.error("Error starting purge: " + ex);

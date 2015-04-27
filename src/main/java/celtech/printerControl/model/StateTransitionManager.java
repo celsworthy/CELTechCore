@@ -112,8 +112,7 @@ public class StateTransitionManager<StateType>
     private final StateType failedState;
     private final StateType initialState;
 
-    private boolean userCancelRequested = false;
-    private boolean errorCancelRequested = false;
+    private boolean runningAction;
 
     /**
      * Return the current state as a property. This variable is only updated on the GUI thread.
@@ -171,14 +170,16 @@ public class StateTransitionManager<StateType>
                 errorCancelRequested();
             });
     }
-    
+
     /**
-     * Initialise all variables and set state to the initial state. The intention is that the
-     * state machine can be restarted at any time.
+     * Initialise all variables and set state to the initial state. The intention is that the state
+     * machine can be restarted at any time.
      */
-    public void start() {
+    public void start()
+    {
         userCancellable.cancelled().set(false);
         errorCancellable.cancelled().set(false);
+        runningAction = false;
         actions.initialise();
         setState(initialState);
     }
@@ -225,15 +226,18 @@ public class StateTransitionManager<StateType>
 
         if (arrivals.containsKey(state))
         {
+            runningAction = true;
 
             ArrivalAction<StateType> arrival = arrivals.get(state);
 
             TaskExecutor.NoArgsVoidFunc nullAction = () ->
             {
+                runningAction = false;
             };
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
+                runningAction = false;
                 setState(arrival.failedState);
             };
 
@@ -287,24 +291,31 @@ public class StateTransitionManager<StateType>
         } else
         {
 
+            runningAction = true;
+
             TaskExecutor.NoArgsVoidFunc goToNextState = () ->
             {
+                runningAction = false;
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.toState);
-                } else {
+                } else
+                {
                     actions.resetAfterCancelOrError();
+                    setState(cancelledState);
                 }
             };
 
             TaskExecutor.NoArgsVoidFunc gotToFailedState = () ->
             {
+                runningAction = false;
                 if (!userCancellable.cancelled().get() && !errorCancellable.cancelled().get())
                 {
                     setState(stateTransition.transitionFailedState);
-                } else {
+                } else
+                {
                     actions.resetAfterCancelOrError();
-                    setState(stateTransition.transitionFailedState);
+                    setState(failedState);
                 }
             };
 
@@ -343,14 +354,18 @@ public class StateTransitionManager<StateType>
 
     private void userCancelRequested()
     {
-        userCancelRequested = true;
-//        setState(cancelledState);
+        if (!runningAction)
+        {
+            actions.resetAfterCancelOrError();
+        }
     }
 
     private void errorCancelRequested()
     {
-        errorCancelRequested = true;
-//        setState(failedState);
+        if (!runningAction)
+        {
+            actions.resetAfterCancelOrError();
+        }
     }
 
 }
