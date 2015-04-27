@@ -57,6 +57,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
     {
         this.printer = printer;
 
+        Lookup.getPrinterListChangesNotifier().addListener(this);
         printer.printerStatusProperty().addListener(printerStatusListener);
     }
 
@@ -72,21 +73,24 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             {
                 if (heater.heaterMode.get() != HeaterMode.OFF)
                 {
-                    tempStatus = PrinterStatus.HEATING;
+                    if (tempStatus == PrinterStatus.SENDING_TO_PRINTER)
+                    {
+                        tempStatus = PrinterStatus.HEATING;
+                    }
                 }
             }
         }
 
         switch (tempStatus)
         {
-            case HEATING:
-                bindProgressForHeating();
-                break;
             case PRINTING:
             case SLICING:
             case POST_PROCESSING:
             case EXECUTING_MACRO:
                 bindProgressToPrimaryPrintEnginePercent();
+                break;
+            case HEATING:
+                bindProgressForHeating();
                 break;
             case SENDING_TO_PRINTER:
                 bindProgressToSecondaryPrintEnginePercent();

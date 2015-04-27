@@ -9,7 +9,8 @@ public enum FillPattern
 
     LINE("Line"),
     RECTILINEAR("Rectilinear"),
-    HONEYCOMB("Honeycomb");
+    HONEYCOMB("Honeycomb"),
+    CONCENTRIC("Concentric");
 
     private String displayText;
 

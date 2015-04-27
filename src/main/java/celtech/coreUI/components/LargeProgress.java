@@ -149,8 +149,9 @@ public class LargeProgress extends BorderPane implements Initializable
             }
         });
 
-        redraw();
+        progressBarElement.setVisible(false);
 
+        redraw();
     }
 
     public void setProgressPercent(double progress)
@@ -308,7 +309,6 @@ public class LargeProgress extends BorderPane implements Initializable
         slidIn = true;
     }
 
-    
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
