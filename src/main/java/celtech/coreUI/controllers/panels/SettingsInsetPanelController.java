@@ -78,9 +78,6 @@ public class SettingsInsetPanelController implements Initializable
     private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.fineSettingsProfileName);
 
-    private final ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
-        observableArrayList();
-
     private Project currentProject;
     private PrinterSettings printerSettings = null;
 
@@ -167,7 +164,7 @@ public class SettingsInsetPanelController implements Initializable
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
-        customProfileChooser.setItems(availableProfiles);
+        customProfileChooser.setItems(SlicerParametersContainer.getUserProfileList());
 
         updateProfileList();
 
@@ -190,8 +187,8 @@ public class SettingsInsetPanelController implements Initializable
         SlicerParametersContainer.getUserProfileList().addListener(
             (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
-                System.out.println("XXX User profiles changed - update list");
-                updateProfileList();
+//                System.out.println("XXX User profiles changed - update list");
+//                updateProfileList();
             });
     }
 
@@ -277,62 +274,23 @@ public class SettingsInsetPanelController implements Initializable
      */
     private void updateProfileList()
     {
-        SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().
-            getSelectedItem();
-        String currentSelectionName = "";
-        if (currentSelection != null)
-        {
-            currentSelectionName = customProfileChooser.getSelectionModel().
-                getSelectedItem().getProfileName();
-        }
 
-        if (SlicerParametersContainer.getUserProfileList().size() > 0)
-        {
-            refreshAndShowProfileCombo(currentSelectionName, currentSelection);
-        } else
+        if (SlicerParametersContainer.getUserProfileList().size() == 0)
         {
             if (printerSettings != null)
             {
-                System.out.println("XXX Clear settings name after update list ");
                 printerSettings.setSettingsName("");
             }
-            hideProfileCombo();
+            hideProfileCombo(true);
+        } else {
+            hideProfileCombo(false);
         }
     }
 
-    private void hideProfileCombo()
+    private void hideProfileCombo(boolean hide)
     {
-        customProfileChooser.setVisible(false);
-        createProfileLabel.setVisible(true);
-    }
-
-    private void refreshAndShowProfileCombo(String currentSelectionName,
-        SlicerParametersFile currentSelection)
-    {
-        createProfileLabel.setVisible(false);
-        customProfileChooser.setVisible(true);
-        availableProfiles.clear();
-        availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
-
-        boolean currentSelectionInAvailableProfiles = false;
-        for (SlicerParametersFile availableProfile : availableProfiles)
-        {
-
-            if (availableProfile.getProfileName().equals(currentSelectionName))
-            {
-                currentSelectionInAvailableProfiles = true;
-                currentSelection = availableProfile;
-            }
-        }
-        if (currentSelection != null && currentSelectionInAvailableProfiles)
-        {
-            System.out.println("Show current selection");
-            customProfileChooser.getSelectionModel().select(currentSelection);
-        } else
-        {
-            System.out.println("selection not found - show first in list");
-            customProfileChooser.getSelectionModel().selectFirst();
-        }
+        customProfileChooser.setVisible(!hide);
+        createProfileLabel.setVisible(hide);
     }
 
     private void whenProjectChanged(Project project)
