@@ -177,8 +177,9 @@ public class SettingsInsetPanelController implements Initializable
                 if (newValue != null)
                 {
                     if (printerSettings != null && printerSettings.getPrintQuality()
-                    == PrintQualityEnumeration.CUSTOM)
+                                                        == PrintQualityEnumeration.CUSTOM)
                     {
+                        System.out.println("XXX Combo selection changed");
                         printerSettings.setSettingsName(newValue.getProfileName());
                     } else if (printerSettings != null) {
                         steno.error("custom profile chosen but quality not CUSTOM");
@@ -189,6 +190,7 @@ public class SettingsInsetPanelController implements Initializable
         SlicerParametersContainer.getUserProfileList().addListener(
             (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
+                System.out.println("XXX User profiles changed - update list");
                 updateProfileList();
             });
     }
@@ -291,6 +293,7 @@ public class SettingsInsetPanelController implements Initializable
         {
             if (printerSettings != null)
             {
+                System.out.println("XXX Clear settings name after update list ");
                 printerSettings.setSettingsName("");
             }
             hideProfileCombo();
@@ -323,9 +326,11 @@ public class SettingsInsetPanelController implements Initializable
         }
         if (currentSelection != null && currentSelectionInAvailableProfiles)
         {
+            System.out.println("Show current selection");
             customProfileChooser.getSelectionModel().select(currentSelection);
         } else
         {
+            System.out.println("selection not found - show first in list");
             customProfileChooser.getSelectionModel().selectFirst();
         }
     }

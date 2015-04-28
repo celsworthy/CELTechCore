@@ -131,6 +131,7 @@ public class PrinterSettings
     {
         if (! this.settingsName.get().equals(settingsName))
         {
+            System.out.println("XXX change printer settings to " + settingsName);
             this.settingsName.set(settingsName);
             toggleDataChanged();
         }

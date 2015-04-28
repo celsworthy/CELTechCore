@@ -1473,7 +1473,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     {
         if (state.get() != ProfileDetailsController.State.NEW)
         {
-            SlicerParametersContainer.deleteProfile(currentProfileName);
+            SlicerParametersContainer.deleteUserProfile(currentProfileName);
         }
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();
