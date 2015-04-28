@@ -147,25 +147,18 @@ public class GetTimeWeightCost
             }
         });
 
-        slicerTask.setOnCancelled((WorkerStateEvent event) ->
-        {
-            lblTime.setText("cancelled");
-            lblWeight.setText("cancelled");
-            lblCost.setText("cancelled");
-        });
-
         Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
         return slicerTask;
     }
 
-    private void clearPrintJobDirectory()
+    public void clearPrintJobDirectory()
     {
         try
         {
-            FileUtils.deleteDirectory(printJobDirectory);
+            FileUtils.deleteDirectory(new File(temporaryDirectory));
         } catch (IOException ex)
         {
-            steno.error("Could not delete directory " + printJobDirectory.getAbsolutePath() + " "
+            steno.error("Could not delete directory " + temporaryDirectory+ " "
                 + ex);
         }
     }
