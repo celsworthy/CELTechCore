@@ -219,7 +219,7 @@ public class SlicerTask extends Task<SliceResult>
             if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95)
             {
                 steno.debug("Set working directory (Non-Windows) to " + printJobDirectory);
-                slicerProcessBuilder.directory(new File(progressOutputCommand));
+                slicerProcessBuilder.directory(new File(printJobDirectory));
             }
 
             try
