@@ -13,6 +13,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * PrinterSettings represents the choices made by the user for a project on the Settings panel. It
@@ -22,6 +24,9 @@ import javafx.beans.property.StringProperty;
  */
 public class PrinterSettings
 {
+
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        PrinterSettings.class.getName());
 
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament0 = new SimpleObjectProperty<>(null);
@@ -129,9 +134,9 @@ public class PrinterSettings
 
     public void setSettingsName(String settingsName)
     {
-        if (! this.settingsName.get().equals(settingsName))
+        if (!this.settingsName.get().equals(settingsName))
         {
-            System.out.println("XXX change printer settings to " + settingsName);
+            steno.debug("change printer settings to " + settingsName);
             this.settingsName.set(settingsName);
             toggleDataChanged();
         }

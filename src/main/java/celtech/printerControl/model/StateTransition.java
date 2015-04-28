@@ -8,8 +8,8 @@ import celtech.utils.tasks.TaskExecutor;
 
 /**
  * StateTransition represents a transition from the fromState to the toState. If the action has not been
- * set then the toState is reached either directly. If no action was set then it is called and the
- * toState is reached if the action did not fail (throw an exception). If the action fails (throws
+ * set then the toState is reached directly. If an action was set then it is called and the
+ * toState will be reached if the action did not fail (throw an exception). If the action fails (throws
  * an exception) then the transition goes to the transitionFailedState.
  * If the guiName is AUTO then the transition is run automatically whenever the fromState is reached.
  * @author tony

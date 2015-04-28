@@ -14,9 +14,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -176,7 +174,6 @@ public class SettingsInsetPanelController implements Initializable
                     if (printerSettings != null && printerSettings.getPrintQuality()
                                                         == PrintQualityEnumeration.CUSTOM)
                     {
-                        System.out.println("XXX Combo selection changed");
                         printerSettings.setSettingsName(newValue.getProfileName());
                     } else if (printerSettings != null) {
                         steno.error("custom profile chosen but quality not CUSTOM");
@@ -187,8 +184,7 @@ public class SettingsInsetPanelController implements Initializable
         SlicerParametersContainer.getUserProfileList().addListener(
             (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
-//                System.out.println("XXX User profiles changed - update list");
-//                updateProfileList();
+                updateProfileList();
             });
     }
 
@@ -295,13 +291,15 @@ public class SettingsInsetPanelController implements Initializable
 
     private void whenProjectChanged(Project project)
     {
-
         currentProject = project;
         printerSettings = project.getPrinterSettings();
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
         boolean saveSupports = printerSettings.getPrintSupportOverride();
+        
+        // printer settings name is cleared by combo population so must be saved
+        String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
 
         qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
         // UGH quality chooser has (rightly) stamped on the overrides so restore them
@@ -310,14 +308,13 @@ public class SettingsInsetPanelController implements Initializable
         printerSettings.setPrintSupportOverride(saveSupports);
 
         setupQualityOverrideControls(printerSettings);
-
+        
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
-            if (project.getPrinterSettings().getSettingsName().length() > 0)
+            if (savePrinterSettingsName.length() > 0)
             {
                 SlicerParametersFile chosenProfile = SlicerParametersContainer.
-                    getSettingsByProfileName(
-                        project.getPrinterSettings().getSettingsName());
+                    getSettingsByProfileName(savePrinterSettingsName);
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
