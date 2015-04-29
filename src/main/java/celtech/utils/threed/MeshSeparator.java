@@ -117,9 +117,9 @@ public class MeshSeparator
         int[] vertices = new int[6];
         int originalVertex0 = mesh.getFaces().get(faceIndex * 6);
         vertices[0] = newVertexIndices[originalVertex0];
-        int originalVertex1 = mesh.getFaces().get(faceIndex * 6) + 2;
+        int originalVertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
         vertices[2] = newVertexIndices[originalVertex1];
-        int originalVertex2 = mesh.getFaces().get(faceIndex * 6) + 4;
+        int originalVertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
         vertices[4] = newVertexIndices[originalVertex2];  
         subMesh.getFaces().addAll(vertices);
     }
