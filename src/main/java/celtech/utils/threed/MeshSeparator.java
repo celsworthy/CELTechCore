@@ -21,32 +21,63 @@ public class MeshSeparator
 
     /**
      * Separate the given mesh into multiple meshes according to the number of separate (non-joined)
-     * objects in the given mesh.
+     * objects in the given mesh. For first vertex:.
+     * <p>
+     * 1) Create a new face group.</p><p>
+     * 2) Find all faces using that vertex. Put into the group. Mark vertex and faces as done.
+     * </p><p>
+     * 3) For each face found, process vertices of the faces. Mark faces and vertices as done.
+     * </p><p>
+     * 4) Continue until all found connected faces / vertices are already marked. Then </p><p>
+     * 5) Find first unmarked vertex. Create a new face group. Continue as before. Then No unmarked
+     * vertices left. We have a number of groups. Each group is a separate object.</p>
      */
     static List<TriangleMesh> separate(TriangleMesh mesh)
     {
         List<TriangleMesh> meshes = new ArrayList<>();
 
-        System.out.println("create VV of size " + mesh.getPoints().size() / 3) ;
-        System.out.println("create FV of size " + mesh.getFaces().size() / 6) ;
         boolean[] vertexVisited = new boolean[mesh.getPoints().size() / 3];
         boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
 
-        /**
-         * For first vertex:.
-         * <p>
-         * 1) Create a new face group.</p><p>
-         * 2) Find all faces using that vertex. Put into the group. Mark vertex and faces as done. </p><p>
-         * 3) For each face found, process vertices of the faces. Mark faces and vertices as done. </p><p>
-         * 4) Continue until all found connected faces / vertices are already marked. Then </p><p>
-         * 5) Find first unmarked vertex. Create a new face group. Continue as before. Then No
-         * unmarked vertices left. We have a number of groups. Each group is a separate object.</p>
-         */
-        // we choose vertex 0 as the first vertex.
-        Set<Integer> faceGroup = new HashSet<>();
-        visitVertex(faceGroup, mesh, vertexVisited, faceVisited, 0);
-        
+        while (true)
+        {
+            int startVertex = findFirstUnvisitedVertex(vertexVisited);
+            if (startVertex == -1) {
+                break;
+            }
+            Set<Integer> faceGroup = new HashSet<>();
+            visitVertex(faceGroup, mesh, vertexVisited, faceVisited, startVertex);
+
+            System.out.println("face group contains num faces: " + faceGroup.size());
+            TriangleMesh subMesh = makeSubMesh(mesh, faceGroup);
+            meshes.add(subMesh);
+        }
+
         return meshes;
+    }
+    
+    /**
+     * Find the index of the first vertex where visited is false. If all vertices have been
+     * visited then return -1.
+     */
+    private static int findFirstUnvisitedVertex(boolean[] vertexVisited)
+    {
+        for (int i = 0; i < vertexVisited.length; i++)
+        {
+            if (!vertexVisited[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }    
+
+    /**
+     * Make a sub mesh from the given mesh, composed of all the faces found in the given faceGroup.
+     * The faceGroup is the set of the indices of the faces.
+     */
+    private static TriangleMesh makeSubMesh(TriangleMesh mesh, Set<Integer> faceGroup)
+    {
+        return mesh;
     }
 
     /**
@@ -89,7 +120,10 @@ public class MeshSeparator
         faceGroup.addAll(faceIndices);
         for (Integer faceIndex : faceIndices)
         {
-            visitFace(faceGroup, mesh, vertexVisited, faceVisited, faceIndex);
+            if (!faceVisited[faceIndex])
+            {
+                visitFace(faceGroup, mesh, vertexVisited, faceVisited, faceIndex);
+            }
         }
     }
 
@@ -101,7 +135,7 @@ public class MeshSeparator
     {
         Set<Integer> faceIndices = new HashSet<>();
         int faceIndex = -1;
-        while (faceIndex < mesh.getFaceElementSize() - 1)
+        while (faceIndex < mesh.getFaces().size() / 6 - 1)
         {
             faceIndex++;
             if (faceVisited[faceIndex])

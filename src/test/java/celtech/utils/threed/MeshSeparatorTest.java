@@ -22,8 +22,8 @@ public class MeshSeparatorTest
     @Test
     public void testMeshOfOneObject() throws STLFileParsingException
     {
-        URL pyramidSTLURL = this.getClass().getResource("/pyramid1.stl");
-        File singleObjectSTLFile = new File(pyramidSTLURL.getFile());
+        URL stlURL = this.getClass().getResource("/pyramid1.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         List<TriangleMesh> meshes = MeshSeparator.separate(mesh);    
         assertEquals(1, meshes.size());
@@ -32,8 +32,8 @@ public class MeshSeparatorTest
     @Test
     public void testMeshOfTwoObjects() throws STLFileParsingException
     {
-        URL pyramidSTLURL = this.getClass().getResource("/twodiscs.stl");
-        File singleObjectSTLFile = new File(pyramidSTLURL.getFile());
+        URL stlURL = this.getClass().getResource("/twodiscs.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         List<TriangleMesh> meshes = MeshSeparator.separate(mesh);    
         assertEquals(2, meshes.size());
