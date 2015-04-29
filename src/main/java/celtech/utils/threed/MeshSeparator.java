@@ -36,7 +36,7 @@ public class MeshSeparator
      * there are no unmarked vertices left. We have a number of groups. Each group is a separate
      * object.</p>
      */
-    static List<TriangleMesh> separate(TriangleMesh mesh)
+    public static List<TriangleMesh> separate(TriangleMesh mesh)
     {
         List<TriangleMesh> meshes = new ArrayList<>();
 
