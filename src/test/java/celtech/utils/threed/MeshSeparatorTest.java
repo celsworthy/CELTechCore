@@ -37,6 +37,9 @@ public class MeshSeparatorTest
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         List<TriangleMesh> meshes = MeshSeparator.separate(mesh);    
         assertEquals(2, meshes.size());
+        // each sub mesh should have 176 faces
+        assertEquals(176, meshes.get(0).getFaces().size() / 6);
+        assertEquals(176, meshes.get(1).getFaces().size() / 6);
     }    
     
 }

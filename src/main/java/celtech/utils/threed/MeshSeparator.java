@@ -3,6 +3,7 @@
  */
 package celtech.utils.threed;
 
+import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,9 +29,12 @@ public class MeshSeparator
      * </p><p>
      * 3) For each face found, process vertices of the faces. Mark faces and vertices as done.
      * </p><p>
-     * 4) Continue until all found connected faces / vertices are already marked. Then </p><p>
-     * 5) Find first unmarked vertex. Create a new face group. Continue as before. Then No unmarked
-     * vertices left. We have a number of groups. Each group is a separate object.</p>
+     * 4) Continue until all found connected faces / vertices are already marked. </p><p>
+     * The face group now contains the indices of all faces in the first found object.</p><p>
+     * Then </p><p>
+     * 5) Find first unmarked vertex. Create a new face group. Continue as before. Repeat until
+     * there are no unmarked vertices left. We have a number of groups. Each group is a separate
+     * object.</p>
      */
     static List<TriangleMesh> separate(TriangleMesh mesh)
     {
@@ -42,7 +46,8 @@ public class MeshSeparator
         while (true)
         {
             int startVertex = findFirstUnvisitedVertex(vertexVisited);
-            if (startVertex == -1) {
+            if (startVertex == -1)
+            {
                 break;
             }
             Set<Integer> faceGroup = new HashSet<>();
@@ -55,21 +60,22 @@ public class MeshSeparator
 
         return meshes;
     }
-    
+
     /**
-     * Find the index of the first vertex where visited is false. If all vertices have been
-     * visited then return -1.
+     * Find the index of the first vertex where visited is false. If all vertices have been visited
+     * then return -1.
      */
     private static int findFirstUnvisitedVertex(boolean[] vertexVisited)
     {
         for (int i = 0; i < vertexVisited.length; i++)
         {
-            if (!vertexVisited[i]) {
+            if (!vertexVisited[i])
+            {
                 return i;
             }
         }
         return -1;
-    }    
+    }
 
     /**
      * Make a sub mesh from the given mesh, composed of all the faces found in the given faceGroup.
@@ -77,7 +83,65 @@ public class MeshSeparator
      */
     private static TriangleMesh makeSubMesh(TriangleMesh mesh, Set<Integer> faceGroup)
     {
-        return mesh;
+        TriangleMesh subMesh = new TriangleMesh();
+
+        int numFaces = faceGroup.size();
+        Set<Integer> vertices = getUsedVertices(mesh, faceGroup);
+        // The nth element of this list contains the vertex index of the same point in the submesh
+        int[] parentIndices = new int[mesh.getPoints().size()];
+
+        int ix = 0;
+        for (Integer vertex : vertices)
+        {
+            // vertex is the index of the vertex in mesh and ix is the index of the vertex in the submesh
+            addPointToMesh(mesh, vertex, subMesh);
+            parentIndices[vertex] = ix;
+            ix++;
+        }
+
+        addTextureAndSmoothing(subMesh, numFaces);
+        return subMesh;
+    }
+
+    /**
+     * Add the vertex details of the given vertex from the parent mesh to the sub mesh.
+     */
+    private static void addPointToMesh(TriangleMesh parentMesh, Integer vertex, TriangleMesh subMesh)
+    {
+        subMesh.getPoints().addAll(parentMesh.getPoints(), vertex * 3, 3);
+    }
+
+    /**
+     * Get the vertices being used by the given faces.
+     */
+    private static Set<Integer> getUsedVertices(TriangleMesh mesh, Set<Integer> faceGroup)
+    {
+        Set<Integer> vertices = new HashSet<>();
+        for (Integer faceIndex : faceGroup)
+        {
+            vertices.add(mesh.getFaces().get(faceIndex * 6));
+            vertices.add(mesh.getFaces().get(faceIndex * 6 + 2));
+            vertices.add(mesh.getFaces().get(faceIndex * 6 + 4));
+        }
+        return vertices;
+    }
+
+    /**
+     * Add the boilerplate texture and smoothing data to the given mesh.
+     */
+    private static void addTextureAndSmoothing(TriangleMesh mesh, int numFaces)
+    {
+        FloatArrayList texCoords = new FloatArrayList();
+        texCoords.add(0f);
+        texCoords.add(0f);
+        mesh.getTexCoords().addAll(texCoords.toFloatArray());
+
+        int[] smoothingGroups = new int[numFaces];
+        for (int i = 0; i < smoothingGroups.length; i++)
+        {
+            smoothingGroups[i] = 0;
+        }
+        mesh.getFaceSmoothingGroups().addAll(smoothingGroups);
     }
 
     /**
@@ -87,7 +151,6 @@ public class MeshSeparator
         boolean[] faceVisited,
         Integer faceIndex)
     {
-        System.out.println("visit face " + faceIndex);
         faceVisited[faceIndex] = true;
         int vertex0 = mesh.getFaces().get(faceIndex * 6);
         if (!vertexVisited[vertex0])
@@ -114,7 +177,6 @@ public class MeshSeparator
         boolean[] vertexVisited,
         boolean[] faceVisited, int vertexIndex)
     {
-        System.out.println("visit vertex " + vertexIndex);
         vertexVisited[vertexIndex] = true;
         Set<Integer> faceIndices = getFacesWithVertex(mesh, faceVisited, vertexIndex);
         faceGroup.addAll(faceIndices);
@@ -128,7 +190,8 @@ public class MeshSeparator
     }
 
     /**
-     * Return the indices of those faces that use the vertex of the given index.
+     * Return the indices of those faces that use the given vertex. If a face has already been
+     * visited then skip it.
      */
     private static Set<Integer> getFacesWithVertex(TriangleMesh mesh, boolean[] faceVisited,
         int vertexIndex)
