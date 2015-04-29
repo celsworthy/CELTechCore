@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.List;
 import javafx.scene.shape.TriangleMesh;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import org.junit.Test;
 
 /**
@@ -27,6 +28,7 @@ public class MeshSeparatorTest
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         List<TriangleMesh> meshes = MeshSeparator.separate(mesh);    
         assertEquals(1, meshes.size());
+        assertSame(mesh, meshes.get(0));
     }
     
     @Test

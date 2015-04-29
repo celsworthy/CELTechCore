@@ -539,6 +539,8 @@ public class Project implements Serializable
                     addModel(newModelContainer);
                     newModelContainers.add(newModelContainer);
                 }
+            } else {
+                newModelContainers.add(modelContainer);
             }
         }
         return newModelContainers;

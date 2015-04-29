@@ -27,7 +27,7 @@ public class SplitIntoPartsCommand extends Command
         this.project = project;
         this.modelContainers = modelContainers;
     }
-    
+
     @Override
     public void do_()
     {
@@ -37,26 +37,41 @@ public class SplitIntoPartsCommand extends Command
             states.put(modelContainer, modelContainer.getState());
         }
         newModelContainers = project.splitIntoParts(modelContainers);
+        System.out.println("Split into parts: " + newModelContainers.size());
     }
 
     @Override
     public void undo()
     {
+        if (newModelContainers.size() == 1)
+        {
+            return;
+        }
         project.deleteModels(newModelContainers);
         for (ModelContainer modelContainer : modelContainers)
         {
-           project.addModel(modelContainer); 
+            project.addModel(modelContainer);
         }
     }
 
     @Override
     public void redo()
     {
+        if (newModelContainers.size() == 1)
+        {
+            return;
+        }
         project.deleteModels(modelContainers);
         for (ModelContainer modelContainer : newModelContainers)
         {
-           project.addModel(modelContainer); 
-           modelContainer.setState(states.get(modelContainer));
+            project.addModel(modelContainer);
+            try
+            {
+                modelContainer.setState(states.get(modelContainer));
+            } catch (Exception ex)
+            {
+                //TODO fix storing state!!
+            }
         }
     }
 
