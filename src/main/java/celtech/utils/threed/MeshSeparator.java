@@ -5,8 +5,10 @@ package celtech.utils.threed;
 
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
 
@@ -42,6 +44,8 @@ public class MeshSeparator
 
         boolean[] vertexVisited = new boolean[mesh.getPoints().size() / 3];
         boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
+        
+        Map<Integer, Set<Integer>> facesWithVertex = makeFacesWithVertex(mesh);
 
         while (true)
         {
@@ -51,7 +55,7 @@ public class MeshSeparator
                 break;
             }
             Set<Integer> faceGroup = new HashSet<>();
-            visitVertex(faceGroup, mesh, vertexVisited, faceVisited, startVertex);
+            visitVertex(facesWithVertex, faceGroup, mesh, vertexVisited, faceVisited, startVertex);
 
             System.out.println("face group contains num faces: " + faceGroup.size());
             if (faceGroup.size() == mesh.getFaces().size() / 6) {
@@ -174,7 +178,7 @@ public class MeshSeparator
     /**
      * Get the unmarked vertices of this face and visit them, marking it and its connected faces.
      */
-    private static void visitFace(Set<Integer> faceGroup, TriangleMesh mesh, boolean[] vertexVisited,
+    private static void visitFace(Map<Integer, Set<Integer>> facesWithVertex, Set<Integer> faceGroup, TriangleMesh mesh, boolean[] vertexVisited,
         boolean[] faceVisited,
         Integer faceIndex)
     {
@@ -182,17 +186,17 @@ public class MeshSeparator
         int vertex0 = mesh.getFaces().get(faceIndex * 6);
         if (!vertexVisited[vertex0])
         {
-            visitVertex(faceGroup, mesh, vertexVisited, faceVisited, vertex0);
+            visitVertex(facesWithVertex, faceGroup, mesh, vertexVisited, faceVisited, vertex0);
         }
         int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
         if (!vertexVisited[vertex1])
         {
-            visitVertex(faceGroup, mesh, vertexVisited, faceVisited, vertex1);
+            visitVertex(facesWithVertex, faceGroup, mesh, vertexVisited, faceVisited, vertex1);
         }
         int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
         if (!vertexVisited[vertex2])
         {
-            visitVertex(faceGroup, mesh, vertexVisited, faceVisited, vertex2);
+            visitVertex(facesWithVertex, faceGroup, mesh, vertexVisited, faceVisited, vertex2);
         }
     }
 
@@ -200,57 +204,54 @@ public class MeshSeparator
      * Find unmarked faces that use this vertex and add them to the group. Mark all the faces and
      * visit each of them.
      */
-    private static void visitVertex(Set<Integer> faceGroup, TriangleMesh mesh,
+    private static void visitVertex(Map<Integer, Set<Integer>> facesWithVertex, Set<Integer> faceGroup, TriangleMesh mesh,
         boolean[] vertexVisited,
         boolean[] faceVisited, int vertexIndex)
     {
         vertexVisited[vertexIndex] = true;
-        Set<Integer> faceIndices = getFacesWithVertex(mesh, faceVisited, vertexIndex);
+        Set<Integer> faceIndices = facesWithVertex.get(vertexIndex);
         faceGroup.addAll(faceIndices);
         for (Integer faceIndex : faceIndices)
         {
             if (!faceVisited[faceIndex])
             {
-                visitFace(faceGroup, mesh, vertexVisited, faceVisited, faceIndex);
+                visitFace(facesWithVertex, faceGroup, mesh, vertexVisited, faceVisited, faceIndex);
             }
         }
     }
 
+    
     /**
-     * Return the indices of those faces that use the given vertex. If a face has already been
-     * visited then skip it.
+     * Create a map of vertex to faces using the vertex.
+     * @param meshes
+     * @return 
      */
-    private static Set<Integer> getFacesWithVertex(TriangleMesh mesh, boolean[] faceVisited,
-        int vertexIndex)
+    private static Map<Integer, Set<Integer>> makeFacesWithVertex(TriangleMesh mesh)
     {
-        Set<Integer> faceIndices = new HashSet<>();
-        int faceIndex = -1;
-        while (faceIndex < mesh.getFaces().size() / 6 - 1)
-        {
-            faceIndex++;
-            if (faceVisited[faceIndex])
-            {
-                continue;
-            }
+        
+        Map<Integer, Set<Integer>> facesWithVertex = new HashMap<>();
+        
+        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++) {
+
             int vertex0 = mesh.getFaces().get(faceIndex * 6);
-            if (vertex0 == vertexIndex)
-            {
-                faceIndices.add(faceIndex);
-                continue;
+            if (! facesWithVertex.containsKey(vertex0)) {
+                facesWithVertex.put(vertex0, new HashSet<>());
             }
+            facesWithVertex.get(vertex0).add(faceIndex);
+            
             int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
-            if (vertex1 == vertexIndex)
-            {
-                faceIndices.add(faceIndex);
-                continue;
+            if (! facesWithVertex.containsKey(vertex1)) {
+                facesWithVertex.put(vertex1, new HashSet<>());
             }
+            facesWithVertex.get(vertex1).add(faceIndex);
+            
             int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            if (vertex2 == vertexIndex)
-            {
-                faceIndices.add(faceIndex);
+            if (! facesWithVertex.containsKey(vertex2)) {
+                facesWithVertex.put(vertex2, new HashSet<>());
             }
+            facesWithVertex.get(vertex2).add(faceIndex);            
         }
-        return faceIndices;
+        return facesWithVertex;
     }
 
 }
