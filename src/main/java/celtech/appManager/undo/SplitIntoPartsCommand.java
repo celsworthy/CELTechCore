@@ -5,6 +5,9 @@ package celtech.appManager.undo;
 
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelContainer.State;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,6 +20,7 @@ public class SplitIntoPartsCommand extends Command
     Project project;
     Set<ModelContainer> modelContainers;
     Set<ModelContainer> newModelContainers;
+    Map<ModelContainer, State> states;
 
     public SplitIntoPartsCommand(Project project, Set<ModelContainer> modelContainers)
     {
@@ -27,6 +31,11 @@ public class SplitIntoPartsCommand extends Command
     @Override
     public void do_()
     {
+        states = new HashMap<>();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            states.put(modelContainer, modelContainer.getState());
+        }
         newModelContainers = project.splitIntoParts(modelContainers);
     }
 
@@ -47,6 +56,7 @@ public class SplitIntoPartsCommand extends Command
         for (ModelContainer modelContainer : newModelContainers)
         {
            project.addModel(modelContainer); 
+           modelContainer.setState(states.get(modelContainer));
         }
     }
 
