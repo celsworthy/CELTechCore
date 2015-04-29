@@ -339,9 +339,9 @@ public class STLImporter
                 smoothingGroups[i] = 0;
             }
             triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
-            steno.info("The mesh contains " + triangleMesh.getPoints().size()
+            steno.info("The mesh contains " + triangleMesh.getPoints().size() / 3
                 + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
-                + triangleMesh.getFaces().size() + " faces");
+                + triangleMesh.getFaces().size() / 6 + " faces");
 
         } catch (FileNotFoundException ex)
         {
