@@ -88,20 +88,42 @@ public class MeshSeparator
         int numFaces = faceGroup.size();
         Set<Integer> vertices = getUsedVertices(mesh, faceGroup);
         // The nth element of this list contains the vertex index of the same point in the submesh
-        int[] parentIndices = new int[mesh.getPoints().size()];
+        int[] newVertexIndices = new int[mesh.getPoints().size()];
 
         int ix = 0;
         for (Integer vertex : vertices)
         {
             // vertex is the index of the vertex in mesh and ix is the index of the vertex in the submesh
             addPointToMesh(mesh, vertex, subMesh);
-            parentIndices[vertex] = ix;
+            newVertexIndices[vertex] = ix;
             ix++;
+        }
+        
+        for (Integer face : faceGroup) {
+            addFaceToMesh(mesh, face, subMesh, newVertexIndices);
         }
 
         addTextureAndSmoothing(subMesh, numFaces);
         return subMesh;
     }
+    
+    /**
+     * Add the face of the given index in mesh to the sub mesh, using the vertex mapping given in
+     * newVertexIndices.
+     */
+    private static void addFaceToMesh(TriangleMesh mesh, int faceIndex, TriangleMesh subMesh,
+        int[] newVertexIndices)
+    {
+        int[] vertices = new int[6];
+        int originalVertex0 = mesh.getFaces().get(faceIndex * 6);
+        vertices[0] = newVertexIndices[originalVertex0];
+        int originalVertex1 = mesh.getFaces().get(faceIndex * 6) + 2;
+        vertices[2] = newVertexIndices[originalVertex1];
+        int originalVertex2 = mesh.getFaces().get(faceIndex * 6) + 4;
+        vertices[4] = newVertexIndices[originalVertex2];  
+        subMesh.getFaces().addAll(vertices);
+    }
+    
 
     /**
      * Add the vertex details of the given vertex from the parent mesh to the sub mesh.
