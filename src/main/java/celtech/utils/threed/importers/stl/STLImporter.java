@@ -39,7 +39,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 public class STLImporter
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(STLImporter.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        STLImporter.class.getName());
     private TriangleMesh meshToOutput = null;
     private ModelLoaderTask parentTask = null;
     private DoubleProperty percentProgressProperty = null;
@@ -126,7 +127,8 @@ public class STLImporter
             steno.info("Model orig bounds are : " + originalBounds);
             modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
-            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge, modelFile.getAbsolutePath(),
+            ModelLoadResult result = new ModelLoadResult(modelIsTooLarge,
+                                                         modelFile.getAbsolutePath(),
                                                          modelFile.getName(), targetProject,
                                                          modelContainer);
             return result;
@@ -206,7 +208,7 @@ public class STLImporter
      * @return
      * @throws STLFileParsingException
      */
-    protected TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
+    public TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
     {
         DataInputStream inputFileStream;
         ByteBuffer dataBuffer;
@@ -248,7 +250,10 @@ public class STLImporter
                 if (progressUpdate != progressPercent)
                 {
                     progressPercent = progressUpdate;
-                    percentProgressProperty.set(progressPercent);
+                    if (percentProgressProperty != null)
+                    {
+                        percentProgressProperty.set(progressPercent);
+                    }
                 }
 
                 inputFileStream.read(facetData);              // We get the rest of the file
@@ -378,7 +383,7 @@ public class STLImporter
                 if (line.trim().startsWith("vertex"))
                 {
                     facetCounter++;
-                    
+
                     for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
                     {
                         String[] lineBits = line.trim().split(spacePattern);
