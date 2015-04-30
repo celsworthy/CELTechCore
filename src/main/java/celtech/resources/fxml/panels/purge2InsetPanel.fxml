@@ -29,7 +29,7 @@
                         </Text>
                         <StackPane>
                            <children>
-                              <Text fx:id="resettingPrinter" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="resettingPrinter" text="%purgeMaterial.resettingPrinter" visible="false" />
+                              <Text fx:id="resettingPrinter" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="resettingPrinter" text="%misc.resettingPrinter" visible="false" />
                               <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeInstructions" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
                                   <font>
                                       <Font name="Segoe UI" size="18.0" />
