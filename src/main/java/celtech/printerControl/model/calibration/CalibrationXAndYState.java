@@ -22,7 +22,7 @@ public enum CalibrationXAndYState
                        "Nozzle Alignment Illustrations_Step 5.fxml"),
     FINISHED("calibrationPanel.calibrationSucceededMessage",
              "Nozzle Alignment Illustrations_Step 6.fxml"),
-    CANCELLING("", ""),
+    CANCELLING("misc.resettingPrinter", ""),
     CANCELLED("", ""),
     DONE("", ""),
     FAILED("calibrationPanel.nozzleCalibrationFailed", "Nozzle Height Illustrations_Failure.fxml");

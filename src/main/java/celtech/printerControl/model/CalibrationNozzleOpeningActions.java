@@ -483,7 +483,9 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         printerErrorHandler.deregisterForPrinterErrors();
         printer.closeNozzleFully();
+        steno.debug("Switch heaters and lights off");
         switchHeatersAndHeadLightOff();
+        steno.debug("bring bed to front");
         doBringBedToFrontAndRaiseHead();
         printer.inhibitHeadIntegrityChecks(false);
         PrinterUtils.waitOnBusy(printer, (Cancellable) null);
@@ -508,7 +510,10 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         {
             if (printer.canCancelProperty().get())
             {
+                steno.debug("Cancel ongoing job");
                 printer.cancel(null);
+            } else {
+                steno.debug("Nothing ongoing to cancel");
             }
         } catch (PrinterException ex)
         {

@@ -36,6 +36,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
                 profileFile.delete();
             }
         }
+        SlicerParametersContainer.reload();
     }
 
     @Test

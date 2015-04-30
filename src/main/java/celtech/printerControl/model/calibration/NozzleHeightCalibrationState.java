@@ -28,7 +28,7 @@ public enum NozzleHeightCalibrationState
     FINISHED("calibrationPanel.calibrationSucceededMessage",
              "Nozzle Height Illustrations_Step 9.fxml"),
     FAILED("calibrationPanel.nozzleCalibrationFailed", "Nozzle Height Illustrations_Failure.fxml"),
-    CANCELLING("", ""),
+    CANCELLING("misc.resettingPrinter", ""),
     CANCELLED("", ""),
     DONE("", "");
 

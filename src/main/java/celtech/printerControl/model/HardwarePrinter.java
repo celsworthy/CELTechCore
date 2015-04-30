@@ -2110,6 +2110,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void goToTargetNozzleTemperature()
     {
+         steno.debug("Go to target nozzle temperature");
         try
         {
             transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
@@ -2122,6 +2123,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void setNozzleFirstLayerTargetTemperature(int targetTemperature)
     {
+         steno.debug("Set nozzle first layer target temp");
         try
         {
             transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget
@@ -2135,6 +2137,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void setNozzleTargetTemperature(int targetTemperature)
     {
+        steno.debug("Set nozzle  target temp");
         try
         {
             transmitDirectGCode(GCodeConstants.setNozzleTemperatureTarget + targetTemperature, false);
