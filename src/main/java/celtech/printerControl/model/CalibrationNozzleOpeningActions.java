@@ -455,7 +455,6 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         restoreHeadData();
         abortAnyOngoingPrint();
-
     }
 
     @Override

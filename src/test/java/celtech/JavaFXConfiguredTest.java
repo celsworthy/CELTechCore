@@ -5,7 +5,6 @@ package celtech;
 
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
-import static celtech.configuration.ApplicationConfiguration.filamentDirectoryPath;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.gcodetranslator.TestGCodeOutputWriter;
 import celtech.utils.tasks.TestTaskExecutor;
@@ -28,6 +27,7 @@ public class JavaFXConfiguredTest
 
     @Rule
     public TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
+    public String userStorageFolderPath;
 
     @Before
     public void setUp()
@@ -36,24 +36,18 @@ public class JavaFXConfiguredTest
 
         testProperties.setProperty("language", "UK");
         URL applicationInstallURL = JavaFXConfiguredTest.class.getResource("/InstallDir/AutoMaker/");
-        String userStorageFolderPath = temporaryUserStorageFolder.getRoot().getAbsolutePath()
+        userStorageFolderPath = temporaryUserStorageFolder.getRoot().getAbsolutePath()
             + File.separator;
         ApplicationConfiguration.setInstallationProperties(
             testProperties,
             applicationInstallURL.getFile(),
             userStorageFolderPath);
         
-        File userStorageDir = new File(userStorageFolderPath);
-        
-        System.out.println("USD: " + userStorageFolderPath + " exists: " + userStorageDir.exists());
-
         File filamentDir = new File(userStorageFolderPath
             + ApplicationConfiguration.filamentDirectoryPath
             + File.separator);
         filamentDir.mkdirs();
         
-         System.out.println("Filament: " + filamentDir.getAbsolutePath() + " exists: " + filamentDir.exists());
-
         new File(userStorageFolderPath
             + ApplicationConfiguration.printSpoolStorageDirectoryPath
             + File.separator).mkdirs();
@@ -61,7 +55,7 @@ public class JavaFXConfiguredTest
         new File(userStorageFolderPath
             + ApplicationConfiguration.projectFileDirectoryPath
             + File.separator).mkdirs();
-
+        
         Lookup.setupDefaultValues();
 
         // force initialisation

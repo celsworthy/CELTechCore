@@ -17,10 +17,10 @@ import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
-import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
@@ -39,6 +39,8 @@ public class GetTimeWeightCost
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         GetTimeWeightCost.class.getName());
+    
+    private final static Random random = new Random();
 
     private final Project project;
     private final Label lblTime;
@@ -66,7 +68,7 @@ public class GetTimeWeightCost
 
         this.temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.timeAndCostFileSubpath
-            + settings.getProfileName()
+            + settings.getProfileName() + random.nextInt()
             + File.separator;
     }
 
@@ -145,25 +147,18 @@ public class GetTimeWeightCost
             }
         });
 
-        slicerTask.setOnCancelled((WorkerStateEvent event) ->
-        {
-            lblTime.setText("cancelled");
-            lblWeight.setText("cancelled");
-            lblCost.setText("cancelled");
-        });
-
         Lookup.getTaskExecutor().runTaskAsDaemon(slicerTask);
         return slicerTask;
     }
 
-    private void clearPrintJobDirectory()
+    public void clearPrintJobDirectory()
     {
         try
         {
-            FileUtils.deleteDirectory(printJobDirectory);
+            FileUtils.deleteDirectory(new File(temporaryDirectory));
         } catch (IOException ex)
         {
-            steno.error("Could not delete directory " + printJobDirectory.getAbsolutePath() + " "
+            steno.error("Could not delete directory " + temporaryDirectory+ " "
                 + ex);
         }
     }
@@ -198,8 +193,8 @@ public class GetTimeWeightCost
         } else
         {
             // If there is no filament loaded...
-            lblWeight.setText("?");
-            lblCost.setText("?");
+            lblWeight.setText("No filament");
+            lblCost.setText("No filament");
         }
     }
 

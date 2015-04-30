@@ -14,9 +14,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -77,9 +75,6 @@ public class SettingsInsetPanelController implements Initializable
             ApplicationConfiguration.normalSettingsProfileName);
     private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.fineSettingsProfileName);
-
-    private final ObservableList<SlicerParametersFile> availableProfiles = FXCollections.
-        observableArrayList();
 
     private Project currentProject;
     private PrinterSettings printerSettings = null;
@@ -167,7 +162,7 @@ public class SettingsInsetPanelController implements Initializable
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
-        customProfileChooser.setItems(availableProfiles);
+        customProfileChooser.setItems(SlicerParametersContainer.getUserProfileList());
 
         updateProfileList();
 
@@ -177,7 +172,7 @@ public class SettingsInsetPanelController implements Initializable
                 if (newValue != null)
                 {
                     if (printerSettings != null && printerSettings.getPrintQuality()
-                    == PrintQualityEnumeration.CUSTOM)
+                                                        == PrintQualityEnumeration.CUSTOM)
                     {
                         printerSettings.setSettingsName(newValue.getProfileName());
                     } else if (printerSettings != null) {
@@ -275,70 +270,36 @@ public class SettingsInsetPanelController implements Initializable
      */
     private void updateProfileList()
     {
-        SlicerParametersFile currentSelection = customProfileChooser.getSelectionModel().
-            getSelectedItem();
-        String currentSelectionName = "";
-        if (currentSelection != null)
-        {
-            currentSelectionName = customProfileChooser.getSelectionModel().
-                getSelectedItem().getProfileName();
-        }
 
-        if (SlicerParametersContainer.getUserProfileList().size() > 0)
-        {
-            refreshAndShowProfileCombo(currentSelectionName, currentSelection);
-        } else
+        if (SlicerParametersContainer.getUserProfileList().size() == 0)
         {
             if (printerSettings != null)
             {
                 printerSettings.setSettingsName("");
             }
-            hideProfileCombo();
+            hideProfileCombo(true);
+        } else {
+            hideProfileCombo(false);
         }
     }
 
-    private void hideProfileCombo()
+    private void hideProfileCombo(boolean hide)
     {
-        customProfileChooser.setVisible(false);
-        createProfileLabel.setVisible(true);
-    }
-
-    private void refreshAndShowProfileCombo(String currentSelectionName,
-        SlicerParametersFile currentSelection)
-    {
-        createProfileLabel.setVisible(false);
-        customProfileChooser.setVisible(true);
-        availableProfiles.clear();
-        availableProfiles.addAll(SlicerParametersContainer.getUserProfileList());
-
-        boolean currentSelectionInAvailableProfiles = false;
-        for (SlicerParametersFile availableProfile : availableProfiles)
-        {
-
-            if (availableProfile.getProfileName().equals(currentSelectionName))
-            {
-                currentSelectionInAvailableProfiles = true;
-                currentSelection = availableProfile;
-            }
-        }
-        if (currentSelection != null && currentSelectionInAvailableProfiles)
-        {
-            customProfileChooser.getSelectionModel().select(currentSelection);
-        } else
-        {
-            customProfileChooser.getSelectionModel().selectFirst();
-        }
+        customProfileChooser.setVisible(!hide);
+        createProfileLabel.setVisible(hide);
     }
 
     private void whenProjectChanged(Project project)
     {
-
         currentProject = project;
         printerSettings = project.getPrinterSettings();
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
         boolean saveSupports = printerSettings.getPrintSupportOverride();
+        
+        // printer settings name is cleared by combo population so must be saved
+        String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
 
         qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
         // UGH quality chooser has (rightly) stamped on the overrides so restore them
@@ -347,14 +308,13 @@ public class SettingsInsetPanelController implements Initializable
         printerSettings.setPrintSupportOverride(saveSupports);
 
         setupQualityOverrideControls(printerSettings);
-
+        
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
-            if (project.getPrinterSettings().getSettingsName().length() > 0)
+            if (savePrinterSettingsName.length() > 0)
             {
                 SlicerParametersFile chosenProfile = SlicerParametersContainer.
-                    getSettingsByProfileName(
-                        project.getPrinterSettings().getSettingsName());
+                    getSettingsByProfileName(savePrinterSettingsName);
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }

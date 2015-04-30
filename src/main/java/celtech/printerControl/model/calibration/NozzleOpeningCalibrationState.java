@@ -60,7 +60,7 @@ public enum NozzleOpeningCalibrationState
     FAILED("calibrationPanel.nozzleCalibrationFailed", "Nozzle Opening Illustrations_Failure.fxml");
 
     private String stepTitleResource = null;
-    private String diagramName;
+    private final String diagramName;
 
     private NozzleOpeningCalibrationState(String stepTitleResource, String diagramName)
     {
@@ -69,10 +69,10 @@ public enum NozzleOpeningCalibrationState
     }
     
      /**
-     * Return if the cancel button should be show for this state.
+     * Return if the cancel button should be shown for this state.
      */
     public boolean showCancelButton() {
-        return (this != IDLE && this != FAILED && this != FINISHED);
+        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLING);
     }    
     
     public Optional<URL> getDiagramFXMLFileName() {

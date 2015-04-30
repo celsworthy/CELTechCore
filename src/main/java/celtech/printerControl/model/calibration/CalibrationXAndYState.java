@@ -37,10 +37,10 @@ public enum CalibrationXAndYState
     }
     
     /**
-     * Return if the cancel button should be show for this state.
+     * Return if the cancel button should be shown for this state.
      */
     public boolean showCancelButton() {
-        return (this != IDLE && this != FAILED && this != FINISHED);
+        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLING);
     }
 
     public Optional<URL> getDiagramFXMLFileName()

@@ -24,10 +24,11 @@ import libertysystems.stenographer.StenographerFactory;
  * <p>
  * It also functions as the data transfer interface between the StateActions instance and the GUI.
  * GUIs therefore only need to deal with the StateTransitionManager.
- * </p><p>
- * GUIs should call {@link #getTransitions() getTransitions} and for each transition returned there
- * is a GUIName. This indicates which transitions are available to the user e.g. Next, Back, Retry,
- * Up.
+ * </p>
+ * <p>
+ * In order to see which actions should be available to the user, GUIs should call
+ * {@link #getTransitions() getTransitions} and for each transition returned there is a GUIName.
+ * This indicates which transitions are available to the user e.g. Next, Back, Retry, Up.
  * </p>
  * <p>
  * If the user selects e.g. Next, then
@@ -39,13 +40,13 @@ import libertysystems.stenographer.StenographerFactory;
  * The GUI can allow the user to cancel the whole process (even during a long-running transition) by
  * calling the {@link #cancel() cancel} method. The StateTransitionManager will then move to the
  * cancelledState state, after allowing any ongoing transition/arrival to complete. Actions should
- * listen for user/error states and terminate themselves early in that case {
- *
- * @see StateTransitionActions#userOrErrorCancellable}.
+ * listen for user/error states and terminate themselves early in that case,
+ * see {@link StateTransitionActions#userOrErrorCancellable userOrErrorCancellable}.
  * </p>
  * <p>
- * All StateTransitionManager methods should be called from the GUI thread. All actions are run in a
- * new thread.
+ * All StateTransitionManager methods should preferably be called from the GUI thread. All actions
+ * will be run by the manager in a new thread.
+ * </p>
  *
  * @author tony
  */

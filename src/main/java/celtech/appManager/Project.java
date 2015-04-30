@@ -8,9 +8,11 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelContainer.State;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
+import celtech.utils.threed.MeshSeparator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -35,6 +38,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -74,7 +79,7 @@ public class Project implements Serializable
     public Project()
     {
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
-        
+
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
@@ -89,10 +94,10 @@ public class Project implements Serializable
                 projectModified();
                 fireWhenPrinterSettingsChanged(printerSettings);
             });
-        
+
         customSettingsNotChosen.bind(
             printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
-                .and(printerSettings.getSettingsNameProperty().isEmpty()));
+            .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
     }
@@ -449,14 +454,14 @@ public class Project implements Serializable
             projectChangesListener.whenModelAdded(modelContainer);
         }
     }
-    
+
     private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenPrinterSettingsChanged(printerSettings);
         }
-    }    
+    }
 
     public void deleteModel(ModelContainer modelContainer)
     {
@@ -514,11 +519,46 @@ public class Project implements Serializable
     {
         return canPrint;
     }
-    
+
     public BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
-    }    
+    }
+
+    public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
+    {
+        Set<ModelContainer> newModelContainers = new HashSet<>();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            ModelContainer.State state = modelContainer.getState();
+            double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
+            double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
+            String modelName = modelContainer.getModelName();
+            List<TriangleMesh> subMeshes = MeshSeparator.separate(
+                (TriangleMesh) modelContainer.getMeshView().getMesh());
+            if (subMeshes.size() > 1) {
+                deleteModel(modelContainer);
+                int ix = 1;
+                for (TriangleMesh subMesh: subMeshes) {
+                    MeshView meshView = new MeshView(subMesh);
+                    ModelContainer newModelContainer = new ModelContainer(modelContainer.getModelFile(), meshView);
+                    newModelContainer.setState(state);
+                    addModel(newModelContainer);
+                    double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
+                    double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
+                    double deltaX = newTransformCentreX - transformCentreX;
+                    double deltaZ = newTransformCentreZ - transformCentreZ;
+                    newModelContainer.translateBy(-deltaX, -deltaZ);
+                    newModelContainer.setModelName(modelName + " " + ix);
+                    newModelContainers.add(newModelContainer);
+                    ix++;
+                }
+            } else {
+                newModelContainers.add(modelContainer);
+            }
+        }
+        return newModelContainers;
+    }
 
     /**
      * ProjectChangesListener allows other objects to observe when models are added or removed etc
@@ -553,10 +593,11 @@ public class Project implements Serializable
          * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
-        
+
         /**
          * This should be fired whenever the PrinterSettings of the project changes.
-         * @param printerSettings 
+         *
+         * @param printerSettings
          */
         void whenPrinterSettingsChanged(PrinterSettings printerSettings);
     }

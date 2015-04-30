@@ -194,7 +194,6 @@ public class PurgeInsetPanelController2 implements Initializable
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
-                steno.debug("show button " + allowedTransition.getGUIName());
                 namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
             }
         }

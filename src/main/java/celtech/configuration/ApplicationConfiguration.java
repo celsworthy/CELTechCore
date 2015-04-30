@@ -35,90 +35,42 @@ public class ApplicationConfiguration
     private static String applicationName = null;
     private static String applicationShortName = null;
 
-    /**
-     *
-     */
     public static final String resourcePath = "/celtech/resources/";
 
-    /**
-     *
-     */
     public static final String modelResourcePath = resourcePath + "models/";
 
-    /**
-     *
-     */
     public static final String imageResourcePath = resourcePath + "images/";
 
-    /**
-     *
-     */
     public static final String fxmlResourcePath = resourcePath + "fxml/";
 
-    /**
-     *
-     */
     public static final String fxmlPanelResourcePath = resourcePath + "fxml/panels/";
 
     public static final String fxmlDiagramsResourcePath = resourcePath + "fxml/diagrams/";
 
     public static final String fxmlButtonsResourcePath = resourcePath + "fxml/buttons/";
 
-    /**
-     *
-     */
     public static final String fxmlUtilityPanelResourcePath = resourcePath + "fxml/utilityPanels/";
 
-    /**
-     *
-     */
     public static final String fxmlPopupResourcePath = resourcePath + "fxml/popups/";
 
-    /**
-     *
-     */
     public static final String fontResourcePath = resourcePath + "fonts/";
 
-    /**
-     *
-     */
     public static final String cssResourcePath = resourcePath + "css/";
 
-    /**
-     *
-     */
     public static final String macroFileExtension = ".gcode";
 
-    /**
-     *
-     */
     public static final String macroFileSubpath = "Macros/";
 
-    /**
-     *
-     */
     public static final String timeAndCostFileSubpath = "TimeCostTemp/";
 
-    /**
-     *
-     */
     private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
 
     private static final String dialogsCSSFile = cssResourcePath + "dialogsOverride.css";
 
-    /**
-     *
-     */
     public static final double DEFAULT_WIDTH = 1440;
 
-    /**
-     *
-     */
     public static final double DEFAULT_HEIGHT = 900;
 
-    /**
-     *
-     */
     public static final double DESIRED_ASPECT_RATIO = DEFAULT_WIDTH / DEFAULT_HEIGHT;
 
     public static final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 210;
@@ -128,21 +80,12 @@ public class ApplicationConfiguration
     private static Configuration configuration = null;
     private static String applicationInstallDirectory = null;
 
-    /**
-     *
-     */
     public static final String applicationConfigComponent = "ApplicationConfiguration";
     private static String userStorageDirectory = null;
 
-    /**
-     *
-     */
     public static final String userStorageDirectoryComponent = "UserDataStorageDirectory";
     private static String applicationStorageDirectory = null;
 
-    /**
-     *
-     */
     public static final String applicationStorageDirectoryComponent = "ApplicationDataStorageDirectory";
 
     private static String commonApplicationDirectory = null;
@@ -150,27 +93,18 @@ public class ApplicationConfiguration
     private static String projectFileStorageDirectory = null;
     public static String projectFileDirectoryPath = "Projects";
 
-    /**
-     *
-     */
     public static final String projectFileExtension = ".robox";
     public static final String projectModelsFileExtension = ".models";
     public static final String demoPrintFilename = "demoPrint.gcode";
     private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst(
         "\\.", "");
 
-    /**
-     *
-     */
     public static final String[] supportedModelExtensions =
     {
         "stl",
         "obj"
     };
 
-    /**
-     *
-     */
     public static final String[] supportedProcessedModelExtensions =
     {
 //        "gcode"
@@ -178,42 +112,21 @@ public class ApplicationConfiguration
 
     private static String printFileSpoolDirectory = null;
 
-    /**
-     *
-     */
     public static final String printSpoolStorageDirectoryPath = "PrintJobs";
 
-    /**
-     *
-     */
     public static final String modelStorageDirectoryPath = "Models";
 
-    /**
-     *
-     */
     public static final String printFileExtension = ".prt";
 
     private static String filamentFileDirectory = null;
     private static String userFilamentFileDirectory = null;
 
-    /**
-     *
-     */
     public static final String filamentDirectoryPath = "Filaments";
 
-    /**
-     *
-     */
     public static final String filamentFileExtension = ".roboxfilament";
 
-    /**
-     *
-     */
     public static final int mmOfFilamentOnAReel = 240000;
 
-    /**
-     *
-     */
     public static final float filamentDiameterToYieldVolumetricExtrusion = 1.1283791670955125738961589031215f;
 
     private static final String commonFileDirectoryPath = "CEL Robox" + File.separator;
@@ -223,77 +136,34 @@ public class ApplicationConfiguration
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";
 
-    /**
-     *
-     */
     public static final String headFileExtension = ".roboxhead";
 
     private static String printProfileFileDirectory = null;
     private static String userPrintProfileFileDirectory = null;
 
-    /**
-     *
-     */
     public static final String printProfileDirectoryPath = "PrintProfiles";
 
-    /**
-     *
-     */
     public static final String printProfileFileExtension = ".roboxprofile";
 
-    /**
-     *
-     */
     public static final String customSettingsProfileName = "Custom";
 
-    /**
-     *
-     */
     public static final String draftSettingsProfileName = "Draft";
 
-    /**
-     *
-     */
     public static final String normalSettingsProfileName = "Normal";
 
-    /**
-     *
-     */
     public static final String fineSettingsProfileName = "Fine";
 
-    /**
-     *
-     */
     public static final String stlTempFileExtension = ".stl";
 
-    /**
-     *
-     */
     public static final String amfTempFileExtension = ".amf";
-
-    /**
-     *
-     */
     public static final String gcodeTempFileExtension = ".gcode";
 
-    /**
-     *
-     */
     public static final String gcodePostProcessedFileHandle = "_robox";
 
-    /**
-     *
-     */
     public static final float bedHotAboveDegrees = 60.0f;
 
-    /**
-     *
-     */
     public static final float maxTempToDisplayOnGraph = 300;
 
-    /**
-     *
-     */
     public static final float minTempToDisplayOnGraph = 35;
 
     public static final int maxPermittedTempDifferenceForPurge = 15;
@@ -306,38 +176,20 @@ public class ApplicationConfiguration
     private static String applicationVersion = null;
     private static String applicationLanguageRaw = null;
 
-    /**
-     *
-     */
     public static final String projectDataFilename = "projects.dat";
 
     private static String applicationTitleAndVersion = null;
 
-    /**
-     *
-     */
     public static final Color xAxisColour = Color.RED;
 
-    /**
-     *
-     */
     public static final Color zAxisColour = Color.GREEN;
 
     private static MachineType machineType = null;
 
-    /**
-     *
-     */
     public static final Duration notificationDisplayDelay = Duration.seconds(5);
 
-    /**
-     *
-     */
     public static final Pos notificationPosition = Pos.BOTTOM_RIGHT;
 
-    /**
-     *
-     */
     public static final int maxPrintSpoolFiles = 20;
     /**
      * The extension for statistics files in print spool directories
@@ -355,14 +207,8 @@ public class ApplicationConfiguration
         ApplicationConfiguration.userStorageDirectory = userStorageDirectory;
     }
 
-    /**
-     *
-     */
     private static boolean autoRepairHeads = true;
 
-    /**
-     *
-     */
     private static boolean autoRepairReels = true;
 
     /**
@@ -373,10 +219,6 @@ public class ApplicationConfiguration
     public static final int xPrintOffset = 6;
     public static final int yPrintOffset = 6;
 
-    /**
-     *
-     * @return
-     */
     public static MachineType getMachineType()
     {
         if (machineType == null)
@@ -430,10 +272,6 @@ public class ApplicationConfiguration
         return machineType;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationName()
     {
         if (configuration == null)
@@ -463,10 +301,6 @@ public class ApplicationConfiguration
         return applicationName;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationShortName()
     {
         if (configuration == null)
@@ -497,11 +331,6 @@ public class ApplicationConfiguration
         return applicationShortName;
     }
 
-    /**
-     *
-     * @param classToCheck
-     * @return
-     */
     public static String getApplicationInstallDirectory(Class classToCheck)
     {
         if (configuration == null)
@@ -555,10 +384,6 @@ public class ApplicationConfiguration
         return applicationInstallDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getCommonApplicationDirectory()
     {
         if (commonApplicationDirectory == null)
@@ -569,19 +394,11 @@ public class ApplicationConfiguration
         return commonApplicationDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getBinariesDirectory()
     {
         return getCommonApplicationDirectory() + "bin/";
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getUserStorageDirectory()
     {
         if (configuration == null)
@@ -636,10 +453,6 @@ public class ApplicationConfiguration
         return userStorageDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationStorageDirectory()
     {
         if (configuration == null)
@@ -670,10 +483,6 @@ public class ApplicationConfiguration
         return applicationStorageDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getProjectDirectory()
     {
         if (projectFileStorageDirectory == null)
@@ -691,10 +500,6 @@ public class ApplicationConfiguration
         return projectFileStorageDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getPrintSpoolDirectory()
     {
         if (printFileSpoolDirectory == null)
@@ -713,10 +518,6 @@ public class ApplicationConfiguration
         return printFileSpoolDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getUserFilamentDirectory()
     {
         userFilamentFileDirectory = getUserStorageDirectory() + filamentDirectoryPath + '/';
@@ -731,10 +532,6 @@ public class ApplicationConfiguration
         return userFilamentFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationFilamentDirectory()
     {
         if (filamentFileDirectory == null)
@@ -745,10 +542,6 @@ public class ApplicationConfiguration
         return filamentFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationHeadDirectory()
     {
         if (headFileDirectory == null)
@@ -759,32 +552,21 @@ public class ApplicationConfiguration
         return headFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getUserPrintProfileDirectory()
     {
-        if (userPrintProfileFileDirectory == null)
+        userPrintProfileFileDirectory = getUserStorageDirectory() + printProfileDirectoryPath
+            + '/';
+
+        File dirHandle = new File(userPrintProfileFileDirectory);
+
+        if (!dirHandle.exists())
         {
-            userPrintProfileFileDirectory = getUserStorageDirectory() + printProfileDirectoryPath
-                + '/';
-
-            File dirHandle = new File(userPrintProfileFileDirectory);
-
-            if (!dirHandle.exists())
-            {
-                dirHandle.mkdirs();
-            }
+            dirHandle.mkdirs();
         }
 
         return userPrintProfileFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationPrintProfileDirectory()
     {
         if (printProfileFileDirectory == null)
@@ -825,10 +607,6 @@ public class ApplicationConfiguration
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationVersion()
     {
         if (installationProperties == null)
@@ -843,10 +621,6 @@ public class ApplicationConfiguration
         return applicationVersion;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationInstallationLanguage()
     {
         if (installationProperties == null)
@@ -863,29 +637,16 @@ public class ApplicationConfiguration
         return applicationLanguageRaw;
     }
 
-    /**
-     *
-     * @param titleAndVersion
-     */
     public static void setTitleAndVersion(String titleAndVersion)
     {
         applicationTitleAndVersion = titleAndVersion;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getTitleAndVersion()
     {
         return applicationTitleAndVersion;
     }
 
-    /**
-     *
-     * @param projectMode
-     * @return
-     */
     public static ArrayList<String> getSupportedFileExtensionWildcards(ProjectMode projectMode)
     {
         ArrayList<String> returnVal = new ArrayList<>();
@@ -915,11 +676,6 @@ public class ApplicationConfiguration
         return returnVal;
     }
 
-    /**
-     *
-     * @param projectMode
-     * @return
-     */
     public static ArrayList<String> getSupportedFileExtensions(ProjectMode projectMode)
     {
         ArrayList<String> returnVal = new ArrayList<>();
@@ -1004,11 +760,6 @@ public class ApplicationConfiguration
         }
     }
 
-    /**
-     *
-     * @param whichProperty
-     * @return
-     */
     public static String getLastDirectory(DirectoryMemoryProperty whichProperty)
     {
         if (applicationMemoryProperties == null)
@@ -1022,11 +773,6 @@ public class ApplicationConfiguration
         return directory;
     }
 
-    /**
-     *
-     * @param whichProperty
-     * @param directoryName
-     */
     public static void setLastDirectory(DirectoryMemoryProperty whichProperty, String directoryName)
     {
         if (applicationMemoryProperties == null)
@@ -1158,10 +904,6 @@ public class ApplicationConfiguration
         return ApplicationConfiguration.class.getResource(dialogsCSSFile).toExternalForm();
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getMyMiniFactoryDownloadDirectory()
     {
         if (myMiniFactoryDownloadsDirectory == null)

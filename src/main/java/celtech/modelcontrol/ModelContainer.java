@@ -1643,7 +1643,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return originalModelBounds;
     }
-
+    
+    public Translate getTransformMoveToCentre() {
+        return transformMoveToCentre;
+    }
+    
     private void dropToBedAndUpdateLastTransformedBounds()
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
