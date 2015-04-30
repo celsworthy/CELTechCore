@@ -587,5 +587,5 @@ public interface Printer extends RoboxResponseConsumer
     
     public PrinterMetaStatus getPrinterMetaStatus();
 
-    public void transferGCodeFileToPrinter(String string);
+    public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
 }
