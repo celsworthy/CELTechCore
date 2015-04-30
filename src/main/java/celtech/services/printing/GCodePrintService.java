@@ -27,6 +27,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     private boolean printUsingSDCard = true;
     private int startFromSequenceNumber = 0;
     private boolean canBeReprinted = true;
+    private boolean dontInitiatePrint = false;
 
     /**
      *
@@ -132,12 +133,21 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
         printUsingSDCard = useSDCard;
     }
 
+    /**
+     *
+     * @param dontInitiatePrint
+     */
+    public void dontInitiatePrint(boolean dontInitiatePrint)
+    {
+        this.dontInitiatePrint = dontInitiatePrint;
+    }
+
     @Override
     protected Task<GCodePrintResult> createTask()
     {
         return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(),
                                     linesInGCodeFileProperty(), printUsingSDCard,
-                                    startFromSequenceNumber, canBeReprinted);
+                                    startFromSequenceNumber, canBeReprinted, dontInitiatePrint);
     }
 
     /**

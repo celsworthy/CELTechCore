@@ -828,8 +828,22 @@ public class PrintEngine implements ControllableService
      * @param filename
      * @param useSDCard
      * @return
+     * @throws celtech.printerControl.comms.commands.MacroPrintException
      */
     protected boolean printGCodeFile(final String filename, final boolean useSDCard) throws MacroPrintException
+    {
+        return printGCodeFile(filename, useSDCard, false);
+    }
+    
+    /**
+     *
+     * @param filename
+     * @param useSDCard
+     * @param dontInitiatePrint
+     * @return
+     * @throws celtech.printerControl.comms.commands.MacroPrintException
+     */
+    protected boolean printGCodeFile(final String filename, final boolean useSDCard, final boolean dontInitiatePrint) throws MacroPrintException
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
@@ -908,6 +922,7 @@ public class PrintEngine implements ControllableService
             gcodePrintService.setCurrentPrintJobID(printUUID);
             gcodePrintService.setModelFileToPrint(printjobFilename);
             gcodePrintService.setPrinterToUse(associatedPrinter);
+            gcodePrintService.dontInitiatePrint(dontInitiatePrint);
             gcodePrintService.start();
             consideringPrintRequest = false;
         });

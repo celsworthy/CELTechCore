@@ -29,6 +29,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         getStenographer(this.getClass().getName());
     private IntegerProperty linesInFile = null;
     private boolean printUsingSDCard = true;
+    private boolean dontInitiatePrint = false;
     private int startFromSequenceNumber = 0;
     private boolean thisJobCanBeReprinted = false;
     private int lineCounter = 0;
@@ -50,7 +51,8 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         IntegerProperty linesInFile,
         boolean printUsingSDCard,
         int startFromSequenceNumber,
-        boolean thisJobCanBeReprinted
+        boolean thisJobCanBeReprinted,
+        boolean dontInitiatePrint
     )
     {
         this.printerToUse = printerToUse;
@@ -60,6 +62,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         this.printUsingSDCard = printUsingSDCard;
         this.startFromSequenceNumber = startFromSequenceNumber;
         this.thisJobCanBeReprinted = thisJobCanBeReprinted;
+        this.dontInitiatePrint = dontInitiatePrint;
     }
 
     @Override
@@ -173,6 +176,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                 printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1,
                                                true);
                 if (startFromSequenceNumber == 0
+                    && !dontInitiatePrint
                     && ((printerToUse.getDataFileSequenceNumber() > 1
                     && printerToUse.isPrintInitiated() == false)
                     || (lineCounter == numberOfLines - 1

@@ -864,7 +864,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void transferGCodeFileToPrinter(String string)
+    public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

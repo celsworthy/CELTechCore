@@ -227,11 +227,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return metaStatus;
     }
 
-    @Override
-    public void transferGCodeFileToPrinter(String string)
-    {
-    }
-
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePrinter to provide a way to override
      * the detection of whether a filament is loaded or not on a given extruder.
@@ -858,6 +853,31 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void transferGCodeFileToPrinterAndCallbackWhenDone(String fileName,
+        TaskResponder taskResponder)
+    {
+        final Cancellable cancellable = new SimpleCancellable();
+
+        new Thread(() ->
+        {
+            boolean success = false;
+
+            try
+            {
+                printEngine.printGCodeFile(fileName, true, true);
+                PrinterUtils.waitOnMacroFinished(this, cancellable);
+                success = true;
+            } catch (MacroPrintException ex)
+            {
+                steno.error("Error transferring " + fileName + " to printer");
+            }
+
+            Lookup.getTaskExecutor().respondOnGUIThread(taskResponder, success, "Complete");
+
+        }, "Transfer to printer").start();
+    }
+
+    @Override
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException
     {
         if (!canRunMacro.get())
@@ -944,7 +964,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 //                error("Printer state is " + printerStatus.getName() + " when execute macro called");
 //            throw new PrintActionUnavailableException("Run macro not available");
 //        }
-
         if (mustPurgeHead.get())
         {
             throw new PurgeRequiredException("Cannot run macro - purge required");
