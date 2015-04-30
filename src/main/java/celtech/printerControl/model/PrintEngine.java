@@ -29,6 +29,7 @@ import celtech.printerControl.comms.commands.MacroPrintException;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -848,46 +849,59 @@ public class PrintEngine implements ControllableService
             associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
         }
 
-        File printjobFile = new File(printjobFilename);
-        FileReader reader = null;
-
+        File src = new File(filename);
+        File dest = new File(printjobFilename);
         try
         {
-            reader = new FileReader(filename);
-            Scanner scanner = new Scanner(reader);
-
-            while (scanner.hasNext())
-            {
-                String line = scanner.nextLine();
-                if (GCodeMacros.isMacroExecutionDirective(line))
-                {
-                    FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line), true);
-                } else
-                {
-                    FileUtils.writeStringToFile(printjobFile, line + "\r", true);
-                }
-            }
-            reader.close();
-        } catch (IOException | MacroLoadException ex)
-        {
-            throw new MacroPrintException(ex.getMessage());
-        } finally
-        {
-            try
-            {
-                if (reader != null)
-                {
-                    reader.close();
-                }
-            } catch (IOException ex)
-            {
-                steno.error("Failed to create GCode print job");
-            }
+        FileUtils.copyFile(src, dest);
         }
+        catch (IOException ex)
+        {
+            steno.error("Error copying file");
+        }
+//        File printjobFile = new File(printjobFilename);
+//        BufferedReader reader = null;
+
+//        try
+//        {
+//            FileReader fileReader = new FileReader(filename);
+//            reader = new BufferedReader(new FileReader(filename));
+//
+//            steno.info("START");
+//            String line = null;
+//            
+//            while ((line = reader.readLine()) != null)
+//            {
+//                if (GCodeMacros.isMacroExecutionDirective(line))
+//                {
+//                    FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line), true);
+//                } else
+//                {
+//                    FileUtils.writeStringToFile(printjobFile, line + "\r", true);
+//                }
+//            }
+//            steno.info("END");
+//            reader.close();
+//        } catch (IOException | MacroLoadException ex)
+//        {
+//            throw new MacroPrintException(ex.getMessage());
+//        } finally
+//        {
+//            try
+//            {
+//                if (reader != null)
+//                {
+//                    reader.close();
+//                }
+//            } catch (IOException ex)
+//            {
+//                steno.error("Failed to create GCode print job");
+//            }
+//        }
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
+            int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
             linesInPrintingFile.set(numberOfLines);
             gcodePrintService.reset();
             gcodePrintService.setPrintUsingSDCard(useSDCard);
@@ -973,6 +987,7 @@ public class PrintEngine implements ControllableService
         {
             int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
             linesInPrintingFile.set(numberOfLines);
+            steno.info("Print service is in state:" + gcodePrintService.stateProperty().get().name());
             gcodePrintService.reset();
             gcodePrintService.setPrintUsingSDCard(useSDCard);
             gcodePrintService.setStartFromSequenceNumber(0);

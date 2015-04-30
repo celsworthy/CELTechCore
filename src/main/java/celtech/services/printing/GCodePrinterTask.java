@@ -1,5 +1,6 @@
 package celtech.services.printing;
 
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -7,6 +8,7 @@ import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.List;
 import java.util.Scanner;
 import javafx.beans.property.IntegerProperty;
 import javafx.concurrent.Task;
@@ -29,6 +31,8 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
     private boolean printUsingSDCard = true;
     private int startFromSequenceNumber = 0;
     private boolean thisJobCanBeReprinted = false;
+    private int lineCounter = 0;
+    private int numberOfLines = 0;
 
     /**
      *
@@ -72,7 +76,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
         File gcodeFile = new File(gcodeFileToPrint);
         FileReader gcodeReader = null;
         Scanner scanner = null;
-        int numberOfLines = SystemUtils.countLinesInFile(gcodeFile, ";");
+        numberOfLines = SystemUtils.countLinesInFile(gcodeFile, ";");
         linesInFile.setValue(numberOfLines);
 
         steno.info("Beginning transfer of file " + gcodeFileToPrint + " to printer from line "
@@ -94,7 +98,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
 
             updateMessage("Transferring data");
 
-            int lineCounter = 0;
+            lineCounter = 0;
 
             final int bufferSize = 512;
             StringBuffer outputBuffer = new StringBuffer(bufferSize);
@@ -104,32 +108,19 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
                 String line = scanner.nextLine();
                 line = line.trim();
 
-                boolean lineIngested = false;
-                int positionInLine = 0;
-
-                if (line.equals("") == false && line.startsWith(";") == false)
+                if (GCodeMacros.isMacroExecutionDirective(line))
                 {
-                    line = SystemUtils.cleanGCodeForTransmission(line);
-                    if (printUsingSDCard)
+                    //Put in contents of macro
+                    List<String> macroLines = GCodeMacros.getMacroContents(line);
+                    for (String macroLine : macroLines)
                     {
-                        steno.trace("Sending data line " + lineCounter + " to printer");
-                        printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1,
-                                                       true);
-                        if (startFromSequenceNumber == 0
-                            && ((printerToUse.getDataFileSequenceNumber() > 1
-                            && printerToUse.isPrintInitiated() == false)
-                            || (lineCounter == numberOfLines - 1
-                            && printerToUse.isPrintInitiated() == false)))
-                        {
-                            //Start printing!
-                            printerToUse.initiatePrint(printJobID);
-                        }
-                    } else
-                    {
-                        printerToUse.sendRawGCode(line, false);
+                        outputLine(macroLine);
                     }
-                    lineCounter++;
+                } else
+                {
+                    outputLine(line);
                 }
+
                 if (lineCounter < numberOfLines)
                 {
                     updateProgress(lineCounter, numberOfLines);
@@ -169,6 +160,33 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
 
         result.setSuccess(gotToEndOK);
         return result;
+    }
+
+    private void outputLine(String line) throws RoboxCommsException, DatafileSendNotInitialised
+    {
+        if (line.equals("") == false && line.startsWith(";") == false)
+        {
+            line = SystemUtils.cleanGCodeForTransmission(line);
+            if (printUsingSDCard)
+            {
+                steno.trace("Sending data line " + lineCounter + " to printer");
+                printerToUse.sendDataFileChunk(line, lineCounter == numberOfLines - 1,
+                                               true);
+                if (startFromSequenceNumber == 0
+                    && ((printerToUse.getDataFileSequenceNumber() > 1
+                    && printerToUse.isPrintInitiated() == false)
+                    || (lineCounter == numberOfLines - 1
+                    && printerToUse.isPrintInitiated() == false)))
+                {
+                    //Start printing!
+                    printerToUse.initiatePrint(printJobID);
+                }
+            } else
+            {
+                printerToUse.sendRawGCode(line, false);
+            }
+            lineCounter++;
+        }
     }
 
 }

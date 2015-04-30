@@ -2,11 +2,13 @@ package celtech.printerControl.comms.commands;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -45,8 +47,7 @@ public class GCodeMacros
             contents.add("; Printed with safety features OFF");
         }
 
-        String cleanedMacroName = macroName.replaceFirst(macroDefinitionString, "").trim();
-        appendMacroContents(contents, parentMacros, cleanedMacroName);
+        appendMacroContents(contents, parentMacros, macroName);
 
         return contents;
     }
@@ -60,20 +61,22 @@ public class GCodeMacros
         final ArrayList<String> parentMacros,
         String macroName) throws IOException, MacroLoadException
     {
-        if (!parentMacros.contains(macroName))
+        String cleanedMacroName = macroName.replaceFirst(macroDefinitionString, "").trim();
+
+        if (!parentMacros.contains(cleanedMacroName))
         {
-            steno.debug("Processing macro: " + macroName);
+            steno.debug("Processing macro: " + cleanedMacroName);
             contents.add(";");
-            contents.add("; Macro Start - " + macroName);
+            contents.add("; Macro Start - " + cleanedMacroName);
             contents.add(";");
 
-            parentMacros.add(macroName);
+            parentMacros.add(cleanedMacroName);
 
             FileReader fileReader = null;
 
             try
             {
-                fileReader = new FileReader(GCodeMacros.getFilename(macroName));
+                fileReader = new FileReader(GCodeMacros.getFilename(cleanedMacroName));
                 Scanner scanner = new Scanner(fileReader);
 
                 while (scanner.hasNextLine())
@@ -83,16 +86,12 @@ public class GCodeMacros
 
                     if (isMacroExecutionDirective(line))
                     {
-                        String[] parts = line.split(":");
-                        if (parts.length == 2)
+                        String subMacroName = line.replaceFirst(macroDefinitionString, "").trim();
+                        if (subMacroName != null)
                         {
-                            String subMacroName = parts[1].trim();
                             steno.debug("Sub-macro " + subMacroName + " detected");
 
                             appendMacroContents(contents, parentMacros, subMacroName);
-                        } else
-                        {
-                            steno.error("Saw macro directive but couldn't understand it: " + line);
                         }
                     } else
                     {
@@ -162,5 +161,44 @@ public class GCodeMacros
     public static boolean isMacroExecutionDirective(String input)
     {
         return input.startsWith(macroDefinitionString);
+    }
+
+    private String getMacroNameFromDirective(String macroDirective)
+    {
+        String macroName = null;
+        String[] parts = macroDirective.split(":");
+        if (parts.length == 2)
+        {
+            macroName = parts[1].trim();
+        } else
+        {
+            steno.error("Saw macro directive but couldn't understand it: " + macroDirective);
+        }
+        return macroName;
+    }
+
+    public static int getNumberOfOperativeLinesInMacro(String macroDirective)
+    {
+        int linesInMacro = 0;
+        String macro = getFilename(macroDirective);
+        if (macro != null)
+        {
+            try
+            {
+                List<String> contents = getMacroContents(macro);
+                for (String line : contents)
+                {
+                    if (line.trim().startsWith(";") == false && line.equals("") == false)
+                    {
+                        linesInMacro++;
+                    }
+                }
+            } catch (IOException | MacroLoadException ex)
+            {
+                steno.error("Error trying to get number of lines in macro " + macro);
+            }
+        }
+
+        return linesInMacro;
     }
 }

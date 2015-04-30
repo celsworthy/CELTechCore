@@ -34,6 +34,7 @@ import celtech.printerControl.comms.commands.tx.SendDataFileChunk;
 import celtech.printerControl.comms.commands.tx.SendDataFileEnd;
 import celtech.printerControl.comms.commands.tx.SendDataFileStart;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
+import celtech.printerControl.comms.commands.tx.SendPrintFileStart;
 import celtech.printerControl.comms.commands.tx.SendResetErrors;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
@@ -601,20 +602,36 @@ public class DummyPrinterCommandInterface extends CommandInterface
             }
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                 getExpectedResponse());
+        } else if (messageToWrite instanceof SendPrintFileStart)
+        {
+            linesInCurrentPrintJob = 0;
+            printJobID = messageToWrite.getMessageData();
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
+                getExpectedResponse());
+            steno.debug("Got start of print file - job " + printJobID);
         } else if (messageToWrite instanceof SendDataFileStart)
         {
             linesInCurrentPrintJob = 0;
             printJobID = messageToWrite.getMessageData();
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                 getExpectedResponse());
-        } else if (messageToWrite instanceof SendDataFileChunk
-            || messageToWrite instanceof SendDataFileEnd)
+            steno.debug("Got start of data file - job " + printJobID);
+        } else if (messageToWrite instanceof SendDataFileChunk)
         {
             String payload = messageToWrite.getMessageData();
             String onlyCommas = payload.replaceAll("[^\r]+", "");
             linesInCurrentPrintJob += onlyCommas.length();
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                 getExpectedResponse());
+            steno.debug("Got data file chunk");
+        } else if (messageToWrite instanceof SendDataFileEnd)
+        {
+            String payload = messageToWrite.getMessageData();
+            String onlyCommas = payload.replaceAll("[^\r]+", "");
+            linesInCurrentPrintJob += onlyCommas.length();
+            response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
+                getExpectedResponse());
+            steno.debug("Got end of data file");
         } else if (messageToWrite instanceof InitiatePrint)
         {
             printJobID = messageToWrite.getMessageData();
@@ -622,6 +639,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             currentStatus.setRunningPrintJobID(printJobID);
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                 getExpectedResponse());
+            steno.debug("Asked to initiate print " + printJobID);
         } else if (messageToWrite instanceof AbortPrint)
         {
             currentStatus.setRunningPrintJobID(null);
