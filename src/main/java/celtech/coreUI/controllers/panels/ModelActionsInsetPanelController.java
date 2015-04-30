@@ -75,7 +75,11 @@ public class ModelActionsInsetPanelController implements Initializable
     void doSplit(ActionEvent event)
     {
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        try {
         undoableProject.splitIntoParts(modelContainers);
+        } catch (StackOverflowError soe) {
+            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n("splitParts.title"), Lookup.i18n("splitParts.message"));
+        }
     }
 
 }
