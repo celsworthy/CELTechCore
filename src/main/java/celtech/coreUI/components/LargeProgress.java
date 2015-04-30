@@ -149,8 +149,6 @@ public class LargeProgress extends BorderPane implements Initializable
             }
         });
 
-        progressBarElement.setVisible(false);
-
         redraw();
     }
 
@@ -189,15 +187,24 @@ public class LargeProgress extends BorderPane implements Initializable
         {
             switch (printerMetaStatus.get().printerStatusProperty().get())
             {
+                case HEATING:
+                    progressBarElement.setVisible(true);
+                    largeTargetLegend.setVisible(true);
+                    largeTargetValue.setVisible(true);
+                    break;
                 case PRINTING:
                 case SLICING:
                 case POST_PROCESSING:
                 case EXECUTING_MACRO:
                 case SENDING_TO_PRINTER:
                     progressBarElement.setVisible(true);
+                    largeTargetLegend.setVisible(false);
+                    largeTargetValue.setVisible(false);
                     break;
                 default:
                     progressBarElement.setVisible(false);
+                    largeTargetLegend.setVisible(false);
+                    largeTargetValue.setVisible(false);
                     break;
             }
         }
@@ -245,7 +252,6 @@ public class LargeProgress extends BorderPane implements Initializable
             asString());
         largeTargetValue.textProperty().bind(printerMetaStatus.currentStatusValueTargetProperty().
             asString("%.0f"));
-        largeTargetValue.visibleProperty().bind(printerMetaStatus.targetValueValidProperty());
         largeTargetLegend.textProperty().bind(printerMetaStatus.legendProperty());
         largeProgressCurrentValue.textProperty().bind(
             printerMetaStatus.currentStatusValueProperty().asString("%.0f%%"));
@@ -258,7 +264,6 @@ public class LargeProgress extends BorderPane implements Initializable
     {
         largeProgressDescription.textProperty().unbind();
         largeTargetValue.textProperty().unbind();
-        largeTargetValue.visibleProperty().unbind();
         largeProgressCurrentValue.textProperty().unbind();
         progressProperty.removeListener(progressChangeListener);
         progressProperty.unbind();

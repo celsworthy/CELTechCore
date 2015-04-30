@@ -862,6 +862,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         if (!canRunMacro.get())
         {
+            steno.
+                error("Printer state is " + printerStatus.getName() + " when execute GCode called");
             throw new PrintActionUnavailableException("Execute GCode not available");
         }
 
@@ -900,6 +902,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         if (!canRunMacro.get())
         {
+            steno.
+                error("Printer state is " + printerStatus.getName()
+                    + " when execute GCode without purge check called");
             throw new PrintActionUnavailableException("Execute GCode not available");
         }
 
@@ -933,10 +938,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         steno.debug("Request to run macro: " + macroName);
 
-        if (!canRunMacro.get())
-        {
-            throw new PrintActionUnavailableException("Run macro not available");
-        }
+//        if (!canRunMacro.get())
+//        {
+//            steno.
+//                error("Printer state is " + printerStatus.getName() + " when execute macro called");
+//            throw new PrintActionUnavailableException("Run macro not available");
+//        }
 
         if (mustPurgeHead.get())
         {
@@ -966,10 +973,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public final void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
-        if (!canRunMacro.get())
-        {
-            throw new PrintActionUnavailableException("Run macro not available");
-        }
+//        if (!canRunMacro.get())
+//        {
+//            steno.error("Printer state is " + printerStatus.get().name()
+//                + " when execute macro without purge check called");
+//            throw new PrintActionUnavailableException("Run macro not available");
+//        }
 
         macroType.set(MacroType.STANDARD_MACRO);
 
@@ -2799,14 +2808,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Purge not permitted");
         }
-        
-        /**
-         * The state transition mechanism requires 3 classes to be created:
-         *  +  StateTransitionManager, the GUI deals solely with this small class
-         *  +  StateTransitionActions, the methods that are run on the business object
-         *  +  Transitions, the set of valid transitions between states
-         */
 
+        /**
+         * The state transition mechanism requires 3 classes to be created: +
+         * StateTransitionManager, the GUI deals solely with this small class +
+         * StateTransitionActions, the methods that are run on the business object + Transitions,
+         * the set of valid transitions between states
+         */
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
             Cancellable errorCancellable)
             -> new PurgeActions(HardwarePrinter.this, userCancellable, errorCancellable);
