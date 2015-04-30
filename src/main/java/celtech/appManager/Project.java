@@ -8,6 +8,7 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelContainer.State;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
@@ -529,15 +530,28 @@ public class Project implements Serializable
         Set<ModelContainer> newModelContainers = new HashSet<>();
         for (ModelContainer modelContainer : modelContainers)
         {
+            ModelContainer.State state = modelContainer.getState();
+            double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
+            double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
+            String modelName = modelContainer.getModelName();
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
                 (TriangleMesh) modelContainer.getMeshView().getMesh());
             if (subMeshes.size() > 1) {
                 deleteModel(modelContainer);
+                int ix = 1;
                 for (TriangleMesh subMesh: subMeshes) {
                     MeshView meshView = new MeshView(subMesh);
                     ModelContainer newModelContainer = new ModelContainer(modelContainer.getModelFile(), meshView);
+                    newModelContainer.setState(state);
                     addModel(newModelContainer);
+                    double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
+                    double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
+                    double deltaX = newTransformCentreX - transformCentreX;
+                    double deltaZ = newTransformCentreZ - transformCentreZ;
+                    newModelContainer.translateBy(-deltaX, -deltaZ);
+                    newModelContainer.setModelName(modelName + " " + ix);
                     newModelContainers.add(newModelContainer);
+                    ix++;
                 }
             } else {
                 newModelContainers.add(modelContainer);
