@@ -4,7 +4,6 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import static celtech.Lookup.getProjectGUIState;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
@@ -13,6 +12,7 @@ import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -69,16 +69,23 @@ public class ModelActionsInsetPanelController implements Initializable
     {
         currentProject = project;
         undoableProject = new UndoableProject(project);
+
+        ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumModelsSelectedProperty();
+        splitIntoParts.disableProperty().bind(numModelsSelected.isEqualTo(0));
+            
     }
 
     @FXML
     void doSplit(ActionEvent event)
     {
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
-        try {
-        undoableProject.splitIntoParts(modelContainers);
-        } catch (StackOverflowError soe) {
-            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n("splitParts.title"), Lookup.i18n("splitParts.message"));
+        try
+        {
+            undoableProject.splitIntoParts(modelContainers);
+        } catch (StackOverflowError soe)
+        {
+            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n(
+                "splitParts.title"), Lookup.i18n("splitParts.message"));
         }
     }
 
