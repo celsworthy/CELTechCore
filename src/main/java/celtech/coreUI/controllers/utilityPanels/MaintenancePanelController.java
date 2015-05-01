@@ -66,6 +66,9 @@ public class MaintenancePanelController implements Initializable
 
     @FXML
     private Button PurgeMaterialButton;
+    
+    @FXML
+    private Button PurgeMaterialButton1;    
 
     @FXML
     private Button loadFirmwareGCodeMacroButton;
@@ -231,6 +234,7 @@ public class MaintenancePanelController implements Initializable
 
         YTestButton.disableProperty().bind(printingdisabled);
         PurgeMaterialButton.disableProperty().bind(noFilamentOrPrintingdisabled);
+        PurgeMaterialButton1.disableProperty().bind(noFilamentOrPrintingdisabled);
         T1CleanButton.disableProperty().bind(noFilamentOrPrintingdisabled);
         EjectStuckMaterialButton.disableProperty().bind(noFilamentOrPrintingdisabled);
         SpeedTestButton.disableProperty().bind(printingdisabled);

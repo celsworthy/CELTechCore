@@ -3,7 +3,6 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
-import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
@@ -20,9 +19,7 @@ import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.PrinterUtils;
-import java.io.IOException;
 import javafx.concurrent.WorkerStateEvent;
-import jssc.SerialPort;
 import libertysystems.configuration.ConfigItemIsAnArray;
 import libertysystems.configuration.ConfigNotLoadedException;
 import libertysystems.configuration.Configuration;
@@ -258,6 +255,8 @@ public abstract class CommandInterface extends Thread
                         steno.debug("Comms interrupted");
                     }
                     break;
+                case DISCONNECTED:
+                    break;
             }
         }
         steno.info(
@@ -294,6 +293,8 @@ public abstract class CommandInterface extends Thread
             steno.info("Shutdown command interface firmware service...");
             firmwareLoadService.cancel();
         }
+        commsState = RoboxCommsState.DISCONNECTED;
+        disconnectSerialPort();
         steno.info("Shutdown command interface complete");
         keepRunning = false;
     }

@@ -30,16 +30,14 @@ public class DiagramHandler
     
     private Bounds diagramBounds;
     private Pane diagramNode;
-    private VBox diagramContainer;
-    private ResourceBundle resources;
+    private final VBox diagramContainer;
+    private final ResourceBundle resources;
 
     public DiagramHandler(VBox diagramContainer, ResourceBundle resources)
     {
         this.diagramContainer = diagramContainer;
         this.resources = resources;
     }
-    
-    
     
     private void addDiagramMoveScaleListeners()
     {

@@ -2110,7 +2110,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void goToTargetNozzleTemperature()
     {
-         steno.debug("Go to target nozzle temperature");
+        steno.debug("Go to target nozzle temperature");
         try
         {
             transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
@@ -2123,7 +2123,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void setNozzleFirstLayerTargetTemperature(int targetTemperature)
     {
-         steno.debug("Set nozzle first layer target temp");
+        steno.debug("Set nozzle first layer target temp");
         try
         {
             transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget
@@ -2832,10 +2832,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
 
         /**
-         * The state transition mechanism requires 3 classes to be created: +
-         * StateTransitionManager, the GUI deals solely with this small class +
-         * StateTransitionActions, the methods that are run on the business object + Transitions,
-         * the set of valid transitions between states
+         * The state transition mechanism requires 3 classes to be created:
+         * <p>
+         * + StateTransitionManager, the GUI deals solely with this small class</p><p>
+         * + StateTransitionActions, the methods that are run on the business object</p>
+         * + Transitions, the set of valid transitions between states
          */
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
             Cancellable errorCancellable)
