@@ -554,6 +554,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             + materialType.getFriendlyName();
 
         double remainingLengthMeters = remainingFilament / 1000d;
+        if (remainingLengthMeters < 0) {
+            remainingLengthMeters = 0;
+        }
         double densityKGM3 = materialType.getDensity() * 1000d;
         double crossSectionM2 = Math.PI * filamentDiameter * filamentDiameter / 4d * 1e-6;
         double remainingWeightG = remainingLengthMeters * crossSectionM2 * densityKGM3 * 1000d;
