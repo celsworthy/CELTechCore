@@ -506,6 +506,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         return valid;
     }
 
+    private float getRemainingFilament(int reelIndex)
+    {
+        return currentPrinter.get().reelsProperty().get(reelIndex).remainingFilamentProperty().get();
+    }
+
     void whenSavePressed()
     {
         assert (state.get() != State.ROBOX);
@@ -568,7 +573,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenSavePressed();
             }
-            currentPrinter.get().transmitWriteReelEEPROM(0, cmbFilament.getValue());
+            float remainingFilament = getRemainingFilament(0);
+            Filament filament = cmbFilament.getValue();
+            filament.setRemainingFilament(remainingFilament);
+            currentPrinter.get().transmitWriteReelEEPROM(0, filament);
         } catch (RoboxCommsException ex)
         {
             steno.error("Unable to write to Reel 0 " + ex);
@@ -583,7 +591,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 whenSavePressed();
             }
-            currentPrinter.get().transmitWriteReelEEPROM(1, cmbFilament.getValue());
+            float remainingFilament = getRemainingFilament(1);
+            Filament filament = cmbFilament.getValue();
+            filament.setRemainingFilament(remainingFilament);
+            currentPrinter.get().transmitWriteReelEEPROM(1, filament);
         } catch (RoboxCommsException ex)
         {
             steno.error("Unable to write to Reel 1 " + ex);
