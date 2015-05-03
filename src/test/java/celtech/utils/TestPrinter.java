@@ -11,7 +11,7 @@ import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.MacroType;
+import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -41,6 +41,7 @@ import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
 import java.util.List;
@@ -382,18 +383,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void executeMacro(String macroName) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void selectNozzle(int nozzleNumber) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -714,7 +703,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void levelGantry()
+    public void levelGantryRaw()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -739,12 +728,6 @@ public class TestPrinter implements Printer
 
 //    @Override
     public void resetPurgeTemperature()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ReadOnlyObjectProperty<MacroType> macroTypeProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -828,13 +811,6 @@ public class TestPrinter implements Printer
 
     @Override
     public List<Integer> requestDebugData(boolean addToGCodeTranscript)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
-        TaskResponder responder)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -954,13 +930,37 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException
+    public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder taskResponder)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder taskResponder)
+    public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

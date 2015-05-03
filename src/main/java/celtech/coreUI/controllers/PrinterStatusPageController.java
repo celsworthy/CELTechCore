@@ -380,32 +380,30 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                         unbindFromSelectedPrinter();
                         
                         newProgressBar.bindToPrinter(printerToUse.getPrinterMetaStatus());
-                        newProgressBar.visibleProperty().bind(printerToUse.printerStatusProperty().
-                            isNotEqualTo(PrinterStatus.IDLE));
                         
 //                        progressBar.progressProperty().bind(selectedPrinter.getPrintEngine().
 //                            progressProperty());
 //                        progressPercent.textProperty().bind(
 //                            Bindings.multiply(selectedPrinter.getPrintEngine().progressProperty(),
 //                                              100).asString("%.0f%%"));
-                        BooleanBinding progressVisible
-                        = selectedPrinter.printerStatusProperty().isNotEqualTo(
-                            PrinterStatus.PRINTING)
-                        .or(Bindings.and(
-                                selectedPrinter.getPrintEngine().
-                                linesInPrintingFileProperty().greaterThan(
-                                    0),
-                                selectedPrinter.getPrintEngine().
-                                progressProperty().greaterThanOrEqualTo(
-                                    0)));
-                        BooleanBinding progressETCVisible
-                        = Bindings.and(
-                            selectedPrinter.getPrintEngine().etcAvailableProperty(),
-                            Bindings.or(
-                                selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatus.PRINTING),
-                                selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatus.SENDING_TO_PRINTER)));
+//                        BooleanBinding progressVisible
+//                        = selectedPrinter.printerStatusProperty().isNotEqualTo(
+//                            PrinterStatus.PRINTING)
+//                        .or(Bindings.and(
+//                                selectedPrinter.getPrintEngine().
+//                                linesInPrintingFileProperty().greaterThan(
+//                                    0),
+//                                selectedPrinter.getPrintEngine().
+//                                progressProperty().greaterThanOrEqualTo(
+//                                    0)));
+//                        BooleanBinding progressETCVisible
+//                        = Bindings.and(
+//                            selectedPrinter.getPrintEngine().etcAvailableProperty(),
+//                            Bindings.or(
+//                                selectedPrinter.printerStatusProperty().isEqualTo(
+//                                    PrinterStatus.PRINTING),
+//                                selectedPrinter.printerStatusProperty().isEqualTo(
+//                                    PrinterStatus.SENDING_TO_PRINTER)));
 //                        progressPercent.visibleProperty().bind(progressVisible);
 //                        progressETC.visibleProperty().bind(progressETCVisible);
 //                        progressETC.textProperty().bind(new StringBinding()
@@ -537,19 +535,19 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 case PAUSED:
                     visible = true;
                     break;
-                case SENDING_TO_PRINTER:
-                    visible = false;
-                    break;
+//                case SENDING_TO_PRINTER:
+//                    visible = false;
+//                    break;
                 case PRINTING:
                     visible = false;
                     break;
-                case EXECUTING_MACRO:
-                    visible = false;
-                    break;
-                case SLICING:
-                case POST_PROCESSING:
-                    visible = false;
-                    break;
+//                case EXECUTING_MACRO:
+//                    visible = false;
+//                    break;
+//                case SLICING:
+//                case POST_PROCESSING:
+//                    visible = false;
+//                    break;
                 default:
                     break;
             }
@@ -587,33 +585,33 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 case PAUSED:
                     showProgressGroup.set(false);
                     break;
-                case SENDING_TO_PRINTER:
-                    if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
-                    {
-                        showProgressGroup.set(true);
-                    } else
-                    {
-                        showProgressGroup.set(false);
-                    }
-                    break;
+//                case SENDING_TO_PRINTER:
+//                    if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
+//                    {
+//                        showProgressGroup.set(true);
+//                    } else
+//                    {
+//                        showProgressGroup.set(false);
+//                    }
+//                    break;
                 case PRINTING:
                     showProgressGroup.set(true);
 //                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
                     break;
-                case EXECUTING_MACRO:
-                    if (lastSelectedPrinter.macroTypeProperty().isNotNull().get()
-                        && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
-                    {
-                        showProgressGroup.set(true);
-                    } else
-                    {
-                        showProgressGroup.set(false);
-                    }
-                    break;
-                case SLICING:
-                case POST_PROCESSING:
-                    showProgressGroup.set(true);
-                    break;
+//                case EXECUTING_MACRO:
+//                    if (lastSelectedPrinter.macroTypeProperty().isNotNull().get()
+//                        && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
+//                    {
+//                        showProgressGroup.set(true);
+//                    } else
+//                    {
+//                        showProgressGroup.set(false);
+//                    }
+//                    break;
+//                case SLICING:
+//                case POST_PROCESSING:
+//                    showProgressGroup.set(true);
+//                    break;
                 default:
                     showProgressGroup.set(false);
                     break;

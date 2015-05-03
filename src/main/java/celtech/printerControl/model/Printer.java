@@ -7,7 +7,7 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.MacroType;
+import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -28,6 +28,7 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
+import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -196,7 +197,7 @@ public interface Printer extends RoboxResponseConsumer
     
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException;
 
-    public void levelGantry();
+    public void levelGantryRaw();
 
     /**
      *
@@ -245,13 +246,12 @@ public interface Printer extends RoboxResponseConsumer
      * @param filament
      * @param printQuality
      * @param settings
+     * @throws celtech.printerControl.model.PrinterException
      */
     public void printProject(Project project, Filament filament,
         PrintQualityEnumeration printQuality, SlicerParametersFile settings) throws PrinterException;
 
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
-
-    public ReadOnlyObjectProperty<MacroType> macroTypeProperty();
 
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket);
@@ -291,22 +291,46 @@ public interface Printer extends RoboxResponseConsumer
      */
     public void resume() throws PrinterException;
 
-    /*
-     * Macros
-     */
     /**
-     * This method 'prints' a GCode file. A print job is created and the printer will manage
-     * extrusion dynamically. The printer will register as an error handler for the duration of the
-     * 'print'.
-     *
-     * @see executeMacro executeMacro - if you wish to run a macro rather than execute a print job
-     * @param fileName
-     * @param monitorForErrors Indicates whether the printer should automatically manage error
-     * handling (e.g. auto reduction of print speed)
-     * @throws PrinterException
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
      */
-    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException;
-
+    public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
     /**
      * This method 'prints' a GCode file. A print job is created and the printer will manage
      * extrusion dynamically. The printer will register as an error handler for the duration of the
@@ -319,20 +343,7 @@ public interface Printer extends RoboxResponseConsumer
      * @throws PrinterException
      */
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
-
-    /**
-     * This method runs the commands found in a GCode file without management - if an error occurs
-     * the caller is expected to deal with it.
-     *
-     * @param macroName
-     * @throws PrinterException
-     */
-    public void executeMacro(String macroName) throws PrinterException;
-
-    public void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException;
-
-    public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
-        TaskResponder responder);
+    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException;
 
     public void callbackWhenNotBusy(TaskResponder responder);
 

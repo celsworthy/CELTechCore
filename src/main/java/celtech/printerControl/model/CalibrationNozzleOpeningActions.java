@@ -132,7 +132,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         {
             return;
         }
-        printer.executeMacro("Home_all");
+        printer.homeAllAxes(true, userOrErrorCancellable);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;

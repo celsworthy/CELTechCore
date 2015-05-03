@@ -14,7 +14,6 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.MacroType;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
 import celtech.printerControl.PrinterStatus;
@@ -100,7 +99,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -123,7 +121,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
         PrinterStatus.IDLE);
     private final PrinterMetaStatus metaStatus;
-    protected ObjectProperty<MacroType> macroType = new SimpleObjectProperty<>(null);
     protected BooleanProperty macroIsInterruptible = new SimpleBooleanProperty(false);
 
     private PrinterStatus lastStateBeforePause = null;
@@ -149,6 +146,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final BooleanProperty canRemoveHead = new SimpleBooleanProperty(false);
     private final BooleanProperty canPurgeHead = new SimpleBooleanProperty(false);
     private final BooleanProperty mustPurgeHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canInitiateNewState = new SimpleBooleanProperty(false);
     private final BooleanProperty canPrint = new SimpleBooleanProperty(false);
     private final BooleanProperty canOpenCloseNozzle = new SimpleBooleanProperty(false);
     private final BooleanProperty canPause = new SimpleBooleanProperty(false);
@@ -261,19 +259,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         this.commandInterface = commandInterface;
         this.filamentLoadedGetter = filamentLoadedGetter;
 
-        metaStatus = new PrinterMetaStatus(this);
+        printEngine = new PrintEngine(this);
 
-        macroType.addListener(
-            (ObservableValue<? extends MacroType> observable, MacroType oldValue, MacroType newValue) ->
-            {
-                if (newValue != null)
-                {
-                    macroIsInterruptible.set(newValue.isInterruptible());
-                } else
-                {
-                    macroIsInterruptible.set(false);
-                }
-            });
+        metaStatus = new PrinterMetaStatus(this);
 
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
@@ -286,9 +274,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         threeDPformatter.setGroupingUsed(false);
 
         systemNotificationManager = Lookup.getSystemNotificationHandler();
-
-        printEngine = new PrintEngine(this);
-        setPrinterStatus(PrinterStatus.IDLE);
 
         commandInterface.setPrinter(this);
         commandInterface.start();
@@ -317,20 +302,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canCalibrateXYAlignment.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
 
+        canInitiateNewState.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
+
         canCancel.bind(
-            printerStatus.isEqualTo(PrinterStatus.PAUSED)
-            .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
-            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO)
-                .and(macroType.isNotEqualTo(MacroType.ABORT)))
-            .or(printerStatus.isEqualTo(PrinterStatus.POST_PROCESSING))
-            .or(printerStatus.isEqualTo(PrinterStatus.SLICING))
-            .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER).and(macroType.isNull().or(
-                        macroType.isNotNull().and(macroIsInterruptible))))
-            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO).and(macroIsInterruptible))
-            .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING)));
+            printerStatus.isNotEqualTo(PrinterStatus.CANCELLING)
+            .and(printerStatus.isEqualTo(PrinterStatus.PAUSED)
+                .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
+                .or(printEngine.postProcessorService.runningProperty())
+                .or(printEngine.slicerService.runningProperty())
+                .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))));
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
             .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING)
@@ -341,9 +324,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
-            .or(printerStatus.isEqualTo(PrinterStatus.SENDING_TO_PRINTER))
-            .or(printerStatus.isEqualTo(PrinterStatus.EXECUTING_MACRO)
-                .and(macroType.isEqualTo(MacroType.GCODE_PRINT))));
+            .or(printEngine.sendingDataToPrinterProperty())
+            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE)));
 
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
@@ -386,7 +368,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         });
     }
 
-    // Don't call this from anywhere but Print Engine!
     @Override
     public void setPrinterStatus(PrinterStatus printerStatus)
     {
@@ -400,21 +381,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         case IDLE:
                             lastStateBeforePause = null;
                             printEngine.goToIdle();
-                            macroType.set(null);
                             deregisterErrorConsumer(this);
                             break;
                         case REMOVING_HEAD:
                             break;
                         case PURGING_HEAD:
-                            break;
-                        case SLICING:
-                            printEngine.goToSlicing();
-                            break;
-                        case POST_PROCESSING:
-                            printEngine.goToPostProcessing();
-                            break;
-                        case SENDING_TO_PRINTER:
-                            printEngine.goToSendingToPrinter();
                             break;
                         case PAUSING:
                             lastStateBeforePause = this.printerStatus.get();
@@ -431,9 +402,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         case PRINTING:
                             registerErrorConsumerAllErrors(this);
                             printEngine.goToPrinting();
-                            break;
-                        case EXECUTING_MACRO:
-                            printEngine.goToExecutingMacro();
                             break;
                         case EJECTING_FILAMENT:
                             if (!extruders.get(0).canEject.get())
@@ -467,12 +435,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty()
     {
         return printerStatus;
-    }
-
-    @Override
-    public ReadOnlyObjectProperty<MacroType> macroTypeProperty()
-    {
-        return macroType;
     }
 
     @Override
@@ -736,8 +698,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
         PrinterUtils.waitOnBusy(this, cancellable);
 
-        macroType.set(MacroType.ABORT);
-
         try
         {
             printEngine.runMacroPrintJob("abort_print", true);
@@ -897,8 +857,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             registerErrorConsumerAllErrors(this);
         }
 
-        macroType.set(MacroType.GCODE_PRINT);
-
         boolean jobAccepted = false;
 
         try
@@ -911,7 +869,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         if (!jobAccepted)
         {
-            macroType.set(null);
             throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
                 + printerStatus.get().name());
         }
@@ -933,8 +890,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             registerErrorConsumerAllErrors(this);
         }
 
-        macroType.set(MacroType.GCODE_PRINT);
-
         boolean jobAccepted = false;
 
         try
@@ -947,14 +902,92 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         if (!jobAccepted)
         {
-            macroType.set(null);
             throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
                 + printerStatus.get().name());
         }
     }
 
+    private void executeMacroWithoutPurgeCheckAndWaitIfRequired(String macroName,
+        PrinterStatus initialState,
+        PrinterStatus finalState,
+        boolean blockUntilFinished,
+        Cancellable cancellable) throws PrinterException
+    {
+        if (canRunMacro.get())
+        {
+            setPrinterStatus(initialState);
+            if (blockUntilFinished)
+            {
+                executeMacroWithoutPurgeCheck(macroName);
+                PrinterUtils.waitOnMacroFinished(this, cancellable);
+                setPrinterStatus(finalState);
+            } else
+            {
+                new Thread(() ->
+                {
+                    try
+                    {
+                        executeMacroWithoutPurgeCheck(macroName);
+                        PrinterUtils.waitOnMacroFinished(this, cancellable);
+                        setPrinterStatus(finalState);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("PrinterException whilst invoking macro: " + ex.getMessage());
+                    }
+                }, "Executing Macro " + macroName).start();
+            }
+        } else
+        {
+            steno.
+                error("Printer state is " + printerStatus.get().name());
+            throw new PrintActionUnavailableException("Macro " + macroName + " not available");
+        }
+    }
+
     @Override
-    public final void executeMacro(String macroName) throws PrinterException
+    public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("Home_all",
+                                                       PrinterStatus.HOMING, PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }
+
+    @Override
+    public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("Purge Material",
+                                                       PrinterStatus.PURGING_HEAD,
+                                                       PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }
+
+    @Override
+    public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("level_gantry",
+                                                       PrinterStatus.LEVELLING_GANTRY,
+                                                       PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }
+
+    @Override
+    public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("Level_Gantry_(2-points)",
+                                                       PrinterStatus.LEVELLING_GANTRY,
+                                                       PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }
+
+    @Override
+    public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("level_Y", PrinterStatus.LEVELLING_Y,
+                                                       PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }
+
+    private void executeMacro(String macroName) throws PrinterException
     {
         steno.debug("Request to run macro: " + macroName);
 
@@ -969,8 +1002,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PurgeRequiredException("Cannot run macro - purge required");
         }
 
-        macroType.set(MacroType.STANDARD_MACRO);
-
         boolean jobAccepted = false;
 
         try
@@ -983,24 +1014,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         if (!jobAccepted)
         {
-            macroType.set(null);
             throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode "
                 + printerStatus.get().name());
         }
     }
 
-    @Override
-    public final void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
+    private void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
-//        if (!canRunMacro.get())
-//        {
-//            steno.error("Printer state is " + printerStatus.get().name()
-//                + " when execute macro without purge check called");
-//            throw new PrintActionUnavailableException("Run macro not available");
-//        }
-
-        macroType.set(MacroType.STANDARD_MACRO);
-
         boolean jobAccepted = false;
 
         try
@@ -1013,17 +1033,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         if (!jobAccepted)
         {
-            macroType.set(null);
             throw new PrintJobRejectedException("Macro " + macroName + " could not be run");
         }
     }
 
-    @Override
-    public void executeMacroWithoutPurgeCheckAndCallbackWhenDone(String macroName,
-        TaskResponder responder)
+    private void executeMacroWithoutPurgeCheckAndCallbackWhenDone(final String macroName,
+        final TaskResponder responder,
+        final Cancellable cancellable)
     {
-        final Cancellable cancellable = new SimpleCancellable();
-
         new Thread(() ->
         {
             boolean success = false;
@@ -1032,7 +1049,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 executeMacroWithoutPurgeCheck(macroName);
                 PrinterUtils.waitOnMacroFinished(this, cancellable);
-                success = true;
+                success = !cancellable.cancelled().get();
             } catch (PrinterException ex)
             {
                 steno.error("PrinterException whilst invoking macro: " + ex.getMessage());
@@ -1040,7 +1057,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Complete");
 
-        }, "Executing Macro").start();
+        }, "Executing Macro " + macroName).start();
     }
 
     @Override
@@ -1783,6 +1800,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error whilst sending preheat commands");
         }
 
+        
         printEngine.printProject(project, printQuality, settings);
     }
 
@@ -2110,7 +2128,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void goToTargetNozzleTemperature()
     {
-         steno.debug("Go to target nozzle temperature");
+        steno.debug("Go to target nozzle temperature");
         try
         {
             transmitDirectGCode(GCodeConstants.goToTargetNozzleTemperature, false);
@@ -2123,7 +2141,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void setNozzleFirstLayerTargetTemperature(int targetTemperature)
     {
-         steno.debug("Set nozzle first layer target temp");
+        steno.debug("Set nozzle first layer target temp");
         try
         {
             transmitDirectGCode(GCodeConstants.setFirstLayerNozzleTemperatureTarget
@@ -2418,7 +2436,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void levelGantry()
+    public void levelGantryRaw()
     {
         try
         {
@@ -2950,8 +2968,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             case E_FILAMENT_SLIP:
             case D_FILAMENT_SLIP:
                 if (printerStatus.get() == PrinterStatus.PRINTING
-                    || (printerStatus.get() == PrinterStatus.PRINTING && macroType.get().equals(
-                        MacroType.GCODE_PRINT)))
+                    || (printerStatus.get() == PrinterStatus.PRINTING_GCODE))
                 {
                     boolean reachedLimit = doFilamentSlipWhilePrinting(error);
 

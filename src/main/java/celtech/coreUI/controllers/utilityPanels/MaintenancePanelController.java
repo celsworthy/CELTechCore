@@ -14,7 +14,7 @@ import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.printing.GCodePrintResult;
-import celtech.services.printing.GCodePrintService;
+import celtech.services.printing.TransferGCodeToPrinterService;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -53,7 +53,7 @@ public class MaintenancePanelController implements Initializable
 
     private ProgressDialog gcodeUpdateProgress = null;
     private final FileChooser gcodeFileChooser = new FileChooser();
-    private final GCodePrintService gcodePrintService = new GCodePrintService();
+    private final TransferGCodeToPrinterService gcodePrintService = new TransferGCodeToPrinterService();
 
     private final BooleanProperty printingdisabled = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentOrPrintingdisabled = new SimpleBooleanProperty(false);
@@ -107,13 +107,13 @@ public class MaintenancePanelController implements Initializable
 
             if (macroName != null)
             {
-                try
-                {
-                    connectedPrinter.executeMacro(macroName);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error sending macro : " + macroName);
-                }
+//                try
+//                {
+//                    connectedPrinter.executeMacro(macroName);
+//                } catch (PrinterException ex)
+//                {
+//                    steno.error("Error sending macro : " + macroName);
+//                }
             }
         }
     }
@@ -128,13 +128,13 @@ public class MaintenancePanelController implements Initializable
 
             if (macroName != null)
             {
-                try
-                {
-                    connectedPrinter.executeMacroWithoutPurgeCheck(macroName);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error sending macro : " + macroName);
-                }
+//                try
+//                {
+//                    connectedPrinter.executeMacroWithoutPurgeCheck(macroName);
+//                } catch (PrinterException ex)
+//                {
+//                    steno.error("Error sending macro : " + macroName);
+//                }
             }
         }
     }

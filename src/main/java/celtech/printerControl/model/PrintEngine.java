@@ -15,23 +15,20 @@ import celtech.services.ControllableService;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorService;
 import celtech.services.printing.GCodePrintResult;
-import celtech.services.printing.GCodePrintService;
+import celtech.services.printing.TransferGCodeToPrinterService;
 import celtech.services.roboxmoviemaker.MovieMakerTask;
 import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
-import celtech.printerControl.MacroType;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +36,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -78,9 +74,9 @@ public class PrintEngine implements ControllableService
         PrintEngine.class.getName());
 
     private Printer associatedPrinter = null;
-    private AbstractSlicerService slicerService;
-    private final PostProcessorService gcodePostProcessorService = new PostProcessorService();
-    private final GCodePrintService gcodePrintService = new GCodePrintService();
+    public final AbstractSlicerService slicerService = new SlicerService();
+    public final PostProcessorService postProcessorService = new PostProcessorService();
+    public final TransferGCodeToPrinterService transferGCodeToPrinterService = new TransferGCodeToPrinterService();
     private final IntegerProperty linesInPrintingFile = new SimpleIntegerProperty(0);
 
     /**
@@ -90,16 +86,20 @@ public class PrintEngine implements ControllableService
     /*
      * 
      */
+    private EventHandler<WorkerStateEvent> scheduledSliceEventHandler = null;
     private EventHandler<WorkerStateEvent> cancelSliceEventHandler = null;
     private EventHandler<WorkerStateEvent> failedSliceEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededSliceEventHandler = null;
+
+    private EventHandler<WorkerStateEvent> scheduledGCodePostProcessEventHandler = null;
     private EventHandler<WorkerStateEvent> cancelGCodePostProcessEventHandler = null;
     private EventHandler<WorkerStateEvent> failedGCodePostProcessEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededGCodePostProcessEventHandler = null;
+
+    private EventHandler<WorkerStateEvent> scheduledPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> cancelPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> failedPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededPrintEventHandler = null;
-    private EventHandler<WorkerStateEvent> scheduledPrintEventHandler = null;
 
     private final StringProperty printProgressTitle = new SimpleStringProperty();
     private final StringProperty printProgressMessage = new SimpleStringProperty();
@@ -114,6 +114,9 @@ public class PrintEngine implements ControllableService
     private final BooleanProperty sendingDataToPrinter = new SimpleBooleanProperty(
         false);
     private final ObjectProperty<Date> printJobStartTime = new SimpleObjectProperty<>();
+    private final BooleanProperty slicing = new SimpleBooleanProperty(false);
+    private final BooleanProperty postProcessing = new SimpleBooleanProperty(false);
+
     /*
      * 
      */
@@ -142,16 +145,11 @@ public class PrintEngine implements ControllableService
      */
     private MovieMakerTask movieMakerTask = null;
 
+    private boolean raiseProgressNotifications = true;
+
     public PrintEngine(Printer associatedPrinter)
     {
-        this(associatedPrinter, new SlicerService());
-    }
-
-    public PrintEngine(Printer associatedPrinter,
-        AbstractSlicerService slicerService)
-    {
         this.associatedPrinter = associatedPrinter;
-        this.slicerService = slicerService;
 
         cancelSliceEventHandler = (WorkerStateEvent t) ->
         {
@@ -168,7 +166,10 @@ public class PrintEngine implements ControllableService
         failedSliceEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has failed");
-            Lookup.getSystemNotificationHandler().showSliceFailedNotification();
+            if (raiseProgressNotifications)
+            {
+                Lookup.getSystemNotificationHandler().showSliceFailedNotification();
+            }
             try
             {
                 associatedPrinter.cancel(null);
@@ -185,20 +186,24 @@ public class PrintEngine implements ControllableService
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
-                gcodePostProcessorService.reset();
-                gcodePostProcessorService.setPrintJobUUID(
+                postProcessorService.reset();
+                postProcessorService.setPrintJobUUID(
                     result.getPrintJobUUID());
-                gcodePostProcessorService.setSettings(result.getSettings());
-                gcodePostProcessorService.setPrinterToUse(
+                postProcessorService.setSettings(result.getSettings());
+                postProcessorService.setPrinterToUse(
                     result.getPrinterToUse());
-                gcodePostProcessorService.start();
+                postProcessorService.start();
 
-                Lookup.getSystemNotificationHandler().showSliceSuccessfulNotification();
-
-                associatedPrinter.setPrinterStatus(PrinterStatus.POST_PROCESSING);
+                if (raiseProgressNotifications)
+                {
+                    Lookup.getSystemNotificationHandler().showSliceSuccessfulNotification();
+                }
             } else
             {
-                Lookup.getSystemNotificationHandler().showSliceFailedNotification();
+                if (raiseProgressNotifications)
+                {
+                    Lookup.getSystemNotificationHandler().showSliceFailedNotification();
+                }
                 try
                 {
                     associatedPrinter.cancel(null);
@@ -224,7 +229,10 @@ public class PrintEngine implements ControllableService
         failedGCodePostProcessEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has failed");
-            Lookup.getSystemNotificationHandler().showGCodePostProcessFailedNotification();
+            if (raiseProgressNotifications)
+            {
+                Lookup.getSystemNotificationHandler().showGCodePostProcessFailedNotification();
+            }
             try
             {
                 associatedPrinter.cancel(null);
@@ -252,21 +260,27 @@ public class PrintEngine implements ControllableService
 
                 makeETCCalculator(printJobStatistics, associatedPrinter);
 
-                gcodePrintService.reset();
-                gcodePrintService.setCurrentPrintJobID(jobUUID);
-                gcodePrintService.setStartFromSequenceNumber(0);
-                gcodePrintService.setModelFileToPrint(result.getOutputFilename());
-                gcodePrintService.setPrinterToUse(result.getPrinterToUse());
-                gcodePrintService.start();
+                transferGCodeToPrinterService.reset();
+                transferGCodeToPrinterService.setCurrentPrintJobID(jobUUID);
+                transferGCodeToPrinterService.setStartFromSequenceNumber(0);
+                transferGCodeToPrinterService.setModelFileToPrint(result.getOutputFilename());
+                transferGCodeToPrinterService.setPrinterToUse(result.getPrinterToUse());
+                transferGCodeToPrinterService.start();
 
                 printJobStartTime.set(new Date());
 
-                Lookup.getSystemNotificationHandler().showGCodePostProcessSuccessfulNotification();
-
-                associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+                if (raiseProgressNotifications)
+                {
+                    Lookup.getSystemNotificationHandler().
+                        showGCodePostProcessSuccessfulNotification();
+                }
+                sendingDataToPrinter.set(true);
             } else
             {
-                Lookup.getSystemNotificationHandler().showGCodePostProcessFailedNotification();
+                if (raiseProgressNotifications)
+                {
+                    Lookup.getSystemNotificationHandler().showGCodePostProcessFailedNotification();
+                }
                 try
                 {
                     associatedPrinter.cancel(null);
@@ -281,13 +295,19 @@ public class PrintEngine implements ControllableService
         cancelPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been cancelled");
-            Lookup.getSystemNotificationHandler().showPrintJobCancelledNotification();
+            if (raiseProgressNotifications)
+            {
+                Lookup.getSystemNotificationHandler().showPrintJobCancelledNotification();
+            }
         };
 
         failedPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.error(t.getSource().getTitle() + " has failed");
-            Lookup.getSystemNotificationHandler().showPrintJobFailedNotification();
+            if (raiseProgressNotifications)
+            {
+                Lookup.getSystemNotificationHandler().showPrintJobFailedNotification();
+            }
             try
             {
                 associatedPrinter.cancel(null);
@@ -303,9 +323,10 @@ public class PrintEngine implements ControllableService
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
-                if (associatedPrinter.macroTypeProperty().isNotNull().get())
+                if (associatedPrinter.printerStatusProperty().get()
+                    == PrinterStatus.EJECT_STUCK_MATERIAL)
                 {
-                    associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
+//                    associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
                     //Remove the print job from disk
                     String printjobFilename = ApplicationConfiguration.
                         getApplicationStorageDirectory()
@@ -325,14 +346,22 @@ public class PrintEngine implements ControllableService
                     }
                 } else
                 {
-                    Lookup.getSystemNotificationHandler().showPrintTransferSuccessfulNotification(
-                        associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
-                    associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+                    if (raiseProgressNotifications)
+                    {
+                        Lookup.getSystemNotificationHandler().
+                            showPrintTransferSuccessfulNotification(
+                                associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().
+                                get());
+                    }
+                    printInProgress.set(true);
                 }
             } else
             {
-                Lookup.getSystemNotificationHandler().showPrintTransferFailedNotification(
-                    associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
+                if (raiseProgressNotifications)
+                {
+                    Lookup.getSystemNotificationHandler().showPrintTransferFailedNotification(
+                        associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().get());
+                }
                 steno.error("Submission of job to printer failed");
                 try
                 {
@@ -354,10 +383,12 @@ public class PrintEngine implements ControllableService
         scheduledPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been scheduled");
-            if (associatedPrinter.macroTypeProperty().get() == MacroType.GCODE_PRINT
-                || associatedPrinter.macroTypeProperty().get() == null)
+            if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.PRINTING_GCODE)
             {
-                Lookup.getSystemNotificationHandler().showPrintTransferInitiatedNotification();
+                if (raiseProgressNotifications)
+                {
+                    Lookup.getSystemNotificationHandler().showPrintTransferInitiatedNotification();
+                }
             }
         };
 
@@ -376,7 +407,6 @@ public class PrintEngine implements ControllableService
 //Ignore this state...
                         break;
                     case PRINTING:
-                    case SENDING_TO_PRINTER:
                         if (etcAvailable.get())
                         {
                             updateETCUsingETCCalculator(newValue);
@@ -385,9 +415,9 @@ public class PrintEngine implements ControllableService
                             updateETCUsingLineNumber(newValue);
                         }
                         break;
-                    case EXECUTING_MACRO:
-                        updateETCUsingLineNumber(newValue);
-                        break;
+//                    case EXECUTING_MACRO:
+//                        updateETCUsingLineNumber(newValue);
+//                        break;
                     default:
                         break;
                 }
@@ -404,27 +434,28 @@ public class PrintEngine implements ControllableService
             }
         };
 
+        slicerService.setOnScheduled(scheduledSliceEventHandler);
         slicerService.setOnCancelled(cancelSliceEventHandler);
 
         slicerService.setOnFailed(failedSliceEventHandler);
 
         slicerService.setOnSucceeded(succeededSliceEventHandler);
 
-        gcodePostProcessorService.setOnCancelled(
+        postProcessorService.setOnCancelled(
             cancelGCodePostProcessEventHandler);
 
-        gcodePostProcessorService.setOnFailed(failedGCodePostProcessEventHandler);
+        postProcessorService.setOnFailed(failedGCodePostProcessEventHandler);
 
-        gcodePostProcessorService.setOnSucceeded(
+        postProcessorService.setOnSucceeded(
             succeededGCodePostProcessEventHandler);
 
-        gcodePrintService.setOnScheduled(scheduledPrintEventHandler);
+        transferGCodeToPrinterService.setOnScheduled(scheduledPrintEventHandler);
 
-        gcodePrintService.setOnCancelled(cancelPrintEventHandler);
+        transferGCodeToPrinterService.setOnCancelled(cancelPrintEventHandler);
 
-        gcodePrintService.setOnFailed(failedPrintEventHandler);
+        transferGCodeToPrinterService.setOnFailed(failedPrintEventHandler);
 
-        gcodePrintService.setOnSucceeded(succeededPrintEventHandler);
+        transferGCodeToPrinterService.setOnSucceeded(succeededPrintEventHandler);
 
         associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
@@ -644,7 +675,6 @@ public class PrintEngine implements ControllableService
                                              + printUUID
                                              + ApplicationConfiguration.printProfileFileExtension);
 
-        associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
         slicerService.reset();
         slicerService.setProject(project);
         slicerService.setSettings(settings);
@@ -672,14 +702,14 @@ public class PrintEngine implements ControllableService
         {
             steno.error("Couldn't get job statistics for job " + jobUUID);
         }
-        associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+        sendingDataToPrinter.set(true);
         steno.info("Respooling job " + jobUUID + " to printer from line " + startFromLineNumber);
-        gcodePrintService.reset();
-        gcodePrintService.setCurrentPrintJobID(jobUUID);
-        gcodePrintService.setStartFromSequenceNumber(startFromLineNumber);
-        gcodePrintService.setModelFileToPrint(gCodeFileName);
-        gcodePrintService.setPrinterToUse(associatedPrinter);
-        gcodePrintService.start();
+        transferGCodeToPrinterService.reset();
+        transferGCodeToPrinterService.setCurrentPrintJobID(jobUUID);
+        transferGCodeToPrinterService.setStartFromSequenceNumber(startFromLineNumber);
+        transferGCodeToPrinterService.setModelFileToPrint(gCodeFileName);
+        transferGCodeToPrinterService.setPrinterToUse(associatedPrinter);
+        transferGCodeToPrinterService.start();
         acceptedPrintRequest = true;
         return acceptedPrintRequest;
     }
@@ -694,7 +724,10 @@ public class PrintEngine implements ControllableService
         boolean acceptedPrintRequest;
         //Reprint directly from printer
         steno.info("Printing job " + printJob.getJobUUID() + " from printer store");
-        Lookup.getSystemNotificationHandler().showReprintStartedNotification();
+        if (raiseProgressNotifications)
+        {
+            Lookup.getSystemNotificationHandler().showReprintStartedNotification();
+        }
 
         if (printJob.roboxisedFileExists())
         {
@@ -707,7 +740,7 @@ public class PrintEngine implements ControllableService
             }
         }
         associatedPrinter.initiatePrint(printJob.getJobUUID());
-        associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+        printInProgress.set(true);
         acceptedPrintRequest = true;
         return acceptedPrintRequest;
     }
@@ -834,7 +867,7 @@ public class PrintEngine implements ControllableService
     {
         return printGCodeFile(filename, useSDCard, false);
     }
-    
+
     /**
      *
      * @param filename
@@ -843,7 +876,8 @@ public class PrintEngine implements ControllableService
      * @return
      * @throws celtech.printerControl.comms.commands.MacroPrintException
      */
-    protected boolean printGCodeFile(final String filename, final boolean useSDCard, final boolean dontInitiatePrint) throws MacroPrintException
+    protected boolean printGCodeFile(final String filename, final boolean useSDCard,
+        final boolean dontInitiatePrint) throws MacroPrintException
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
@@ -857,19 +891,17 @@ public class PrintEngine implements ControllableService
             + printUUID + File.separator + printUUID
             + ApplicationConfiguration.gcodeTempFileExtension;
 
-        if (associatedPrinter.macroTypeProperty().isNotNull().get()
-            && associatedPrinter.macroTypeProperty().get() == MacroType.GCODE_PRINT)
+        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.PRINTING_GCODE)
         {
-            associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
+            sendingDataToPrinter.set(true);
         }
 
         File src = new File(filename);
         File dest = new File(printjobFilename);
         try
         {
-        FileUtils.copyFile(src, dest);
-        }
-        catch (IOException ex)
+            FileUtils.copyFile(src, dest);
+        } catch (IOException ex)
         {
             steno.error("Error copying file");
         }
@@ -912,18 +944,18 @@ public class PrintEngine implements ControllableService
 //                steno.error("Failed to create GCode print job");
 //            }
 //        }
-
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
+            raiseProgressNotifications = true;
             linesInPrintingFile.set(numberOfLines);
-            gcodePrintService.reset();
-            gcodePrintService.setPrintUsingSDCard(useSDCard);
-            gcodePrintService.setCurrentPrintJobID(printUUID);
-            gcodePrintService.setModelFileToPrint(printjobFilename);
-            gcodePrintService.setPrinterToUse(associatedPrinter);
-            gcodePrintService.dontInitiatePrint(dontInitiatePrint);
-            gcodePrintService.start();
+            transferGCodeToPrinterService.reset();
+            transferGCodeToPrinterService.setPrintUsingSDCard(useSDCard);
+            transferGCodeToPrinterService.setCurrentPrintJobID(printUUID);
+            transferGCodeToPrinterService.setModelFileToPrint(printjobFilename);
+            transferGCodeToPrinterService.setPrinterToUse(associatedPrinter);
+            transferGCodeToPrinterService.dontInitiatePrint(dontInitiatePrint);
+            transferGCodeToPrinterService.start();
             consideringPrintRequest = false;
         });
 
@@ -1001,16 +1033,19 @@ public class PrintEngine implements ControllableService
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
+            raiseProgressNotifications = false;
             linesInPrintingFile.set(numberOfLines);
-            steno.info("Print service is in state:" + gcodePrintService.stateProperty().get().name());
-            gcodePrintService.reset();
-            gcodePrintService.setPrintUsingSDCard(useSDCard);
-            gcodePrintService.setStartFromSequenceNumber(0);
-            gcodePrintService.setCurrentPrintJobID(printUUID);
-            gcodePrintService.setModelFileToPrint(printjobFilename);
-            gcodePrintService.setPrinterToUse(associatedPrinter);
-            gcodePrintService.setThisCanBeReprinted(false);
-            gcodePrintService.start();
+            steno.
+                info("Print service is in state:" + transferGCodeToPrinterService.stateProperty().
+                    get().name());
+            transferGCodeToPrinterService.reset();
+            transferGCodeToPrinterService.setPrintUsingSDCard(useSDCard);
+            transferGCodeToPrinterService.setStartFromSequenceNumber(0);
+            transferGCodeToPrinterService.setCurrentPrintJobID(printUUID);
+            transferGCodeToPrinterService.setModelFileToPrint(printjobFilename);
+            transferGCodeToPrinterService.setPrinterToUse(associatedPrinter);
+            transferGCodeToPrinterService.setThisCanBeReprinted(false);
+            transferGCodeToPrinterService.start();
             consideringPrintRequest = false;
         });
 
@@ -1108,12 +1143,10 @@ public class PrintEngine implements ControllableService
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             printProgressMessage.unbind();
-            printProgressMessage.bind(
-                gcodePostProcessorService.messageProperty());
+            printProgressMessage.bind(postProcessorService.messageProperty());
             primaryProgressPercent.unbind();
             setPrimaryProgressPercent(0);
-            primaryProgressPercent.bind(
-                gcodePostProcessorService.progressProperty());
+            primaryProgressPercent.bind(postProcessorService.progressProperty());
             secondaryProgressPercent.unbind();
             sendingDataToPrinter.set(false);
             setSecondaryProgressPercent(0);
@@ -1127,13 +1160,12 @@ public class PrintEngine implements ControllableService
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             printProgressMessage.unbind();
-            printProgressMessage.bind(gcodePrintService.messageProperty());
+            printProgressMessage.bind(transferGCodeToPrinterService.messageProperty());
             primaryProgressPercent.unbind();
             setPrimaryProgressPercent(0);
             secondaryProgressPercent.unbind();
             setSecondaryProgressPercent(0);
-            secondaryProgressPercent.bind(
-                gcodePrintService.progressProperty());
+            secondaryProgressPercent.bind(transferGCodeToPrinterService.progressProperty());
             sendingDataToPrinter.set(true);
             setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.SendingToPrinter"));
@@ -1177,7 +1209,7 @@ public class PrintEngine implements ControllableService
             }
             printProgressMessage.set("");
             setPrintInProgress(true);
-            setPrintProgressTitle(associatedPrinter.macroTypeProperty().get().getI18nString());
+            setPrintProgressTitle(associatedPrinter.printerStatusProperty().get().getI18nString());
         });
     }
 
@@ -1198,15 +1230,15 @@ public class PrintEngine implements ControllableService
                     steno.info("Shutdown slicer service...");
                     slicerService.cancelRun();
                 }
-                if (gcodePostProcessorService.isRunning())
+                if (postProcessorService.isRunning())
                 {
                     steno.info("Shutdown PP...");
-                    gcodePostProcessorService.cancelRun();
+                    postProcessorService.cancelRun();
                 }
-                if (gcodePrintService.isRunning())
+                if (transferGCodeToPrinterService.isRunning())
                 {
                     steno.info("Shutdown print service...");
-                    gcodePrintService.cancelRun();
+                    transferGCodeToPrinterService.cancelRun();
                 }
                 steno.info("Shutdown print services complete");
                 return true;
@@ -1231,7 +1263,10 @@ public class PrintEngine implements ControllableService
         if (printJob.roboxisedFileExists())
         {
             acceptedPrintRequest = reprintFileFromDisk(printJob, expectedSequenceNumber);
-            Lookup.getSystemNotificationHandler().removePrintTransferFailedNotification();
+            if (raiseProgressNotifications)
+            {
+                Lookup.getSystemNotificationHandler().removePrintTransferFailedNotification();
+            }
         }
 
         return acceptedPrintRequest;
@@ -1259,8 +1294,11 @@ public class PrintEngine implements ControllableService
                     if (roboxIsPrinting)
                     {
                         makeETCCalculatorForJobOfUUID(printJobID);
-                        Lookup.getSystemNotificationHandler().
-                            showDetectedPrintInProgressNotification();
+                        if (raiseProgressNotifications)
+                        {
+                            Lookup.getSystemNotificationHandler().
+                                showDetectedPrintInProgressNotification();
+                        }
                         steno.info("Printer "
                             + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
                             + " is printing");
@@ -1270,13 +1308,11 @@ public class PrintEngine implements ControllableService
                             associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
                         } else
                         {
-                            associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+                            printInProgress.set(true);
                         }
                     }
                     break;
-                case SENDING_TO_PRINTER:
                 case PRINTING:
-                case EXECUTING_MACRO:
                     if (roboxIsPrinting == false)
                     {
                         associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);

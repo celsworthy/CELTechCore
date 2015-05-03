@@ -6,16 +6,16 @@ import celtech.Lookup;
  *
  * @author ianhudson
  */
-public enum PrinterStatus
+public enum PrinterMetaStatusStates
 {
-
     IDLE("printerStatus.idle"),
-    HEATING_BED("printerStatus.heatingBed"),
+    HEATING_BED("printerStatus.heatingNozzle"),
     HEATING_NOZZLE("printerStatus.heatingNozzle"),
-    SLICING("printerStatus.slicing"),
-    POST_PROCESSING("printerStatus.postProcessing"),
-    //    SENDING_TO_PRINTER("printerStatus.sendingToPrinter"),
+//    SLICING("printerStatus.slicing"),
+//    POST_PROCESSING("printerStatus.postProcessing"),
+//    SENDING_TO_PRINTER("printerStatus.sendingToPrinter"),
     PRINTING("printerStatus.printing"),
+//    EXECUTING_MACRO("printerStatus.executingMacro"),
     PRINTING_GCODE("printerStatus.printingGCode"),
     //Macros
     HOMING("printerStatus.macro.homing"),
@@ -39,7 +39,7 @@ public enum PrinterStatus
 
     private final String i18nString;
 
-    private PrinterStatus(String i18nString)
+    private PrinterMetaStatusStates(String i18nString)
     {
         this.i18nString = i18nString;
     }

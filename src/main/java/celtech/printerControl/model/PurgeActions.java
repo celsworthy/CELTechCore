@@ -149,8 +149,7 @@ public class PurgeActions extends StateTransitionActions
 
     void doRunPurgeAction() throws PrinterException
     {
-        printer.executeMacro("Purge Material");
-        PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
+        printer.purgeMaterial(true, userOrErrorCancellable);
     }
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException

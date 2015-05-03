@@ -47,8 +47,11 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         recalculateStatus();
     };
 
-    private final StringProperty statusStringProperty = new SimpleStringProperty("");
-    private final StringProperty legendProperty = new SimpleStringProperty("");
+    private final ChangeListener<Boolean> booleanTriggerListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    {
+        recalculateStatus();
+    };
+
     private final DoubleProperty currentStatusValue = new SimpleDoubleProperty(0);
     private final DoubleProperty currentStatusValueTarget = new SimpleDoubleProperty(0);
     private final BooleanProperty targetValueValidProperty = new SimpleBooleanProperty(false);
@@ -59,13 +62,19 @@ public class PrinterMetaStatus implements PrinterListChangesListener
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
         printer.printerStatusProperty().addListener(printerStatusListener);
+
+        printer.getPrintEngine().slicerService.runningProperty().addListener(booleanTriggerListener);
+        printer.getPrintEngine().postProcessorService.runningProperty().addListener(
+            booleanTriggerListener);
+        printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(
+            booleanTriggerListener);
+        printer.getPrintEngine().printInProgressProperty().addListener(booleanTriggerListener);
+        printer.getPrinterAncillarySystems().bedHeaterMode.addListener(heaterModeListener);
     }
 
     private void recalculateStatus()
     {
-        PrinterStatus tempStatus = PrinterStatus.IDLE;
-
-        tempStatus = printer.printerStatusProperty().get();
+        PrinterStatus tempStatus = null;
 
         if (attachedHead != null)
         {
@@ -73,12 +82,40 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             {
                 if (heater.heaterMode.get() != HeaterMode.OFF)
                 {
-                    if (tempStatus == PrinterStatus.SENDING_TO_PRINTER)
-                    {
-                        tempStatus = PrinterStatus.HEATING;
-                    }
+                    tempStatus = PrinterStatus.HEATING_NOZZLE;
+                    break;
                 }
             }
+        }
+
+        if (tempStatus == null)
+        {
+            if (printer.getPrinterAncillarySystems().bedHeaterMode.get() != HeaterMode.OFF)
+            {
+                tempStatus = PrinterStatus.HEATING_BED;
+            }
+        }
+
+        if (tempStatus == null)
+        {
+            if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
+                && printer.getPrintEngine().slicerService.isRunning())
+            {
+                tempStatus = PrinterStatus.SLICING;
+            } else if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
+                && printer.getPrintEngine().postProcessorService.isRunning())
+            {
+                tempStatus = PrinterStatus.POST_PROCESSING;
+            } else if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
+                && printer.getPrintEngine().printInProgressProperty().get())
+            {
+                tempStatus = PrinterStatus.PRINTING;
+            }
+        }
+
+        if (tempStatus == null)
+        {
+            tempStatus = printer.printerStatusProperty().get();
         }
 
         switch (tempStatus)
@@ -86,15 +123,17 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             case PRINTING:
             case SLICING:
             case POST_PROCESSING:
-            case EXECUTING_MACRO:
                 bindProgressToPrimaryPrintEnginePercent();
                 break;
-            case HEATING:
-                bindProgressForHeating();
+            case HEATING_BED:
+                bindProgressForBedHeating();
                 break;
-            case SENDING_TO_PRINTER:
-                bindProgressToSecondaryPrintEnginePercent();
+            case HEATING_NOZZLE:
+                bindProgressForNozzleHeating();
                 break;
+//            case SENDING_TO_PRINTER:
+//                bindProgressToSecondaryPrintEnginePercent();
+//                break;
             default:
                 bindProgressDefaultCase();
                 break;
@@ -103,6 +142,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         if (tempStatus != printerStatus.get())
         {
             printerStatus.set(tempStatus);
+            steno.info("Meta status is now " + tempStatus.getI18nString());
         }
     }
 
@@ -182,7 +222,23 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         return printerStatus;
     }
 
-    private void bindProgressForHeating()
+    private void bindProgressForBedHeating()
+    {
+        unbindProgress();
+        switch (printer.getPrinterAncillarySystems().bedHeaterMode.get())
+        {
+            case NORMAL:
+                currentStatusValueTarget.bind(printer.getPrinterAncillarySystems().bedTargetTemperature);
+                break;
+            case FIRST_LAYER:
+                currentStatusValueTarget.bind(printer.getPrinterAncillarySystems().bedFirstLayerTargetTemperature);
+                break;
+        }
+        currentStatusValue.bind(printer.getPrinterAncillarySystems().bedTemperature);
+        targetValueValidProperty.set(true);
+    }
+
+    private void bindProgressForNozzleHeating()
     {
         unbindProgress();
         NozzleHeater heater = attachedHead.getNozzleHeaters().get(0);
@@ -197,7 +253,6 @@ public class PrinterMetaStatus implements PrinterListChangesListener
                 break;
         }
         currentStatusValue.bind(heater.nozzleTemperature);
-        legendProperty.set(Lookup.i18n("misc.degreesC"));
         targetValueValidProperty.set(true);
     }
 
@@ -206,7 +261,6 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         unbindProgress();
         currentStatusValueTarget.set(100);
         currentStatusValue.bind(printer.getPrintEngine().progressProperty().multiply(100));
-        legendProperty.set("");
         targetValueValidProperty.set(false);
     }
 
@@ -215,7 +269,6 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         unbindProgress();
         currentStatusValueTarget.set(100);
         currentStatusValue.bind(printer.getPrintEngine().secondaryProgressProperty().multiply(100));
-        legendProperty.set("");
         targetValueValidProperty.set(false);
     }
 
@@ -223,7 +276,6 @@ public class PrinterMetaStatus implements PrinterListChangesListener
     {
         unbindProgress();
         currentStatusValue.bind(printer.getPrintEngine().progressProperty());
-        legendProperty.set("");
         targetValueValidProperty.set(false);
     }
 
@@ -232,11 +284,6 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         currentStatusValue.unbind();
         currentStatusValueTarget.unbind();
         targetValueValidProperty.set(false);
-    }
-
-    public ReadOnlyStringProperty legendProperty()
-    {
-        return legendProperty;
     }
 
     public ReadOnlyBooleanProperty targetValueValidProperty()

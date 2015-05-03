@@ -15,7 +15,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class GCodePrintService extends Service<GCodePrintResult> implements ControllableService
+public class TransferGCodeToPrinterService extends Service<GCodePrintResult> implements ControllableService
 {
 
     private Printer printerToUse = null;
@@ -145,7 +145,7 @@ public class GCodePrintService extends Service<GCodePrintResult> implements Cont
     @Override
     protected Task<GCodePrintResult> createTask()
     {
-        return new GCodePrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(),
+        return new TransferGCodeToPrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(),
                                     linesInGCodeFileProperty(), printUsingSDCard,
                                     startFromSequenceNumber, canBeReprinted, dontInitiatePrint);
     }

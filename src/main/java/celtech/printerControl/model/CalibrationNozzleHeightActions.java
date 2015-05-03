@@ -105,7 +105,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     private void heatNozzle() throws InterruptedException, PrinterException
     {
         printer.goToTargetNozzleTemperature();
-        printer.executeMacro("Home_all");
+        printer.homeAllAxes(true, userOrErrorCancellable);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
@@ -192,7 +192,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         {
             return;
         }
-        printer.levelGantry();
+        printer.levelGantryRaw();
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;

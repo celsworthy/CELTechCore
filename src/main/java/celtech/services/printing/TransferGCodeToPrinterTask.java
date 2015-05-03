@@ -19,7 +19,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class GCodePrinterTask extends Task<GCodePrintResult>
+public class TransferGCodeToPrinterTask extends Task<GCodePrintResult>
 {
 
     private Printer printerToUse = null;
@@ -45,7 +45,7 @@ public class GCodePrinterTask extends Task<GCodePrintResult>
      * @param startFromSequenceNumber
      * @param thisJobCanBeReprinted
      */
-    public GCodePrinterTask(Printer printerToUse,
+    public TransferGCodeToPrinterTask(Printer printerToUse,
         String modelFileToPrint,
         String printJobID,
         IntegerProperty linesInFile,

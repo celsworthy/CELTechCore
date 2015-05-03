@@ -23,6 +23,7 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -456,7 +457,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.executeMacro("Home_all");
+            currentStatusPrinter.homeAllAxes(false, null);
         } catch (PrinterException ex)
         {
             steno.error("Couldn't run home macro");

@@ -3,7 +3,6 @@
  */
 package celtech.coreUI.components;
 
-import celtech.Lookup;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterMetaStatus;
@@ -36,7 +35,7 @@ import javafx.util.Duration;
  *
  * @author tony
  */
-public class LargeProgress extends BorderPane implements Initializable
+public class ProgressEntity extends BorderPane implements Initializable
 {
 
     @FXML
@@ -66,7 +65,6 @@ public class LargeProgress extends BorderPane implements Initializable
 
     private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        System.out.println("Progress is now " + newValue.doubleValue());
         setProgressPercent(newValue.doubleValue());
     };
 
@@ -82,7 +80,7 @@ public class LargeProgress extends BorderPane implements Initializable
     private double panelHeight = 0;
     private int delayTime = 250;
 
-    public LargeProgress()
+    public ProgressEntity()
     {
         super();
         URL fxml = getClass().getResource(
@@ -189,60 +187,29 @@ public class LargeProgress extends BorderPane implements Initializable
         {
             switch (printerMetaStatus.get().printerStatusProperty().get())
             {
-                case HEATING_BED:
-                case HEATING_NOZZLE:
-                    progressBarElement.setVisible(true);
-                    largeTargetLegend.setVisible(true);
-                    largeTargetValue.setVisible(true);
-                    largeTargetValue.textProperty().unbind();
-                    largeTargetValue.textProperty().bind(
-                        printerMetaStatus.get()
-                        .currentStatusValueTargetProperty()
-                        .asString("%.0f").concat(Lookup.i18n("misc.degreesC")));
-                    largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-                    largeProgressCurrentValue.textProperty().bind(
-                        printerMetaStatus.get()
-                        .currentStatusValueProperty().asString("%.0f").concat(Lookup.i18n(
-                                "misc.degreesC")));
-                    this.setVisible(true);
-                    break;
+//                case HEATING:
+//                    progressBarElement.setVisible(true);
+//                    largeTargetLegend.setVisible(true);
+//                    largeTargetValue.setVisible(true);
+//                    break;
                 case PRINTING:
-                case SLICING:
-                case POST_PROCESSING:
-                    progressBarElement.setVisible(true);
-                    largeTargetLegend.setVisible(false);
-                    largeTargetValue.setVisible(false);
-                    largeTargetValue.textProperty().unbind();
-                    largeTargetValue.textProperty().bind(
-                        printerMetaStatus.get()
-                        .currentStatusValueTargetProperty()
-                        .asString("%.0f%%"));
-                    largeTargetLegend.setText("");
-                    largeProgressCurrentValue.textProperty().bind(
-                        printerMetaStatus.get()
-                        .currentStatusValueProperty().asString("%.0f%%"));
-                    this.setVisible(true);
-                    break;
+//                case SLICING:
+//                case POST_PROCESSING:
+//                case EXECUTING_MACRO:
+//                case SENDING_TO_PRINTER:
+//                    progressBarElement.setVisible(true);
+//                    largeTargetLegend.setVisible(false);
+//                    largeTargetValue.setVisible(false);
+//                    break;
                 default:
                     progressBarElement.setVisible(false);
                     largeTargetLegend.setVisible(false);
                     largeTargetValue.setVisible(false);
-                    this.setVisible(false);
                     break;
             }
         }
 
-        double normalisedProgress;
-
-        if (printerMetaStatus.isPresent())
-        {
-            normalisedProgress = progressPercent / printerMetaStatus.get()
-                .currentStatusValueTargetProperty().get();
-        }
-        else
-        {
-            normalisedProgress = progressPercent / 100;
-        }
+        double normalisedProgress = progressPercent / 100;
 
         double progressBackWidth = largeProgressBarBack.getWidth();
         double barWidth = progressBackWidth * normalisedProgress;
@@ -283,9 +250,10 @@ public class LargeProgress extends BorderPane implements Initializable
         this.printerMetaStatus = Optional.of(printerMetaStatus);
         largeProgressDescription.textProperty().bind(printerMetaStatus.printerStatusProperty().
             asString());
-        largeTargetValue.setText("");
-        largeTargetLegend.setText("");
-        largeProgressCurrentValue.setText("");
+        largeTargetValue.textProperty().bind(printerMetaStatus.currentStatusValueTargetProperty().
+            asString("%.0f"));
+        largeProgressCurrentValue.textProperty().bind(
+            printerMetaStatus.currentStatusValueProperty().asString("%.0f%%"));
         progressProperty.bind(printerMetaStatus.currentStatusValueProperty());
         progressProperty.addListener(progressChangeListener);
         printerMetaStatus.printerStatusProperty().addListener(statusChangeListener);
