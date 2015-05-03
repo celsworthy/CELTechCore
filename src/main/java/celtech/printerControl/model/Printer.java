@@ -332,6 +332,14 @@ public interface Printer extends RoboxResponseConsumer
     public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
     
     /**
+     * 
+     * @param macroName
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException;
+    
+    /**
      * This method 'prints' a GCode file. A print job is created and the printer will manage
      * extrusion dynamically. The printer will register as an error handler for the duration of the
      * 'print'.

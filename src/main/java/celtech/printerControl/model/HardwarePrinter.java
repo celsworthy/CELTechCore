@@ -987,6 +987,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                        blockUntilFinished, cancellable);
     }
 
+        @Override
+    public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(macroName,
+                                                       PrinterStatus.RUNNING_TEST,
+                                                       PrinterStatus.IDLE,
+                                                       true, cancellable);
+    }
+
+
     private void executeMacro(String macroName) throws PrinterException
     {
         steno.debug("Request to run macro: " + macroName);
