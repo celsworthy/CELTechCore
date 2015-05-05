@@ -991,6 +991,28 @@ public class PrintEngine implements ControllableService
         }
     }
 
+    private void tidyMacroSpoolDirectory()
+    {
+        //Erase old print job directories
+        File printSpoolDirectory = new File(
+            ApplicationConfiguration.getApplicationStorageDirectory()
+            + ApplicationConfiguration.macroFileSubpath);
+        File[] filesOnDisk = printSpoolDirectory.listFiles();
+        
+        if (filesOnDisk.length > ApplicationConfiguration.maxPrintSpoolFiles)
+        {
+            int filesToDelete = filesOnDisk.length
+                - ApplicationConfiguration.maxPrintSpoolFiles;
+            Arrays.sort(filesOnDisk,
+                        (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(
+                            f2.lastModified()));
+            for (int i = 0; i < filesToDelete; i++)
+            {
+                FileUtils.deleteQuietly(filesOnDisk[i]);
+            }
+        }
+    }
+
     /**
      *
      * @param macroName
@@ -1009,6 +1031,8 @@ public class PrintEngine implements ControllableService
             + ApplicationConfiguration.macroFileSubpath;
         File printJobDirectory = new File(printJobDirectoryName);
         printJobDirectory.mkdirs();
+
+        tidyMacroSpoolDirectory();
 
         String printjobFilename = printJobDirectoryName + printUUID
             + ApplicationConfiguration.gcodeTempFileExtension;
@@ -1029,6 +1053,8 @@ public class PrintEngine implements ControllableService
         {
             throw new MacroPrintException("Error whilst generating macro - " + ex.getMessage());
         }
+        
+        steno.info("About to call transfer for " + macroName);
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
