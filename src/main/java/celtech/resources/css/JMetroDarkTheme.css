@@ -2052,6 +2052,7 @@ modal-dialogue{
 
 .cmbCleanCombo .combo-box-popup .list-view .list-cell {
      -fx-background-color: white;
+     -fx-text-fill: black;
 }
 
 .cmbCleanCombo:hover {
@@ -2409,11 +2410,23 @@ modal-dialogue{
     -fx-padding: 0 0 0 8;
 }
 
+.color-picker {
+    -fx-text-fill: black;
+}
+
+color-picker-label .text-field {
+    -fx-text-fill: red;
+}
+
 /**
 * Print Profiles
 */
 
 #cmbPrintProfile {
+    -fx-pref-width: 290;
+}
+
+#cmbPrintProfile .combo-box .list-cell {
     -fx-pref-width: 290;
 }
 
