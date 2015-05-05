@@ -30,6 +30,7 @@ public class FilamentCell extends ListCell<Object>
         cellContainer.setAlignment(Pos.CENTER_LEFT);
         rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
         label = new Label();
+        label.setId("materialComponentComboLabel");
         cellContainer.getChildren().addAll(rectangle, label);
     }
 

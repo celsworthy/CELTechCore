@@ -376,10 +376,10 @@
 .gizmoControlButton, .gizmoControlButton:hover, .gizmoControlButton:focused {
     -fx-background-color: transparent;
     -fx-padding: 0;
-/*    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 0;
-    -fx-font-weight: bold;
-    -fx-font-size: 1.1em;*/
+    /*    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+        -fx-background-radius: 0;
+        -fx-font-weight: bold;
+        -fx-font-size: 1.1em;*/
     -fx-border-color: transparent; 
     -fx-content-display: graphic-only;
 }
@@ -2033,6 +2033,10 @@ modal-dialogue{
     -fx-padding: 0 10 0 10;
 }
 
+#materialComponentComboLabel {
+    -fx-text-fill: black;
+}
+
 // ===== Copied from caspian.css for detailed combo box styling =====
 /* -------------- CODE FOR THE NON-EDITABLE COMBO-BOX -------------- */
 
@@ -2044,6 +2048,10 @@ modal-dialogue{
     /*-fx-background-radius: 5, 5, 4, 3;
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
     -fx-padding: 0;
+}
+
+.cmbCleanCombo .combo-box-popup .list-view .list-cell {
+     -fx-background-color: white;
 }
 
 .cmbCleanCombo:hover {
@@ -2350,7 +2358,7 @@ modal-dialogue{
 }
 
 #cmbLibraryFilament {
-    -fx-pref-width: 290;
+    -fx-pref-width: 320;
 }
 
 .filamentLibUpper {
@@ -2384,7 +2392,21 @@ modal-dialogue{
 
 #helpText .content {
     -fx-background-color: mid_grey;
+}
 
+#cmbLibraryFilament .list-cell {
+    -fx-cell-size: 15;
+}
+
+#cmbFilamentTextField {
+    -fx-text-fill: black;
+}
+
+#cmbFilamentReelIndexLabel {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 7px;
+    -fx-text-fill: black;
+    -fx-padding: 0 0 0 8;
 }
 
 /**
