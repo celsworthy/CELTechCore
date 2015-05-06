@@ -8,10 +8,12 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
+import celtech.utils.threed.exporters.AMFOutputConverter;
 import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -37,7 +39,8 @@ public class SlicerTask extends Task<SliceResult>
         SlicerParametersFile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
-        this.printJobDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator;
+        this.printJobDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
+            + File.separator;
         this.project = project;
         this.printQuality = printQuality;
         this.settings = settings;
@@ -78,10 +81,30 @@ public class SlicerTask extends Task<SliceResult>
         }
 
         String tempModelFilename;
+        MeshFileOutputConverter outputConverter = null;
 
-        tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-        MeshFileOutputConverter outputConverter = new STLOutputConverter();
-        outputConverter.outputFile(project, printJobUUID, printJobDirectory);
+//        if (slicerType == SlicerType.Cura)
+//        {
+//            tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
+//            outputConverter = new AMFOutputConverter();
+//        } else
+        {
+            tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+            outputConverter = new STLOutputConverter();
+        }
+
+        List<String> createdMeshFiles = null;
+
+        // Output multiple files if we are using Cura
+//        if (slicerType == SlicerType.Cura)
+//        {
+//            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+//                                                          false);
+//        } else
+        {
+            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+                                                          true);
+        }
 
         String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
 
@@ -132,7 +155,7 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \""
+                String win95PrintCommand = "\"pushd \""
                     + printJobDirectory
                     + "\" && "
                     + windowsSlicerCommand
@@ -143,16 +166,21 @@ public class SlicerTask extends Task<SliceResult>
                     + " "
                     + combinedConfigSection
                     + " -o "
-                    + tempGcodeFilename
-                    + " "
-                    + tempModelFilename
-                    + " && popd\"");
+                    + tempGcodeFilename;
+                for (String fileName : createdMeshFiles)
+                {
+                    win95PrintCommand += " \"";
+                    win95PrintCommand += fileName;
+                    win95PrintCommand += "\"";
+                }
+                win95PrintCommand += " && popd\"";
+                commands.add(win95PrintCommand);
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \""
+                String windowsPrintCommand = "\"pushd \""
                     + printJobDirectory
                     + "\" && "
                     + windowsSlicerCommand
@@ -163,10 +191,15 @@ public class SlicerTask extends Task<SliceResult>
                     + " "
                     + combinedConfigSection
                     + " -o "
-                    + tempGcodeFilename
-                    + " "
-                    + tempModelFilename
-                    + " && popd\"");
+                    + tempGcodeFilename;
+                for (String fileName : createdMeshFiles)
+                {
+                    windowsPrintCommand += " \"";
+                    windowsPrintCommand += fileName;
+                    windowsPrintCommand += "\"";
+                }
+                windowsPrintCommand += " && popd\"";
+                commands.add(windowsPrintCommand);
                 break;
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
@@ -183,7 +216,10 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
-                commands.add(tempModelFilename);
+                for (String fileName : createdMeshFiles)
+                {
+                    commands.add(fileName);
+                }
                 break;
             case LINUX_X86:
             case LINUX_X64:
@@ -201,7 +237,10 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
-                commands.add(tempModelFilename);
+                for (String fileName : createdMeshFiles)
+                {
+                    commands.add(fileName);
+                }
                 break;
             default:
                 steno.error("Couldn't determine how to run slicer");

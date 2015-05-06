@@ -323,28 +323,28 @@ public class PrintEngine implements ControllableService
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
-                if (associatedPrinter.printerStatusProperty().get()
-                    == PrinterStatus.EJECT_STUCK_MATERIAL)
-                {
-//                    associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
-                    //Remove the print job from disk
-                    String printjobFilename = ApplicationConfiguration.
-                        getApplicationStorageDirectory()
-                        + ApplicationConfiguration.macroFileSubpath
-                        + File.separator
-                        + result.getPrintJobID();
-                    File fileToDelete = new File(printjobFilename);
-                    try
-                    {
-                        FileDeleteStrategy.FORCE.delete(fileToDelete);
-                    } catch (IOException ex)
-                    {
-                        steno.error(
-                            "Error whilst deleting macro print directory "
-                            + printjobFilename + " exception - "
-                            + ex.getMessage());
-                    }
-                } else
+//                if (associatedPrinter.printerStatusProperty().get()
+//                    == PrinterStatus.EJECTING_STUCK_MATERIAL)
+//                {
+////                    associatedPrinter.setPrinterStatus(PrinterStatus.EXECUTING_MACRO);
+//                    //Remove the print job from disk
+//                    String printjobFilename = ApplicationConfiguration.
+//                        getApplicationStorageDirectory()
+//                        + ApplicationConfiguration.macroFileSubpath
+//                        + File.separator
+//                        + result.getPrintJobID();
+//                    File fileToDelete = new File(printjobFilename);
+//                    try
+//                    {
+//                        FileDeleteStrategy.FORCE.delete(fileToDelete);
+//                    } catch (IOException ex)
+//                    {
+//                        steno.error(
+//                            "Error whilst deleting macro print directory "
+//                            + printjobFilename + " exception - "
+//                            + ex.getMessage());
+//                    }
+//                } else
                 {
                     if (raiseProgressNotifications)
                     {

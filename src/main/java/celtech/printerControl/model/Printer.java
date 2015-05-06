@@ -333,6 +333,14 @@ public interface Printer extends RoboxResponseConsumer
     
     /**
      * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
      * @param macroName
      * @param cancellable
      * @throws PrinterException 

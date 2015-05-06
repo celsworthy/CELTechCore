@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javafx.collections.ObservableFloatArray;
@@ -37,7 +39,7 @@ public class AMFOutputConverter implements MeshFileOutputConverter
     void outputProject(Project project, XMLStreamWriter streamWriter) throws XMLStreamException
     {
         Map<ModelContainer, Integer> vertexOffsetForModels = new HashMap<>();
-        
+
         streamWriter.writeStartDocument();
         streamWriter.writeStartElement("amf");
         streamWriter.writeAttribute("unit", "millimeter");
@@ -149,11 +151,12 @@ public class AMFOutputConverter implements MeshFileOutputConverter
 
             }
         }
-        
+
         return numVertices;
     }
 
-    private void outputFace(ObservableFaceArray faces, int offset, int vertexOffset, XMLStreamWriter streamWriter) throws XMLStreamException
+    private void outputFace(ObservableFaceArray faces, int offset, int vertexOffset,
+        XMLStreamWriter streamWriter) throws XMLStreamException
     {
         streamWriter.writeStartElement("triangle");
         streamWriter.writeStartElement("v1");
@@ -168,13 +171,14 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeEndElement();
     }
 
-    private void outputVertex(ModelContainer modelContainer, ObservableFloatArray points, int offset, XMLStreamWriter streamWriter) throws XMLStreamException
+    private void outputVertex(ModelContainer modelContainer, ObservableFloatArray points, int offset,
+        XMLStreamWriter streamWriter) throws XMLStreamException
     {
         Point3D transformedVertex = modelContainer.
-                                transformMeshToRealWorldCoordinates(
-                                    points.get(offset),
-                                    points.get(offset + 1),
-                                    points.get(offset + 2));
+            transformMeshToRealWorldCoordinates(
+                points.get(offset),
+                points.get(offset + 1),
+                points.get(offset + 2));
         streamWriter.writeStartElement("vertex");
         streamWriter.writeStartElement("coordinates");
         streamWriter.writeStartElement("x");
@@ -191,12 +195,23 @@ public class AMFOutputConverter implements MeshFileOutputConverter
     }
 
     @Override
-    public void outputFile(Project project, String printJobUUID)
+    public List<String> outputFile(Project project, String printJobUUID, boolean outputAsSingleFile)
     {
-        String tempModelFilenameWithPath = ApplicationConfiguration.getPrintSpoolDirectory()
-            + printJobUUID
-            + File.separator + printJobUUID + ApplicationConfiguration.amfTempFileExtension;
+        return outputFile(project, printJobUUID, ApplicationConfiguration.getPrintSpoolDirectory()
+                          + printJobUUID + File.separator, outputAsSingleFile);
+    }
 
+    @Override
+    public List<String> outputFile(Project project, String printJobUUID, String printJobDirectory,
+        boolean outputAsSingleFile)
+    {
+        List<String> createdFiles = new ArrayList<>();
+
+        String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+            + ApplicationConfiguration.amfTempFileExtension;
+
+        createdFiles.add(tempModelFilenameWithPath);
+        
         try
         {
             FileWriter fileWriter = new FileWriter(tempModelFilenameWithPath);
@@ -225,18 +240,13 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         {
             steno.error("Unable to write AMF file: " + ex);
         }
-
-    }
-
-    @Override
-    public void outputFile(Project project, String printJobUUID, String printJobDirectory)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        return createdFiles;
     }
 
     /**
-     * This could be much simpler if it just wrapped the interface, but it was free off the 
-     * internet so I can't argue... It pretty-prints the XML.
+     * This could be much simpler if it just wrapped the interface, but it was free off the internet
+     * so I can't argue... It pretty-prints the XML.
      */
     class PrettyPrintHandler implements InvocationHandler
     {
