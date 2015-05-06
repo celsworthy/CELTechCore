@@ -14,6 +14,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.MeshView;
@@ -37,19 +39,52 @@ public class STLOutputConverter implements MeshFileOutputConverter
     }
 
     @Override
-    public void outputFile(Project project, String printJobUUID)
+    public List<String> outputFile(Project project, String printJobUUID, boolean outputAsSingleFile)
     {
-        outputFile(project, printJobUUID, ApplicationConfiguration.getPrintSpoolDirectory()
-                   + printJobUUID + File.separator);
+        return outputFile(project, printJobUUID, ApplicationConfiguration.getPrintSpoolDirectory()
+                   + printJobUUID + File.separator, outputAsSingleFile);
     }
 
     @Override
-    public void outputFile(Project project, String printJobUUID, String printJobDirectory)
+    public List<String> outputFile(Project project, String printJobUUID, String printJobDirectory,
+        boolean outputAsSingleFile)
     {
-        String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-            + ApplicationConfiguration.stlTempFileExtension;
+        List<String> createdFiles = new ArrayList<>();
 
+        if (outputAsSingleFile)
+        {
+            List<ModelContainer> modelContainersToOutput = project.getLoadedModels();
+
+            String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+                + ApplicationConfiguration.stlTempFileExtension;
+
+            createdFiles.add(tempModelFilenameWithPath);
+
+            outputModelContainersInSingleFile(tempModelFilenameWithPath, modelContainersToOutput);
+        } else
+        {
+            for (int i = 0; i < project.getLoadedModels().size(); i++)
+            {
+                List<ModelContainer> modelContainersToOutput = new ArrayList<>();
+                modelContainersToOutput.add(project.getLoadedModels().get(i));
+
+                String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+                    + "-" + i + ApplicationConfiguration.stlTempFileExtension;
+
+                createdFiles.add(tempModelFilenameWithPath);
+
+                outputModelContainersInSingleFile(tempModelFilenameWithPath, modelContainersToOutput);
+            }
+        }
+        
+        return createdFiles;
+    }
+
+    private void outputModelContainersInSingleFile(final String tempModelFilenameWithPath,
+        List<ModelContainer> modelContainersToOutput)
+    {
         File fFile = new File(tempModelFilenameWithPath);
+
         final short blankSpace = (short) 0;
 
         try
@@ -61,7 +96,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 int totalNumberOfFacets = 0;
                 ByteBuffer headerByteBuffer = null;
 
-                for (ModelContainer modelContainer : project.getLoadedModels())
+                for (ModelContainer modelContainer : modelContainersToOutput)
                 {
                     MeshView meshview = modelContainer.getMeshView();
                     TriangleMesh triangles = (TriangleMesh) meshview.getMesh();
@@ -99,7 +134,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 //  3 floats for facet normals
                 //  3 x 3 floats for vertices (x,y,z * 3)
                 //  2 byte spacer
-                for (ModelContainer modelContainer : project.getLoadedModels())
+                for (ModelContainer modelContainer : modelContainersToOutput)
                 {
                     MeshView meshview = modelContainer.getMeshView();
                     TriangleMesh triangles = (TriangleMesh) meshview.getMesh();
@@ -158,5 +193,6 @@ public class STLOutputConverter implements MeshFileOutputConverter
         {
             steno.error("Error opening STL output file " + fFile + " :" + ex.toString());
         }
+
     }
 }

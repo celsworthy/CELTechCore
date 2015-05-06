@@ -325,7 +325,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
             .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
             .or(printEngine.sendingDataToPrinterProperty())
-            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE)));
+            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE))
+            .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_NOZZLE))
+            .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_BED)));
 
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
@@ -987,7 +989,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                        blockUntilFinished, cancellable);
     }
 
-        @Override
+    @Override
+    public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("eject_stuck_material", PrinterStatus.EJECTING_STUCK_MATERIAL,
+                                                       PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }
+
+    @Override
     public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macroName,
@@ -995,7 +1005,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                        PrinterStatus.IDLE,
                                                        true, cancellable);
     }
-
 
     private void executeMacro(String macroName) throws PrinterException
     {
@@ -1810,7 +1819,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error whilst sending preheat commands");
         }
 
-        
         printEngine.printProject(project, printQuality, settings);
     }
 

@@ -20,7 +20,7 @@ public enum PrinterStatus
     //Macros
     RUNNING_TEST("printerStatus.runningTest"),
     HOMING("printerStatus.macro.homing"),
-    EJECT_STUCK_MATERIAL("printerStatus.macro.ejectStuckMaterial"),
+    EJECTING_STUCK_MATERIAL("printerStatus.macro.ejectStuckMaterial"),
     LEVELLING_GANTRY("printerStatus.macro.levellingGantry"),
     LEVELLING_Y("printerStatus.macro.levellingY"),
     //

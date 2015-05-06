@@ -56,6 +56,8 @@ public class PrinterMetaStatus implements PrinterListChangesListener
     private final DoubleProperty currentStatusValueTarget = new SimpleDoubleProperty(0);
     private final BooleanProperty targetValueValidProperty = new SimpleBooleanProperty(false);
 
+    private final int temperatureBoxForHeatingMode = 8;
+
     public PrinterMetaStatus(Printer printer)
     {
         this.printer = printer;
@@ -80,6 +82,28 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         {
             for (NozzleHeater heater : attachedHead.getNozzleHeaters())
             {
+                switch (heater.heaterMode.get())
+                {
+                    case FIRST_LAYER:
+                        if (Math.abs(heater.nozzleFirstLayerTargetTemperature.get()
+                            - heater.nozzleTemperature.get())
+                            > temperatureBoxForHeatingMode)
+                        {
+                            tempStatus = PrinterStatus.HEATING_NOZZLE;
+                        }
+                        break;
+                    case NORMAL:
+                        if (Math.abs(heater.nozzleTargetTemperature.get()
+                            - heater.nozzleTemperature.get())
+                            > temperatureBoxForHeatingMode)
+                        {
+                            tempStatus = PrinterStatus.HEATING_NOZZLE;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
                 if (heater.heaterMode.get() != HeaterMode.OFF)
                 {
                     tempStatus = PrinterStatus.HEATING_NOZZLE;
@@ -90,9 +114,26 @@ public class PrinterMetaStatus implements PrinterListChangesListener
 
         if (tempStatus == null)
         {
-            if (printer.getPrinterAncillarySystems().bedHeaterMode.get() != HeaterMode.OFF)
+            switch (printer.getPrinterAncillarySystems().bedHeaterMode.get())
             {
-                tempStatus = PrinterStatus.HEATING_BED;
+                case FIRST_LAYER:
+                    if (Math.abs(printer.getPrinterAncillarySystems().bedTemperature.get()
+                        - printer.getPrinterAncillarySystems().bedFirstLayerTargetTemperature.get())
+                        > temperatureBoxForHeatingMode)
+                    {
+                        tempStatus = PrinterStatus.HEATING_BED;
+                    }
+                    break;
+                case NORMAL:
+                    if (Math.abs(printer.getPrinterAncillarySystems().bedTemperature.get()
+                        - printer.getPrinterAncillarySystems().bedTargetTemperature.get())
+                        > temperatureBoxForHeatingMode)
+                    {
+                        tempStatus = PrinterStatus.HEATING_BED;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -228,10 +269,12 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         switch (printer.getPrinterAncillarySystems().bedHeaterMode.get())
         {
             case NORMAL:
-                currentStatusValueTarget.bind(printer.getPrinterAncillarySystems().bedTargetTemperature);
+                currentStatusValueTarget.bind(
+                    printer.getPrinterAncillarySystems().bedTargetTemperature);
                 break;
             case FIRST_LAYER:
-                currentStatusValueTarget.bind(printer.getPrinterAncillarySystems().bedFirstLayerTargetTemperature);
+                currentStatusValueTarget.bind(
+                    printer.getPrinterAncillarySystems().bedFirstLayerTargetTemperature);
                 break;
         }
         currentStatusValue.bind(printer.getPrinterAncillarySystems().bedTemperature);

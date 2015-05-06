@@ -66,9 +66,9 @@ public class MaintenancePanelController implements Initializable
 
     @FXML
     private Button PurgeMaterialButton;
-    
+
     @FXML
-    private Button PurgeMaterialButton1;    
+    private Button PurgeMaterialButton1;
 
     @FXML
     private Button loadFirmwareGCodeMacroButton;
@@ -77,7 +77,7 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton T1CleanButton;
 
     @FXML
-    private GCodeMacroButton EjectStuckMaterialButton;
+    private Button EjectStuckMaterialButton;
 
     @FXML
     private GCodeMacroButton SpeedTestButton;
@@ -99,6 +99,21 @@ public class MaintenancePanelController implements Initializable
 
     @FXML
     private GCodeMacroButton ZTestButton;
+
+    @FXML
+    void ejectStuckMaterial(ActionEvent event)
+    {
+        if (connectedPrinter != null)
+        {
+            try
+            {
+                connectedPrinter.ejectStuckMaterial(false, null);
+            } catch (PrinterException ex)
+            {
+                steno.info("Error attempting to run eject stuck material");
+            }
+        }
+    }
 
     @FXML
     void macroButtonPress(ActionEvent event)
@@ -206,12 +221,12 @@ public class MaintenancePanelController implements Initializable
     {
         DisplayManager.getInstance().getPurgeInsetPanelController().purge(connectedPrinter);
     }
-    
+
     @FXML
     void purge2(ActionEvent event)
     {
         DisplayManager.getInstance().getPurgeInsetPanelController2().purge(connectedPrinter);
-    }    
+    }
 
     /**
      * Initializes the controller class.
