@@ -4,8 +4,10 @@ import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
@@ -77,10 +79,10 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class PrintEngine implements ControllableService
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrintEngine.class.getName());
-
+    
     private Printer associatedPrinter = null;
     private AbstractSlicerService slicerService;
     private final PostProcessorService gcodePostProcessorService = new PostProcessorService();
@@ -104,7 +106,7 @@ public class PrintEngine implements ControllableService
     private EventHandler<WorkerStateEvent> failedPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> succeededPrintEventHandler = null;
     private EventHandler<WorkerStateEvent> scheduledPrintEventHandler = null;
-
+    
     private final StringProperty printProgressTitle = new SimpleStringProperty();
     private final StringProperty printProgressMessage = new SimpleStringProperty();
     private final BooleanProperty dialogRequired = new SimpleBooleanProperty(
@@ -123,9 +125,9 @@ public class PrintEngine implements ControllableService
      */
     private ChangeListener<Number> printLineNumberListener = null;
     private ChangeListener<String> printJobIDListener = null;
-
+    
     private final Map<String, Project> printJobsAgainstProjects = new HashMap<>();
-
+    
     private boolean consideringPrintRequest = false;
     ETCCalculator etcCalculator;
     /**
@@ -145,18 +147,18 @@ public class PrintEngine implements ControllableService
      * The movie maker task
      */
     private MovieMakerTask movieMakerTask = null;
-
+    
     public PrintEngine(Printer associatedPrinter)
     {
         this(associatedPrinter, new SlicerService());
     }
-
+    
     public PrintEngine(Printer associatedPrinter,
         AbstractSlicerService slicerService)
     {
         this.associatedPrinter = associatedPrinter;
         this.slicerService = slicerService;
-
+        
         cancelSliceEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been cancelled");
@@ -168,7 +170,7 @@ public class PrintEngine implements ControllableService
                 steno.error("Couldn't abort on slice cancel");
             }
         };
-
+        
         failedSliceEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has failed");
@@ -181,11 +183,11 @@ public class PrintEngine implements ControllableService
                 steno.error("Couldn't abort on slice fail");
             }
         };
-
+        
         succeededSliceEventHandler = (WorkerStateEvent t) ->
         {
             SliceResult result = (SliceResult) (t.getSource().getValue());
-
+            
             if (result.isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
@@ -196,9 +198,9 @@ public class PrintEngine implements ControllableService
                 gcodePostProcessorService.setPrinterToUse(
                     result.getPrinterToUse());
                 gcodePostProcessorService.start();
-
+                
                 Lookup.getSystemNotificationHandler().showSliceSuccessfulNotification();
-
+                
                 associatedPrinter.setPrinterStatus(PrinterStatus.POST_PROCESSING);
             } else
             {
@@ -212,7 +214,7 @@ public class PrintEngine implements ControllableService
                 }
             }
         };
-
+        
         cancelGCodePostProcessEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been cancelled");
@@ -224,7 +226,7 @@ public class PrintEngine implements ControllableService
                 steno.error("Couldn't abort on post process cancel");
             }
         };
-
+        
         failedGCodePostProcessEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has failed");
@@ -237,36 +239,36 @@ public class PrintEngine implements ControllableService
                 steno.error("Couldn't abort on post process fail");
             }
         };
-
+        
         succeededGCodePostProcessEventHandler = (WorkerStateEvent t) ->
         {
             GCodePostProcessingResult result = (GCodePostProcessingResult) (t.getSource().
                 getValue());
-
+            
             if (result.getRoboxiserResult().isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
                 String jobUUID = result.getPrintJobUUID();
-
+                
                 Project project = printJobsAgainstProjects.get(jobUUID);
                 project.addPrintJobID(jobUUID);
-
+                
                 PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
                     getPrintJobStatistics();
-
+                
                 makeETCCalculator(printJobStatistics, associatedPrinter);
-
+                
                 gcodePrintService.reset();
                 gcodePrintService.setCurrentPrintJobID(jobUUID);
                 gcodePrintService.setStartFromSequenceNumber(0);
                 gcodePrintService.setModelFileToPrint(result.getOutputFilename());
                 gcodePrintService.setPrinterToUse(result.getPrinterToUse());
                 gcodePrintService.start();
-
+                
                 printJobStartTime.set(new Date());
-
+                
                 Lookup.getSystemNotificationHandler().showGCodePostProcessSuccessfulNotification();
-
+                
                 associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
             } else
             {
@@ -278,16 +280,16 @@ public class PrintEngine implements ControllableService
                 {
                     steno.error("Couldn't abort on post process fail");
                 }
-
+                
             }
         };
-
+        
         cancelPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been cancelled");
             Lookup.getSystemNotificationHandler().showPrintJobCancelledNotification();
         };
-
+        
         failedPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.error(t.getSource().getTitle() + " has failed");
@@ -300,7 +302,7 @@ public class PrintEngine implements ControllableService
                 steno.error("Couldn't abort on print job fail");
             }
         };
-
+        
         succeededPrintEventHandler = (WorkerStateEvent t) ->
         {
             GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
@@ -346,12 +348,12 @@ public class PrintEngine implements ControllableService
             }
             sendingDataToPrinter.set(false);
         };
-
+        
         printJobIDListener = (ObservableValue<? extends String> ov, String oldValue, String newValue) ->
         {
             detectAlreadyPrinting();
         };
-
+        
         scheduledPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been scheduled");
@@ -361,7 +363,7 @@ public class PrintEngine implements ControllableService
                 Lookup.getSystemNotificationHandler().showPrintTransferInitiatedNotification();
             }
         };
-
+        
         printLineNumberListener = new ChangeListener<Number>()
         {
             @Override
@@ -393,7 +395,7 @@ public class PrintEngine implements ControllableService
                         break;
                 }
             }
-
+            
             private void updateETCUsingLineNumber(Number newValue)
             {
                 if (linesInPrintingFile.get() > 0)
@@ -404,29 +406,29 @@ public class PrintEngine implements ControllableService
                 }
             }
         };
-
+        
         slicerService.setOnCancelled(cancelSliceEventHandler);
-
+        
         slicerService.setOnFailed(failedSliceEventHandler);
-
+        
         slicerService.setOnSucceeded(succeededSliceEventHandler);
-
+        
         gcodePostProcessorService.setOnCancelled(
             cancelGCodePostProcessEventHandler);
-
+        
         gcodePostProcessorService.setOnFailed(failedGCodePostProcessEventHandler);
-
+        
         gcodePostProcessorService.setOnSucceeded(
             succeededGCodePostProcessEventHandler);
-
+        
         gcodePrintService.setOnScheduled(scheduledPrintEventHandler);
-
+        
         gcodePrintService.setOnCancelled(cancelPrintEventHandler);
-
+        
         gcodePrintService.setOnFailed(failedPrintEventHandler);
-
+        
         gcodePrintService.setOnSucceeded(succeededPrintEventHandler);
-
+        
         associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
     }
@@ -444,14 +446,14 @@ public class PrintEngine implements ControllableService
         List<Integer> layerNumberToLineNumber = printJobStatistics.getLayerNumberToLineNumber();
         etcCalculator = new ETCCalculator(associatedPrinter,
                                           layerNumberToPredictedDuration, layerNumberToLineNumber);
-
+        
         progressNumLayers.set(layerNumberToLineNumber.size());
         primaryProgressPercent.unbind();
         primaryProgressPercent.set(0);
         progressETC.set(etcCalculator.getETCPredicted(0));
         etcAvailable.set(true);
     }
-
+    
     private void updateETCUsingETCCalculator(Number newValue)
     {
         int lineNumber = newValue.intValue();
@@ -459,7 +461,7 @@ public class PrintEngine implements ControllableService
         progressETC.set(etcCalculator.getETCPredicted(lineNumber));
         progressCurrentLayer.set(etcCalculator.getCompletedLayerNumberForLineNumber(lineNumber));
     }
-
+    
     public void makeETCCalculatorForJobOfUUID(String printJobID)
     {
         PrintJob printJob = PrintJob.readJobFromDirectory(printJobID);
@@ -495,11 +497,11 @@ public class PrintEngine implements ControllableService
     {
         boolean acceptedPrintRequest = false;
         etcAvailable.set(false);
-
+        
         if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
         {
             boolean printFromScratchRequired = false;
-
+            
             if (project.getLastPrintJobID() != null)
             {
                 String jobUUID = project.getLastPrintJobID();
@@ -530,7 +532,7 @@ public class PrintEngine implements ControllableService
                                 + " not found on printer or disk - going ahead with print from scratch");
                         }
                     }
-
+                    
                     try
                     {
                         makeETCCalculator(printJob.getStatistics(), associatedPrinter);
@@ -548,7 +550,7 @@ public class PrintEngine implements ControllableService
             {
                 printFromScratchRequired = true;
             }
-
+            
             if (printFromScratchRequired)
             {
                 acceptedPrintRequest = printFromScratch(printQuality, settings,
@@ -591,13 +593,15 @@ public class PrintEngine implements ControllableService
 //            movieThread.setName("Movie Maker - " + project.getUUID());
 //            movieThread.start();
         }
-
+        
         return acceptedPrintRequest;
     }
-
+    
     private boolean printFromScratch(PrintQualityEnumeration printQuality,
-        SlicerParametersFile settings, Project project, boolean acceptedPrintRequest)
+        final SlicerParametersFile settings, Project project, boolean acceptedPrintRequest)
     {
+        SlicerParametersFile settingsToUse = settings.clone();
+
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
         String printJobDirectoryName = ApplicationConfiguration.
@@ -619,7 +623,7 @@ public class PrintEngine implements ControllableService
                 FileUtils.deleteQuietly(filesOnDisk[i]);
             }
         }
-
+        
         if (project.getProjectMode() == ProjectMode.MESH)
         {
             //Write out the slicer config
@@ -631,30 +635,44 @@ public class PrintEngine implements ControllableService
             {
                 slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
             }
-
+            
             SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
                 slicerTypeToUse);
 
+            //TODO DMH and/or material-dependent profiles
+            // This is a hack to force the fan speed to 100% when using PLA - it only looks at the first reel...
+            if (associatedPrinter.reelsProperty().containsKey(0))
+            {
+                if (associatedPrinter.reelsProperty().get(0).material.get() == MaterialType.PLA
+                    && SlicerParametersContainer.applicationProfileListContainsProfile(settingsToUse.getProfileName()))
+                {
+                    settingsToUse.setEnableCooling(true);
+                    settingsToUse.setMinFanSpeed_percent(100);
+                    settingsToUse.setMaxFanSpeed_percent(100);
+                }
+            }
+            // End of hack
+            
             //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
             Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
             configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()
                 + ApplicationConfiguration.xPrintOffset),
                                         (float) (centreOfPrintedObject.getZ()
                                         + ApplicationConfiguration.yPrintOffset));
-            configWriter.generateConfigForSlicer(settings,
+            configWriter.generateConfigForSlicer(settingsToUse,
                                                  printJobDirectoryName
                                                  + File.separator
                                                  + printUUID
                                                  + ApplicationConfiguration.printProfileFileExtension);
-
+            
             associatedPrinter.setPrinterStatus(PrinterStatus.SLICING);
             slicerService.reset();
             slicerService.setProject(project);
-            slicerService.setSettings(settings);
+            slicerService.setSettings(settingsToUse);
             slicerService.setPrintJobUUID(printUUID);
             slicerService.setPrinterToUse(associatedPrinter);
             slicerService.start();
-
+            
             printJobsAgainstProjects.put(printUUID, project);
 
             // Do we need to slice?
@@ -672,7 +690,7 @@ public class PrintEngine implements ControllableService
                 Files.copy(fileToCopy.toPath(), printjobFile.toPath(),
                            StandardCopyOption.REPLACE_EXISTING);
                 associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
-
+                
                 gcodePrintService.reset();
                 gcodePrintService.setCurrentPrintJobID(printUUID);
                 gcodePrintService.setStartFromSequenceNumber(0);
@@ -689,7 +707,7 @@ public class PrintEngine implements ControllableService
         }
         return acceptedPrintRequest;
     }
-
+    
     private boolean reprintFileFromDisk(PrintJob printJob, int startFromLineNumber)
     {
         String gCodeFileName = printJob.getRoboxisedFileLocation();
@@ -713,19 +731,19 @@ public class PrintEngine implements ControllableService
         acceptedPrintRequest = true;
         return acceptedPrintRequest;
     }
-
+    
     private boolean reprintFileFromDisk(PrintJob printJob)
     {
         return reprintFileFromDisk(printJob, 0);
     }
-
+    
     private boolean reprintDirectFromPrinter(PrintJob printJob) throws RoboxCommsException
     {
         boolean acceptedPrintRequest;
         //Reprint directly from printer
         steno.info("Printing job " + printJob.getJobUUID() + " from printer store");
         Lookup.getSystemNotificationHandler().showReprintStartedNotification();
-
+        
         if (printJob.roboxisedFileExists())
         {
             try
@@ -741,7 +759,7 @@ public class PrintEngine implements ControllableService
         acceptedPrintRequest = true;
         return acceptedPrintRequest;
     }
-
+    
     private void setPrintInProgress(boolean value)
     {
         printInProgress.set(value);
@@ -755,22 +773,22 @@ public class PrintEngine implements ControllableService
     {
         return printInProgress;
     }
-
+    
     private void setPrintProgressMessage(String value)
     {
         printProgressMessage.set(value);
     }
-
+    
     private void setPrintProgressTitle(String value)
     {
         printProgressTitle.set(value);
     }
-
+    
     private void setPrimaryProgressPercent(double value)
     {
         primaryProgressPercent.set(value);
     }
-
+    
     private void setSecondaryProgressPercent(double value)
     {
         secondaryProgressPercent.set(value);
@@ -866,27 +884,27 @@ public class PrintEngine implements ControllableService
 
         //Create the print job directory
         String printUUID = createPrintJobDirectory();
-
+        
         tidyPrintSpoolDirectory();
-
+        
         String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory()
             + printUUID + File.separator + printUUID
             + ApplicationConfiguration.gcodeTempFileExtension;
-
+        
         if (associatedPrinter.macroTypeProperty().isNotNull().get()
             && associatedPrinter.macroTypeProperty().get() == MacroType.GCODE_PRINT)
         {
             associatedPrinter.setPrinterStatus(PrinterStatus.SENDING_TO_PRINTER);
         }
-
+        
         File printjobFile = new File(printjobFilename);
         FileReader reader = null;
-
+        
         try
         {
             reader = new FileReader(filename);
             Scanner scanner = new Scanner(reader);
-
+            
             while (scanner.hasNext())
             {
                 String line = scanner.nextLine();
@@ -915,7 +933,7 @@ public class PrintEngine implements ControllableService
                 steno.error("Failed to create GCode print job");
             }
         }
-
+        
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
@@ -928,12 +946,12 @@ public class PrintEngine implements ControllableService
             gcodePrintService.start();
             consideringPrintRequest = false;
         });
-
+        
         acceptedPrintRequest = true;
-
+        
         return acceptedPrintRequest;
     }
-
+    
     private void tidyPrintSpoolDirectory()
     {
         //Erase old print job directories
@@ -972,17 +990,17 @@ public class PrintEngine implements ControllableService
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
-
+        
         String printUUID = createPrintJobDirectory();
-
+        
         tidyPrintSpoolDirectory();
-
+        
         String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory()
             + printUUID + File.separator + printUUID
             + ApplicationConfiguration.gcodeTempFileExtension;
-
+        
         File printjobFile = new File(printjobFilename);
-
+        
         try
         {
             ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
@@ -997,7 +1015,7 @@ public class PrintEngine implements ControllableService
         {
             throw new MacroPrintException("Error whilst generating macro - " + ex.getMessage());
         }
-
+        
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
@@ -1012,12 +1030,12 @@ public class PrintEngine implements ControllableService
             gcodePrintService.start();
             consideringPrintRequest = false;
         });
-
+        
         acceptedPrintRequest = true;
-
+        
         return acceptedPrintRequest;
     }
-
+    
     private String createPrintJobDirectory()
     {
         //Create the print job directory
@@ -1045,22 +1063,22 @@ public class PrintEngine implements ControllableService
     {
         return progressETC;
     }
-
+    
     public ReadOnlyBooleanProperty etcAvailableProperty()
     {
         return etcAvailable;
     }
-
+    
     public ReadOnlyIntegerProperty progressCurrentLayerProperty()
     {
         return progressCurrentLayer;
     }
-
+    
     public ReadOnlyIntegerProperty progressNumLayersProperty()
     {
         return progressNumLayers;
     }
-
+    
     protected void goToIdle()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1084,7 +1102,7 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Idle"));
         });
     }
-
+    
     void goToSlicing()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1101,7 +1119,7 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Slicing"));
         });
     }
-
+    
     void goToPostProcessing()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1120,7 +1138,7 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.PostProcessing"));
         });
     }
-
+    
     void goToSendingToPrinter()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1138,7 +1156,7 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.SendingToPrinter"));
         });
     }
-
+    
     void goToPause()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1147,7 +1165,7 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Paused"));
         });
     }
-
+    
     void goToPrinting()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1163,7 +1181,7 @@ public class PrintEngine implements ControllableService
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
         });
     }
-
+    
     void goToExecutingMacro()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -1185,7 +1203,7 @@ public class PrintEngine implements ControllableService
      */
     protected void stopAllServices()
     {
-
+        
         Callable<Boolean> stopServices = new Callable()
         {
             @Override
@@ -1221,25 +1239,25 @@ public class PrintEngine implements ControllableService
             steno.error("Error while stopping services");
         }
     }
-
+    
     public boolean reEstablishTransfer(String printJobID, int expectedSequenceNumber)
     {
         PrintJob printJob = PrintJob.readJobFromDirectory(printJobID);
         boolean acceptedPrintRequest = false;
-
+        
         if (printJob.roboxisedFileExists())
         {
             acceptedPrintRequest = reprintFileFromDisk(printJob, expectedSequenceNumber);
             Lookup.getSystemNotificationHandler().removePrintTransferFailedNotification();
         }
-
+        
         return acceptedPrintRequest;
     }
-
+    
     private void detectAlreadyPrinting()
     {
         boolean roboxIsPrinting = false;
-
+        
         if (associatedPrinter != null)
         {
             String printJobID = associatedPrinter.printJobIDProperty().get();
@@ -1251,7 +1269,7 @@ public class PrintEngine implements ControllableService
                     makeETCCalculatorForJobOfUUID(printJobID);
                 }
             }
-
+            
             switch (associatedPrinter.printerStatusProperty().get())
             {
                 case IDLE:
@@ -1263,7 +1281,7 @@ public class PrintEngine implements ControllableService
                         steno.info("Printer "
                             + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
                             + " is printing");
-
+                        
                         if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
                         {
                             associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
