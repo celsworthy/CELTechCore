@@ -203,4 +203,9 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void removePrintTransferFailedNotification()
     {
     }
+
+    @Override
+    public void showEjectFailedDialog(Printer printer)
+    {
+    }
 }

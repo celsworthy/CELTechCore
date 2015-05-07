@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface SystemNotificationManager
 {
 
+    public void showEjectFailedDialog(Printer printer);
+
     public enum PrinterErrorChoice {
         CONTINUE, ABORT, RETRY, OK;
     }

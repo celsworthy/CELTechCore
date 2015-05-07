@@ -217,11 +217,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final FilamentLoadedGetter filamentLoadedGetter;
 
     /**
-     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to
-     * override the detection of whether a filament is loaded or not on a given extruder.
+     * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a way to override the
+     * detection of whether a filament is loaded or not on a given extruder.
      */
     public interface FilamentLoadedGetter
     {
+
         public boolean getFilamentLoaded(StatusResponse statusResponse, int extruderNumber);
     }
 
@@ -341,6 +342,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         commandInterface.setPrinter(this);
         commandInterface.start();
+
+        registerErrorConsumerAllErrors(this);
     }
 
     // Don't call this from anywhere but Print Engine!
@@ -358,7 +361,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             lastStateBeforePause = null;
                             printEngine.goToIdle();
                             macroType.set(null);
-                            deregisterErrorConsumer(this);
                             break;
                         case REMOVING_HEAD:
                             break;
@@ -386,7 +388,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             printEngine.goToPause();
                             break;
                         case PRINTING:
-                            registerErrorConsumerAllErrors(this);
                             printEngine.goToPrinting();
                             break;
                         case EXECUTING_MACRO:
@@ -920,11 +921,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         if (mustPurgeHead.get())
         {
             throw new PurgeRequiredException("Cannot execute GCode - purge required");
-        }
-
-        if (monitorForErrors)
-        {
-            registerErrorConsumerAllErrors(this);
         }
 
         macroType.set(MacroType.GCODE_PRINT);
@@ -2785,6 +2781,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         switch (error)
         {
+            //TODO DMH
+            case E_UNLOAD_ERROR:
+            case D_UNLOAD_ERROR:
+                Lookup.getSystemNotificationHandler().showEjectFailedDialog(this);
+                break;
+
             case E_FILAMENT_SLIP:
             case D_FILAMENT_SLIP:
                 if (printerStatus.get() == PrinterStatus.PRINTING
@@ -2990,8 +2992,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Extruders
                      */
-                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 1);
-                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse, 2);
+                    boolean filament1Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
+                                                                                     1);
+                    boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
+                                                                                     2);
 
                     //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
