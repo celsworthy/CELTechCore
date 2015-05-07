@@ -111,12 +111,12 @@ public class SettingsInsetPanelController implements Initializable
 
             Lookup.getFilamentContainer().getUserFilamentList().addListener(
                 (ListChangeListener.Change<? extends Filament> c) ->
-            {
-                showPleaseCreateProfile(
-                    Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
-            });
+                {
+                    showPleaseCreateProfile(
+                        Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
+                });
             showPleaseCreateProfile(
-                    Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
+                Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -320,10 +320,6 @@ public class SettingsInsetPanelController implements Initializable
                 break;
             case CUSTOM:
                 showCustomWidgets(true);
-                if (printerSettings != null)
-                {
-                    customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
-                }
                 break;
             default:
                 break;
@@ -339,7 +335,7 @@ public class SettingsInsetPanelController implements Initializable
                 setupQualityOverrideControls(printerSettings);
             } else
             {
-                printerSettings.setSettingsName("");
+                customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
             }
         }
     }
