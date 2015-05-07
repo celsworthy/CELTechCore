@@ -47,7 +47,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ProfileDetailsController implements Initializable, ExtrasMenuInnerPanel
+public class ProfileLibraryPanelController implements Initializable, ExtrasMenuInnerPanel
 {
 
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
@@ -115,7 +115,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         ROBOX
     };
 
-    private final ObjectProperty<ProfileDetailsController.State> state = new SimpleObjectProperty<>();
+    private final ObjectProperty<ProfileLibraryPanelController.State> state = new SimpleObjectProperty<>();
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
 
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
@@ -125,8 +125,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        ProfileDetailsController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(ProfileLibraryPanelController.class.getName());
 
     @FXML
     private VBox container;
@@ -370,7 +369,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     private SlicerMappings slicerMappings;
 
-    public ProfileDetailsController()
+    public ProfileLibraryPanelController()
     {
     }
 
@@ -1404,7 +1403,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     void whenSavePressed()
     {
-        assert (state.get() != ProfileDetailsController.State.ROBOX);
+        assert (state.get() != ProfileLibraryPanelController.State.ROBOX);
         if (!validateData())
         {
             return;
@@ -1412,14 +1411,14 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         SlicerParametersFile parametersFile = getPrintProfile();
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
-        state.set(ProfileDetailsController.State.CUSTOM);
+        state.set(ProfileLibraryPanelController.State.CUSTOM);
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
             parametersFile.getProfileName()));
     }
 
     void whenNewPressed()
     {
-        state.set(ProfileDetailsController.State.NEW);
+        state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile = makeNewSlicerParametersFile();
         slicerParametersFile.setProfileName("");
         updateWidgetsFromSettingsFile(slicerParametersFile);
@@ -1427,16 +1426,16 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     void whenSaveAsPressed()
     {
-        currentProfileName = "";
+        
         isNameValid.set(false);
-        profileNameField.pseudoClassStateChanged(ERROR, true);
-        state.set(ProfileDetailsController.State.NEW);
+        state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
-            getSettingsByProfileName(
-                currentProfileName).clone();
+            getSettingsByProfileName(currentProfileName).clone();
+        
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
+        currentProfileName = "";
         profileNameField.pseudoClassStateChanged(ERROR, true);
     }
 
@@ -1472,7 +1471,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     void whenDeletePressed()
     {
-        if (state.get() != ProfileDetailsController.State.NEW)
+        if (state.get() != ProfileLibraryPanelController.State.NEW)
         {
             SlicerParametersContainer.deleteUserProfile(currentProfileName);
         }

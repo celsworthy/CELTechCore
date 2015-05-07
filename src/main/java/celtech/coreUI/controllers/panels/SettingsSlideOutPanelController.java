@@ -44,7 +44,7 @@ public class SettingsSlideOutPanelController implements Initializable, PopupComm
     private Tab profileTab;
 
     @FXML
-    private ProfileDetailsController profileDetailsController;
+    private ProfileLibraryPanelController profileDetailsController;
 
     @FXML
     private VBox profileData;

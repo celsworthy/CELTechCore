@@ -55,7 +55,7 @@ public class ExtrasMenuPanelController implements Initializable
     private HBox buttonBoxContainer;
     
     InnerPanelDetails profileDetails;
-    ProfileDetailsController profileDetailsController;
+    ProfileLibraryPanelController profileDetailsController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -88,7 +88,7 @@ public class ExtrasMenuPanelController implements Initializable
             ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml",
             new FilamentLibraryPanelController());
         
-        profileDetailsController = new ProfileDetailsController();
+        profileDetailsController = new ProfileLibraryPanelController();
         profileDetails = loadInnerPanel(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetailsCopy.fxml",
             profileDetailsController);        
