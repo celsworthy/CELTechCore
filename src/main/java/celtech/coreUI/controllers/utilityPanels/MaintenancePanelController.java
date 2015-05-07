@@ -21,7 +21,6 @@ import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
@@ -66,9 +65,6 @@ public class MaintenancePanelController implements Initializable
 
     @FXML
     private Button PurgeMaterialButton;
-
-    @FXML
-    private Button PurgeMaterialButton1;
 
     @FXML
     private Button loadFirmwareGCodeMacroButton;
@@ -222,12 +218,6 @@ public class MaintenancePanelController implements Initializable
         DisplayManager.getInstance().getPurgeInsetPanelController().purge(connectedPrinter);
     }
 
-    @FXML
-    void purge2(ActionEvent event)
-    {
-        DisplayManager.getInstance().getPurgeInsetPanelController2().purge(connectedPrinter);
-    }
-
     /**
      * Initializes the controller class.
      *
@@ -237,6 +227,7 @@ public class MaintenancePanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        try {
         Platform.runLater(new Runnable()
         {
             @Override
@@ -249,7 +240,6 @@ public class MaintenancePanelController implements Initializable
 
         YTestButton.disableProperty().bind(printingdisabled);
         PurgeMaterialButton.disableProperty().bind(noFilamentOrPrintingdisabled);
-        PurgeMaterialButton1.disableProperty().bind(noFilamentOrPrintingdisabled);
         T1CleanButton.disableProperty().bind(noFilamentOrPrintingdisabled);
         EjectStuckMaterialButton.disableProperty().bind(noFilamentOrPrintingdisabled);
         SpeedTestButton.disableProperty().bind(printingdisabled);
@@ -354,5 +344,6 @@ public class MaintenancePanelController implements Initializable
                                 filamentLoadedProperty().not())));
                 }
             });
-    }
+    } catch (Exception ex) {ex.printStackTrace();}
+        }
 }

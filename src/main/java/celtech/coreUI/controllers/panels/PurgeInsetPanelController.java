@@ -4,29 +4,39 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
-import celtech.services.purge.PurgeState;
+import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.PurgeState;
+import static celtech.printerControl.model.PurgeState.CONFIRM_TEMPERATURE;
+import static celtech.printerControl.model.PurgeState.FAILED;
+import static celtech.printerControl.model.PurgeState.FINISHED;
+import static celtech.printerControl.model.PurgeState.HEATING;
+import static celtech.printerControl.model.PurgeState.IDLE;
+import static celtech.printerControl.model.PurgeState.INITIALISING;
+import static celtech.printerControl.model.PurgeState.RUNNING_PURGE;
+import celtech.printerControl.model.PurgeStateTransitionManager;
+import celtech.printerControl.model.StateTransition;
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.StateTransitionManager.GUIName;
 import celtech.services.slicer.PrintQualityEnumeration;
-import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
-import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
@@ -36,30 +46,25 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class PurgeInsetPanelController implements Initializable, PurgeStateListener
+public class PurgeInsetPanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        PurgeInsetPanelController.class.getName());
-
-    private PurgeHelper purgeHelper;
+    private final Stenographer steno = StenographerFactory.getStenographer(PurgeInsetPanelController.class.getName());
 
     private Project project = null;
-    private Printer printerToUse = null;
+    private Printer printer = null;
     private double printPercent;
-    private Bounds diagramBounds;
-    private Pane diagramNode;
-    private ResourceBundle resources;
+    private DiagramHandler diagramHandler;
 
-    private final ChangeListener<Number> purgeTempEntryListener = new ChangeListener<Number>()
-    {
-        @Override
-        public void changed(
-            ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+    PurgeStateTransitionManager transitionManager;
+
+    Map<StateTransitionManager.GUIName, Region> namesToButtons = new HashMap<>();
+
+    private final ChangeListener<Number> purgeTempEntryListener
+        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            purgeHelper.setPurgeTemperature(newValue.intValue());
-        }
-    };
+            transitionManager.setPurgeTemperature(newValue.intValue());
+        };
 
     @FXML
     private VBox diagramContainer;
@@ -75,6 +80,9 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
     @FXML
     private Text currentMaterialTemperature;
+    
+    @FXML
+    private Text resettingPrinter;    
 
     @FXML
     private GridPane purgeDetailsGrid;
@@ -103,25 +111,25 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     @FXML
     void start(ActionEvent event)
     {
-        purgeHelper.setState(PurgeState.INITIALISING);
+        transitionManager.followTransition(GUIName.START);
     }
 
     @FXML
     void proceed(ActionEvent event)
     {
-        purgeHelper.setState(PurgeState.HEATING);
+        transitionManager.followTransition(GUIName.NEXT);
     }
 
     @FXML
     void cancel(ActionEvent event)
     {
-        cancelPurgeAction();
+        transitionManager.cancel();
     }
 
     @FXML
     void repeat(ActionEvent event)
     {
-        repeatPurgeAction();
+        transitionManager.followTransition(GUIName.RETRY);
     }
 
     @FXML
@@ -133,12 +141,10 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     @FXML
     void closeWindow(ActionEvent event)
     {
-        boolean purgeCompletedOK = (purgeHelper.getState() == PurgeState.FINISHED);
 
-        purgeHelper.setState(PurgeState.IDLE);
         ApplicationStatus.getInstance().returnToLastMode();
 
-        if (project != null && purgeCompletedOK)
+        if (project != null)
         {
             Lookup.getSystemNotificationHandler().askUserToClearBed();
 
@@ -148,24 +154,10 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         }
     }
 
-    /**
-     *
-     */
-    public void cancelPurgeAction()
-    {
-        purgeHelper.cancelPurgeAction();
-        closeWindow(null);
-    }
-
-    public void repeatPurgeAction()
-    {
-        purgeHelper.repeatPurgeAction();
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        this.resources = resources;
+        populateNamesToButtons();
 
         purgeProgressBar.setTargetLegend("");
         purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
@@ -173,111 +165,96 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
 
         startPurgeButton.installTag();
         proceedButton.installTag();
-
-        loadDiagram();
-        resizeDiagram();
-        addDiagramMoveScaleListeners();
-
+        
+        diagramHandler = new DiagramHandler(diagramContainer, resources);
+        diagramHandler.initialise();
     }
 
-    @Override
+    private void populateNamesToButtons()
+    {
+        namesToButtons.put(StateTransitionManager.GUIName.NEXT, proceedButton);
+        namesToButtons.put(StateTransitionManager.GUIName.RETRY, repeatButton);
+        namesToButtons.put(StateTransitionManager.GUIName.START, startPurgeButton);
+        namesToButtons.put(StateTransitionManager.GUIName.BACK, backButton);
+        namesToButtons.put(StateTransitionManager.GUIName.COMPLETE, okButton);
+    }
+
+    /**
+     * According to the available transitions, show the appropriate buttons.
+     */
+    private void showAppropriateButtons(PurgeState state)
+    {
+        if (state.showCancelButton())
+        {
+            cancelPurgeButton.setVisible(true);
+        }
+        for (StateTransition<PurgeState> allowedTransition : transitionManager.getTransitions())
+        {
+            if (namesToButtons.containsKey(allowedTransition.getGUIName()))
+            {
+                namesToButtons.get(allowedTransition.getGUIName()).setVisible(true);
+            }
+        }
+    }
+
+    private void hideAllButtons()
+    {
+        cancelPurgeButton.setVisible(false);
+        proceedButton.setVisible(false);
+        repeatButton.setVisible(false);
+        startPurgeButton.setVisible(false);
+        backButton.setVisible(false);
+        purgeProgressBar.setVisible(false);
+        okButton.setVisible(false);
+        purgeDetailsGrid.setVisible(false);
+        diagramContainer.setVisible(false);
+    }
+
     public void setState(PurgeState state)
     {
+        steno.debug("go to state " + state);
+        steno.debug("printer status is " + printer.printerStatusProperty().get());
+        hideAllButtons();
+        showAppropriateButtons(state);
+        resettingPrinter.setVisible(false);
+        purgeStatus.setVisible(true);
+        purgeStatus.setText(state.getStepTitle());
+        purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
         switch (state)
         {
             case IDLE:
-                startPurgeButton.setVisible(true);
-                backButton.setVisible(false);
-                cancelPurgeButton.setVisible(true);
-                purgeDetailsGrid.setVisible(false);
-                purgeProgressBar.setVisible(false);
-                proceedButton.setVisible(false);
-                repeatButton.setVisible(false);
-                okButton.setVisible(false);
-                purgeStatus.setText(state.getStepTitle());
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-                diagramContainer.setVisible(false);
                 break;
             case INITIALISING:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(false);
-                cancelPurgeButton.setVisible(true);
-                proceedButton.setVisible(false);
-                purgeProgressBar.setVisible(false);
-                repeatButton.setVisible(false);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
-                purgeStatus.setText(state.getStepTitle());
-                diagramContainer.setVisible(false);
                 break;
             case CONFIRM_TEMPERATURE:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(false);
-                cancelPurgeButton.setVisible(true);
-                proceedButton.setVisible(true);
-                purgeProgressBar.setVisible(false);
-                repeatButton.setVisible(false);
-                okButton.setVisible(false);
                 lastMaterialTemperature.setText(String.valueOf(
-                    purgeHelper.getLastMaterialTemperature()));
+                    transitionManager.getLastMaterialTemperature()));
                 currentMaterialTemperature.setText(String.valueOf(
-                    purgeHelper.getCurrentMaterialTemperature()));
-                purgeTemperature.setText(String.valueOf(purgeHelper.getPurgeTemperature()));
+                    transitionManager.getCurrentMaterialTemperature()));
+                purgeTemperature.setText(String.valueOf(transitionManager.getPurgeTemperature()));
                 purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
-                purgeStatus.setText(state.getStepTitle());
-                diagramContainer.setVisible(false);
                 break;
             case HEATING:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(false);
-                cancelPurgeButton.setVisible(true);
-                proceedButton.setVisible(false);
-                repeatButton.setVisible(false);
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
-                purgeStatus.setText(state.getStepTitle());
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-                diagramContainer.setVisible(false);
                 break;
             case RUNNING_PURGE:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(false);
-                cancelPurgeButton.setVisible(true);
-                proceedButton.setVisible(false);
-                repeatButton.setVisible(false);
                 purgeProgressBar.setVisible(true);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
-                purgeStatus.setText(state.getStepTitle());
                 diagramContainer.setVisible(true);
                 break;
             case FINISHED:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(false);
-                cancelPurgeButton.setVisible(false);
-                proceedButton.setVisible(false);
-                repeatButton.setVisible(true);
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(true);
-                purgeDetailsGrid.setVisible(false);
-                purgeStatus.setText(state.getStepTitle());
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
                 diagramContainer.setVisible(true);
                 break;
+            case DONE:
+                closeWindow(null);
+                break;
             case FAILED:
-                startPurgeButton.setVisible(false);
-                backButton.setVisible(true);
-                cancelPurgeButton.setVisible(false);
-                proceedButton.setVisible(false);
-                repeatButton.setVisible(false);
-                purgeProgressBar.setVisible(false);
-                okButton.setVisible(false);
-                purgeDetailsGrid.setVisible(false);
-                purgeStatus.setText(state.getStepTitle());
-                purgeTemperature.intValueProperty().removeListener(purgeTempEntryListener);
-                diagramContainer.setVisible(false);
+                break;
+            case CANCELLING:
+                resettingPrinter.setVisible(true);
+                purgeStatus.setVisible(false);
+                break;
+            case CANCELLED:
+                closeWindow(null);
                 break;
         }
     }
@@ -309,130 +286,75 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
         printer.getPrintEngine().progressProperty().addListener(printPercentListener);
     }
 
-    public void purgeAndPrint(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, SlicerParametersFile settings, Printer printerToUse)
+    private void bindPrinter(Printer printer)
     {
-        this.project = project;
-        //TODO what about multiple reels etc
-        bindPrinter(printerToUse, project.getPrinterSettings().getFilament0());
-
-        ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
-    }
-
-    private void bindPrinter(Printer printerToUse, Filament purgeFilament)
-    {
-        if (this.printerToUse != null)
+        if (this.printer != null)
         {
-            removePrintProgressListeners(this.printerToUse);
+            removePrintProgressListeners(this.printer);
             startPurgeButton.getTag().removeAllConditionalText();
             proceedButton.getTag().removeAllConditionalText();
         }
-        this.printerToUse = printerToUse;
-        purgeHelper = new PurgeHelper(printerToUse, purgeFilament);
-        purgeHelper.addStateListener(this);
-        purgeHelper.setState(PurgeState.IDLE);
-        setupPrintProgressListeners(printerToUse);
+        this.printer = printer;
+        setupPrintProgressListeners(printer);
 
-        installTag(printerToUse, startPurgeButton);
-        installTag(printerToUse, proceedButton);
+        installTag(printer, startPurgeButton);
+        installTag(printer, proceedButton);
     }
 
-    private void installTag(Printer printerToUse, GraphicButtonWithLabel button)
+    private void installTag(Printer printer, GraphicButtonWithLabel button)
     {
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                           printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()));
+                                           printer.getPrinterAncillarySystems().doorOpenProperty().and(
+                                               Lookup.getUserPreferences().safetyFeaturesOnProperty()));
         button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                           printerToUse.extrudersProperty().get(0).
+                                           printer.extrudersProperty().get(0).
                                            filamentLoadedProperty().not());
 
-        button.disableProperty().bind(printerToUse.canPrintProperty().not()
-            .or(printerToUse.getPrinterAncillarySystems().doorOpenProperty().and(Lookup.getUserPreferences().safetyFeaturesOnProperty()))
-            .or(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().not()));
+        button.disableProperty().bind(Bindings.and(
+            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.PURGING_HEAD),
+            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE))
+            .or(printer.getPrinterAncillarySystems().doorOpenProperty().and(
+                    Lookup.getUserPreferences().safetyFeaturesOnProperty()))
+            .or(printer.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
-
-    public void purge(Printer printerToUse)
+    
+    public void purgeAndPrint(Project project, Filament filament, Printer printerToUse)
     {
-        bindPrinter(printerToUse, null);
+        this.project = project;
+        //TODO what about multiple reels etc
+        Filament purgeFilament = project.getPrinterSettings().getFilament0();
+        bindPrinter(printerToUse);
+
+        startPurge(purgeFilament);
+    }    
+
+    public void purge(Printer printer)
+    {
+        bindPrinter(printer);
+        startPurge(null);
+    }    
+
+    private void startPurge(Filament purgeFilament) {    
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
-    }
 
-    private Bounds getBoundsOfNotYetDisplayedNode(Pane loadedDiagramNode)
-    {
-        Group group = new Group(loadedDiagramNode);
-        Scene scene = new Scene(group);
-        scene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
-        group.applyCss();
-        group.layout();
-        Bounds bounds = loadedDiagramNode.getLayoutBounds();
-        return bounds;
-    }
-
-    private void addDiagramMoveScaleListeners()
-    {
-
-        diagramContainer.widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeDiagram();
-            });
-
-        diagramContainer.heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeDiagram();
-            });
-
-    }
-
-    private void loadDiagram()
-    {
-        URL fxmlFileName = getClass().getResource(
-            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge.fxml");
         try
         {
-            FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
-            diagramNode = loader.load();
-            diagramBounds = getBoundsOfNotYetDisplayedNode(diagramNode);
-            diagramContainer.getChildren().clear();
-            diagramContainer.getChildren().add(diagramNode);
-
-        } catch (IOException ex)
+            transitionManager = printer.startPurge();
+            transitionManager.setPurgeFilament(purgeFilament);
+            transitionManager.stateGUITProperty().addListener(new ChangeListener()
+            {
+                @Override
+                public void changed(ObservableValue observable, Object oldValue, Object newValue)
+                {
+                    setState((PurgeState) newValue);
+                }
+            });
+            transitionManager.start();
+            setState(PurgeState.IDLE);
+        } catch (PrinterException ex)
         {
-            ex.printStackTrace();
-            steno.error("Could not load diagram: " + fxmlFileName);
+            steno.error("Error starting purge: " + ex);
         }
     }
-
-    private void resizeDiagram()
-    {
-        double diagramWidth = diagramBounds.getWidth();
-        double diagramHeight = diagramBounds.getHeight();
-
-        double availableWidth = diagramContainer.getWidth();
-        double availableHeight = diagramContainer.getHeight();
-
-        double requiredScaleHeight = availableHeight / diagramHeight * 0.95;
-        double requiredScaleWidth = availableWidth / diagramWidth * 0.95;
-        double requiredScale = Math.min(requiredScaleHeight, requiredScaleWidth);
-//        requiredScale = Math.min(requiredScale, 1.3d);
-        steno.debug("Scale is " + requiredScale);
-        diagramNode.setScaleX(requiredScale);
-        diagramNode.setScaleY(requiredScale);
-
-        diagramNode.setPrefWidth(0);
-        diagramNode.setPrefHeight(0);
-
-        double scaledDiagramWidth = diagramWidth * requiredScale;
-
-        double xTranslate = 0;
-        double yTranslate = 0;
-//        
-        xTranslate += availableWidth / 2.0 - diagramWidth / 2.0;
-        yTranslate -= availableHeight;
-
-        diagramNode.setTranslateX(xTranslate);
-        diagramNode.setTranslateY(yTranslate);
-
-    }
-
+    
 }
