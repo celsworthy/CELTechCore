@@ -86,7 +86,9 @@ public class Lookup
      * The database of known filaments.
      */
     private static FilamentContainer filamentContainer;
-    
+
+    private static ResourceBundle defaultBundle;
+
     public static Languages getLanguages()
     {
         return languages;
@@ -99,14 +101,24 @@ public class Lookup
     {
         return applicationEnvironment;
     }
-    
-    public static FilamentContainer getFilamentContainer() {
+
+    public static FilamentContainer getFilamentContainer()
+    {
         return filamentContainer;
     }
 
     public static String i18n(String stringId)
     {
         String langString = applicationEnvironment.getLanguageBundle().getString(stringId);
+        if (langString.equals(""))
+        {
+            if (defaultBundle == null)
+            {
+                defaultBundle = ResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
+                                                         new UTF8Control());
+            }
+            langString = defaultBundle.getString(stringId);
+        }
         langString = substituteTemplates(langString);
         return langString;
     }
@@ -151,7 +163,7 @@ public class Lookup
     {
         steno.debug("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
-        
+
         StenographerFactory.changeAllLogLevels(userPreferences.getLoggingLevel());
 
         Locale appLocale;
@@ -189,7 +201,7 @@ public class Lookup
         systemNotificationHandler = new SystemNotificationManagerJavaFX();
         steno.debug("Detected locale - " + appLocale.toLanguageTag());
         printerListChangesNotifier = new PrinterListChangesNotifier(connectedPrinters);
-        
+
         filamentContainer = new FilamentContainer();
 
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();

@@ -387,7 +387,7 @@ public class PurgeInsetPanelController implements Initializable, PurgeStateListe
     private void loadDiagram()
     {
         URL fxmlFileName = getClass().getResource(
-            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge_simplified.fxml");
+            ApplicationConfiguration.fxmlDiagramsResourcePath + "purge/purge.fxml");
         try
         {
             FXMLLoader loader = new FXMLLoader(fxmlFileName, resources);
