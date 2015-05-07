@@ -15,6 +15,7 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -285,6 +286,13 @@ public class SettingsInsetPanelController implements Initializable
                 printQualityWidgetsUpdate(newValue);
             });
         printQualityWidgetsUpdate(printQuality.get());
+        
+        // just in case custom settings are changing through some other mechanism
+        printerSettings.getSettingsNameProperty().addListener(
+            (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+        {
+            customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
+        });
 
     }
 
