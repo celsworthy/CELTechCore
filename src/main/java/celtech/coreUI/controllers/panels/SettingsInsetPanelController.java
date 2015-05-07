@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
@@ -14,13 +15,11 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.print.PrintQuality;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -109,6 +108,15 @@ public class SettingsInsetPanelController implements Initializable
                         settingsInsetRoot.setVisible(false);
                     }
                 });
+
+            Lookup.getFilamentContainer().getUserFilamentList().addListener(
+                (ListChangeListener.Change<? extends Filament> c) ->
+            {
+                showPleaseCreateProfile(
+                    Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
+            });
+            showPleaseCreateProfile(
+                    Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -238,17 +246,7 @@ public class SettingsInsetPanelController implements Initializable
             {
                 printerSettings.setSettingsName("");
             }
-            hideProfileCombo(true);
-        } else
-        {
-            hideProfileCombo(false);
         }
-    }
-
-    private void hideProfileCombo(boolean hide)
-    {
-        customProfileChooser.setVisible(!hide);
-        createProfileLabel.setVisible(hide);
     }
 
     private void whenProjectChanged(Project project)
@@ -280,20 +278,29 @@ public class SettingsInsetPanelController implements Initializable
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
-        
+
         printQuality.addListener(
             (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) ->
-        {
-            printQualityUpdate(newValue);
-        });
-        
-        nonCustomProfileVBox.visibleProperty()
-                .bind(printQuality.isNotEqualTo(
-                        PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+            {
+                printQualityWidgetsUpdate(newValue);
+            });
+        printQualityWidgetsUpdate(printQuality.get());
 
     }
 
-    private void printQualityUpdate(PrintQualityEnumeration quality)
+    private void showCustomWidgets(boolean show)
+    {
+        nonCustomProfileVBox.visibleProperty().set(!show);
+        customProfileVBox.visibleProperty().set(show);
+    }
+
+    private void showPleaseCreateProfile(boolean show)
+    {
+        customProfileChooser.setVisible(!show);
+        createProfileLabel.setVisible(show);
+    }
+
+    private void printQualityWidgetsUpdate(PrintQualityEnumeration quality)
     {
         SlicerParametersFile settings = null;
 
@@ -301,19 +308,22 @@ public class SettingsInsetPanelController implements Initializable
         {
             case DRAFT:
                 settings = draftSettings;
-                customProfileVBox.setVisible(false);
+                showCustomWidgets(false);
                 break;
             case NORMAL:
                 settings = normalSettings;
-                customProfileVBox.setVisible(false);
+                showCustomWidgets(false);
                 break;
             case FINE:
                 settings = fineSettings;
-                customProfileVBox.setVisible(false);
+                showCustomWidgets(false);
                 break;
             case CUSTOM:
-                customProfileVBox.setVisible(true);
-                customProfileChooser.getSelectionModel().select(settings);
+                showCustomWidgets(true);
+                if (printerSettings != null)
+                {
+                    customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
+                }
                 break;
             default:
                 break;

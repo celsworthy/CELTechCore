@@ -25,18 +25,18 @@
                                             <children>
                                                 <Label fx:id="customSettingsLabel" minHeight="0.0" styleClass="sidePanelDivider" text="%sidePanel_settings.customButtonLabel">
                                                 </Label>
-                                    <HBox alignment="CENTER" spacing="15.0">
-                                       <children>
-                                          <StackPane>
-                                             <children>
-                                                            <ComboBox fx:id="customProfileChooser" prefWidth="270.0" promptText="%sidePanel_settings.customProfileSelectionLabel" styleClass="cmbCleanCombo">
-                                                </ComboBox>
-                                                <Label id="pleaseCreateProfile" fx:id="createProfileLabel" text="%sidePanel_settings.pleaseCreateProfile" />
-                                             </children>
-                                          </StackPane>
-                                          <Button fx:id="editPrintProfileButton" mnemonicParsing="false" onAction="#editPrintProfile" scaleY="0.9" style="-fx-background-color: light_grey;" text="..." />
-                                       </children>
-                                    </HBox>
+                                                <HBox alignment="CENTER" spacing="15.0">
+                                                    <children>
+                                                        <StackPane>
+                                                            <children>
+                                                                <ComboBox fx:id="customProfileChooser" prefWidth="270.0" promptText="%sidePanel_settings.customProfileSelectionLabel" styleClass="cmbCleanCombo">
+                                                                </ComboBox>
+                                                                <Label id="pleaseCreateProfile" fx:id="createProfileLabel" text="%sidePanel_settings.pleaseCreateProfile" />
+                                                            </children>
+                                                        </StackPane>
+                                                        <Button fx:id="editPrintProfileButton" mnemonicParsing="false" onAction="#editPrintProfile" scaleY="0.9" style="-fx-background-color: light_grey;" text="..." />
+                                                    </children>
+                                                </HBox>
                                             </children>
                                         </VBox>
                                         <VBox fx:id="nonCustomProfileVBox" fillWidth="true" spacing="5.0">
