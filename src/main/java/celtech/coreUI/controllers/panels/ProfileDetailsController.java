@@ -1,4 +1,4 @@
-package celtech.coreUI.controllers.utilityPanels;
+package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.configuration.CustomSlicerType;
@@ -382,13 +382,13 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     {
         slicerMappings = Lookup.getSlicerMappings();
 
-        canSave.bind(isDirty.and(
+        canSave.bind(isNameValid.and(isDirty.and(
             state.isEqualTo(State.NEW).
-            or(state.isEqualTo(State.CUSTOM))));
+            or(state.isEqualTo(State.CUSTOM)))));
 
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
 
-        canDelete.bind(state.isNotEqualTo(State.ROBOX));
+        canDelete.bind(state.isNotEqualTo(State.NEW).and(state.isNotEqualTo(State.ROBOX)));
 
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
 
@@ -479,9 +479,6 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
     {
         try
         {
-//            allFilaments.addAll(FilamentContainer.getUserFilamentList().sorted(
-//                (Filament o1, Filament o2)
-//                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             cmbPrintProfile.setItems(SlicerParametersContainer.getCompleteProfileList());
         } catch (NoClassDefFoundError exception)
         {
@@ -1364,8 +1361,8 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
                 getCompleteProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
-                if (!settings.getProfileName().equals(currentProfileName)
-                    && settings.getProfileName().equals(profileNameText))
+                if (!settings.getProfileName().equals(currentProfileName) && 
+                    settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
                     break;
@@ -1415,6 +1412,7 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
         SlicerParametersFile parametersFile = getPrintProfile();
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
+        state.set(ProfileDetailsController.State.CUSTOM);
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
             parametersFile.getProfileName()));
     }
@@ -1429,6 +1427,9 @@ public class ProfileDetailsController implements Initializable, ExtrasMenuInnerP
 
     void whenSaveAsPressed()
     {
+        currentProfileName = "";
+        isNameValid.set(false);
+        profileNameField.pseudoClassStateChanged(ERROR, true);
         state.set(ProfileDetailsController.State.NEW);
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
             getSettingsByProfileName(

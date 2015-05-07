@@ -7,7 +7,6 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.controllers.panels.userpreferences.Preferences;
-import celtech.coreUI.controllers.utilityPanels.ProfileDetailsController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
