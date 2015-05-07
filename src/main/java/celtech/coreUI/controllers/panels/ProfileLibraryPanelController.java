@@ -11,8 +11,6 @@ import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
-import celtech.coreUI.controllers.panels.FXMLUtilities;
 import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.util.ArrayList;

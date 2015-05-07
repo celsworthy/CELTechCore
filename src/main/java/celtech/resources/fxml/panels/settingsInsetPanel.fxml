@@ -19,13 +19,6 @@
                     <children>
                         <VBox alignment="CENTER" fillWidth="true" spacing="5.0">
                             <children>
-                                <Label fx:id="printQualityLabel" styleClass="sidePanelDivider" text="%sidePanel_settings.printQualityLabel">
-                                </Label>
-                                <Slider fx:id="qualityChooser" majorTickUnit="1.0" max="3.0" maxWidth="1.7976931348623157E308" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="-1.0">
-                                    <VBox.margin>
-                                        <Insets left="20.0" right="20.0" />
-                                    </VBox.margin>
-                                </Slider>
                                 <StackPane>
                                     <children>
                                         <VBox fx:id="customProfileVBox" minHeight="0.0" spacing="5.0">

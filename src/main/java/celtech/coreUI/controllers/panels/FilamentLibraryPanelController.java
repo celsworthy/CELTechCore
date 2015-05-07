@@ -403,7 +403,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         name.textProperty().addListener(
             (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
             {
-                System.out.println("name changed");
                 if (!validateMaterialName(newValue))
                 {
                     isNameValid.set(false);
@@ -616,7 +615,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 }
             }
         }
-        System.out.println("validate material name: " + valid);
         return valid;
     }
 

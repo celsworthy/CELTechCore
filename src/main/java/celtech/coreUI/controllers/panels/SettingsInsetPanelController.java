@@ -13,11 +13,14 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.print.PrintQuality;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -54,9 +57,6 @@ public class SettingsInsetPanelController implements Initializable
     private Slider supportSlider;
 
     @FXML
-    private Slider qualityChooser;
-
-    @FXML
     private VBox customProfileVBox;
 
     @FXML
@@ -78,6 +78,7 @@ public class SettingsInsetPanelController implements Initializable
 
     private Project currentProject;
     private PrinterSettings printerSettings = null;
+    private ObjectProperty<PrintQualityEnumeration> printQuality;
 
     /**
      * Initialises the controller class.
@@ -87,13 +88,7 @@ public class SettingsInsetPanelController implements Initializable
     {
         try
         {
-            setupQualityChooser();
-
             setupCustomProfileChooser();
-
-            nonCustomProfileVBox.visibleProperty()
-                .bind(qualityChooser.valueProperty().isNotEqualTo(
-                        PrintQualityEnumeration.CUSTOM.getEnumPosition()));
 
             setupOverrides();
 
@@ -120,41 +115,6 @@ public class SettingsInsetPanelController implements Initializable
         }
     }
 
-    private void setupQualityChooser()
-    {
-        qualityChooser.setLabelFormatter(new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double n)
-            {
-                PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.fromEnumPosition(
-                    n.intValue());
-                return selectedQuality.getFriendlyName();
-            }
-
-            @Override
-            public Double fromString(String s)
-            {
-                PrintQualityEnumeration selectedQuality = PrintQualityEnumeration.valueOf(s);
-                return (double) selectedQuality.getEnumPosition();
-            }
-        });
-
-        printQualityUpdate(PrintQualityEnumeration.DRAFT);
-
-        qualityChooser.valueProperty().addListener(
-            (ObservableValue<? extends Number> ov, Number lastQualityValue, Number newQualityValue) ->
-            {
-                if (lastQualityValue != newQualityValue)
-                {
-                    PrintQualityEnumeration quality = PrintQualityEnumeration.fromEnumPosition(
-                        newQualityValue.intValue());
-
-                    printQualityUpdate(quality);
-                }
-            });
-    }
-
     private void setupCustomProfileChooser()
     {
         Callback<ListView<SlicerParametersFile>, ListCell<SlicerParametersFile>> profileChooserCellFactory
@@ -172,10 +132,11 @@ public class SettingsInsetPanelController implements Initializable
                 if (newValue != null)
                 {
                     if (printerSettings != null && printerSettings.getPrintQuality()
-                                                        == PrintQualityEnumeration.CUSTOM)
+                    == PrintQualityEnumeration.CUSTOM)
                     {
                         printerSettings.setSettingsName(newValue.getProfileName());
-                    } else if (printerSettings != null) {
+                    } else if (printerSettings != null)
+                    {
                         steno.error("custom profile chosen but quality not CUSTOM");
                     }
                 }
@@ -278,7 +239,8 @@ public class SettingsInsetPanelController implements Initializable
                 printerSettings.setSettingsName("");
             }
             hideProfileCombo(true);
-        } else {
+        } else
+        {
             hideProfileCombo(false);
         }
     }
@@ -293,22 +255,22 @@ public class SettingsInsetPanelController implements Initializable
     {
         currentProject = project;
         printerSettings = project.getPrinterSettings();
+        printQuality = printerSettings.printQualityProperty();
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
         boolean saveSupports = printerSettings.getPrintSupportOverride();
-        
+
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
 
-        qualityChooser.setValue(project.getPrintQuality().getEnumPosition());
         // UGH quality chooser has (rightly) stamped on the overrides so restore them
         printerSettings.setBrimOverride(saveBrim);
         printerSettings.setFillDensityOverride(saveFillDensity);
         printerSettings.setPrintSupportOverride(saveSupports);
 
         setupQualityOverrideControls(printerSettings);
-        
+
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
             if (savePrinterSettingsName.length() > 0)
@@ -318,6 +280,17 @@ public class SettingsInsetPanelController implements Initializable
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
+        
+        printQuality.addListener(
+            (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) ->
+        {
+            printQualityUpdate(newValue);
+        });
+        
+        nonCustomProfileVBox.visibleProperty()
+                .bind(printQuality.isNotEqualTo(
+                        PrintQualityEnumeration.CUSTOM.getEnumPosition()));
+
     }
 
     private void printQualityUpdate(PrintQualityEnumeration quality)
@@ -348,8 +321,7 @@ public class SettingsInsetPanelController implements Initializable
 
         if (currentProject != null)
         {
-            printerSettings.setPrintQuality(quality);
-            if (quality != PrintQualityEnumeration.CUSTOM)
+            if (printQuality.get() != PrintQualityEnumeration.CUSTOM)
             {
                 printerSettings.setBrimOverride(settings.getBrimWidth_mm());
                 printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());

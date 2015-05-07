@@ -14,10 +14,14 @@ import celtech.services.slicer.SlicerTask;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -60,6 +64,16 @@ public class TimeCostInsetPanelController implements Initializable
     private Label lblFineCost;
     @FXML
     private Label lblCustomCost;
+    @FXML
+    private RadioButton rbDraft;
+    @FXML
+    private RadioButton rbNormal;
+    @FXML
+    private RadioButton rbFine;
+    @FXML
+    private RadioButton rbCustom;
+
+    private ToggleGroup qualityToggleGroup;
 
     private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
@@ -70,6 +84,7 @@ public class TimeCostInsetPanelController implements Initializable
         ApplicationConfiguration.fineSettingsProfileName);
 
     private Project currentProject;
+    private PrinterSettings printerSettings;
 
     /**
      * Initialises the controller class.
@@ -104,6 +119,23 @@ public class TimeCostInsetPanelController implements Initializable
             {
                 updateFields(Lookup.getSelectedProjectProperty().get());
             }
+
+            qualityToggleGroup = new ToggleGroup();
+            rbDraft.setToggleGroup(qualityToggleGroup);
+            rbDraft.setUserData(PrintQualityEnumeration.DRAFT);
+            rbNormal.setToggleGroup(qualityToggleGroup);
+            rbNormal.setUserData(PrintQualityEnumeration.NORMAL);
+            rbFine.setToggleGroup(qualityToggleGroup);
+            rbFine.setUserData(PrintQualityEnumeration.FINE);
+            rbCustom.setToggleGroup(qualityToggleGroup);
+            rbCustom.setUserData(PrintQualityEnumeration.CUSTOM);
+            rbDraft.setSelected(true);
+            qualityToggleGroup.selectedToggleProperty().addListener(
+                (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
+            {
+                printerSettings.setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
+            });
+
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -119,6 +151,8 @@ public class TimeCostInsetPanelController implements Initializable
 
     private void bindProject(Project project)
     {
+        printerSettings = project.getPrinterSettings();
+
         projectChangesListener = new Project.ProjectChangesListener()
         {
 
@@ -163,7 +197,9 @@ public class TimeCostInsetPanelController implements Initializable
             }
         };
         updateFields(project);
+        updatePrintQuality(printerSettings);
         project.addProjectChangesListener(projectChangesListener);
+
     }
 
     private void whenProjectChanged(Project project)
@@ -226,14 +262,15 @@ public class TimeCostInsetPanelController implements Initializable
                                                      lblDraftWeight,
                                                      lblDraftCost, runNormal);
         };
-        if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM 
-            && ! currentProject.getPrinterSettings().getSettingsName().equals(""))
+        if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
+            && !currentProject.getPrinterSettings().getSettingsName().equals(""))
         {
             SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
             updateFieldsForProfile(project, customSettings, lblCustomTime,
-                                                      lblCustomWeight,
-                                                      lblCustomCost, runDraft);
-        } else {
+                                   lblCustomWeight,
+                                   lblCustomCost, runDraft);
+        } else
+        {
             lblCustomTime.setText("---");
             lblCustomWeight.setText("---");
             lblCustomCost.setText("---");
@@ -266,6 +303,25 @@ public class TimeCostInsetPanelController implements Initializable
         SlicerTask slicerTask = updateDetails.setupAndRunSlicerTask();
         return slicerTask;
 
+    }
+
+    private void updatePrintQuality(PrinterSettings printerSettings)
+    {
+        switch (printerSettings.getPrintQuality())
+        {
+            case DRAFT:
+                rbDraft.setSelected(true);
+                break;
+            case NORMAL:
+                rbNormal.setSelected(true);
+                break;
+            case FINE:
+                rbFine.setSelected(true);
+                break;
+            case CUSTOM:
+                rbCustom.setSelected(true);
+                break;
+        }
     }
 
     private void cancelTask(SlicerTask slicerTask)

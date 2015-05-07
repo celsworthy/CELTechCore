@@ -37,7 +37,6 @@ public class SplitIntoPartsCommand extends Command
             states.put(modelContainer, modelContainer.getState());
         }
         newModelContainers = project.splitIntoParts(modelContainers);
-        System.out.println("Split into parts: " + newModelContainers.size());
     }
 
     @Override
