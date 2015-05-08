@@ -134,7 +134,6 @@ public class SettingsInsetPanelController implements Initializable
                 brimSlider.valueProperty().set(((Number) evt.getNewValue()).intValue());
             } else if (evt.getPropertyName().equals("fillDensity_normalised"))
             {
-                System.out.println("XXA");
                 fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
                     * 100);
             } else if (evt.getPropertyName().equals("generateSupportMaterial"))
@@ -246,7 +245,6 @@ public class SettingsInsetPanelController implements Initializable
             .addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
-                    System.out.println("XXB");
                     printerSettings.setFillDensityOverride(newValue.floatValue() / 100.0f);
                 });
 
@@ -262,7 +260,6 @@ public class SettingsInsetPanelController implements Initializable
 
     private void populateQualityOverrideControls(PrinterSettings printerSettings)
     {
-        System.out.println("XXC");
         fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
         brimSlider.setValue(printerSettings.getBrimOverride());
         supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
@@ -329,9 +326,7 @@ public class SettingsInsetPanelController implements Initializable
                 customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
             });
 
-        System.out.println("Project changed: restore overrides");
         brimSlider.setValue(saveBrim);
-        System.out.println("XXD");
         fillDensitySlider.setValue(saveFillDensity * 100);
         supportSlider.setValue(saveSupports ? 1: 0);
         

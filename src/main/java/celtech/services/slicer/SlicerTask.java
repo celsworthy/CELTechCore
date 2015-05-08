@@ -66,7 +66,7 @@ public class SlicerTask extends Task<SliceResult>
     protected SliceResult call() throws Exception
     {
         boolean succeeded = false;
-
+        
         if (isCancelled())
         {
             return null;

@@ -20,6 +20,7 @@ public interface TaskExecutor
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject);
     public void respondOnCurrentThread(TaskResponder responder, boolean success, String message);
     public void runOnGUIThread(Runnable runnable);
+    public void runOnBackgroundThread(Runnable runnable);
     
     /**
      * Run the given Task in a daemon thread.

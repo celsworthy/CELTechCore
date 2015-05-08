@@ -120,26 +120,31 @@ public class TimeCostInsetPanelController implements Initializable
                 updateFields(Lookup.getSelectedProjectProperty().get());
             }
 
-            qualityToggleGroup = new ToggleGroup();
-            rbDraft.setToggleGroup(qualityToggleGroup);
-            rbDraft.setUserData(PrintQualityEnumeration.DRAFT);
-            rbNormal.setToggleGroup(qualityToggleGroup);
-            rbNormal.setUserData(PrintQualityEnumeration.NORMAL);
-            rbFine.setToggleGroup(qualityToggleGroup);
-            rbFine.setUserData(PrintQualityEnumeration.FINE);
-            rbCustom.setToggleGroup(qualityToggleGroup);
-            rbCustom.setUserData(PrintQualityEnumeration.CUSTOM);
-            rbDraft.setSelected(true);
-            qualityToggleGroup.selectedToggleProperty().addListener(
-                (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
-            {
-                printerSettings.setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
-            });
+            setupQualityRadioButtons();
 
         } catch (Exception ex)
         {
             ex.printStackTrace();
         }
+    }
+
+    private void setupQualityRadioButtons()
+    {
+        qualityToggleGroup = new ToggleGroup();
+        rbDraft.setToggleGroup(qualityToggleGroup);
+        rbDraft.setUserData(PrintQualityEnumeration.DRAFT);
+        rbNormal.setToggleGroup(qualityToggleGroup);
+        rbNormal.setUserData(PrintQualityEnumeration.NORMAL);
+        rbFine.setToggleGroup(qualityToggleGroup);
+        rbFine.setUserData(PrintQualityEnumeration.FINE);
+        rbCustom.setToggleGroup(qualityToggleGroup);
+        rbCustom.setUserData(PrintQualityEnumeration.CUSTOM);
+        rbDraft.setSelected(true);
+        qualityToggleGroup.selectedToggleProperty().addListener(
+            (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
+            {
+                printerSettings.setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
+            });
     }
 
     private void unbindProject(Project project)
@@ -219,6 +224,7 @@ public class TimeCostInsetPanelController implements Initializable
     private SlicerTask draftSlicerTask;
     private SlicerTask normalSlicerTask;
     private SlicerTask fineSlicerTask;
+    private SlicerTask customSlicerTask;
 
     /**
      * Update the time, cost and weight fields. Long running calculations must be performed in a
@@ -253,22 +259,30 @@ public class TimeCostInsetPanelController implements Initializable
                     fineSlicerTask = updateFieldsForProfile(project, fineSettings, lblFineTime,
                                                             lblFineWeight,
                                                             lblFineCost, (Runnable) null);
+                    System.out.println("launch slicer task " + fineSlicerTask);
+                    Lookup.getTaskExecutor().runTaskAsDaemon(fineSlicerTask);
                 };
                 normalSlicerTask = updateFieldsForProfile(project, normalSettings, lblNormalTime,
                                                           lblNormalWeight,
                                                           lblNormalCost, runFine);
+                System.out.println("launch slicer task " + normalSlicerTask);
+                Lookup.getTaskExecutor().runTaskAsDaemon(normalSlicerTask);
             };
             draftSlicerTask = updateFieldsForProfile(project, draftSettings, lblDraftTime,
                                                      lblDraftWeight,
                                                      lblDraftCost, runNormal);
+            System.out.println("launch slicer task " + draftSlicerTask);
+            Lookup.getTaskExecutor().runTaskAsDaemon(draftSlicerTask);
         };
         if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
             && !currentProject.getPrinterSettings().getSettingsName().equals(""))
         {
             SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
-            updateFieldsForProfile(project, customSettings, lblCustomTime,
+            customSlicerTask = updateFieldsForProfile(project, customSettings, lblCustomTime,
                                    lblCustomWeight,
                                    lblCustomCost, runDraft);
+            System.out.println("launch slicer task " + customSlicerTask);
+            Lookup.getTaskExecutor().runTaskAsDaemon(customSlicerTask);
         } else
         {
             lblCustomTime.setText("---");
@@ -283,6 +297,7 @@ public class TimeCostInsetPanelController implements Initializable
         cancelTask(draftSlicerTask);
         cancelTask(normalSlicerTask);
         cancelTask(fineSlicerTask);
+        cancelTask(customSlicerTask);
     }
 
     /**
@@ -300,7 +315,7 @@ public class TimeCostInsetPanelController implements Initializable
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                                                                 lblTime, lblWeight,
                                                                 lblCost, whenComplete);
-        SlicerTask slicerTask = updateDetails.setupAndRunSlicerTask();
+        SlicerTask slicerTask = updateDetails.setupSlicerTask();
         return slicerTask;
 
     }
@@ -326,6 +341,7 @@ public class TimeCostInsetPanelController implements Initializable
 
     private void cancelTask(SlicerTask slicerTask)
     {
+        System.out.println("cancel task " + slicerTask);
         if (slicerTask != null && !(slicerTask.isDone() || slicerTask.isCancelled()))
         {
             slicerTask.cancel();

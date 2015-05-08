@@ -43,6 +43,12 @@ public class TestTaskExecutor implements TaskExecutor
     {
         runnable.run();
     }
+    
+    @Override
+    public void runOnBackgroundThread(Runnable runnable)
+    {
+        runnable.run();
+    }    
 
     @Override
     public void runAsTask(NoArgsVoidFunc action, NoArgsVoidFunc successHandler,

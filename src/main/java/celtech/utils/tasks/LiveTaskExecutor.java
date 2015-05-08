@@ -44,6 +44,14 @@ public class LiveTaskExecutor implements TaskExecutor
     }
 
     @Override
+    public void runOnBackgroundThread(Runnable runnable)
+    {
+        Thread th = new Thread(runnable);
+        th.setDaemon(true);
+        th.start();
+    }
+
+    @Override
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message)
     {
         respondOnGUIThread(responder, success, message, null);
