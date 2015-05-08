@@ -12,6 +12,8 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.services.slicer.PrintQualityEnumeration;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
@@ -120,6 +122,28 @@ public class SettingsInsetPanelController implements Initializable
         }
     }
 
+    PropertyChangeListener customSettingsListener = new PropertyChangeListener()
+    {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if (evt.getPropertyName().equals("brimWidth_mm"))
+            {
+                brimSlider.valueProperty().set(((Number) evt.getNewValue()).intValue());
+            } else if (evt.getPropertyName().equals("fillDensity_normalised"))
+            {
+                fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
+                    * 100);
+            } else if (evt.getPropertyName().equals("generateSupportMaterial"))
+            {
+                boolean supportEnabled = (Boolean) evt.getNewValue();
+                double value = supportEnabled ? 1d : 0d;
+                supportSlider.valueProperty().set(value);
+            }
+        }
+    };
+
     private void setupCustomProfileChooser()
     {
         Callback<ListView<SlicerParametersFile>, ListCell<SlicerParametersFile>> profileChooserCellFactory
@@ -129,29 +153,45 @@ public class SettingsInsetPanelController implements Initializable
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
         customProfileChooser.setItems(SlicerParametersContainer.getUserProfileList());
 
-        updateProfileList();
+        clearSettingsIfNoCustomProfileAvailable();
 
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
             (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
             {
+
                 if (newValue != null)
                 {
-                    if (printerSettings != null && printerSettings.getPrintQuality()
-                    == PrintQualityEnumeration.CUSTOM)
+                    if (printerSettings != null && 
+                        printerSettings.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
                     {
-                        printerSettings.setSettingsName(newValue.getProfileName());
+                        whenCustomProfileChanges(newValue);
                     } else if (printerSettings != null)
                     {
                         steno.error("custom profile chosen but quality not CUSTOM");
                     }
+
                 }
             });
 
         SlicerParametersContainer.getUserProfileList().addListener(
             (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
             {
-                updateProfileList();
+                clearSettingsIfNoCustomProfileAvailable();
             });
+    }
+
+    private void whenCustomProfileChanges(SlicerParametersFile newValue)
+    {
+        if (getCustomSettings() != null)
+        {
+            getCustomSettings().removePropertyChangeListener(customSettingsListener);
+        }
+        printerSettings.setSettingsName(newValue.getProfileName());
+        if (getCustomSettings() != null)
+        {
+            getCustomSettings().addPropertyChangeListener(customSettingsListener);
+        }
+        printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
     }
 
     private void setupOverrides()
@@ -217,7 +257,7 @@ public class SettingsInsetPanelController implements Initializable
             });
     }
 
-    private void setupQualityOverrideControls(PrinterSettings printerSettings)
+    private void populateQualityOverrideControls(PrinterSettings printerSettings)
     {
         fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
         brimSlider.setValue(printerSettings.getBrimOverride());
@@ -231,10 +271,9 @@ public class SettingsInsetPanelController implements Initializable
     }
 
     /**
-     * Update the profile combo box with the list of user profiles. If there are no user profiles
-     * then hide the combo box and show the 'Please create a custom profile' message.
+     * If no profiles are left available then clear the settingsName.
      */
-    private void updateProfileList()
+    private void clearSettingsIfNoCustomProfileAvailable()
     {
 
         if (SlicerParametersContainer.getUserProfileList().size() == 0)
@@ -264,7 +303,7 @@ public class SettingsInsetPanelController implements Initializable
         printerSettings.setFillDensityOverride(saveFillDensity);
         printerSettings.setPrintSupportOverride(saveSupports);
 
-        setupQualityOverrideControls(printerSettings);
+        populateQualityOverrideControls(printerSettings);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
@@ -322,6 +361,7 @@ public class SettingsInsetPanelController implements Initializable
                 enableCustomWidgets(false);
                 break;
             case CUSTOM:
+                settings = getCustomSettings();
                 enableCustomWidgets(true);
                 break;
             default:
@@ -330,27 +370,34 @@ public class SettingsInsetPanelController implements Initializable
 
         if (currentProject != null)
         {
-            if (printQuality.get() != PrintQualityEnumeration.CUSTOM)
+            printerSettings.setBrimOverride(settings.getBrimWidth_mm());
+            printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
+            printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
+            populateQualityOverrideControls(printerSettings);
+
+            if (printQuality.get() == PrintQualityEnumeration.CUSTOM)
             {
-                printerSettings.setBrimOverride(settings.getBrimWidth_mm());
-                printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
-                printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
-                setupQualityOverrideControls(printerSettings);
-            } else
-            {
-                String customSettingsName = printerSettings.getSettingsName();
-                steno.debug("Custom settings is " + customSettingsName);
-                if (customSettingsName.equals(""))
+                if (settings == null)
                 {
                     customProfileChooser.setValue(null);
                 } else
                 {
-                    
-                    SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(
-                        customSettingsName);
-                    customProfileChooser.getSelectionModel().select(slicerParametersFile);
+                    customProfileChooser.getSelectionModel().select(settings);
                 }
             }
+        }
+    }
+
+    private SlicerParametersFile getCustomSettings()
+    {
+        String customSettingsName = printerSettings.getSettingsName();
+        if (customSettingsName.equals(""))
+        {
+            return null;
+        } else
+        {
+            return SlicerParametersContainer.getSettingsByProfileName(
+                customSettingsName);
         }
     }
 }

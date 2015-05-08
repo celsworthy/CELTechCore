@@ -1408,6 +1408,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         }
         SlicerParametersFile parametersFile = getPrintProfile();
         SlicerParametersContainer.saveProfile(parametersFile);
+        isDirty.set(false);
         repopulateCmbPrintProfile();
         state.set(ProfileLibraryPanelController.State.CUSTOM);
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
