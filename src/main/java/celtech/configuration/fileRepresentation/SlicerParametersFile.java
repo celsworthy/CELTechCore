@@ -159,6 +159,9 @@ public class SlicerParametersFile
 
     public void setFillDensity_normalised(float fillDensity_normalised)
     {
+        if (this.fillDensity_normalised == fillDensity_normalised) {
+            return;
+        }
         this.fillDensity_normalised = fillDensity_normalised;
         firePropertyChange("fillDensity_normalised", null, fillDensity_normalised);
     }
@@ -225,6 +228,9 @@ public class SlicerParametersFile
 
     public void setBrimWidth_mm(int brimWidth_mm)
     {
+        if (this.brimWidth_mm == brimWidth_mm) {
+            return;
+        }        
         this.brimWidth_mm = brimWidth_mm;
         firePropertyChange("brimWidth_mm", null, brimWidth_mm);
     }
@@ -379,6 +385,9 @@ public class SlicerParametersFile
 
     public void setGenerateSupportMaterial(boolean generateSupportMaterial)
     {
+        if (this.generateSupportMaterial == generateSupportMaterial) {
+            return;
+        }        
         this.generateSupportMaterial = generateSupportMaterial;
         firePropertyChange("generateSupportMaterial", null, generateSupportMaterial);
     }
