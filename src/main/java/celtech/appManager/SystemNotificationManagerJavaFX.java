@@ -66,6 +66,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private boolean clearBedDialogOnDisplay = false;
 
+    private ChoiceLinkDialogBox keepPushingFilamentDialogBox = null;
+
     private ChoiceLinkDialogBox failedTransferDialogBox = null;
 
     private ChoiceLinkDialogBox failedEjectDialogBox = null;
@@ -982,6 +984,43 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             steno.error("Error during advanced mode query");
             return false;
+        }
+    }
+
+    /**
+     *
+     * @param printerName
+     */
+    @Override
+    public void showKeepPushingFilamentNotification()
+    {
+        if (keepPushingFilamentDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                if (keepPushingFilamentDialogBox == null)
+                {
+                    keepPushingFilamentDialogBox = new ChoiceLinkDialogBox();
+                    keepPushingFilamentDialogBox.setTitle(Lookup.i18n(
+                        "notification.keepPushingFilamentTitle"));
+                    keepPushingFilamentDialogBox.setMessage(Lookup.i18n(
+                        "notification.keepPushingFilament"));
+                    keepPushingFilamentDialogBox.getUserInput();
+                }
+            });
+        }
+    }
+
+    @Override
+    public void hideKeepPushingFilamentNotification()
+    {
+        if (keepPushingFilamentDialogBox != null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                keepPushingFilamentDialogBox.close();
+                keepPushingFilamentDialogBox = null;
+            });
         }
     }
 

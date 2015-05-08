@@ -558,5 +558,5 @@ public interface Printer extends RoboxResponseConsumer
      * @param error
      * @return
      */
-    public boolean doFilamentSlipWhilePrinting(FirmwareError error);
+    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 }

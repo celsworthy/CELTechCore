@@ -93,7 +93,7 @@ public class CalibrationXYErrorHandler
 
     private boolean runReducePrintSpeed(FirmwareError error)
     {
-        return printer.doFilamentSlipWhilePrinting(error);
+        return printer.doFilamentSlipActionWhilePrinting(error);
     }
 
     public void deregisterForPrinterErrors()

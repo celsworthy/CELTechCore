@@ -208,4 +208,14 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void showEjectFailedDialog(Printer printer)
     {
     }
+
+    @Override
+    public void showKeepPushingFilamentNotification()
+    {
+    }
+
+    @Override
+    public void hideKeepPushingFilamentNotification()
+    {
+    }
 }

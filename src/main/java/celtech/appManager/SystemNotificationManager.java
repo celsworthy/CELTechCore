@@ -15,12 +15,12 @@ import java.util.Optional;
 public interface SystemNotificationManager
 {
 
-    public void showEjectFailedDialog(Printer printer);
+    public enum PrinterErrorChoice
+    {
 
-    public enum PrinterErrorChoice {
         CONTINUE, ABORT, RETRY, OK;
     }
-    
+
     void showInformationNotification(String title, String message);
 
     void showWarningNotification(String title, String message);
@@ -81,7 +81,7 @@ public interface SystemNotificationManager
     boolean showOpenDoorDialog();
 
     boolean showModelTooBigDialog(String modelFilename);
-    
+
     boolean showApplicationUpgradeDialog(String applicationName);
 
     public PurgeResponse showPurgeDialog();
@@ -91,26 +91,34 @@ public interface SystemNotificationManager
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse);
 
     public void showHeadNotRecognisedDialog(String printerName);
-    
-     /**
-     * Show a dialog to the user asking them to choose between available Continue, Abort or
-     * Retry actions when a printer error has occurred.
+
+    /**
+     * Show a dialog to the user asking them to choose between available Continue, Abort or Retry
+     * actions when a printer error has occurred.
+     *
      * @param title
      * @param message
      * @param showContinueOption
      * @param showAbortOption
      * @param showRetryOption
      * @param showOKOption
-     * @return 
+     * @return
      */
-    public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message, boolean showContinueOption,
+    public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
+        boolean showContinueOption,
         boolean showAbortOption, boolean showRetryOption, boolean showOKOption);
 
     public void showReelNotRecognisedDialog(String printerName);
 
     public void showReelUpdatedNotification();
-    
+
     public void askUserToClearBed();
-    
+
     public boolean confirmAdvancedMode();
+
+    public void showKeepPushingFilamentNotification();
+
+    public void hideKeepPushingFilamentNotification();
+
+    public void showEjectFailedDialog(Printer printer);
 }
