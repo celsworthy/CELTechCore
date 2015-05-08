@@ -31,7 +31,7 @@ public class PrinterSettings
     private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament0 = new SimpleObjectProperty<>(null);
     private final ObjectProperty<Filament> selectedFilament1 = new SimpleObjectProperty<>(null);
-    private final StringProperty settingsName = new SimpleStringProperty();
+    private final StringProperty customSettingsName = new SimpleStringProperty();
     private final ObjectProperty<PrintQualityEnumeration> printQuality
         = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
     private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
@@ -42,7 +42,7 @@ public class PrinterSettings
 
     public PrinterSettings()
     {
-        settingsName.set(ApplicationConfiguration.draftSettingsProfileName);
+        customSettingsName.set("");
         SlicerParametersFile draftParametersFile = SlicerParametersContainer.getSettingsByProfileName(
             ApplicationConfiguration.draftSettingsProfileName);
         brimOverride = draftParametersFile.getBrimWidth_mm();
@@ -134,22 +134,22 @@ public class PrinterSettings
 
     public void setSettingsName(String settingsName)
     {
-        if (!this.settingsName.get().equals(settingsName))
+        if (!this.customSettingsName.get().equals(settingsName))
         {
-            steno.debug("change printer settings to " + settingsName);
-            this.settingsName.set(settingsName);
+            steno.debug("change custom printer settings to " + settingsName);
+            this.customSettingsName.set(settingsName);
             toggleDataChanged();
         }
     }
 
     public String getSettingsName()
     {
-        return settingsName.get();
+        return customSettingsName.get();
     }
 
     public StringProperty getSettingsNameProperty()
     {
-        return settingsName;
+        return customSettingsName;
     }
 
     public SlicerParametersFile getSettings()
@@ -166,7 +166,7 @@ public class PrinterSettings
                 return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
                     ApplicationConfiguration.fineSettingsProfileName));
             case CUSTOM:
-                return SlicerParametersContainer.getSettingsByProfileName(settingsName.get());
+                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(customSettingsName.get()));
 
         }
         throw new RuntimeException("Unknown print quality");

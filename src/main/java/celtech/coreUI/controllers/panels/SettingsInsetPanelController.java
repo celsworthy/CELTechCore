@@ -15,7 +15,6 @@ import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -61,9 +60,6 @@ public class SettingsInsetPanelController implements Initializable
 
     @FXML
     private Slider fillDensitySlider;
-
-    @FXML
-    private VBox nonCustomProfileVBox;
 
     @FXML
     private Label createProfileLabel;
@@ -286,20 +282,19 @@ public class SettingsInsetPanelController implements Initializable
                 printQualityWidgetsUpdate(newValue);
             });
         printQualityWidgetsUpdate(printQuality.get());
-        
+
         // just in case custom settings are changing through some other mechanism
         printerSettings.getSettingsNameProperty().addListener(
             (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-        {
-            customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
-        });
+            {
+                customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
+            });
 
     }
 
-    private void showCustomWidgets(boolean show)
+    private void enableCustomWidgets(boolean enable)
     {
-        nonCustomProfileVBox.visibleProperty().set(!show);
-        customProfileVBox.visibleProperty().set(show);
+        customProfileVBox.setDisable(!enable);
     }
 
     private void showPleaseCreateProfile(boolean show)
@@ -316,18 +311,18 @@ public class SettingsInsetPanelController implements Initializable
         {
             case DRAFT:
                 settings = draftSettings;
-                showCustomWidgets(false);
+                enableCustomWidgets(false);
                 break;
             case NORMAL:
                 settings = normalSettings;
-                showCustomWidgets(false);
+                enableCustomWidgets(false);
                 break;
             case FINE:
                 settings = fineSettings;
-                showCustomWidgets(false);
+                enableCustomWidgets(false);
                 break;
             case CUSTOM:
-                showCustomWidgets(true);
+                enableCustomWidgets(true);
                 break;
             default:
                 break;
@@ -343,7 +338,18 @@ public class SettingsInsetPanelController implements Initializable
                 setupQualityOverrideControls(printerSettings);
             } else
             {
-                customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
+                String customSettingsName = printerSettings.getSettingsName();
+                steno.debug("Custom settings is " + customSettingsName);
+                if (customSettingsName.equals(""))
+                {
+                    customProfileChooser.setValue(null);
+                } else
+                {
+                    
+                    SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(
+                        customSettingsName);
+                    customProfileChooser.getSelectionModel().select(slicerParametersFile);
+                }
             }
         }
     }
