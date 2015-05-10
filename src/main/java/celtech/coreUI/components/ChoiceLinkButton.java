@@ -5,7 +5,6 @@ import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 /**
@@ -17,16 +16,16 @@ public class ChoiceLinkButton extends Button
 
     @FXML
     VBox labelGroup;
-    
+
     @FXML
-    Label title;
-    
+    HyperlinkedLabel title;
+
     @FXML
-    Label message;
+    HyperlinkedLabel message;
 
     public ChoiceLinkButton()
     {
-         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
             "/celtech/resources/fxml/components/ChoiceLinkButton.fxml"));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -40,28 +39,28 @@ public class ChoiceLinkButton extends Button
         {
             throw new RuntimeException(exception);
         }
-        
+
         this.getStyleClass().add("error-dialog-choice-button");
     }
 
-    public void setTitle(String i18Title)
+    public void setTitle(String i18nTitle)
     {
-        title.setText(i18Title);
+        title.replaceText(i18nTitle);
     }
 
     public String getTitle()
     {
         return title.getText();
     }
-    
+
     public StringProperty titleProperty()
     {
         return title.textProperty();
     }
 
-    public void setMessage(String i18Message)
+    public void setMessage(String i18nMessage)
     {
-        message.setText(i18Message);
+        message.replaceText(i18nMessage);
     }
 
     public String getMessage()
