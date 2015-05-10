@@ -218,4 +218,14 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void hideKeepPushingFilamentNotification()
     {
     }
+
+    @Override
+    public void showFilamentStuckMessage()
+    {
+    }
+
+    @Override
+    public void showLoadFilamentNowMessage()
+    {
+    }
 }

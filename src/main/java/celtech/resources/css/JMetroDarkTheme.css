@@ -375,10 +375,10 @@
 .gizmoControlButton, .gizmoControlButton:hover, .gizmoControlButton:focused {
     -fx-background-color: transparent;
     -fx-padding: 0;
-/*    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-background-radius: 0;
-    -fx-font-weight: bold;
-    -fx-font-size: 1.1em;*/
+    /*    -fx-background-insets: 0,0 0 0 0, 0 0 0 0, 0 0 0 0;
+        -fx-background-radius: 0;
+        -fx-font-weight: bold;
+        -fx-font-size: 1.1em;*/
     -fx-border-color: transparent; 
     -fx-content-display: graphic-only;
 }
@@ -2088,6 +2088,11 @@ modal-dialogue{
     -fx-wrap-text: true;
 }
 
+.hyperlink-plaintext
+{
+    -fx-fill: white;
+}
+
 /**
  * The error dialog configuration
  */
@@ -2099,6 +2104,15 @@ modal-dialogue{
     -fx-max-width: 500;
     -fx-min-width: 100;
 }
+
+.textflow .text
+{
+    -fx-fill: purple;
+}
+/*.error-dialog .text{
+    -fx-fill: purple;
+}*/
+
 
 .error-dialog #errorDialogButtonContainer{
     -fx-spacing: 5;

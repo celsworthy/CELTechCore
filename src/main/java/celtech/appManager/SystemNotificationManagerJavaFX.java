@@ -72,6 +72,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private ChoiceLinkDialogBox failedEjectDialogBox = null;
 
+    private ChoiceLinkDialogBox filamentStuckDialogBox = null;
+
+    private ChoiceLinkDialogBox loadFilamentNowDialogBox = null;
+
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -1035,45 +1039,90 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                if (failedEjectDialogBox == null)
+                failedEjectDialogBox = new ChoiceLinkDialogBox();
+                failedEjectDialogBox.setTitle(Lookup.i18n("error.ERROR_UNLOAD"));
+                failedEjectDialogBox.setMessage(Lookup.i18n(
+                    "error.ERROR_UNLOAD.message"));
+
+                ChoiceLinkButton ejectStuckMaterial = failedEjectDialogBox.addChoiceLink(
+                    Lookup.i18n("error.ERROR_UNLOAD.action.title"));
+                failedEjectDialogBox.addChoiceLink(
+                    Lookup.i18n("error.ERROR_UNLOAD.noaction.title"));
+
+                boolean runEjectStuckMaterial = false;
+
+                Optional<ChoiceLinkButton> choice = failedEjectDialogBox.getUserInput();
+                if (choice.isPresent())
                 {
-                    failedEjectDialogBox = new ChoiceLinkDialogBox();
-                    failedEjectDialogBox.setTitle(Lookup.i18n("error.ERROR_UNLOAD"));
-                    failedEjectDialogBox.setMessage(Lookup.i18n(
-                        "error.ERROR_UNLOAD.message"));
-
-                    ChoiceLinkButton ejectStuckMaterial = failedEjectDialogBox.addChoiceLink(
-                        Lookup.i18n("error.ERROR_UNLOAD.action.title"));
-                    failedEjectDialogBox.addChoiceLink(
-                        Lookup.i18n("error.ERROR_UNLOAD.noaction.title"));
-
-                    boolean runEjectStuckMaterial = false;
-
-                    Optional<ChoiceLinkButton> choice = failedEjectDialogBox.getUserInput();
-                    if (choice.isPresent())
+                    if (choice.get() == ejectStuckMaterial)
                     {
-                        if (choice.get() == ejectStuckMaterial)
-                        {
-                            runEjectStuckMaterial = true;
-                        }
-                    }
-                    failedEjectDialogBox = null;
-
-                    if (runEjectStuckMaterial)
-                    {
-                        steno.error("Eject failed - user chose to eject stuck material");
-                        try
-                        {
-                            printer.executeMacroWithoutPurgeCheck("eject_stuck_material");
-                        } catch (PrinterException ex)
-                        {
-                            steno.error("Error when automatically invoking eject stuck material");
-                        }
-                    } else
-                    {
-                        steno.error("Eject failed - user chose not to run eject stuck material");
+                        runEjectStuckMaterial = true;
                     }
                 }
+                failedEjectDialogBox = null;
+
+                if (runEjectStuckMaterial)
+                {
+                    steno.error("Eject failed - user chose to eject stuck material");
+                    try
+                    {
+                        printer.executeMacroWithoutPurgeCheck("eject_stuck_material");
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error when automatically invoking eject stuck material");
+                    }
+                } else
+                {
+                    steno.error("Eject failed - user chose not to run eject stuck material");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void showFilamentStuckMessage()
+    {
+        if (filamentStuckDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                filamentStuckDialogBox = new ChoiceLinkDialogBox();
+                filamentStuckDialogBox.
+                    setTitle(Lookup.i18n("dialogs.filamentStuck.title"));
+                filamentStuckDialogBox.setMessage(
+                    Lookup.i18n("dialogs.filamentStuck.message"));
+
+                ChoiceLinkButton ok = filamentStuckDialogBox.addChoiceLink(
+                    Lookup.i18n("misc.OK"));
+
+                Optional<ChoiceLinkButton> choice = filamentStuckDialogBox.getUserInput();
+
+                filamentStuckDialogBox.close();
+                filamentStuckDialogBox = null;
+            });
+        }
+    }
+
+    @Override
+    public void showLoadFilamentNowMessage()
+    {
+        if (loadFilamentNowDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                loadFilamentNowDialogBox = new ChoiceLinkDialogBox();
+                loadFilamentNowDialogBox.
+                    setTitle(Lookup.i18n("dialogs.loadFilamentNow.title"));
+                loadFilamentNowDialogBox.setMessage(
+                    Lookup.i18n("dialogs.loadFilamentNow.message"));
+
+                ChoiceLinkButton ok = loadFilamentNowDialogBox.addChoiceLink(
+                    Lookup.i18n("misc.OK"));
+
+                Optional<ChoiceLinkButton> choice = loadFilamentNowDialogBox.getUserInput();
+
+                loadFilamentNowDialogBox.close();
+                loadFilamentNowDialogBox = null;
             });
         }
     }
