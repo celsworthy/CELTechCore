@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
 import celtech.printerControl.model.StateTransition;
@@ -108,7 +109,7 @@ public class CalibrationXAndYGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format("Step %s of 2", stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf2"), stepNo));
         }
     }
 

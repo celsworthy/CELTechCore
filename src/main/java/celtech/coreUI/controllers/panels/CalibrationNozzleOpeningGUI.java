@@ -136,7 +136,7 @@ public class CalibrationNozzleOpeningGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format("Step %s of 9", stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf9"), stepNo));
         }
     }
 
