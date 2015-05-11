@@ -24,7 +24,6 @@ public class FXMLUtilities
      */
     public static void addColonsToLabels(Node parentNode)
     {
-        System.out.println("Parent is " + parentNode.getClass().getName());
         if (parentNode instanceof Label)
         {
             Label label = (Label) parentNode;
@@ -36,7 +35,6 @@ public class FXMLUtilities
         {
             for (Node node : ((Parent) parentNode).getChildrenUnmodifiable())
             {
-                System.out.println("Node is " + node.getClass().getName());
                 if (node instanceof Parent || node instanceof Text)
                 {
                     addColonsToLabels(node);

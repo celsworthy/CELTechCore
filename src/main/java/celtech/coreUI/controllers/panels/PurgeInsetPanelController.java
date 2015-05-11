@@ -9,7 +9,6 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import celtech.coreUI.controllers.panels.FilamentLibraryPanelController.FilamentCell;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -411,10 +410,15 @@ public class PurgeInsetPanelController implements Initializable
         } else
         {
             currentMaterial = cmbCurrentMaterial.getValue();
+            System.out.println("current material is " + currentMaterial);
         }
         if (currentMaterial != null) {
             selectMaterial(currentMaterial);
-        }    
+        } else {
+            System.out.println("set purge temp to -1");
+            transitionManager.setPurgeTemperature(-1);
+            purgeTemperature.textProperty().set("-1");
+        } 
     }
 
     private void installTag(Printer printer, GraphicButtonWithLabel button)
