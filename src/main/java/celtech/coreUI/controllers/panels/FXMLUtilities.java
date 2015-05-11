@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.text.Text;
 
 /**
  *
@@ -23,21 +24,26 @@ public class FXMLUtilities
      */
     public static void addColonsToLabels(Parent parentNode)
     {
+        System.out.println("Parent is " + parentNode.getClass().getName());
         if (parentNode instanceof Label)
         {
             Label label = (Label) parentNode;
-            if (label.getStyleClass().contains("colon"))
-            {
-                label.setText(label.getText() + ":");
-            }
+            addColonToLabel(label);
         } else
         {
             for (Node node : parentNode.getChildrenUnmodifiable())
             {
+                System.out.println("Node is " + node.getClass().getName());
                 if (node instanceof Parent)
                 {
                     addColonsToLabels((Parent) node);
                 }
+                if (node instanceof Label) {
+                    addColonToLabel((Label) node);
+                }
+                if (node instanceof Text) {
+                    addColonToText((Text) node);
+                }                
                 if (node instanceof TabPane)
                 {
                     TabPane tabPane = (TabPane) node;
@@ -53,4 +59,20 @@ public class FXMLUtilities
             }
         }
     }
+
+    private static void addColonToLabel(Label label)
+    {
+        if (label.getStyleClass().contains("colon"))
+        {
+            label.setText(label.getText() + ":");
+        }
+    }
+    
+    private static void addColonToText(Text text)
+    {
+        if (text.getStyleClass().contains("colon"))
+        {
+            text.setText(text.getText() + ":");
+        }
+    }    
 }

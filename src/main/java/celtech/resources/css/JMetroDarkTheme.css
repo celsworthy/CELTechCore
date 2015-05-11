@@ -1011,6 +1011,15 @@
     -fx-fill: white;
 }
 
+#purgeFilamentCombo {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 15px;
+}
+
+#purgeTextCurrentFilament {
+    -fx-fill: white;
+}
+
 /**
 * Reel and Material
 */

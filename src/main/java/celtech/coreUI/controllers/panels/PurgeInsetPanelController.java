@@ -8,6 +8,7 @@ import celtech.configuration.Filament;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
+import celtech.coreUI.controllers.panels.FilamentLibraryPanelController.FilamentCell;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -30,8 +31,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
@@ -39,12 +38,16 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javax.print.PrintException;
 import libertysystems.stenographer.Stenographer;
@@ -77,7 +80,7 @@ public class PurgeInsetPanelController implements Initializable
         };
 
     @FXML
-    private VBox diagramContainer;
+    private VBox diagramContainer; 
 
     @FXML
     private GraphicButtonWithLabel startPurgeButton;
@@ -184,6 +187,8 @@ public class PurgeInsetPanelController implements Initializable
 
         diagramHandler = new DiagramHandler(diagramContainer, resources);
         diagramHandler.initialise();
+        
+        FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
 
         setupMaterialCombo();
 
@@ -403,7 +408,9 @@ public class PurgeInsetPanelController implements Initializable
         {
             currentMaterial = cmbCurrentMaterial.getValue();
         }
-        selectMaterial(currentMaterial);
+        if (currentMaterial != null) {
+            selectMaterial(currentMaterial);
+        }    
     }
 
     private void installTag(Printer printer, GraphicButtonWithLabel button)
@@ -446,14 +453,16 @@ public class PurgeInsetPanelController implements Initializable
         try
         {
             transitionManager = printer.startPurge();
-            
+
             currentMaterialTemperature.textProperty().unbind();
             purgeTemperature.textProperty().unbind();
             lastMaterialTemperature.textProperty().unbind();
-            currentMaterialTemperature.textProperty().bind(transitionManager.getCurrentMaterialTemperature().asString());
+            currentMaterialTemperature.textProperty().bind(
+                transitionManager.getCurrentMaterialTemperature().asString());
             purgeTemperature.textProperty().bind(transitionManager.getPurgeTemperature().asString());
-            lastMaterialTemperature.textProperty().bind(transitionManager.getLastMaterialTemperature().asString());
-            
+            lastMaterialTemperature.textProperty().bind(
+                transitionManager.getLastMaterialTemperature().asString());
+
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
             {
                 @Override
@@ -463,7 +472,6 @@ public class PurgeInsetPanelController implements Initializable
                 }
             });
             transitionManager.start();
-            showCurrentMaterial();
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
         {
@@ -474,7 +482,7 @@ public class PurgeInsetPanelController implements Initializable
     private void setupMaterialCombo()
     {
         cmbCurrentMaterial.setCellFactory(
-            (ListView<Filament> param) -> new MaterialCell());
+            (ListView<Filament> param) -> new FilamentCell());
 
         cmbCurrentMaterial.setButtonCell(cmbCurrentMaterial.getCellFactory().call(null));
 
@@ -521,8 +529,24 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
-    public class MaterialCell extends ListCell<Filament>
+    public static class FilamentCell extends ListCell<Filament>
     {
+
+        private static int SWATCH_SQUARE_SIZE = 16;
+
+        HBox cellContainer;
+        Rectangle rectangle = new Rectangle();
+        Label label;
+
+        public FilamentCell()
+        {
+            cellContainer = new HBox();
+            cellContainer.setAlignment(Pos.CENTER_LEFT);
+            rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
+            label = new Label();
+            label.setId("materialComponentComboLabel");
+            cellContainer.getChildren().addAll(rectangle, label);
+        }
 
         @Override
         protected void updateItem(Filament item, boolean empty)
@@ -530,12 +554,19 @@ public class PurgeInsetPanelController implements Initializable
             super.updateItem(item, empty);
             if (item != null && !empty)
             {
-                setText(item.getFriendlyFilamentName());
+                Filament filament = (Filament) item;
+                setGraphic(cellContainer);
+                rectangle.setFill(filament.getDisplayColour());
+
+                label.setText(filament.getLongFriendlyName() + " "
+                    + filament.getMaterial().getFriendlyName());
+                label.getStyleClass().add("filamentSwatchPadding");
             } else
             {
-                setText("");
+                setGraphic(null);
             }
-        }
-    }
 
+        }
+
+    }
 }
