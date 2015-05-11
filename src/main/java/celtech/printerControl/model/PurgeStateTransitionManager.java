@@ -4,6 +4,8 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.Filament;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javax.print.PrintException;
 
 /**
  * The PurgeStateTransitionManager manages state and transitions between different states, and also
@@ -26,22 +28,22 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
         ((PurgeActions) actions).setPurgeTemperature(purgeTemperature);
     }
 
-    public int getLastMaterialTemperature()
+    public ReadOnlyIntegerProperty getLastMaterialTemperature()
     {
-        return ((PurgeActions) actions).getLastMaterialTemperature();
+        return ((PurgeActions) actions).getLastMaterialTemperatureProperty();
     }
 
-    public int getCurrentMaterialTemperature()
+    public ReadOnlyIntegerProperty getCurrentMaterialTemperature()
     {
-        return ((PurgeActions) actions).getCurrentMaterialTemperature();
+        return ((PurgeActions) actions).getCurrentMaterialTemperatureProperty();
     }
 
-    public int getPurgeTemperature()
+    public ReadOnlyIntegerProperty getPurgeTemperature()
     {
-        return ((PurgeActions) actions).getPurgeTemperature();
+        return ((PurgeActions) actions).getPurgeTemperatureProperty();
     }
 
-    public void setPurgeFilament(Filament filament)
+    public void setPurgeFilament(Filament filament) throws PrintException
     {
         ((PurgeActions) actions).setPurgeFilament(filament);
     }

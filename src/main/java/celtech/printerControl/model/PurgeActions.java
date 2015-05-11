@@ -9,6 +9,9 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javax.print.PrintException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -39,9 +42,9 @@ public class PurgeActions extends StateTransitionActions
     private HeadEEPROMDataResponse savedHeadData;
 
     private float reelNozzleTemperature = 0;
-    private int lastDisplayTemperature = 0;
-    private int currentDisplayTemperature = 0;
-    private int purgeTemperature;
+    private final IntegerProperty lastDisplayTemperature = new SimpleIntegerProperty(0);
+    private final IntegerProperty currentDisplayTemperature = new SimpleIntegerProperty(0);
+    private final IntegerProperty purgeTemperature = new SimpleIntegerProperty(0);
 
     /**
      * The filament that will be used during the purge, either the filament on the current reel or a
@@ -60,8 +63,8 @@ public class PurgeActions extends StateTransitionActions
     public void initialise()
     {
         reelNozzleTemperature = 0;
-        lastDisplayTemperature = 0;
-        currentDisplayTemperature = 0;
+        lastDisplayTemperature.set(0);
+        currentDisplayTemperature.set(0);
         savedHeadData = null;
     }
 
@@ -110,13 +113,13 @@ public class PurgeActions extends StateTransitionActions
             throw new PurgeException("Bed heat failed");
         }
 
-        printer.setNozzleTargetTemperature(purgeTemperature);
+        printer.setNozzleTargetTemperature(purgeTemperature.get());
         printer.goToTargetNozzleTemperature();
         //TODO modify to support multiple heaters
         boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
             printer.headProperty().get().getNozzleHeaters().get(0).
             nozzleTemperatureProperty(),
-            null, purgeTemperature, 5, 300, userOrErrorCancellable);
+            null, purgeTemperature.get(), 5, 300, userOrErrorCancellable);
 
         if (extruderHeatFailed)
         {
@@ -178,24 +181,24 @@ public class PurgeActions extends StateTransitionActions
         printer.switchOffHeadLEDs();
     }
 
-    public int getLastMaterialTemperature()
+    public ReadOnlyIntegerProperty getLastMaterialTemperatureProperty()
     {
         return lastDisplayTemperature;
     }
 
-    public int getCurrentMaterialTemperature()
+    public ReadOnlyIntegerProperty getCurrentMaterialTemperatureProperty()
     {
         return currentDisplayTemperature;
     }
 
-    public int getPurgeTemperature()
+    public ReadOnlyIntegerProperty getPurgeTemperatureProperty()
     {
         return purgeTemperature;
     }
 
     public void setPurgeTemperature(int newPurgeTemperature)
     {
-        purgeTemperature = newPurgeTemperature;
+        purgeTemperature.set(newPurgeTemperature);
     }
 
     public void setPurgeFilament(Filament filament) throws PrintException
@@ -217,13 +220,13 @@ public class PurgeActions extends StateTransitionActions
 
         float temperatureDifference = reelNozzleTemperature
             - savedHeadData.getLastFilamentTemperature();
-        lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
-        currentDisplayTemperature = (int) reelNozzleTemperature;
-        purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(),
+        lastDisplayTemperature.set((int) savedHeadData.getLastFilamentTemperature());
+        currentDisplayTemperature.set((int) reelNozzleTemperature);
+        purgeTemperature.set((int) Math.min(savedHeadData.getMaximumTemperature(),
                                           Math.max(180.0,
                                                    savedHeadData.
                                                    getLastFilamentTemperature()
-                                                   + (temperatureDifference / 2)));
+                                                   + (temperatureDifference / 2))));
 
     }
 

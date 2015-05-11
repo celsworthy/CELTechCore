@@ -30,6 +30,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
@@ -44,6 +46,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javax.print.PrintException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -303,11 +306,6 @@ public class PurgeInsetPanelController implements Initializable
             case INITIALISING:
                 break;
             case CONFIRM_TEMPERATURE:
-                lastMaterialTemperature.setText(String.valueOf(
-                    transitionManager.getLastMaterialTemperature()));
-                currentMaterialTemperature.setText(String.valueOf(
-                    transitionManager.getCurrentMaterialTemperature()));
-                purgeTemperature.setText(String.valueOf(transitionManager.getPurgeTemperature()));
                 purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
                 break;
@@ -362,6 +360,10 @@ public class PurgeInsetPanelController implements Initializable
         printer.getPrintEngine().progressProperty().addListener(printPercentListener);
     }
 
+    /**
+     * Bind to the given printer. This is only called once for a given purge and should not be
+     * called again during the purge.
+     */
     private void bindPrinter(Printer printer)
     {
         if (this.printer != null)
@@ -369,18 +371,18 @@ public class PurgeInsetPanelController implements Initializable
             removePrintProgressListeners(this.printer);
             startPurgeButton.getTag().removeAllConditionalText();
             proceedButton.getTag().removeAllConditionalText();
+            cmbCurrentMaterial.visibleProperty().unbind();
+            textCurrentMaterial.visibleProperty().unbind();
         }
+
         this.printer = printer;
         setupPrintProgressListeners(printer);
 
         installTag(printer, startPurgeButton);
         installTag(printer, proceedButton);
 
-        showCurrentMaterial();
-
         BooleanBinding reel0Present = Bindings.valueAt(printer.reelsProperty(), 0).isNotNull();
-        cmbCurrentMaterial.visibleProperty().unbind();
-        textCurrentMaterial.visibleProperty().unbind();
+
         cmbCurrentMaterial.visibleProperty().bind(reel0Present.not());
         textCurrentMaterial.visibleProperty().bind(reel0Present);
 
@@ -396,14 +398,11 @@ public class PurgeInsetPanelController implements Initializable
         {
             currentMaterial = Lookup.getFilamentContainer().getFilamentByID(
                 printer.reelsProperty().get(0).filamentIDProperty().get());
-            textCurrentMaterial.setText(
-                printer.reelsProperty().get(0).friendlyFilamentNameProperty().get());
-            selectMaterial(currentMaterial);
         } else
         {
-            selectMaterial(cmbCurrentMaterial.getValue());
+            currentMaterial = cmbCurrentMaterial.getValue();
         }
-
+        selectMaterial(currentMaterial);
     }
 
     private void installTag(Printer printer, GraphicButtonWithLabel button)
@@ -446,10 +445,14 @@ public class PurgeInsetPanelController implements Initializable
         try
         {
             transitionManager = printer.startPurge();
-            if (currentMaterial != null)
-            {
-                transitionManager.setPurgeFilament(currentMaterial);
-            }
+            
+            currentMaterialTemperature.textProperty().unbind();
+            purgeTemperature.textProperty().unbind();
+            lastMaterialTemperature.textProperty().unbind();
+            currentMaterialTemperature.textProperty().bind(transitionManager.getCurrentMaterialTemperature().asString());
+            purgeTemperature.textProperty().bind(transitionManager.getPurgeTemperature().asString());
+            lastMaterialTemperature.textProperty().bind(transitionManager.getLastMaterialTemperature().asString());
+            
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
             {
                 @Override
@@ -489,13 +492,19 @@ public class PurgeInsetPanelController implements Initializable
      */
     private void selectMaterial(Filament filament)
     {
+        System.out.println("select material " + filament);
         currentMaterial = filament;
         if (transitionManager != null)
         {
-            transitionManager.setPurgeFilament(filament);
-            currentMaterialTemperature.setText(String.valueOf(
-                transitionManager.getCurrentMaterialTemperature()));
-            purgeTemperature.setText(String.valueOf(transitionManager.getPurgeTemperature()));
+            try
+            {
+                transitionManager.setPurgeFilament(filament);
+            } catch (PrintException ex)
+            {
+                ex.printStackTrace();
+                steno.error("Error setting purge filament");
+            }
+            textCurrentMaterial.setText(currentMaterial.getFriendlyFilamentName());
         }
     }
 
