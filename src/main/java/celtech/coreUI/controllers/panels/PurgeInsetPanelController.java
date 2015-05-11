@@ -5,11 +5,11 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PurgeState;
@@ -21,20 +21,25 @@ import static celtech.printerControl.model.PurgeState.IDLE;
 import static celtech.printerControl.model.PurgeState.INITIALISING;
 import static celtech.printerControl.model.PurgeState.RUNNING_PURGE;
 import celtech.printerControl.model.PurgeStateTransitionManager;
+import celtech.printerControl.model.Reel;
 import celtech.printerControl.model.StateTransition;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
-import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -49,12 +54,14 @@ import libertysystems.stenographer.StenographerFactory;
 public class PurgeInsetPanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(PurgeInsetPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        PurgeInsetPanelController.class.getName());
 
     private Project project = null;
     private Printer printer = null;
     private double printPercent;
     private DiagramHandler diagramHandler;
+    private Filament currentMaterial;
 
     PurgeStateTransitionManager transitionManager;
 
@@ -80,9 +87,9 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private Text currentMaterialTemperature;
-    
+
     @FXML
-    private Text resettingPrinter;    
+    private Text resettingPrinter;
 
     @FXML
     private GridPane purgeDetailsGrid;
@@ -107,6 +114,12 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     protected LargeProgress purgeProgressBar;
+
+    @FXML
+    private Text textCurrentMaterial;
+
+    @FXML
+    private ComboBox<Filament> cmbCurrentMaterial;
 
     @FXML
     void start(ActionEvent event)
@@ -165,9 +178,72 @@ public class PurgeInsetPanelController implements Initializable
 
         startPurgeButton.installTag();
         proceedButton.installTag();
-        
+
         diagramHandler = new DiagramHandler(diagramContainer, resources);
         diagramHandler.initialise();
+
+        setupMaterialCombo();
+
+        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
+        {
+
+            @Override
+            public void whenPrinterAdded(Printer printer)
+            {
+            }
+
+            @Override
+            public void whenPrinterRemoved(Printer printer)
+            {
+            }
+
+            @Override
+            public void whenHeadAdded(Printer printer)
+            {
+            }
+
+            @Override
+            public void whenHeadRemoved(Printer printer, Head head)
+            {
+            }
+
+            @Override
+            public void whenReelAdded(Printer printer, int reelIndex)
+            {
+                if (PurgeInsetPanelController.this.printer == printer)
+                {
+                    PurgeInsetPanelController.this.showCurrentMaterial();
+                }
+            }
+
+            @Override
+            public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+            {
+                if (PurgeInsetPanelController.this.printer == printer)
+                {
+                    PurgeInsetPanelController.this.showCurrentMaterial();
+                }
+            }
+
+            @Override
+            public void whenReelChanged(Printer printer, Reel reel)
+            {
+                if (PurgeInsetPanelController.this.printer == printer)
+                {
+                    PurgeInsetPanelController.this.showCurrentMaterial();
+                }
+            }
+
+            @Override
+            public void whenExtruderAdded(Printer printer, int extruderIndex)
+            {
+            }
+
+            @Override
+            public void whenExtruderRemoved(Printer printer, int extruderIndex)
+            {
+            }
+        });
     }
 
     private void populateNamesToButtons()
@@ -299,6 +375,35 @@ public class PurgeInsetPanelController implements Initializable
 
         installTag(printer, startPurgeButton);
         installTag(printer, proceedButton);
+
+        showCurrentMaterial();
+
+        BooleanBinding reel0Present = Bindings.valueAt(printer.reelsProperty(), 0).isNotNull();
+        cmbCurrentMaterial.visibleProperty().unbind();
+        textCurrentMaterial.visibleProperty().unbind();
+        cmbCurrentMaterial.visibleProperty().bind(reel0Present.not());
+        textCurrentMaterial.visibleProperty().bind(reel0Present);
+
+    }
+
+    /**
+     * If a reel is loaded then show and select its material, else show and select the material from
+     * the combo box. This should be called whenever a reel is loaded/unloaded or changed.
+     */
+    private void showCurrentMaterial()
+    {
+        if (printer.reelsProperty().containsKey(0))
+        {
+            currentMaterial = Lookup.getFilamentContainer().getFilamentByID(
+                printer.reelsProperty().get(0).filamentIDProperty().get());
+            textCurrentMaterial.setText(
+                printer.reelsProperty().get(0).friendlyFilamentNameProperty().get());
+            selectMaterial(currentMaterial);
+        } else
+        {
+            selectMaterial(cmbCurrentMaterial.getValue());
+        }
+
     }
 
     private void installTag(Printer printer, GraphicButtonWithLabel button)
@@ -317,30 +422,34 @@ public class PurgeInsetPanelController implements Initializable
                     Lookup.getUserPreferences().safetyFeaturesOnProperty()))
             .or(printer.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
-    
+
     public void purgeAndPrint(Project project, Filament filament, Printer printerToUse)
     {
         this.project = project;
         //TODO what about multiple reels etc
         Filament purgeFilament = project.getPrinterSettings().getFilament0();
         bindPrinter(printerToUse);
-
-        startPurge(purgeFilament);
-    }    
+        currentMaterial = purgeFilament;
+        startPurge();
+    }
 
     public void purge(Printer printer)
     {
         bindPrinter(printer);
-        startPurge(null);
-    }    
+        startPurge();
+    }
 
-    private void startPurge(Filament purgeFilament) {    
+    private void startPurge()
+    {
         ApplicationStatus.getInstance().setMode(ApplicationMode.PURGE);
 
         try
         {
             transitionManager = printer.startPurge();
-            transitionManager.setPurgeFilament(purgeFilament);
+            if (currentMaterial != null)
+            {
+                transitionManager.setPurgeFilament(currentMaterial);
+            }
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
             {
                 @Override
@@ -356,5 +465,66 @@ public class PurgeInsetPanelController implements Initializable
             steno.error("Error starting purge: " + ex);
         }
     }
-    
+
+    private void setupMaterialCombo()
+    {
+        cmbCurrentMaterial.setCellFactory(
+            (ListView<Filament> param) -> new MaterialCell());
+
+        cmbCurrentMaterial.setButtonCell(cmbCurrentMaterial.getCellFactory().call(null));
+
+        repopulateCmbCurrentMaterial();
+
+        cmbCurrentMaterial.valueProperty().addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                selectMaterial(newValue);
+            });
+
+    }
+
+    /**
+     * Tell the purge state machine about the (changed) current material, and update the relevant
+     * text fields.
+     */
+    private void selectMaterial(Filament filament)
+    {
+        currentMaterial = filament;
+        if (transitionManager != null)
+        {
+            transitionManager.setPurgeFilament(filament);
+            currentMaterialTemperature.setText(String.valueOf(
+                transitionManager.getCurrentMaterialTemperature()));
+            purgeTemperature.setText(String.valueOf(transitionManager.getPurgeTemperature()));
+        }
+    }
+
+    private void repopulateCmbCurrentMaterial()
+    {
+        try
+        {
+            cmbCurrentMaterial.setItems(Lookup.getFilamentContainer().getCompleteFilamentList());
+        } catch (NoClassDefFoundError exception)
+        {
+            // this should only happen in SceneBuilder            
+        }
+    }
+
+    public class MaterialCell extends ListCell<Filament>
+    {
+
+        @Override
+        protected void updateItem(Filament item, boolean empty)
+        {
+            super.updateItem(item, empty);
+            if (item != null && !empty)
+            {
+                setText(item.getFriendlyFilamentName());
+            } else
+            {
+                setText("");
+            }
+        }
+    }
+
 }

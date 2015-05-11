@@ -9,6 +9,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import javax.print.PrintException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -92,30 +93,6 @@ public class PurgeActions extends StateTransitionActions
         // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
         //TODO make PURGE work for dual material head
         savedHeadData = printer.readHeadEEPROM();
-
-        // The nozzle should be heated to a temperature halfway between the last
-        //temperature stored on the head and the current required temperature stored
-        // on the reel
-        if (purgeFilament != null)
-        {
-            reelNozzleTemperature = purgeFilament.getNozzleTemperature();
-        } else
-        {
-            //TODO modify for multiple reels
-            reelNozzleTemperature = (float) printer.reelsProperty().get(0).
-                nozzleTemperatureProperty().get();
-        }
-
-        float temperatureDifference = reelNozzleTemperature
-            - savedHeadData.getLastFilamentTemperature();
-        lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
-        currentDisplayTemperature = (int) reelNozzleTemperature;
-        purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(),
-                                          Math.max(180.0,
-                                                   savedHeadData.
-                                                   getLastFilamentTemperature()
-                                                   + (temperatureDifference / 2)));
-
     }
 
     void doHeatingAction() throws InterruptedException, PurgeException
@@ -221,9 +198,33 @@ public class PurgeActions extends StateTransitionActions
         purgeTemperature = newPurgeTemperature;
     }
 
-    public void setPurgeFilament(Filament filament)
+    public void setPurgeFilament(Filament filament) throws PrintException
     {
         purgeFilament = filament;
+        updatePurgeTemperature();
+    }
+    
+    private void updatePurgeTemperature() throws PrintException {
+        // The nozzle should be heated to a temperature halfway between the last
+        //temperature stored on the head and the current required temperature stored
+        // on the reel
+        if (purgeFilament != null)
+        {
+            reelNozzleTemperature = purgeFilament.getNozzleTemperature();
+        } else {
+            throw new PrintException("The purge filament must be set");
+        }
+
+        float temperatureDifference = reelNozzleTemperature
+            - savedHeadData.getLastFilamentTemperature();
+        lastDisplayTemperature = (int) savedHeadData.getLastFilamentTemperature();
+        currentDisplayTemperature = (int) reelNozzleTemperature;
+        purgeTemperature = (int) Math.min(savedHeadData.getMaximumTemperature(),
+                                          Math.max(180.0,
+                                                   savedHeadData.
+                                                   getLastFilamentTemperature()
+                                                   + (temperatureDifference / 2)));
+
     }
 
     @Override

@@ -14,7 +14,6 @@ import celtech.services.slicer.SlicerTask;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -341,7 +340,6 @@ public class TimeCostInsetPanelController implements Initializable
 
     private void cancelTask(SlicerTask slicerTask)
     {
-        System.out.println("cancel task " + slicerTask);
         if (slicerTask != null && !(slicerTask.isDone() || slicerTask.isCancelled()))
         {
             slicerTask.cancel();

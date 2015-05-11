@@ -48,24 +48,32 @@
                             </columnConstraints>
                             <rowConstraints>
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
-                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
+                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="3">
                                 </Text>
-                                <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="1">
+                                <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
                                 </Text>
                                 <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.lastTemperature" textAlignment="CENTER">
                                 </Text>
                                 <Text fx:id="lastMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1">
                                 </Text>
-                                <Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                <Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                 </Text>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" />
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                              <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="%purgeMaterial.currentMaterial" textAlignment="CENTER" GridPane.rowIndex="1" />
+                              <StackPane GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                                 <children>
+                                    <Text fx:id="textCurrentMaterial" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" StackPane.alignment="CENTER_LEFT" />
+                                    <ComboBox fx:id="cmbCurrentMaterial" prefWidth="150.0" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
+                                 </children>
+                              </StackPane>
                             </children>
                         </GridPane>
                         <VBox fx:id="diagramContainer" alignment="BOTTOM_LEFT" VBox.vgrow="ALWAYS" />
