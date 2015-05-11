@@ -70,7 +70,7 @@ public class ChoiceLinkDialogBox extends VBox
 
     public void setMessage(String i18nMessage)
     {
-        message.setText(i18nMessage);
+        message.replaceText(i18nMessage);
     }
 
     public ChoiceLinkButton addChoiceLink(String i18Title, String i18nMessage)
