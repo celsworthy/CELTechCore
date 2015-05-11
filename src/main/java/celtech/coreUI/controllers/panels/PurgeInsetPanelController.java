@@ -306,6 +306,7 @@ public class PurgeInsetPanelController implements Initializable
             case INITIALISING:
                 break;
             case CONFIRM_TEMPERATURE:
+                showCurrentMaterial();
                 purgeTemperature.intValueProperty().addListener(purgeTempEntryListener);
                 purgeDetailsGrid.setVisible(true);
                 break;
@@ -462,6 +463,7 @@ public class PurgeInsetPanelController implements Initializable
                 }
             });
             transitionManager.start();
+            showCurrentMaterial();
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
         {

@@ -86,7 +86,7 @@ public class PurgeActions extends StateTransitionActions
 
     }
 
-    public void doInitialiseAction() throws RoboxCommsException
+    public void doInitialiseAction() throws RoboxCommsException, PrintException
     {
         printer.setPrinterStatus(PrinterStatus.PURGING_HEAD);
 
@@ -206,27 +206,32 @@ public class PurgeActions extends StateTransitionActions
         purgeFilament = filament;
         updatePurgeTemperature();
     }
-    
-    private void updatePurgeTemperature() throws PrintException {
+
+    private void updatePurgeTemperature() throws PrintException
+    {
         // The nozzle should be heated to a temperature halfway between the last
         //temperature stored on the head and the current required temperature stored
         // on the reel
         if (purgeFilament != null)
         {
             reelNozzleTemperature = purgeFilament.getNozzleTemperature();
-        } else {
+        } else
+        {
             throw new PrintException("The purge filament must be set");
         }
 
-        float temperatureDifference = reelNozzleTemperature
-            - savedHeadData.getLastFilamentTemperature();
-        lastDisplayTemperature.set((int) savedHeadData.getLastFilamentTemperature());
-        currentDisplayTemperature.set((int) reelNozzleTemperature);
-        purgeTemperature.set((int) Math.min(savedHeadData.getMaximumTemperature(),
-                                          Math.max(180.0,
-                                                   savedHeadData.
-                                                   getLastFilamentTemperature()
-                                                   + (temperatureDifference / 2))));
+        if (savedHeadData != null)
+        {
+            float temperatureDifference = reelNozzleTemperature
+                - savedHeadData.getLastFilamentTemperature();
+            lastDisplayTemperature.set((int) savedHeadData.getLastFilamentTemperature());
+            currentDisplayTemperature.set((int) reelNozzleTemperature);
+            purgeTemperature.set((int) Math.min(savedHeadData.getMaximumTemperature(),
+                                                Math.max(180.0,
+                                                         savedHeadData.
+                                                         getLastFilamentTemperature()
+                                                         + (temperatureDifference / 2))));
+        }
 
     }
 
@@ -250,10 +255,10 @@ public class PurgeActions extends StateTransitionActions
 
     @Override
     /**
-     * This is run after a Cancel or Error but not until any ongoing Action has completed / stopped. We
-     * reset the printer here and not at the time of error/cancel detection because if done
+     * This is run after a Cancel or Error but not until any ongoing Action has completed / stopped.
+     * We reset the printer here and not at the time of error/cancel detection because if done
      * immediately the ongoing Action could undo the effects of the reset.
-     */ 
+     */
     void resetAfterCancelOrError()
     {
         try
