@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
@@ -35,6 +36,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -379,7 +382,8 @@ public class PurgeInsetPanelController implements Initializable
             proceedButton.getTag().removeAllConditionalText();
             cmbCurrentMaterial.visibleProperty().unbind();
             textCurrentMaterial.visibleProperty().unbind();
-        }
+            proceedButton.disableProperty().unbind(); 
+       }
 
         this.printer = printer;
         setupPrintProgressListeners(printer);
@@ -436,7 +440,8 @@ public class PurgeInsetPanelController implements Initializable
         //TODO what about multiple reels etc
         Filament purgeFilament = project.getPrinterSettings().getFilament0();
         bindPrinter(printerToUse);
-        currentMaterial = purgeFilament;
+        selectMaterial(filament);
+        cmbCurrentMaterial.setValue(filament);
         startPurge();
     }
 
@@ -455,11 +460,10 @@ public class PurgeInsetPanelController implements Initializable
             transitionManager = printer.startPurge();
 
             currentMaterialTemperature.textProperty().unbind();
-            purgeTemperature.textProperty().unbind();
             lastMaterialTemperature.textProperty().unbind();
             currentMaterialTemperature.textProperty().bind(
                 transitionManager.getCurrentMaterialTemperature().asString());
-            purgeTemperature.textProperty().bind(transitionManager.getPurgeTemperature().asString());
+            
             lastMaterialTemperature.textProperty().bind(
                 transitionManager.getLastMaterialTemperature().asString());
 
@@ -471,6 +475,9 @@ public class PurgeInsetPanelController implements Initializable
                     setState((PurgeState) newValue);
                 }
             });
+            
+            setupProceedButton();
+            
             transitionManager.start();
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
@@ -502,7 +509,6 @@ public class PurgeInsetPanelController implements Initializable
      */
     private void selectMaterial(Filament filament)
     {
-        System.out.println("select material " + filament);
         currentMaterial = filament;
         if (transitionManager != null)
         {
@@ -514,19 +520,66 @@ public class PurgeInsetPanelController implements Initializable
                 ex.printStackTrace();
                 steno.error("Error setting purge filament");
             }
-            textCurrentMaterial.setText(currentMaterial.getFriendlyFilamentName());
+            textCurrentMaterial.setText(currentMaterial.getLongFriendlyName() + " " + currentMaterial.getMaterial().getFriendlyName());
+            purgeTemperature.setText(transitionManager.getPurgeTemperature().asString().get());
         }
     }
 
     private void repopulateCmbCurrentMaterial()
     {
+        FilamentContainer filamentContainer = Lookup.getFilamentContainer();
         try
         {
-            cmbCurrentMaterial.setItems(Lookup.getFilamentContainer().getCompleteFilamentList());
+            ObservableList<Filament> filamentList = FXCollections.observableArrayList();
+            ObservableList<Filament> appFilaments = FXCollections.observableArrayList();
+            ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
+            appFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+            if (Lookup.getUserPreferences().isAdvancedMode())
+            {
+                appFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
+                (Filament o1, Filament o2)
+                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+            }
+            filamentList.addAll(appFilaments);
+            filamentList.addAll(userFilaments);
+            cmbCurrentMaterial.setItems(filamentList);
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
         }
+    }
+
+    /**
+     * The proceed button should be disabled on the CONFIRM_TEMPERATURE page if the
+     * purge temperature is not greater than 0.
+     */
+    private void setupProceedButton()
+    {
+        BooleanBinding proceedDisabled = new BooleanBinding()
+        {
+            {
+                super.bind(transitionManager.stateGUITProperty(),
+                           transitionManager.getPurgeTemperature());
+            }
+
+            @Override
+            protected boolean computeValue()
+            {
+                if (! transitionManager.stateGUITProperty().get().equals(CONFIRM_TEMPERATURE)) {
+                    return false;
+                }
+                if (transitionManager.getPurgeTemperature().greaterThan(0).get()) {
+                    return false;
+                }
+                return true;
+            }
+        };
+        proceedButton.disableProperty().bind(proceedDisabled);
     }
 
     public static class FilamentCell extends ListCell<Filament>

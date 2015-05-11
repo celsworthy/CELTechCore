@@ -100,6 +100,7 @@ public class PurgeActions extends StateTransitionActions
 
     void doHeatingAction() throws InterruptedException, PurgeException
     {
+        steno.debug("purge temperature set to " + purgeTemperature.get());
         //Set the bed to 90 degrees C
         int desiredBedTemperature = 90;
         printer.setBedTargetTemperature(desiredBedTemperature);
@@ -112,7 +113,7 @@ public class PurgeActions extends StateTransitionActions
         {
             throw new PurgeException("Bed heat failed");
         }
-
+        
         printer.setNozzleTargetTemperature(purgeTemperature.get());
         printer.goToTargetNozzleTemperature();
         //TODO modify to support multiple heaters

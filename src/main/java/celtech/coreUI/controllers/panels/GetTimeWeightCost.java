@@ -75,8 +75,6 @@ public class GetTimeWeightCost
     public SlicerTask setupSlicerTask()
     {
 
-        System.out.println("launch time cost process for project " + project + " and settings "
-            + settings.getProfileName());
         steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
@@ -90,7 +88,6 @@ public class GetTimeWeightCost
         slicerTask.setOnCancelled((WorkerStateEvent event) ->
         {
             clearPrintJobDirectory();
-            System.out.println("cancel post processor");
             if (postProcessorTask != null)
             {
                 postProcessorTask.cancel();
@@ -150,8 +147,6 @@ public class GetTimeWeightCost
             }
         });
 
-        System.out.println("return slicer task for project " + project + " and settings "
-            + settings.getProfileName());
         return slicerTask;
     }
 

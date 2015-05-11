@@ -22,28 +22,26 @@ public class FXMLUtilities
      *
      * @param parentNode the node from which to start the recursion.
      */
-    public static void addColonsToLabels(Parent parentNode)
+    public static void addColonsToLabels(Node parentNode)
     {
         System.out.println("Parent is " + parentNode.getClass().getName());
         if (parentNode instanceof Label)
         {
             Label label = (Label) parentNode;
             addColonToLabel(label);
-        } else
+        } else if (parentNode instanceof Text)
         {
-            for (Node node : parentNode.getChildrenUnmodifiable())
+            addColonToText((Text) parentNode);
+        } else if (parentNode instanceof Parent)
+        {
+            for (Node node : ((Parent) parentNode).getChildrenUnmodifiable())
             {
                 System.out.println("Node is " + node.getClass().getName());
-                if (node instanceof Parent)
+                if (node instanceof Parent || node instanceof Text)
                 {
-                    addColonsToLabels((Parent) node);
+                    addColonsToLabels(node);
                 }
-                if (node instanceof Label) {
-                    addColonToLabel((Label) node);
-                }
-                if (node instanceof Text) {
-                    addColonToText((Text) node);
-                }                
+
                 if (node instanceof TabPane)
                 {
                     TabPane tabPane = (TabPane) node;
@@ -67,12 +65,12 @@ public class FXMLUtilities
             label.setText(label.getText() + ":");
         }
     }
-    
+
     private static void addColonToText(Text text)
     {
         if (text.getStyleClass().contains("colon"))
         {
             text.setText(text.getText() + ":");
         }
-    }    
+    }
 }

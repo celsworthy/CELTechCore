@@ -43,6 +43,9 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.effect.Light;
+import javafx.scene.effect.Lighting;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
@@ -1643,11 +1646,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return originalModelBounds;
     }
-    
-    public Translate getTransformMoveToCentre() {
+
+    public Translate getTransformMoveToCentre()
+    {
         return transformMoveToCentre;
     }
-    
+
     private void dropToBedAndUpdateLastTransformedBounds()
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
@@ -1828,7 +1832,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
             } else
             {
-                meshMaterial = new PhongMaterial(displayColourExtruder0);
+                meshMaterial = getMaterialForColour(displayColourExtruder0);
             }
         } else
         {
@@ -1837,7 +1841,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
             } else
             {
-                meshMaterial = new PhongMaterial(displayColourExtruder1);
+                meshMaterial = getMaterialForColour(displayColourExtruder0);
             }
         }
         material = meshMaterial;
@@ -1846,6 +1850,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             MeshView meshView = (MeshView) mesh;
             meshView.setMaterial(meshMaterial);
         }
+    }
+
+    private PhongMaterial getMaterialForColour(Color displayColourExtruder)
+    {
+        PhongMaterial meshMaterial = new PhongMaterial(displayColourExtruder);
+        if (displayColourExtruder.equals(Color.BLACK))
+        {
+            meshMaterial.setSpecularColor(Color.DARKGRAY);
+            meshMaterial.setSpecularPower(20);
+            meshMaterial.setDiffuseColor(new Color(0.1, 0.1, 0.1, 1));
+        }
+        return meshMaterial;
     }
 
     @Override
