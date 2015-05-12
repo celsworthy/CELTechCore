@@ -10,6 +10,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.utils.SystemUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,22 +32,46 @@ public class ProjectHeader implements Serializable
 
     public ProjectHeader()
     {
+        System.out.println("create project header");
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
             + formatter.format(now));
         projectPath = ApplicationConfiguration.getProjectDirectory();
         lastModifiedDate.set(now);
+        System.out.println("end create project header");
+    }
+
+    private void writeObject(ObjectOutputStream out)
+            throws IOException
+    {
+        out.writeUTF(projectUUID);
+        out.writeUTF(projectNameProperty.get());
+        out.writeUTF(projectPath);
+        out.writeObject(lastModifiedDate.get());
+        out.writeObject(new Date());
     }
 
     private void readObject(ObjectInputStream in)
-        throws IOException, ClassNotFoundException
+            throws IOException, ClassNotFoundException
     {
+        System.out.println("read project header 1");
         projectUUID = in.readUTF();
+        System.out.println("read project header 2");
         projectNameProperty = new SimpleStringProperty(in.readUTF());
+        System.out.println("read project header 3");
         projectPath = in.readUTF();
-        SimpleObjectProperty lastModifiedDate = new SimpleObjectProperty<>((Date) (in.readObject()));
-        SimpleObjectProperty lastSavedDate = new SimpleObjectProperty<>((Date) (in.readObject()));
+        System.out.println("read project header 4");
+        Object lastModifiedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
+        System.out.println("read project header 5");
+        Object lastSavedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
+        System.out.println("read project header 6");
+    }
+
+    private void readObjectNoData()
+            throws ObjectStreamException
+    {
+
     }
 
     public final void setProjectName(String value)

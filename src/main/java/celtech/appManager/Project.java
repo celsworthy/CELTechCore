@@ -318,13 +318,19 @@ public class Project implements Serializable
 
         FileInputStream fin = new FileInputStream(file);
         ObjectInputStream in = new ObjectInputStream(fin);
+        System.out.println("read proj 1");
         ProjectHeader projectHeader = (ProjectHeader) in.readObject();
+        
+        System.out.println("read proj 2");
         int numberOfModels = in.readInt();
+        System.out.println("read proj 3");
         for (int counter = 0; counter < numberOfModels; counter++)
         {
+            System.out.println("read proj 4");
             ModelContainer model = (ModelContainer) in.readObject();
             addModel(model);
         }
+        System.out.println("read proj 5");
 
 //        String gcodeFileName = in.readUTF();
 //        // lastPrintJobID - don't set
