@@ -153,6 +153,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      */
     public void shutdown()
     {
+        keepRunning = false;
+        
         for (Printer printer : Lookup.getConnectedPrinters())
         {
             steno.info("Shutdown printer " + printer);
@@ -165,7 +167,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
             }
         }
 
-        keepRunning = false;
+        
     }
 
 

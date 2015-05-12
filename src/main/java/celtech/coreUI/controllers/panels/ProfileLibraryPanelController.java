@@ -1460,7 +1460,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 allCurrentNames.add(printProfile.getProfileName());
             });
-        String newName = DeDuplicator.suggestNonDuplicateName(parametersFile.getProfileName(),
+        String newName = DeDuplicator.suggestNonDuplicateNameCopy(parametersFile.getProfileName(),
                                                               allCurrentNames);
         parametersFile.setProfileName(newName);
         SlicerParametersContainer.saveProfile(parametersFile);

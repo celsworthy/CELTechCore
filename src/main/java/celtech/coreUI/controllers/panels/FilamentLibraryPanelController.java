@@ -658,7 +658,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         {
             allCurrentNames.add(filament1.getFriendlyFilamentName());
         });
-        String newName = DeDuplicator.suggestNonDuplicateName(filament.getFriendlyFilamentName(),
+        String newName = DeDuplicator.suggestNonDuplicateNameCopy(filament.getFriendlyFilamentName(),
                                                               allCurrentNames);
         filament.setFriendlyFilamentName(newName);
         filamentContainer.saveFilament(filament);

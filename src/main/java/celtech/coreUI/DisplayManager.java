@@ -10,7 +10,6 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.components.ProjectLoader;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.SlideoutAndProjectHolder;
 import celtech.coreUI.components.Spinner;
@@ -108,7 +107,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     /*
      * Project loading
      */
-    private ProjectLoader projectLoader = null;
     private ProgressDialog modelLoadDialog = null;
 
     private InfoScreenIndicatorController infoScreenIndicatorController = null;
@@ -452,7 +450,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             ex.printStackTrace();
         }
 
-        projectLoader = new ProjectLoader();
         modelLoadDialog = new ProgressDialog(ModelLoader.modelLoaderService);
 
         scene = new Scene(rootStackPane, ApplicationConfiguration.DEFAULT_WIDTH,
