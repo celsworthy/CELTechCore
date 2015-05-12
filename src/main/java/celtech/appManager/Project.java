@@ -342,43 +342,14 @@ public class Project implements Serializable
     {
         initialise();
 
-        System.out.println("read proj 1");
         ProjectHeader projectHeader = (ProjectHeader) in.readObject();
 
-        System.out.println("read proj 2");
         int numberOfModels = in.readInt();
-        System.out.println("read proj 3");
         for (int counter = 0; counter < numberOfModels; counter++)
         {
-            System.out.println("read proj 4");
             ModelContainer model = (ModelContainer) in.readObject();
             addModel(model);
         }
-        System.out.println("read proj 5");
-
-//        String gcodeFileName = in.readUTF();
-//        // lastPrintJobID - don't set
-//        in.readUTF();
-//
-//        SlicerParametersFile customSettings;
-//        String customProfileName;
-//        PrintQualityEnumeration printQuality;
-//        try
-//        {
-//            customSettings = (SlicerParametersFile) in.readObject();
-//            //Introduced in version 1.00.06
-//            if (in.available() > 0)
-//            {
-//                customProfileName = in.readUTF();
-//                printQuality = (PrintQualityEnumeration) in.readObject();
-//            }
-//        } catch (IOException ex)
-//        {
-//            steno.warning("Unable to deserialise settings");
-//            customSettings = null;
-//            customProfileName = "";
-//            printQuality = null;
-//        }
     }
 
     public ObservableList<ModelContainer> getLoadedModels()

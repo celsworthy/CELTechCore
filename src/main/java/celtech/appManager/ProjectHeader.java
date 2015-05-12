@@ -20,6 +20,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ * ProjectHeader is not used except when loading legacy Project files.
+ * @author tony
+ */
 public class ProjectHeader implements Serializable
 {
 
@@ -32,14 +36,12 @@ public class ProjectHeader implements Serializable
 
     public ProjectHeader()
     {
-        System.out.println("create project header");
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
             + formatter.format(now));
         projectPath = ApplicationConfiguration.getProjectDirectory();
         lastModifiedDate.set(now);
-        System.out.println("end create project header");
     }
 
     private void writeObject(ObjectOutputStream out)
@@ -55,17 +57,11 @@ public class ProjectHeader implements Serializable
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException
     {
-        System.out.println("read project header 1");
         projectUUID = in.readUTF();
-        System.out.println("read project header 2");
         projectNameProperty = new SimpleStringProperty(in.readUTF());
-        System.out.println("read project header 3");
         projectPath = in.readUTF();
-        System.out.println("read project header 4");
         Object lastModifiedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
-        System.out.println("read project header 5");
         Object lastSavedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
-        System.out.println("read project header 6");
     }
 
     private void readObjectNoData()
@@ -74,49 +70,5 @@ public class ProjectHeader implements Serializable
 
     }
 
-    public final void setProjectName(String value)
-    {
-        projectNameProperty.set(value);
-    }
-
-    public final String getProjectName()
-    {
-        return projectNameProperty.get();
-    }
-
-    public final StringProperty projectNameProperty()
-    {
-        return projectNameProperty;
-    }
-
-    public final String getProjectPath()
-    {
-        return projectPath;
-    }
-
-    public void setProjectPath(String value)
-    {
-        projectPath = value;
-    }
-
-    public final String getUUID()
-    {
-        return projectUUID;
-    }
-
-    public final void setProjectUUID(String value)
-    {
-        projectUUID = value;
-    }
-
-    public final Date getLastModifiedDate()
-    {
-        return lastModifiedDate.get();
-    }
-
-    public final ObjectProperty<Date> getLastModifiedDateProperty()
-    {
-        return lastModifiedDate;
-    }
-
+   
 }
