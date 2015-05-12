@@ -93,11 +93,11 @@ public class ProjectTab extends Tab
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
 
-        setupDragHandlers();
-
         basePane.getChildren().addAll(viewManager.getSubScene(), timeCostInsetPanel,
                                       settingsInsetPanel, modelActionsInsetPanel);
-        dimensionLineManager = new DimensionLineManager(basePane, project);
+        //Leave this out in 1.01.05
+//        setupDragHandlers();
+//        dimensionLineManager = new DimensionLineManager(basePane, project);
 
         settingsInsetPanel.setVisible(false);
         timeCostInsetPanel.setVisible(false);
