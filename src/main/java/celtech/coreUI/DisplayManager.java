@@ -303,6 +303,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinnerContainer.setMouseTransparent(true);
         spinnerContainer.setPickOnBounds(false);
         spinner = new Spinner();
+        spinner.setVisible(false);
         spinnerContainer.getChildren().add(spinner);
 
         AnchorPane.setBottomAnchor(rootAnchorPane, 0.0);
