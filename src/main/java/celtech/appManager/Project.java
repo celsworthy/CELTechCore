@@ -52,36 +52,39 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class Project implements Serializable
 {
+
     private static final long serialVersionUID = 1L;
 
-    private final Filament DEFAULT_FILAMENT;
+    private Filament DEFAULT_FILAMENT;
 
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
+    
+    Set<ProjectChangesListener> projectChangesListeners;
 
-    private final ObservableList<ModelContainer> loadedModels = FXCollections.observableArrayList();
+    private ObservableList<ModelContainer> loadedModels;
     private String lastPrintJobID = "";
-    private final ObjectProperty<Filament> extruder0Filament = new SimpleObjectProperty<>();
-    private final ObjectProperty<Filament> extruder1Filament = new SimpleObjectProperty<>();
-    private final BooleanProperty modelColourChanged = new SimpleBooleanProperty();
-    private final BooleanProperty canPrint = new SimpleBooleanProperty(true);
-    private final BooleanProperty customSettingsNotChosen = new SimpleBooleanProperty(true);
+    private ObjectProperty<Filament> extruder0Filament;
+    private ObjectProperty<Filament> extruder1Filament;
+    private BooleanProperty modelColourChanged;
+    private BooleanProperty canPrint;
+    private BooleanProperty customSettingsNotChosen;
 
     private final PrinterSettings printerSettings;
 
     private final StringProperty projectNameProperty;
-    private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
-    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    private ObjectProperty<Date> lastModifiedDate;
+    private FilamentContainer filamentContainer;
 
     private boolean suppressProjectChanged = false;
 
     public Project()
     {
-        DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
-
+        initialise();
+        
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
@@ -102,6 +105,20 @@ public class Project implements Serializable
             .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
+    }
+
+    private void initialise()
+    {
+        loadedModels = FXCollections.observableArrayList();
+        extruder0Filament = new SimpleObjectProperty<>();
+        extruder1Filament = new SimpleObjectProperty<>();
+        modelColourChanged = new SimpleBooleanProperty();
+        canPrint = new SimpleBooleanProperty(true);
+        customSettingsNotChosen = new SimpleBooleanProperty(true);
+        lastModifiedDate = new SimpleObjectProperty<>();
+        filamentContainer = Lookup.getFilamentContainer();
+        DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
+        projectChangesListeners = new HashSet<>();
     }
 
     public final void setProjectName(String value)
@@ -140,7 +157,15 @@ public class Project implements Serializable
             {
                 try
                 {
-                    project.readOldProjectFileFormat(basePath);
+                    FileInputStream projectFileStream = new FileInputStream(basePath
+                        + ApplicationConfiguration.projectFileExtension);
+                    ObjectInputStream reader = new ObjectInputStream(projectFileStream);
+                    Project loadedProject = (Project) reader.readObject();
+                    reader.close();
+                    for (ModelContainer modelContainer : loadedProject.loadedModels) {
+                        project.addModel(modelContainer);
+                    }
+                    
                 } catch (Exception ex)
                 {
                     ex.printStackTrace();
@@ -166,9 +191,9 @@ public class Project implements Serializable
         String line;
         while ((line = bufferedReader.readLine()) != null)
         {
-            for (char c: line.toCharArray())
+            for (char c : line.toCharArray())
             {
-                if (! Character.isWhitespace(c))
+                if (!Character.isWhitespace(c))
                 {
                     return c;
                 }
@@ -312,15 +337,14 @@ public class Project implements Serializable
      * This is the Project file reader for version 1.01.04 and is used for reading old project
      * files.
      */
-    private void readOldProjectFileFormat(String basePath) throws FileNotFoundException, IOException, ClassNotFoundException
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException
     {
-        File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
+        initialise();
 
-        FileInputStream fin = new FileInputStream(file);
-        ObjectInputStream in = new ObjectInputStream(fin);
         System.out.println("read proj 1");
         ProjectHeader projectHeader = (ProjectHeader) in.readObject();
-        
+
         System.out.println("read proj 2");
         int numberOfModels = in.readInt();
         System.out.println("read proj 3");
@@ -502,8 +526,6 @@ public class Project implements Serializable
             projectChangesListener.whenModelRemoved(modelContainer);
         }
     }
-
-    Set<ProjectChangesListener> projectChangesListeners = new HashSet<>();
 
     public void addProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
