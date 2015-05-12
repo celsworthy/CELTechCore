@@ -521,8 +521,7 @@ public class PrintEngine implements ControllableService
      * @param settings
      * @return
      */
-    public synchronized boolean printProject(Project project, PrintQualityEnumeration printQuality,
-        SlicerParametersFile settings)
+    public synchronized boolean printProject(Project project)
     {
         boolean acceptedPrintRequest = false;
         etcAvailable.set(false);
@@ -582,8 +581,7 @@ public class PrintEngine implements ControllableService
 
             if (printFromScratchRequired)
             {
-                acceptedPrintRequest = printFromScratch(printQuality, settings,
-                                                        project,
+                acceptedPrintRequest = printFromScratch(project,
                                                         acceptedPrintRequest);
             }
 
@@ -626,10 +624,9 @@ public class PrintEngine implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private boolean printFromScratch(PrintQualityEnumeration printQuality,
-        final SlicerParametersFile settings, Project project, boolean acceptedPrintRequest)
+    private boolean printFromScratch(Project project, boolean acceptedPrintRequest)
     {
-        SlicerParametersFile settingsToUse = settings.clone();
+        SlicerParametersFile settingsToUse = project.getPrinterSettings().getSettings().clone();
 
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
@@ -655,9 +652,9 @@ public class PrintEngine implements ControllableService
 
         //Write out the slicer config
         SlicerType slicerTypeToUse = null;
-        if (settings.getSlicerOverride() != null)
+        if (settingsToUse.getSlicerOverride() != null)
         {
-            slicerTypeToUse = settings.getSlicerOverride();
+            slicerTypeToUse = settingsToUse.getSlicerOverride();
         } else
         {
             slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
@@ -687,7 +684,7 @@ public class PrintEngine implements ControllableService
             + ApplicationConfiguration.xPrintOffset),
                                     (float) (centreOfPrintedObject.getZ()
                                     + ApplicationConfiguration.yPrintOffset));
-        configWriter.generateConfigForSlicer(settings,
+        configWriter.generateConfigForSlicer(settingsToUse,
                                              printJobDirectoryName
                                              + File.separator
                                              + printUUID
@@ -695,7 +692,7 @@ public class PrintEngine implements ControllableService
 
         slicerService.reset();
         slicerService.setProject(project);
-        slicerService.setSettings(settings);
+        slicerService.setSettings(settingsToUse);
         slicerService.setPrintJobUUID(printUUID);
         slicerService.setPrinterToUse(associatedPrinter);
         slicerService.start();

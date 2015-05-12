@@ -40,7 +40,8 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     private final double cornerBracketLength = 5;
 
-    private final ScaleControls scaleControls;
+    //Leave out for 1.01.05
+//    private final ScaleControls scaleControls;
     
     /**
      *
@@ -49,11 +50,11 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     public SelectionHighlighter(final ModelContainer modelContainer)
     {
         this.setId(idString);
-        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "genericIlluminationMap.png").toExternalForm());
+        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "greenIlluminationMap.png").toExternalForm());
         greenMaterial.setSelfIlluminationMap(illuminationMap);
         buildSelectionBox();
 
-        scaleControls = new ScaleControls(this);
+//        scaleControls = new ScaleControls(this);
         modelContainer.addShapeChangeListener(this);
     }
 
@@ -130,7 +131,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         selectionBoxFrontRightTop.setTy(minY);
 
         //Place the scale boxes
-        scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
+//        scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
     }
 
     private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate)

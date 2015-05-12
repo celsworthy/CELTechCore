@@ -243,13 +243,9 @@ public interface Printer extends RoboxResponseConsumer
     /**
      *
      * @param project
-     * @param filament
-     * @param printQuality
-     * @param settings
      * @throws celtech.printerControl.model.PrinterException
      */
-    public void printProject(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, SlicerParametersFile settings) throws PrinterException;
+    public void printProject(Project project) throws PrinterException;
 
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty();
 

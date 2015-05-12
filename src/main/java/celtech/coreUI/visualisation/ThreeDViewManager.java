@@ -45,6 +45,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -164,7 +165,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         bedTranslateXform.setRotateY(yAxisRotation);
         bedTranslateXform.setRotateX(xAxisRotation);
-        
+
         notifyModelsOfCameraViewChange();
     }
 
@@ -173,7 +174,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         for (Node node : models.getChildren())
         {
             //Relying on only models being here...
-            ModelContainer model = (ModelContainer)node;
+            ModelContainer model = (ModelContainer) node;
             model.cameraViewOfYouHasChanged();
         }
     }
@@ -344,8 +345,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         if (modelContainer != null)
         {
-           undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
-           layoutSubmode.set(LayoutSubmode.SELECT);
+            undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
+            layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
@@ -442,7 +443,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             cameraDistance.set(z);
             bedTranslateXform.setTz(z);
         }
-        
+
         notifyModelsOfCameraViewChange();
     };
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
@@ -639,6 +640,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
+        bed.getChildren().add(createBoundingBox());
+
         bed.getChildren()
             .addAll(bedInnerLoadResult.getModelContainer().getMeshes());
 
@@ -676,6 +679,91 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         return bed;
     }
 
+    private Node createBoundingBox()
+    {
+        Group boxGroup = new Group();
+
+        double lineWidth = 0.05;
+        double printAreaHeight = -printBedData.getPrintVolumeBounds().getHeight();
+        double printAreaWidth = printBedData.getPrintVolumeBounds().getWidth();
+        double printAreaDepth = printBedData.getPrintVolumeBounds().getDepth();
+
+        Box lhf = new Box(lineWidth,
+                          printAreaHeight,
+                          lineWidth);
+        setupFakeLine(lhf);
+        lhf.setTranslateY(-printAreaHeight/2);
+
+        Box rhf = new Box(lineWidth,
+                          printAreaHeight,
+                          lineWidth);
+        setupFakeLine(rhf);
+        rhf.setTranslateY(-printAreaHeight/2);
+        rhf.setTranslateX(printAreaWidth);
+
+        Box lhb = new Box(lineWidth,
+                          printAreaHeight,
+                          lineWidth);
+        setupFakeLine(lhb);
+        lhb.setTranslateY(-printAreaHeight/2);
+        lhb.setTranslateZ(printAreaDepth);
+
+        Box rhb = new Box(lineWidth,
+                          printAreaHeight,
+                          lineWidth);
+        setupFakeLine(rhb);
+        rhb.setTranslateY(-printAreaHeight/2);
+        rhb.setTranslateX(printAreaWidth);
+        rhb.setTranslateZ(printAreaDepth);
+
+        Box lhftTOlhbt = new Box(lineWidth,
+                          lineWidth,
+                          printBedData.getPrintVolumeBounds().getDepth());
+        setupFakeLine(lhftTOlhbt);
+        lhftTOlhbt.setTranslateY(-printAreaHeight);
+        lhftTOlhbt.setTranslateZ(printAreaDepth / 2);
+
+        Box rhftTOrhbt = new Box(lineWidth,
+                          lineWidth,
+                          printBedData.getPrintVolumeBounds().getDepth());
+        setupFakeLine(rhftTOrhbt);
+        rhftTOrhbt.setTranslateX(printAreaWidth);
+        rhftTOrhbt.setTranslateY(-printAreaHeight);
+        rhftTOrhbt.setTranslateZ(printAreaDepth / 2);
+
+        Box lhftTOrhft = new Box(printAreaWidth,
+                          lineWidth,
+                          lineWidth);
+        setupFakeLine(lhftTOrhft);
+        lhftTOrhft.setTranslateX(printAreaWidth / 2);
+        lhftTOrhft.setTranslateY(-printAreaHeight);
+
+        Box lhbtTOrhbt = new Box(printAreaWidth,
+                          lineWidth,
+                          lineWidth);
+        setupFakeLine(lhbtTOrhbt);
+        lhbtTOrhbt.setTranslateX(printAreaWidth / 2);
+        lhbtTOrhbt.setTranslateY(-printAreaHeight);
+        lhbtTOrhbt.setTranslateZ(printAreaDepth);
+
+        boxGroup.getChildren().addAll(lhf, rhf, lhb, rhb,
+                                                     lhftTOlhbt, rhftTOrhbt,
+                                                     lhftTOrhft, lhbtTOrhbt);
+
+        return boxGroup;
+    }
+
+    private void setupFakeLine(Box line)
+    {
+        line.setDrawMode(DrawMode.LINE);
+        PhongMaterial boundsBoxMaterial = new PhongMaterial(Color.BLUE);
+        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(
+            ApplicationConfiguration.imageResourcePath + "blueIlluminationMap.png").
+            toExternalForm());
+        boundsBoxMaterial.setSelfIlluminationMap(illuminationMap);
+        line.setMaterial(boundsBoxMaterial);
+    }
+
     public void addGCodeParts(Group gCodeParts)
     {
         if (this.gcodeParts != null)
@@ -710,7 +798,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void translateSelection(double x, double z)
     {
         undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
-                                          ! justEnteredDragMode);
+                                          !justEnteredDragMode);
     }
 
     /**
@@ -724,8 +812,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             selectedModelContainers.removeModelContainer(pickedModel);
         }
     }
-    
-    private void collideModels() {
+
+    private void collideModels()
+    {
         // stub this out at Chris' request until it is more precise
     }
 
