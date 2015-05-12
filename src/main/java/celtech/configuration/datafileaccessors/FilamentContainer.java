@@ -205,7 +205,7 @@ public class FilamentContainer
         {
             currentFilamentNames.add(filament.getFriendlyFilamentName());
         }
-        return DeDuplicator.suggestNonDuplicateName(proposedName, currentFilamentNames);
+        return DeDuplicator.suggestNonDuplicateNameCopy(proposedName, currentFilamentNames);
     }
 
     private Optional<String> getCurrentFileNameForFilamentID(String filamentID)

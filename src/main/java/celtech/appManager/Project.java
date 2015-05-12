@@ -63,7 +63,7 @@ public class Project implements Serializable
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
-    
+
     Set<ProjectChangesListener> projectChangesListeners;
 
     private ObservableList<ModelContainer> loadedModels;
@@ -85,7 +85,7 @@ public class Project implements Serializable
     public Project()
     {
         initialise();
-        
+
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
@@ -155,24 +155,7 @@ public class Project implements Serializable
                 project.load(basePath);
             } else
             {
-                try
-                {
-                    FileInputStream projectFileStream = new FileInputStream(basePath
-                        + ApplicationConfiguration.projectFileExtension);
-                    ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(projectFileStream));
-                    Project loadedProject = (Project) reader.readObject();
-                    reader.close();
-                    for (ModelContainer modelContainer : loadedProject.loadedModels) {
-                        project.addModel(modelContainer);
-                    }
-                    String[] fileNameElements = basePath.split(File.separator);
-                    project.setProjectName(fileNameElements[fileNameElements.length - 1]);
-                    
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                    steno.error("Unable to load old project format file: " + ex);
-                }
+                loadLegacyProjectFile(basePath, project);
             }
             return project;
         } catch (IOException ex)
@@ -180,6 +163,33 @@ public class Project implements Serializable
             steno.error("Unable to load project file at " + basePath + " :" + ex);
         }
         return null;
+    }
+
+    /**
+     * Load a Serialisable format project.
+     */
+    private static void loadLegacyProjectFile(String basePath, Project project)
+    {
+        try
+        {
+            FileInputStream projectFileStream = new FileInputStream(basePath
+                + ApplicationConfiguration.projectFileExtension);
+            ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(
+                projectFileStream));
+            Project loadedProject = (Project) reader.readObject();
+            reader.close();
+            for (ModelContainer modelContainer : loadedProject.loadedModels)
+            {
+                project.addModel(modelContainer);
+            }
+            String[] fileNameElements = basePath.split(File.separator);
+            project.setProjectName(fileNameElements[fileNameElements.length - 1]);
+            
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+            steno.error("Unable to load old project format file: " + ex);
+        }
     }
 
     /**
@@ -257,9 +267,10 @@ public class Project implements Serializable
 
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
-        ObjectInputStream modelsInput = new ObjectInputStream(
-            new FileInputStream(basePath
-                + ApplicationConfiguration.projectModelsFileExtension));
+        FileInputStream fileInputStream = new FileInputStream(basePath
+                + ApplicationConfiguration.projectModelsFileExtension);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+        ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
         for (int i = 0; i < numModels; i++)
         {

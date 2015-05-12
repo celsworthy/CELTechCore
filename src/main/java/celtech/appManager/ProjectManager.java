@@ -144,30 +144,21 @@ public class ProjectManager implements Savable, Serializable
         return openProjects;
     }
 
-    public ObservableList<Project> getAvailableProjects()
+    public Set<String> getAvailableProjectNames()
     {
-        ObservableList<Project> availableProjects = FXCollections.observableArrayList();
+        Set<String> availableProjectNames = new HashSet<>();
 
         File projectDir = new File(ApplicationConfiguration.getProjectDirectory());
         File[] projectFiles = projectDir.listFiles(fileFilter);
         for (File file : projectFiles)
         {
-            try
-            {
-                FileInputStream projectFile = new FileInputStream(file);
-                ObjectInputStream reader = new ObjectInputStream(projectFile);
-                Project project = (Project) reader.readObject();
-                availableProjects.add(project);
-                reader.close();
-            } catch (IOException ex)
-            {
-                steno.error("Failed to load project manager");
-            } catch (ClassNotFoundException ex)
-            {
-                steno.error("Failure whilst loading available project headers");
-            }
+            String[] fileNameElements = file.getAbsolutePath().split(File.separator);
+            String fileName = fileNameElements[fileNameElements.length - 1];
+            String projectName = fileName.substring(0, fileName.length() - 6);
+            availableProjectNames.add(projectName);
         }
-        return availableProjects;
+        System.out.println("available names are " + availableProjectNames);
+        return availableProjectNames;
     }
 
     public Set<String> getOpenAndAvailableProjectNames()
@@ -177,10 +168,7 @@ public class ProjectManager implements Savable, Serializable
         {
             openAndAvailableProjectNames.add(project.getProjectName());
         }
-        for (Project project : getAvailableProjects())
-        {
-            openAndAvailableProjectNames.add(project.getProjectName());
-        }
+        openAndAvailableProjectNames.addAll(getAvailableProjectNames());
         return openAndAvailableProjectNames;
     }
 
