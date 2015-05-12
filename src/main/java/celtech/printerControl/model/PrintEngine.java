@@ -3,8 +3,10 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
@@ -59,7 +61,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -626,8 +627,10 @@ public class PrintEngine implements ControllableService
     }
 
     private boolean printFromScratch(PrintQualityEnumeration printQuality,
-        SlicerParametersFile settings, Project project, boolean acceptedPrintRequest)
+        final SlicerParametersFile settings, Project project, boolean acceptedPrintRequest)
     {
+        SlicerParametersFile settingsToUse = settings.clone();
+
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();
         String printJobDirectoryName = ApplicationConfiguration.
@@ -662,6 +665,21 @@ public class PrintEngine implements ControllableService
 
         SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
             slicerTypeToUse);
+
+        //TODO DMH and/or material-dependent profiles
+        // This is a hack to force the fan speed to 100% when using PLA - it only looks at the first reel...
+        if (associatedPrinter.reelsProperty().containsKey(0))
+        {
+            if (associatedPrinter.reelsProperty().get(0).material.get() == MaterialType.PLA
+                && SlicerParametersContainer.applicationProfileListContainsProfile(settingsToUse.
+                    getProfileName()))
+            {
+                settingsToUse.setEnableCooling(true);
+                settingsToUse.setMinFanSpeed_percent(100);
+                settingsToUse.setMaxFanSpeed_percent(100);
+            }
+        }
+        // End of hack
 
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
@@ -998,7 +1016,7 @@ public class PrintEngine implements ControllableService
             ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.macroFileSubpath);
         File[] filesOnDisk = printSpoolDirectory.listFiles();
-        
+
         if (filesOnDisk.length > ApplicationConfiguration.maxPrintSpoolFiles)
         {
             int filesToDelete = filesOnDisk.length
@@ -1053,7 +1071,7 @@ public class PrintEngine implements ControllableService
         {
             throw new MacroPrintException("Error whilst generating macro - " + ex.getMessage());
         }
-        
+
         steno.info("About to call transfer for " + macroName);
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->

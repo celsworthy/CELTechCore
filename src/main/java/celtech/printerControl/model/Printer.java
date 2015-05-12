@@ -602,7 +602,7 @@ public interface Printer extends RoboxResponseConsumer
      * @param error
      * @return
      */
-    public boolean doFilamentSlipWhilePrinting(FirmwareError error);
+    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 
     public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
     

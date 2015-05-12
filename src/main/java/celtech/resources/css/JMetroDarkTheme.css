@@ -2156,6 +2156,11 @@ modal-dialogue{
     -fx-wrap-text: true;
 }
 
+.hyperlink-plaintext
+{
+    -fx-fill: white;
+}
+
 /**
  * The error dialog configuration
  */
@@ -2167,6 +2172,15 @@ modal-dialogue{
     -fx-max-width: 500;
     -fx-min-width: 100;
 }
+
+.textflow .text
+{
+    -fx-fill: purple;
+}
+/*.error-dialog .text{
+    -fx-fill: purple;
+}*/
+
 
 .error-dialog #errorDialogButtonContainer{
     -fx-spacing: 5;
