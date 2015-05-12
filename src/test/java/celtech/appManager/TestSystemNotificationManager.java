@@ -228,4 +228,16 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public void showLoadFilamentNowMessage()
     {
     }
+
+    @Override
+    public void showFilamentMotionCheckBanner()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void hideFilamentMotionCheckBanner()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

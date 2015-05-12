@@ -122,6 +122,10 @@ public interface SystemNotificationManager
 
     public void showEjectFailedDialog(Printer printer);
 
+    public void showFilamentMotionCheckBanner();
+
+    public void hideFilamentMotionCheckBanner();
+
     public void showFilamentStuckMessage();
 
     public void showLoadFilamentNowMessage();

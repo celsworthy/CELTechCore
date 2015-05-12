@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import javafx.application.Platform;
 import javafx.scene.control.ChoiceDialog;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -71,6 +72,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     private ChoiceLinkDialogBox failedTransferDialogBox = null;
 
     private ChoiceLinkDialogBox failedEjectDialogBox = null;
+
+    private ChoiceLinkDialogBox filamentMotionCheckDialogBox = null;
 
     private ChoiceLinkDialogBox filamentStuckDialogBox = null;
 
@@ -1000,7 +1003,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (keepPushingFilamentDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            Platform.runLater(() ->
             {
                 if (keepPushingFilamentDialogBox == null)
                 {
@@ -1020,10 +1023,13 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (keepPushingFilamentDialogBox != null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            Platform.runLater(() ->
             {
-                keepPushingFilamentDialogBox.close();
-                keepPushingFilamentDialogBox = null;
+                if (keepPushingFilamentDialogBox != null)
+                {
+                    keepPushingFilamentDialogBox.close();
+                    keepPushingFilamentDialogBox = null;
+                }
             });
         }
     }
@@ -1033,7 +1039,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * @param printer
      */
     @Override
-    public void showEjectFailedDialog(Printer printer)
+    public void showEjectFailedDialog(Printer printer
+    )
     {
         if (failedEjectDialogBox == null)
         {
@@ -1123,6 +1130,40 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 loadFilamentNowDialogBox.close();
                 loadFilamentNowDialogBox = null;
+            });
+        }
+    }
+
+    @Override
+    public void showFilamentMotionCheckBanner()
+    {
+        if (filamentMotionCheckDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                filamentMotionCheckDialogBox = new ChoiceLinkDialogBox();
+                filamentMotionCheckDialogBox.
+                    setTitle(Lookup.i18n("notification.printManagement.title"));
+                filamentMotionCheckDialogBox.setMessage(
+                    Lookup.i18n("notification.filamentMotionCheck"));
+
+                filamentMotionCheckDialogBox.getUserInput();
+            });
+        }
+    }
+
+    @Override
+    public void hideFilamentMotionCheckBanner()
+    {
+        if (filamentMotionCheckDialogBox != null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                if (filamentMotionCheckDialogBox != null)
+                {
+                    filamentMotionCheckDialogBox.close();
+                    filamentMotionCheckDialogBox = null;
+                }
             });
         }
     }

@@ -331,8 +331,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
+        //TODO make this work with multiple extruders
         canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED)
-            .or(printerStatus.isEqualTo(PrinterStatus.PAUSING)));
+            .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
+            .and(extruders.get(0).filamentLoaded));
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -357,7 +359,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             runOnGUIThread(() ->
                 {
                     boolean okToChangeState = true;
-
+                    steno.debug("Status was " + this.printerStatus.get().name() + " and is going to "
+                        + printerStatus);
                     switch (printerStatus)
                     {
                         case IDLE:
@@ -842,11 +845,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
 
         steno.debug("Printer model asked to pause");
-        if (steno.getCurrentLogLevel().isLoggable(LogLevel.DEBUG))
-        {
-            Throwable t = new Throwable();
-            t.printStackTrace();
-        }
 
         setPrinterStatus(PrinterStatus.PAUSING);
 
@@ -2820,15 +2818,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             if (!filamentSlipActionInProgress)
             {
-                steno.info("Need to run filament slip action");
+                steno.debug("Need to run filament slip action");
                 filamentSlipActionInProgress = true;
                 new Thread(() ->
                 {
                     try
                     {
-                        Lookup.getSystemNotificationHandler().showWarningNotification(
-                            Lookup.i18n("notification.printManagement.title"),
-                            Lookup.i18n("notification.filamentMotionCheck"));
+                        Lookup.getSystemNotificationHandler().showFilamentMotionCheckBanner();
                         pause();
                         PrinterUtils.waitOnBusy(this, (Cancellable) null);
                         if (error == FirmwareError.E_FILAMENT_SLIP)
@@ -2852,6 +2848,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             changeFeedRateMultiplier(1);
                             forcedResume();
                         }
+                        Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
                     } catch (PrinterException | RoboxCommsException ex)
                     {
                         steno.error("Error attempting automated filament slip action");
@@ -2875,12 +2872,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         steno.info("Suspect that we're out of filament");
         sendRawGCode("M909 S60", false);
-        PrinterUtils.waitOnBusy(this, (Cancellable)null);
+        PrinterUtils.waitOnBusy(this, (Cancellable) null);
         sendRawGCode("M121 E", false);
-        PrinterUtils.waitOnBusy(this, (Cancellable)null);
+        PrinterUtils.waitOnBusy(this, (Cancellable) null);
         try
         {
             AckResponse response = transmitReportErrors();
+            Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
             if (response.isError())
             {
                 cancel(null);
@@ -2894,7 +2892,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("...");
         }
         sendRawGCode("M909 S10", false);
-        PrinterUtils.waitOnBusy(this, (Cancellable)null);
+        PrinterUtils.waitOnBusy(this, (Cancellable) null);
     }
 
     @Override
@@ -3180,22 +3178,51 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                      */
                     if (busyStatus.get() != statusResponse.getBusyStatus())
                     {
+                        busyStatus.set(statusResponse.getBusyStatus());
                         switch (statusResponse.getBusyStatus())
                         {
                             case BUSY:
                                 break;
                             case LOADING_FILAMENT:
-                                lastStateBeforeLoadUnload = printerStatus.get();
+                                if (lastStateBeforeLoadUnload != null)
+                                {
+                                    steno.debug("Going into NOT BUSY - status is " + printerStatus.
+                                        get().name()
+                                        + " last status is " + lastStateBeforeLoadUnload.name());
+                                } else
+                                {
+                                    steno.debug("Going into NOT BUSY - status is " + printerStatus.
+                                        get().name());
+                                }
+
+                                if (lastStateBeforeLoadUnload == null
+                                    && printerStatus.get() != PrinterStatus.LOADING_FILAMENT)
+                                {
+                                    lastStateBeforeLoadUnload = printerStatus.get();
+                                }
                                 setPrinterStatus(PrinterStatus.LOADING_FILAMENT);
                                 break;
                             case UNLOADING_FILAMENT:
-                                lastStateBeforeLoadUnload = printerStatus.get();
+                                if (lastStateBeforeLoadUnload == null
+                                    && printerStatus.get() != PrinterStatus.EJECTING_FILAMENT)
+                                {
+                                    lastStateBeforeLoadUnload = printerStatus.get();
+                                }
                                 setPrinterStatus(PrinterStatus.EJECTING_FILAMENT);
                                 break;
                             case NOT_BUSY:
+                                if (lastStateBeforeLoadUnload != null)
+                                {
+                                    steno.debug("Going into NOT BUSY - status is " + printerStatus.
+                                        get().name()
+                                        + " last status is " + lastStateBeforeLoadUnload.name());
+                                } else
+                                {
+                                    steno.debug("Going into NOT BUSY - status is " + printerStatus.
+                                        get().name());
+                                }
                                 if (printerStatus.get().equals(PrinterStatus.EJECTING_FILAMENT)
-                                    || printerStatus.get().
-                                    equals(PrinterStatus.LOADING_FILAMENT))
+                                    || printerStatus.get().equals(PrinterStatus.LOADING_FILAMENT))
                                 {
                                     if (lastStateBeforeLoadUnload != null)
                                     {
@@ -3206,10 +3233,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                         setPrinterStatus(PrinterStatus.IDLE);
                                     }
                                 }
+//                                else
+//                                {
+//                                    // Just poke us back to the same state - causes pop-up menu management to take place
+//                                    setPrinterStatus(printerStatus.get());
+//                                }
                                 break;
                         }
                     }
-                    busyStatus.set(statusResponse.getBusyStatus());
 
                     pauseStatus.set(statusResponse.getPauseStatus());
                     printJobLineNumber.set(statusResponse.getPrintJobLineNumber());
@@ -3490,13 +3521,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         head.set(null);
                         break;
                     case NOT_PROGRAMMED:
-                        try
-                        {
-                            formatHeadEEPROM();
-                        } catch (PrinterException ex)
-                        {
-                            steno.error("Error formatting head");
-                        }
+                        steno.error("Unformatted head detected - no action taken");
+//                        try
+//                        {
+//                            formatHeadEEPROM();
+//                        } catch (PrinterException ex)
+//                        {
+//                            steno.error("Error formatting head");
+//                        }
                         break;
                     case PROGRAMMED:
                         try
@@ -3528,13 +3560,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             reels.remove(reelNumber);
                             break;
                         case NOT_PROGRAMMED:
-                            try
-                            {
-                                formatReelEEPROM(reelNumber);
-                            } catch (PrinterException ex)
-                            {
-                                steno.error("Error formatting reel " + reelNumber);
-                            }
+                            steno.error("Unformatted reel detected - no action taken");
+//                            try
+//                            {
+//                                formatReelEEPROM(reelNumber);
+//                            } catch (PrinterException ex)
+//                            {
+//                                steno.error("Error formatting reel " + reelNumber);
+//                            }
                             break;
                         case PROGRAMMED:
                             try
