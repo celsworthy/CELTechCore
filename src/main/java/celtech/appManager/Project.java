@@ -12,6 +12,7 @@ import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
 import celtech.utils.threed.MeshSeparator;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -149,7 +150,6 @@ public class Project implements Serializable
         {
             Project project = new Project();
             char firstNonWhitespaceCharacter = getFirstNonWhitespaceCharacter(basePath);
-            System.out.println("first non-whitespace character is " + firstNonWhitespaceCharacter);
             if (firstNonWhitespaceCharacter == '{')
             {
                 project.load(basePath);
@@ -159,12 +159,14 @@ public class Project implements Serializable
                 {
                     FileInputStream projectFileStream = new FileInputStream(basePath
                         + ApplicationConfiguration.projectFileExtension);
-                    ObjectInputStream reader = new ObjectInputStream(projectFileStream);
+                    ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(projectFileStream));
                     Project loadedProject = (Project) reader.readObject();
                     reader.close();
                     for (ModelContainer modelContainer : loadedProject.loadedModels) {
                         project.addModel(modelContainer);
                     }
+                    String[] fileNameElements = basePath.split(File.separator);
+                    project.setProjectName(fileNameElements[fileNameElements.length - 1]);
                     
                 } catch (Exception ex)
                 {
@@ -285,7 +287,7 @@ public class Project implements Serializable
 
     private void save(String basePath)
     {
-        if (getLoadedModels().size() > 0)
+        if (loadedModels.size() > 0)
         {
             try
             {

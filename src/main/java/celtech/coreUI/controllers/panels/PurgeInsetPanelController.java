@@ -410,12 +410,10 @@ public class PurgeInsetPanelController implements Initializable
         } else
         {
             currentMaterial = cmbCurrentMaterial.getValue();
-            System.out.println("current material is " + currentMaterial);
         }
         if (currentMaterial != null) {
             selectMaterial(currentMaterial);
         } else {
-            System.out.println("set purge temp to -1");
             transitionManager.setPurgeTemperature(-1);
             purgeTemperature.textProperty().set("-1");
         } 
