@@ -256,6 +256,7 @@ public abstract class CommandInterface extends Thread
                     }
                     break;
                 case DISCONNECTED:
+                    steno.debug("state is disconnected");
                     break;
             }
         }
@@ -293,6 +294,7 @@ public abstract class CommandInterface extends Thread
             steno.info("Shutdown command interface firmware service...");
             firmwareLoadService.cancel();
         }
+        steno.debug("set state to disconnected");
         commsState = RoboxCommsState.DISCONNECTED;
         disconnectSerialPort();
         steno.info("Shutdown command interface complete");

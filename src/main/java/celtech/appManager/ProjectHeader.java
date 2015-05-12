@@ -8,6 +8,8 @@ package celtech.appManager;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.utils.SystemUtils;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,6 +20,7 @@ import javafx.beans.property.StringProperty;
 
 public class ProjectHeader implements Serializable
 {
+
     private static final long serialVersionUID = 1L;
     private final transient SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
     private String projectUUID = null;
@@ -29,9 +32,20 @@ public class ProjectHeader implements Serializable
     {
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
-        projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled") + formatter.format(now));
+        projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
+            + formatter.format(now));
         projectPath = ApplicationConfiguration.getProjectDirectory();
         lastModifiedDate.set(now);
+    }
+
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        projectUUID = in.readUTF();
+        projectNameProperty = new SimpleStringProperty(in.readUTF());
+        projectPath = in.readUTF();
+        SimpleObjectProperty lastModifiedDate = new SimpleObjectProperty<>((Date) (in.readObject()));
+        SimpleObjectProperty lastSavedDate = new SimpleObjectProperty<>((Date) (in.readObject()));
     }
 
     public final void setProjectName(String value)
@@ -78,31 +92,5 @@ public class ProjectHeader implements Serializable
     {
         return lastModifiedDate;
     }
-
-//    private void writeObject(ObjectOutputStream out)
-//            throws IOException
-//    {
-//        out.writeUTF(projectUUID);
-//        out.writeUTF(projectNameProperty.get());
-//        out.writeUTF(projectPath);
-//        out.writeObject(lastModifiedDate.get());
-//        out.writeObject(new Date());
-//    }
-//
-//    private void readObject(ObjectInputStream in)
-//            throws IOException, ClassNotFoundException
-//    {
-//        projectUUID = in.readUTF();
-//        projectNameProperty = new SimpleStringProperty(in.readUTF());
-//        projectPath = in.readUTF();
-//        lastModifiedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
-//        lastSavedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
-//    }
-//
-//    private void readObjectNoData()
-//            throws ObjectStreamException
-//    {
-//
-//    }
 
 }

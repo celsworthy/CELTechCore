@@ -8,15 +8,16 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelContainer.State;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
 import celtech.utils.threed.MeshSeparator;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -51,8 +52,9 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class Project implements Serializable
 {
+    private static final long serialVersionUID = 1L;
 
-    private Filament DEFAULT_FILAMENT;
+    private final Filament DEFAULT_FILAMENT;
 
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
@@ -126,9 +128,53 @@ public class Project implements Serializable
 
     static Project loadProject(String basePath)
     {
-        Project project = new Project();
-        project.load(basePath);
-        return project;
+        try
+        {
+            Project project = new Project();
+            char firstNonWhitespaceCharacter = getFirstNonWhitespaceCharacter(basePath);
+            System.out.println("first non-whitespace character is " + firstNonWhitespaceCharacter);
+            if (firstNonWhitespaceCharacter == '{')
+            {
+                project.load(basePath);
+            } else
+            {
+                try
+                {
+                    project.readOldProjectFileFormat(basePath);
+                } catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                    steno.error("Unable to load old project format file: " + ex);
+                }
+            }
+            return project;
+        } catch (IOException ex)
+        {
+            steno.error("Unable to load project file at " + basePath + " :" + ex);
+        }
+        return null;
+    }
+
+    /**
+     * Get the first non-whitespace character in a file. If there is no non-whitespace character
+     * then return a space.
+     */
+    private static char getFirstNonWhitespaceCharacter(String basePath) throws FileNotFoundException, IOException
+    {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath
+            + ApplicationConfiguration.projectFileExtension));
+        String line;
+        while ((line = bufferedReader.readLine()) != null)
+        {
+            for (char c: line.toCharArray())
+            {
+                if (! Character.isWhitespace(c))
+                {
+                    return c;
+                }
+            }
+        }
+        return ' ';
     }
 
     private void load(String basePath)
@@ -262,77 +308,49 @@ public class Project implements Serializable
         return usedExtruders;
     }
 
-//    private void readObject(ObjectInputStream in)
-//        throws IOException, ClassNotFoundException
-//    {
+    /**
+     * This is the Project file reader for version 1.01.04 and is used for reading old project
+     * files.
+     */
+    private void readOldProjectFileFormat(String basePath) throws FileNotFoundException, IOException, ClassNotFoundException
+    {
+        File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
+
+        FileInputStream fin = new FileInputStream(file);
+        ObjectInputStream in = new ObjectInputStream(fin);
+        ProjectHeader projectHeader = (ProjectHeader) in.readObject();
+        int numberOfModels = in.readInt();
+        for (int counter = 0; counter < numberOfModels; counter++)
+        {
+            ModelContainer model = (ModelContainer) in.readObject();
+            addModel(model);
+        }
+
+//        String gcodeFileName = in.readUTF();
+//        // lastPrintJobID - don't set
+//        in.readUTF();
 //
-//        printerSettings = new PrinterSettings();
-//        extruder0Filament = new SimpleObjectProperty<>();
-//        extruder1Filament = new SimpleObjectProperty<>();
-//        projectChangesListeners = new HashSet<>();
-//
-//        steno = StenographerFactory.getStenographer(Project.class.getName());
-//
-//        projectHeader = (ProjectHeader) in.readObject();
-//        int numberOfModels = in.readInt();
-//        loadedModels = FXCollections.observableArrayList();
-//        for (int counter = 0; counter < numberOfModels; counter++)
-//        {
-//            ModelContainer model = (ModelContainer) in.readObject();
-//            loadedModels.add(model);
-//        }
-//
-//        gcodeFileName = in.readUTF();
-//        lastPrintJobID = in.readUTF();
-//
-//        // We have to be of mesh type as no others are saved...
-//        projectMode = new SimpleObjectProperty<>(ProjectMode.MESH);
-//
+//        SlicerParametersFile customSettings;
+//        String customProfileName;
+//        PrintQualityEnumeration printQuality;
 //        try
 //        {
-////            SlicerParametersFile settings = (SlicerParametersFile) in.readObject();
-////            //Introduced in version 1.00.06
-////            if (in.available() > 0)
-////            {
-////                customProfileName = in.readUTF();
-////            }
-//            //Introduced in version 1.??
+//            customSettings = (SlicerParametersFile) in.readObject();
+//            //Introduced in version 1.00.06
 //            if (in.available() > 0)
 //            {
-//                extruder0Filament = new SimpleObjectProperty<Filament>();
-//                extruder1Filament = new SimpleObjectProperty<Filament>();
-//                String filamentID0 = in.readUTF();
-//                String filamentID1 = in.readUTF();
-//                if (!filamentID0.equals("NULL"))
-//                {
-//                    Filament filament0 = FilamentContainer.getFilamentByID(filamentID0);
-//                    if (filament0 != null)
-//                    {
-//                        extruder0Filament.set(filament0);
-//                    }
-//                }
-//                if (!filamentID1.equals("NULL"))
-//                {
-//                    Filament filament1 = FilamentContainer.getFilamentByID(filamentID1);
-//                    if (filament1 != null)
-//                    {
-//                        extruder1Filament.set(filament1);
-//                    }
-//                }
-//
+//                customProfileName = in.readUTF();
+//                printQuality = (PrintQualityEnumeration) in.readObject();
 //            }
 //        } catch (IOException ex)
 //        {
-//            steno.warning("Unable to deserialise settings " + ex);
-////            customProfileName = "";
+//            steno.warning("Unable to deserialise settings");
+//            customSettings = null;
+//            customProfileName = "";
+//            printQuality = null;
 //        }
-//
-//    }
-//    private void readObjectNoData()
-//        throws ObjectStreamException
-//    {
-//
-//    }
+    }
+
     public ObservableList<ModelContainer> getLoadedModels()
     {
         return loadedModels;
@@ -536,12 +554,15 @@ public class Project implements Serializable
             String modelName = modelContainer.getModelName();
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
                 (TriangleMesh) modelContainer.getMeshView().getMesh());
-            if (subMeshes.size() > 1) {
+            if (subMeshes.size() > 1)
+            {
                 deleteModel(modelContainer);
                 int ix = 1;
-                for (TriangleMesh subMesh: subMeshes) {
+                for (TriangleMesh subMesh : subMeshes)
+                {
                     MeshView meshView = new MeshView(subMesh);
-                    ModelContainer newModelContainer = new ModelContainer(modelContainer.getModelFile(), meshView);
+                    ModelContainer newModelContainer = new ModelContainer(
+                        modelContainer.getModelFile(), meshView);
                     newModelContainer.setState(state);
                     addModel(newModelContainer);
                     double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
@@ -553,7 +574,8 @@ public class Project implements Serializable
                     newModelContainers.add(newModelContainer);
                     ix++;
                 }
-            } else {
+            } else
+            {
                 newModelContainers.add(modelContainer);
             }
         }

@@ -73,6 +73,7 @@ public class PurgeActions extends StateTransitionActions
         printer.gotoNozzlePosition(0);
         printer.switchBedHeaterOff();
         switchHeatersAndHeadLightOff();
+        printer.goToOpenDoorPosition(null);
         PrinterUtils.waitOnBusy(printer, (Cancellable) null);
         try
         {
@@ -135,7 +136,6 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException
     {
-        resetPrinter();
         printer.transmitWriteHeadEEPROM(
             savedHeadData.getTypeCode(),
             savedHeadData.getUniqueID(),
@@ -153,6 +153,7 @@ public class PurgeActions extends StateTransitionActions
             reelNozzleTemperature,
             savedHeadData.getHeadHours());
         printer.readHeadEEPROM();
+        resetPrinter();
         printer.setPrinterStatus(PrinterStatus.IDLE);
         deregisterPrinterErrorHandler();
     }
