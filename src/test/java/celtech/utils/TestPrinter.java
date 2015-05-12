@@ -334,8 +334,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void printProject(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, SlicerParametersFile settings)
+    public void printProject(Project project)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -12,7 +12,6 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
@@ -342,12 +341,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
-                //TODO make this work with multiple extruders
+        //TODO make this work with multiple extruders
         canResume.bind(printerStatus.isEqualTo(PrinterStatus.PAUSED)
             .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
             .and(extruders.get(0).filamentLoaded));
     }
-    
+
     /**
      * If the filament details change for a filament currently on a reel, then the reel should be
      * immediately updated with the new details.
@@ -382,7 +381,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             runOnGUIThread(() ->
                 {
                     boolean okToChangeState = true;
-                    steno.debug("Status was " + this.printerStatus.get().name() + " and is going to "
+                    steno.debug("Status was " + this.printerStatus.get().name()
+                        + " and is going to "
                         + printerStatus);
                     switch (printerStatus)
                     {
@@ -874,7 +874,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PurgeRequiredException("Cannot execute GCode - purge required");
         }
 
-
         boolean jobAccepted = false;
 
         try
@@ -1008,7 +1007,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired("eject_stuck_material", PrinterStatus.EJECTING_STUCK_MATERIAL,
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("eject_stuck_material",
+                                                       PrinterStatus.EJECTING_STUCK_MATERIAL,
                                                        PrinterStatus.IDLE,
                                                        blockUntilFinished, cancellable);
     }
@@ -1838,30 +1838,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * @param settings
      */
     @Override
-    public void printProject(Project project, Filament filament,
-        PrintQualityEnumeration printQuality, SlicerParametersFile settings) throws PrinterException
+    public void printProject(Project project) throws PrinterException
     {
-
         //TODO modify for multiple reels
-        if ((reels.size() > 0
-            && filament != null
-            && reels.get(0).isSameAs(filament) == false)
-            || filament != null)
+        Filament filamentInUse = project.getPrinterSettings().getFilament0();
+
+        if (filamentInUse.isMutable())
         {
             try
             {
                 //TODO modify for multiple heaters
-                transmitSetTemperatures(filament.getFirstLayerNozzleTemperature(),
-                                        filament.getNozzleTemperature(),
-                                        filament.getFirstLayerNozzleTemperature(),
-                                        filament.getNozzleTemperature(),
-                                        filament.getFirstLayerBedTemperature(),
-                                        filament.getBedTemperature(),
-                                        filament.getAmbientTemperature());
+                transmitSetTemperatures(filamentInUse.getFirstLayerNozzleTemperature(),
+                                        filamentInUse.getNozzleTemperature(),
+                                        filamentInUse.getFirstLayerNozzleTemperature(),
+                                        filamentInUse.getNozzleTemperature(),
+                                        filamentInUse.getFirstLayerBedTemperature(),
+                                        filamentInUse.getBedTemperature(),
+                                        filamentInUse.getAmbientTemperature());
 
-                changeFeedRateMultiplier(filament.getFeedRateMultiplier());
+                changeFeedRateMultiplier(filamentInUse.getFeedRateMultiplier());
                 //TODO modify for multiple extruders
-                changeFilamentInfo("E", filament.getDiameter(), filament.getFilamentMultiplier());
+                changeFilamentInfo("E", filamentInUse.getDiameter(), filamentInUse.getFilamentMultiplier());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
@@ -1876,7 +1873,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error whilst sending preheat commands");
         }
 
-        printEngine.printProject(project, printQuality, settings);
+        printEngine.printProject(project);
     }
 
     /**
@@ -3735,7 +3732,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             // Head already attached to model
                             head.get().updateFromEEPROMData(headResponse);
                         }
-                                    }
+                    }
                     break;
 
                 case GCODE_RESPONSE:

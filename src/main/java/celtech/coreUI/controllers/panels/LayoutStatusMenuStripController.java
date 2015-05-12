@@ -192,15 +192,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
             {
                 currentStatusPrinter.resetPurgeTemperature(printerSettings);
-                printer.printProject(currentProject, printerSettings.getFilament0(),
-                                     printerSettings.getPrintQuality(),
-                                     printerSettings.getSettings());
+                //TODO fix for DMH
+                printer.printProject(currentProject);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
             {
-                printer.printProject(currentProject, printerSettings.getFilament0(),
-                                     printerSettings.getPrintQuality(),
-                                     printerSettings.getSettings());
+                //TODO fix for DMH
+                printer.printProject(currentProject);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             }
         } catch (PrinterException ex)
