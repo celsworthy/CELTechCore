@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import javafx.application.Platform;
 import javafx.scene.control.ChoiceDialog;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -70,6 +71,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private ChoiceLinkDialogBox failedTransferDialogBox = null;
 
+    private ChoiceLinkDialogBox failedEjectDialogBox = null;
+
+    private ChoiceLinkDialogBox filamentMotionCheckDialogBox = null;
+
+    private ChoiceLinkDialogBox filamentStuckDialogBox = null;
+
+    private ChoiceLinkDialogBox loadFilamentNowDialogBox = null;
+
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -102,71 +111,77 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            //Don't show B POSITION LOST errors for the moment...
-            if (error != FirmwareError.B_POSITION_LOST)
+
+            switch (error)
             {
-                if (!errorDialogOnDisplay)
-                {
-                    errorDialogOnDisplay = true;
+                case B_POSITION_LOST:
+                    steno.warning("B Position Lost error detected");
+                    break;
 
-                    setupErrorOptions();
-
-                    ChoiceLinkDialogBox errorChoiceBox = new ChoiceLinkDialogBox();
-                    errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
-                    errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
-                    error.getOptions()
-                        .stream()
-                        .forEach(option -> errorChoiceBox.
-                            addChoiceLink(errorToButtonMap.get(option)));
-
-                    Optional<ChoiceLinkButton> buttonPressed = errorChoiceBox.getUserInput();
-
-                    if (buttonPressed.isPresent())
+                default:
+                    if (!errorDialogOnDisplay)
                     {
-                        for (Entry<SystemErrorHandlerOptions, ChoiceLinkButton> mapEntry : errorToButtonMap.
-                            entrySet())
+                        errorDialogOnDisplay = true;
+
+                        setupErrorOptions();
+
+                        ChoiceLinkDialogBox errorChoiceBox = new ChoiceLinkDialogBox();
+                        errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
+                        errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
+                        error.getOptions()
+                            .stream()
+                            .forEach(option -> errorChoiceBox.
+                                addChoiceLink(errorToButtonMap.get(option)));
+
+                        Optional<ChoiceLinkButton> buttonPressed = errorChoiceBox.getUserInput();
+
+                        if (buttonPressed.isPresent())
                         {
-                            if (buttonPressed.get() == mapEntry.getValue())
+                            for (Entry<SystemErrorHandlerOptions, ChoiceLinkButton> mapEntry : errorToButtonMap.
+                                entrySet())
                             {
-                                switch (mapEntry.getKey())
+                                if (buttonPressed.get() == mapEntry.getValue())
                                 {
-                                    case ABORT:
-                                    case OK_ABORT:
-                                        try
-                                        {
-                                            if (printer.canPauseProperty().get())
+                                    switch (mapEntry.getKey())
+                                    {
+                                        case ABORT:
+                                        case OK_ABORT:
+                                            try
                                             {
-                                                printer.pause();
-                                            }
-                                            printer.cancel(null);
-                                        } catch (PrinterException ex)
-                                        {
-                                            steno.error(
-                                                "Error whilst cancelling print from error dialog");
-                                        }
-                                        break;
-                                    case CLEAR_CONTINUE:
-                                    case OK_CONTINUE:
-                                        try
-                                        {
-                                            if (printer.canResumeProperty().get())
+                                                if (printer.canPauseProperty().get())
+                                                {
+                                                    printer.pause();
+                                                }
+                                                printer.cancel(null);
+                                            } catch (PrinterException ex)
                                             {
-                                                printer.resume();
+                                                steno.error(
+                                                    "Error whilst cancelling print from error dialog");
                                             }
-                                        } catch (PrinterException ex)
-                                        {
-                                            steno.error(
-                                                "Error whilst resuming print from error dialog");
-                                        }
-                                        break;
+                                            break;
+                                        case CLEAR_CONTINUE:
+                                        case OK_CONTINUE:
+                                            try
+                                            {
+                                                if (printer.canResumeProperty().get())
+                                                {
+                                                    printer.resume();
+                                                }
+                                            } catch (PrinterException ex)
+                                            {
+                                                steno.error(
+                                                    "Error whilst resuming print from error dialog");
+                                            }
+                                            break;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
-                    }
 
-                    errorDialogOnDisplay = false;
-                }
+                        errorDialogOnDisplay = false;
+                    }
+                    break;
             }
         });
     }
@@ -988,12 +1003,13 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (keepPushingFilamentDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            Platform.runLater(() ->
             {
                 if (keepPushingFilamentDialogBox == null)
                 {
                     keepPushingFilamentDialogBox = new ChoiceLinkDialogBox();
-                    keepPushingFilamentDialogBox.setTitle(Lookup.i18n("notification.keepPushingFilamentTitle"));
+                    keepPushingFilamentDialogBox.setTitle(Lookup.i18n(
+                        "notification.keepPushingFilamentTitle"));
                     keepPushingFilamentDialogBox.setMessage(Lookup.i18n(
                         "notification.keepPushingFilament"));
                     keepPushingFilamentDialogBox.getUserInput();
@@ -1007,10 +1023,147 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (keepPushingFilamentDialogBox != null)
         {
+            Platform.runLater(() ->
+            {
+                if (keepPushingFilamentDialogBox != null)
+                {
+                    keepPushingFilamentDialogBox.close();
+                    keepPushingFilamentDialogBox = null;
+                }
+            });
+        }
+    }
+
+    /**
+     *
+     * @param printer
+     */
+    @Override
+    public void showEjectFailedDialog(Printer printer
+    )
+    {
+        if (failedEjectDialogBox == null)
+        {
             Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                keepPushingFilamentDialogBox.close();
-                keepPushingFilamentDialogBox = null;
+                failedEjectDialogBox = new ChoiceLinkDialogBox();
+                failedEjectDialogBox.setTitle(Lookup.i18n("error.ERROR_UNLOAD"));
+                failedEjectDialogBox.setMessage(Lookup.i18n(
+                    "error.ERROR_UNLOAD.message"));
+
+                ChoiceLinkButton ejectStuckMaterial = failedEjectDialogBox.addChoiceLink(
+                    Lookup.i18n("error.ERROR_UNLOAD.action.title"));
+                failedEjectDialogBox.addChoiceLink(
+                    Lookup.i18n("error.ERROR_UNLOAD.noaction.title"));
+
+                boolean runEjectStuckMaterial = false;
+
+                Optional<ChoiceLinkButton> choice = failedEjectDialogBox.getUserInput();
+                if (choice.isPresent())
+                {
+                    if (choice.get() == ejectStuckMaterial)
+                    {
+                        runEjectStuckMaterial = true;
+                    }
+                }
+                failedEjectDialogBox = null;
+
+                if (runEjectStuckMaterial)
+                {
+                    steno.error("Eject failed - user chose to eject stuck material");
+                    try
+                    {
+                        printer.ejectStuckMaterial(false, null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error when automatically invoking eject stuck material");
+                    }
+                } else
+                {
+                    steno.error("Eject failed - user chose not to run eject stuck material");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void showFilamentStuckMessage()
+    {
+        if (filamentStuckDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                filamentStuckDialogBox = new ChoiceLinkDialogBox();
+                filamentStuckDialogBox.
+                    setTitle(Lookup.i18n("dialogs.filamentStuck.title"));
+                filamentStuckDialogBox.setMessage(
+                    Lookup.i18n("dialogs.filamentStuck.message"));
+
+                ChoiceLinkButton ok = filamentStuckDialogBox.addChoiceLink(
+                    Lookup.i18n("misc.OK"));
+
+                Optional<ChoiceLinkButton> choice = filamentStuckDialogBox.getUserInput();
+
+                filamentStuckDialogBox.close();
+                filamentStuckDialogBox = null;
+            });
+        }
+    }
+
+    @Override
+    public void showLoadFilamentNowMessage()
+    {
+        if (loadFilamentNowDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                loadFilamentNowDialogBox = new ChoiceLinkDialogBox();
+                loadFilamentNowDialogBox.
+                    setTitle(Lookup.i18n("dialogs.loadFilamentNow.title"));
+                loadFilamentNowDialogBox.setMessage(
+                    Lookup.i18n("dialogs.loadFilamentNow.message"));
+
+                ChoiceLinkButton ok = loadFilamentNowDialogBox.addChoiceLink(
+                    Lookup.i18n("misc.OK"));
+
+                Optional<ChoiceLinkButton> choice = loadFilamentNowDialogBox.getUserInput();
+
+                loadFilamentNowDialogBox.close();
+                loadFilamentNowDialogBox = null;
+            });
+        }
+    }
+
+    @Override
+    public void showFilamentMotionCheckBanner()
+    {
+        if (filamentMotionCheckDialogBox == null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                filamentMotionCheckDialogBox = new ChoiceLinkDialogBox();
+                filamentMotionCheckDialogBox.
+                    setTitle(Lookup.i18n("notification.printManagement.title"));
+                filamentMotionCheckDialogBox.setMessage(
+                    Lookup.i18n("notification.filamentMotionCheck"));
+
+                filamentMotionCheckDialogBox.getUserInput();
+            });
+        }
+    }
+
+    @Override
+    public void hideFilamentMotionCheckBanner()
+    {
+        if (filamentMotionCheckDialogBox != null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                if (filamentMotionCheckDialogBox != null)
+                {
+                    filamentMotionCheckDialogBox.close();
+                    filamentMotionCheckDialogBox = null;
+                }
             });
         }
     }

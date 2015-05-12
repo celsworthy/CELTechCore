@@ -730,7 +730,8 @@ public class CommandInterfaceTestPrinter implements Printer
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public boolean doFilamentSlipWhilePrinting(FirmwareError error)
+    @Override
+    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
