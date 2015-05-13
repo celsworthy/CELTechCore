@@ -970,7 +970,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             }
 
         };
-        operationButtons.add(writeToReel2Button);
+//        operationButtons.add(writeToReel2Button);
 
         return operationButtons;
     }

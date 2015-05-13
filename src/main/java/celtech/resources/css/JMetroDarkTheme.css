@@ -2542,10 +2542,10 @@ color-picker-label .text-field {
 }
 
 #printProfileTabPane {
-    -fx-tab-min-height: 35;
-    -fx-tab-max-height: 35;
-    -fx-tab-min-width: 50;
-    -fx-tab-min-width: 50;    
+    -fx-tab-min-height: 35px;
+    -fx-tab-max-height: 35px;
+    -fx-tab-min-width: 50px;
+    -fx-tab-min-width: 50px;    
 }
 
 /**
