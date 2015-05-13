@@ -2541,6 +2541,13 @@ color-picker-label .text-field {
     -fx-text-fill: robox_blue;
 }
 
+#printProfileTabPane {
+    -fx-tab-min-height: 35;
+    -fx-tab-max-height: 35;
+    -fx-tab-min-width: 50;
+    -fx-tab-min-width: 50;    
+}
+
 /**
 * PrinterGrid
 */

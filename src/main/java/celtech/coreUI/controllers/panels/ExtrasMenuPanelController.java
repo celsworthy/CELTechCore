@@ -90,7 +90,7 @@ public class ExtrasMenuPanelController implements Initializable
         
         profileDetailsController = new ProfileLibraryPanelController();
         profileDetails = loadInnerPanel(
-            ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetailsCopy.fxml",
+            ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml",
             profileDetailsController);        
         UserPreferences userPreferences = Lookup.getUserPreferences();
         loadInnerPanel(
