@@ -11,10 +11,17 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerTask;
+import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
+import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -85,6 +92,8 @@ public class TimeCostInsetPanelController implements Initializable
     private Project currentProject;
     private PrinterSettings printerSettings;
 
+    private TimeCostThreadManager timeCostThreadManager;
+
     /**
      * Initialises the controller class.
      */
@@ -93,6 +102,9 @@ public class TimeCostInsetPanelController implements Initializable
     {
         try
         {
+
+            timeCostThreadManager = new TimeCostThreadManager();
+
             Lookup.getSelectedProjectProperty().addListener(
                 (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
                 {
@@ -109,7 +121,7 @@ public class TimeCostInsetPanelController implements Initializable
                     } else
                     {
                         timeCostInsetRoot.setVisible(false);
-                        cancelRunningTimeCostTasks();
+                        timeCostThreadManager.cancelRunningTimeCostTasks();
                     }
 
                 });
@@ -220,11 +232,6 @@ public class TimeCostInsetPanelController implements Initializable
         }
     }
 
-    private SlicerTask draftSlicerTask;
-    private SlicerTask normalSlicerTask;
-    private SlicerTask fineSlicerTask;
-    private SlicerTask customSlicerTask;
-
     /**
      * Update the time, cost and weight fields. Long running calculations must be performed in a
      * background thread. Run draft, normal and fine sequentially to avoid flooding the CPU(s).
@@ -246,76 +253,74 @@ public class TimeCostInsetPanelController implements Initializable
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
 
-        cancelRunningTimeCostTasks();
-
-        Runnable runDraft = () ->
-        {
+     
             Runnable runNormal = () ->
             {
                 Runnable runFine = () ->
                 {
 
-                    fineSlicerTask = updateFieldsForProfile(project, fineSettings, lblFineTime,
+                    updateFieldsForProfile(project, fineSettings, lblFineTime,
                                                             lblFineWeight,
                                                             lblFineCost, (Runnable) null);
-                    System.out.println("launch slicer task " + fineSlicerTask);
-                    Lookup.getTaskExecutor().runTaskAsDaemon(fineSlicerTask);
                 };
-                normalSlicerTask = updateFieldsForProfile(project, normalSettings, lblNormalTime,
+                updateFieldsForProfile(project, normalSettings, lblNormalTime,
                                                           lblNormalWeight,
                                                           lblNormalCost, runFine);
-                System.out.println("launch slicer task " + normalSlicerTask);
-                Lookup.getTaskExecutor().runTaskAsDaemon(normalSlicerTask);
             };
-            draftSlicerTask = updateFieldsForProfile(project, draftSettings, lblDraftTime,
-                                                     lblDraftWeight,
-                                                     lblDraftCost, runNormal);
-            System.out.println("launch slicer task " + draftSlicerTask);
-            Lookup.getTaskExecutor().runTaskAsDaemon(draftSlicerTask);
-        };
+            
+
         if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
             && !currentProject.getPrinterSettings().getSettingsName().equals(""))
         {
             SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
-            customSlicerTask = updateFieldsForProfile(project, customSettings, lblCustomTime,
-                                   lblCustomWeight,
-                                   lblCustomCost, runDraft);
-            System.out.println("launch slicer task " + customSlicerTask);
-            Lookup.getTaskExecutor().runTaskAsDaemon(customSlicerTask);
+//            updateFieldsForProfile(project, customSettings, lblCustomTime,
+//                                                      lblCustomWeight,
+//                                                      lblCustomCost, runDraft);
+
         } else
         {
             lblCustomTime.setText("---");
             lblCustomWeight.setText("---");
             lblCustomCost.setText("---");
-            runDraft.run();
-        }
-    }
 
-    private void cancelRunningTimeCostTasks()
-    {
-        cancelTask(draftSlicerTask);
-        cancelTask(normalSlicerTask);
-        cancelTask(fineSlicerTask);
-        cancelTask(customSlicerTask);
+            updateFieldsForProfile(project, draftSettings, lblDraftTime,
+                                                     lblDraftWeight,
+                                                     lblDraftCost, runNormal);
+        }
     }
 
     /**
      * Update the time, cost and weight fields for the given profile and fields. Long running
      * calculations must be performed in a background thread.
      */
-    private SlicerTask updateFieldsForProfile(Project project, SlicerParametersFile settings,
+    private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
     {
         String working = Lookup.i18n("timeCost.working");
-        lblTime.setText(working);
-        lblWeight.setText(working);
-        lblCost.setText(working);
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            lblTime.setText(working);
+            lblWeight.setText(working);
+            lblCost.setText(working);
+        });
 
+        Cancellable cancellable = new SimpleCancellable();
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                                                                 lblTime, lblWeight,
-                                                                lblCost, whenComplete);
-        SlicerTask slicerTask = updateDetails.setupSlicerTask();
-        return slicerTask;
+                                                                lblCost, whenComplete, cancellable);
+        
+        
+        timeCostThreadManager.cancelRunningTimeCostTasksAndRun(() ->
+        {
+            try
+            {
+                updateDetails.runSlicerAndPostProcessor();
+            } catch (IOException ex)
+            {
+                ex.printStackTrace();
+                steno.error("Unable to update time/cost fields: " + ex);
+            }
+        });
 
     }
 
@@ -335,14 +340,6 @@ public class TimeCostInsetPanelController implements Initializable
             case CUSTOM:
                 rbCustom.setSelected(true);
                 break;
-        }
-    }
-
-    private void cancelTask(SlicerTask slicerTask)
-    {
-        if (slicerTask != null && !(slicerTask.isDone() || slicerTask.isCancelled()))
-        {
-            slicerTask.cancel();
         }
     }
 

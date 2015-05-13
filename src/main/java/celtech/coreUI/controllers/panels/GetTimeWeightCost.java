@@ -17,11 +17,11 @@ import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
+import celtech.utils.tasks.Cancellable;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
-import javafx.concurrent.WorkerStateEvent;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -39,25 +39,21 @@ public class GetTimeWeightCost
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         GetTimeWeightCost.class.getName());
-    
-    private final static Random random = new Random();
 
     private final Project project;
     private final Label lblTime;
     private final Label lblWeight;
     private final Label lblCost;
     private final SlicerParametersFile settings;
-
-    private SlicerTask slicerTask;
-    private PostProcessorTask postProcessorTask;
     private final Runnable whenComplete;
-
     private final String temporaryDirectory;
 
     private File printJobDirectory;
+    private Thread slicingThread;
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
+        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete,
+        Cancellable cancellable)
     {
         this.project = project;
         this.lblTime = lblTime;
@@ -68,86 +64,55 @@ public class GetTimeWeightCost
 
         this.temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.timeAndCostFileSubpath
-            + settings.getProfileName() + random.nextInt()
+            + settings.getProfileName()
             + File.separator;
+
+        cancellable.cancelled().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean cancelled) ->
+            {
+                if (cancelled)
+                {
+                    cancel();
+                }
+            });
     }
 
-    public SlicerTask setupSlicerTask()
+    private void cancel()
+    {
+        slicingThread.interrupt();
+        clearPrintJobDirectory();
+        lblTime.setText("cancelled");
+        lblWeight.setText("cancelled");
+        lblCost.setText("cancelled");
+    }
+
+    public void runSlicerAndPostProcessor() throws IOException
     {
 
         steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
-        slicerTask = makeSlicerTask(project, settings);
+        slicingThread = Thread.currentThread();
+        doSlicing(project, settings);
 
-        slicerTask.setOnFailed((WorkerStateEvent event) ->
+        GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
+            settings.getProfileName(),
+            settings, temporaryDirectory,
+            null, null);
+        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
+            getPrintJobStatistics();
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            clearPrintJobDirectory();
+            updateFieldsForStatistics(printJobStatistics);
         });
+        
+        clearPrintJobDirectory();
 
-        slicerTask.setOnCancelled((WorkerStateEvent event) ->
+        if (whenComplete != null)
         {
-            clearPrintJobDirectory();
-            if (postProcessorTask != null)
-            {
-                postProcessorTask.cancel();
-            }
-            lblTime.setText("cancelled");
-            lblWeight.setText("cancelled");
-            lblCost.setText("cancelled");
-        });
+            whenComplete.run();
+        }
 
-        slicerTask.setOnSucceeded((WorkerStateEvent event) ->
-        {
-            try
-            {
-                SliceResult sliceResult = slicerTask.getValue();
-
-                postProcessorTask = new PostProcessorTask(
-                    sliceResult.getPrintJobUUID(),
-                    temporaryDirectory,
-                    settings, null);
-
-                postProcessorTask.setOnSucceeded((WorkerStateEvent event1) ->
-                {
-                    try
-                    {
-                        GCodePostProcessingResult result = postProcessorTask.getValue();
-                        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
-                            getPrintJobStatistics();
-
-                        updateFieldsForStatistics(printJobStatistics);
-                        clearPrintJobDirectory();
-
-                        if (whenComplete != null)
-                        {
-                            whenComplete.run();
-                        }
-
-                    } catch (Exception ex)
-                    {
-                        ex.printStackTrace();
-                    }
-                });
-
-                postProcessorTask.setOnFailed((WorkerStateEvent event1) ->
-                {
-                    clearPrintJobDirectory();
-                    lblTime.setText("NA");
-                    lblWeight.setText("NA");
-                    lblCost.setText("NA");
-                });
-
-                steno.info("launch post processor for project " + project + " and settings "
-                    + settings.getProfileName());
-                Lookup.getTaskExecutor().runTaskAsDaemon(postProcessorTask);
-            } catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        });
-
-        return slicerTask;
     }
 
     public void clearPrintJobDirectory()
@@ -157,7 +122,7 @@ public class GetTimeWeightCost
             FileUtils.deleteDirectory(new File(temporaryDirectory));
         } catch (IOException ex)
         {
-            steno.error("Could not delete directory " + temporaryDirectory+ " "
+            steno.warning("Could not delete directory " + temporaryDirectory + " "
                 + ex);
         }
     }
@@ -200,7 +165,7 @@ public class GetTimeWeightCost
     /**
      * Set up a print job directory etc and return a SlicerTask based on it.
      */
-    private SlicerTask makeSlicerTask(Project project, SlicerParametersFile settings)
+    private boolean doSlicing(Project project, SlicerParametersFile settings)
     {
 
         settings = project.getPrinterSettings().applyOverrides(settings);
@@ -233,12 +198,12 @@ public class GetTimeWeightCost
                                              + settings.getProfileName()
                                              + ApplicationConfiguration.printProfileFileExtension);
 
-        return new SlicerTask(settings.getProfileName(),
-                              temporaryDirectory,
-                              project,
-                              PrintQualityEnumeration.DRAFT,
-                              settings, null);
-
+        SliceResult sliceResult = SlicerTask.doSlicing(settings.getProfileName(), settings,
+                                                       temporaryDirectory,
+                                                       project,
+                                                       PrintQualityEnumeration.DRAFT,
+                                                       null, null, steno);
+        return sliceResult.isSuccess();
     }
 
     /**

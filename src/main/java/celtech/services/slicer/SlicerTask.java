@@ -8,7 +8,6 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
-import celtech.utils.threed.exporters.AMFOutputConverter;
 import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +21,9 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class SlicerTask extends Task<SliceResult>
+public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.
         getName());
     private String printJobUUID = null;
@@ -33,7 +32,6 @@ public class SlicerTask extends Task<SliceResult>
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
-    Process slicerProcess = null;
 
     public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality,
         SlicerParametersFile settings, Printer printerToUse)
@@ -65,15 +63,26 @@ public class SlicerTask extends Task<SliceResult>
     @Override
     protected SliceResult call() throws Exception
     {
-        boolean succeeded = false;
-        
         if (isCancelled())
         {
             return null;
         }
 
         steno.info("slice " + project + " " + settings.getProfileName());
+        updateTitle("Slicer");
+        updateMessage("Preparing model for conversion");
+        updateProgress(0, 100);
 
+        return doSlicing(printJobUUID, settings, printJobDirectory, project, 
+                                                  printQuality, printerToUse, this, steno);
+    }
+
+    public static SliceResult doSlicing(String printJobUUID, SlicerParametersFile settings,
+        String printJobDirectory, Project project, PrintQualityEnumeration printQuality,
+        Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno)
+    {
+        boolean succeeded = false;
+                
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         if (settings.getSlicerOverride() != null)
         {
@@ -89,10 +98,10 @@ public class SlicerTask extends Task<SliceResult>
 //            outputConverter = new AMFOutputConverter();
 //        } else
         {
-            tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-            outputConverter = new STLOutputConverter();
-        }
-
+        tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
+        outputConverter = new STLOutputConverter();
+    }
+        
         List<String> createdMeshFiles = null;
 
         // Output multiple files if we are using Cura
@@ -102,17 +111,13 @@ public class SlicerTask extends Task<SliceResult>
 //                                                          false);
 //        } else
         {
-            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-                                                          true);
-        }
-
+        createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+                                                                                 true);
+    }
+        
         String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
 
         String configFile = printJobUUID + ApplicationConfiguration.printProfileFileExtension;
-
-        updateTitle("Slicer");
-        updateMessage("Preparing model for conversion");
-        updateProgress(0, 100);
 
         MachineType machineType = ApplicationConfiguration.getMachineType();
         ArrayList<String> commands = new ArrayList<>();
@@ -246,11 +251,6 @@ public class SlicerTask extends Task<SliceResult>
                 steno.error("Couldn't determine how to run slicer");
         }
 
-        if (isCancelled())
-        {
-            return null;
-        }
-
         if (commands.size() > 0)
         {
             steno.debug("Slicer command is " + String.join(" ", commands));
@@ -261,19 +261,20 @@ public class SlicerTask extends Task<SliceResult>
                 slicerProcessBuilder.directory(new File(printJobDirectory));
             }
 
+            Process slicerProcess = null;
             try
             {
                 slicerProcess = slicerProcessBuilder.start();
                 // any error message?
-                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(this, slicerProcess.
-                                                                           getErrorStream(), "ERROR",
-                                                                           slicerType);
-
+                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(progressReceiver, slicerProcess.
+                    getErrorStream(), "ERROR",
+                    slicerType);
+                
                 // any output?
-                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.
-                                                                            getInputStream(),
-                                                                            "OUTPUT", slicerType);
-
+                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(progressReceiver, slicerProcess.
+                    getInputStream(),
+                    "OUTPUT", slicerType);
+                
                 // kick them off
                 errorGobbler.start();
                 outputGobbler.start();
@@ -308,10 +309,11 @@ public class SlicerTask extends Task<SliceResult>
         }
 
         return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
-                               succeeded);
+            succeeded);
     }
 
-    protected void progressUpdateFromSlicer(String message, int workDone)
+    @Override
+    public void progressUpdateFromSlicer(String message, int workDone)
     {
         updateMessage(message);
         updateProgress(workDone, 100);
