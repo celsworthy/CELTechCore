@@ -88,13 +88,13 @@ public class CalibrationPrinterErrorHandler
 
                 if (abort)
                 {
-                    cancelPurge();
+                    cancelCalibration();
                 }
             } else
             {
                 // Must be something else
                 // if not filament slip or B POSITION then cancel / abort printer activity immediately
-                cancelPurge();
+                cancelCalibration();
                 Lookup.getSystemNotificationHandler().
                     showPrinterErrorDialog(
                         error.getLocalisedErrorTitle(),
@@ -107,7 +107,7 @@ public class CalibrationPrinterErrorHandler
         }
     }
 
-    private void cancelPurge()
+    private void cancelCalibration()
     {
         errorCancellable.cancelled().set(true);
     }

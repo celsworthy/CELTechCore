@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -144,7 +142,7 @@ public class ProjectManager implements Savable, Serializable
         return openProjects;
     }
 
-    public Set<String> getAvailableProjectNames()
+    private Set<String> getAvailableProjectNames()
     {
         Set<String> availableProjectNames = new HashSet<>();
 

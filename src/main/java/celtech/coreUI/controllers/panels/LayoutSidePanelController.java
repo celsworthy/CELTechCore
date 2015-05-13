@@ -1018,7 +1018,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     {
         materialComponent0 = new MaterialComponent(MaterialComponent.Mode.LAYOUT, null, 0);
         materialComponent1 = new MaterialComponent(MaterialComponent.Mode.LAYOUT, null, 1);
-        materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
+//        materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
+        materialContainer.getChildren().addAll(materialComponent0);
 
         materialComponent0.setOnMouseClicked((MouseEvent event) ->
         {
