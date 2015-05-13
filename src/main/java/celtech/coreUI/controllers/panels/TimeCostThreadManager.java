@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.utils.tasks.Cancellable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -24,7 +25,8 @@ public class TimeCostThreadManager
 
     private ExecutorService executorService;
     private Future timeCostFuture;
-
+    private Cancellable cancellable;
+    
     public TimeCostThreadManager()
     {
         ThreadFactory threadFactory = (Runnable runnable) ->
@@ -39,17 +41,17 @@ public class TimeCostThreadManager
     public void cancelRunningTimeCostTasks()
     {
         System.out.println("cancel running tasks");
-        if (timeCostFuture != null)
+        if (cancellable != null)
         {
+            cancellable.cancelled().set(true);
             timeCostFuture.cancel(true);
         }
     }
 
-    public void cancelRunningTimeCostTasksAndRun(Runnable runnable)
+    public void cancelRunningTimeCostTasksAndRun(Runnable runnable, Cancellable cancellable)
     {
-
         cancelRunningTimeCostTasks();
-
+        this.cancellable = cancellable;
         timeCostFuture = executorService.submit(() ->
         {
             runnable.run();

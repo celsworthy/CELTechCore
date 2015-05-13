@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -250,41 +248,30 @@ public class TimeCostInsetPanelController implements Initializable
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
 
-        Runnable runNormal = () ->
+        Cancellable cancellable = new SimpleCancellable();
+        Runnable runUpdateFields = () ->
         {
-            Runnable runFine = () ->
+            if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
+                && !currentProject.getPrinterSettings().getSettingsName().equals(""))
             {
-
-                updateFieldsForProfile(project, fineSettings, lblFineTime,
-                                       lblFineWeight,
-                                       lblFineCost, (Runnable) null);
-            };
+                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
+                updateFieldsForProfile(project, customSettings, lblCustomTime,
+                                       lblCustomWeight,
+                                       lblCustomCost, cancellable);
+            }
+            updateFieldsForProfile(project, draftSettings, lblDraftTime,
+                                   lblDraftWeight,
+                                   lblDraftCost, cancellable);
             updateFieldsForProfile(project, normalSettings, lblNormalTime,
                                    lblNormalWeight,
-                                   lblNormalCost, runFine);
+                                   lblNormalCost, cancellable);
+            updateFieldsForProfile(project, fineSettings, lblFineTime,
+                                   lblFineWeight,
+                                   lblFineCost, cancellable);            
         };
-
-        if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
-            && !currentProject.getPrinterSettings().getSettingsName().equals(""))
-        {
-            SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
-//            updateFieldsForProfile(project, customSettings, lblCustomTime,
-//                                                      lblCustomWeight,
-//                                                      lblCustomCost, runDraft);
-
-        } else
-        {
-            lblCustomTime.setText("---");
-            lblCustomWeight.setText("---");
-            lblCustomCost.setText("---");
-
-            timeCostThreadManager.cancelRunningTimeCostTasksAndRun(() ->
-            {
-                updateFieldsForProfile(project, draftSettings, lblDraftTime,
-                                       lblDraftWeight,
-                                       lblDraftCost, runNormal);
-            });
-        }
+        
+        timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
+        
     }
 
     /**
@@ -292,7 +279,7 @@ public class TimeCostInsetPanelController implements Initializable
      * calculations must be performed in a background thread.
      */
     private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
+        Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         String working = Lookup.i18n("timeCost.working");
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -304,7 +291,7 @@ public class TimeCostInsetPanelController implements Initializable
 
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                                                                 lblTime, lblWeight,
-                                                                lblCost, whenComplete);
+                                                                lblCost, cancellable);
         try
         {
             updateDetails.runSlicerAndPostProcessor();

@@ -17,9 +17,11 @@ import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
+import celtech.utils.tasks.Cancellable;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -43,20 +45,20 @@ public class GetTimeWeightCost
     private final Label lblWeight;
     private final Label lblCost;
     private final SlicerParametersFile settings;
-    private final Runnable whenComplete;
     private final String temporaryDirectory;
 
     private File printJobDirectory;
+    private final Cancellable cancellable;
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
+        Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         this.project = project;
         this.lblTime = lblTime;
         this.lblWeight = lblWeight;
         this.lblCost = lblCost;
         this.settings = settings;
-        this.whenComplete = whenComplete;
+        this.cancellable = cancellable;
 
         temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.timeAndCostFileSubpath
@@ -64,6 +66,12 @@ public class GetTimeWeightCost
             + File.separator;
         
         new File(temporaryDirectory).mkdirs();
+        
+        cancellable.cancelled().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            showCancelled();
+        });
     }
 
     private void showCancelled()
@@ -77,6 +85,10 @@ public class GetTimeWeightCost
         });
 
     }
+    
+    private boolean isCancelled() {
+        return cancellable.cancelled().get();
+    }
 
     public void runSlicerAndPostProcessor() throws IOException
     {
@@ -86,7 +98,15 @@ public class GetTimeWeightCost
         steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
+        if (isCancelled()) {
+            return;
+        }
+        
         doSlicing(project, settings);
+        
+        if (isCancelled()) {
+            return;
+        }        
         
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
             settings.getProfileName(),
@@ -94,17 +114,15 @@ public class GetTimeWeightCost
             null, null);
         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
             getPrintJobStatistics();
+        
+        if (isCancelled()) {
+            return;
+        }        
+        
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             updateFieldsForStatistics(printJobStatistics);
         });
-
-        clearPrintJobDirectory();
-
-        if (whenComplete != null)
-        {
-            whenComplete.run();
-        }
 
     }
 
@@ -157,7 +175,7 @@ public class GetTimeWeightCost
     }
 
     /**
-     * Set up a print job directory etc and return a SlicerTask based on it.
+     * Set up a print job directory etc run the slicer.
      */
     private boolean doSlicing(Project project, SlicerParametersFile settings)
     {
