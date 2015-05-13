@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author Ian
  */
-public class PrinterTest extends JavaFXConfiguredTest
+public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusConsumer
 {
 
     @ClassRule
@@ -32,6 +32,7 @@ public class PrinterTest extends JavaFXConfiguredTest
     private HardwarePrinter printer = null;
     private final int statusTimer = 500;
     private StatusConsumer statusConsumer = null;
+    private boolean printerIsConnected = false;
 
     public PrinterTest()
     {
@@ -42,8 +43,31 @@ public class PrinterTest extends JavaFXConfiguredTest
     {
         statusConsumer = new StatusConsumer();
         testCommandInterface = new TestCommandInterface(statusConsumer, "Test Printer", false,
-                                                        statusTimer);
+                statusTimer);
         printer = new HardwarePrinter(null, testCommandInterface);
+
+        long millisecondsWaited = 0;
+        final long millisecondsDelay = 500;
+        final long maxDelay = 2000;
+
+        while (!printerIsConnected
+                && millisecondsWaited <= maxDelay)
+        {
+            try
+            {
+                Thread.sleep(millisecondsDelay);
+            } catch (InterruptedException ex)
+            {
+                System.err.println("Interrupted whilst waiting for printer initialisation");
+                ex.printStackTrace();
+            }
+            millisecondsWaited += millisecondsDelay;
+        }
+        
+        if (millisecondsWaited >= maxDelay)
+        {
+            fail("Failed to connect to test printer");
+        }
     }
 
     @AfterClass
@@ -74,7 +98,7 @@ public class PrinterTest extends JavaFXConfiguredTest
     @Test
     public void testDefaultPrinterColour()
     {
-        assertNull(printer.getPrinterIdentity().printerColourProperty().get());
+        assertEquals(Color.CRIMSON, printer.getPrinterIdentity().printerColourProperty().get());
     }
 
     @Test
@@ -97,18 +121,18 @@ public class PrinterTest extends JavaFXConfiguredTest
     public void testUpdateHead() throws RoboxCommsException
     {
         HeadEEPROMDataResponse response = (HeadEEPROMDataResponse) RoboxRxPacketFactory.createPacket(
-            RxPacketTypeEnum.HEAD_EEPROM_DATA);
+                RxPacketTypeEnum.HEAD_EEPROM_DATA);
         response.setHeadTypeCode("RBX01-SM");
         response.setUniqueID("XYZ1");
         testCommandInterface.addHead(response);
 
         float nozzle1XOffset = 7.4f;
         printer.transmitWriteHeadEEPROM(
-            "RBX01-SM", "XZYA",
-            250f, 5f, 6f,
-            nozzle1XOffset, 7f, 0.2f, 1.1f,
-            100f, 7f, 0.2f, 1f,
-            210f, 45f);
+                "RBX01-SM", "XZYA",
+                250f, 5f, 6f,
+                nozzle1XOffset, 7f, 0.2f, 1.1f,
+                100f, 7f, 0.2f, 1f,
+                210f, 45f);
 
         assertEquals(nozzle1XOffset, printer.headProperty().get().getNozzles().get(0).xOffsetProperty().get(), 0.001);
     }
@@ -116,7 +140,7 @@ public class PrinterTest extends JavaFXConfiguredTest
     @Test
     public void testDefaultPrinterName()
     {
-        assertEquals("", printer.getPrinterIdentity().printerFriendlyNameProperty().get());
+        assertEquals("Dummy", printer.getPrinterIdentity().printerFriendlyNameProperty().get());
     }
 
     @Test
@@ -135,12 +159,31 @@ public class PrinterTest extends JavaFXConfiguredTest
         assertEquals(testName, printer.getPrinterIdentity().printerFriendlyNameProperty().get());
     }
 
+    @Override
+    public void printerConnected(String portName)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void failedToConnect(String portName)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void disconnected(String portName)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     class StatusConsumer implements PrinterStatusConsumer
     {
 
         @Override
         public void printerConnected(String portName)
         {
+            printerIsConnected = true;
         }
 
         @Override
@@ -151,6 +194,7 @@ public class PrinterTest extends JavaFXConfiguredTest
         @Override
         public void disconnected(String portName)
         {
+            printerIsConnected = false;
         }
     }
 }
