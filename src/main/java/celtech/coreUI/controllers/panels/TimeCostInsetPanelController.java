@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -241,16 +243,32 @@ public class TimeCostInsetPanelController implements Initializable
         lblDraftTime.setText("...");
         lblNormalTime.setText("...");
         lblFineTime.setText("...");
+        lblCustomTime.setText("...");
         lblDraftWeight.setText("...");
         lblNormalWeight.setText("...");
         lblFineWeight.setText("...");
+        lblCustomWeight.setText("...");
         lblDraftCost.setText("...");
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
+        lblCustomCost.setText("...");
 
         Cancellable cancellable = new SimpleCancellable();
         Runnable runUpdateFields = () ->
         {
+
+            try
+            {
+                Thread.sleep(500);
+            } catch (InterruptedException ex)
+            {
+                return;
+            }
+            if (cancellable.cancelled().get())
+            {
+                return;
+            }
+
             if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                 && !currentProject.getPrinterSettings().getSettingsName().equals(""))
             {
@@ -258,20 +276,32 @@ public class TimeCostInsetPanelController implements Initializable
                 updateFieldsForProfile(project, customSettings, lblCustomTime,
                                        lblCustomWeight,
                                        lblCustomCost, cancellable);
+                if (cancellable.cancelled().get())
+                {
+                    return;
+                }
             }
             updateFieldsForProfile(project, draftSettings, lblDraftTime,
                                    lblDraftWeight,
                                    lblDraftCost, cancellable);
+            if (cancellable.cancelled().get())
+            {
+                return;
+            }
             updateFieldsForProfile(project, normalSettings, lblNormalTime,
                                    lblNormalWeight,
                                    lblNormalCost, cancellable);
+            if (cancellable.cancelled().get())
+            {
+                return;
+            }
             updateFieldsForProfile(project, fineSettings, lblFineTime,
                                    lblFineWeight,
-                                   lblFineCost, cancellable);            
+                                   lblFineCost, cancellable);
         };
-        
+
         timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
-        
+
     }
 
     /**

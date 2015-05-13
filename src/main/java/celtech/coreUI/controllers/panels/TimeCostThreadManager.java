@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -40,7 +39,6 @@ public class TimeCostThreadManager
 
     public void cancelRunningTimeCostTasks()
     {
-        System.out.println("cancel running tasks");
         if (cancellable != null)
         {
             cancellable.cancelled().set(true);

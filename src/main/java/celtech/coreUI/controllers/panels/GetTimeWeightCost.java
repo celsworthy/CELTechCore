@@ -62,7 +62,6 @@ public class GetTimeWeightCost
 
         temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.timeAndCostFileSubpath
-            + settings.getProfileName()
             + File.separator;
         
         new File(temporaryDirectory).mkdirs();
@@ -76,12 +75,12 @@ public class GetTimeWeightCost
 
     private void showCancelled()
     {
-        System.out.println("cancel time/cost");
+        String cancelled = Lookup.i18n("timeCost.cancelled");
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            lblTime.setText("cancelled");
-            lblWeight.setText("cancelled");
-            lblCost.setText("cancelled");
+            lblTime.setText(cancelled);
+            lblWeight.setText(cancelled);
+            lblCost.setText(cancelled);
         });
 
     }
@@ -169,8 +168,9 @@ public class GetTimeWeightCost
         } else
         {
             // If there is no filament loaded...
-            lblWeight.setText("No filament");
-            lblCost.setText("No filament");
+            String noFilament = Lookup.i18n("timeCost.noFilament");
+            lblWeight.setText(noFilament);
+            lblCost.setText(noFilament);
         }
     }
 
