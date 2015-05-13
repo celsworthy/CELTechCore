@@ -3,12 +3,13 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.Lookup;
-import celtech.services.slicer.SlicerTask;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import javafx.concurrent.Task;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * TimeCostThreadManager makes sure that all tasks are properly cancelled.
@@ -18,41 +19,41 @@ import javafx.concurrent.Task;
 public class TimeCostThreadManager
 {
 
-    ExecutorService executorService;
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        TimeCostThreadManager.class.getName());
+
+    private ExecutorService executorService;
+    private Future timeCostFuture;
 
     public TimeCostThreadManager()
     {
-        executorService = Executors.newFixedThreadPool(1);
-    }
-
-    private void cancelTask(Task task)
-    {
-        if (task != null && !(task.isDone() || task.isCancelled()))
+        ThreadFactory threadFactory = (Runnable runnable) ->
         {
-            task.cancel();
-        }
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setDaemon(true);
+            return thread;
+        };
+        executorService = Executors.newFixedThreadPool(1, threadFactory);
     }
 
     public void cancelRunningTimeCostTasks()
     {
         System.out.println("cancel running tasks");
-//        for (Task task : tasks)
-//        {
-//            cancelTask(task);
-//        }
+        if (timeCostFuture != null)
+        {
+            timeCostFuture.cancel(true);
+        }
     }
 
     public void cancelRunningTimeCostTasksAndRun(Runnable runnable)
     {
-       
+
         cancelRunningTimeCostTasks();
-        runTask(runnable);
-        executorService.submit(runnable);
+
+        timeCostFuture = executorService.submit(() ->
+        {
+            runnable.run();
+        });
     }
 
-    void runTask(Runnable runnable)
-    {
-        System.out.println("start task " + runnable);
-        executorService.submit(runnable);
-    }
 }

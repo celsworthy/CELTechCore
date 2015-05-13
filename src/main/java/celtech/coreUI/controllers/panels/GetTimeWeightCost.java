@@ -17,11 +17,9 @@ import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
-import celtech.utils.tasks.Cancellable;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -49,11 +47,9 @@ public class GetTimeWeightCost
     private final String temporaryDirectory;
 
     private File printJobDirectory;
-    private Thread slicingThread;
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete,
-        Cancellable cancellable)
+        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
     {
         this.project = project;
         this.lblTime = lblTime;
@@ -62,39 +58,36 @@ public class GetTimeWeightCost
         this.settings = settings;
         this.whenComplete = whenComplete;
 
-        this.temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
+        temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.timeAndCostFileSubpath
             + settings.getProfileName()
             + File.separator;
-
-        cancellable.cancelled().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean cancelled) ->
-            {
-                if (cancelled)
-                {
-                    cancel();
-                }
-            });
+        
+        new File(temporaryDirectory).mkdirs();
     }
 
-    private void cancel()
+    private void showCancelled()
     {
-        slicingThread.interrupt();
-        clearPrintJobDirectory();
-        lblTime.setText("cancelled");
-        lblWeight.setText("cancelled");
-        lblCost.setText("cancelled");
+        System.out.println("cancel time/cost");
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            lblTime.setText("cancelled");
+            lblWeight.setText("cancelled");
+            lblCost.setText("cancelled");
+        });
+
     }
 
     public void runSlicerAndPostProcessor() throws IOException
     {
+        
+        clearPrintJobDirectory();
 
         steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
-        slicingThread = Thread.currentThread();
         doSlicing(project, settings);
-
+        
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
             settings.getProfileName(),
             settings, temporaryDirectory,
@@ -105,7 +98,7 @@ public class GetTimeWeightCost
         {
             updateFieldsForStatistics(printJobStatistics);
         });
-        
+
         clearPrintJobDirectory();
 
         if (whenComplete != null)
@@ -125,6 +118,7 @@ public class GetTimeWeightCost
             steno.warning("Could not delete directory " + temporaryDirectory + " "
                 + ex);
         }
+        new File(temporaryDirectory).mkdirs();
     }
 
     /**

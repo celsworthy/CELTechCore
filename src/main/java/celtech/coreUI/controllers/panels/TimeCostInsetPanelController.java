@@ -10,18 +10,15 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.SlicerTask;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.SimpleCancellable;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -253,21 +250,19 @@ public class TimeCostInsetPanelController implements Initializable
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
 
-     
-            Runnable runNormal = () ->
+        Runnable runNormal = () ->
+        {
+            Runnable runFine = () ->
             {
-                Runnable runFine = () ->
-                {
 
-                    updateFieldsForProfile(project, fineSettings, lblFineTime,
-                                                            lblFineWeight,
-                                                            lblFineCost, (Runnable) null);
-                };
-                updateFieldsForProfile(project, normalSettings, lblNormalTime,
-                                                          lblNormalWeight,
-                                                          lblNormalCost, runFine);
+                updateFieldsForProfile(project, fineSettings, lblFineTime,
+                                       lblFineWeight,
+                                       lblFineCost, (Runnable) null);
             };
-            
+            updateFieldsForProfile(project, normalSettings, lblNormalTime,
+                                   lblNormalWeight,
+                                   lblNormalCost, runFine);
+        };
 
         if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
             && !currentProject.getPrinterSettings().getSettingsName().equals(""))
@@ -283,9 +278,12 @@ public class TimeCostInsetPanelController implements Initializable
             lblCustomWeight.setText("---");
             lblCustomCost.setText("---");
 
-            updateFieldsForProfile(project, draftSettings, lblDraftTime,
-                                                     lblDraftWeight,
-                                                     lblDraftCost, runNormal);
+            timeCostThreadManager.cancelRunningTimeCostTasksAndRun(() ->
+            {
+                updateFieldsForProfile(project, draftSettings, lblDraftTime,
+                                       lblDraftWeight,
+                                       lblDraftCost, runNormal);
+            });
         }
     }
 
@@ -304,23 +302,17 @@ public class TimeCostInsetPanelController implements Initializable
             lblCost.setText(working);
         });
 
-        Cancellable cancellable = new SimpleCancellable();
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                                                                 lblTime, lblWeight,
-                                                                lblCost, whenComplete, cancellable);
-        
-        
-        timeCostThreadManager.cancelRunningTimeCostTasksAndRun(() ->
+                                                                lblCost, whenComplete);
+        try
         {
-            try
-            {
-                updateDetails.runSlicerAndPostProcessor();
-            } catch (IOException ex)
-            {
-                ex.printStackTrace();
-                steno.error("Unable to update time/cost fields: " + ex);
-            }
-        });
+            updateDetails.runSlicerAndPostProcessor();
+        } catch (IOException ex)
+        {
+            ex.printStackTrace();
+            steno.error("Error running slicer/postprocessor " + ex);
+        }
 
     }
 
