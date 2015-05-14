@@ -39,6 +39,7 @@ public class PrinterSettings
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
+    private boolean raftOverride = false;
 
     public PrinterSettings()
     {
@@ -166,7 +167,8 @@ public class PrinterSettings
                 return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
                     ApplicationConfiguration.fineSettingsProfileName));
             case CUSTOM:
-                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(customSettingsName.get()));
+                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
+                    customSettingsName.get()));
 
         }
         throw new RuntimeException("Unknown print quality");
@@ -222,6 +224,15 @@ public class PrinterSettings
         if (this.printSupportOverride != printSupportOverride)
         {
             this.printSupportOverride = printSupportOverride;
+            toggleDataChanged();
+        }
+    }
+
+    public void setRaftOverride(boolean raftOverride)
+    {
+        if (this.raftOverride != raftOverride)
+        {
+            this.raftOverride = raftOverride;
             toggleDataChanged();
         }
     }

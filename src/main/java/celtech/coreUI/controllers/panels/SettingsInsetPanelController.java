@@ -58,6 +58,9 @@ public class SettingsInsetPanelController implements Initializable
     private Slider supportSlider;
 
     @FXML
+    private Slider raftSlider;
+
+    @FXML
     private VBox customProfileVBox;
 
     @FXML
@@ -114,7 +117,7 @@ public class SettingsInsetPanelController implements Initializable
                     showPleaseCreateProfile(
                         Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
                 });
-            
+
             showPleaseCreateProfile(
                 Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
         } catch (Exception ex)
@@ -162,8 +165,8 @@ public class SettingsInsetPanelController implements Initializable
 
                 if (newValue != null)
                 {
-                    if (printerSettings != null && 
-                        printerSettings.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+                    if (printerSettings != null && printerSettings.getPrintQuality()
+                    == PrintQualityEnumeration.CUSTOM)
                     {
                         whenCustomProfileChanges(newValue);
                     } else if (printerSettings != null)
@@ -241,6 +244,50 @@ public class SettingsInsetPanelController implements Initializable
                 }
             });
 
+        raftSlider.setLabelFormatter(new StringConverter<Double>()
+        {
+            @Override
+            public String toString(Double n)
+            {
+                String returnedText = "";
+
+                if (n <= 0)
+                {
+                    returnedText = Lookup.i18n("genericFirstLetterCapitalised.Off");
+                } else
+                {
+                    returnedText = Lookup.i18n("genericFirstLetterCapitalised.On");
+                }
+                return returnedText;
+            }
+
+            @Override
+            public Double fromString(String s)
+            {
+                double returnVal = 0;
+
+                if (s.equals(Lookup.i18n("genericFirstLetterCapitalised.Off")))
+                {
+                    returnVal = 0;
+                } else if (s.equals(Lookup.i18n("genericFirstLetterCapitalised.On")))
+                {
+                    returnVal = 1;
+                }
+                return returnVal;
+            }
+        }
+        );
+
+        raftSlider.valueProperty().addListener(
+            (ObservableValue<? extends Number> ov, Number lastRaftValue, Number newRaftValue) ->
+            {
+                if (lastRaftValue != newRaftValue)
+                {
+                    boolean raftSelected = (newRaftValue.doubleValue() >= 1.0);
+                    printerSettings.setRaftOverride(raftSelected);
+                }
+            });
+
         fillDensitySlider.valueProperty()
             .addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -299,7 +346,6 @@ public class SettingsInsetPanelController implements Initializable
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
 
-
         populateQualityOverrideControls(printerSettings);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
@@ -328,8 +374,8 @@ public class SettingsInsetPanelController implements Initializable
 
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
-        supportSlider.setValue(saveSupports ? 1: 0);
-        
+        supportSlider.setValue(saveSupports ? 1 : 0);
+
     }
 
     private void enableCustomWidgets(boolean enable)
