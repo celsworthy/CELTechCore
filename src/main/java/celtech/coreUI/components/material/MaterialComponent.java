@@ -83,10 +83,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     @FXML
     private Group reelSVGQuestion;
-    
-    @FXML
-    private Group reelSVGCross;    
 
+    @FXML
+    private Group reelSVGCross;
+
+    @FXML
+    private SVGPath svgLoaded;
+    
     @FXML
     private Text materialColour;
 
@@ -159,6 +162,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         return selectedFilamentProperty;
     }
+    
+    private boolean filamentLoaded() {
+        return printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get();
+    }
 
     /**
      * When the filament property changes for STATUS mode, update the component appropriately.
@@ -168,7 +175,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         if (selectedFilamentProperty.get() == null)
         {
-            showReelNotLoaded();
+            if (filamentLoaded())
+            {
+                showFilamentUnknown();
+            } else
+            {
+                showFilamentNotLoaded();
+            }
         } else
         {
             Float remainingFilament = 0f;
@@ -187,7 +200,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getFriendlyFilamentName(),
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
-                        diameter);
+                        diameter, filamentLoaded());
         }
     }
 
@@ -207,7 +220,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getFriendlyFilamentName(),
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
-                        diameter);
+                        diameter, false);
         }
     }
 
@@ -248,7 +261,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                                 filament.getFriendlyFilamentName(),
                                 filament.getDisplayColourProperty().get(),
                                 remainingFilament,
-                                diameter);
+                                diameter, false);
                 }
             }
         };
@@ -271,7 +284,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         if (filament == null)
         {
-            showReelNotLoaded();
+            if (filamentLoaded())
+            {
+                showFilamentUnknown();
+            } else
+            {
+                showFilamentNotLoaded();
+            }
         } else
         {
             Float remainingFilament = 0f;
@@ -290,7 +309,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getFriendlyFilamentName(),
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
-                        diameter);
+                        diameter, filamentLoaded());
         }
     }
 
@@ -359,11 +378,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
                 userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
         } catch (NoClassDefFoundError exception)
         {
@@ -382,9 +401,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         comboItems = FXCollections.observableArrayList(filamentsList);
         cmbMaterials.setItems(comboItems);
 
-        if (mode == Mode.LAYOUT) {
+        if (mode == Mode.LAYOUT)
+        {
             reselectFilamentId(currentFilamentId);
-        }    
+        }
 
     }
 
@@ -425,7 +445,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         } else
         {
             selectedFilamentProperty.set(null);
-            showReelNotLoaded();
+            showFilamentNotLoaded();
         }
     }
 
@@ -539,7 +559,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         reelSVGRobox.setVisible(false);
         reelSVGGears.setVisible(false);
         reelSVGQuestion.setVisible(false);
-        reelSVGCross.setVisible(false);        
+        reelSVGCross.setVisible(false);
         switch (reelType)
         {
             case ROBOX:
@@ -553,19 +573,20 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 break;
             case SOLID_CROSS:
                 reelSVGCross.setVisible(true);
-                break;                
+                break;
         }
     }
 
     private void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
-        Color colour, double remainingFilament, double filamentDiameter)
+        Color colour, double remainingFilament, double filamentDiameter, boolean filamentLoaded)
     {
-        
+
         String numberMaterial = String.valueOf(reelNumber + 1) + ":"
             + materialType.getFriendlyName();
 
         double remainingLengthMeters = remainingFilament / 1000d;
-        if (remainingLengthMeters < 0) {
+        if (remainingLengthMeters < 0)
+        {
             remainingLengthMeters = 0;
         }
         double densityKGM3 = materialType.getDensity() * 1000d;
@@ -574,17 +595,21 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String remaining = ((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG)
             + "g " + Lookup.i18n("materialComponent.remaining");
 
-        showDetails(numberMaterial, remaining, materialColourString, colour);
+        showDetails(numberMaterial, remaining, materialColourString, colour, filamentLoaded);
     }
 
     private void showDetails(String numberMaterial, String materialRemainingString,
-        String materialColourString, Color colour)
+        String materialColourString, Color colour, boolean filamentLoaded)
     {
+        
+        svgLoaded.setVisible(filamentLoaded);
+        
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
         reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
+        svgLoaded.setStyle("-fx-fill: #" + colourString + ";");
         setReelColourString(colourString);
 
         materialColour.setText(materialColourString);
@@ -600,21 +625,25 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     /**
      * Indicate that the reel is not formatted.
      */
-    private void showReelNotFormatted()
+    private void showFilamentUnknown()
     {
+        svgLoaded.setVisible(true);
+        svgLoaded.setFill(Color.BLACK);
+        setReelType(ReelType.SOLID_QUESTION);
         String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
         String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
         String error = Lookup.i18n("smartReelProgrammer.error");
         showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString,
-                    Color.BLACK);
+                    Color.BLACK, true);
     }
 
-    private void showReelNotLoaded()
+    private void showFilamentNotLoaded()
     {
-        setReelType(ReelType.SOLID_QUESTION);
+        svgLoaded.setVisible(false);
+        setReelType(ReelType.SOLID_CROSS);
         String unknown = UNKNOWN;
         String noReelLoaded = Lookup.i18n("smartReelProgrammer.noReelLoaded");
-        showDetails((1 + extruderNumber) + ":", unknown, noReelLoaded, Color.BLACK);
+        showDetails((1 + extruderNumber) + ":", unknown, noReelLoaded, Color.BLACK, false);
     }
 
     private void setReelColourString(String colourString)

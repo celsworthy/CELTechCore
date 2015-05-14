@@ -60,6 +60,7 @@
             <Text fx:id="materialRemaining" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialRemaining" text="24m / 121g remaining" translateX="9.0" />
          </children>
       </HBox>
+            <SVGPath fx:id="svgLoaded" content="M179.075,135.346l-2.105-2.274c-0.248-0.306-0.372-0.635-0.372-0.988c0-0.414,0.165-0.786,0.496-1.117l6.07-5.696c0.288-0.245,0.619-0.369,1.01-0.369c0.21,0,0.401,0.044,0.601,0.122c0.193,0.076,0.361,0.189,0.494,0.344l16.695,18.009l28.749-37.01c0.329-0.378,0.726-0.563,1.194-0.563c0.354,0,0.65,0.111,0.918,0.331l6.614,5.104c0.134,0.111,0.257,0.266,0.382,0.48c0.113,0.206,0.179,0.396,0.179,0.569c0,0.38-0.104,0.727-0.332,1.063l-36.939,47.452L179.075,135.346z" layoutY="-95.0" scaleX="0.25" scaleY="0.25" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="23.0" />
    </children>
 </AnchorPane>
  </children>
