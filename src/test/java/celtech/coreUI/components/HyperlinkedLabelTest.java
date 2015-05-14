@@ -1,10 +1,7 @@
 package celtech.coreUI.components;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.services.printing.JavaFXThreadingRule;
-import javafx.beans.property.StringProperty;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
 import javafx.scene.text.Text;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
@@ -13,18 +10,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Rule;
 
 /**
  *
  * @author Ian
  */
-public class HyperlinkedLabelTest
+public class HyperlinkedLabelTest extends JavaFXConfiguredTest
 {
-
-    @Rule
-    public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
-
     public HyperlinkedLabelTest()
     {
     }
