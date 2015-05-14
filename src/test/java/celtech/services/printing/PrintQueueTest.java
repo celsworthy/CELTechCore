@@ -4,6 +4,7 @@
 package celtech.services.printing;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.JavaFXThreadingRule;
 import celtech.appManager.Project;
 import celtech.printerControl.model.PrintEngine;
 import org.junit.Rule;
@@ -21,9 +22,6 @@ public class PrintQueueTest extends JavaFXConfiguredTest
 
     PrintEngine printQueue;
     Project project;
-
-    @Rule
-    public JavaFXThreadingRule jfxRule = new JavaFXThreadingRule();
 
 //    /**
 //     * Test that progressProperty is 0 at start of print
