@@ -623,7 +623,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * Indicate that the reel is not formatted.
+     * Indicate that no reel is attached and the filament is loaded but unknown.
      */
     private void showFilamentUnknown()
     {
@@ -635,6 +635,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                     Color.BLACK, true);
     }
 
+     /**
+     * Indicate that no reel is attached and no filament is loaded.
+     */
     private void showFilamentNotLoaded()
     {
         svgLoaded.setVisible(false);
@@ -647,7 +650,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         reelSVGRobox.setStyle("-fx-fill: #" + colourString + ";");
         reelSVGGears.setStyle("-fx-fill: #" + colourString + ";");
-        reelSVGQuestion.setStyle("-fx-fill: #" + colourString + ";");
     }
 
     /**
