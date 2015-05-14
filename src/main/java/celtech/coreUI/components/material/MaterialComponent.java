@@ -342,6 +342,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (currentValue instanceof Filament)
         {
             currentFilamentId = ((Filament) currentValue).getFilamentID();
+            System.out.println("current filament id is " + currentFilamentId);
         }
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
@@ -378,7 +379,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         comboItems = FXCollections.observableArrayList(filamentsList);
         cmbMaterials.setItems(comboItems);
 
-        reselectFilamentId(currentFilamentId);
+        if (mode == Mode.LAYOUT) {
+            reselectFilamentId(currentFilamentId);
+        }    
 
     }
 
@@ -550,6 +553,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
         Color colour, double remainingFilament, double filamentDiameter)
     {
+        
+        System.out.println("materialColourString is " + materialColourString);
+        
         String numberMaterial = String.valueOf(reelNumber + 1) + ":"
             + materialType.getFriendlyName();
 

@@ -19,16 +19,16 @@ import libertysystems.stenographer.StenographerFactory;
 class SlicerOutputGobbler extends Thread
 {
 
-    private InputStream is = null;
-    private String type = null;
-    private Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
-    ;
-    private SlicerTask taskToUpdate = null;
-    private SlicerType slicerType = null;
+    private final InputStream is;
+    private final String type;
+    private final Stenographer steno = StenographerFactory.getStenographer(this.getClass().getName());
+    private final ProgressReceiver progressReceiver;
+    private final SlicerType slicerType;
 
-    SlicerOutputGobbler(SlicerTask taskToUpdate, InputStream is, String type, SlicerType slicerType)
+    SlicerOutputGobbler(ProgressReceiver progressReceiver, InputStream is, String type,
+        SlicerType slicerType)
     {
-        this.taskToUpdate = taskToUpdate;
+        this.progressReceiver = progressReceiver;
         this.is = is;
         this.type = type;
         this.slicerType = slicerType;
@@ -92,25 +92,22 @@ class SlicerOutputGobbler extends Thread
                         {
                             String task = lineParts[1];
                             int progressInt = 0;
-                            
+
                             float workDone = Float.valueOf(lineParts[2]);
                             float totalWork = Float.valueOf(lineParts[3]);
-                            
+
                             if (task.equalsIgnoreCase("inset"))
                             {
-                                progressInt = (int)((workDone/ totalWork) * 25);
-                            }
-                            else if (task.equalsIgnoreCase("skin"))
+                                progressInt = (int) ((workDone / totalWork) * 25);
+                            } else if (task.equalsIgnoreCase("skin"))
                             {
-                                progressInt = (int)((workDone/ totalWork) * 25) + 25;                                
-                            }
-                            else if (task.equalsIgnoreCase("export"))
+                                progressInt = (int) ((workDone / totalWork) * 25) + 25;
+                            } else if (task.equalsIgnoreCase("export"))
                             {
-                                progressInt = (int)((workDone/ totalWork) * 49) + 50;                                
-                            }
-                            else if (task.equalsIgnoreCase("process"))
+                                progressInt = (int) ((workDone / totalWork) * 49) + 50;
+                            } else if (task.equalsIgnoreCase("process"))
                             {
-                                progressInt = (int)((workDone/ totalWork) * 1) + 99;                                
+                                progressInt = (int) ((workDone / totalWork) * 1) + 99;
                             }
                             setLoadProgress(task, progressInt);
                         }
@@ -125,6 +122,9 @@ class SlicerOutputGobbler extends Thread
 
     private void setLoadProgress(final String loadMessage, final int percentProgress)
     {
-        taskToUpdate.progressUpdateFromSlicer(loadMessage, percentProgress);
+        if (progressReceiver != null)
+        {
+            progressReceiver.progressUpdateFromSlicer(loadMessage, percentProgress);
+        }
     }
 }

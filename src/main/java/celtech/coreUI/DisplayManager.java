@@ -265,6 +265,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     /**
      * Show the spinner, and keep it centred on the given region.
      */
+    @Override
     public void startSpinning(Region centreRegion)
     {
         spinner.setVisible(true);
@@ -275,6 +276,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     /**
      * Stop and hide the spinner.
      */
+    @Override
     public void stopSpinning()
     {
         spinner.setVisible(false);

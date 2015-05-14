@@ -10,7 +10,10 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.SlicerTask;
+import celtech.utils.tasks.Cancellable;
+import celtech.utils.tasks.SimpleCancellable;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -24,6 +27,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  * FXML Controller class
@@ -85,6 +89,8 @@ public class TimeCostInsetPanelController implements Initializable
     private Project currentProject;
     private PrinterSettings printerSettings;
 
+    private TimeCostThreadManager timeCostThreadManager;
+
     /**
      * Initialises the controller class.
      */
@@ -93,6 +99,9 @@ public class TimeCostInsetPanelController implements Initializable
     {
         try
         {
+
+            timeCostThreadManager = new TimeCostThreadManager();
+
             Lookup.getSelectedProjectProperty().addListener(
                 (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
                 {
@@ -109,7 +118,7 @@ public class TimeCostInsetPanelController implements Initializable
                     } else
                     {
                         timeCostInsetRoot.setVisible(false);
-                        cancelRunningTimeCostTasks();
+                        timeCostThreadManager.cancelRunningTimeCostTasks();
                     }
 
                 });
@@ -163,14 +172,12 @@ public class TimeCostInsetPanelController implements Initializable
             @Override
             public void whenModelAdded(ModelContainer modelContainer)
             {
-                steno.debug("model added");
                 updateFields(project);
             }
 
             @Override
             public void whenModelRemoved(ModelContainer modelContainer)
             {
-                steno.debug("model removed");
                 updateFields(project);
             }
 
@@ -182,21 +189,18 @@ public class TimeCostInsetPanelController implements Initializable
             @Override
             public void whenModelsTransformed(Set<ModelContainer> modelContainers)
             {
-                steno.debug("model transformed");
                 updateFields(project);
             }
 
             @Override
             public void whenModelChanged(ModelContainer modelContainer, String propertyName)
             {
-                steno.debug("model changed");
                 updateFields(project);
             }
 
             @Override
             public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
             {
-                steno.debug("printer settings changed");
                 updateFields(project);
             }
         };
@@ -220,10 +224,29 @@ public class TimeCostInsetPanelController implements Initializable
         }
     }
 
-    private SlicerTask draftSlicerTask;
-    private SlicerTask normalSlicerTask;
-    private SlicerTask fineSlicerTask;
-    private SlicerTask customSlicerTask;
+    public void clearPrintJobDirectories()
+    {
+        try
+        {
+            String filePath = ApplicationConfiguration.getApplicationStorageDirectory()
+                + ApplicationConfiguration.timeAndCostFileSubpath;
+            File folder = new File(filePath);
+            for (final File fileEntry : folder.listFiles())
+            {
+                if (fileEntry.isDirectory())
+                {
+                    try
+                    {
+                        FileUtils.deleteDirectory(fileEntry);
+                    } catch (IOException ex)
+                    {
+                    }
+                }
+            }
+        } catch (Exception ex)
+        {
+        }
+    }
 
     /**
      * Update the time, cost and weight fields. Long running calculations must be performed in a
@@ -239,83 +262,101 @@ public class TimeCostInsetPanelController implements Initializable
         lblDraftTime.setText("...");
         lblNormalTime.setText("...");
         lblFineTime.setText("...");
+        lblCustomTime.setText("...");
         lblDraftWeight.setText("...");
         lblNormalWeight.setText("...");
         lblFineWeight.setText("...");
+        lblCustomWeight.setText("...");
         lblDraftCost.setText("...");
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
+        lblCustomCost.setText("...");
 
-        cancelRunningTimeCostTasks();
-
-        Runnable runDraft = () ->
+        Cancellable cancellable = new SimpleCancellable();
+        Runnable runUpdateFields = () ->
         {
-            Runnable runNormal = () ->
+
+            try
             {
-                Runnable runFine = () ->
+                Thread.sleep(500);
+            } catch (InterruptedException ex)
+            {
+                return;
+            }
+            if (cancellable.cancelled().get())
+            {
+                return;
+            }
+
+            clearPrintJobDirectories();
+
+            if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
+                && !currentProject.getPrinterSettings().getSettingsName().equals(""))
+            {
+                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
+                updateFieldsForProfile(project, customSettings, lblCustomTime,
+                                       lblCustomWeight,
+                                       lblCustomCost, cancellable);
+                if (cancellable.cancelled().get())
                 {
-
-                    fineSlicerTask = updateFieldsForProfile(project, fineSettings, lblFineTime,
-                                                            lblFineWeight,
-                                                            lblFineCost, (Runnable) null);
-                    System.out.println("launch slicer task " + fineSlicerTask);
-                    Lookup.getTaskExecutor().runTaskAsDaemon(fineSlicerTask);
-                };
-                normalSlicerTask = updateFieldsForProfile(project, normalSettings, lblNormalTime,
-                                                          lblNormalWeight,
-                                                          lblNormalCost, runFine);
-                System.out.println("launch slicer task " + normalSlicerTask);
-                Lookup.getTaskExecutor().runTaskAsDaemon(normalSlicerTask);
-            };
-            draftSlicerTask = updateFieldsForProfile(project, draftSettings, lblDraftTime,
-                                                     lblDraftWeight,
-                                                     lblDraftCost, runNormal);
-            System.out.println("launch slicer task " + draftSlicerTask);
-            Lookup.getTaskExecutor().runTaskAsDaemon(draftSlicerTask);
+                    return;
+                }
+            }
+            updateFieldsForProfile(project, draftSettings, lblDraftTime,
+                                   lblDraftWeight,
+                                   lblDraftCost, cancellable);
+            if (cancellable.cancelled().get())
+            {
+                return;
+            }
+            updateFieldsForProfile(project, normalSettings, lblNormalTime,
+                                   lblNormalWeight,
+                                   lblNormalCost, cancellable);
+            if (cancellable.cancelled().get())
+            {
+                return;
+            }
+            updateFieldsForProfile(project, fineSettings, lblFineTime,
+                                   lblFineWeight,
+                                   lblFineCost, cancellable);
         };
-        if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
-            && !currentProject.getPrinterSettings().getSettingsName().equals(""))
-        {
-            SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
-            customSlicerTask = updateFieldsForProfile(project, customSettings, lblCustomTime,
-                                   lblCustomWeight,
-                                   lblCustomCost, runDraft);
-            System.out.println("launch slicer task " + customSlicerTask);
-            Lookup.getTaskExecutor().runTaskAsDaemon(customSlicerTask);
-        } else
-        {
-            lblCustomTime.setText("---");
-            lblCustomWeight.setText("---");
-            lblCustomCost.setText("---");
-            runDraft.run();
-        }
-    }
 
-    private void cancelRunningTimeCostTasks()
-    {
-        cancelTask(draftSlicerTask);
-        cancelTask(normalSlicerTask);
-        cancelTask(fineSlicerTask);
-        cancelTask(customSlicerTask);
+        timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
+
     }
 
     /**
      * Update the time, cost and weight fields for the given profile and fields. Long running
      * calculations must be performed in a background thread.
      */
-    private SlicerTask updateFieldsForProfile(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Runnable whenComplete)
+    private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
+        Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         String working = Lookup.i18n("timeCost.working");
-        lblTime.setText(working);
-        lblWeight.setText(working);
-        lblCost.setText(working);
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            lblTime.setText(working);
+            lblWeight.setText(working);
+            lblCost.setText(working);
+        });
 
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                                                                 lblTime, lblWeight,
-                                                                lblCost, whenComplete);
-        SlicerTask slicerTask = updateDetails.setupSlicerTask();
-        return slicerTask;
+                                                                lblCost, cancellable);
+        try
+        {
+            updateDetails.runSlicerAndPostProcessor();
+        } catch (Exception ex)
+        {
+            steno.error("Error running slicer/postprocessor " + ex);
+            String failed = Lookup.i18n("timeCost.failed");
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                lblTime.setText(failed);
+                lblWeight.setText(failed);
+                lblCost.setText(failed);
+            });
+        }
 
     }
 
@@ -335,14 +376,6 @@ public class TimeCostInsetPanelController implements Initializable
             case CUSTOM:
                 rbCustom.setSelected(true);
                 break;
-        }
-    }
-
-    private void cancelTask(SlicerTask slicerTask)
-    {
-        if (slicerTask != null && !(slicerTask.isDone() || slicerTask.isCancelled()))
-        {
-            slicerTask.cancel();
         }
     }
 

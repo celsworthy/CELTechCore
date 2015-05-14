@@ -69,9 +69,7 @@ import celtech.printerControl.model.calibration.CalibrationNozzleOpeningTransiti
 import celtech.printerControl.model.calibration.CalibrationXAndYTransitions;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
-import celtech.utils.Math.MathUtils;
 import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
@@ -105,7 +103,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
-import libertysystems.stenographer.LogLevel;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -1022,38 +1019,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                        true, cancellable);
     }
 
-    private void executeMacro(String macroName) throws PrinterException
-    {
-        steno.debug("Request to run macro: " + macroName);
-
-//        if (!canRunMacro.get())
-//        {
-//            steno.
-//                error("Printer state is " + printerStatus.getName() + " when execute macro called");
-//            throw new PrintActionUnavailableException("Run macro not available");
-//        }
-        if (mustPurgeHead.get())
-        {
-            throw new PurgeRequiredException("Cannot run macro - purge required");
-        }
-
-        boolean jobAccepted = false;
-
-        try
-        {
-            jobAccepted = printEngine.runMacroPrintJob(macroName, true);
-        } catch (MacroPrintException ex)
-        {
-            steno.error("Failed to run macro " + macroName + ": " + ex.getMessage());
-        }
-
-        if (!jobAccepted)
-        {
-            throw new PrintJobRejectedException("Macro " + macroName + " could not be run in mode "
-                + printerStatus.get().name());
-        }
-    }
-
     private void executeMacroWithoutPurgeCheck(String macroName) throws PrinterException
     {
         boolean jobAccepted = false;
@@ -1070,29 +1035,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrintJobRejectedException("Macro " + macroName + " could not be run");
         }
-    }
-
-    private void executeMacroWithoutPurgeCheckAndCallbackWhenDone(final String macroName,
-        final TaskResponder responder,
-        final Cancellable cancellable)
-    {
-        new Thread(() ->
-        {
-            boolean success = false;
-
-            try
-            {
-                executeMacroWithoutPurgeCheck(macroName);
-                PrinterUtils.waitOnMacroFinished(this, cancellable);
-                success = !cancellable.cancelled().get();
-            } catch (PrinterException ex)
-            {
-                steno.error("PrinterException whilst invoking macro: " + ex.getMessage());
-            }
-
-            Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Complete");
-
-        }, "Executing Macro " + macroName).start();
     }
 
     private void forceExecuteMacroAsStream(String macroName, boolean blockUntilFinished,
@@ -3747,19 +3689,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     steno.warning("Unknown packet type delivered to Printer Status: "
                         + rxPacket.getPacketType().name());
                     break;
-            }
-        }
-
-        private void processReelEEPROMData(ReelEEPROMDataResponse reelResponse)
-        {
-            if (!reels.containsKey(reelResponse.getReelNumber()))
-            {
-                Reel newReel = new Reel();
-                newReel.updateFromEEPROMData(reelResponse);
-                reels.put(reelResponse.getReelNumber(), newReel);
-            } else
-            {
-                reels.get(reelResponse.getReelNumber()).updateFromEEPROMData(reelResponse);
             }
         }
 

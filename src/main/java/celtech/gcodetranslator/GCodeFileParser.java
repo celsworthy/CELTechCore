@@ -33,7 +33,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeFileParser
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(GCodeFileParser.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        GCodeFileParser.class.getName());
     private final ArrayList<GCodeTranslationEventHandler> listeners = new ArrayList<>();
 
     /**
@@ -60,7 +61,8 @@ public class GCodeFileParser
      * @param percentProgress
      * @param slicerType
      */
-    public void parse(final String inputfilename, DoubleProperty percentProgress, final SlicerType slicerType)
+    public void parse(final String inputfilename, DoubleProperty percentProgress,
+        final SlicerType slicerType)
     {
         File inputFile = new File(inputfilename);
 
@@ -83,7 +85,10 @@ public class GCodeFileParser
                 double percentSoFar = ((double) linesSoFar / (double) linesInFile) * 100;
                 if (percentSoFar - lastPercentSoFar >= 1)
                 {
-                    percentProgress.set(percentSoFar);
+                    if (percentProgress != null)
+                    {
+                        percentProgress.set(percentSoFar);
+                    }
                     lastPercentSoFar = percentSoFar;
                 }
 
@@ -338,7 +343,8 @@ public class GCodeFileParser
                                 if (comment != null)
                                 {
                                     // Look for the extrusion type in the comment
-                                    ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+                                    ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(
+                                        slicerType, comment);
                                     event.setExtrusionTask(foundExtrusionTask);
                                     if (foundExtrusionTask != null)
                                     {
@@ -405,7 +411,8 @@ public class GCodeFileParser
                     if (slicerType == SlicerType.Cura)
                     {
                         // Pre-post processing enrichment for Cura - extrusion type is in the comments...
-                        ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+                        ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(
+                            slicerType, comment);
 
                         if (foundExtrusionTask != null)
                         {

@@ -8,6 +8,7 @@ import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.model.Printer;
 import java.io.File;
+import java.io.IOException;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
@@ -65,25 +66,13 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         {
             updateMessage("");
             updateProgress(0, 100);
-
-            GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
-            PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID, printJobDirectory);
-            String gcodeFileToProcess = printJob.getGCodeFileLocation();
-            String gcodeOutputFile = printJob.getRoboxisedFileLocation();
-
             taskProgress.addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    updateProgress(newValue.doubleValue(), 100.0);
-                });
-
-            RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
-                gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
-            roboxiserResult.getPrintJobStatistics().
-                writeToFile(printJob.getStatisticsFileLocation());
-
-            GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
-                printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                updateProgress(newValue.doubleValue(), 100.0);
+            });            
+            GCodePostProcessingResult postProcessingResult = doPostProcessing(printJobUUID, settings,
+                                                          printJobDirectory, printerToUse, taskProgress);
             return postProcessingResult;
         } catch (Exception ex)
         {
@@ -92,6 +81,21 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         }
         return null;
 
+    }
+
+    public static GCodePostProcessingResult doPostProcessing(String printJobUUID, SlicerParametersFile settings,
+        String printJobDirectory, Printer printerToUse, DoubleProperty taskProgress) throws IOException
+    {
+        GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
+        PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID, printJobDirectory);
+        String gcodeFileToProcess = printJob.getGCodeFileLocation();
+        String gcodeOutputFile = printJob.getRoboxisedFileLocation();
+        RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
+            gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
+        roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
+            printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+        return postProcessingResult;
     }
 
 }
