@@ -630,10 +630,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         svgLoaded.setVisible(true);
         svgLoaded.setFill(Color.BLACK);
         setReelType(ReelType.SOLID_QUESTION);
-        String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
-        String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
-        String error = Lookup.i18n("smartReelProgrammer.error");
-        showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString,
+        String materialUnknown = Lookup.i18n("materialComponent.materialUnknown");
+        showDetails((1 + extruderNumber) + ":", "", materialUnknown,
                     Color.BLACK, true);
     }
 
@@ -641,9 +639,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         svgLoaded.setVisible(false);
         setReelType(ReelType.SOLID_CROSS);
-        String unknown = UNKNOWN;
-        String noReelLoaded = Lookup.i18n("smartReelProgrammer.noReelLoaded");
-        showDetails((1 + extruderNumber) + ":", unknown, noReelLoaded, Color.BLACK, false);
+        String pleaseLoadAFilament = Lookup.i18n("materialComponent.pleaseLoadAFilament");
+        showDetails((1 + extruderNumber) + ":", "", pleaseLoadAFilament, Color.BLACK, false);
     }
 
     private void setReelColourString(String colourString)
