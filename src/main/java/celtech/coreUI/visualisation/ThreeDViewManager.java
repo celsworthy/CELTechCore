@@ -681,9 +681,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private Node createBoundingBox()
     {
+        PhongMaterial boundsBoxMaterial = new PhongMaterial(Color.BLUE);
+        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(
+            ApplicationConfiguration.imageResourcePath + "blueIlluminationMap.png").
+            toExternalForm());
+        boundsBoxMaterial.setSelfIlluminationMap(illuminationMap);
+
         Group boxGroup = new Group();
 
-        double lineWidth = 0.05;
+        double lineWidth = .1;
         double printAreaHeight = -printBedData.getPrintVolumeBounds().getHeight();
         double printAreaWidth = printBedData.getPrintVolumeBounds().getWidth();
         double printAreaDepth = printBedData.getPrintVolumeBounds().getDepth();
@@ -691,27 +697,27 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         Box lhf = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
-        setupFakeLine(lhf);
+        lhf.setMaterial(boundsBoxMaterial);
         lhf.setTranslateY(-printAreaHeight/2);
 
         Box rhf = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
-        setupFakeLine(rhf);
+        rhf.setMaterial(boundsBoxMaterial);
         rhf.setTranslateY(-printAreaHeight/2);
         rhf.setTranslateX(printAreaWidth);
 
         Box lhb = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
-        setupFakeLine(lhb);
+        lhb.setMaterial(boundsBoxMaterial);
         lhb.setTranslateY(-printAreaHeight/2);
         lhb.setTranslateZ(printAreaDepth);
 
         Box rhb = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
-        setupFakeLine(rhb);
+        rhb.setMaterial(boundsBoxMaterial);
         rhb.setTranslateY(-printAreaHeight/2);
         rhb.setTranslateX(printAreaWidth);
         rhb.setTranslateZ(printAreaDepth);
@@ -719,14 +725,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         Box lhftTOlhbt = new Box(lineWidth,
                           lineWidth,
                           printBedData.getPrintVolumeBounds().getDepth());
-        setupFakeLine(lhftTOlhbt);
+        lhftTOlhbt.setMaterial(boundsBoxMaterial);
         lhftTOlhbt.setTranslateY(-printAreaHeight);
         lhftTOlhbt.setTranslateZ(printAreaDepth / 2);
 
         Box rhftTOrhbt = new Box(lineWidth,
                           lineWidth,
                           printBedData.getPrintVolumeBounds().getDepth());
-        setupFakeLine(rhftTOrhbt);
+        rhftTOrhbt.setMaterial(boundsBoxMaterial);
         rhftTOrhbt.setTranslateX(printAreaWidth);
         rhftTOrhbt.setTranslateY(-printAreaHeight);
         rhftTOrhbt.setTranslateZ(printAreaDepth / 2);
@@ -734,14 +740,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         Box lhftTOrhft = new Box(printAreaWidth,
                           lineWidth,
                           lineWidth);
-        setupFakeLine(lhftTOrhft);
+        lhftTOrhft.setMaterial(boundsBoxMaterial);
         lhftTOrhft.setTranslateX(printAreaWidth / 2);
         lhftTOrhft.setTranslateY(-printAreaHeight);
 
         Box lhbtTOrhbt = new Box(printAreaWidth,
                           lineWidth,
                           lineWidth);
-        setupFakeLine(lhbtTOrhbt);
+        lhbtTOrhbt.setMaterial(boundsBoxMaterial);
         lhbtTOrhbt.setTranslateX(printAreaWidth / 2);
         lhbtTOrhbt.setTranslateY(-printAreaHeight);
         lhbtTOrhbt.setTranslateZ(printAreaDepth);
@@ -751,17 +757,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                                                      lhftTOrhft, lhbtTOrhbt);
 
         return boxGroup;
-    }
-
-    private void setupFakeLine(Box line)
-    {
-        line.setDrawMode(DrawMode.LINE);
-        PhongMaterial boundsBoxMaterial = new PhongMaterial(Color.BLUE);
-        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(
-            ApplicationConfiguration.imageResourcePath + "blueIlluminationMap.png").
-            toExternalForm());
-        boundsBoxMaterial.setSelfIlluminationMap(illuminationMap);
-        line.setMaterial(boundsBoxMaterial);
     }
 
     public void addGCodeParts(Group gCodeParts)
