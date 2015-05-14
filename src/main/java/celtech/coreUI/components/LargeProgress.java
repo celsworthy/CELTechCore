@@ -66,7 +66,6 @@ public class LargeProgress extends BorderPane implements Initializable
 
     private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        System.out.println("Progress is now " + newValue.doubleValue());
         setProgressPercent(newValue.doubleValue());
     };
 
@@ -223,11 +222,17 @@ public class LargeProgress extends BorderPane implements Initializable
                         .currentStatusValueProperty().asString("%.0f%%"));
                     this.setVisible(true);
                     break;
-                default:
+                case IDLE:
                     progressBarElement.setVisible(false);
                     largeTargetLegend.setVisible(false);
                     largeTargetValue.setVisible(false);
                     this.setVisible(false);
+                    break;
+                default:
+                    progressBarElement.setVisible(false);
+                    largeTargetLegend.setVisible(false);
+                    largeTargetValue.setVisible(false);
+                    this.setVisible(true);
                     break;
             }
         }

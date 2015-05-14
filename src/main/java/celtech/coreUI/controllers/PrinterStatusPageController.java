@@ -5,7 +5,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.JogButton;
-import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.visualisation.threed.StaticModelOverlay;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
@@ -147,32 +147,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @FXML
     private JogButton x_minus10;
     
-//    @FXML
-//    private ProgressBar progressBar;
-//    
-//    @FXML
-//    private ProgressBar secondProgressBar;
-//    
     @FXML
     private JogButton y_plus1;
-    
-//    @FXML
-//    private Text progressPercent;
-//    
-//    @FXML
-//    private Text secondProgressPercent;
-//    
-//    @FXML
-//    private Text progressETC;
-//    
-//    @FXML
-//    private Text progressLayers;
-//    
-//    @FXML
-//    private Text progressLayerLabel;
-//    
-//    @FXML
-//    private Text progressETCLabel;
     
     @FXML
     private Button cancelPrintButton;
@@ -192,14 +168,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @FXML
     private ImageView printerClosedImage;
     
-//    @FXML
-//    private VBox progressGroup;
-    
     @FXML
     private JogButton z_minus10;
-    
-//    @FXML
-//    private Text progressMessage;
     
     @FXML
     private Group temperatureWarning;
@@ -208,13 +178,31 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private AnchorPane container;
     
     @FXML
-    private LargeProgress newProgressBar;
+    private ProgressDisplay progressDisplay;
+    
+    @FXML
+    private Button apppear;
+    
+    @FXML
+    private Button disapppear;
     
     private Node[] advancedControls = null;
     
     private Printer lastSelectedPrinter = null;
     
     private final BooleanProperty showProgressGroup = new SimpleBooleanProperty(false);
+    
+    @FXML
+    void appear(ActionEvent event)
+    {
+    progressDisplay.forceAppear();
+    }
+    
+    @FXML
+    void disappear(ActionEvent event)
+    {
+    progressDisplay.forceDisappear();
+    }
     
     @FXML
     void pausePrint(ActionEvent event)
@@ -296,9 +284,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         
         transferringDataString = i18nBundle.getString(
             "PrintQueue.SendingToPrinter");
-        
-        newProgressBar.setVisible(false);
-        
+                
 //        progressLayerLabel.setText(i18nBundle.getString("dialogs.progressLayerLabel"));
 //        progressETCLabel.setText(i18nBundle.getString("dialogs.progressETCLabel"));
         
@@ -379,7 +365,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     {
                         unbindFromSelectedPrinter();
                         
-                        newProgressBar.bindToPrinter(printerToUse.getPrinterMetaStatus());
+                        progressDisplay.bindToPrinter(printerToUse);
                         
 //                        progressBar.progressProperty().bind(selectedPrinter.getPrintEngine().
 //                            progressProperty());
@@ -685,9 +671,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     
     private void unbindFromSelectedPrinter()
     {
-        newProgressBar.unbindProgress();
-        newProgressBar.visibleProperty().unbind();
-        newProgressBar.setVisible(false);
+        progressDisplay.unbindFromPrinter();
         
 //        progressBar.progressProperty().unbind();
 //        progressPercent.textProperty().unbind();
