@@ -342,6 +342,7 @@ public class SettingsInsetPanelController implements Initializable
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
         boolean saveSupports = printerSettings.getPrintSupportOverride();
+        boolean savePrintRaft = printerSettings.getRaftOverride();
 
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
@@ -375,6 +376,7 @@ public class SettingsInsetPanelController implements Initializable
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
         supportSlider.setValue(saveSupports ? 1 : 0);
+        raftSlider.setValue(savePrintRaft ? 1: 0);
 
     }
 
@@ -420,6 +422,7 @@ public class SettingsInsetPanelController implements Initializable
             printerSettings.setBrimOverride(settings.getBrimWidth_mm());
             printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
             printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
+            printerSettings.setRaftOverride(settings.getPrintRaft());
             populateQualityOverrideControls(printerSettings);
 
             if (printQuality.get() == PrintQualityEnumeration.CUSTOM)

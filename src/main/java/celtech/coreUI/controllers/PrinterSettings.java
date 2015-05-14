@@ -183,6 +183,7 @@ public class PrinterSettings
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
         profileCopy.setGenerateSupportMaterial(printSupportOverride);
+        profileCopy.setPrintRaft(raftOverride);
         return profileCopy;
     }
 
@@ -227,6 +228,11 @@ public class PrinterSettings
             toggleDataChanged();
         }
     }
+    
+    public boolean getRaftOverride()
+    {
+        return raftOverride;
+    }    
 
     public void setRaftOverride(boolean raftOverride)
     {
