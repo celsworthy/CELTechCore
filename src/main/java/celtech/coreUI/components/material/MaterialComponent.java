@@ -30,6 +30,7 @@ import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
@@ -59,7 +60,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     public enum ReelType
     {
 
-        ROBOX, GEARS, SOLID_QUESTION;
+        ROBOX, GEARS, SOLID_QUESTION, SOLID_CROSS;
     }
 
     public enum Mode
@@ -81,7 +82,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private SVGPath reelSVGGears;
 
     @FXML
-    private SVGPath reelSVGSolid;
+    private Group reelSVGQuestion;
+    
+    @FXML
+    private Group reelSVGCross;    
 
     @FXML
     private Text materialColour;
@@ -342,7 +346,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (currentValue instanceof Filament)
         {
             currentFilamentId = ((Filament) currentValue).getFilamentID();
-            System.out.println("current filament id is " + currentFilamentId);
         }
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
@@ -535,7 +538,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         reelSVGRobox.setVisible(false);
         reelSVGGears.setVisible(false);
-        reelSVGSolid.setVisible(false);
+        reelSVGQuestion.setVisible(false);
+        reelSVGCross.setVisible(false);        
         switch (reelType)
         {
             case ROBOX:
@@ -545,16 +549,17 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 reelSVGGears.setVisible(true);
                 break;
             case SOLID_QUESTION:
-                reelSVGSolid.setVisible(true);
+                reelSVGQuestion.setVisible(true);
                 break;
+            case SOLID_CROSS:
+                reelSVGCross.setVisible(true);
+                break;                
         }
     }
 
     private void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
         Color colour, double remainingFilament, double filamentDiameter)
     {
-        
-        System.out.println("materialColourString is " + materialColourString);
         
         String numberMaterial = String.valueOf(reelNumber + 1) + ":"
             + materialType.getFriendlyName();
@@ -602,7 +607,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String error = Lookup.i18n("smartReelProgrammer.error");
         showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString,
                     Color.BLACK);
-
     }
 
     private void showReelNotLoaded()
@@ -617,7 +621,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         reelSVGRobox.setStyle("-fx-fill: #" + colourString + ";");
         reelSVGGears.setStyle("-fx-fill: #" + colourString + ";");
-        reelSVGSolid.setStyle("-fx-fill: #" + colourString + ";");
+        reelSVGQuestion.setStyle("-fx-fill: #" + colourString + ";");
     }
 
     /**
