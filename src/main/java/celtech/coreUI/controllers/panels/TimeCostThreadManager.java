@@ -19,10 +19,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class TimeCostThreadManager
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        TimeCostThreadManager.class.getName());
-
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
     private Future timeCostFuture;
     private Cancellable cancellable;
     

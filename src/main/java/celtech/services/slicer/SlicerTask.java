@@ -297,11 +297,9 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 steno.error("Exception whilst running slicer: " + ex);
             } catch (InterruptedException ex)
             {
-                System.out.println("XXX task interrupter 1");
                 steno.warning("Interrupted whilst waiting for slicer to complete");
                 if (slicerProcess != null)
                 {
-                    System.out.println("XXX task interrupter 2");
                     slicerProcess.destroyForcibly();
                 }
             }

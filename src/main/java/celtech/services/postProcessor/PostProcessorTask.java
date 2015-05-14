@@ -92,8 +92,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
         RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
             gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
-        roboxiserResult.getPrintJobStatistics().
-            writeToFile(printJob.getStatisticsFileLocation());
+        roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
         GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
             printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
         return postProcessingResult;

@@ -12,12 +12,11 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.SimpleCancellable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -28,6 +27,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  * FXML Controller class
@@ -172,14 +172,12 @@ public class TimeCostInsetPanelController implements Initializable
             @Override
             public void whenModelAdded(ModelContainer modelContainer)
             {
-                steno.debug("model added");
                 updateFields(project);
             }
 
             @Override
             public void whenModelRemoved(ModelContainer modelContainer)
             {
-                steno.debug("model removed");
                 updateFields(project);
             }
 
@@ -191,21 +189,18 @@ public class TimeCostInsetPanelController implements Initializable
             @Override
             public void whenModelsTransformed(Set<ModelContainer> modelContainers)
             {
-                steno.debug("model transformed");
                 updateFields(project);
             }
 
             @Override
             public void whenModelChanged(ModelContainer modelContainer, String propertyName)
             {
-                steno.debug("model changed");
                 updateFields(project);
             }
 
             @Override
             public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
             {
-                steno.debug("printer settings changed");
                 updateFields(project);
             }
         };
@@ -226,6 +221,30 @@ public class TimeCostInsetPanelController implements Initializable
             }
             bindProject(project);
             currentProject = project;
+        }
+    }
+
+    public void clearPrintJobDirectories()
+    {
+        try
+        {
+            String filePath = ApplicationConfiguration.getApplicationStorageDirectory()
+                + ApplicationConfiguration.timeAndCostFileSubpath;
+            File folder = new File(filePath);
+            for (final File fileEntry : folder.listFiles())
+            {
+                if (fileEntry.isDirectory())
+                {
+                    try
+                    {
+                        FileUtils.deleteDirectory(fileEntry);
+                    } catch (IOException ex)
+                    {
+                    }
+                }
+            }
+        } catch (Exception ex)
+        {
         }
     }
 
@@ -268,6 +287,8 @@ public class TimeCostInsetPanelController implements Initializable
             {
                 return;
             }
+
+            clearPrintJobDirectories();
 
             if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                 && !currentProject.getPrinterSettings().getSettingsName().equals(""))
@@ -325,10 +346,16 @@ public class TimeCostInsetPanelController implements Initializable
         try
         {
             updateDetails.runSlicerAndPostProcessor();
-        } catch (IOException ex)
+        } catch (Exception ex)
         {
-            ex.printStackTrace();
             steno.error("Error running slicer/postprocessor " + ex);
+            String failed = Lookup.i18n("timeCost.failed");
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                lblTime.setText(failed);
+                lblWeight.setText(failed);
+                lblCost.setText(failed);
+            });
         }
 
     }

@@ -21,11 +21,11 @@ import celtech.utils.tasks.Cancellable;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -49,6 +49,7 @@ public class GetTimeWeightCost
 
     private File printJobDirectory;
     private final Cancellable cancellable;
+    private Random random = new Random();
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
@@ -62,15 +63,16 @@ public class GetTimeWeightCost
 
         temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
             + ApplicationConfiguration.timeAndCostFileSubpath
+            + random.nextInt(10000)
             + File.separator;
-        
+
         new File(temporaryDirectory).mkdirs();
-        
+
         cancellable.cancelled().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-        {
-            showCancelled();
-        });
+            {
+                showCancelled();
+            });
     }
 
     private void showCancelled()
@@ -84,58 +86,50 @@ public class GetTimeWeightCost
         });
 
     }
-    
-    private boolean isCancelled() {
+
+    private boolean isCancelled()
+    {
         return cancellable.cancelled().get();
     }
 
     public void runSlicerAndPostProcessor() throws IOException
     {
-        
-        clearPrintJobDirectory();
 
         steno.debug("launch time cost process for project " + project + " and settings "
             + settings.getProfileName());
 
-        if (isCancelled()) {
+        if (isCancelled())
+        {
             return;
         }
-        
-        doSlicing(project, settings);
-        
-        if (isCancelled()) {
+
+        boolean succeeded = doSlicing(project, settings);
+        if (! succeeded) {
             return;
-        }        
-        
+        }
+
+        if (isCancelled())
+        {
+            return;
+        }
+
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
             settings.getProfileName(),
             settings, temporaryDirectory,
             null, null);
         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
             getPrintJobStatistics();
-        
-        if (isCancelled()) {
+
+        if (isCancelled())
+        {
             return;
-        }        
-        
+        }
+
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             updateFieldsForStatistics(printJobStatistics);
         });
 
-    }
-
-    public void clearPrintJobDirectory()
-    {
-        try
-        {
-            FileUtils.deleteDirectory(new File(temporaryDirectory));
-        } catch (IOException ex)
-        {
-            steno.warning("Could not delete directory " + temporaryDirectory + " "
-                + ex);
-        }
-        new File(temporaryDirectory).mkdirs();
     }
 
     /**
