@@ -271,7 +271,7 @@ public class TimeCostInsetPanelController implements Initializable
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
         lblCustomCost.setText("...");
-
+        
         Cancellable cancellable = new SimpleCancellable();
         Runnable runUpdateFields = () ->
         {
@@ -287,8 +287,6 @@ public class TimeCostInsetPanelController implements Initializable
             {
                 return;
             }
-
-            clearPrintJobDirectories();
 
             if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                 && !currentProject.getPrinterSettings().getSettingsName().equals(""))
@@ -320,7 +318,9 @@ public class TimeCostInsetPanelController implements Initializable
                                    lblFineWeight,
                                    lblFineCost, cancellable);
         };
-
+        
+        clearPrintJobDirectories();
+        
         timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
 
     }
@@ -348,6 +348,7 @@ public class TimeCostInsetPanelController implements Initializable
             updateDetails.runSlicerAndPostProcessor();
         } catch (Exception ex)
         {
+            ex.printStackTrace();
             steno.error("Error running slicer/postprocessor " + ex);
             String failed = Lookup.i18n("timeCost.failed");
             Lookup.getTaskExecutor().runOnGUIThread(() ->

@@ -30,6 +30,7 @@ import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
@@ -59,7 +60,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     public enum ReelType
     {
 
-        ROBOX, GEARS, SOLID_QUESTION;
+        ROBOX, GEARS, SOLID_QUESTION, SOLID_CROSS;
     }
 
     public enum Mode
@@ -81,8 +82,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private SVGPath reelSVGGears;
 
     @FXML
-    private SVGPath reelSVGSolid;
+    private Group reelSVGQuestion;
 
+    @FXML
+    private Group reelSVGCross;
+
+    @FXML
+    private SVGPath svgLoaded;
+    
     @FXML
     private Text materialColour;
 
@@ -155,6 +162,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         return selectedFilamentProperty;
     }
+    
+    private boolean filamentLoaded() {
+        return printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get();
+    }
 
     /**
      * When the filament property changes for STATUS mode, update the component appropriately.
@@ -164,7 +175,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         if (selectedFilamentProperty.get() == null)
         {
-            showReelNotLoaded();
+            if (filamentLoaded())
+            {
+                showFilamentUnknown();
+            } else
+            {
+                showFilamentNotLoaded();
+            }
         } else
         {
             Float remainingFilament = 0f;
@@ -183,7 +200,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getFriendlyFilamentName(),
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
-                        diameter);
+                        diameter, filamentLoaded());
         }
     }
 
@@ -203,7 +220,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getFriendlyFilamentName(),
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
-                        diameter);
+                        diameter, false);
         }
     }
 
@@ -244,7 +261,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                                 filament.getFriendlyFilamentName(),
                                 filament.getDisplayColourProperty().get(),
                                 remainingFilament,
-                                diameter);
+                                diameter, false);
                 }
             }
         };
@@ -267,7 +284,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         if (filament == null)
         {
-            showReelNotLoaded();
+            if (filamentLoaded())
+            {
+                showFilamentUnknown();
+            } else
+            {
+                showFilamentNotLoaded();
+            }
         } else
         {
             Float remainingFilament = 0f;
@@ -286,7 +309,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         filament.getFriendlyFilamentName(),
                         filament.getDisplayColourProperty().get(),
                         remainingFilament,
-                        diameter);
+                        diameter, filamentLoaded());
         }
     }
 
@@ -342,7 +365,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (currentValue instanceof Filament)
         {
             currentFilamentId = ((Filament) currentValue).getFilamentID();
-            System.out.println("current filament id is " + currentFilamentId);
         }
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
@@ -356,11 +378,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
                 userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
         } catch (NoClassDefFoundError exception)
         {
@@ -379,9 +401,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         comboItems = FXCollections.observableArrayList(filamentsList);
         cmbMaterials.setItems(comboItems);
 
-        if (mode == Mode.LAYOUT) {
+        if (mode == Mode.LAYOUT)
+        {
             reselectFilamentId(currentFilamentId);
-        }    
+        }
 
     }
 
@@ -422,7 +445,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         } else
         {
             selectedFilamentProperty.set(null);
-            showReelNotLoaded();
+            showFilamentNotLoaded();
         }
     }
 
@@ -535,7 +558,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         reelSVGRobox.setVisible(false);
         reelSVGGears.setVisible(false);
-        reelSVGSolid.setVisible(false);
+        reelSVGQuestion.setVisible(false);
+        reelSVGCross.setVisible(false);
         switch (reelType)
         {
             case ROBOX:
@@ -545,22 +569,24 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 reelSVGGears.setVisible(true);
                 break;
             case SOLID_QUESTION:
-                reelSVGSolid.setVisible(true);
+                reelSVGQuestion.setVisible(true);
+                break;
+            case SOLID_CROSS:
+                reelSVGCross.setVisible(true);
                 break;
         }
     }
 
     private void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
-        Color colour, double remainingFilament, double filamentDiameter)
+        Color colour, double remainingFilament, double filamentDiameter, boolean filamentLoaded)
     {
-        
-        System.out.println("materialColourString is " + materialColourString);
-        
+
         String numberMaterial = String.valueOf(reelNumber + 1) + ":"
             + materialType.getFriendlyName();
 
         double remainingLengthMeters = remainingFilament / 1000d;
-        if (remainingLengthMeters < 0) {
+        if (remainingLengthMeters < 0)
+        {
             remainingLengthMeters = 0;
         }
         double densityKGM3 = materialType.getDensity() * 1000d;
@@ -569,17 +595,21 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String remaining = ((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG)
             + "g " + Lookup.i18n("materialComponent.remaining");
 
-        showDetails(numberMaterial, remaining, materialColourString, colour);
+        showDetails(numberMaterial, remaining, materialColourString, colour, filamentLoaded);
     }
 
     private void showDetails(String numberMaterial, String materialRemainingString,
-        String materialColourString, Color colour)
+        String materialColourString, Color colour, boolean filamentLoaded)
     {
+        
+        svgLoaded.setVisible(filamentLoaded);
+        
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
         reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
+        svgLoaded.setStyle("-fx-fill: #" + colourString + ";");
         setReelColourString(colourString);
 
         materialColour.setText(materialColourString);
@@ -593,31 +623,33 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * Indicate that the reel is not formatted.
+     * Indicate that no reel is attached and the filament is loaded but unknown.
      */
-    private void showReelNotFormatted()
+    private void showFilamentUnknown()
     {
-        String reelNotFormattedString = Lookup.i18n("smartReelProgrammer.reelNotFormatted");
-        String notAvailable = Lookup.i18n("smartReelProgrammer.notAvailable");
-        String error = Lookup.i18n("smartReelProgrammer.error");
-        showDetails((1 + extruderNumber) + ":" + error, notAvailable, reelNotFormattedString,
-                    Color.BLACK);
-
+        svgLoaded.setVisible(true);
+        svgLoaded.setFill(Color.BLACK);
+        setReelType(ReelType.SOLID_QUESTION);
+        String materialUnknown = Lookup.i18n("materialComponent.materialUnknown");
+        showDetails((1 + extruderNumber) + ":", "", materialUnknown,
+                    Color.BLACK, true);
     }
 
-    private void showReelNotLoaded()
+     /**
+     * Indicate that no reel is attached and no filament is loaded.
+     */
+    private void showFilamentNotLoaded()
     {
-        setReelType(ReelType.SOLID_QUESTION);
-        String unknown = UNKNOWN;
-        String noReelLoaded = Lookup.i18n("smartReelProgrammer.noReelLoaded");
-        showDetails((1 + extruderNumber) + ":", unknown, noReelLoaded, Color.BLACK);
+        svgLoaded.setVisible(false);
+        setReelType(ReelType.SOLID_CROSS);
+        String pleaseLoadAFilament = Lookup.i18n("materialComponent.pleaseLoadAFilament");
+        showDetails((1 + extruderNumber) + ":", "", pleaseLoadAFilament, Color.BLACK, false);
     }
 
     private void setReelColourString(String colourString)
     {
         reelSVGRobox.setStyle("-fx-fill: #" + colourString + ";");
         reelSVGGears.setStyle("-fx-fill: #" + colourString + ";");
-        reelSVGSolid.setStyle("-fx-fill: #" + colourString + ";");
     }
 
     /**

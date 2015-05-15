@@ -751,6 +751,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             reelIndexLabel = new Label();
             reelIndexLabel.setId("cmbFilamentReelIndexLabel");
             cellContainer.getChildren().addAll(rectangle, label, reelIcon, reelIndexLabel);
+            cellContainer.setMinHeight(25);
+            cellContainer.setMaxHeight(25);
         }
 
         @Override

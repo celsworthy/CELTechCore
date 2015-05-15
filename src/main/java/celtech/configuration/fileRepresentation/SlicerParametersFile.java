@@ -87,6 +87,15 @@ public class SlicerParametersFile
     private int slowDownIfLayerTimeLessThan_secs;
     private int minPrintSpeed_mm_per_s;
     
+    /*
+    * Raft
+    */
+    private boolean printRaft;
+    private int raftBaseLinewidth;
+    private int raftAirGapLayer0;
+    private int raftSurfaceLayers;
+    private int raftBaseThickness;
+    
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
@@ -391,6 +400,72 @@ public class SlicerParametersFile
         this.generateSupportMaterial = generateSupportMaterial;
         firePropertyChange("generateSupportMaterial", null, generateSupportMaterial);
     }
+    
+    public boolean getPrintRaft()
+    {
+        return printRaft;
+    }
+
+    public void setPrintRaft(boolean printRaft)
+    {
+        if (this.printRaft == printRaft) {
+            return;
+        }        
+        this.printRaft = printRaft;
+        firePropertyChange("printRaft", null, printRaft);
+    }   
+    
+    public int getRaftBaseLinewidth() {
+        return raftBaseLinewidth;
+    }
+    
+    public void setRaftBaseLinewidth(int raftBaseLinewidth)
+    {
+        if (this.raftBaseLinewidth == raftBaseLinewidth) {
+            return;
+        }        
+        this.raftBaseLinewidth = raftBaseLinewidth;
+        firePropertyChange("raftBaseLinewidth", null, raftBaseLinewidth);
+    }      
+    
+    public int getRaftAirGapLayer0() {
+        return raftAirGapLayer0;
+    }
+    
+    public void setRaftAirGapLayer0(int raftAirGapLayer0)
+    {
+        if (this.raftAirGapLayer0 == raftAirGapLayer0) {
+            return;
+        }        
+        this.raftAirGapLayer0 = raftAirGapLayer0;
+        firePropertyChange("raftAirGapLayer0", null, raftAirGapLayer0);
+    }  
+    
+    public int getRaftSurfaceLayers() {
+        return raftSurfaceLayers;
+    }
+    
+    public void setRaftSurfaceLayers(int raftSurfaceLayers)
+    {
+        if (this.raftSurfaceLayers == raftSurfaceLayers) {
+            return;
+        }        
+        this.raftSurfaceLayers = raftSurfaceLayers;
+        firePropertyChange("raftSurfaceLayers", null, raftSurfaceLayers);
+    }     
+    
+    public int getRaftBaseThickness() {
+        return raftBaseThickness;
+    }
+    
+    public void setRaftBaseThickness(int raftSurfaceLayers)
+    {
+        if (this.raftBaseThickness == raftBaseThickness) {
+            return;
+        }        
+        this.raftBaseThickness = raftBaseThickness;
+        firePropertyChange("raftBaseThickness", null, raftBaseThickness);
+    }         
 
     public int getSupportOverhangThreshold_degrees()
     {
@@ -734,6 +809,15 @@ public class SlicerParametersFile
         clone.coolIfLayerTimeLessThan_secs = coolIfLayerTimeLessThan_secs;
         clone.slowDownIfLayerTimeLessThan_secs = slowDownIfLayerTimeLessThan_secs;
         clone.minPrintSpeed_mm_per_s = minPrintSpeed_mm_per_s;
+        
+        /*
+        * Raft
+        */
+        clone.raftAirGapLayer0 = raftAirGapLayer0;
+        clone.raftBaseLinewidth = raftBaseLinewidth;
+        clone.raftBaseThickness = raftBaseThickness;
+        clone.raftSurfaceLayers = raftSurfaceLayers;
+        clone.printRaft = printRaft;
 
         return clone;
     }
