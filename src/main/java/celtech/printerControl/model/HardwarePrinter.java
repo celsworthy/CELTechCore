@@ -3228,7 +3228,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                 if (errorList.contains(foundError) || errorList.
                                                 contains(FirmwareError.ALL_ERRORS))
                                                 {
-                                                    steno.info("Error:" + foundError.name()
+                                                    steno.debug("Error:" + foundError.name()
                                                         + " passed to " + consumer.toString());
                                                     consumer.consumeError(foundError);
                                                     errorWasConsumed = true;
