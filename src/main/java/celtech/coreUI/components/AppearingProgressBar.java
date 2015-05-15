@@ -3,22 +3,15 @@
  */
 package celtech.coreUI.components;
 
-import celtech.Lookup;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.PrinterMetaStatus;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.Transition;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -26,9 +19,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -72,7 +63,7 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     {
         super();
         URL fxml = getClass().getResource(
-                "/celtech/resources/fxml/components/largeProgress.fxml");
+                "/celtech/resources/fxml/components/appearingProgressBar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -500,7 +491,7 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         this.panelWidth = getWidth();
-        this.panelHeight = getHeight();
+        this.panelHeight = getPrefHeight();
         this.panelLayoutMinX = 0;
         this.panelLayoutMinY = 0;
     }
