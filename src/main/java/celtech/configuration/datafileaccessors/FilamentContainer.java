@@ -30,16 +30,16 @@ import org.apache.commons.io.FileUtils;
  *
  * @author ianhudson
  */
-public class FilamentContainer
-{
+public class FilamentContainer {
+
     private static final Stenographer steno = StenographerFactory.getStenographer(FilamentContainer.class.getName());
     private final ObservableList<Filament> appFilamentList = FXCollections.observableArrayList();
     private final ObservableList<Filament> userFilamentList = FXCollections.observableArrayList();
     private final ObservableList<Filament> completeFilamentList = FXCollections.observableArrayList();
     private final ObservableMap<String, Filament> completeFilamentMap = FXCollections.observableHashMap();
 
-    public  final Filament createNewFilament = new Filament(null, null, null,
-                                                                  0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, 0, false);
+    public final Filament createNewFilament = new Filament(null, null, null,
+            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE, 0, false);
 
     private static final String nameProperty = "name";
     private static final String materialProperty = "material";
@@ -54,66 +54,70 @@ public class FilamentContainer
     private static final String firstLayerNozzleTempProperty = "first_layer_nozzle_temperature_C";
     private static final String nozzleTempProperty = "nozzle_temperature_C";
     private static final String displayColourProperty = "display_colour";
-    
+
     public interface FilamentDatabaseChangesListener {
+
         public void whenFilamentChanges(String filamentId);
     }
-    
+
     private List<FilamentDatabaseChangesListener> filamentDatabaseChangesListeners = new ArrayList<>();
 
-    public FilamentContainer()
-    {
+    public FilamentContainer() {
         loadFilamentData();
     }
-    
+
     public void addFilamentDatabaseChangesListener(FilamentDatabaseChangesListener listener) {
         filamentDatabaseChangesListeners.add(listener);
     }
-    
+
     public void removeFilamentDatabaseChangesListener(FilamentDatabaseChangesListener listener) {
         filamentDatabaseChangesListeners.remove(listener);
-    }    
-    
+    }
+
     private void notifyFilamentDatabaseChangesListeners(String filamentId) {
-        for (FilamentDatabaseChangesListener listener : filamentDatabaseChangesListeners)
-        {
+        for (FilamentDatabaseChangesListener listener : filamentDatabaseChangesListeners) {
             listener.whenFilamentChanges(filamentId);
         }
     }
 
-    public static String constructFilePath(Filament filament)
-    {
+    public static String constructFilePath(Filament filament) {
         return ApplicationConfiguration.getUserFilamentDirectory() + filament.getFriendlyFilamentName() + "-" + filament.getMaterial().getFriendlyName()
-            + ApplicationConfiguration.filamentFileExtension;
+                + ApplicationConfiguration.filamentFileExtension;
     }
 
-    private void loadFilamentData()
-    {
+    private void loadFilamentData() {
         completeFilamentList.clear();
         appFilamentList.clear();
         userFilamentList.clear();
 
+        ArrayList<Filament> filaments = null;
+
         File applicationFilamentDirHandle = new File(ApplicationConfiguration.getApplicationFilamentDirectory());
         File[] applicationfilaments = applicationFilamentDirHandle.listFiles(new FilamentFileFilter());
-        ArrayList<Filament> filaments = ingestFilaments(applicationfilaments, false);
-        appFilamentList.addAll(filaments);
-        completeFilamentList.addAll(filaments);
-        
+        if (applicationfilaments != null) {
+            filaments = ingestFilaments(applicationfilaments, false);
+            appFilamentList.addAll(filaments);
+            completeFilamentList.addAll(filaments);
+        } else {
+            steno.error("No application filaments found");
+        }
+
         File userFilamentDirHandle = new File(ApplicationConfiguration.getUserFilamentDirectory());
         File[] userfilaments = userFilamentDirHandle.listFiles(new FilamentFileFilter());
-        filaments = ingestFilaments(userfilaments, true);
-        completeFilamentList.addAll(filaments);
-        userFilamentList.addAll(filaments);
+        if (userfilaments != null) {
+            filaments = ingestFilaments(userfilaments, true);
+            completeFilamentList.addAll(filaments);
+            userFilamentList.addAll(filaments);
+        } else {
+            steno.info("No user filaments found");
+        }
     }
 
-    private ArrayList<Filament> ingestFilaments(File[] filamentFiles, boolean filamentsAreMutable)
-    {
+    private ArrayList<Filament> ingestFilaments(File[] filamentFiles, boolean filamentsAreMutable) {
         ArrayList<Filament> filamentList = new ArrayList<>();
 
-        for (File filamentFile : filamentFiles)
-        {
-            try
-            {
+        for (File filamentFile : filamentFiles) {
+            try {
                 Properties filamentProperties = new Properties();
                 filamentProperties.load(new FileInputStream(filamentFile));
 
@@ -132,20 +136,18 @@ public class FilamentContainer
                 String costGBPPerKGString = filamentProperties.getProperty(costGBPPerKGProperty).trim();
 
                 if (name != null
-                    && material != null
-                    && reelID != null
-                    && diameterString != null
-                    && feedRateMultiplierString != null
-                    && filamentMultiplierString != null
-                    && ambientTempString != null
-                    && firstLayerBedTempString != null
-                    && bedTempString != null
-                    && firstLayerNozzleTempString != null
-                    && nozzleTempString != null
-                    && displayColourString != null)
-                {
-                    try
-                    {
+                        && material != null
+                        && reelID != null
+                        && diameterString != null
+                        && feedRateMultiplierString != null
+                        && filamentMultiplierString != null
+                        && ambientTempString != null
+                        && firstLayerBedTempString != null
+                        && bedTempString != null
+                        && firstLayerNozzleTempString != null
+                        && nozzleTempString != null
+                        && displayColourString != null) {
+                    try {
                         float diameter = Float.valueOf(diameterString);
                         float filamentMultiplier = Float.valueOf(filamentMultiplierString);
                         float feedRateMultiplier = Float.valueOf(feedRateMultiplierString);
@@ -159,32 +161,30 @@ public class FilamentContainer
                         MaterialType selectedMaterial = MaterialType.valueOf(material);
 
                         Filament newFilament = new Filament(
-                            name,
-                            selectedMaterial,
-                            reelID,
-                            diameter,
-                            filamentMultiplier,
-                            feedRateMultiplier,
-                            ambientTemp,
-                            firstLayerBedTemp,
-                            bedTemp,
-                            firstLayerNozzleTemp,
-                            nozzleTemp,
-                            colour,
-                            costGBPPerKG,
-                            filamentsAreMutable);
+                                name,
+                                selectedMaterial,
+                                reelID,
+                                diameter,
+                                filamentMultiplier,
+                                feedRateMultiplier,
+                                ambientTemp,
+                                firstLayerBedTemp,
+                                bedTemp,
+                                firstLayerNozzleTemp,
+                                nozzleTemp,
+                                colour,
+                                costGBPPerKG,
+                                filamentsAreMutable);
 
                         filamentList.add(newFilament);
                         completeFilamentMap.put(reelID, newFilament);
 
-                    } catch (IllegalArgumentException ex)
-                    {
+                    } catch (IllegalArgumentException ex) {
                         steno.error("Failed to parse filament file " + filamentFile.getAbsolutePath());
                     }
 
                 }
-            } catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 steno.error("Error loading filament " + filamentFile.getAbsolutePath() + " " + ex);
             }
         }
@@ -198,22 +198,17 @@ public class FilamentContainer
      * @param originalName
      * @return
      */
-    public String suggestNonDuplicateName(String proposedName)
-    {
+    public String suggestNonDuplicateName(String proposedName) {
         List<String> currentFilamentNames = new ArrayList<>();
-        for (Filament filament : completeFilamentList)
-        {
+        for (Filament filament : completeFilamentList) {
             currentFilamentNames.add(filament.getFriendlyFilamentName());
         }
         return DeDuplicator.suggestNonDuplicateNameCopy(proposedName, currentFilamentNames);
     }
 
-    private Optional<String> getCurrentFileNameForFilamentID(String filamentID)
-    {
-        for (Filament filament : completeFilamentList)
-        {
-            if (filament.getFilamentID().equals(filamentID))
-            {
+    private Optional<String> getCurrentFileNameForFilamentID(String filamentID) {
+        for (Filament filament : completeFilamentList) {
+            if (filament.getFilamentID().equals(filamentID)) {
                 return Optional.of(constructFilePath(filament));
             }
         }
@@ -221,31 +216,29 @@ public class FilamentContainer
     }
 
     /**
-     * Save the given filament to file, using the friendly name and material type as file name. If a filament already exists of the same filamentID but different file name then delete that file.
+     * Save the given filament to file, using the friendly name and material
+     * type as file name. If a filament already exists of the same filamentID
+     * but different file name then delete that file.
      *
      * @param filament
      * @return
      */
-    public boolean saveFilament(Filament filament)
-    {
+    public boolean saveFilament(Filament filament) {
         boolean success = false;
         NumberFormat floatConverter = DecimalFormat.getNumberInstance(Locale.UK);
         floatConverter.setMinimumFractionDigits(3);
         floatConverter.setGroupingUsed(false);
 
-        try
-        {
+        try {
             Properties filamentProperties = new Properties();
 
             filamentProperties.setProperty(nameProperty, filament.getFriendlyFilamentName());
             filamentProperties.setProperty(materialProperty, filament.getMaterial().name());
-            if (filament.getFilamentID() == null)
-            {
+            if (filament.getFilamentID() == null) {
                 String userReelID = Filament.generateUserReelID();
                 filament.setFilamentID(userReelID);
                 filamentProperties.setProperty(reelIDProperty, userReelID);
-            } else
-            {
+            } else {
                 filamentProperties.setProperty(reelIDProperty, filament.getFilamentID());
             }
             filamentProperties.setProperty(costGBPPerKGProperty, floatConverter.format(filament.getCostGBPPerKG()));
@@ -259,9 +252,9 @@ public class FilamentContainer
             filamentProperties.setProperty(nozzleTempProperty, String.valueOf(filament.getNozzleTemperature()));
 
             String webColour = String.format("#%02X%02X%02X",
-                                             (int) (filament.getDisplayColour().getRed() * 255),
-                                             (int) (filament.getDisplayColour().getGreen() * 255),
-                                             (int) (filament.getDisplayColour().getBlue() * 255));
+                    (int) (filament.getDisplayColour().getRed() * 255),
+                    (int) (filament.getDisplayColour().getGreen() * 255),
+                    (int) (filament.getDisplayColour().getBlue() * 255));
             filamentProperties.setProperty(displayColourProperty, webColour);
 
             String newFilename = constructFilePath(filament);
@@ -269,80 +262,68 @@ public class FilamentContainer
 
             File filamentFile = new File(newFilename);
             filamentProperties.store(new FileOutputStream(filamentFile), "Robox data");
-            if (previousFileName.isPresent() && !previousFileName.get().equals(newFilename))
-            {
+            if (previousFileName.isPresent() && !previousFileName.get().equals(newFilename)) {
                 Files.delete(Paths.get(previousFileName.get()));
             }
             loadFilamentData();
-        } catch (IOException ex)
-        {
+        } catch (IOException ex) {
             steno.error("Error whilst storing filament file " + filament.getFileName() + " " + ex);
         }
         notifyFilamentDatabaseChangesListeners(filament.getFilamentID());
         return success;
     }
 
-    public void deleteFilament(Filament filamentToSave)
-    {
-        assert(filamentToSave.isMutable());
+    public void deleteFilament(Filament filamentToSave) {
+        assert (filamentToSave.isMutable());
         File filamentToDelete = new File(constructFilePath(filamentToSave));
         FileUtils.deleteQuietly(filamentToDelete);
         loadFilamentData();
     }
-    
-    public boolean isFilamentIDValid(String filamentID)
-    {
+
+    public boolean isFilamentIDValid(String filamentID) {
         boolean filamentIDIsValid = false;
 
         if (filamentID != null
-            && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
-            || filamentID.matches("^U.*")))
-        {
+                && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
+                || filamentID.matches("^U.*"))) {
             filamentIDIsValid = true;
         }
 
         return filamentIDIsValid;
-    }    
-    
-    public  boolean isFilamentIDInDatabase(String filamentID)
-    {
+    }
+
+    public boolean isFilamentIDInDatabase(String filamentID) {
         boolean filamentIDIsInDatabase = false;
 
         if (filamentID != null
-            && getFilamentByID(filamentID) != null)
-        {
+                && getFilamentByID(filamentID) != null) {
             filamentIDIsInDatabase = true;
         }
 
         return filamentIDIsInDatabase;
-    }    
+    }
 
-    public Filament getFilamentByID(String filamentID)
-    {
+    public Filament getFilamentByID(String filamentID) {
         Filament returnedFilament = null;
 
-        if (filamentID != null)
-        {
+        if (filamentID != null) {
             returnedFilament = completeFilamentMap.get(filamentID);
-            if (returnedFilament == null)
-            {
+            if (returnedFilament == null) {
                 //Try replacing dashes with underscores...
                 returnedFilament = completeFilamentMap.get(filamentID.replaceAll("-", "_"));
             }
         }
         return returnedFilament;
     }
-    
+
     /**
      * Add the filament to the user filament list but do not save it to disk.
      */
-    public void addFilamentToUserFilamentList(Filament filament)
-    {
+    public void addFilamentToUserFilamentList(Filament filament) {
         userFilamentList.add(filament);
     }
 
-    public ObservableList<Filament> getCompleteFilamentList()
-    {
+    public ObservableList<Filament> getCompleteFilamentList() {
         return completeFilamentList;
     }
 
@@ -350,8 +331,7 @@ public class FilamentContainer
      *
      * @return
      */
-    public ObservableList<Filament> getUserFilamentList()
-    {
+    public ObservableList<Filament> getUserFilamentList() {
         return userFilamentList;
     }
 
@@ -359,8 +339,7 @@ public class FilamentContainer
      *
      * @return
      */
-    public ObservableList<Filament> getAppFilamentList()
-    {
+    public ObservableList<Filament> getAppFilamentList() {
         return appFilamentList;
     }
 }
