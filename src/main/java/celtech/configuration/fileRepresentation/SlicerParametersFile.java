@@ -94,6 +94,7 @@ public class SlicerParametersFile
     private int raftBaseLinewidth;
     private int raftAirGapLayer0;
     private int raftSurfaceLayers;
+    private int raftBaseThickness;
     
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
     
@@ -452,6 +453,19 @@ public class SlicerParametersFile
         this.raftSurfaceLayers = raftSurfaceLayers;
         firePropertyChange("raftSurfaceLayers", null, raftSurfaceLayers);
     }     
+    
+    public int getRaftBaseThickness() {
+        return raftBaseThickness;
+    }
+    
+    public void setRaftBaseThickness(int raftSurfaceLayers)
+    {
+        if (this.raftBaseThickness == raftBaseThickness) {
+            return;
+        }        
+        this.raftBaseThickness = raftBaseThickness;
+        firePropertyChange("raftBaseThickness", null, raftBaseThickness);
+    }         
 
     public int getSupportOverhangThreshold_degrees()
     {
@@ -795,6 +809,15 @@ public class SlicerParametersFile
         clone.coolIfLayerTimeLessThan_secs = coolIfLayerTimeLessThan_secs;
         clone.slowDownIfLayerTimeLessThan_secs = slowDownIfLayerTimeLessThan_secs;
         clone.minPrintSpeed_mm_per_s = minPrintSpeed_mm_per_s;
+        
+        /*
+        * Raft
+        */
+        clone.raftAirGapLayer0 = raftAirGapLayer0;
+        clone.raftBaseLinewidth = raftBaseLinewidth;
+        clone.raftBaseThickness = raftBaseThickness;
+        clone.raftSurfaceLayers = raftSurfaceLayers;
+        clone.printRaft = printRaft;
 
         return clone;
     }

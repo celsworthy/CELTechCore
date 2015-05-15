@@ -155,7 +155,6 @@ public class ProjectManager implements Savable, Serializable
             String projectName = fileName.substring(0, fileName.length() - 6);
             availableProjectNames.add(projectName);
         }
-        System.out.println("available names are " + availableProjectNames);
         return availableProjectNames;
     }
 

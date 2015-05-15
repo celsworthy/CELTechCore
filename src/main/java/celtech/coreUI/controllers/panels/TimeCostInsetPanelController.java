@@ -348,6 +348,7 @@ public class TimeCostInsetPanelController implements Initializable
             updateDetails.runSlicerAndPostProcessor();
         } catch (Exception ex)
         {
+            ex.printStackTrace();
             steno.error("Error running slicer/postprocessor " + ex);
             String failed = Lookup.i18n("timeCost.failed");
             Lookup.getTaskExecutor().runOnGUIThread(() ->

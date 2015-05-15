@@ -308,7 +308,11 @@ public abstract class SlicerConfigWriter
 
                             try
                             {
-                                variableValue = (float) getMethod.invoke(profileData);
+                                if (getMethod.getReturnType().equals(int.class)) {
+                                    variableValue = (int) getMethod.invoke(profileData);
+                                } else {
+                                    variableValue = (float) getMethod.invoke(profileData);
+                                }    
                                 okToProcess = true;
                             } catch (IllegalAccessException | InvocationTargetException ex)
                             {
@@ -374,7 +378,6 @@ public abstract class SlicerConfigWriter
         Method foundMethod = null;
 
         methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1, methodName.length());
-
         try
         {
             foundMethod = SlicerParametersFile.class.getMethod(methodName, null);
