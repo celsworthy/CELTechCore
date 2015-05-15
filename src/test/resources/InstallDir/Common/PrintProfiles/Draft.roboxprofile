@@ -1,10 +1,6 @@
 {
   "version" : 2,
   "profileName" : "Draft",
-  "raftBaseLinewidth": 1250,
-  "raftAirGapLayer0": 285,
-  "raftSurfaceLayers": 1,
-  "raftBaseThickness": 0,
   "slicerOverride" : null,
   "firstLayerHeight_mm" : 0.2,
   "layerHeight_mm" : 0.3,
@@ -55,7 +51,6 @@
   "supportNozzle" : 0,
   "supportInterfaceNozzle" : 0,
   "generateSupportMaterial" : false,
-  "printRaft": false,
   "supportOverhangThreshold_degrees" : 40,
   "forcedSupportForFirstNLayers" : 0,
   "supportPattern" : "RECTILINEAR",
@@ -79,5 +74,9 @@
   "coolIfLayerTimeLessThan_secs" : 60,
   "slowDownIfLayerTimeLessThan_secs" : 15,
   "minPrintSpeed_mm_per_s" : 8,
-  "maxClosesBeforeNozzleReselect" : 100
+  "maxClosesBeforeNozzleReselect" : 100,
+  "raftBaseLinewidth": 1250,
+  "raftAirGapLayer0": 285,
+  "raftSurfaceLayers": 1,
+  "raftBaseThickness": 0
 }
