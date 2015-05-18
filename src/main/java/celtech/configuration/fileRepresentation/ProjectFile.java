@@ -14,6 +14,7 @@ public class ProjectFile
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
+    private boolean printRaft = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;
     private String lastPrintJobID = "";
@@ -80,6 +81,16 @@ public class ProjectFile
         this.printSupportOverride = printSupportOverride;
     }
 
+    public boolean getPrintRaft()
+    {
+        return printRaft;
+    }
+
+    public void setPrintRaft(boolean printRaft)
+    {
+        this.printRaft = printRaft;
+    }
+
     public String getExtruder0FilamentID()
     {
         return extruder0FilamentID;
@@ -141,5 +152,6 @@ public class ProjectFile
         brimOverride = project.getPrinterSettings().getBrimOverride();
         fillDensityOverride = project.getPrinterSettings().getFillDensityOverride();
         printSupportOverride = project.getPrinterSettings().getPrintSupportOverride();
+        printRaft = project.getPrinterSettings().getRaftOverride();
     }
 }
