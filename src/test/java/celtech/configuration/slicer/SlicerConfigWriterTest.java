@@ -37,7 +37,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator + TEMPFILENAME;
         configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("raftBaseThickness=300"));
+        assertTrue(outputData.contains("raftBaseThickness_mm=0.3"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
     }
     
@@ -53,7 +53,11 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator + TEMPFILENAME;
         configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("raftBaseThickness=300"));
+        for (String outputData1 : outputData)
+        {
+            System.out.println(outputData1);
+        }
+        assertTrue(outputData.contains("raftBaseThickness_mm=0.3"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
     }    
     
@@ -69,8 +73,60 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator + TEMPFILENAME;
         configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("raftBaseThickness=300"));
+        assertTrue(outputData.contains("raftBaseThickness_mm=0.3"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
     }        
+    
+@Test
+    public void testGenerateConfigForNoRaftOnCuraDraft() throws IOException
+    {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
+        printerSettings.setRaftOverride(false);
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator + TEMPFILENAME;
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("raftBaseThickness_mm=0"));
+        assertTrue(outputData.contains("raftInterfaceThickness=280"));
+    }
+    
+    @Test
+    public void testGenerateConfigForNoRaftOnCuraNormal() throws IOException
+    {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.NORMAL);
+        printerSettings.setRaftOverride(false);
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator + TEMPFILENAME;
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
+        List<String> outputData = readLines(new File(destinationFile));
+        for (String outputData1 : outputData)
+        {
+            System.out.println(outputData1);
+        }
+        assertTrue(outputData.contains("raftBaseThickness_mm=0"));
+        assertTrue(outputData.contains("raftInterfaceThickness=280"));
+    }    
+    
+    @Test
+    public void testGenerateConfigForNoRaftOnCuraFine() throws IOException
+    {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.FINE);
+        printerSettings.setRaftOverride(false);
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator + TEMPFILENAME;
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("raftBaseThickness_mm=0"));
+        assertTrue(outputData.contains("raftInterfaceThickness=280"));
+    }    
     
 }

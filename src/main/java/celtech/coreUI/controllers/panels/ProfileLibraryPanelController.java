@@ -1348,6 +1348,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         nozzleOpenVolume1.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume1.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen1.textProperty().addListener(dirtyStringListener);
+        
+        raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
+        raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
+        raftSurfaceLayers.textProperty().addListener(dirtyStringListener);
     }
 
     private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
@@ -1403,6 +1407,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         supportPattern.valueProperty().set(parametersFile.getSupportPattern());
         supportPatternSpacing.floatValueProperty().set(parametersFile.getSupportPatternSpacing_mm());
         supportPatternAngle.intValueProperty().set(parametersFile.getSupportPatternAngle_degrees());
+        raftBaseLinewidth.floatValueProperty().set(parametersFile.getRaftBaseLinewidth_mm());
+        raftAirGapLayer0.floatValueProperty().set(parametersFile.getRaftAirGapLayer0_mm());
+        raftSurfaceLayers.intValueProperty().set(parametersFile.getRaftSurfaceLayers());
 
         //Speed tab
         firstLayerSpeed.intValueProperty().set(parametersFile.getFirstLayerSpeed_mm_per_s());
