@@ -81,7 +81,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         DISABLE_FAN_FIRST_N_LAYERS("disableFanFirstNLayers"),
         ENABLE_FAN_LAYER_TIME_BELOW("enableFanLayerTimeBelow"),
         SLOW_FAN_LAYER_TIME_BELOW("slowFanLayerTimeBelow"),
-        MIN_PRINT_SPEED("minPrintSpeed");
+        MIN_PRINT_SPEED("minPrintSpeed"), RAFT_BASE_LINE_WIDTH("raftBaseLinewidth"),
+        RAFT_AIR_GAP_LAYER_0("raftAirGapLayer0"), RAFT_SURFACE_LAYERS("raftSurfaceLayers");
 
         private final String helpTextId;
 
@@ -123,7 +124,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ProfileLibraryPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        ProfileLibraryPanelController.class.getName());
 
     @FXML
     private VBox container;
@@ -319,6 +321,15 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private ComboBox<CustomSlicerType> slicerChooser;
+
+    @FXML
+    private RestrictedNumberField raftBaseLinewidth;
+
+    @FXML
+    private RestrictedNumberField raftAirGapLayer0;
+
+    @FXML
+    private RestrictedNumberField raftSurfaceLayers;
 
     @FXML
     private TextArea helpText;
@@ -927,7 +938,25 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.MIN_PRINT_SPEED);
             });
-        
+
+        raftBaseLinewidth.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
+            });
+
+        raftAirGapLayer0.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
+            });
+
+        raftSurfaceLayers.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+            });
+
         profileNameField.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1157,6 +1186,23 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.MIN_PRINT_SPEED);
+            });
+        raftBaseLinewidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
+            });
+
+        raftAirGapLayer0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
+            });
+
+        raftSurfaceLayers.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_SURFACE_LAYERS);
             });        
     }
 
@@ -1589,8 +1635,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 getCompleteProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
-                if (!settings.getProfileName().equals(currentProfileName) && 
-                    settings.getProfileName().equals(profileNameText))
+                if (!settings.getProfileName().equals(currentProfileName)
+                    && settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
                     break;
@@ -1656,12 +1702,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     void whenSaveAsPressed()
     {
-        
+
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
             getSettingsByProfileName(currentProfileName).clone();
-        
+
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
@@ -1692,7 +1738,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 allCurrentNames.add(printProfile.getProfileName());
             });
         String newName = DeDuplicator.suggestNonDuplicateNameCopy(parametersFile.getProfileName(),
-                                                              allCurrentNames);
+                                                                  allCurrentNames);
         parametersFile.setProfileName(newName);
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
