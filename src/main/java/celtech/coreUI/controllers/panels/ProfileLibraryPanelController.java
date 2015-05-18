@@ -1583,6 +1583,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             supportPatternSpacing.floatValueProperty().get());
         settingsToUpdate.
             setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
+        settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.floatValueProperty().get());
+        settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.floatValueProperty().get());
+        settingsToUpdate.setRaftSurfaceLayers(raftSurfaceLayers.intValueProperty().get());
 
         //Speed tab
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());

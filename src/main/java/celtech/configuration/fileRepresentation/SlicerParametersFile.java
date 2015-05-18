@@ -94,7 +94,7 @@ public class SlicerParametersFile
     private float raftBaseLinewidth_mm;
     private float raftAirGapLayer0_mm;
     private int raftSurfaceLayers;
-    private float raftBaseThickness_mm;
+    private float raftBaseThickness_mm = 0.3f;
     
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
     

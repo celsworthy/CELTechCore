@@ -459,14 +459,14 @@
                                         <Label minWidth="95.0" styleClass="colon" text="%support.raftBaseLinewidth" GridPane.rowIndex="6" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                             <children>
-                                                <RestrictedNumberField id="raftBaseLinewidth" fx:id="raftBaseLinewidth" allowedDecimalPlaces="4" maxLength="4" prefWidth="50.0" text="1.0" />
+                                                <RestrictedNumberField id="raftBaseLinewidth" fx:id="raftBaseLinewidth" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="1.0" />
                                                 <Label text="%misc.mm" />
                                             </children>
                                         </HBox>
                                         <Label minWidth="95.0" styleClass="colon" text="%support.raftAirGapLayer0" GridPane.rowIndex="7" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                             <children>
-                                                <RestrictedNumberField id="raftAirGapLayer0" fx:id="raftAirGapLayer0" allowedDecimalPlaces="4" maxLength="3" prefWidth="50.0" text="0.285" />
+                                                <RestrictedNumberField id="raftAirGapLayer0" fx:id="raftAirGapLayer0" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="0.285" />
                                                 <Label text="%misc.mm" />
                                             </children>
                                         </HBox>

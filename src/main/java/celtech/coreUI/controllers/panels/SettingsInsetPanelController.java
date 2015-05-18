@@ -311,6 +311,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
         brimSlider.setValue(printerSettings.getBrimOverride());
         supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
+        raftSlider.setValue(printerSettings.getRaftOverride() ? 1: 0);
     }
 
     @FXML
