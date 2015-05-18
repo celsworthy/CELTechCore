@@ -926,7 +926,7 @@
                 </Tab>
             </tabs>
         </TabPane>
-      <TextArea id="helpText" fx:id="helpText" editable="false" />
+      <TextArea id="helpText" fx:id="helpText" editable="false" wrapText="true" />
     </children>
     <padding>
         <Insets left="25.0" right="25.0" />

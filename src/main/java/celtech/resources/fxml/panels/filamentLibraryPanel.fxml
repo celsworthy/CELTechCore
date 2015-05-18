@@ -154,7 +154,7 @@
         <Label alignment="CENTER" styleClass="filamentLibTitle" text="%reelPanel.temperature" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
         <Label alignment="CENTER" styleClass="filamentLibTitle" text="%genericFirstLetterCapitalised.Filament" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="13" />
         <Label alignment="CENTER" styleClass="filamentLibTitle" text="%filamentLibrary.identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-        <TextArea id="helpText" fx:id="helpText" editable="false" GridPane.columnSpan="2147483647" GridPane.rowIndex="17" />
+        <TextArea id="helpText" fx:id="helpText" editable="false" wrapText="true" GridPane.columnSpan="2147483647" GridPane.rowIndex="17" />
         <Label styleClass="colon" text="%filamentLibrary.costGBPPerKG" GridPane.rowIndex="6" />
     </children>
     <padding>

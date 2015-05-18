@@ -2408,6 +2408,9 @@ modal-dialogue{
     -fx-font-size: 9pt;  
     -fx-pref-height: 80;
     -fx-pref-width: 120;
+    -fx-background-radius: 0px;
+    -fx-background-color: dark_grey;
+    -fx-background-insets: 0px;
 }
 
 #helpText .scroll-pane {

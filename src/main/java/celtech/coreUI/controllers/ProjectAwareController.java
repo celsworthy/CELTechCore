@@ -6,7 +6,7 @@ package celtech.coreUI.controllers;
 import celtech.appManager.Project;
 
 /**
- *
+ * A ProjectAwareController can be directly told which project to bind to.
  * @author tony
  */
 public interface ProjectAwareController

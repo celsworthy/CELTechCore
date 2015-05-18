@@ -927,6 +927,237 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.MIN_PRINT_SPEED);
             });
+        
+        profileNameField.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NAME);
+            });
+        slicerChooser.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SLICER_CHOOSER);
+            });
+        layerHeight.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.LAYER_HEIGHT);
+            });
+        fillDensity.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FILL_DENSITY);
+            });
+        fillPatternChoice.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FILL_PATTERN);
+            });
+        infillEveryN.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_EVERYN);
+            });
+        solidLayersTop.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_LAYERS_TOP);
+            });
+        solidLayersBottom.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_LAYERS_BOTTOM);
+            });
+        numberOfPerimeters.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NUMBER_OF_PERIMETERS);
+            });
+        brimWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIM_WIDTH);
+            });
+        firstLayerExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_EXTRUSION_WIDTH);
+            });
+        perimeterExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.PERIMETER_EXTRUSION_WIDTH);
+            });
+        infillExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_EXTRUSION_WIDTH);
+            });
+        solidInfillExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_INFILL_EXTRUSION_WIDTH);
+            });
+        topSolidInfillExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.TOP_SOLID_INFILL_EXTRUSION_WIDTH);
+            });
+        supportExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_EXTRUSION_WIDTH);
+            });
+        nozzleOpenVolume0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+            });
+        nozzleOpenVolume1.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+            });
+        nozzleEjectionVolume0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+            });
+        nozzleEjectionVolume1.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+            });
+        nozzlePartialOpen0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+            });
+        nozzlePartialOpen1.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+            });
+        supportMaterialEnabled.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
+            });
+        supportOverhangThreshold.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
+            });
+        forcedSupportLayers.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FORCED_SUPPORT_LAYERS);
+            });
+        supportPattern.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_PATTERN);
+            });
+        supportPatternSpacing.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_PATTERN_SPACING);
+            });
+        supportPatternAngle.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_PATTERN_ANGLE);
+            });
+        firstLayerSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_SPEED);
+            });
+        perimeterSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.PERIMETER_SPEED);
+            });
+        smallPerimeterSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SMALL_PERIMETER_SPEED);
+            });
+        externalPerimeterSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.EXTERNAL_PERIMETER_SPEED);
+            });
+        infillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_SPEED);
+            });
+        solidInfillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_INFILL_SPEED);
+            });
+        topSolidInfillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.TOP_SOLID_INFILL_SPEED);
+            });
+        supportMaterialSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_MATERIAL_SPEED);
+            });
+        bridgesSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIDGES_SPEED);
+            });
+        gapFillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.GAP_FILL_SPEED);
+            });
+        enableAutoCooling.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.ENABLE_AUTO_COOLING);
+            });
+        minFanSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MIN_FAN_SPEED);
+            });
+        maxFanSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MAX_FAN_SPEED);
+            });
+        bridgesFanSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIDGES_FAN_SPEED);
+            });
+        disableFanForFirstNLayers.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.DISABLE_FAN_FIRST_N_LAYERS);
+            });
+        enableFanIfLayerTimeBelow.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.ENABLE_FAN_LAYER_TIME_BELOW);
+            });
+        slowFanIfLayerTimeBelow.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SLOW_FAN_LAYER_TIME_BELOW);
+            });
+        minPrintSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MIN_PRINT_SPEED);
+            });        
     }
 
     private void showHelpText(Fields field)
