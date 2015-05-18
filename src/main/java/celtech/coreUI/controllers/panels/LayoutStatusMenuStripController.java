@@ -721,6 +721,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                 oneExtruderPrinter.and(filament0Reqd).and(
                                                     printer.extrudersProperty().get(0).
                                                     filamentLoadedProperty().not()));
+        
+        /* Inhibit DMH related functionality
         printButton.getTag().addConditionalText("dialogs.filamentMismatchMessage",
                                                 oneExtruderPrinter.and(extruder0FilamentMismatch));
 
@@ -743,6 +745,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printButton.getTag().addConditionalText("dialogs.filament1MismatchMessage",
                                                 twoExtruderPrinter.and(filament1Reqd).and(
                                                     extruder1FilamentMismatch));
+        */
     }
 
     /**
