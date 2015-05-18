@@ -64,7 +64,7 @@
                 <String fx:value="filamentLibUpper" />
             </styleClass>
         </ComboBox>
-        <ColorPicker fx:id="colour" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
+        <ColorPicker fx:id="colour" minHeight="26.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
             <styleClass>
                 <String fx:value="cmbCleanCombo" />
                 <String fx:value="filamentLibUpper" />

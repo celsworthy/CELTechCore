@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.coreUI.visualisation.DimensionLineManager;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -86,8 +87,8 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                                             tabDisplayWidthProperty,
                                             tabDisplayHeightProperty);
-        Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml");
-        Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml");
+        Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
+        Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
 //        Node modelActionsInsetPanel = loadInsetPanel("modelActionsInsetPanel.fxml");
 
         basePane = new AnchorPane();
@@ -118,7 +119,7 @@ public class ProjectTab extends Tab
 
     }
 
-    private Node loadInsetPanel(String innerPanelFXMLName)
+    private Node loadInsetPanel(String innerPanelFXMLName, Project project)
     {
         URL settingsInsetPanelURL = getClass().getResource(
             ApplicationConfiguration.fxmlPanelResourcePath + innerPanelFXMLName);
@@ -127,6 +128,8 @@ public class ProjectTab extends Tab
         try
         {
             insetPanel = loader.load();
+            ProjectAwareController projectAwareController = (ProjectAwareController) loader.getController();
+            projectAwareController.setProject(project);
         } catch (IOException ex)
         {
             steno.error("Unable to load inset panel: " + innerPanelFXMLName + "  " + ex);
