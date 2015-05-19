@@ -10,5 +10,5 @@ package celtech.services.slicer;
 public interface ProgressReceiver
 {
 
-    void progressUpdateFromSlicer(String message, int workDone);
+    void progressUpdateFromSlicer(String message, float workDone);
 }

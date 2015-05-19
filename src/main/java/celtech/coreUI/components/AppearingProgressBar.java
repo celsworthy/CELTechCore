@@ -3,19 +3,22 @@
  */
 package celtech.coreUI.components;
 
+import celtech.Lookup;
+import celtech.printerControl.PrinterStatus;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.Transition;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -51,13 +54,20 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     @FXML
     private Label largeTargetLegend;
 
-    private final ReadOnlyDoubleProperty currentValue = new SimpleDoubleProperty(0);
-    private final ReadOnlyDoubleProperty currentTarget = new SimpleDoubleProperty(0);
-
-    private final ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    private ReadOnlyDoubleProperty currentValueProperty = null;
+    private ReadOnlyDoubleProperty currentTargetProperty = null;
+    private ReadOnlyIntegerProperty currentEtcProperty = null;
+    private DisplayMode displayMode = DisplayMode.PERCENT;
+    private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
     {
-//        setProgressPercent(newValue.doubleValue());
+        redraw();
     };
+
+    enum DisplayMode
+    {
+
+        PERCENT, TEMPERATURE;
+    }
 
     public AppearingProgressBar()
     {
@@ -106,206 +116,215 @@ public class AppearingProgressBar extends BorderPane implements Initializable
             }
         };
 
-        largeProgressBarBack.boundsInLocalProperty().addListener(
-                (ObservableValue<? extends Bounds> observable, Bounds oldValue, Bounds newValue) ->
-                {
-//                    redraw();
-                });
-
-//        hideSidebar = new Transition()
-//        {
-//            {
-//                setCycleDuration(Duration.millis(delayTime));
-//            }
-//
-//            @Override
-//            public void interpolate(double frac)
-//            {
-//                slideMenuPanel(1.0 - frac);
-//            }
-//        };
-//
-//        hideSidebar.onFinishedProperty().set(new EventHandler<ActionEvent>()
-//        {
-//            @Override
-//            public void handle(ActionEvent event)
-//            {
-//                slidIn = true;
-//            }
-//        });
-//
-//        // create an animation to show a sidebar.
-//        showSidebar = new Transition()
-//        {
-//            {
-//                setCycleDuration(Duration.millis(delayTime));
-//            }
-//
-//            @Override
-//            public void interpolate(double frac)
-//            {
-//                slideMenuPanel(frac);
-//            }
-//        };
-//
-//        showSidebar.onFinishedProperty().set(new EventHandler<ActionEvent>()
-//        {
-//            @Override
-//            public void handle(ActionEvent event)
-//            {
-//                slidIn = false;
-//            }
-//        });
-//        redraw();
+        slideIn();
     }
 
-//    public void setProgressPercent(double progress)
-//    {
-//        if (progress != currentValue.get())
-//        {
-//            currentValue.set(progress);
-//            redraw();
-//        }
-//    }
-//
-//    public void setTargetValue(String targetValue)
-//    {
-//        largeTargetValue.setText(targetValue);
-//    }
-//
-//    public void setProgressDescription(String progressDescription)
-//    {
-//        largeProgressDescription.setText(progressDescription);
-//    }
-//
-//    public void setTargetLegend(String targetLegend)
-//    {
-//        largeTargetLegend.setText(targetLegend);
-//    }
-//
-//    public void setCurrentValue(String currentValue)
-//    {
-//        largeProgressCurrentValue.setText(currentValue);
-//    }
-//    public void configureForStatus(PrinterMetaStatus metaStatus)
-//    {
-//        switch (metaStatus)
-//        {
-//            case HEATING_BED:
-//            case HEATING_NOZZLE:
-//                progressBarElement.setVisible(true);
-//                largeTargetLegend.setVisible(true);
-//                largeTargetValue.setVisible(true);
-//                largeTargetValue.textProperty().unbind();
-//                largeTargetValue.textProperty().bind(
-//                        metaStatus.get()
-//                        .currentStatusValueTargetProperty()
-//                        .asString("%.0f").concat(Lookup.i18n("misc.degreesC")));
-//                largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-//                largeProgressCurrentValue.textProperty().bind(
-//                        metaStatus.get()
-//                        .currentStatusValueProperty().asString("%.0f").concat(Lookup.i18n(
-//                                        "misc.degreesC")));
-//                this.setVisible(true);
-//                break;
-//            case PRINTING:
-//            case SLICING:
-//            case POST_PROCESSING:
-//                progressBarElement.setVisible(true);
-//                largeTargetLegend.setVisible(false);
-//                largeTargetValue.setVisible(false);
-//                largeTargetValue.textProperty().unbind();
-//                largeTargetValue.textProperty().bind(
-//                        metaStatus.get()
-//                        .currentStatusValueTargetProperty()
-//                        .asString("%.0f%%"));
-//                largeTargetLegend.setText("");
-//                largeProgressCurrentValue.textProperty().bind(
-//                        metaStatus.get()
-//                        .currentStatusValueProperty().asString("%.0f%%"));
-//                this.setVisible(true);
-//                break;
-//            case IDLE:
-//                progressBarElement.setVisible(false);
-//                largeTargetLegend.setVisible(false);
-//                largeTargetValue.setVisible(false);
-//                this.setVisible(false);
-//                break;
-//            default:
-//                progressBarElement.setVisible(false);
-//                largeTargetLegend.setVisible(false);
-//                largeTargetValue.setVisible(false);
-//                this.setVisible(true);
-//                break;
-//        }
-//
-//    }
-//    private void redraw()
-//    {
-//        double normalisedProgress = 0;
-//
-//        double progressBackWidth = largeProgressBarBack.getWidth();
-//        double barWidth = progressBackWidth * normalisedProgress;
-//        largeProgressBarInner.setWidth(barWidth);
-//
-//        // place currentValue in correct place on progress bar (just to the left of RHS of the bar)
-//        double barEndXPosition = largeProgressBarInner.getLayoutX()
-//                + largeProgressBarInner.boundsInParentProperty().get().getWidth();
-//        double barStartXPosition = largeProgressBarInner.getLayoutX();
-//        double currentValueWidth = largeProgressCurrentValue.boundsInParentProperty().get().
-//                getWidth();
-//        int OFFSET_FROM_PROGRESS_BAR_RHS = 10;  // px
-//        double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth
-//                - OFFSET_FROM_PROGRESS_BAR_RHS;
-//
-//        double leftmostValuePositionAllowed = barStartXPosition + 2;
-//        if (requiredCurrentValueXPosition < leftmostValuePositionAllowed)
-//        {
-//            requiredCurrentValueXPosition = leftmostValuePositionAllowed;
-//        }
-//
-//        double currentX = largeProgressCurrentValue.getLayoutX();
-//        double requiredTranslate = requiredCurrentValueXPosition - currentX;
-//        largeProgressCurrentValue.setTranslateX(requiredTranslate);
-//        if (currentValue < 5)
-//        {
-//            largeProgressCurrentValue.setTextFill(Color.DARKBLUE);
-//        } else
-//        {
-//            largeProgressCurrentValue.setTextFill(Color.web("#000000"));
-//        }
-//    }
-//
-//    public void bindToData(PrinterStatus printerStatus, 
-//            ReadOnlyDoubleProperty currentValue,
-//            ReadOnlyDoubleProperty currentTarget)
-//    {
-//        largeProgressDescription.textProperty().bind(printerStatus.asString());
-//        largeTargetValue.setText("");
-//        largeTargetLegend.setText("");
-//        largeProgressCurrentValue.setText("");
-//        this.
-//        c.addListener(progressChangeListener);
-//        printerMetaStatus.printerStatusProperty().addListener(statusChangeListener);
-//    }
-//
-//    public void unbindProgress()
-//    {
-//        largeProgressDescription.textProperty().unbind();
-//        largeTargetValue.textProperty().unbind();
-//        largeProgressCurrentValue.textProperty().unbind();
-//        progressProperty.removeListener(progressChangeListener);
-//        progressProperty.unbind();
-//        if (printerMetaStatus.isPresent())
-//        {
-//            printerMetaStatus.get().printerStatusProperty().removeListener(statusChangeListener);
-//            printerMetaStatus = Optional.empty();
-//        }
-//    }
+    public void manuallyConfigure(String progressDescription,
+            ReadOnlyDoubleProperty currentValueProperty,
+            ReadOnlyDoubleProperty currentTargetProperty)
+    {
+        if (progressDescription == null)
+        {
+            startSlidingIn();
+            unbind();
+            currentTargetProperty = null;
+            currentValueProperty = null;
+        } else
+        {
+            unbind();
+            largeProgressDescription.setText(progressDescription);
+            this.currentTargetProperty = currentTargetProperty;
+            this.currentTargetProperty.addListener(progressChangeListener);
+            this.currentValueProperty = currentValueProperty;
+            this.currentValueProperty.addListener(progressChangeListener);
+            displayMode = DisplayMode.PERCENT;
+            progressBarElement.setVisible(true);
+            largeTargetLegend.setVisible(false);
+            largeTargetValue.setVisible(false);
+            startSlidingOut();
+        }
+
+        redraw();
+    }
+
+    public void configureForStatus(PrinterStatus printerStatus,
+            ReadOnlyDoubleProperty currentValueProperty,
+            ReadOnlyDoubleProperty currentTargetProperty,
+            ReadOnlyIntegerProperty etcProperty)
+    {
+        if (printerStatus == null)
+        {
+            startSlidingIn();
+            unbind();
+            currentTargetProperty = null;
+            currentValueProperty = null;
+        } else
+        {
+            unbind();
+            largeProgressDescription.setText(printerStatus.getI18nString());
+            this.currentTargetProperty = currentTargetProperty;
+            this.currentTargetProperty.addListener(progressChangeListener);
+            this.currentValueProperty = currentValueProperty;
+            this.currentValueProperty.addListener(progressChangeListener);
+
+            switch (printerStatus)
+            {
+                case HEATING_BED:
+                case HEATING_NOZZLE:
+                    progressBarElement.setVisible(true);
+                    largeTargetLegend.setVisible(true);
+                    largeTargetValue.setVisible(true);
+                    largeTargetValue.textProperty().bind(currentTargetProperty.asString("%.0f")
+                            .concat(Lookup.i18n("misc.degreesC")));
+                    largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
+                    displayMode = DisplayMode.TEMPERATURE;
+                    startSlidingOut();
+                    break;
+                case PRINTING:
+                    progressBarElement.setVisible(true);
+                    displayMode = DisplayMode.PERCENT;
+                    if (etcProperty != null)
+                    {
+                        this.currentEtcProperty = etcProperty;
+                        largeTargetLegend.setVisible(true);
+                        largeTargetLegend.setText(Lookup.i18n("dialogs.progressETCLabel"));
+                        largeTargetValue.textProperty().bind(new StringBinding()
+                        {
+                            {
+                                super.bind(currentEtcProperty);
+                            }
+
+                            @Override
+                            protected String computeValue()
+                            {
+                                int secondsRemaining = currentEtcProperty.intValue();
+                                secondsRemaining += 30;
+                                if (secondsRemaining > 60)
+                                {
+                                    String hoursMinutes = convertToHoursMinutes(
+                                            secondsRemaining);
+                                    return hoursMinutes;
+                                } else
+                                {
+                                    return Lookup.i18n("dialogs.lessThanOneMinute");
+                                }
+                            }
+                        });
+                        largeTargetValue.setVisible(true);
+                    } else
+                    {
+                        largeTargetLegend.setVisible(false);
+                        largeTargetValue.setVisible(false);
+                        largeTargetLegend.setText("");
+                    }
+                    startSlidingOut();
+                    break;
+                case SLICING:
+                case POST_PROCESSING:
+                    progressBarElement.setVisible(true);
+                    largeTargetLegend.setVisible(false);
+                    largeTargetValue.setVisible(false);
+                    largeTargetValue.textProperty().bind(currentTargetProperty.asString("%.0f%%"));
+                    largeTargetLegend.setText("");
+                    displayMode = DisplayMode.PERCENT;
+                    startSlidingOut();
+                    break;
+                case IDLE:
+                    progressBarElement.setVisible(false);
+                    largeTargetLegend.setVisible(false);
+                    largeTargetValue.setVisible(false);
+                    startSlidingIn();
+                    break;
+                default:
+                    displayMode = DisplayMode.PERCENT;
+                    progressBarElement.setVisible(false);
+                    largeTargetLegend.setVisible(false);
+                    largeTargetValue.setVisible(false);
+                    startSlidingOut();
+                    break;
+            }
+        }
+
+        redraw();
+    }
+
+    private String convertToHoursMinutes(int seconds)
+    {
+        int minutes = (int) (seconds / 60);
+        int hours = minutes / 60;
+        minutes = minutes - (60 * hours);
+        return String.format("%02d:%02d", hours, minutes);
+    }
+
+    private void redraw()
+    {
+        double normalisedProgress = 0;
+
+        if (currentValueProperty != null
+                && currentTargetProperty != null)
+        {
+            normalisedProgress = Math.max(Math.min(currentValueProperty.get() / currentTargetProperty.get(), 1.0), 0);
+            switch (displayMode)
+            {
+                case PERCENT:
+                    largeProgressCurrentValue.setText(String.format("%.0f", normalisedProgress * 100.0).concat("%"));
+                    break;
+                case TEMPERATURE:
+                    largeProgressCurrentValue.setText(String.format("%.0f", currentValueProperty.get()).concat(Lookup.i18n("misc.degreesC")));
+                    break;
+            }
+            largeProgressCurrentValue.setVisible(true);
+        } else
+        {
+            largeProgressCurrentValue.setText("");
+            largeProgressCurrentValue.setVisible(false);
+        }
+        double progressBackWidth = largeProgressBarBack.getWidth();
+        double barWidth = progressBackWidth * normalisedProgress;
+
+        largeProgressBarInner.setWidth(barWidth);
+
+        // place currentValue in correct place on progress bar (just to the left of RHS of the bar)
+        double barEndXPosition = largeProgressBarInner.getLayoutX()
+                + largeProgressBarInner.boundsInParentProperty().get().getWidth();
+        double barStartXPosition = largeProgressBarInner.getLayoutX();
+        double currentValueWidth = largeProgressCurrentValue.boundsInParentProperty().get().
+                getWidth();
+        int OFFSET_FROM_PROGRESS_BAR_RHS = 10;  // px
+        double requiredCurrentValueXPosition = barEndXPosition - currentValueWidth
+                - OFFSET_FROM_PROGRESS_BAR_RHS;
+
+        double leftmostValuePositionAllowed = barStartXPosition + 2;
+        if (requiredCurrentValueXPosition < leftmostValuePositionAllowed)
+        {
+            requiredCurrentValueXPosition = leftmostValuePositionAllowed;
+        }
+
+        double currentX = largeProgressCurrentValue.getLayoutX();
+        double requiredTranslate = requiredCurrentValueXPosition - currentX;
+
+        largeProgressCurrentValue.setTranslateX(requiredTranslate);
+    }
+
+    private void unbind()
+    {
+        largeTargetValue.textProperty().unbind();
+
+        if (currentValueProperty != null)
+        {
+            currentValueProperty.removeListener(progressChangeListener);
+        }
+
+        if (currentTargetProperty != null)
+        {
+            currentTargetProperty.removeListener(progressChangeListener);
+        }
+    }
+
     private Animation hideSidebar = null;
     private Animation showSidebar = null;
     private boolean hidden = false;
-    private final double minimumToShow = 0.1;
+    private final double minimumToShow = 0.0;
     private final double maximumToShow = 1.0;
     private boolean slidIn = false;
     private SlidingComponentDirection directionToSlide = SlidingComponentDirection.UP_FROM_BOTTOM;
@@ -314,10 +333,10 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     private double panelLayoutMinX = 0;
     private double panelLayoutMinY = 0;
     private final Rectangle clippingRectangle = new Rectangle();
+    private double lastAmountShown = 0;
 
     /**
      *
-     * @param paneToSlide
      * @param directionToSlide
      */
     public void configurePanel(SlidingComponentDirection directionToSlide)
@@ -342,7 +361,7 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     /**
      *
      */
-    public void slideIn()
+    private void slideIn()
     {
         slideMenuPanel(0.0);
         hidden = true;
@@ -351,7 +370,7 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     /**
      *
      */
-    public void slideOut()
+    private void slideOut()
     {
         slideMenuPanel(1.0);
         hidden = false;
@@ -361,8 +380,10 @@ public class AppearingProgressBar extends BorderPane implements Initializable
      *
      * @param amountToShow
      */
-    public void slideMenuPanel(double amountToShow)
+    private void slideMenuPanel(double amountToShow)
     {
+        lastAmountShown = amountToShow;
+
         if (amountToShow < minimumToShow)
         {
             amountToShow = minimumToShow;
@@ -422,6 +443,8 @@ public class AppearingProgressBar extends BorderPane implements Initializable
 
             setClip(clippingRectangle);
             setTranslateY(translateByY);
+            setMaxHeight(targetPanelHeight);
+            setMinHeight(0);
         }
     }
 
@@ -448,9 +471,10 @@ public class AppearingProgressBar extends BorderPane implements Initializable
      *
      * @return
      */
-    public boolean startSlidingOut()
+    private boolean startSlidingOut()
     {
-        if (hideSidebar.statusProperty().get() == Animation.Status.STOPPED)
+        if (hideSidebar.statusProperty().get() == Animation.Status.STOPPED
+                && slidIn)
         {
 //            steno.info("Pulling out");
             showSidebar.play();
@@ -465,9 +489,10 @@ public class AppearingProgressBar extends BorderPane implements Initializable
      *
      * @return
      */
-    public boolean startSlidingIn()
+    private boolean startSlidingIn()
     {
-        if (showSidebar.statusProperty().get() == Animation.Status.STOPPED)
+        if (showSidebar.statusProperty().get() == Animation.Status.STOPPED
+                && !slidIn)
         {
 //            steno.info("Hiding");
             hideSidebar.play();
@@ -490,9 +515,12 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        this.panelWidth = getWidth();
-        this.panelHeight = getPrefHeight();
-        this.panelLayoutMinX = 0;
-        this.panelLayoutMinY = 0;
+        panelHeight = getPrefHeight();
+        widthProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number newWidth) ->
+        {
+            panelWidth = newWidth.doubleValue();
+            slideMenuPanel(lastAmountShown);
+            redraw();
+        });
     }
 }

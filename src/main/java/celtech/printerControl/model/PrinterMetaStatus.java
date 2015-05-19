@@ -139,15 +139,15 @@ public class PrinterMetaStatus implements PrinterListChangesListener
 
         if (tempStatus == null)
         {
+////            if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
+////                    && printer.getPrintEngine().slicerService.isRunning())
+////            {
+////                tempStatus = PrinterStatus.SLICING;
+////            } else if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
+////                    && printer.getPrintEngine().postProcessorService.isRunning())
+////            {
+////                tempStatus = PrinterStatus.POST_PROCESSING;
             if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
-                    && printer.getPrintEngine().slicerService.isRunning())
-            {
-                tempStatus = PrinterStatus.SLICING;
-            } else if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
-                    && printer.getPrintEngine().postProcessorService.isRunning())
-            {
-                tempStatus = PrinterStatus.POST_PROCESSING;
-            } else if (printer.printerStatusProperty().get() == PrinterStatus.IDLE
                     && printer.getPrintEngine().printInProgressProperty().get())
             {
                 tempStatus = PrinterStatus.PRINTING;

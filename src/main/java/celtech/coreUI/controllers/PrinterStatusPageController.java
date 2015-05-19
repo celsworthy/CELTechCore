@@ -180,30 +180,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @FXML
     private ProgressDisplay progressDisplay;
     
-    @FXML
-    private Button apppear;
-    
-    @FXML
-    private Button disapppear;
-    
     private Node[] advancedControls = null;
     
     private Printer lastSelectedPrinter = null;
     
     private final BooleanProperty showProgressGroup = new SimpleBooleanProperty(false);
-    
-    @FXML
-    void appear(ActionEvent event)
-    {
-    progressDisplay.forceAppear();
-    }
-    
-    @FXML
-    void disappear(ActionEvent event)
-    {
-    progressDisplay.forceDisappear();
-    }
-    
+
     @FXML
     void pausePrint(ActionEvent event)
     {

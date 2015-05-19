@@ -1,5 +1,6 @@
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterMetaStatus;
@@ -21,38 +22,29 @@ public class ProgressDisplay extends VBox
 
     private final ChangeListener<PrinterStatus> statusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
     {
-        respondToMetaStateChange(newValue);
+        respondToStateChange();
     };
 
-    private final ChangeListener<Boolean> sendingDataChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    private final ChangeListener<Boolean> ancillaryStatusListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
-        respondToSendingDataChange(newValue);
+        respondToStateChange();
     };
 
     public ProgressDisplay()
     {
-        generalPurposeProgressBar.slideIn();
-        transferringDataProgressBar.slideIn();
-        getChildren().addAll(generalPurposeProgressBar);
+        setFillWidth(true);
+        getChildren().addAll(transferringDataProgressBar, generalPurposeProgressBar);
     }
 
     public void bindToPrinter(Printer printer)
     {
-//        unbindProgress();
-
         this.printer = printer;
         printerMetaStatus = printer.getPrinterMetaStatus();
         printerMetaStatus.printerStatusProperty().addListener(statusChangeListener);
-        printer.getPrintEngine().sendingDataToPrinterProperty().addListener(sendingDataChangeListener);
-        respondToMetaStateChange(printerMetaStatus.printerStatusProperty().get());
-
-//        largeProgressDescription.textProperty().bind(printerMetaStatus.printerStatusProperty().
-//                asString());
-//        largeTargetValue.setText("");
-//        largeTargetLegend.setText("");
-//        largeProgressCurrentValue.setText("");
-//        progressProperty.bind(printerMetaStatus.currentStatusValueProperty());
-//        progressProperty.addListener(progressChangeListener);
+        printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(ancillaryStatusListener);
+        printer.getPrintEngine().slicerService.runningProperty().addListener(ancillaryStatusListener);
+        printer.getPrintEngine().postProcessorService.runningProperty().addListener(ancillaryStatusListener);
+        respondToStateChange();
     }
 
     public void unbindFromPrinter()
@@ -62,51 +54,63 @@ public class ProgressDisplay extends VBox
             printerMetaStatus.printerStatusProperty().removeListener(statusChangeListener);
             this.printerMetaStatus = null;
         }
-        respondToMetaStateChange(null);
+        respondToStateChange();
 
         if (printer != null)
         {
-            printer.getPrintEngine().sendingDataToPrinterProperty().removeListener(sendingDataChangeListener);
+            printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().removeListener(ancillaryStatusListener);
+            printer.getPrintEngine().slicerService.runningProperty().removeListener(ancillaryStatusListener);
+            printer.getPrintEngine().postProcessorService.runningProperty().removeListener(ancillaryStatusListener);
         }
-        respondToSendingDataChange(false);
+        respondToStateChange();
         printer = null;
     }
 
-    private void respondToMetaStateChange(PrinterStatus printerStatus)
+    private void respondToStateChange()
     {
-        if (printerStatus != null)
+        boolean dontShowTransferringBar = true;
+
+        if (printerMetaStatus != null)
         {
-            switch (printerStatus)
+            generalPurposeProgressBar.configureForStatus(printerMetaStatus.printerStatusProperty().get(),
+                    printerMetaStatus.currentStatusValueProperty(), printerMetaStatus.currentStatusValueTargetProperty(),
+                    printer.getPrintEngine().progressETCProperty());
+
+            if (printer != null)
             {
-                case IDLE:
-                    generalPurposeProgressBar.startSlidingIn();
-                    break;
-                default:
-                    generalPurposeProgressBar.startSlidingOut();
-                    System.out.println("Progress Display status --- " + printerStatus.name());
-                    break;
+                if (printer.getPrintEngine().transferGCodeToPrinterService.isRunning()
+                        && (printerMetaStatus.printerStatusProperty().get() == PrinterStatus.PRINTING
+                        || printerMetaStatus.printerStatusProperty().get() == PrinterStatus.HEATING_BED
+                        || printerMetaStatus.printerStatusProperty().get() == PrinterStatus.HEATING_NOZZLE))
+                {
+                    dontShowTransferringBar = false;
+                    transferringDataProgressBar.manuallyConfigure(Lookup.i18n("printerStatus.sendingToPrinter"),
+                            printer.getPrintEngine().transferGCodeToPrinterService.workDoneProperty(),
+                            printer.getPrintEngine().transferGCodeToPrinterService.totalWorkProperty());
+                } else if (printer.getPrintEngine().slicerService.isRunning())
+                {
+                    dontShowTransferringBar = false;
+                    transferringDataProgressBar.manuallyConfigure(Lookup.i18n("printerStatus.slicing"),
+                            printer.getPrintEngine().slicerService.workDoneProperty(),
+                            printer.getPrintEngine().slicerService.totalWorkProperty());
+                } else if (printer.getPrintEngine().postProcessorService.isRunning())
+                {
+                    dontShowTransferringBar = false;
+                    transferringDataProgressBar.manuallyConfigure(Lookup.i18n("printerStatus.postProcessing"),
+                            printer.getPrintEngine().postProcessorService.workDoneProperty(),
+                            printer.getPrintEngine().postProcessorService.totalWorkProperty());
+                }
             }
+
         } else
         {
             //OK need to do some tidying
+            generalPurposeProgressBar.configureForStatus(null, null, null, null);
         }
-    }
 
-    private void respondToSendingDataChange(boolean sendingData)
-    {
-        if (printer == null
-                || !sendingData)
+        if (dontShowTransferringBar)
         {
-            transferringDataProgressBar.slideIn();
+            transferringDataProgressBar.manuallyConfigure(null, null, null);
         }
-    }
-    
-    public void forceAppear()
-    {
-        generalPurposeProgressBar.startSlidingOut();
-    }
-    public void forceDisappear()
-    {
-        generalPurposeProgressBar.startSlidingIn();
     }
 }

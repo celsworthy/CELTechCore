@@ -1905,7 +1905,7 @@ modal-dialogue{
 }
 
 #largeProgressCurrentValue {
-    -fx-text-fill: robox_blue;
+    -fx-text-fill: black;
     -fx-font-size: 36px;
 }
 

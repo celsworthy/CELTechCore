@@ -57,6 +57,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         this.settings = settings;
         this.printerToUse = printerToUse;
         updateTitle("Post Processor");
+        updateProgress(0.0, 100.0);
     }
 
     @Override
@@ -65,7 +66,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         try
         {
             updateMessage("");
-            updateProgress(0, 100);
+            updateProgress(0.0, 100.0);
             taskProgress.addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
