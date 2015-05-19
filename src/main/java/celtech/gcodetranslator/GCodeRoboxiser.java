@@ -52,7 +52,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     //Profile variables
     private double startClosingByMM = 2;
 
-    protected ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
+    protected LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
     private boolean triggerCloseFromTravel = true;
     private boolean triggerCloseFromRetract = true;
@@ -88,78 +88,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     private boolean movieMakerEnabled = false;
 
     private int closeCounter = 0;
-
-//    /**
-//     *
-//     * @param inputFilename
-//     * @param outputFilename
-//     * @param settings
-//     * @param percentProgress
-//     * @return
-//     */
-//    public RoboxiserResult roboxiseFile(String inputFilename,
-//        String outputFilename,
-//        SlicerParametersFile settings, DoubleProperty percentProgress)
-//    {
-//        RoboxiserResult result = new RoboxiserResult();
-//        result.setSuccess(false);
-//
-//        if (initialise(settings, outputFilename))
-//        {
-//            boolean success = false;
-//
-//            try
-//            {
-//                SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
-//                outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on "
-//                    + formatter.format(new Date()) + "\n");
-//                outputWriter.
-//                    writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
-//
-//                outputWriter.writeOutput(";\n; Pre print gcode\n");
-//                for (String macroLine : GCodeMacros.getMacroContents("before_print"))
-//                {
-//                    outputWriter.writeOutput(macroLine + "\n");
-//                }
-//                outputWriter.writeOutput("; End of Pre print gcode\n");
-//
-//                gcodeParser.parse(inputFilename, percentProgress);
-//
-//                outputWriter.close();
-//
-//                steno.info("Finished roboxising " + inputFilename);
-//                steno.info("Total extrusion volume " + totalExtrudedVolume + " mm3");
-//                steno.info("Total XY movement distance " + totalXYMovement + " mm");
-//
-//                success = true;
-//            } catch (IOException ex)
-//            {
-//                steno.error("Error roboxising file " + inputFilename);
-//            } catch (MacroLoadException ex)
-//            {
-//                steno.error(
-//                    "Error roboxising file - couldn't add before print header due to circular macro reference "
-//                    + inputFilename);
-//            }
-//
-//            result.setSuccess(success);
-//            /**
-//             * TODO: layerNumberToLineNumber uses lines numbers from the GCode file so are a little
-//             * less than the line numbers for each layer after roboxisation. As a quick fix for now
-//             * set the line number of the last layer to the actual maximum line number.
-//             */
-//            layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
-//                                        getNumberOfLinesOutput());
-//            PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-//                outputWriter.getNumberOfLinesOutput(),
-//                volumeUsed, lineNumberOfFirstExtrusion,
-//                layerNumberToLineNumber, layerNumberToPredictedDuration);
-//
-//            result.setRoboxisedStatistics(roboxisedStatistics);
-//        }
-//
-//        return result;
-//    }
 
     /**
      *

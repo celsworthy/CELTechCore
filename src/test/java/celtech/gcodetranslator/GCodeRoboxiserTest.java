@@ -38,7 +38,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
 
-        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
+        LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
         NozzleChangeEvent nozzleChange = new NozzleChangeEvent();
         nozzleChange.setNozzleNumber(0);
@@ -69,7 +69,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
 
-        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
+        LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
         //G0 F18000 X0.750 Y24.250 Z0.400
         //;TYPE:WALL-INNER
@@ -154,7 +154,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
 
-        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
+        LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
         /*
          * 2.25 - 22.75
@@ -388,7 +388,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
         SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
         parameters.setSlicerOverride(SlicerType.Cura);
 
-        ExtrusionBuffer extrusionBuffer = new ExtrusionBuffer();
+        LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
         /*
          * X 95.595 - 119.095

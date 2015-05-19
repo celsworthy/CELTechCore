@@ -10,7 +10,7 @@ import java.util.ArrayList;
  *
  * @author Ian
  */
-public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
+public class LegacyExtrusionBuffer extends ArrayList<GCodeParseEvent>
 {
 
     public boolean containsExtrusionEvents()

@@ -3,6 +3,7 @@ package celtech.services.postProcessor;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.GCodeRoboxiser;
+import celtech.gcodetranslator.GCodeRoboxiser2;
 import celtech.gcodetranslator.GCodeRoboxisingEngine;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.printerControl.PrintJob;

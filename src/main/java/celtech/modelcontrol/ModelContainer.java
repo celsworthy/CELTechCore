@@ -1838,7 +1838,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
             } else
             {
-                meshMaterial = getMaterialForColour(displayColourExtruder0);
+                meshMaterial = getMaterialForColour(displayColourExtruder1);
             }
         }
         material = meshMaterial;
