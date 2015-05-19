@@ -79,7 +79,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         ApplicationConfiguration.fineSettingsProfileName);
 
     private Project currentProject;
-    private PrinterSettings printerSettings = null;
+    private PrinterSettings printerSettings;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
 
     /**
@@ -338,7 +338,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @Override
     public void setProject(Project project)
     {
-        currentProject = project;
         whenProjectChanged(project);
     }
 
@@ -430,13 +429,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             if (settings != null)
             {
-                printerSettings.setBrimOverride(settings.getBrimWidth_mm());
                 printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
-                printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
-                printerSettings.setRaftOverride(settings.getPrintRaft());
+                fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
             }
-            
-            populateQualityOverrideControls(printerSettings);
 
             if (printQuality.get() == PrintQualityEnumeration.CUSTOM)
             {
