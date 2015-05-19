@@ -8,6 +8,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.tasks.Cancellable;
@@ -34,7 +35,7 @@ import org.apache.commons.io.FileUtils;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class TimeCostInsetPanelController implements Initializable
+public class TimeCostInsetPanelController implements Initializable, ProjectAwareController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -102,19 +103,21 @@ public class TimeCostInsetPanelController implements Initializable
 
             timeCostThreadManager = new TimeCostThreadManager();
 
-            Lookup.getSelectedProjectProperty().addListener(
-                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-                {
-                    whenProjectChanged(newValue);
-                });
-
+//            Lookup.getSelectedProjectProperty().addListener(
+//                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+//                {
+//                    whenProjectChanged(newValue);
+//                });
             ApplicationStatus.getInstance().modeProperty().addListener(
                 (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
                 {
                     if (newValue == ApplicationMode.SETTINGS)
                     {
                         timeCostInsetRoot.setVisible(true);
-                        updateFields(Lookup.getSelectedProjectProperty().get());
+                        if (Lookup.getSelectedProjectProperty().get() == currentProject)
+                        {
+                            updateFields(currentProject);
+                        }
                     } else
                     {
                         timeCostInsetRoot.setVisible(false);
@@ -123,11 +126,10 @@ public class TimeCostInsetPanelController implements Initializable
 
                 });
 
-            if (Lookup.getSelectedProjectProperty().get() != null)
-            {
-                updateFields(Lookup.getSelectedProjectProperty().get());
-            }
-
+//            if (Lookup.getSelectedProjectProperty().get() != null)
+//            {
+//                updateFields(Lookup.getSelectedProjectProperty().get());
+//            }
             setupQualityRadioButtons();
 
         } catch (Exception ex)
@@ -210,6 +212,13 @@ public class TimeCostInsetPanelController implements Initializable
 
     }
 
+    @Override
+    public void setProject(Project project)
+    {
+        currentProject = project;
+        whenProjectChanged(project);
+    }
+
     private void whenProjectChanged(Project project)
     {
         currentProject = project;
@@ -254,6 +263,7 @@ public class TimeCostInsetPanelController implements Initializable
      */
     private void updateFields(Project project)
     {
+
         if (ApplicationStatus.getInstance().modeProperty().get() != ApplicationMode.SETTINGS)
         {
             return;
@@ -271,7 +281,7 @@ public class TimeCostInsetPanelController implements Initializable
         lblNormalCost.setText("...");
         lblFineCost.setText("...");
         lblCustomCost.setText("...");
-        
+
         Cancellable cancellable = new SimpleCancellable();
         Runnable runUpdateFields = () ->
         {
@@ -318,9 +328,9 @@ public class TimeCostInsetPanelController implements Initializable
                                    lblFineWeight,
                                    lblFineCost, cancellable);
         };
-        
+
         clearPrintJobDirectories();
-        
+
         timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
 
     }

@@ -521,6 +521,68 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 showHelpText(Fields.COST_GBP_PER_KG);
             });
+        
+        name.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NAME);
+            });
+        colour.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.COLOUR);
+            });
+        material.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MATERIAL);
+            });
+        filamentDiameter.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.DIAMETER);
+            });
+        filamentMultiplier.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MULTIPLIER);
+            });
+        feedRateMultiplier.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FEED_RATE_MULTIPLIER);
+            });
+        firstLayerBedTemperature.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_BED_TEMP);
+            });
+        bedTemperature.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BED_TEMP);
+            });
+        firstLayerNozzleTemperature.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_NOZZLE_TEMP);
+            });
+        nozzleTemperature.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_TEMP);
+            });
+        ambientTemperature.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.AMBIENT_TEMP);
+            });
+        costGBPPerKG.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.COST_GBP_PER_KG);
+            });
+          
     }
 
     private final ChangeListener<String> dirtyStringListener

@@ -81,7 +81,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         DISABLE_FAN_FIRST_N_LAYERS("disableFanFirstNLayers"),
         ENABLE_FAN_LAYER_TIME_BELOW("enableFanLayerTimeBelow"),
         SLOW_FAN_LAYER_TIME_BELOW("slowFanLayerTimeBelow"),
-        MIN_PRINT_SPEED("minPrintSpeed");
+        MIN_PRINT_SPEED("minPrintSpeed"), RAFT_BASE_LINE_WIDTH("raftBaseLinewidth"),
+        RAFT_AIR_GAP_LAYER_0("raftAirGapLayer0"), RAFT_SURFACE_LAYERS("raftSurfaceLayers");
 
         private final String helpTextId;
 
@@ -123,7 +124,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ProfileLibraryPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        ProfileLibraryPanelController.class.getName());
 
     @FXML
     private VBox container;
@@ -319,6 +321,15 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private ComboBox<CustomSlicerType> slicerChooser;
+
+    @FXML
+    private RestrictedNumberField raftBaseLinewidth;
+
+    @FXML
+    private RestrictedNumberField raftAirGapLayer0;
+
+    @FXML
+    private RestrictedNumberField raftSurfaceLayers;
 
     @FXML
     private TextArea helpText;
@@ -927,6 +938,272 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.MIN_PRINT_SPEED);
             });
+
+        raftBaseLinewidth.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
+            });
+
+        raftAirGapLayer0.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
+            });
+
+        raftSurfaceLayers.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+            });
+
+        profileNameField.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NAME);
+            });
+        slicerChooser.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SLICER_CHOOSER);
+            });
+        layerHeight.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.LAYER_HEIGHT);
+            });
+        fillDensity.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FILL_DENSITY);
+            });
+        fillPatternChoice.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FILL_PATTERN);
+            });
+        infillEveryN.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_EVERYN);
+            });
+        solidLayersTop.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_LAYERS_TOP);
+            });
+        solidLayersBottom.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_LAYERS_BOTTOM);
+            });
+        numberOfPerimeters.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NUMBER_OF_PERIMETERS);
+            });
+        brimWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIM_WIDTH);
+            });
+        firstLayerExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_EXTRUSION_WIDTH);
+            });
+        perimeterExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.PERIMETER_EXTRUSION_WIDTH);
+            });
+        infillExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_EXTRUSION_WIDTH);
+            });
+        solidInfillExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_INFILL_EXTRUSION_WIDTH);
+            });
+        topSolidInfillExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.TOP_SOLID_INFILL_EXTRUSION_WIDTH);
+            });
+        supportExtrusionWidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_EXTRUSION_WIDTH);
+            });
+        nozzleOpenVolume0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+            });
+        nozzleOpenVolume1.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+            });
+        nozzleEjectionVolume0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+            });
+        nozzleEjectionVolume1.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+            });
+        nozzlePartialOpen0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+            });
+        nozzlePartialOpen1.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+            });
+        supportMaterialEnabled.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
+            });
+        supportOverhangThreshold.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
+            });
+        forcedSupportLayers.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FORCED_SUPPORT_LAYERS);
+            });
+        supportPattern.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_PATTERN);
+            });
+        supportPatternSpacing.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_PATTERN_SPACING);
+            });
+        supportPatternAngle.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_PATTERN_ANGLE);
+            });
+        firstLayerSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.FIRST_LAYER_SPEED);
+            });
+        perimeterSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.PERIMETER_SPEED);
+            });
+        smallPerimeterSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SMALL_PERIMETER_SPEED);
+            });
+        externalPerimeterSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.EXTERNAL_PERIMETER_SPEED);
+            });
+        infillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INFILL_SPEED);
+            });
+        solidInfillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SOLID_INFILL_SPEED);
+            });
+        topSolidInfillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.TOP_SOLID_INFILL_SPEED);
+            });
+        supportMaterialSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SUPPORT_MATERIAL_SPEED);
+            });
+        bridgesSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIDGES_SPEED);
+            });
+        gapFillSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.GAP_FILL_SPEED);
+            });
+        enableAutoCooling.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.ENABLE_AUTO_COOLING);
+            });
+        minFanSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MIN_FAN_SPEED);
+            });
+        maxFanSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MAX_FAN_SPEED);
+            });
+        bridgesFanSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.BRIDGES_FAN_SPEED);
+            });
+        disableFanForFirstNLayers.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.DISABLE_FAN_FIRST_N_LAYERS);
+            });
+        enableFanIfLayerTimeBelow.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.ENABLE_FAN_LAYER_TIME_BELOW);
+            });
+        slowFanIfLayerTimeBelow.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.SLOW_FAN_LAYER_TIME_BELOW);
+            });
+        minPrintSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.MIN_PRINT_SPEED);
+            });
+        raftBaseLinewidth.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
+            });
+
+        raftAirGapLayer0.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
+            });
+
+        raftSurfaceLayers.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+            });        
     }
 
     private void showHelpText(Fields field)
@@ -1071,6 +1348,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         nozzleOpenVolume1.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume1.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen1.textProperty().addListener(dirtyStringListener);
+        
+        raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
+        raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
+        raftSurfaceLayers.textProperty().addListener(dirtyStringListener);
     }
 
     private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
@@ -1126,6 +1407,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         supportPattern.valueProperty().set(parametersFile.getSupportPattern());
         supportPatternSpacing.floatValueProperty().set(parametersFile.getSupportPatternSpacing_mm());
         supportPatternAngle.intValueProperty().set(parametersFile.getSupportPatternAngle_degrees());
+        raftBaseLinewidth.floatValueProperty().set(parametersFile.getRaftBaseLinewidth_mm());
+        raftAirGapLayer0.floatValueProperty().set(parametersFile.getRaftAirGapLayer0_mm());
+        raftSurfaceLayers.intValueProperty().set(parametersFile.getRaftSurfaceLayers());
 
         //Speed tab
         firstLayerSpeed.intValueProperty().set(parametersFile.getFirstLayerSpeed_mm_per_s());
@@ -1299,6 +1583,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             supportPatternSpacing.floatValueProperty().get());
         settingsToUpdate.
             setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
+        settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.floatValueProperty().get());
+        settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.floatValueProperty().get());
+        settingsToUpdate.setRaftSurfaceLayers(raftSurfaceLayers.intValueProperty().get());
 
         //Speed tab
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
@@ -1358,8 +1645,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 getCompleteProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
-                if (!settings.getProfileName().equals(currentProfileName) && 
-                    settings.getProfileName().equals(profileNameText))
+                if (!settings.getProfileName().equals(currentProfileName)
+                    && settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
                     break;
@@ -1425,12 +1712,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     void whenSaveAsPressed()
     {
-        
+
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
             getSettingsByProfileName(currentProfileName).clone();
-        
+
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
@@ -1461,7 +1748,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 allCurrentNames.add(printProfile.getProfileName());
             });
         String newName = DeDuplicator.suggestNonDuplicateNameCopy(parametersFile.getProfileName(),
-                                                              allCurrentNames);
+                                                                  allCurrentNames);
         parametersFile.setProfileName(newName);
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();

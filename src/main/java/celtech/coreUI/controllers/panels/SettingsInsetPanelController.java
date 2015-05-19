@@ -11,6 +11,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -39,7 +40,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsInsetPanelController implements Initializable
+public class SettingsInsetPanelController implements Initializable, ProjectAwareController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -78,7 +79,7 @@ public class SettingsInsetPanelController implements Initializable
         ApplicationConfiguration.fineSettingsProfileName);
 
     private Project currentProject;
-    private PrinterSettings printerSettings = null;
+    private PrinterSettings printerSettings;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
 
     /**
@@ -93,11 +94,11 @@ public class SettingsInsetPanelController implements Initializable
 
             setupOverrides();
 
-            Lookup.getSelectedProjectProperty().addListener(
-                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-                {
-                    whenProjectChanged(newValue);
-                });
+//            Lookup.getSelectedProjectProperty().addListener(
+//                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+//                {
+//                    whenProjectChanged(newValue);
+//                });
 
             ApplicationStatus.getInstance().modeProperty().addListener(
                 (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
@@ -310,6 +311,7 @@ public class SettingsInsetPanelController implements Initializable
         fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
         brimSlider.setValue(printerSettings.getBrimOverride());
         supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
+        raftSlider.setValue(printerSettings.getRaftOverride() ? 1: 0);
     }
 
     @FXML
@@ -331,6 +333,12 @@ public class SettingsInsetPanelController implements Initializable
                 printerSettings.setSettingsName("");
             }
         }
+    }
+    
+    @Override
+    public void setProject(Project project)
+    {
+        whenProjectChanged(project);
     }
 
     private void whenProjectChanged(Project project)
@@ -376,11 +384,11 @@ public class SettingsInsetPanelController implements Initializable
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
         supportSlider.setValue(saveSupports ? 1 : 0);
-        raftSlider.setValue(savePrintRaft ? 1: 0);
+        raftSlider.setValue(savePrintRaft ? 1 : 0);
 
     }
 
-    private void enableCustomWidgets(boolean enable)
+    private void enableCustomChooser(boolean enable)
     {
         customProfileVBox.setDisable(!enable);
     }
@@ -399,19 +407,19 @@ public class SettingsInsetPanelController implements Initializable
         {
             case DRAFT:
                 settings = draftSettings;
-                enableCustomWidgets(false);
+                enableCustomChooser(false);
                 break;
             case NORMAL:
                 settings = normalSettings;
-                enableCustomWidgets(false);
+                enableCustomChooser(false);
                 break;
             case FINE:
                 settings = fineSettings;
-                enableCustomWidgets(false);
+                enableCustomChooser(false);
                 break;
             case CUSTOM:
                 settings = getCustomSettings();
-                enableCustomWidgets(true);
+                enableCustomChooser(true);
                 break;
             default:
                 break;
@@ -419,11 +427,11 @@ public class SettingsInsetPanelController implements Initializable
 
         if (currentProject != null)
         {
-            printerSettings.setBrimOverride(settings.getBrimWidth_mm());
-            printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
-            printerSettings.setPrintSupportOverride(settings.getGenerateSupportMaterial());
-            printerSettings.setRaftOverride(settings.getPrintRaft());
-            populateQualityOverrideControls(printerSettings);
+            if (settings != null)
+            {
+                printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
+                fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
+            }
 
             if (printQuality.get() == PrintQualityEnumeration.CUSTOM)
             {
@@ -450,4 +458,5 @@ public class SettingsInsetPanelController implements Initializable
                 customSettingsName);
         }
     }
+
 }

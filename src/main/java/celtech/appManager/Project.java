@@ -252,6 +252,7 @@ public class Project implements Serializable
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
             printerSettings.setFillDensityOverride(projectFile.getFillDensityOverride());
             printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
+            printerSettings.setRaftOverride(projectFile.getPrintRaft());
 
             loadModels(basePath);
 
