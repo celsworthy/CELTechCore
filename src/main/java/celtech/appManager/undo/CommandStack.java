@@ -52,7 +52,6 @@ public class CommandStack
 
     public void do_(Command command)
     {
-        steno.debug("Do COMMAND " + command);
         clearEndOfList();
         commands.add(command);
         command.do_();
