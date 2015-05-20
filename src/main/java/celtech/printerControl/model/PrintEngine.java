@@ -1311,38 +1311,29 @@ public class PrintEngine implements ControllableService
                 }
             }
 
-            switch (associatedPrinter.printerStatusProperty().get())
+            if (roboxIsPrinting)
             {
-                case IDLE:
-                    if (roboxIsPrinting)
-                    {
-                        makeETCCalculatorForJobOfUUID(printJobID);
-                        if (raiseProgressNotifications)
-                        {
-                            Lookup.getSystemNotificationHandler().
-                                    showDetectedPrintInProgressNotification();
-                        }
-                        steno.info("Printer "
-                                + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
-                                + " is printing");
+                makeETCCalculatorForJobOfUUID(printJobID);
+                if (raiseProgressNotifications
+                        && associatedPrinter.getPrinterMetaStatus().printerStatusProperty().get() != PrinterStatus.PRINTING)
+                {
+                    Lookup.getSystemNotificationHandler().
+                            showDetectedPrintInProgressNotification();
+                }
+                steno.debug("Printer "
+                        + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
+                        + " is printing");
 
-                        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
-                        {
-                            associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
-                        } else
-                        {
-                            printInProgress.set(true);
-                        }
-                    }
-                    break;
-                case PRINTING:
-                    if (roboxIsPrinting == false)
-                    {
-                        associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
-                    }
-                    break;
-                default:
-                    break;
+                if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
+                {
+                    associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
+                } else
+                {
+                    printInProgress.set(true);
+                }
+            } else
+            {
+                associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
             }
         }
     }
