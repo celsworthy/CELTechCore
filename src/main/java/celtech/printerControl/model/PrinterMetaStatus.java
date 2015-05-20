@@ -183,7 +183,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         if (tempStatus != printerStatus.get())
         {
             printerStatus.set(tempStatus);
-            steno.info("Meta status is now " + tempStatus.getI18nString());
+            steno.debug("Meta status is now " + tempStatus.getI18nString());
         }
     }
 
