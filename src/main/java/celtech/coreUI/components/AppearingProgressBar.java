@@ -161,7 +161,11 @@ public class AppearingProgressBar extends BorderPane implements Initializable
         } else
         {
             unbind();
-            largeProgressDescription.setText(printerStatus.getI18nString());
+
+            if (printerStatus != PrinterStatus.IDLE)
+            {
+                largeProgressDescription.setText(printerStatus.getI18nString());
+            }
             this.currentTargetProperty = currentTargetProperty;
             this.currentTargetProperty.addListener(progressChangeListener);
             this.currentValueProperty = currentValueProperty;
@@ -230,10 +234,10 @@ public class AppearingProgressBar extends BorderPane implements Initializable
                     startSlidingOut();
                     break;
                 case IDLE:
+                    startSlidingIn();
                     progressBarElement.setVisible(false);
                     largeTargetLegend.setVisible(false);
                     largeTargetValue.setVisible(false);
-                    startSlidingIn();
                     break;
                 default:
                     displayMode = DisplayMode.PERCENT;
