@@ -87,8 +87,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
     private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
-    private final StackPane rhPanel = new StackPane();
-    private final SlideoutAndProjectHolder slideoutAndProjectHolder = new SlideoutAndProjectHolder();
+    private final StackPane rhPanel;
+    private final SlideoutAndProjectHolder slideoutAndProjectHolder;
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers = new HashMap<>();
     private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
     private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
@@ -122,6 +122,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private DisplayManager()
     {
+        this.slideoutAndProjectHolder = new SlideoutAndProjectHolder();
+        this.rhPanel = new StackPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
         switch (ApplicationConfiguration.getMachineType())
         {
