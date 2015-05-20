@@ -51,6 +51,11 @@ public class GCodeMacros
 
         return contents;
     }
+    
+    private static String cleanMacroName(String macroName)
+    {
+        return macroName.replaceFirst(macroDefinitionString, "").trim();
+    }
 
     /**
      *
@@ -59,9 +64,9 @@ public class GCodeMacros
      */
     private static ArrayList<String> appendMacroContents(ArrayList<String> contents,
         final ArrayList<String> parentMacros,
-        String macroName) throws IOException, MacroLoadException
+        final String macroName) throws IOException, MacroLoadException
     {
-        String cleanedMacroName = macroName.replaceFirst(macroDefinitionString, "").trim();
+        String cleanedMacroName = cleanMacroName(macroName);
 
         if (!parentMacros.contains(cleanedMacroName))
         {
@@ -180,7 +185,7 @@ public class GCodeMacros
     public static int getNumberOfOperativeLinesInMacro(String macroDirective)
     {
         int linesInMacro = 0;
-        String macro = getFilename(macroDirective);
+        String macro = cleanMacroName(macroDirective);
         if (macro != null)
         {
             try

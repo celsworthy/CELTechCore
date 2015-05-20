@@ -400,27 +400,12 @@ public class PrintEngine implements ControllableService
                     Number oldValue,
                     Number newValue)
             {
-//                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
-//                System.out.println("Line number changed to " + newValue);
-                switch (associatedPrinter.printerStatusProperty().get())
+                if (etcAvailable.get())
                 {
-                    case IDLE:
-//Ignore this state...
-                        break;
-                    case PRINTING:
-                        if (etcAvailable.get())
-                        {
-                            updateETCUsingETCCalculator(newValue);
-                        } else
-                        {
-                            updateETCUsingLineNumber(newValue);
-                        }
-                        break;
-//                    case EXECUTING_MACRO:
-//                        updateETCUsingLineNumber(newValue);
-//                        break;
-                    default:
-                        break;
+                    updateETCUsingETCCalculator(newValue);
+                } else
+                {
+                    updateETCUsingLineNumber(newValue);
                 }
             }
 
@@ -1023,7 +1008,7 @@ public class PrintEngine implements ControllableService
     {
         return runMacroPrintJob(macro.getMacroFileName(), true);
     }
-    
+
     /**
      *
      * @param macroName
@@ -1326,38 +1311,29 @@ public class PrintEngine implements ControllableService
                 }
             }
 
-            switch (associatedPrinter.printerStatusProperty().get())
+            if (roboxIsPrinting)
             {
-                case IDLE:
-                    if (roboxIsPrinting)
-                    {
-                        makeETCCalculatorForJobOfUUID(printJobID);
-                        if (raiseProgressNotifications)
-                        {
-                            Lookup.getSystemNotificationHandler().
-                                    showDetectedPrintInProgressNotification();
-                        }
-                        steno.info("Printer "
-                                + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
-                                + " is printing");
+                makeETCCalculatorForJobOfUUID(printJobID);
+                if (raiseProgressNotifications
+                        && associatedPrinter.getPrinterMetaStatus().printerStatusProperty().get() != PrinterStatus.PRINTING)
+                {
+                    Lookup.getSystemNotificationHandler().
+                            showDetectedPrintInProgressNotification();
+                }
+                steno.debug("Printer "
+                        + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
+                        + " is printing");
 
-                        if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
-                        {
-                            associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
-                        } else
-                        {
-                            printInProgress.set(true);
-                        }
-                    }
-                    break;
-                case PRINTING:
-                    if (roboxIsPrinting == false)
-                    {
-                        associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
-                    }
-                    break;
-                default:
-                    break;
+                if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
+                {
+                    associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
+                } else
+                {
+                    printInProgress.set(true);
+                }
+            } else
+            {
+                associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
             }
         }
     }
