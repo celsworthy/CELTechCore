@@ -2584,6 +2584,21 @@ color-picker-label .text-field {
 * Layout
 */
 
+#preserveAspectRatio {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 0 0 0 0;
+}
+
+#preserveAspectRatio:selected {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 0 0 0 0;
+}
+
+#preserveAspectRatio:selected:focused {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 0 0 0 0;
+}
+
 #modelTable {
     -fx-pref-width: 260;
     -fx-max_width: 260;
