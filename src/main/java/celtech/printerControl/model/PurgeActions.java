@@ -57,7 +57,10 @@ public class PurgeActions extends StateTransitionActions
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
+        PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
     }
+
+    
 
     @Override
     public void initialise()
@@ -114,7 +117,7 @@ public class PurgeActions extends StateTransitionActions
         {
             throw new PurgeException("Bed heat failed");
         }
-        
+
         printer.setNozzleTargetTemperature(purgeTemperature.get());
         printer.goToTargetNozzleTemperature();
         //TODO modify to support multiple heaters
@@ -160,9 +163,15 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
-        abortAnyOngoingPrint();
-        resetPrinter();
-        deregisterPrinterErrorHandler();
+        try
+        {
+            abortAnyOngoingPrint();
+            resetPrinter();
+            deregisterPrinterErrorHandler();
+        } catch (PrinterException ex)
+        {
+            System.out.println("Error running failed action");
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -269,7 +278,7 @@ public class PurgeActions extends StateTransitionActions
             deregisterPrinterErrorHandler();
         } catch (PrinterException ex)
         {
-            steno.error("Error reseting printer");
+            steno.error("Error resetting printer");
         }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }

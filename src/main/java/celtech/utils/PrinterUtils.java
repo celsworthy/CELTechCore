@@ -16,7 +16,9 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import celtech.utils.tasks.Cancellable;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -413,7 +415,6 @@ public class PrinterUtils
         float offsetAverage = -nozzle1OverrunValue;
         float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
         float nozzle1Offset = offsetAverage - delta;
-        float nozzle2Offset = offsetAverage + delta;
 
         return nozzle1Offset;
     }
@@ -423,7 +424,6 @@ public class PrinterUtils
     {
         float offsetAverage = -nozzle1OverrunValue;
         float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
-        float nozzle1Offset = offsetAverage - delta;
         float nozzle2Offset = offsetAverage + delta;
 
         return nozzle2Offset;
@@ -440,5 +440,60 @@ public class PrinterUtils
             printing = false;
         }
         return printing;
+    }
+
+    public static void setCancelledIfPrinterDisconnected(Printer printerToMonitor, Cancellable cancellable)
+    {
+        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
+        {
+            @Override
+            public void whenPrinterAdded(Printer printer)
+            {
+            }
+
+            @Override
+            public void whenPrinterRemoved(Printer printer)
+            {
+                if (printerToMonitor == printer)
+                {
+                    cancellable.cancelled().set(true);
+                }
+            }
+
+            @Override
+            public void whenHeadAdded(Printer printer)
+            {
+            }
+
+            @Override
+            public void whenHeadRemoved(Printer printer, Head head)
+            {
+            }
+
+            @Override
+            public void whenReelAdded(Printer printer, int reelIndex)
+            {
+            }
+
+            @Override
+            public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+            {
+            }
+
+            @Override
+            public void whenReelChanged(Printer printer, Reel reel)
+            {
+            }
+
+            @Override
+            public void whenExtruderAdded(Printer printer, int extruderIndex)
+            {
+            }
+
+            @Override
+            public void whenExtruderRemoved(Printer printer, int extruderIndex)
+            {
+            }
+        });
     }
 }

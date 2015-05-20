@@ -58,6 +58,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             });
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
+        PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
     }
 
     @Override
@@ -433,21 +434,33 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         printer.sendRawGCode("G1 E4 F400", false);
     }
 
-    public void doFinishedAction() throws RoboxCommsException, PrinterException, CalibrationException
+    public void doFinishedAction()
     {
-        printerErrorHandler.deregisterForPrinterErrors();
-        saveSettings();
-        resetPrinter();
+        try
+        {
+            printerErrorHandler.deregisterForPrinterErrors();
+            saveSettings();
+            resetPrinter();
+        } catch (CalibrationException | RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error in finished action: " + ex);
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    public void doFailedAction() throws RoboxCommsException, PrinterException, CalibrationException
+    public void doFailedAction()
     {
-        printerErrorHandler.deregisterForPrinterErrors();
-        restoreHeadData();
-        resetPrinter();
-        abortAnyOngoingPrint();
-        printer.setPrinterStatus(PrinterStatus.IDLE);
+        try
+        {
+            printerErrorHandler.deregisterForPrinterErrors();
+            restoreHeadData();
+            resetPrinter();
+            abortAnyOngoingPrint();
+            printer.setPrinterStatus(PrinterStatus.IDLE);
+        } catch (CalibrationException | PrinterException ex)
+        {
+            steno.error("Error in failed action: " + ex);
+        }
     }
 
     @Override
@@ -512,7 +525,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             {
                 steno.debug("Cancel ongoing job");
                 printer.cancel(null);
-            } else {
+            } else
+            {
                 steno.debug("Nothing ongoing to cancel");
             }
         } catch (PrinterException ex)

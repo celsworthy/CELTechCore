@@ -29,15 +29,17 @@ public class CalibrationXAndYActions extends StateTransitionActions
     private int yOffset = 0;
     private final CalibrationPrinterErrorHandler printerErrorHandler;
 
-    public CalibrationXAndYActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
+    public CalibrationXAndYActions(Printer printer, Cancellable userCancellable,
+        Cancellable errorCancellable)
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
 
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
+        PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
     }
-    
+
     @Override
     public void initialise()
     {
@@ -196,22 +198,34 @@ public class CalibrationXAndYActions extends StateTransitionActions
     {
         this.yOffset = yOffset;
     }
-    
-    public void doFinishedAction() throws PrinterException
+
+    public void doFinishedAction()
     {
-        saveSettings();
-        switchHeatersOffAndRaiseHead();
-        printerErrorHandler.deregisterForPrinterErrors();
+        try
+        {
+            saveSettings();
+            switchHeatersOffAndRaiseHead();
+            printerErrorHandler.deregisterForPrinterErrors();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error in finished action: " + ex);
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    public void doFailedAction() throws PrinterException, RoboxCommsException
+    public void doFailedAction()
     {
-        restoreHeadData();
-        switchHeatersOffAndRaiseHead();
-        printerErrorHandler.deregisterForPrinterErrors();
+        try
+        {
+            restoreHeadData();
+            switchHeatersOffAndRaiseHead();
+            printerErrorHandler.deregisterForPrinterErrors();
+        } catch (PrinterException ex)
+        {
+            steno.error("Error in finished action: " + ex);
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
-    }    
+    }
 
     @Override
     void whenUserCancelDetected()
@@ -242,15 +256,15 @@ public class CalibrationXAndYActions extends StateTransitionActions
         }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
-    
+
     private void resetPrinter() throws PrinterException, CalibrationException
     {
         printerErrorHandler.deregisterForPrinterErrors();
         switchHeatersOffAndRaiseHead();
         PrinterUtils.waitOnBusy(printer, (Cancellable) null);
-    }    
-    
-   private void abortAnyOngoingPrint()
+    }
+
+    private void abortAnyOngoingPrint()
     {
         try
         {
@@ -262,5 +276,5 @@ public class CalibrationXAndYActions extends StateTransitionActions
         {
             steno.error("Failed to abort print - " + ex.getMessage());
         }
-    }       
+    }
 }

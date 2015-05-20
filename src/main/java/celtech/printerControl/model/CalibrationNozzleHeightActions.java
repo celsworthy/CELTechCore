@@ -56,6 +56,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
             });
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
+        PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
     }
 
     @Override
@@ -287,19 +288,31 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         printer.goToZPosition(zco.get());
     }
 
-    public void doFinishedAction() throws PrinterException, RoboxCommsException
+    public void doFinishedAction()
     {
-        printerErrorHandler.deregisterForPrinterErrors();
-        saveSettings();
-        switchHeatersAndHeadLightOff();
+        try
+        {
+            printerErrorHandler.deregisterForPrinterErrors();
+            saveSettings();
+            switchHeatersAndHeadLightOff();
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Error in finished action: " + ex);
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
-    public void doFailedAction() throws PrinterException, RoboxCommsException, CalibrationException
+    public void doFailedAction()
     {
-        restoreHeadData();
-        abortAnyOngoingPrint();
-        resetPrinter();
+        try
+        {
+            restoreHeadData();
+            abortAnyOngoingPrint();
+            resetPrinter();
+        } catch (CalibrationException | PrinterException ex)
+        {
+            steno.error("Error in failed action: " + ex);
+        } 
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -400,7 +413,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
-    
+
     private void resetPrinter() throws PrinterException, CalibrationException
     {
         printerErrorHandler.deregisterForPrinterErrors();
@@ -421,6 +434,6 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         {
             steno.error("Failed to abort print - " + ex.getMessage());
         }
-    }    
+    }
 
 }
