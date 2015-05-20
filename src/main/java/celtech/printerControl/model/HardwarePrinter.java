@@ -1886,15 +1886,43 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private boolean doOpenDoorActivity(Cancellable cancellable)
     {
+        boolean openTheDoorWithCooling = false;
         boolean success = false;
-        try
+
+        if (printerAncillarySystems
+                .bedTemperatureProperty().get() > 60)
         {
-            transmitDirectGCode(GCodeConstants.goToOpenDoorPosition, false);
-            PrinterUtils.waitOnBusy(this, cancellable);
-            success = true;
-        } catch (RoboxCommsException ex)
+            if (Lookup.getUserPreferences().isSafetyFeaturesOn() == false)
+            {
+                try
+                {
+                    transmitDirectGCode(GCodeConstants.goToOpenDoorPositionDontWait, false);
+                    PrinterUtils.waitOnBusy(this, cancellable);
+                    success = true;
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error opening door " + ex.getMessage());
+                }
+            } else
+            {
+                openTheDoorWithCooling = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
+            }
+        } else
         {
-            steno.error("Error when moving sending open door command");
+            openTheDoorWithCooling = true;
+        }
+
+        if (openTheDoorWithCooling)
+        {
+            try
+            {
+                transmitDirectGCode(GCodeConstants.goToOpenDoorPosition, false);
+                PrinterUtils.waitOnBusy(this, cancellable);
+                success = true;
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error when moving sending open door command");
+            }
         }
 
         return success;
