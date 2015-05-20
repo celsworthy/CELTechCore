@@ -10,12 +10,9 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
@@ -62,7 +59,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
     private final DoubleProperty currentStatusValueTarget = new SimpleDoubleProperty(0);
     private final BooleanProperty targetValueValidProperty = new SimpleBooleanProperty(false);
 
-    private final int temperatureBoxForHeatingMode = 10;
+    private final int temperatureBoxForHeatingMode = 4;
 
     public PrinterMetaStatus(Printer printer)
     {
@@ -183,7 +180,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         if (tempStatus != printerStatus.get())
         {
             printerStatus.set(tempStatus);
-            steno.info("Meta status is now " + tempStatus.getI18nString());
+            steno.debug("Meta status is now " + tempStatus.getI18nString());
         }
     }
 

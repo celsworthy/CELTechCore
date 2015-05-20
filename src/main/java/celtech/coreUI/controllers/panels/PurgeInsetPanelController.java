@@ -322,6 +322,7 @@ public class PurgeInsetPanelController implements Initializable
             case RUNNING_PURGE:
                 purgeProgressBar.setVisible(true);
                 diagramContainer.setVisible(true);
+                updateProgressPrint();
                 break;
             case FINISHED:
                 diagramContainer.setVisible(true);
@@ -354,7 +355,7 @@ public class PurgeInsetPanelController implements Initializable
         {
             String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
             purgeProgressBar.setCurrentValue(currentPrintPercentStr);
-            purgeProgressBar.setProgressPercent(printPercent);
+            purgeProgressBar.setProgress(printPercent);
         }
     }
 

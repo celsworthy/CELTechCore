@@ -55,7 +55,7 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class CalibrationInsetPanelController implements Initializable,
-    PrinterListChangesListener
+        PrinterListChangesListener
 {
 
     CalibrationMenuConfiguration calibrationMenuConfiguration = new CalibrationMenuConfiguration();
@@ -89,7 +89,7 @@ public class CalibrationInsetPanelController implements Initializable,
     };
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationInsetPanelController.class.getName());
+            CalibrationInsetPanelController.class.getName());
 
     @FXML
     protected VerticalMenu calibrationMenu;
@@ -277,28 +277,28 @@ public class CalibrationInsetPanelController implements Initializable,
     private void addDiagramMoveScaleListeners()
     {
         topPane.widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeTopBorderPane();
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    resizeTopBorderPane();
+                });
 
         topPane.heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeTopBorderPane();
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    resizeTopBorderPane();
+                });
 
         diagramContainer.widthProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeDiagram();
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    resizeDiagram();
+                });
 
         diagramContainer.heightProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                resizeDiagram();
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    resizeDiagram();
+                });
 
     }
 
@@ -408,11 +408,11 @@ public class CalibrationInsetPanelController implements Initializable,
     };
 
     private final ChangeListener<Number> extruderTemperatureListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            currentExtruderTemperature = newValue.doubleValue();
-            updateCalibrationProgressTemp();
-        };
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                currentExtruderTemperature = newValue.doubleValue();
+                updateCalibrationProgressTemp();
+            };
 
     private void updateCalibrationProgressTemp()
     {
@@ -429,7 +429,7 @@ public class CalibrationInsetPanelController implements Initializable,
             String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
             calibrationProgressTemp.setCurrentValue(currentTempStr);
             calibrationProgressTemp.setTargetValue(targetTempStr);
-            calibrationProgressTemp.setProgressPercent((currentExtruderTemperature / targetTemperature) * 100);
+            calibrationProgressTemp.setProgress((currentExtruderTemperature / targetTemperature) * 100);
         }
     }
 
@@ -440,11 +440,11 @@ public class CalibrationInsetPanelController implements Initializable,
     };
 
     private final ChangeListener<Number> printPercentListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            printPercent = newValue.doubleValue();
-            updateCalibrationProgressPrint();
-        };
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                printPercent = newValue.doubleValue();
+                updateCalibrationProgressPrint();
+            };
 
     private void updateCalibrationProgressPrint()
     {
@@ -455,7 +455,7 @@ public class CalibrationInsetPanelController implements Initializable,
             String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
             calibrationProgressPrint.setCurrentValue(currentPrintPercentStr);
 //            calibrationProgressPrint.setTargetValue(targetETCStr);
-            calibrationProgressPrint.setProgressPercent(printPercent);
+            calibrationProgressPrint.setProgress(printPercent);
         }
     }
 
@@ -470,11 +470,13 @@ public class CalibrationInsetPanelController implements Initializable,
             {
                 calibrationProgressTemp.setVisible(true);
                 calibrationBottomArea.getChildren().add(calibrationProgressTemp);
+                updateCalibrationProgressTemp();
             }
             if (visibility == ProgressVisibility.PRINT)
             {
                 calibrationProgressPrint.setVisible(true);
                 calibrationBottomArea.getChildren().add(calibrationProgressPrint);
+                updateCalibrationProgressTemp();
             }
         }
         calibrationBottomArea.getChildren().add(calibrateBottomMenu);
@@ -501,7 +503,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void bindPrinter(Printer printer)
     {
-        calibrationProgressTemp.setProgressPercent(0);
+        calibrationProgressTemp.setProgress(0);
         Head newHead = printer.headProperty().get();
         if (newHead != null)
         {
@@ -544,27 +546,27 @@ public class CalibrationInsetPanelController implements Initializable,
         }
         startCalibrationButton.getTag().removeAllConditionalText();
         startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateHeadIsDetached",
-                                                           Bindings.isNull(printer.headProperty()));
+                Bindings.isNull(printer.headProperty()));
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
                 startCalibrationButton.disableProperty().bind(
-                    printer.canCalibrateNozzleOpeningProperty().not());
+                        printer.canCalibrateNozzleOpeningProperty().not());
                 startCalibrationButton.getTag().addConditionalText(
-                    "dialogs.cantPrintNoFilamentMessage",
-                    printer.extrudersProperty().get(0).
-                    filamentLoadedProperty().not());
+                        "dialogs.cantPrintNoFilamentMessage",
+                        printer.extrudersProperty().get(0).
+                        filamentLoadedProperty().not());
                 startCalibrationButton.getTag().addConditionalText(
-                    "dialogs.cantCalibrateNoSmartReel",
-                    Bindings.isEmpty(printer.reelsProperty()));
+                        "dialogs.cantCalibrateNoSmartReel",
+                        Bindings.isEmpty(printer.reelsProperty()));
                 break;
             case NOZZLE_HEIGHT:
                 startCalibrationButton.disableProperty().bind(
-                    printer.canCalibrateNozzleHeightProperty().not());
+                        printer.canCalibrateNozzleHeightProperty().not());
                 break;
             case X_AND_Y_OFFSET:
                 startCalibrationButton.disableProperty().bind(
-                    printer.canCalibrateXYAlignmentProperty().not());
+                        printer.canCalibrateXYAlignmentProperty().not());
                 break;
 
         }
@@ -648,7 +650,7 @@ public class CalibrationInsetPanelController implements Initializable,
 //        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
         calibrationProgressPrint.setTargetLegend("");
         calibrationProgressPrint.
-            setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
+                setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
 //        calibrationProgressPrint.setTargetValue("0");
         calibrationProgressPrint.setTargetValue("");
 

@@ -1886,15 +1886,43 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private boolean doOpenDoorActivity(Cancellable cancellable)
     {
+        boolean openTheDoorWithCooling = false;
         boolean success = false;
-        try
+
+        if (printerAncillarySystems
+                .bedTemperatureProperty().get() > 60)
         {
-            transmitDirectGCode(GCodeConstants.goToOpenDoorPosition, false);
-            PrinterUtils.waitOnBusy(this, cancellable);
-            success = true;
-        } catch (RoboxCommsException ex)
+            if (Lookup.getUserPreferences().isSafetyFeaturesOn() == false)
+            {
+                try
+                {
+                    transmitDirectGCode(GCodeConstants.goToOpenDoorPositionDontWait, false);
+                    PrinterUtils.waitOnBusy(this, cancellable);
+                    success = true;
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Error opening door " + ex.getMessage());
+                }
+            } else
+            {
+                openTheDoorWithCooling = Lookup.getSystemNotificationHandler().showOpenDoorDialog();
+            }
+        } else
         {
-            steno.error("Error when moving sending open door command");
+            openTheDoorWithCooling = true;
+        }
+
+        if (openTheDoorWithCooling)
+        {
+            try
+            {
+                transmitDirectGCode(GCodeConstants.goToOpenDoorPosition, false);
+                PrinterUtils.waitOnBusy(this, cancellable);
+                success = true;
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error when moving sending open door command");
+            }
         }
 
         return success;
@@ -3029,8 +3057,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void consumeError(FirmwareError error
-    )
+    public void consumeError(FirmwareError error)
     {
 
         switch (error)
@@ -3043,8 +3070,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             case E_FILAMENT_SLIP:
             case D_FILAMENT_SLIP:
-                if (printerStatus.get() == PrinterStatus.PRINTING
-                        || (printerStatus.get() == PrinterStatus.PRINTING_GCODE))
+                if (metaStatus.printerStatusProperty().get() == PrinterStatus.PRINTING)
                 {
                     boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
                     if (limitOnSlipActionsReached)
@@ -3065,7 +3091,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             default:
                 // Back stop
-                Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error, this);
+                switch (printerStatus.get())
+                {
+                    //Ignore the error in these cases - they should be handled elsewhere
+                    case CALIBRATING_NOZZLE_ALIGNMENT:
+                    case CALIBRATING_NOZZLE_HEIGHT:
+                    case CALIBRATING_NOZZLE_OPENING:
+                    case EJECTING_STUCK_MATERIAL:
+                    case PURGING_HEAD:
+                        break;
+                    default:
+                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error, this);
+                        break;
+                }
                 break;
         }
     }
