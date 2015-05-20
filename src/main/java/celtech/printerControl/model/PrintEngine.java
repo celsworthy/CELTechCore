@@ -400,27 +400,12 @@ public class PrintEngine implements ControllableService
                     Number oldValue,
                     Number newValue)
             {
-//                steno.info("Line number is " + newValue.toString() + " and was " + oldValue.toString());
-//                System.out.println("Line number changed to " + newValue);
-                switch (associatedPrinter.printerStatusProperty().get())
+                if (etcAvailable.get())
                 {
-                    case IDLE:
-//Ignore this state...
-                        break;
-                    case PRINTING:
-                        if (etcAvailable.get())
-                        {
-                            updateETCUsingETCCalculator(newValue);
-                        } else
-                        {
-                            updateETCUsingLineNumber(newValue);
-                        }
-                        break;
-//                    case EXECUTING_MACRO:
-//                        updateETCUsingLineNumber(newValue);
-//                        break;
-                    default:
-                        break;
+                    updateETCUsingETCCalculator(newValue);
+                } else
+                {
+                    updateETCUsingLineNumber(newValue);
                 }
             }
 
@@ -1023,7 +1008,7 @@ public class PrintEngine implements ControllableService
     {
         return runMacroPrintJob(macro.getMacroFileName(), true);
     }
-    
+
     /**
      *
      * @param macroName
