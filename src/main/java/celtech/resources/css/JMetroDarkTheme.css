@@ -2421,14 +2421,6 @@ modal-dialogue{
     -fx-background-color: mid_grey;
 }
 
-#cmbLibraryFilament .list-cell {
-    -fx-cell-size: 15;
-}
-
-#cmbFilamentTextField {
-    -fx-text-fill: black;
-}
-
 #cmbFilamentReelIndexLabel {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 7px;
@@ -2436,6 +2428,9 @@ modal-dialogue{
     -fx-padding: 0 0 0 8;
 }
 
+#cmbFilamentTextField {
+    -fx-text-fill: black;
+}
 .color-picker {
     -fx-text-fill: black;
 }
