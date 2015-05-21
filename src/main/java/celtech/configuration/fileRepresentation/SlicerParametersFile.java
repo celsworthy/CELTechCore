@@ -93,7 +93,7 @@ public class SlicerParametersFile
     private boolean printRaft;
     private float raftBaseLinewidth_mm;
     private float raftAirGapLayer0_mm;
-    private int raftSurfaceLayers;
+    private int interfaceLayers;
     private float raftBaseThickness_mm = 0.3f;
     
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
@@ -441,17 +441,17 @@ public class SlicerParametersFile
         firePropertyChange("raftAirGapLayer0_mm", null, raftAirGapLayer0_mm);
     }  
     
-    public int getRaftSurfaceLayers() {
-        return raftSurfaceLayers;
+    public int getInterfaceLayers() {
+        return interfaceLayers;
     }
     
-    public void setRaftSurfaceLayers(int raftSurfaceLayers)
+    public void setInterfaceLayers(int interfaceLayers)
     {
-        if (this.raftSurfaceLayers == raftSurfaceLayers) {
+        if (this.interfaceLayers == interfaceLayers) {
             return;
         }        
-        this.raftSurfaceLayers = raftSurfaceLayers;
-        firePropertyChange("raftSurfaceLayers", null, raftSurfaceLayers);
+        this.interfaceLayers = interfaceLayers;
+        firePropertyChange("interfaceLayers", null, interfaceLayers);
     }     
     
     public float getRaftBaseThickness_mm() {
@@ -816,7 +816,7 @@ public class SlicerParametersFile
         clone.raftAirGapLayer0_mm = raftAirGapLayer0_mm;
         clone.raftBaseLinewidth_mm = raftBaseLinewidth_mm;
         clone.raftBaseThickness_mm = raftBaseThickness_mm;
-        clone.raftSurfaceLayers = raftSurfaceLayers;
+        clone.interfaceLayers = interfaceLayers;
         clone.printRaft = printRaft;
 
         return clone;

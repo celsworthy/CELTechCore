@@ -47,6 +47,7 @@
 			"seam_position:aligned",
 			"skirt_distance:6",
 			"skirt_height:1",
+			"support_material_enforce_layers:0",
 			"support_material_interface_extruder:1",
 			"support_material_interface_layers:2",
 			"support_material_interface_spacing:0",
@@ -87,7 +88,6 @@
 		 */
 		"generateSupportMaterial" : "support_material",
 		"supportOverhangThreshold_degrees" : "support_material_threshold",
-		"forcedSupportForFirstNLayers" : "support_material_enforce_layers",
 		"supportPattern" : "support_material_pattern",
 		"supportPatternSpacing_mm" : "support_material_spacing",
 		"supportPatternAngle_degrees" : "support_material_angle",
@@ -207,7 +207,7 @@
 			 */
 			"raftBaseLinewidth_mm": "raftBaseLinewidth:*1000",
 			"raftAirGapLayer0_mm": "raftAirGapLayer0:*1000",
-			"raftSurfaceLayers": "raftSurfaceLayers",
+			"interfaceLayers": "interfaceLayers",
 			"raftBaseThickness_mm": "raftBaseThickness:*1000:?printRaft=false->0"
 		}
 	}

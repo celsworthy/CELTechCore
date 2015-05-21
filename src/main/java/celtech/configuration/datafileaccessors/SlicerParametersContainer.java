@@ -113,7 +113,7 @@ public class SlicerParametersContainer
             steno.info("Convert " + newSettings.getProfileName() + " profile to version 4");
             newSettings.setRaftAirGapLayer0_mm(0.285f);
             newSettings.setRaftBaseLinewidth_mm(1.0f);
-            newSettings.setRaftSurfaceLayers(1);
+            newSettings.setInterfaceLayers(1);
             newSettings.setVersion(4);
             doSaveEditedUserProfile(newSettings);
         }

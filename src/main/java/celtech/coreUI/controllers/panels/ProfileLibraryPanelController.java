@@ -82,7 +82,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         ENABLE_FAN_LAYER_TIME_BELOW("enableFanLayerTimeBelow"),
         SLOW_FAN_LAYER_TIME_BELOW("slowFanLayerTimeBelow"),
         MIN_PRINT_SPEED("minPrintSpeed"), RAFT_BASE_LINE_WIDTH("raftBaseLinewidth"),
-        RAFT_AIR_GAP_LAYER_0("raftAirGapLayer0"), RAFT_SURFACE_LAYERS("raftSurfaceLayers");
+        RAFT_AIR_GAP_LAYER_0("raftAirGapLayer0"), INTERFACE_LAYERS("interfaceLayers");
 
         private final String helpTextId;
 
@@ -329,7 +329,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private RestrictedNumberField raftAirGapLayer0;
 
     @FXML
-    private RestrictedNumberField raftSurfaceLayers;
+    private RestrictedNumberField interfaceLayers;
 
     @FXML
     private TextArea helpText;
@@ -951,10 +951,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
             });
 
-        raftSurfaceLayers.focusedProperty().addListener(
+        interfaceLayers.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+                showHelpText(Fields.INTERFACE_LAYERS);
             });
 
         profileNameField.hoverProperty().addListener(
@@ -1199,10 +1199,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
             });
 
-        raftSurfaceLayers.hoverProperty().addListener(
+        interfaceLayers.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+                showHelpText(Fields.INTERFACE_LAYERS);
             });        
     }
 
@@ -1351,7 +1351,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         
         raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
         raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
-        raftSurfaceLayers.textProperty().addListener(dirtyStringListener);
+        interfaceLayers.textProperty().addListener(dirtyStringListener);
     }
 
     private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
@@ -1409,7 +1409,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         supportPatternAngle.intValueProperty().set(parametersFile.getSupportPatternAngle_degrees());
         raftBaseLinewidth.floatValueProperty().set(parametersFile.getRaftBaseLinewidth_mm());
         raftAirGapLayer0.floatValueProperty().set(parametersFile.getRaftAirGapLayer0_mm());
-        raftSurfaceLayers.intValueProperty().set(parametersFile.getRaftSurfaceLayers());
+        interfaceLayers.intValueProperty().set(parametersFile.getInterfaceLayers());
 
         //Speed tab
         firstLayerSpeed.intValueProperty().set(parametersFile.getFirstLayerSpeed_mm_per_s());
@@ -1585,7 +1585,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
         settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.floatValueProperty().get());
         settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.floatValueProperty().get());
-        settingsToUpdate.setRaftSurfaceLayers(raftSurfaceLayers.intValueProperty().get());
+        settingsToUpdate.setInterfaceLayers(interfaceLayers.intValueProperty().get());
 
         //Speed tab
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
