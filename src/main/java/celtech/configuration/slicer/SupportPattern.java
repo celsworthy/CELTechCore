@@ -8,7 +8,9 @@ public enum SupportPattern
 {
 
     RECTILINEAR("Rectilinear"),
-    RECTILINEAR_GRID("Rectilinear Grid");
+    RECTILINEAR_GRID("Rectilinear Grid"),
+    PILLARS("Pillars"),
+    HONEYCOMB("Honeycomb");
 
     private String displayText;
 

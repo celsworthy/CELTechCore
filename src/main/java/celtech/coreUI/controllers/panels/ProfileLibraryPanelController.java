@@ -353,10 +353,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         observableArrayList(
             FillPattern.values());
 
-    private final ObservableList<SupportPattern> supportPatternOptions = FXCollections.
-        observableArrayList(
-            SupportPattern.values());
-
     private final ChangeListener<String> dirtyStringListener
         = (ObservableValue<? extends String> ov, String t, String t1) ->
         {
@@ -417,14 +413,14 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         setupSupportNozzleChoice();
 
         setupSlicerChooser();
+        
+        supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
         forceNozzleFirstLayerOptions.addAll(nozzleOptions);
 
         supportInterfaceNozzleChoice.setItems(nozzleOptions);
 
         fillPatternChoice.setItems(fillPatternOptions);
-
-        supportPattern.setItems(supportPatternOptions);
 
         FXMLUtilities.addColonsToLabels(container);
 
@@ -506,7 +502,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 if (lastSlicer != newSlicer)
                 {
-                    updateFieldDisabledState(newSlicer.getSlicerType());
+                    updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
                 }
             }
         });
@@ -1450,10 +1446,14 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         nozzlePartialOpen1.floatValueProperty().set(parametersFile.getNozzleParameters().get(
             1).getPartialBMinimum());
 
-        updateFieldDisabledState(parametersFile.getSlicerOverride());
+        updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
     }
 
-    private void updateFieldDisabledState(SlicerType slicerType)
+    /**
+     * Enable/Disable fields appropriately according to the selected slicer.
+     * @param slicerType 
+     */
+    private void updateFieldsForSelectedSlicer(SlicerType slicerType)
     {
         if (slicerType == null)
         {
@@ -1491,6 +1491,22 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                                                                   "supportPatternSpacing_mm"));
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
                                                                 "supportPatternAngle_degrees"));
+        
+        SupportPattern currentSupportPattern = supportPattern.getValue();
+        if (slicerType == SlicerType.Slic3r) {
+            supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
+            supportPattern.setValue(currentSupportPattern);
+        } else {
+            supportPattern.getItems().clear();
+            supportPattern.getItems().add(SupportPattern.RECTILINEAR);
+            supportPattern.getItems().add(SupportPattern.RECTILINEAR_GRID);
+            if (currentSupportPattern == SupportPattern.RECTILINEAR || 
+                currentSupportPattern == SupportPattern.RECTILINEAR_GRID) {
+                supportPattern.setValue(currentSupportPattern);
+            } else {
+                supportPattern.setValue(SupportPattern.RECTILINEAR);
+            }
+        }
 
         //Speed tab
         firstLayerSpeed.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerSpeed_mm_per_s"));
