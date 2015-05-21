@@ -114,6 +114,7 @@ public class SlicerParametersContainer
             newSettings.setRaftAirGapLayer0_mm(0.285f);
             newSettings.setRaftBaseLinewidth_mm(1.0f);
             newSettings.setInterfaceLayers(1);
+            newSettings.setInterfaceSpeed_mm_per_s(40);
             newSettings.setVersion(4);
             doSaveEditedUserProfile(newSettings);
         }

@@ -74,6 +74,7 @@ public class SlicerParametersFile
     private int supportSpeed_mm_per_s;
     private int bridgeSpeed_mm_per_s;
     private int gapFillSpeed_mm_per_s;
+    private int interfaceSpeed_mm_per_s;
 
     /*
      * Cooling
@@ -664,6 +665,17 @@ public class SlicerParametersFile
         this.maxFanSpeed_percent = maxFanSpeed_percent;
         firePropertyChange("maxFanSpeed_percent", null, maxFanSpeed_percent);
     }
+    
+    public int getInterfaceSpeed_mm_per_s()
+    {
+        return interfaceSpeed_mm_per_s;
+    }
+
+    public void setInterfaceSpeed_mm_per_s(int interfaceSpeed_mm_per_s)
+    {
+        this.interfaceSpeed_mm_per_s = interfaceSpeed_mm_per_s;
+        firePropertyChange("interfaceSpeed_mm_per_s", null, interfaceSpeed_mm_per_s);
+    }    
 
     public int getBridgeFanSpeed_percent()
     {
@@ -796,6 +808,7 @@ public class SlicerParametersFile
         clone.topSolidFillSpeed_mm_per_s = topSolidFillSpeed_mm_per_s;
         clone.supportSpeed_mm_per_s = supportSpeed_mm_per_s;
         clone.bridgeSpeed_mm_per_s = bridgeSpeed_mm_per_s;
+        clone.interfaceSpeed_mm_per_s = interfaceSpeed_mm_per_s;
         clone.gapFillSpeed_mm_per_s = gapFillSpeed_mm_per_s;
 
         /*

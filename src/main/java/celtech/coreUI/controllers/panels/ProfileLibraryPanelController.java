@@ -78,6 +78,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         BRIDGES_SPEED("bridgesSpeed"), GAP_FILL_SPEED("gapFillSpeed"),
         ENABLE_AUTO_COOLING("enableAutoCooling"), MIN_FAN_SPEED("minFanSpeed"),
         MAX_FAN_SPEED("maxFanSpeed"), BRIDGES_FAN_SPEED("bridgesFanSpeed"),
+        INTERFACE_SPEED("interfaceSpeed"),
         DISABLE_FAN_FIRST_N_LAYERS("disableFanFirstNLayers"),
         ENABLE_FAN_LAYER_TIME_BELOW("enableFanLayerTimeBelow"),
         SLOW_FAN_LAYER_TIME_BELOW("slowFanLayerTimeBelow"),
@@ -312,6 +313,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
+    
+    @FXML
+    private RestrictedNumberField interfaceSpeed;    
 
     @FXML
     private RestrictedNumberField supportExtrusionWidth;
@@ -914,6 +918,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.BRIDGES_FAN_SPEED);
             });
+        interfaceSpeed.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INTERFACE_SPEED);
+            });        
         disableFanForFirstNLayers.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1163,6 +1172,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.BRIDGES_FAN_SPEED);
             });
+        interfaceSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INTERFACE_SPEED);
+            });        
         disableFanForFirstNLayers.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1311,6 +1325,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             .addListener(dirtyStringListener);
         bridgesSpeed.textProperty()
             .addListener(dirtyStringListener);
+        interfaceSpeed.textProperty()
+            .addListener(dirtyStringListener);        
         layerHeight.textProperty()
             .addListener(dirtyStringListener);
         externalPerimeterSpeed.textProperty()
@@ -1418,6 +1434,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         topSolidInfillSpeed.intValueProperty().set(parametersFile.getTopSolidFillSpeed_mm_per_s());
         supportMaterialSpeed.intValueProperty().set(parametersFile.getSupportSpeed_mm_per_s());
         bridgesSpeed.intValueProperty().set(parametersFile.getBridgeSpeed_mm_per_s());
+        interfaceSpeed.intValueProperty().set(parametersFile.getInterfaceSpeed_mm_per_s());
         gapFillSpeed.intValueProperty().set(parametersFile.getGapFillSpeed_mm_per_s());
 
         //Cooling tab
@@ -1615,6 +1632,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         settingsToUpdate.setTopSolidFillSpeed_mm_per_s(topSolidInfillSpeed.intValueProperty().get());
         settingsToUpdate.setSupportSpeed_mm_per_s(supportMaterialSpeed.intValueProperty().get());
         settingsToUpdate.setBridgeSpeed_mm_per_s(bridgesSpeed.intValueProperty().get());
+        settingsToUpdate.setInterfaceSpeed_mm_per_s(interfaceSpeed.intValueProperty().get());
         settingsToUpdate.setGapFillSpeed_mm_per_s(gapFillSpeed.intValueProperty().get());
 
         //Cooling tab
