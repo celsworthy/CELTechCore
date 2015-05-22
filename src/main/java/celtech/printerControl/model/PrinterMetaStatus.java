@@ -161,6 +161,7 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             case PRINTING:
             case SLICING:
             case POST_PROCESSING:
+            case CALIBRATING_NOZZLE_ALIGNMENT:
                 bindProgressToPrimaryPrintEnginePercent();
                 break;
             case HEATING_BED:
