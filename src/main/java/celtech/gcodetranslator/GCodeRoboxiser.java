@@ -85,7 +85,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     private double distanceSoFarInLayer = 0;
 
     // Causes home and return events to be inserted, triggering the camera
-    private boolean movieMakerEnabled = false;
+    private boolean movieMakerEnabled = true;
 
     private int closeCounter = 0;
 

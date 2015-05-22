@@ -30,48 +30,58 @@ public class GCodeRoboxiser2 extends GCodeRoboxisingEngine
 
     private final PostProcessingBuffer postProcessingBuffer = new PostProcessingBuffer();
 
+    private int layerCounter = 1;
+    
     @Override
     public void processEvent(GCodeParseEvent event) throws PostProcessingError
     {
-        if (event instanceof RetractEvent)
+        if (parseLayer(event))
         {
-            mungeTheBuffer();
-        } else if (event instanceof EndOfFileEvent)
-        {
-            try
-            {
-                postProcessingBuffer.closeNozzle("End of file", outputWriter);
-                postProcessingBuffer.emptyBufferToOutput(outputWriter);
-
-                try
-                {
-                    outputWriter.writeOutput(";\n; Post print gcode\n");
-                    for (String macroLine : GCodeMacros.getMacroContents("after_print"))
-                    {
-                        outputWriter.writeOutput(macroLine + "\n");
-                    }
-                    outputWriter.writeOutput("; End of Post print gcode\n");
-                } catch (IOException ex)
-                {
-                    throw new PostProcessingError("IO Error whilst writing post-print gcode to file: "
-                            + ex.getMessage());
-                } catch (MacroLoadException ex)
-                {
-                    throw new PostProcessingError(
-                            "Error whilst writing post-print gcode to file - couldn't add after print footer due to circular macro reference");
-                }
-
-                outputWriter.writeOutput(event.renderForOutput());
-                outputWriter.flush();
-            } catch (IOException ex)
-            {
-                steno.error("Error writing event to file");
-                ex.printStackTrace();
-            }
-        } else
-        {
-            postProcessingBuffer.add(event);
-        }
+            steno.info("Layer complete");
+            layer++;
+        }        
+        
+//        
+//        
+//        if (event instanceof RetractEvent)
+//        {
+//            mungeTheBuffer();
+//        } else if (event instanceof EndOfFileEvent)
+//        {
+//            try
+//            {
+//                postProcessingBuffer.closeNozzle("End of file", outputWriter);
+//                postProcessingBuffer.emptyBufferToOutput(outputWriter);
+//
+//                try
+//                {
+//                    outputWriter.writeOutput(";\n; Post print gcode\n");
+//                    for (String macroLine : GCodeMacros.getMacroContents("after_print"))
+//                    {
+//                        outputWriter.writeOutput(macroLine + "\n");
+//                    }
+//                    outputWriter.writeOutput("; End of Post print gcode\n");
+//                } catch (IOException ex)
+//                {
+//                    throw new PostProcessingError("IO Error whilst writing post-print gcode to file: "
+//                            + ex.getMessage());
+//                } catch (MacroLoadException ex)
+//                {
+//                    throw new PostProcessingError(
+//                            "Error whilst writing post-print gcode to file - couldn't add after print footer due to circular macro reference");
+//                }
+//
+//                outputWriter.writeOutput(event.renderForOutput());
+//                outputWriter.flush();
+//            } catch (IOException ex)
+//            {
+//                steno.error("Error writing event to file");
+//                ex.printStackTrace();
+//            }
+//        } else
+//        {
+//            postProcessingBuffer.add(event);
+//        }
     }
 
     @Override
@@ -110,5 +120,10 @@ public class GCodeRoboxiser2 extends GCodeRoboxisingEngine
         {
             steno.error("IO Exception whilst writing buffer contents");
         }
+    }
+
+    private boolean parseLayer(GCodeParseEvent event)
+    {
+        return false;
     }
 }
