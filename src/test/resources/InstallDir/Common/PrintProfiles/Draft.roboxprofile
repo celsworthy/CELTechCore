@@ -78,5 +78,6 @@
   "raftBaseLinewidth_mm": 1.00,
   "raftAirGapLayer0_mm": 0.290,
   "interfaceLayers": 2,
-  "raftBaseThickness_mm": 0.300
+  "raftBaseThickness_mm": 0.300,
+  "interfaceSpeed_mm_per_s":40
 }

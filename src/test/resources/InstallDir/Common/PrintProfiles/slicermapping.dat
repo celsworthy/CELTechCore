@@ -19,7 +19,6 @@
 			"thin_walls:0",
 			"only_retract_when_crossing_perimeters:1",
 			"infill_first:0",
-			"raft_layers:0",
 			"skirts:0",
 			"threads:4",
 			"travel_speed:200",
@@ -49,9 +48,7 @@
 			"skirt_height:1",
 			"support_material_enforce_layers:0",
 			"support_material_interface_extruder:1",
-			"support_material_interface_layers:2",
 			"support_material_interface_spacing:0",
-			"support_material_interface_speed:40",
 			"use_firmware_retraction:0",
 			"vibration_limit:0",
 			"wipe:0"
@@ -105,6 +102,7 @@
 		"supportSpeed_mm_per_s" : "support_material_speed",
 		"bridgeSpeed_mm_per_s" : "bridge_speed",
 		"gapFillSpeed_mm_per_s" : "gap_fill_speed",
+		"interfaceSpeed_mm_per_s": "support_material_interface_speed",
 
 		/*
 		 * Cooling
@@ -116,7 +114,14 @@
 		"disableFanFirstNLayers" : "disable_fan_first_layers",
 		"coolIfLayerTimeLessThan_secs" : "fan_below_layer_time",
 		"slowDownIfLayerTimeLessThan_secs" : "slowdown_below_layer_time",
-		"minPrintSpeed_mm_per_s" : "min_print_speed"
+		"minPrintSpeed_mm_per_s" : "min_print_speed",
+
+		/*
+		* Raft
+		*/
+		"raftAirGapLayer0_mm": "support_material_contact_distance",
+		"interfaceLayers": "support_material_interface_layers",
+		"interfaceLayers": "raft_layers:+1:?printRaft=false->0"
 		}		 
     },
     "Cura" : {
@@ -193,6 +198,7 @@
 			"fillSpeed_mm_per_s" : "infillSpeed",
 			"externalPerimeterSpeed_mm_per_s" : "inset0Speed",
 			"supportSpeed_mm_per_s" : "printSpeed",
+			"interfaceSpeed_mm_per_s": "raftSurfaceSpeed",
 
 			/*
 			 * Cooling
