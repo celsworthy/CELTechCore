@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButton;
@@ -32,6 +33,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import static javafx.scene.input.KeyCode.ENTER;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -154,8 +157,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private double lastX;
     private double lastY;
 
-    private Node linkGraphic;
-    private Node unlinkGraphic;
+    private ImageView linkedImage;
+    private ImageView unlinkedImage;
 
     @FXML
     void changeToSettings(MouseEvent event)
@@ -188,31 +191,36 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         setUpNumSelectedModelsListener();
         setUpAspectRatioListener(rb);
 
+        Image image = new Image(getClass().getResourceAsStream(
+            ApplicationConfiguration.imageResourcePath + "link.png"));
+        linkedImage = new ImageView(image);
+        image = new Image(getClass().getResourceAsStream(
+            ApplicationConfiguration.imageResourcePath + "unlink.png"));
+        unlinkedImage = new ImageView(image);
+
         FXMLUtilities.addColonsToLabels(layoutBorder);
     }
 
     /**
-     * Change the preserve aspect ratio icon to linked / unlinked according to whether it
-     * is selected or not.
+     * Change the preserve aspect ratio icon to linked / unlinked according to whether it is
+     * selected or not.
      */
     private void setUpAspectRatioListener(ResourceBundle rb)
     {
-        linkGraphic = new GraphicButton("linkButton").getGraphic();
-        unlinkGraphic = new GraphicButton("unlinkButton").getGraphic();
         preserveAspectRatio.setSelected(true);
         preserveAspectRatio.selectedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 if (newValue)
                 {
-                    preserveAspectRatio.setGraphic(linkGraphic);
+                    preserveAspectRatio.setGraphic(linkedImage);
                 } else
                 {
-                    preserveAspectRatio.setGraphic(unlinkGraphic);
+                    preserveAspectRatio.setGraphic(unlinkedImage);
                 }
             });
     }
-    
+
     private void setUpNumSelectedModelsListener()
     {
         numSelectedModels.addListener(

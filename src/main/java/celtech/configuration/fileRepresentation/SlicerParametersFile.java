@@ -16,7 +16,7 @@ import java.util.List;
 public class SlicerParametersFile
 {
 
-    private int version = 3;
+    private int version = 4;
     private String profileName;
     private SlicerType slicerOverride;
 
