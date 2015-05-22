@@ -81,8 +81,6 @@ public class CalibrationNozzleOpeningGUI
             case HEATING:
                 controller.showSpinner();
                 controller.calibrationMenu.disableNonSelectedItems();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 stepNo = 1;
                 break;
             case NO_MATERIAL_CHECK:

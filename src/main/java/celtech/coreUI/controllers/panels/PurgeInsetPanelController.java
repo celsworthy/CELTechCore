@@ -6,7 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.PrinterStatus;
@@ -119,9 +119,9 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private Text lastMaterialTemperature;
-
+    
     @FXML
-    protected LargeProgress purgeProgressBar;
+    private ProgressDisplay progressDisplay;
 
     @FXML
     private Text textCurrentMaterial;
@@ -180,10 +180,6 @@ public class PurgeInsetPanelController implements Initializable
     {
         populateNamesToButtons();
 
-        purgeProgressBar.setTargetLegend("");
-        purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
-        purgeProgressBar.setTargetValue("");
-
         startPurgeButton.installTag();
         proceedButton.installTag();
 
@@ -222,7 +218,7 @@ public class PurgeInsetPanelController implements Initializable
             {
                 if (PurgeInsetPanelController.this.printer == printer)
                 {
-                    PurgeInsetPanelController.this.showCurrentMaterial();
+                    PurgeInsetPanelController.this.showCurrentMaterial(); 
                 }
             }
 
@@ -290,7 +286,6 @@ public class PurgeInsetPanelController implements Initializable
         repeatButton.setVisible(false);
         startPurgeButton.setVisible(false);
         backButton.setVisible(false);
-        purgeProgressBar.setVisible(false);
         okButton.setVisible(false);
         purgeDetailsGrid.setVisible(false);
         diagramContainer.setVisible(false);
@@ -320,9 +315,7 @@ public class PurgeInsetPanelController implements Initializable
             case HEATING:
                 break;
             case RUNNING_PURGE:
-                purgeProgressBar.setVisible(true);
                 diagramContainer.setVisible(true);
-                updateProgressPrint();
                 break;
             case FINISHED:
                 diagramContainer.setVisible(true);
@@ -342,33 +335,6 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
-    private final ChangeListener<Number> printPercentListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            printPercent = newValue.doubleValue();
-            updateProgressPrint();
-        };
-
-    private void updateProgressPrint()
-    {
-        if (purgeProgressBar.isVisible())
-        {
-            String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
-            purgeProgressBar.setCurrentValue(currentPrintPercentStr);
-            purgeProgressBar.setProgress(printPercent);
-        }
-    }
-
-    private void removePrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
-    }
-
-    private void setupPrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressProperty().addListener(printPercentListener);
-    }
-
     /**
      * Bind to the given printer. This is only called once for a given purge and should not be
      * called again during the purge.
@@ -377,7 +343,7 @@ public class PurgeInsetPanelController implements Initializable
     {
         if (this.printer != null)
         {
-            removePrintProgressListeners(this.printer);
+            progressDisplay.unbindFromPrinter();
             startPurgeButton.getTag().removeAllConditionalText();
             proceedButton.getTag().removeAllConditionalText();
             cmbCurrentMaterial.visibleProperty().unbind();
@@ -386,7 +352,6 @@ public class PurgeInsetPanelController implements Initializable
        }
 
         this.printer = printer;
-        setupPrintProgressListeners(printer);
 
         installTag(printer, startPurgeButton);
         installTag(printer, proceedButton);
@@ -396,6 +361,7 @@ public class PurgeInsetPanelController implements Initializable
         cmbCurrentMaterial.visibleProperty().bind(reel0Present.not());
         textCurrentMaterial.visibleProperty().bind(reel0Present);
 
+        progressDisplay.bindToPrinter(printer);
     }
 
     /**
