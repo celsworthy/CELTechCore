@@ -20,11 +20,10 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class TweekPanelController implements Initializable
+public class TweakPanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        TweekPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(TweakPanelController.class.getName());
 
     @FXML
     private Slider speedMultiplierSlider;
@@ -83,8 +82,8 @@ public class TweekPanelController implements Initializable
 
     private void bindPrinter(Printer printer)
     {
-        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
-        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(
+        speedSliderHBox.setVisible(printer.getPrinterMetaStatus().printerStatusProperty().get() == PrinterStatus.PRINTING);
+        speedSliderHBox.visibleProperty().bind(printer.getPrinterMetaStatus().printerStatusProperty().isEqualTo(
             PrinterStatus.PRINTING));
         speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
             feedRateMultiplierProperty().get());

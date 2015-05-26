@@ -102,8 +102,10 @@ public abstract class SlicerConfigWriter
 
             for (Map.Entry<String, String> entry : mappingData.getMappingData().entrySet())
             {
-                String methodName = entry.getKey();
-                String targetVariableName = extractTargetVariableName(entry.getValue());
+//                String methodName = entry.getKey();
+//                String targetVariableName = extractTargetVariableName(entry.getValue());
+                String targetVariableName = entry.getKey();
+                String methodName = extractTargetVariableName(entry.getValue());                
                 steno.debug("Processing method: " + methodName + " and variable : " + targetVariableName);
 
                 Method getMethod = getVariableMethod(methodName);

@@ -78,11 +78,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         BRIDGES_SPEED("bridgesSpeed"), GAP_FILL_SPEED("gapFillSpeed"),
         ENABLE_AUTO_COOLING("enableAutoCooling"), MIN_FAN_SPEED("minFanSpeed"),
         MAX_FAN_SPEED("maxFanSpeed"), BRIDGES_FAN_SPEED("bridgesFanSpeed"),
+        INTERFACE_SPEED("interfaceSpeed"),
         DISABLE_FAN_FIRST_N_LAYERS("disableFanFirstNLayers"),
         ENABLE_FAN_LAYER_TIME_BELOW("enableFanLayerTimeBelow"),
         SLOW_FAN_LAYER_TIME_BELOW("slowFanLayerTimeBelow"),
         MIN_PRINT_SPEED("minPrintSpeed"), RAFT_BASE_LINE_WIDTH("raftBaseLinewidth"),
-        RAFT_AIR_GAP_LAYER_0("raftAirGapLayer0"), RAFT_SURFACE_LAYERS("raftSurfaceLayers");
+        RAFT_AIR_GAP_LAYER_0("raftAirGapLayer0"), INTERFACE_LAYERS("interfaceLayers");
 
         private final String helpTextId;
 
@@ -312,6 +313,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
+    
+    @FXML
+    private RestrictedNumberField interfaceSpeed;    
 
     @FXML
     private RestrictedNumberField supportExtrusionWidth;
@@ -329,7 +333,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private RestrictedNumberField raftAirGapLayer0;
 
     @FXML
-    private RestrictedNumberField raftSurfaceLayers;
+    private RestrictedNumberField interfaceLayers;
 
     @FXML
     private TextArea helpText;
@@ -352,10 +356,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final ObservableList<FillPattern> fillPatternOptions = FXCollections.
         observableArrayList(
             FillPattern.values());
-
-    private final ObservableList<SupportPattern> supportPatternOptions = FXCollections.
-        observableArrayList(
-            SupportPattern.values());
 
     private final ChangeListener<String> dirtyStringListener
         = (ObservableValue<? extends String> ov, String t, String t1) ->
@@ -417,14 +417,14 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         setupSupportNozzleChoice();
 
         setupSlicerChooser();
+        
+        supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
         forceNozzleFirstLayerOptions.addAll(nozzleOptions);
 
         supportInterfaceNozzleChoice.setItems(nozzleOptions);
 
         fillPatternChoice.setItems(fillPatternOptions);
-
-        supportPattern.setItems(supportPatternOptions);
 
         FXMLUtilities.addColonsToLabels(container);
 
@@ -506,7 +506,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 if (lastSlicer != newSlicer)
                 {
-                    updateFieldDisabledState(newSlicer.getSlicerType());
+                    updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
                 }
             }
         });
@@ -918,6 +918,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.BRIDGES_FAN_SPEED);
             });
+        interfaceSpeed.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INTERFACE_SPEED);
+            });        
         disableFanForFirstNLayers.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -951,10 +956,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
             });
 
-        raftSurfaceLayers.focusedProperty().addListener(
+        interfaceLayers.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+                showHelpText(Fields.INTERFACE_LAYERS);
             });
 
         profileNameField.hoverProperty().addListener(
@@ -1167,6 +1172,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.BRIDGES_FAN_SPEED);
             });
+        interfaceSpeed.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.INTERFACE_SPEED);
+            });        
         disableFanForFirstNLayers.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1199,10 +1209,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
             });
 
-        raftSurfaceLayers.hoverProperty().addListener(
+        interfaceLayers.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
-                showHelpText(Fields.RAFT_SURFACE_LAYERS);
+                showHelpText(Fields.INTERFACE_LAYERS);
             });        
     }
 
@@ -1315,6 +1325,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             .addListener(dirtyStringListener);
         bridgesSpeed.textProperty()
             .addListener(dirtyStringListener);
+        interfaceSpeed.textProperty()
+            .addListener(dirtyStringListener);        
         layerHeight.textProperty()
             .addListener(dirtyStringListener);
         externalPerimeterSpeed.textProperty()
@@ -1351,7 +1363,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         
         raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
         raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
-        raftSurfaceLayers.textProperty().addListener(dirtyStringListener);
+        interfaceLayers.textProperty().addListener(dirtyStringListener);
     }
 
     private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
@@ -1409,7 +1421,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         supportPatternAngle.intValueProperty().set(parametersFile.getSupportPatternAngle_degrees());
         raftBaseLinewidth.floatValueProperty().set(parametersFile.getRaftBaseLinewidth_mm());
         raftAirGapLayer0.floatValueProperty().set(parametersFile.getRaftAirGapLayer0_mm());
-        raftSurfaceLayers.intValueProperty().set(parametersFile.getRaftSurfaceLayers());
+        interfaceLayers.intValueProperty().set(parametersFile.getInterfaceLayers());
 
         //Speed tab
         firstLayerSpeed.intValueProperty().set(parametersFile.getFirstLayerSpeed_mm_per_s());
@@ -1422,6 +1434,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         topSolidInfillSpeed.intValueProperty().set(parametersFile.getTopSolidFillSpeed_mm_per_s());
         supportMaterialSpeed.intValueProperty().set(parametersFile.getSupportSpeed_mm_per_s());
         bridgesSpeed.intValueProperty().set(parametersFile.getBridgeSpeed_mm_per_s());
+        interfaceSpeed.intValueProperty().set(parametersFile.getInterfaceSpeed_mm_per_s());
         gapFillSpeed.intValueProperty().set(parametersFile.getGapFillSpeed_mm_per_s());
 
         //Cooling tab
@@ -1450,10 +1463,14 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         nozzlePartialOpen1.floatValueProperty().set(parametersFile.getNozzleParameters().get(
             1).getPartialBMinimum());
 
-        updateFieldDisabledState(parametersFile.getSlicerOverride());
+        updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
     }
 
-    private void updateFieldDisabledState(SlicerType slicerType)
+    /**
+     * Enable/Disable fields appropriately according to the selected slicer.
+     * @param slicerType 
+     */
+    private void updateFieldsForSelectedSlicer(SlicerType slicerType)
     {
         if (slicerType == null)
         {
@@ -1491,6 +1508,22 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                                                                   "supportPatternSpacing_mm"));
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
                                                                 "supportPatternAngle_degrees"));
+        
+        SupportPattern currentSupportPattern = supportPattern.getValue();
+        if (slicerType == SlicerType.Slic3r) {
+            supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
+            supportPattern.setValue(currentSupportPattern);
+        } else {
+            supportPattern.getItems().clear();
+            supportPattern.getItems().add(SupportPattern.RECTILINEAR);
+            supportPattern.getItems().add(SupportPattern.RECTILINEAR_GRID);
+            if (currentSupportPattern == SupportPattern.RECTILINEAR || 
+                currentSupportPattern == SupportPattern.RECTILINEAR_GRID) {
+                supportPattern.setValue(currentSupportPattern);
+            } else {
+                supportPattern.setValue(SupportPattern.RECTILINEAR);
+            }
+        }
 
         //Speed tab
         firstLayerSpeed.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerSpeed_mm_per_s"));
@@ -1585,7 +1618,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
         settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.floatValueProperty().get());
         settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.floatValueProperty().get());
-        settingsToUpdate.setRaftSurfaceLayers(raftSurfaceLayers.intValueProperty().get());
+        settingsToUpdate.setInterfaceLayers(interfaceLayers.intValueProperty().get());
 
         //Speed tab
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
@@ -1599,6 +1632,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         settingsToUpdate.setTopSolidFillSpeed_mm_per_s(topSolidInfillSpeed.intValueProperty().get());
         settingsToUpdate.setSupportSpeed_mm_per_s(supportMaterialSpeed.intValueProperty().get());
         settingsToUpdate.setBridgeSpeed_mm_per_s(bridgesSpeed.intValueProperty().get());
+        settingsToUpdate.setInterfaceSpeed_mm_per_s(interfaceSpeed.intValueProperty().get());
         settingsToUpdate.setGapFillSpeed_mm_per_s(gapFillSpeed.intValueProperty().get());
 
         //Cooling tab

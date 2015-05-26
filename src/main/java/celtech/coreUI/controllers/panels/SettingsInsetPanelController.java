@@ -112,15 +112,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     }
                 });
 
-            Lookup.getFilamentContainer().getUserFilamentList().addListener(
-                (ListChangeListener.Change<? extends Filament> c) ->
-                {
-                    showPleaseCreateProfile(
-                        Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
-                });
+            SlicerParametersContainer.getUserProfileList().addListener(
+                (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
+            {
+                showPleaseCreateProfile(
+                    SlicerParametersContainer.getUserProfileList().isEmpty());
+            });
 
             showPleaseCreateProfile(
-                Lookup.getFilamentContainer().getUserFilamentList().isEmpty());
+                SlicerParametersContainer.getUserProfileList().isEmpty());
         } catch (Exception ex)
         {
             ex.printStackTrace();

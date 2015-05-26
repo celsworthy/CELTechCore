@@ -1,5 +1,7 @@
 package celtech.coreUI.components;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -14,6 +16,8 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -21,6 +25,9 @@ import javafx.scene.text.TextFlow;
  */
 public class HyperlinkedLabel extends TextFlow
 {
+
+    private final Stenographer steno = StenographerFactory.getStenographer(
+        HyperlinkedLabel.class.getName());
 
     private StringProperty text = new SimpleStringProperty("");
     private static final Pattern hyperlinkPattern = Pattern.compile(
@@ -62,23 +69,24 @@ public class HyperlinkedLabel extends TextFlow
                         if (hyperlinkMap.containsKey(clickedLinkText))
                         {
                             URI linkToVisit = hyperlinkMap.get(clickedLinkText);
-                            System.out.println("Link clicked: Text=" + clickedLinkText + " uri="
-                                + linkToVisit.
-                                toString());
-                            if (Desktop.isDesktopSupported())
+                            if (Desktop.isDesktopSupported()
+                                && ApplicationConfiguration.getMachineType()
+                                != MachineType.LINUX_X86
+                                && ApplicationConfiguration.getMachineType()
+                                != MachineType.LINUX_X64)
                             {
                                 try
                                 {
                                     Desktop.getDesktop().browse(linkToVisit);
                                 } catch (IOException ex)
                                 {
-                                    System.err.println("Error when attempting to browse to "
+                                    steno.error("Error when attempting to browse to "
                                         + linkToVisit.
                                         toString());
                                 }
                             } else
                             {
-                                System.err.println(
+                                steno.error(
                                     "Couldn't get Desktop - not able to support hyperlinks");
                             }
                         }
@@ -87,12 +95,12 @@ public class HyperlinkedLabel extends TextFlow
                     getChildren().add(hyperlink);
                 } catch (URISyntaxException ex)
                 {
-                    System.err.println("Error attempting to create UI hyperlink from "
+                    steno.error("Error attempting to create UI hyperlink from "
                         + linkURLString);
                 }
             } else
             {
-                System.out.println("Error rendering dialog text: " + newText);
+                steno.error("Error rendering dialog text: " + newText);
             }
         }
 

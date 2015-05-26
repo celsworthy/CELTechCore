@@ -1,7 +1,7 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.configuration.SlicerType;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -10,20 +10,34 @@ import java.util.HashMap;
 public class SlicerMappings
 {
 
-    private HashMap<SlicerType, SlicerMappingData> mappings;
+    private Map<SlicerType, SlicerMappingData> mappings;
 
-    public HashMap<SlicerType, SlicerMappingData> getMappings()
+    public Map<SlicerType, SlicerMappingData> getMappings()
     {
         return mappings;
     }
-    
-    public void setMappings(HashMap<SlicerType, SlicerMappingData> mappings)
+
+    public void setMappings(Map<SlicerType, SlicerMappingData> mappings)
     {
         this.mappings = mappings;
     }
-    
+
     public boolean isMapped(SlicerType slicerType, String variable)
     {
-        return mappings.get(slicerType).getMappingData().containsKey(variable);
+        boolean isMapped = false;
+        for (String formula : mappings.get(slicerType).getMappingData().values())
+        {
+            String[] elements = formula.split(":");
+            if (elements.length == 0 && formula.equals(variable))
+            {
+                isMapped = true;
+                break;
+            } else if (elements[0].equals(variable))
+            {
+                isMapped = true;
+                break;
+            }
+        }
+        return isMapped;
     }
 }
