@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.PrinterMetaStatus;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
