@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
+import celtech.printerControl.model.PrinterMetaStatus;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -82,8 +83,8 @@ public class TweakPanelController implements Initializable
 
     private void bindPrinter(Printer printer)
     {
-        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
-        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(
+        speedSliderHBox.setVisible(printer.getPrinterMetaStatus().printerStatusProperty().get() == PrinterStatus.PRINTING);
+        speedSliderHBox.visibleProperty().bind(printer.getPrinterMetaStatus().printerStatusProperty().isEqualTo(
             PrinterStatus.PRINTING));
         speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
             feedRateMultiplierProperty().get());
