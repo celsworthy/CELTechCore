@@ -9,9 +9,7 @@ import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -40,7 +38,6 @@ import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionMana
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
@@ -79,10 +76,19 @@ public class TestPrinter implements Printer
     void addHead()
     {
         HeadFile headFile = new HeadFile();
-        Head head = new Head(headFile);
+        Head head = new TestHead(headFile);
         headProperty.setValue(head);
     }
-
+    
+    void addHeadForHeadFile(HeadFile headFile) {
+        Head head = new TestHead(headFile);
+        headProperty.setValue(head);
+    }
+    
+    TestHead getHead() {
+        return (TestHead) headProperty().get();
+    }
+    
     void removeHead()
     {
         headProperty.setValue(null);

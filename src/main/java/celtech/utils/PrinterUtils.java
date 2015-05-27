@@ -17,6 +17,7 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.Head;
+import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
 import celtech.utils.tasks.Cancellable;
@@ -263,38 +264,62 @@ public class PrinterUtils
     }
 
     /**
-     *
-     * @param printer
-     * @return
+     * For each nozzle chamber/heater check if a purge is necessary. Return true if one or more
+     * nozzle heaters require a purge.
      */
     public boolean isPurgeNecessary(Printer printer, Project project)
     {
         boolean purgeIsNecessary = false;
+        for (int i = 0; i < printer.headProperty().get().getNozzleHeaters().size(); i++)
+        {
+            purgeIsNecessary = isPurgeNecessaryForNozzleHeater(project, printer, i);
+            if (purgeIsNecessary)
+            {
+                break;
+            }
+        }
+
+        return purgeIsNecessary;
+    }
+
+    /**
+     * Return true if the given nozzle heater requires a purge.
+     */
+    private boolean isPurgeNecessaryForNozzleHeater(Project project, Printer printer,
+        int nozzleHeaterNumber)
+    {
         float targetNozzleTemperature = 0;
         PrinterSettings printerSettings = project.getPrinterSettings();
-        Filament settingsFilament = printerSettings.getFilament0();
-
+        Filament settingsFilament = null;
+        if (nozzleHeaterNumber == 0)
+        {
+            settingsFilament = printerSettings.getFilament0();
+        } else if (nozzleHeaterNumber == 1)
+        {
+            settingsFilament = printerSettings.getFilament1();
+        } else
+        {
+            throw new RuntimeException("Don't know which filament to use for nozzle heater "
+                + nozzleHeaterNumber);
+        }
         if (settingsFilament != null)
         {
             targetNozzleTemperature = settingsFilament.getNozzleTemperature();
         } else
         {
-            //TODO modify to work with multiple reels
-            targetNozzleTemperature = (float) printer.reelsProperty().get(0).
-                nozzleTemperatureProperty().get();
+           throw new RuntimeException("No filament set in printer settings");
         }
-
         // A reel is attached - check to see if the temperature is different from that stored on the head
-        //TODO modify to work with multiple heaters
+
         if (Math.abs(targetNozzleTemperature
-            - printer.headProperty().get().getNozzleHeaters().get(0).
+            - printer.headProperty().get().getNozzleHeaters().get(nozzleHeaterNumber).
             lastFilamentTemperatureProperty().get())
             > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
         {
-            purgeIsNecessary = true;
+            return true;
         }
 
-        return purgeIsNecessary;
+        return false;
     }
 
     /**
@@ -442,7 +467,8 @@ public class PrinterUtils
         return printing;
     }
 
-    public static void setCancelledIfPrinterDisconnected(Printer printerToMonitor, Cancellable cancellable)
+    public static void setCancelledIfPrinterDisconnected(Printer printerToMonitor,
+        Cancellable cancellable)
     {
         Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
         {

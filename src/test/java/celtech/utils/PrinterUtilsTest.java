@@ -1,14 +1,13 @@
 package celtech.utils;
 
-import celtech.appManager.PurgeResponse;
-import celtech.printerControl.model.Printer;
-import celtech.utils.tasks.Cancellable;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.concurrent.Task;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import celtech.JavaFXConfiguredTest;
+import celtech.Lookup;
+import celtech.appManager.Project;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
+import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.NozzleHeaterData;
+import celtech.utils.TestHead.TestNozzleHeater;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -16,47 +15,96 @@ import static org.junit.Assert.*;
  *
  * @author Ian
  */
-public class PrinterUtilsTest
+public class PrinterUtilsTest extends JavaFXConfiguredTest
 {
 
-    public PrinterUtilsTest()
+    /**
+     * Test of printJobIDIndicatesPrinting method, of class PrinterUtils.
+     */
+    @Test
+    public void testPrintJobIDIndicatesPrinting()
     {
+        System.out.println("printJobIDIndicatesPrinting");
+
+        String printJobID = "";
+        boolean result = PrinterUtils.printJobIDIndicatesPrinting(printJobID);
+        assertEquals(false, result);
+
+        printJobID = null;
+        result = PrinterUtils.printJobIDIndicatesPrinting(printJobID);
+        assertEquals(false, result);
+
+        printJobID = "5793b413812d443a";
+        result = PrinterUtils.printJobIDIndicatesPrinting(printJobID);
+        assertEquals(true, result);
     }
 
-    @BeforeClass
-    public static void setUpClass()
+    @Test
+    public void testRequiresPurgeForNozzleHeater0()
     {
+        int NOZZLE_TEMP = 120;
+        Project project = new Project();
+        Filament filament = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
+        filament.getNozzleTemperatureProperty().set(NOZZLE_TEMP);
+        project.getPrinterSettings().setFilament0(filament);
+
+        TestPrinter printer = new TestPrinter(1);
+        HeadFile headFile = new HeadFile();
+        NozzleHeaterData nozzleHeaterData = new NozzleHeaterData();
+        headFile.getNozzleHeaters().add(nozzleHeaterData);
+        printer.addHeadForHeadFile(headFile);
+        TestNozzleHeater testNozzleHeater = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
+            0);
+        testNozzleHeater.lastFilamentTemperatureProperty().set(NOZZLE_TEMP
+            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+
+        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        assertFalse(purgeIsNecessary);
+
+        testNozzleHeater.lastFilamentTemperatureProperty().set(NOZZLE_TEMP
+            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
+        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        assertTrue(purgeIsNecessary);
     }
 
-    @AfterClass
-    public static void tearDownClass()
+    @Test
+    public void testRequiresPurgeForNozzleHeater1()
     {
+        int NOZZLE_TEMP_0 = 120;
+        int NOZZLE_TEMP_1 = 220;
+        Project project = new Project();
+        Filament filament0 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
+        filament0.getNozzleTemperatureProperty().set(NOZZLE_TEMP_0);
+        Filament filament1 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
+        filament1.getNozzleTemperatureProperty().set(NOZZLE_TEMP_1);
+        project.getPrinterSettings().setFilament0(filament0);
+        project.getPrinterSettings().setFilament1(filament1);
+
+        TestPrinter printer = new TestPrinter(1);
+        HeadFile headFile = new HeadFile();
+        NozzleHeaterData nozzleHeaterData0 = new NozzleHeaterData();
+        headFile.getNozzleHeaters().add(nozzleHeaterData0);
+        NozzleHeaterData nozzleHeaterData1 = new NozzleHeaterData();
+        headFile.getNozzleHeaters().add(nozzleHeaterData1);
+        printer.addHeadForHeadFile(headFile);
+        TestNozzleHeater testNozzleHeater0 = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
+            0);
+        testNozzleHeater0.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_0
+            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+        TestNozzleHeater testNozzleHeater1 = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
+            1);
+        testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
+            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+
+        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        assertFalse(purgeIsNecessary);
+
+        testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
+            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
+        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        assertTrue(purgeIsNecessary);
     }
 
-    @Before
-    public void setUp()
-    {
-    }
-
-    @After
-    public void tearDown()
-    {
-    }
-
-//    /**
-//     * Test of getInstance method, of class PrinterUtils.
-//     */
-//    @Test
-//    public void testGetInstance()
-//    {
-//        System.out.println("getInstance");
-//        PrinterUtils expResult = null;
-//        PrinterUtils result = PrinterUtils.getInstance();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
 //    /**
 //     * Test of waitOnMacroFinished method, of class PrinterUtils.
 //     */
@@ -72,7 +120,6 @@ public class PrinterUtilsTest
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-//
 //    /**
 //     * Test of waitOnMacroFinished method, of class PrinterUtils.
 //     */
@@ -261,25 +308,4 @@ public class PrinterUtilsTest
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-    /**
-     * Test of printJobIDIndicatesPrinting method, of class PrinterUtils.
-     */
-    @Test
-    public void testPrintJobIDIndicatesPrinting()
-    {
-        System.out.println("printJobIDIndicatesPrinting");
-
-        String printJobID = "";
-        boolean result = PrinterUtils.printJobIDIndicatesPrinting(printJobID);
-        assertEquals(false, result);
-
-        printJobID = null;
-        result = PrinterUtils.printJobIDIndicatesPrinting(printJobID);
-        assertEquals(false, result);
-
-        printJobID = "5793b413812d443a";
-        result = PrinterUtils.printJobIDIndicatesPrinting(printJobID);
-        assertEquals(true, result);
-    }
-
 }

@@ -68,6 +68,13 @@ public class Head implements Cloneable, RepairableComponent
 
         return createdHead;
     }
+    
+    protected NozzleHeater makeNozzleHeater(NozzleHeaterData nozzleHeaterData) {
+        return new NozzleHeater(nozzleHeaterData.getMaximum_temperature_C(),
+                                                       nozzleHeaterData.getBeta(),
+                                                       nozzleHeaterData.getTcal(),
+                                                       0, 0, 0, 0);
+    }
 
     private void updateFromHeadFileData(HeadFile headData)
     {
@@ -76,10 +83,7 @@ public class Head implements Cloneable, RepairableComponent
 
         nozzleHeaters.clear();
         headData.getNozzleHeaters().stream().
-            map((nozzleHeaterData) -> new NozzleHeater(nozzleHeaterData.getMaximum_temperature_C(),
-                                                       nozzleHeaterData.getBeta(),
-                                                       nozzleHeaterData.getTcal(),
-                                                       0, 0, 0, 0))
+            map((nozzleHeaterData) -> makeNozzleHeater(nozzleHeaterData))
             .forEach((newNozzleHeater) ->
                 {
                     nozzleHeaters.add(newNozzleHeater);
