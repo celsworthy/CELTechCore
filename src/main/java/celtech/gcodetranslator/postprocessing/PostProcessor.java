@@ -1,19 +1,18 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
+import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.parboiled.Parboiled;
 import static org.parboiled.errors.ErrorUtils.printParseErrors;
+import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.parserunners.TracingParseRunner;
-import static org.parboiled.support.ParseTreeUtils.printNodeTree;
 import org.parboiled.support.ParsingResult;
-import org.parboiled.support.ToStringFormatter;
-import org.parboiled.trees.GraphNode;
-import static org.parboiled.trees.GraphUtils.printTree;
 
 /**
  *
@@ -25,14 +24,11 @@ public class PostProcessor
     private Stenographer steno = StenographerFactory.getStenographer(PostProcessor.class.getName());
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
-    private final GCodeParser gcodeParser;
 
     public PostProcessor(String gcodeFileToProcess, String gcodeOutputFile)
     {
         this.gcodeFileToProcess = gcodeFileToProcess;
         this.gcodeOutputFile = gcodeOutputFile;
-
-        gcodeParser = new GCodeParser();
     }
 
     public void processInput()
@@ -49,36 +45,7 @@ public class PostProcessor
                 lineRead = lineRead.trim();
                 if (lineRead.matches(";LAYER:[0-9]+"))
                 {
-                    // Parse the last layer if it exists...
-                    if (layerBuffer.length() > 0)
-                    {
-                        ParsingResult<?> result = new TracingParseRunner(gcodeParser.Layer()).run(layerBuffer.toString());
-
-                        if (result.hasErrors())
-                        {
-                            System.out.println("\nParse Errors:\n" + printParseErrors(result));
-                        }
-
-                        Object value = result.parseTreeRoot.getValue();
-                        if (value != null)
-                        {
-                            String str = value.toString();
-                            int ix = str.indexOf('|');
-                            if (ix >= 0)
-                            {
-                                str = str.substring(ix + 2); // extract value part of AST node toString()
-                            }
-                            System.out.println(" = " + str + '\n');
-                        }
-                        if (value instanceof GraphNode)
-                        {
-                            System.out.println("\nAbstract Syntax Tree:\n"
-                                    + printTree((GraphNode) value, new ToStringFormatter(null)) + '\n');
-                        } else
-                        {
-                            System.out.println("\nParse Tree:\n" + printNodeTree(result) + '\n');
-                        }
-                    }
+                    parseLayer(layerBuffer);
 
                     layerCounter++;
                     layerBuffer = new StringBuilder();
@@ -95,9 +62,48 @@ public class PostProcessor
                     layerBuffer.append('\n');
                 }
             }
+            
+            //This catches the last layer - if we had no data it won't do anything
+            parseLayer(layerBuffer);
         } catch (IOException ex)
         {
             steno.error("Error reading post-processor input file: " + gcodeFileToProcess);
+        }
+    }
+
+    private void parseLayer(StringBuilder layerBuffer)
+    {
+        // Parse the last layer if it exists...
+        if (layerBuffer.length() > 0)
+        {
+            
+            GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
+            RecoveringParseRunner runner = new RecoveringParseRunner<>(gcodeParser.Layer());
+            ParsingResult result = runner.run(layerBuffer.toString());
+            
+            if (result.hasErrors())
+            {
+                System.out.println("\nParse Errors:\n" + printParseErrors(result));
+            } else
+            {
+                LayerNode layerNode = gcodeParser.getLayerNode();
+                outputNodes(layerNode, 0);
+            }
+        }
+    }
+
+    private void outputNodes(GCodeEventNode node, int level)
+    {
+        //Output me
+        System.out.println("Level - " + level + " " + node.renderForOutput());
+
+        //Output my children
+        List<GCodeEventNode> children = node.getChildren();
+        for (GCodeEventNode child : children)
+        {
+            level++;
+            outputNodes(child, level);
+            level--;
         }
     }
 }

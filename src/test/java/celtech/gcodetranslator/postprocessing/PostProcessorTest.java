@@ -41,15 +41,15 @@ public class PostProcessorTest
     /**
      * Test of processInput method, of class PostProcessor.
      */
-//    @Test
-//    public void testProcessInput()
-//    {
-//        System.out.println("processInput");
-//        URL inputURL = this.getClass().getResource("/postprocessor/baseTest.gcode");
-//        String inputFilename = inputURL.getFile();
-//        String outputFilename = inputFilename + ".out";
-//        PostProcessor instance = new PostProcessor(inputFilename, outputFilename);
-//        instance.processInput();
-//    }
+    @Test
+    public void testProcessInput()
+    {
+        System.out.println("processInput");
+        URL inputURL = this.getClass().getResource("/postprocessor/baseTest.gcode");
+        String inputFilename = inputURL.getFile();
+        String outputFilename = inputFilename + ".out";
+        PostProcessor instance = new PostProcessor(inputFilename, outputFilename);
+        instance.processInput();
+    }
 
 }

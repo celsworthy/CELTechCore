@@ -6,5 +6,9 @@ package celtech.gcodetranslator.postprocessing.nodes;
  */
 public class GCodeDirectiveNode extends GCodeEventNode
 {
-    
+    @Override
+    public String renderForOutput()
+    {
+        return toString();
+    }
 }

@@ -4,9 +4,9 @@ package celtech.gcodetranslator.postprocessing.nodes;
  *
  * @author Ian
  */
-public class RetractNode extends MovementNode
+public class UnretractNode extends MovementNode
 {
-    //Retracts should always use G1
+    //Uetracts should always use G1
 
     @Override
     public String renderForOutput()

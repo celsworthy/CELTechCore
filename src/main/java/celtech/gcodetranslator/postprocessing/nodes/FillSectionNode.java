@@ -6,5 +6,13 @@ package celtech.gcodetranslator.postprocessing.nodes;
  */
 public class FillSectionNode extends GCodeEventNode
 {
+    public FillSectionNode()
+    {
+    }
     
+        @Override
+    public String renderForOutput()
+    {
+        return toString();
+    }
 }

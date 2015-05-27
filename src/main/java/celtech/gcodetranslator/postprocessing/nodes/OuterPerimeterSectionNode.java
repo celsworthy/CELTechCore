@@ -6,5 +6,13 @@ package celtech.gcodetranslator.postprocessing.nodes;
  */
 public class OuterPerimeterSectionNode extends GCodeEventNode
 {
-    
+
+    public OuterPerimeterSectionNode()
+    {
+    }
+        @Override
+    public String renderForOutput()
+    {
+        return toString();
+    }
 }

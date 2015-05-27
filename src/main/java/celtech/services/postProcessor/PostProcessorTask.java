@@ -2,6 +2,9 @@ package celtech.services.postProcessor;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.gcodetranslator.GCodeRoboxiser;
+import celtech.gcodetranslator.GCodeRoboxisingEngine;
+import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.PostProcessor;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.model.Printer;
@@ -89,18 +92,18 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         String gcodeFileToProcess = printJob.getGCodeFileLocation();
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
         
-        PostProcessor postProcessor = new PostProcessor(gcodeFileToProcess, gcodeOutputFile);
-        postProcessor.processInput();
+//        PostProcessor postProcessor = new PostProcessor(gcodeFileToProcess, gcodeOutputFile);
+//        postProcessor.processInput();
         
-//        GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
-//        RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
-//            gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
-//        roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
-//        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
-//            printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
-//        
-//        return postProcessingResult;
-        return null;
+        GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
+        RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
+            gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
+        roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
+            printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+        
+        return postProcessingResult;
+//        return null;
     }
 
 }
