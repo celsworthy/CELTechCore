@@ -305,14 +305,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canCancel.bind(
                 printerStatus.isNotEqualTo(PrinterStatus.CANCELLING)
-                .and(printerStatus.isEqualTo(PrinterStatus.PAUSED)
+                .and(
+                        printerStatus.isEqualTo(PrinterStatus.PAUSED)
                         .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
                         .or(printEngine.postProcessorService.runningProperty())
                         .or(printEngine.slicerService.runningProperty())
                         .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
-                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))));
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
+                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_NOZZLE))
+                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_BED))
+                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))
+                ));
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))
