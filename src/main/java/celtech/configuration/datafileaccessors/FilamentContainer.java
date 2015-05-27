@@ -161,7 +161,15 @@ public class FilamentContainer
                     String nozzleTempString = filamentProperties.getProperty(nozzleTempProperty).trim();
                     String displayColourString = filamentProperties.getProperty(
                         displayColourProperty).trim();
-                    String costGBPPerKGString = filamentProperties.getProperty(costGBPPerKGProperty).trim();
+                    // introduced in 1.01.05
+                    String costGBPPerKGString = "40";
+                    try
+                    {
+                        costGBPPerKGString = filamentProperties.getProperty(costGBPPerKGProperty).trim();
+                    } catch (Exception ex)
+                    {
+                        steno.warning("No cost per GBP found in filament file");
+                    }
 
                     if (name != null
                         && material != null
@@ -219,6 +227,7 @@ public class FilamentContainer
                 }
             } catch (Exception ex)
             {
+                ex.printStackTrace();
                 steno.error("Error loading filament " + filamentFile.getAbsolutePath() + " " + ex);
             }
         }

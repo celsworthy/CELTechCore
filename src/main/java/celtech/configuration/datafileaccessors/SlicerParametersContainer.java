@@ -87,7 +87,9 @@ public class SlicerParametersContainer
                 try
                 {
                     newSettings = mapper.readValue(profileFile, SlicerParametersFile.class);
-
+                    
+                    convertToCurrentVersion(newSettings);
+                    
                     profileList.add(newSettings);
                     profileMap.put(profileName, newSettings);
                 } catch (IOException ex)
@@ -102,6 +104,20 @@ public class SlicerParametersContainer
         }
 
         return profileList;
+    }
+
+    private static void convertToCurrentVersion(SlicerParametersFile newSettings)
+    {
+        
+        if (newSettings.getVersion() < 4) {
+            steno.info("Convert " + newSettings.getProfileName() + " profile to version 4");
+            newSettings.setRaftAirGapLayer0_mm(0.285f);
+            newSettings.setRaftBaseLinewidth_mm(1.0f);
+            newSettings.setInterfaceLayers(1);
+            newSettings.setInterfaceSpeed_mm_per_s(40);
+            newSettings.setVersion(4);
+            doSaveEditedUserProfile(newSettings);
+        }
     }
 
     public static void saveProfile(SlicerParametersFile settingsToSave)

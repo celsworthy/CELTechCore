@@ -16,7 +16,7 @@ import java.util.List;
 public class SlicerParametersFile
 {
 
-    private int version = 3;
+    private int version = 4;
     private String profileName;
     private SlicerType slicerOverride;
 
@@ -74,6 +74,7 @@ public class SlicerParametersFile
     private int supportSpeed_mm_per_s;
     private int bridgeSpeed_mm_per_s;
     private int gapFillSpeed_mm_per_s;
+    private int interfaceSpeed_mm_per_s;
 
     /*
      * Cooling
@@ -93,7 +94,7 @@ public class SlicerParametersFile
     private boolean printRaft;
     private float raftBaseLinewidth_mm;
     private float raftAirGapLayer0_mm;
-    private int raftSurfaceLayers;
+    private int interfaceLayers;
     private float raftBaseThickness_mm = 0.3f;
     
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
@@ -441,17 +442,17 @@ public class SlicerParametersFile
         firePropertyChange("raftAirGapLayer0_mm", null, raftAirGapLayer0_mm);
     }  
     
-    public int getRaftSurfaceLayers() {
-        return raftSurfaceLayers;
+    public int getInterfaceLayers() {
+        return interfaceLayers;
     }
     
-    public void setRaftSurfaceLayers(int raftSurfaceLayers)
+    public void setInterfaceLayers(int interfaceLayers)
     {
-        if (this.raftSurfaceLayers == raftSurfaceLayers) {
+        if (this.interfaceLayers == interfaceLayers) {
             return;
         }        
-        this.raftSurfaceLayers = raftSurfaceLayers;
-        firePropertyChange("raftSurfaceLayers", null, raftSurfaceLayers);
+        this.interfaceLayers = interfaceLayers;
+        firePropertyChange("interfaceLayers", null, interfaceLayers);
     }     
     
     public float getRaftBaseThickness_mm() {
@@ -664,6 +665,17 @@ public class SlicerParametersFile
         this.maxFanSpeed_percent = maxFanSpeed_percent;
         firePropertyChange("maxFanSpeed_percent", null, maxFanSpeed_percent);
     }
+    
+    public int getInterfaceSpeed_mm_per_s()
+    {
+        return interfaceSpeed_mm_per_s;
+    }
+
+    public void setInterfaceSpeed_mm_per_s(int interfaceSpeed_mm_per_s)
+    {
+        this.interfaceSpeed_mm_per_s = interfaceSpeed_mm_per_s;
+        firePropertyChange("interfaceSpeed_mm_per_s", null, interfaceSpeed_mm_per_s);
+    }    
 
     public int getBridgeFanSpeed_percent()
     {
@@ -796,6 +808,7 @@ public class SlicerParametersFile
         clone.topSolidFillSpeed_mm_per_s = topSolidFillSpeed_mm_per_s;
         clone.supportSpeed_mm_per_s = supportSpeed_mm_per_s;
         clone.bridgeSpeed_mm_per_s = bridgeSpeed_mm_per_s;
+        clone.interfaceSpeed_mm_per_s = interfaceSpeed_mm_per_s;
         clone.gapFillSpeed_mm_per_s = gapFillSpeed_mm_per_s;
 
         /*
@@ -816,7 +829,7 @@ public class SlicerParametersFile
         clone.raftAirGapLayer0_mm = raftAirGapLayer0_mm;
         clone.raftBaseLinewidth_mm = raftBaseLinewidth_mm;
         clone.raftBaseThickness_mm = raftBaseThickness_mm;
-        clone.raftSurfaceLayers = raftSurfaceLayers;
+        clone.interfaceLayers = interfaceLayers;
         clone.printRaft = printRaft;
 
         return clone;
