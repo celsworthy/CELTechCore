@@ -47,9 +47,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     @FXML
     private RestrictedTextField lastFilamentTemperature0;
-    
+
     @FXML
-    private RestrictedTextField lastFilamentTemperature1;    
+    private RestrictedTextField lastFilamentTemperature1;
 
     @FXML
     private RestrictedTextField nozzle1ZOverrun;
@@ -89,7 +89,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     @FXML
     private Button writeOffsetsButton;
-    
+
     @FXML
     private GridPane headEEPROMOffsets;
 
@@ -147,8 +147,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             if (uniqueId.length() == 0)
             {
                 uniqueId = headUniqueID.getText();
-            }            
-            
+            }
+
             selectedPrinter.transmitWriteHeadEEPROM(
                 headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
@@ -246,9 +246,13 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headTypeCode.setText(head.typeCodeProperty().get().trim());
         headType.setText(head.nameProperty().get().trim());
         headUniqueID.setText(head.uniqueIDProperty().get().trim());
-        //TODO modify to work with multiple heaters
         lastFilamentTemperature0.setText(String.format("%.0f",
-                                                      head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
+                           head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
+        if (head.getNozzleHeaters().size() > 1)
+        {
+            lastFilamentTemperature1.setText(String.format("%.0f",
+                           head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get()));
+        }
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
         //TODO modify to work with multiple heaters
         headMaxTemperature.setText(String.format("%.0f",
@@ -292,6 +296,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headUniqueID.setText("");
         //TODO modify to work with multiple heaters
         lastFilamentTemperature0.setText("");
+        lastFilamentTemperature1.setText("");
         headHourCounter.setText("");
         //TODO modify to work with multiple heaters
         headMaxTemperature.setText("");
@@ -342,7 +347,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @Override
     public void whenPrinterAdded(Printer printer)
     {
-        headEEPROMOffsets.disableProperty().bind(Lookup.getUserPreferences().advancedModeProperty().not());
+        headEEPROMOffsets.disableProperty().bind(
+            Lookup.getUserPreferences().advancedModeProperty().not());
     }
 
     @Override
@@ -383,12 +389,12 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
     }
-    
+
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
-    
+
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
@@ -397,8 +403,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-    }    
-    
+    }
+
     private ChangeListener<Object> headChangeListener;
 
     private void listenForHeadChanges(Head head)
@@ -416,7 +422,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         head.getNozzles().get(1).zOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(1).bOffsetProperty().addListener(headChangeListener);
         //TODO modify for multiple heaters
-        head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(headChangeListener);
+        head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(
+            headChangeListener);
     }
 
     private void removeHeadChangeListeners(Head head)

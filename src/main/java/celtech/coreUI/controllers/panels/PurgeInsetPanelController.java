@@ -82,7 +82,7 @@ public class PurgeInsetPanelController implements Initializable
         };
 
     @FXML
-    private VBox diagramContainer; 
+    private VBox diagramContainer;
 
     @FXML
     private GraphicButtonWithLabel startPurgeButton;
@@ -91,16 +91,7 @@ public class PurgeInsetPanelController implements Initializable
     private Text purgeStatus;
 
     @FXML
-    private RestrictedNumberField purgeTemperature0;
-
-    @FXML
-    private Text currentMaterialTemperature0;
-
-    @FXML
     private Text resettingPrinter;
-
-    @FXML
-    private GridPane purgeDetailsGrid;
 
     @FXML
     private GraphicButtonWithLabel cancelPurgeButton;
@@ -119,15 +110,42 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private Text lastMaterialTemperature0;
-    
+
+    @FXML
+    private RestrictedNumberField purgeTemperature0;
+
+    @FXML
+    private Text currentMaterialTemperature0;
+
+    @FXML
+    private Text textCurrentMaterial0;
+
+    @FXML
+    private ComboBox<Filament> cmbCurrentMaterial0;
+
+    @FXML
+    private GridPane purgeDetailsGrid0;
+
+    @FXML
+    private Text lastMaterialTemperature1;
+
+    @FXML
+    private RestrictedNumberField purgeTemperature1;
+
+    @FXML
+    private Text currentMaterialTemperature1;
+
+    @FXML
+    private Text textCurrentMaterial1;
+
+    @FXML
+    private ComboBox<Filament> cmbCurrentMaterial1;
+
+    @FXML
+    private GridPane purgeDetailsGrid1;
+
     @FXML
     private ProgressDisplay progressDisplay;
-
-    @FXML
-    private Text textCurrentMaterial;
-
-    @FXML
-    private ComboBox<Filament> cmbCurrentMaterial;
 
     @FXML
     void start(ActionEvent event)
@@ -185,8 +203,8 @@ public class PurgeInsetPanelController implements Initializable
 
         diagramHandler = new DiagramHandler(diagramContainer, resources);
         diagramHandler.initialise();
-        
-        FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
+
+        FXMLUtilities.addColonsToLabels(purgeDetailsGrid0);
 
         setupMaterialCombo();
 
@@ -218,7 +236,7 @@ public class PurgeInsetPanelController implements Initializable
             {
                 if (PurgeInsetPanelController.this.printer == printer)
                 {
-                    PurgeInsetPanelController.this.showCurrentMaterial(); 
+                    PurgeInsetPanelController.this.showCurrentMaterial();
                 }
             }
 
@@ -287,7 +305,8 @@ public class PurgeInsetPanelController implements Initializable
         startPurgeButton.setVisible(false);
         backButton.setVisible(false);
         okButton.setVisible(false);
-        purgeDetailsGrid.setVisible(false);
+        purgeDetailsGrid0.setVisible(false);
+        purgeDetailsGrid1.setVisible(false);
         diagramContainer.setVisible(false);
     }
 
@@ -310,7 +329,8 @@ public class PurgeInsetPanelController implements Initializable
             case CONFIRM_TEMPERATURE:
                 showCurrentMaterial();
                 purgeTemperature0.intValueProperty().addListener(purgeTempEntryListener);
-                purgeDetailsGrid.setVisible(true);
+                purgeDetailsGrid0.setVisible(true);
+                purgeDetailsGrid1.setVisible(true);
                 break;
             case HEATING:
                 break;
@@ -346,10 +366,10 @@ public class PurgeInsetPanelController implements Initializable
             progressDisplay.unbindFromPrinter();
             startPurgeButton.getTag().removeAllConditionalText();
             proceedButton.getTag().removeAllConditionalText();
-            cmbCurrentMaterial.visibleProperty().unbind();
-            textCurrentMaterial.visibleProperty().unbind();
-            proceedButton.disableProperty().unbind(); 
-       }
+            cmbCurrentMaterial0.visibleProperty().unbind();
+            textCurrentMaterial0.visibleProperty().unbind();
+            proceedButton.disableProperty().unbind();
+        }
 
         this.printer = printer;
 
@@ -358,8 +378,8 @@ public class PurgeInsetPanelController implements Initializable
 
         BooleanBinding reel0Present = Bindings.valueAt(printer.reelsProperty(), 0).isNotNull();
 
-        cmbCurrentMaterial.visibleProperty().bind(reel0Present.not());
-        textCurrentMaterial.visibleProperty().bind(reel0Present);
+        cmbCurrentMaterial0.visibleProperty().bind(reel0Present.not());
+        textCurrentMaterial0.visibleProperty().bind(reel0Present);
 
         progressDisplay.bindToPrinter(printer);
     }
@@ -376,14 +396,16 @@ public class PurgeInsetPanelController implements Initializable
                 printer.reelsProperty().get(0).filamentIDProperty().get());
         } else
         {
-            currentMaterial0 = cmbCurrentMaterial.getValue();
+            currentMaterial0 = cmbCurrentMaterial0.getValue();
         }
-        if (currentMaterial0 != null) {
+        if (currentMaterial0 != null)
+        {
             selectMaterial(currentMaterial0);
-        } else {
+        } else
+        {
             transitionManager.setPurgeTemperature(0, -1);
             purgeTemperature0.textProperty().set("-1");
-        } 
+        }
     }
 
     private void installTag(Printer printer, GraphicButtonWithLabel button)
@@ -409,7 +431,7 @@ public class PurgeInsetPanelController implements Initializable
         //TODO what about multiple reels etc
         bindPrinter(printerToUse);
         selectMaterial(printerSettings.getFilament0());
-        cmbCurrentMaterial.setValue(printerSettings.getFilament0());
+        cmbCurrentMaterial0.setValue(printerSettings.getFilament0());
         startPurge();
     }
 
@@ -431,7 +453,7 @@ public class PurgeInsetPanelController implements Initializable
             lastMaterialTemperature0.textProperty().unbind();
             currentMaterialTemperature0.textProperty().bind(
                 transitionManager.getCurrentMaterialTemperature(0).asString());
-            
+
             lastMaterialTemperature0.textProperty().bind(
                 transitionManager.getLastMaterialTemperature(0).asString());
 
@@ -443,9 +465,9 @@ public class PurgeInsetPanelController implements Initializable
                     setState((PurgeState) newValue);
                 }
             });
-            
+
             setupProceedButton();
-            
+
             transitionManager.start();
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
@@ -456,14 +478,14 @@ public class PurgeInsetPanelController implements Initializable
 
     private void setupMaterialCombo()
     {
-        cmbCurrentMaterial.setCellFactory(
+        cmbCurrentMaterial0.setCellFactory(
             (ListView<Filament> param) -> new FilamentCell());
 
-        cmbCurrentMaterial.setButtonCell(cmbCurrentMaterial.getCellFactory().call(null));
+        cmbCurrentMaterial0.setButtonCell(cmbCurrentMaterial0.getCellFactory().call(null));
 
         repopulateCmbCurrentMaterial();
 
-        cmbCurrentMaterial.valueProperty().addListener(
+        cmbCurrentMaterial0.valueProperty().addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
                 selectMaterial(newValue);
@@ -488,7 +510,8 @@ public class PurgeInsetPanelController implements Initializable
                 ex.printStackTrace();
                 steno.error("Error setting purge filament");
             }
-            textCurrentMaterial.setText(currentMaterial0.getLongFriendlyName() + " " + currentMaterial0.getMaterial().getFriendlyName());
+            textCurrentMaterial0.setText(currentMaterial0.getLongFriendlyName() + " "
+                + currentMaterial0.getMaterial().getFriendlyName());
             purgeTemperature0.setText(transitionManager.getPurgeTemperature(0).asString().get());
         }
     }
@@ -507,15 +530,15 @@ public class PurgeInsetPanelController implements Initializable
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 appFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
                 userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
             filamentList.addAll(appFilaments);
             filamentList.addAll(userFilaments);
-            cmbCurrentMaterial.setItems(filamentList);
+            cmbCurrentMaterial0.setItems(filamentList);
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
@@ -523,8 +546,8 @@ public class PurgeInsetPanelController implements Initializable
     }
 
     /**
-     * The proceed button should be disabled on the CONFIRM_TEMPERATURE page if the
-     * purge temperature is not greater than 0.
+     * The proceed button should be disabled on the CONFIRM_TEMPERATURE page if the purge
+     * temperature is not greater than 0.
      */
     private void setupProceedButton()
     {
@@ -538,10 +561,12 @@ public class PurgeInsetPanelController implements Initializable
             @Override
             protected boolean computeValue()
             {
-                if (! transitionManager.stateGUITProperty().get().equals(CONFIRM_TEMPERATURE)) {
+                if (!transitionManager.stateGUITProperty().get().equals(CONFIRM_TEMPERATURE))
+                {
                     return false;
                 }
-                if (transitionManager.getPurgeTemperature(0).greaterThan(0).get()) {
+                if (transitionManager.getPurgeTemperature(0).greaterThan(0).get())
+                {
                     return false;
                 }
                 return true;

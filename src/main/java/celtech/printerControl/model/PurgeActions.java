@@ -144,7 +144,7 @@ public class PurgeActions extends StateTransitionActions
 
         for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
-            steno.debug("purge temperature set to " + purgeTemperature.get(i).get());
+            steno.debug("purge temperature set to " + purgeTemperature.get(i).get() + " for heater " + i);
             printer.setNozzleHeaterTargetTemperature(i, purgeTemperature.get(i).get());
             printer.goToTargetNozzleHeaterTemperature(i);
         }
@@ -200,11 +200,11 @@ public class PurgeActions extends StateTransitionActions
         {
             abortAnyOngoingPrint();
             resetPrinter();
-            deregisterPrinterErrorHandler();
         } catch (PrinterException ex)
         {
-            System.out.println("Error running failed action");
+            steno.error("Error running failed action");
         }
+        deregisterPrinterErrorHandler();
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
