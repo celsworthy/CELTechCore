@@ -190,14 +190,14 @@ public abstract class MovementNode extends CommentableNode
         if (isDSet)
         {
             stringToReturn.append('D');
-            stringToReturn.append(threeDPformatter.format(d));
+            stringToReturn.append(fiveDPformatter.format(d));
             stringToReturn.append(' ');
         }
 
         if (isESet)
         {
             stringToReturn.append('E');
-            stringToReturn.append(threeDPformatter.format(e));
+            stringToReturn.append(fiveDPformatter.format(e));
             stringToReturn.append(' ');
         }
 

@@ -1,14 +1,15 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
-import celtech.gcodetranslator.postprocessing.nodes.CommentableNode;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
+import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
+import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
-import celtech.gcodetranslator.postprocessing.nodes.MovementNode;
+import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
@@ -21,6 +22,8 @@ import org.parboiled.BaseParser;
 import org.parboiled.Context;
 import org.parboiled.Rule;
 import org.parboiled.annotations.SuppressSubnodes;
+import org.parboiled.support.StringVar;
+import org.parboiled.support.Var;
 import org.parboiled.trees.TreeUtils;
 
 /**
@@ -39,6 +42,11 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         return thisLayer;
     }
 
+    public void resetLayer()
+    {
+        thisLayer = new LayerNode();
+    }
+
     public Rule Layer()
     {
         return Sequence(
@@ -50,118 +58,177 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         },
                         Newline()
                 ),
-                OneOrMore(FirstOf(
+                OneOrMore(
+                        FirstOf(
                                 CuraFillSection(),
                                 CuraInnerPerimeterSection(),
                                 CuraOuterPerimeterSection(),
-                                ChildDirective()),
+                                ChildDirective()
+                        ),
                         (Action) (Context context1) ->
                         {
                             if (!context1.getValueStack().isEmpty())
                             {
+                                steno.info("Adding child to layer");
                                 GCodeEventNode node = (GCodeEventNode) context1.getValueStack().pop();
-                                steno.info("Adding child " + node);
                                 TreeUtils.addChild(thisLayer, node);
                             }
                             return true;
                         }
-                )
+                ),
+                EOI
         );
     }
 
     // ;Blah blah blah\n
     Rule CommentDirective()
     {
-        return Sequence(';', ZeroOrMore(NotNewline()),
-                push(new CommentNode(match())),
-                Newline());
+        StringVar comment = new StringVar();
+
+        return Sequence(
+                TestNot(FillSectionNode.designator),
+                TestNot(InnerPerimeterSectionNode.designator),
+                TestNot(OuterPerimeterSectionNode.designator),
+                ';', ZeroOrMore(NotNewline()),
+                comment.set(match()),
+                Newline(),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        CommentNode node = new CommentNode(comment.get());
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
     }
 
     // M14 or M104
     Rule MCode()
     {
-        MCodeNode node = new MCodeNode();
+        Var<Integer> mValue = new Var<>();
+        Var<Integer> sValue = new Var<>();
 
         return Sequence(
                 Sequence('M', OneToThreeDigits(),
-                        (Action) (Context context1) ->
-                        {
-                            node.setMNumber(Integer.valueOf(context1.getMatch()));
-                            return true;
-                        },
-                        Optional(
-                                Sequence(
-                                        " S", ZeroOrMore(Digit()),
-                                        (Action) (Context context1) ->
-                                        {
-                                            node.setSNumber(Integer.valueOf(context1.getMatch()));
-                                            return true;
-                                        }
-                                )
+                        mValue.set(Integer.valueOf(match()))
+                ),
+                Optional(
+                        Sequence(
+                                " S", ZeroOrMore(Digit()),
+                                sValue.set(Integer.valueOf(match()))
                         )
                 ),
-                (Action) (Context context1) ->
+                Newline(),
+                new Action()
                 {
-                    context1.getValueStack().push(node);
-                    return true;
-                },
-                Newline()
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        MCodeNode node = new MCodeNode();
+                        node.setMNumber(mValue.get());
+                        if (sValue.isSet())
+                        {
+                            node.setSNumber(sValue.get());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
         );
     }
 
     // T1 or T12 or T123...
     Rule ToolSelect()
     {
+        Var<Integer> toolNumber = new Var<>();
+
         return Sequence('T', OneOrMore(Digit()),
-                push(new ToolSelectNode()),
-                Newline());
+                toolNumber.set(Integer.valueOf(match())),
+                Newline(),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        ToolSelectNode node = new ToolSelectNode();
+                        node.setToolNumber(toolNumber.get());
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
     }
 
     // G3 or G12
     Rule GCodeDirective()
     {
+        Var<Integer> gcodeValue = new Var<>();
+
         return Sequence('G', OneOrTwoDigits(),
-                push(new GCodeDirectiveNode()),
-                Newline());
+                gcodeValue.set(Integer.valueOf(match())),
+                Newline(),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        GCodeDirectiveNode node = new GCodeDirectiveNode();
+                        node.setGValue(gcodeValue.get());
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                });
     }
 
     //Retract
     // G1 F1800 E-0.50000
     Rule RetractDirective()
     {
-        RetractNode node = new RetractNode();
+        Var<Double> dValue = new Var<>();
+        Var<Double> eValue = new Var<>();
+        Var<Integer> fValue = new Var<>();
 
         return Sequence("G1 ",
-                Sequence(
-                        (Action) (Context context1) ->
-                        {
-                            context1.getValueStack().push(node);
-                            return true;
-                        },
-                        Feedrate()),
-                FirstOf(
-                        Sequence("D", NegativeFloatingPointNumber(),
-                                (Action) (Context context1) ->
-                                {
-                                    steno.info("Retract - adding D to node : " + node.toString());
-                                    node.setD(Float.valueOf(context1.getMatch()));
-                                    return true;
-                                }),
-                        Sequence("E", NegativeFloatingPointNumber(),
-                                (Action) (Context context1) ->
-                                {
-                                    steno.info("Retract - adding E to node : " + node.toString());
-                                    node.setE(Float.valueOf(context1.getMatch()));
-                                    return true;
-                                })
+                Optional(
+                        Feedrate(fValue)
                 ),
-                (Action) (Context context1) ->
+                OneOrMore(
+                        FirstOf(
+                                Sequence("D", NegativeFloatingPointNumber(),
+                                        dValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("E", NegativeFloatingPointNumber(),
+                                        eValue.set(Double.valueOf(match())),
+                                        Optional(' '))
+                        )
+                ),
+                Newline(),
+                new Action()
                 {
-                    steno.info("Retract - adding node to stack: " + node.toString());
-                    context1.getValueStack().push(node);
-                    return true;
-                },
-                Newline()
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        RetractNode node = new RetractNode();
+                        if (dValue.isSet())
+                        {
+                            node.setD(dValue.get());
+                        }
+                        if (eValue.isSet())
+                        {
+                            node.setE(eValue.get());
+                        }
+                        if (fValue.isSet())
+                        {
+                            node.setFeedRate(fValue.get());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
         );
     }
 
@@ -169,149 +236,197 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     // G1 F1800 E0.50000
     Rule UnretractDirective()
     {
-        UnretractNode node = new UnretractNode();
+        Var<Double> dValue = new Var<>();
+        Var<Double> eValue = new Var<>();
+        Var<Integer> fValue = new Var<>();
 
         return Sequence("G1 ",
-                Sequence(
-                        (Action) (Context context1) ->
-                        {
-                            context1.getValueStack().push(node);
-                            return true;
-                        },
-                        Feedrate()
+                Optional(
+                        Feedrate(fValue)
                 ),
                 OneOrMore(
                         FirstOf(
                                 Sequence("D", PositiveFloatingPointNumber(),
-                                        (Action) (Context context1) ->
-                                        {
-                                            steno.info("Unretract - adding D to node : " + node.toString());
-                                            node.setD(Float.valueOf(context1.getMatch()));
-                                            return true;
-                                        }),
+                                        dValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
                                 Sequence("E", PositiveFloatingPointNumber(),
-                                        (Action) (Context context1) ->
-                                        {
-                                            steno.info("Unretract - adding E to node : " + node.toString());
-                                            node.setE(Float.valueOf(context1.getMatch()));
-                                            return true;
-                                        })
+                                        eValue.set(Double.valueOf(match())),
+                                        Optional(' '))
                         )
                 ),
-                (Action) (Context context1) ->
+                Newline(),
+                new Action()
                 {
-                    steno.info("Unretract - adding node to stack: " + node.toString());
-                    context1.getValueStack().push(node);
-                    return true;
-                },
-                Newline());
+                    @Override
+                    public boolean run(Context context
+                    )
+                    {
+                        UnretractNode node = new UnretractNode();
+                        if (dValue.isSet())
+                        {
+                            node.setD(dValue.get());
+                        }
+                        if (eValue.isSet())
+                        {
+                            node.setE(eValue.get());
+                        }
+                        if (fValue.isSet())
+                        {
+                            node.setFeedRate(fValue.get());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
     }
 
     //Travel
     // G0 F12000 X88.302 Y42.421 Z1.020
     Rule TravelDirective()
     {
-        TravelNode node = new TravelNode();
+        Var<Integer> fValue = new Var<>();
+        Var<Double> xValue = new Var<>();
+        Var<Double> yValue = new Var<>();
+        Var<Double> zValue = new Var<>();
 
         return Sequence("G0 ",
                 Optional(
-                        Sequence(
-                                (Action) (Context context1) ->
-                                {
-                                    context1.getValueStack().push(node);
-                                    return true;
-                                },
-                                Feedrate())
+                        Feedrate(fValue)
                 ),
-                Optional(
-                        Sequence("X", FloatingPointNumber(),
-                                (Action) (Context context1) ->
-                                {
-                                    node.setX(Float.valueOf(context1.getMatch()));
-                                    return true;
-                                },
-                                Optional(' '))
+                OneOrMore(
+                        FirstOf(
+                                Sequence("X", FloatingPointNumber(),
+                                        xValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("Y", FloatingPointNumber(),
+                                        yValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("Z", FloatingPointNumber(),
+                                        zValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                )
+                        )
                 ),
-                Optional(
-                        Sequence("Y", FloatingPointNumber(),
-                                (Action) (Context context1) ->
-                                {
-                                    node.setY(Float.valueOf(context1.getMatch()));
-                                    return true;
-                                },
-                                Optional(' '))
-                ),
-                Optional(
-                        Sequence("Z", FloatingPointNumber(),
-                                (Action) (Context context1) ->
-                                {
-                                    node.setZ(Float.valueOf(context1.getMatch()));
-                                    return true;
-                                },
-                                Optional(' '))
-                ),
-                (Action) (Context context1) ->
+                Newline(),
+                new Action()
                 {
-                    context1.getValueStack().push(node);
-                    return true;
-                },
-                Newline());
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        TravelNode node = new TravelNode();
+
+                        if (fValue.isSet())
+                        {
+                            node.setFeedRate(fValue.get());
+                        }
+
+                        if (xValue.isSet())
+                        {
+                            node.setX(xValue.get());
+                        }
+
+                        if (yValue.isSet())
+                        {
+                            node.setY(yValue.get());
+                        }
+
+                        if (zValue.isSet())
+                        {
+                            node.setZ(zValue.get());
+                        }
+
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
     }
 
     //Extrusion
     // G1 F840 X88.700 Y44.153 E5.93294
     Rule ExtrusionDirective()
     {
-        ExtrusionNode node = new ExtrusionNode();
+        Var<Integer> fValue = new Var<>();
+        Var<Double> xValue = new Var<>();
+        Var<Double> yValue = new Var<>();
+        Var<Double> zValue = new Var<>();
+        Var<Double> eValue = new Var<>();
+        Var<Double> dValue = new Var<>();
 
         return Sequence("G1 ",
                 Optional(
-                        Sequence(
-                                (Action) (Context context1) ->
-                                {
-                                    context1.getValueStack().push(node);
-                                    return true;
-                                },
-                                Feedrate())
+                        Feedrate(fValue)
                 ),
-                Sequence("X", FloatingPointNumber(),
-                        (Action) (Context context1) ->
-                        {
-                            node.setX(Float.valueOf(context1.getMatch()));
-                            return true;
-                        },
-                        ' '),
-                Sequence("Y", FloatingPointNumber(),
-                        (Action) (Context context1) ->
-                        {
-                            node.setY(Float.valueOf(context1.getMatch()));
-                            return true;
-                        },
-                        ' '),
-                OneOrMore(
-                        FirstOf(
-                                Sequence("D", FloatingPointNumber(),
-                                        (Action) (Context context1) ->
-                                        {
-                                            node.setD(Float.valueOf(context1.getMatch()));
-                                            return true;
-                                        },
-                                        Optional(' ')),
-                                Sequence("E", FloatingPointNumber(),
-                                        (Action) (Context context1) ->
-                                        {
-                                            node.setE(Float.valueOf(context1.getMatch()));
-                                            return true;
-                                        },
-                                        Optional(' '))
+                Optional(
+                        Sequence("X", FloatingPointNumber(),
+                                xValue.set(Double.valueOf(match())),
+                                ' ',
+                                "Y", FloatingPointNumber(),
+                                yValue.set(Double.valueOf(match())),
+                                Optional(' ')
                         )
                 ),
-                (Action) (Context context1) ->
+                OneOrMore(
+                        FirstOf(
+                                Sequence("D", PositiveFloatingPointNumber(),
+                                        dValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("E", PositiveFloatingPointNumber(),
+                                        eValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                )
+                        )
+                ),
+                Newline(),
+                new Action()
                 {
-                    context1.getValueStack().push(node);
-                    return true;
-                },
-                Newline());
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        ExtrusionNode node = new ExtrusionNode();
+
+                        if (fValue.isSet())
+                        {
+                            node.setFeedRate(fValue.get());
+                        }
+
+                        if (xValue.isSet())
+                        {
+                            node.setX(xValue.get());
+                        }
+
+                        if (yValue.isSet())
+                        {
+                            node.setY(yValue.get());
+                        }
+
+                        if (zValue.isSet())
+                        {
+                            node.setZ(zValue.get());
+                        }
+
+                        if (dValue.isSet())
+                        {
+                            node.setD(dValue.get());
+                        }
+
+                        if (eValue.isSet())
+                        {
+                            node.setE(eValue.get());
+                        }
+
+                        context.getValueStack()
+                        .push(node);
+
+                        return true;
+                    }
+                }
+        );
     }
 
     //Layer change
@@ -334,7 +449,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         FillSectionActionClass createSectionAction = new FillSectionActionClass();
 
         return Sequence(
-                ";TYPE:FILL",
+                FillSectionNode.designator,
                 createSectionAction,
                 Newline(),
                 OneOrMore(ChildDirective(),
@@ -347,10 +462,14 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                             return true;
                         }
                 ),
-                (Action) (Context context1) ->
+                new Action()
                 {
-                    context1.getValueStack().push(createSectionAction.getNode());
-                    return true;
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        context.getValueStack().push(createSectionAction.getNode());
+                        return true;
+                    }
                 }
         );
     }
@@ -362,7 +481,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         OuterPerimeterSectionActionClass createSectionAction = new OuterPerimeterSectionActionClass();
 
         return Sequence(
-                ";TYPE:WALL-OUTER",
+                OuterPerimeterSectionNode.designator,
                 createSectionAction,
                 Newline(),
                 OneOrMore(ChildDirective(),
@@ -375,10 +494,14 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                             return true;
                         }
                 ),
-                (Action) (Context context1) ->
+                new Action()
                 {
-                    context1.getValueStack().push(createSectionAction.getNode());
-                    return true;
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        context.getValueStack().push(createSectionAction.getNode());
+                        return true;
+                    }
                 }
         );
     }
@@ -390,7 +513,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         InnerPerimeterSectionActionClass createSectionAction = new InnerPerimeterSectionActionClass();
 
         return Sequence(
-                ";TYPE:WALL-INNER",
+                InnerPerimeterSectionNode.designator,
                 createSectionAction,
                 Newline(),
                 OneOrMore(ChildDirective(),
@@ -403,10 +526,14 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                             return true;
                         }
                 ),
-                (Action) (Context context1) ->
+                new Action()
                 {
-                    context1.getValueStack().push(createSectionAction.getNode());
-                    return true;
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        context.getValueStack().push(createSectionAction.getNode());
+                        return true;
+                    }
                 }
         );
     }
@@ -414,7 +541,8 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     @SuppressSubnodes
     Rule ChildDirective()
     {
-        return FirstOf(CommentDirective(),
+        return FirstOf(
+                CommentDirective(),
                 MCode(),
                 LayerChangeDirective(),
                 GCodeDirective(),
@@ -423,7 +551,8 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 UnretractDirective(),
                 TravelDirective(),
                 ExtrusionDirective(),
-                UnrecognisedLine());
+                UnrecognisedLine()
+        );
     }
 
     @SuppressSubnodes
@@ -493,21 +622,11 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     }
 
     @SuppressSubnodes
-    Rule Feedrate()
+    Rule Feedrate(Var<Integer> feedrate)
     {
-        return FirstOf(
-                Sequence('F', OneOrMore(Digit()),
-                        (Action) (Context context1) ->
-                        {
-                            ((MovementNode) context1.getValueStack().pop()).setFeedRate(Integer.valueOf(context1.getMatch()));
-                            return true;
-                        },
-                        Optional(' ')),
-                (Action) (Context context1) ->
-                {
-                    context1.getValueStack().pop();
-                    return true;
-                });
+        return Sequence('F', OneOrMore(Digit()),
+                feedrate.set(Integer.valueOf(match())),
+                Optional(' '));
     }
 
     //Anything else we didn't parse... must always be the last thing we look for

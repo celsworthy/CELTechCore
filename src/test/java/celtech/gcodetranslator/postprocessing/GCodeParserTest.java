@@ -76,6 +76,40 @@ public class GCodeParserTest
     }
 
     @Test
+    public void negativeFloatingPointNumberTest()
+    {
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.NegativeFloatingPointNumber());
+
+        String positiveNumber = "1.20\n";
+        ParsingResult positiveNumberResult = runner.run(positiveNumber);
+        assertFalse(positiveNumberResult.hasErrors());
+        assertFalse(positiveNumberResult.matched);
+
+        String negativeNumber = "-1.20\n";
+        ParsingResult negativeNumberResult = runner.run(negativeNumber);
+        assertFalse(negativeNumberResult.hasErrors());
+        assertTrue(negativeNumberResult.matched);
+    }
+
+    @Test
+    public void positiveFloatingPointNumberTest()
+    {
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.PositiveFloatingPointNumber());
+
+        String positiveNumber = "1.20\n";
+        ParsingResult positiveNumberResult = runner.run(positiveNumber);
+        assertFalse(positiveNumberResult.hasErrors());
+        assertTrue(positiveNumberResult.matched);
+
+        String negativeNumber = "-1.20\n";
+        ParsingResult negativeNumberResult = runner.run(negativeNumber);
+        assertFalse(negativeNumberResult.hasErrors());
+        assertFalse(negativeNumberResult.matched);
+    }
+
+    @Test
     public void travelDirective()
     {
         String inputData = ";LAYER:0\nG0 F12000 X88.302 Y42.421 Z1.020\n";
@@ -110,7 +144,7 @@ public class GCodeParserTest
     @Test
     public void unretractDirective()
     {
-        String inputData = ";LAYER:0\nG1 F1800 E0.00000\nG1 F840 E1.2";
+        String inputData = ";LAYER:0\nG1 F1800 E0.00000\nG1 F840 E1.2\n";
         GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
         BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
         ParsingResult result = runner.run(inputData);
@@ -119,8 +153,19 @@ public class GCodeParserTest
         assertTrue(result.matched);
         LayerNode layerNode = gcodeParser.getLayerNode();
         assertNotNull(layerNode);
-        assertEquals(1, layerNode.getChildren().size());
+        assertEquals(2, layerNode.getChildren().size());
+
         assertEquals(UnretractNode.class, layerNode.getChildren().get(0).getClass());
+        UnretractNode node1 = (UnretractNode) layerNode.getChildren().get(0);
+        assertEquals(1800, node1.getFeedRate(), 0.00001);
+        assertEquals(0, node1.getE(), 0.00001);
+        assertEquals(0, node1.getD(), 0.00001);
+
+        assertEquals(UnretractNode.class, layerNode.getChildren().get(1).getClass());
+        UnretractNode node2 = (UnretractNode) layerNode.getChildren().get(1);
+        assertEquals(840, node2.getFeedRate(), 0.00001);
+        assertEquals(1.2, node2.getE(), 0.00001);
+        assertEquals(0, node2.getD(), 0.00001);
     }
 
     @Test
@@ -171,9 +216,9 @@ public class GCodeParserTest
         assertEquals(1, layerNode.getChildren().size());
         assertEquals(ExtrusionNode.class, layerNode.getChildren().get(0).getClass());
 
+        gcodeParser.resetLayer();
+
         String dOnlyExtrude = ";LAYER:0\nG1 F100 X1.4 Y12.3 D1.3\n";
-        gcodeParser = Parboiled.createParser(GCodeParser.class);
-        runner = new BasicParseRunner<>(gcodeParser.Layer());
         ParsingResult dOnlyExtrudeResult = runner.run(dOnlyExtrude);
         assertFalse(dOnlyExtrudeResult.hasErrors());
         assertTrue(dOnlyExtrudeResult.matched);
@@ -218,6 +263,19 @@ public class GCodeParserTest
     }
 
     @Test
+    public void commentDirectiveNoMatch()
+    {
+        String inputData = InnerPerimeterSectionNode.designator + "\n";
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class
+        );
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.CommentDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertFalse(result.matched);
+    }
+
+    @Test
     public void layerChangeDirective()
     {
         String inputData = ";LAYER:0\nG0 Z1.3\n";
@@ -237,29 +295,48 @@ public class GCodeParserTest
     @Test
     public void compoundTest()
     {
-//        String inputData = ";Generated with Cura_SteamEngine DEV\n"
-//                + ";Layer count: 9\n"
         String inputData = ";LAYER:0\n"
                 + "M107\n"
                 + "G1 F1800 E-0.50000\n"
                 + "G0 F12000 X88.302 Y42.421 Z1.020\n"
+                + ";TYPE:WALL-INNER\n"
                 + "G1 F1800 E0.00000\n"
-                + "G1 X12.3 Y14.5 E1.00000\n";
-        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class
-        );
-        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.Layer());
+                + "G1 F840 X115.304 Y42.421 E5.40403\n"
+                + "G1 X115.304 Y114.420 E14.40948\n"
+                + "G1 X88.302 Y114.420 E5.40403\n"
+                + "G1 X88.302 Y42.421 E14.40948\n"
+                + "G0 F12000 X87.302 Y41.421\n"
+                + ";TYPE:WALL-OUTER\n"
+                + "G1 F840 X116.304 Y41.421 E5.80430\n"
+                + "G1 X116.304 Y115.420 E14.80975\n"
+                + "G1 X87.302 Y115.420 E5.80430\n"
+                + "G1 X87.302 Y41.421 E14.80975\n"
+                + "G0 F12000 X87.902 Y41.931\n"
+                + "G0 X88.782 Y42.820\n"
+                + ";TYPE:FILL\n"
+                + "G1 F840 X114.903 Y68.941 E5.91448\n"
+                + "G0 F12000 X114.903 Y70.355\n"
+                + "G1 F840 X88.700 Y44.153 E5.93294\n"
+                + "G0 F12000 X88.700 Y45.567\n"
+                + "G1 F840 X114.903 Y71.769 E5.93294\n"
+                + "G0 F12000 X114.903 Y73.184\n";
+
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
         ParsingResult result = runner.run(inputData);
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
         LayerNode layerNode = gcodeParser.getLayerNode();
         assertNotNull(layerNode);
-        assertEquals(5, layerNode.getChildren().size());
+        assertEquals(6, layerNode.getChildren().size());
+        
         assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
         assertEquals(RetractNode.class, layerNode.getChildren().get(1).getClass());
         assertEquals(TravelNode.class, layerNode.getChildren().get(2).getClass());
-        assertEquals(UnretractNode.class, layerNode.getChildren().get(3).getClass());
-        assertEquals(ExtrusionNode.class, layerNode.getChildren().get(4).getClass());
+        assertEquals(InnerPerimeterSectionNode.class, layerNode.getChildren().get(3).getClass());
+        assertEquals(OuterPerimeterSectionNode.class, layerNode.getChildren().get(4).getClass());
+        assertEquals(FillSectionNode.class, layerNode.getChildren().get(5).getClass());
     }
 
     @Test

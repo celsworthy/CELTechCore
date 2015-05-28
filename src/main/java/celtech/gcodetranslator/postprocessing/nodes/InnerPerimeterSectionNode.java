@@ -6,13 +6,15 @@ package celtech.gcodetranslator.postprocessing.nodes;
  */
 public class InnerPerimeterSectionNode extends GCodeEventNode
 {
-
+    public static final String designator =";TYPE:WALL-INNER";
+    
     public InnerPerimeterSectionNode()
     {
     }
-        @Override
+
+    @Override
     public String renderForOutput()
     {
-        return toString();
+        return designator;
     }
 }

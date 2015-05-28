@@ -2,6 +2,7 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.printerControl.model.Head;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.parboiled.Parboiled;
 import static org.parboiled.errors.ErrorUtils.printParseErrors;
-import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.support.ParsingResult;
 
@@ -23,9 +23,9 @@ public class PostProcessor
 
     private Stenographer steno = StenographerFactory.getStenographer(PostProcessor.class.getName());
     private final String gcodeFileToProcess;
-    private final String gcodeOutputFile;
+    private final String gcodeOutputFile; 
 
-    public PostProcessor(String gcodeFileToProcess, String gcodeOutputFile)
+    public PostProcessor(String gcodeFileToProcess, String gcodeOutputFile, Head currentHead)
     {
         this.gcodeFileToProcess = gcodeFileToProcess;
         this.gcodeOutputFile = gcodeOutputFile;
@@ -87,6 +87,7 @@ public class PostProcessor
             } else
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
+                postProcess(layerNode);
                 outputNodes(layerNode, 0);
             }
         }
@@ -105,5 +106,10 @@ public class PostProcessor
             outputNodes(child, level);
             level--;
         }
+    }
+
+    private void postProcess(LayerNode layerNode)
+    {
+        
     }
 }
