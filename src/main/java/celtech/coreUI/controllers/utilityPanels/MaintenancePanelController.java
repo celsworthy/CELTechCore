@@ -54,8 +54,9 @@ public class MaintenancePanelController implements Initializable
     private final FileChooser gcodeFileChooser = new FileChooser();
     private final TransferGCodeToPrinterService gcodePrintService = new TransferGCodeToPrinterService();
 
-    private final BooleanProperty printingdisabled = new SimpleBooleanProperty(false);
-    private final BooleanProperty noFilamentOrPrintingdisabled = new SimpleBooleanProperty(false);
+    private final BooleanProperty printingDisabled = new SimpleBooleanProperty(false);
+    private final BooleanProperty noHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty noFilamentOrPrintingDisabled = new SimpleBooleanProperty(false);
 
     @FXML
     private AnchorPane container;
@@ -238,18 +239,18 @@ public class MaintenancePanelController implements Initializable
             }
         });
 
-        YTestButton.disableProperty().bind(printingdisabled);
-        PurgeMaterialButton.disableProperty().bind(noFilamentOrPrintingdisabled);
-        T1CleanButton.disableProperty().bind(noFilamentOrPrintingdisabled);
-        EjectStuckMaterialButton.disableProperty().bind(noFilamentOrPrintingdisabled);
-        SpeedTestButton.disableProperty().bind(printingdisabled);
-        XTestButton.disableProperty().bind(printingdisabled);
-        T0CleanButton.disableProperty().bind(noFilamentOrPrintingdisabled);
-        LevelGantryButton.disableProperty().bind(printingdisabled);
-        ZTestButton.disableProperty().bind(printingdisabled);
-        loadFirmwareGCodeMacroButton.disableProperty().bind(printingdisabled.or(Lookup.
+        YTestButton.disableProperty().bind(printingDisabled);
+        PurgeMaterialButton.disableProperty().bind(noFilamentOrPrintingDisabled.or(noHead));
+        T1CleanButton.disableProperty().bind(noFilamentOrPrintingDisabled.or(noHead));
+        EjectStuckMaterialButton.disableProperty().bind(noFilamentOrPrintingDisabled);
+        SpeedTestButton.disableProperty().bind(printingDisabled);
+        XTestButton.disableProperty().bind(printingDisabled);
+        T0CleanButton.disableProperty().bind(noFilamentOrPrintingDisabled.or(noHead));
+        LevelGantryButton.disableProperty().bind(printingDisabled);
+        ZTestButton.disableProperty().bind(printingDisabled);
+        loadFirmwareGCodeMacroButton.disableProperty().bind(printingDisabled.or(Lookup.
             getUserPreferences().advancedModeProperty().not()));
-        sendGCodeSDGCodeMacroButton.disableProperty().bind(printingdisabled.or(Lookup.
+        sendGCodeSDGCodeMacroButton.disableProperty().bind(printingDisabled.or(Lookup.
             getUserPreferences().advancedModeProperty().not()));
 
         currentFirmwareField.setStyle("-fx-font-weight: bold;");
@@ -321,10 +322,12 @@ public class MaintenancePanelController implements Initializable
                     sendGCodeSDGCodeMacroButton.disableProperty().unbind();
                     loadFirmwareGCodeMacroButton.disableProperty().unbind();
 
-                    printingdisabled.unbind();
-                    printingdisabled.set(true);
-                    noFilamentOrPrintingdisabled.unbind();
-                    noFilamentOrPrintingdisabled.set(true);
+                    printingDisabled.unbind();
+                    printingDisabled.set(true);
+                    noHead.unbind();
+                    noHead.set(true);
+                    noFilamentOrPrintingDisabled.unbind();
+                    noFilamentOrPrintingDisabled.set(true);
                 }
 
                 connectedPrinter = newValue;
@@ -333,15 +336,15 @@ public class MaintenancePanelController implements Initializable
                 {
                     readFirmwareVersion();
 
-                    printingdisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
+                    printingDisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
                             PrinterStatus.IDLE));
+                    
+                    noHead.bind(connectedPrinter.headProperty().isNull());
 
                     //TODO modify for multiple extruders
-                    noFilamentOrPrintingdisabled.bind(printingdisabled
-                        .or(connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().
-                            not()
-                            .and(connectedPrinter.extrudersProperty().get(1).
-                                filamentLoadedProperty().not())));
+                    noFilamentOrPrintingDisabled.bind(printingDisabled
+                    .or(connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not()
+                   .and(connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not())));
                 }
             });
     } catch (Exception ex) {ex.printStackTrace();}

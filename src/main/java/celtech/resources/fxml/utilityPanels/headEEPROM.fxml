@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import celtech.coreUI.components.*?>
 
-<AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="-1" prefWidth="-1" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.HeadEEPROMController">
+<AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="-1" prefWidth="-1" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.HeadEEPROMController">
     <children>
         <VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="5" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -22,6 +22,7 @@
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
@@ -32,19 +33,21 @@
                         <RestrictedTextField fx:id="headTypeCode" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <RestrictedTextField id="uniqueID" fx:id="headUniqueID" disable="true" forceUpperCase="true" maxLength="24" prefHeight="25.0" restrict="A-Z0-9" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
                         <RestrictedTextField fx:id="headHourCounter" disable="true" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <RestrictedTextField fx:id="headMaxTemperature" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                        <RestrictedTextField fx:id="lastFilamentTemperature0" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                        <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                        <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="headMaxTemperature" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <RestrictedTextField fx:id="lastFilamentTemperature0" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                         
                         <Label text="%headPanel.headType" GridPane.halignment="RIGHT" />
                         <Label text="%headPanel.uniqueId" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
                         <Label text="%headPanel.hourCounter" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-                        <Label text="%headPanel.maxTemp" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
-                        <Label text="%headPanel.lastFilamentTemperature" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
-                        <Label text="%headPanel.thermBeta" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
-                        <Label text="%headPanel.thermTCal" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
-                  <RestrictedTextField fx:id="lastFilamentTemperature1" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                        <Label text="%headPanel.maxTemp" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
+                        <Label text="%headPanel.lastFilamentTemperature" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+                        <Label text="%headPanel.thermBeta" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
+                        <Label text="%headPanel.thermTCal" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+                  <RestrictedTextField fx:id="lastFilamentTemperature1" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                  <Label text="Heater 1" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                  <Label text="Heater 2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
                     </children>
                 </GridPane>
                 <GridPane fx:id="headEEPROMOffsets" styleClass="borderFrame">

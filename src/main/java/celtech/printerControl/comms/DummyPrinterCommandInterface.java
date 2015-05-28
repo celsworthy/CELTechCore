@@ -55,6 +55,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         DummyPrinterCommandInterface.class.getName());
 
     private final String defaultRoboxAttachCommand = "DEFAULT";
+    private final String defaultRoboxAttachCommand2 = "DEFAULS";
     private final String attachHeadCommand = "ATTACH HEAD ";
     private final String detachHeadCommand = "DETACH HEAD";
     private final String attachReelCommand = "ATTACH REEL ";
@@ -84,9 +85,11 @@ public class DummyPrinterCommandInterface extends CommandInterface
     private int linesInCurrentPrintJob = 0;
 
     private static int ROOM_TEMPERATURE = 20;
-    HeaterMode nozzleHeaterMode = HeaterMode.OFF;
+    HeaterMode nozzleHeaterModeS = HeaterMode.OFF;
+    HeaterMode nozzleHeaterModeT = HeaterMode.OFF;
     protected int currentNozzleTemperature = ROOM_TEMPERATURE;
-    protected int nozzleTargetTemperature = 210;
+    protected int nozzleTargetTemperatureS = 210;
+    protected int nozzleTargetTemperatureT = 210;
     HeaterMode bedHeaterMode = HeaterMode.OFF;
     protected int currentBedTemperature = ROOM_TEMPERATURE;
     protected int bedTargetTemperature = 30;
@@ -121,14 +124,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
 
     private void handleNozzleTempChange()
     {
-        if (nozzleHeaterMode != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperature)
+        if (nozzleHeaterModeS != HeaterMode.OFF && currentNozzleTemperature < nozzleTargetTemperatureS)
         {
             currentNozzleTemperature += 10;
-            if (currentNozzleTemperature > nozzleTargetTemperature)
+            if (currentNozzleTemperature > nozzleTargetTemperatureS)
             {
-                currentNozzleTemperature = nozzleTargetTemperature;
+                currentNozzleTemperature = nozzleTargetTemperatureS;
             }
-        } else if (nozzleHeaterMode == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE)
+        } else if (nozzleHeaterModeS == HeaterMode.OFF && currentNozzleTemperature > ROOM_TEMPERATURE)
         {
             currentNozzleTemperature -= 10;
             if (currentNozzleTemperature < ROOM_TEMPERATURE)
@@ -136,9 +139,9 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 currentNozzleTemperature = ROOM_TEMPERATURE;
             }
         }
-        currentStatus.setNozzle0HeaterMode(nozzleHeaterMode);
+        currentStatus.setNozzle0HeaterMode(nozzleHeaterModeS);
         currentStatus.setNozzle0Temperature(currentNozzleTemperature);
-        currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperature);
+        currentStatus.setNozzle0TargetTemperature(nozzleTargetTemperatureS);
     }
 
     private void handleBedTempChange()
@@ -396,6 +399,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 attachHead("RBX01-SM");
                 attachReel("RBX-PLA-OR022", 0);
                 currentStatus.setFilament1SwitchStatus(true);
+            } else if (messageData.startsWith(defaultRoboxAttachCommand2)) {
+                gcodeResponse.setMessagePayload(
+                    "Adding dual material head, 1 extruder loaded with red ABS to dummy printer");
+                attachExtruder(0);
+                attachHead("RBX01-DM");
+                attachReel("RBX-ABS-RD537", 0);
+                currentStatus.setFilament1SwitchStatus(true);
+            
             } else if (messageData.startsWith(attachHeadCommand))
             {
                 String headName = messageData.replaceAll(attachHeadCommand, "");
@@ -504,16 +515,25 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 currentStatus.setSdCardPresent(false);
             } else if (messageData.startsWith("M104 S"))
             {
-                nozzleTargetTemperature = Integer.parseInt(messageData.substring(6));
-                steno.debug("set temp to " + nozzleTargetTemperature);
-                if (nozzleTargetTemperature == 0)
+                nozzleTargetTemperatureS = Integer.parseInt(messageData.substring(6));
+                steno.debug("set temp to " + nozzleTargetTemperatureS);
+                if (nozzleTargetTemperatureS == 0)
                 {
-                    nozzleHeaterMode = HeaterMode.OFF;
-                    steno.debug("set heater mode off");
+                    nozzleHeaterModeS = HeaterMode.OFF;
+                    steno.debug("set heater mode off for S");
+                }
+            } else if (messageData.startsWith("M104 T"))
+            {
+                nozzleTargetTemperatureT = Integer.parseInt(messageData.substring(6));
+                steno.debug("set temp to " + nozzleTargetTemperatureT);
+                if (nozzleTargetTemperatureT == 0)
+                {
+                    nozzleHeaterModeT = HeaterMode.OFF;
+                    steno.debug("set heater mode off for T");
                 }
             } else if (messageData.startsWith("M104"))
             {
-                nozzleHeaterMode = HeaterMode.NORMAL;
+                nozzleHeaterModeS = HeaterMode.NORMAL;
                 steno.debug("set heater mode normal");
             } else if (messageData.startsWith("M140 S") || messageData.startsWith("M139 S"))
             {

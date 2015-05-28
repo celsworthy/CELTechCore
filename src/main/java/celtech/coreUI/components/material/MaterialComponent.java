@@ -234,11 +234,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             this.undoableProject = new UndoableProject(project);
         }
-        getSelectedFilamentProperty().addListener(
+        selectedFilamentProperty.addListener(
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
                 if (extruderNumber == 0)
                 {
+                    System.out.println("set project fil to " + newValue);
                     undoableProject.setExtruder0Filament(newValue);
                 } else
                 {
@@ -341,10 +342,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             {
                 if (newValue instanceof Filament)
                 {
+                    System.out.println("XXX cmb set filament to " + cmbMaterials.getValue());
                     selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
                     removeUnknownFromCombo();
                 } else
                 {
+                    System.out.println("XXX cmb set filament to null");
                     // must be "Unknown"
                     selectedFilamentProperty.set(null);
                 }
@@ -366,6 +369,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             currentFilamentId = ((Filament) currentValue).getFilamentID();
         }
+        System.out.println("current filament id is " + currentFilamentId);
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
         ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
@@ -403,6 +407,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         if (mode == Mode.LAYOUT)
         {
+            System.out.println("reselect filament id " + currentFilamentId);
             reselectFilamentId(currentFilamentId);
         }
 

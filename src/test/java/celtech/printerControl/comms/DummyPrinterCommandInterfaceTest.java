@@ -34,7 +34,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
         
         hardwarePrinter.setNozzleHeaterTargetTemperature(0, 200);
 
-        assertEquals(200, commandInterface.nozzleTargetTemperature);
+        assertEquals(200, commandInterface.nozzleTargetTemperatureS);
         
 //        NozzleHeater nozzleHeater = hardwarePrinter.headProperty().get().getNozzleHeaters().get(0);
 //        assertEquals(200, nozzleHeater.nozzleTargetTemperatureProperty().get());
@@ -51,7 +51,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
         commandInterface.setPrinter(hardwarePrinter);
         hardwarePrinter.goToTargetNozzleHeaterTemperature(0);
 
-        assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterMode);
+        assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterModeS);
 
     }  
     
@@ -65,9 +65,9 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
         commandInterface.setPrinter(hardwarePrinter);
         
         hardwarePrinter.goToTargetNozzleHeaterTemperature(0);
-        assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterMode);
+        assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterModeS);
         hardwarePrinter.switchAllNozzleHeatersOff();
-        assertEquals(HeaterMode.OFF, commandInterface.nozzleHeaterMode);
+        assertEquals(HeaterMode.OFF, commandInterface.nozzleHeaterModeS);
 
     }     
 

@@ -39,7 +39,13 @@ public class HiddenKey
                 {
                     triggerListeners("dummy:", "ATTACH EXTRUDER 1");
                 }
-                break;                
+                break;  
+            case DIGIT3:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:", "DEFAULS");
+                }
+                break;                 
             case B:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
