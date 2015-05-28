@@ -99,20 +99,21 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                         nozzle2Data.getDefaultYOffset(),
                                         0,
                                         savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(),
+                                        savedHeadData.getLastFilamentTemperature(0),
+                                        savedHeadData.getLastFilamentTemperature(1),
                                         savedHeadData.getHeadHours());
     }
 
     private void heatNozzle() throws InterruptedException, PrinterException
     {
-        printer.goToTargetNozzleTemperature();
+        printer.goToTargetNozzleHeaterTemperature(0);
         printer.homeAllAxes(true, userOrErrorCancellable);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
         }
 
-        printer.goToTargetNozzleTemperature();
+        printer.goToTargetNozzleHeaterTemperature(0);
         printer.goToZPosition(50);
         printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(),
                                PrintBed.getPrintVolumeCentre().getZ());
@@ -349,7 +350,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                                 savedHeadData.getNozzle2YOffset(),
                                                 savedHeadData.getNozzle2ZOffset(),
                                                 savedHeadData.getNozzle2BOffset(),
-                                                savedHeadData.getLastFilamentTemperature(),
+                                                savedHeadData.getLastFilamentTemperature(0),
+                                                savedHeadData.getLastFilamentTemperature(1),
                                                 savedHeadData.getHeadHours());
             } catch (RoboxCommsException ex)
             {
@@ -375,7 +377,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                         savedHeadData.getNozzle2YOffset(),
                                         (float) (-zco.get() + (0.5 * zDifference)),
                                         savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(),
+                                        savedHeadData.getLastFilamentTemperature(0),
+                                        savedHeadData.getLastFilamentTemperature(1),
                                         savedHeadData.getHeadHours());
     }
 

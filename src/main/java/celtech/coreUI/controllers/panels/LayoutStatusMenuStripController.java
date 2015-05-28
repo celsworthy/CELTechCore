@@ -188,7 +188,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
             {
                 displayManager.getPurgeInsetPanelController().purgeAndPrint(
-                        currentProject, printerSettings.getFilament0(), printer);
+                        currentProject, printerSettings, printer);
             } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
             {
                 currentStatusPrinter.resetPurgeTemperature(printerSettings);

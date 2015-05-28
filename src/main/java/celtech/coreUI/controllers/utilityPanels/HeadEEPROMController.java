@@ -46,7 +46,10 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private RestrictedTextField headThermistorBeta;
 
     @FXML
-    private RestrictedTextField lastFilamentTemperature;
+    private RestrictedTextField lastFilamentTemperature0;
+    
+    @FXML
+    private RestrictedTextField lastFilamentTemperature1;    
 
     @FXML
     private RestrictedTextField nozzle1ZOverrun;
@@ -127,7 +130,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             Float nozzle2XOffsetVal = nozzle2XOffset.getFloatValue();
             Float nozzle2YOffsetVal = nozzle2YOffset.getFloatValue();
             Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
-            Float lastFilamentTemperatureVal = lastFilamentTemperature.getFloatValue();
+            Float lastFilamentTemperatureVal0 = lastFilamentTemperature0.getFloatValue();
+            Float lastFilamentTemperatureVal1 = lastFilamentTemperature1.getFloatValue();
             Float headHourCounterVal = headHourCounter.getFloatValue();
 
             float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
@@ -151,7 +155,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                 nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
                 nozzle2XOffsetVal, nozzle2YOffsetVal,
                 nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
-                lastFilamentTemperatureVal, headHourCounterVal);
+                lastFilamentTemperatureVal0, lastFilamentTemperatureVal1, headHourCounterVal);
             offsetFieldsDirty.set(false);
 //            selectedPrinter.readHeadEEPROM();
 //            updateFieldsFromAttachedHead(selectedPrinter.headProperty().get());
@@ -243,7 +247,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headType.setText(head.nameProperty().get().trim());
         headUniqueID.setText(head.uniqueIDProperty().get().trim());
         //TODO modify to work with multiple heaters
-        lastFilamentTemperature.setText(String.format("%.0f",
+        lastFilamentTemperature0.setText(String.format("%.0f",
                                                       head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
         //TODO modify to work with multiple heaters
@@ -287,7 +291,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headType.setText("");
         headUniqueID.setText("");
         //TODO modify to work with multiple heaters
-        lastFilamentTemperature.setText("");
+        lastFilamentTemperature0.setText("");
         headHourCounter.setText("");
         //TODO modify to work with multiple heaters
         headMaxTemperature.setText("");

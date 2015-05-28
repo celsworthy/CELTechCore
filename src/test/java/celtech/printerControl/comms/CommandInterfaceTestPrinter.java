@@ -5,7 +5,6 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -35,7 +34,6 @@ import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionMana
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
@@ -176,7 +174,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void goToTargetNozzleTemperature()
+    public void goToTargetNozzleHeaterTemperature(int nozzleHeaterNumber)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -320,13 +318,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void setNozzleFirstLayerTargetTemperature(int targetTemperature)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setNozzleTargetTemperature(int targetTemperature)
+    public void setNozzleHeaterTargetTemperature(int nozzleHeaterNumber, int targetTemperature)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -432,7 +424,7 @@ public class CommandInterfaceTestPrinter implements Printer
         float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
         float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset,
         float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-        float lastFilamentTemperature,
+        float lastFilamentTemperature0, float lastFilamentTemperature1,
         float hourCounter) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -885,4 +877,6 @@ public class CommandInterfaceTestPrinter implements Printer
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+
 }

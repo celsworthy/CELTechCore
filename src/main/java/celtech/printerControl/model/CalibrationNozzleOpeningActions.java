@@ -101,7 +101,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                                             0,
                                             headReferenceData.getNozzles().get(1).
                                             getDefaultBOffset(),
-                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getLastFilamentTemperature(0),
+                                            savedHeadData.getLastFilamentTemperature(1),
                                             savedHeadData.getHeadHours());
         } else
         {
@@ -124,11 +125,12 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                                             0,
                                             0,
                                             -1,
-                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getLastFilamentTemperature(0),
+                                            savedHeadData.getLastFilamentTemperature(1),
                                             savedHeadData.getHeadHours());
         }
 
-        printer.goToTargetNozzleTemperature();
+        printer.goToTargetNozzleHeaterTemperature(0);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
@@ -138,7 +140,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         {
             return;
         }
-        printer.goToTargetNozzleTemperature();
+        printer.goToTargetNozzleHeaterTemperature(0);
         miniPurge();
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
@@ -226,7 +228,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                                         0,
                                         0,
                                         -bOffsetStartingValue,
-                                        savedHeadData.getLastFilamentTemperature(),
+                                        savedHeadData.getLastFilamentTemperature(0),
+                                        savedHeadData.getLastFilamentTemperature(1),
                                         savedHeadData.getHeadHours());
         extrudeUntilStall(0);
         pressuriseSystem();
@@ -337,7 +340,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                                         savedHeadData.getNozzle2YOffset(),
                                         savedHeadData.getNozzle2ZOffset(),
                                         nozzle1BOffset,
-                                        savedHeadData.getLastFilamentTemperature(),
+                                        savedHeadData.getLastFilamentTemperature(0),
+                                        savedHeadData.getLastFilamentTemperature(1),
                                         savedHeadData.getHeadHours());
 
     }
@@ -362,7 +366,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                                                 savedHeadData.getNozzle2YOffset(),
                                                 savedHeadData.getNozzle2ZOffset(),
                                                 savedHeadData.getNozzle2BOffset(),
-                                                savedHeadData.getLastFilamentTemperature(),
+                                                savedHeadData.getLastFilamentTemperature(0),
+                                                savedHeadData.getLastFilamentTemperature(1),
                                                 savedHeadData.getHeadHours());
             } catch (RoboxCommsException ex)
             {

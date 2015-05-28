@@ -53,7 +53,7 @@ import javafx.collections.ObservableMap;
 import javafx.scene.paint.Color;
 
 /**
- *
+ * The TestPrinter class has a testable/mutable Head, Reels etc.
  * @author tony
  */
 public class TestPrinter implements Printer
@@ -125,6 +125,91 @@ public class TestPrinter implements Printer
     }
 
     @Override
+    public ObservableList<Extruder> extrudersProperty()
+    {
+
+        class FittedExtruder extends Extruder
+        {
+
+            public FittedExtruder(String extruderAxisLetter)
+            {
+                super(extruderAxisLetter);
+                isFitted.set(true);
+            }
+        }
+
+        class UnFittedExtruder extends Extruder
+        {
+
+            public UnFittedExtruder(String extruderAxisLetter)
+            {
+                super(extruderAxisLetter);
+                isFitted.set(false);
+            }
+        }
+
+        ObservableList<Extruder> extruders = FXCollections.observableList(new ArrayList<Extruder>());
+        if (numExtruders == 0)
+        {
+            extruders.add(new UnFittedExtruder("D"));
+            extruders.add(new UnFittedExtruder("E"));
+        } else if (numExtruders == 1)
+        {
+            extruders.add(new FittedExtruder("D"));
+            extruders.add(new UnFittedExtruder("E"));
+        } else if (numExtruders == 2)
+        {
+            extruders.add(new FittedExtruder("D"));
+            extruders.add(new FittedExtruder("E"));
+        }
+        return extruders;
+    }
+
+    @Override
+    public ObservableMap<Integer, Reel> reelsProperty()
+    {
+        return reelsProperty;
+    }   
+    
+    @Override
+    public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
+    {
+    }    
+    
+    @Override
+    public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
+        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+        float reelFirstLayerBedTemperature,
+        float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
+        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+        String friendlyName,
+        MaterialType materialType, Color displayColour) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void changeFeedRateMultiplier(double feedRate) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
+        double nozzle1FirstLayerTarget, double nozzle1Target, double bedFirstLayerTarget,
+        double bedTarget,
+        double ambientTarget) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public AckResponse formatReelEEPROM(int reelNumber) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public void addToGCodeTranscript(String gcodeToSend)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -176,47 +261,6 @@ public class TestPrinter implements Printer
     public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ObservableList<Extruder> extrudersProperty()
-    {
-
-        class FittedExtruder extends Extruder
-        {
-
-            public FittedExtruder(String extruderAxisLetter)
-            {
-                super(extruderAxisLetter);
-                isFitted.set(true);
-            }
-        }
-
-        class UnFittedExtruder extends Extruder
-        {
-
-            public UnFittedExtruder(String extruderAxisLetter)
-            {
-                super(extruderAxisLetter);
-                isFitted.set(false);
-            }
-        }
-
-        ObservableList<Extruder> extruders = FXCollections.observableList(new ArrayList<Extruder>());
-        if (numExtruders == 0)
-        {
-            extruders.add(new UnFittedExtruder("D"));
-            extruders.add(new UnFittedExtruder("E"));
-        } else if (numExtruders == 1)
-        {
-            extruders.add(new FittedExtruder("D"));
-            extruders.add(new UnFittedExtruder("E"));
-        } else if (numExtruders == 2)
-        {
-            extruders.add(new FittedExtruder("D"));
-            extruders.add(new FittedExtruder("E"));
-        }
-        return extruders;
     }
 
     @Override
@@ -280,7 +324,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void goToTargetNozzleTemperature()
+    public void goToTargetNozzleHeaterTemperature(int nozzleHeaterNumber)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -430,13 +474,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void setNozzleFirstLayerTargetTemperature(int targetTemperature)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setNozzleTargetTemperature(int targetTemperature)
+    public void setNozzleHeaterTargetTemperature(int nozzleHeaterNumber, int targetTemperature)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -542,7 +580,7 @@ public class TestPrinter implements Printer
         float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
         float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset,
         float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-        float lastFilamentTemperature, float hourCounter) throws RoboxCommsException
+        float lastFilamentTemperature0, float lastFilamentTemperature1, float hourCounter) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -650,45 +688,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
-        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
-        float reelFirstLayerBedTemperature,
-        float reelBedTemperature, float reelAmbientTemperature, float reelFilamentDiameter,
-        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
-        String friendlyName,
-        MaterialType materialType, Color displayColour) throws RoboxCommsException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void changeFeedRateMultiplier(double feedRate) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
-        double nozzle1FirstLayerTarget, double nozzle1Target, double bedFirstLayerTarget,
-        double bedTarget,
-        double ambientTarget) throws RoboxCommsException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public AckResponse formatReelEEPROM(int reelNumber) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ObservableMap<Integer, Reel> reelsProperty()
-    {
-        return reelsProperty;
-    }
-
-    @Override
     public void registerErrorConsumer(ErrorConsumer errorConsumer,
         List<FirmwareError> errorsOfInterest)
     {
@@ -765,12 +764,6 @@ public class TestPrinter implements Printer
     public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
-    {
-
     }
 
     public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException
@@ -988,4 +981,5 @@ public class TestPrinter implements Printer
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
 }

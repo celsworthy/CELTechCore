@@ -132,7 +132,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
                 250f, 5f, 6f,
                 nozzle1XOffset, 7f, 0.2f, 1.1f,
                 100f, 7f, 0.2f, 1f,
-                210f, 45f);
+                210f, 210f, 45f);
 
         assertEquals(nozzle1XOffset, printer.headProperty().get().getNozzles().get(0).xOffsetProperty().get(), 0.001);
     }

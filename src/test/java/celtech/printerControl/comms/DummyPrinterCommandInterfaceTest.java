@@ -32,7 +32,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
         
         hardwarePrinter.sendRawGCode("ATTACH HEAD RBX01-DM", true);
         
-        hardwarePrinter.setNozzleTargetTemperature(200);
+        hardwarePrinter.setNozzleHeaterTargetTemperature(0, 200);
 
         assertEquals(200, commandInterface.nozzleTargetTemperature);
         
@@ -49,7 +49,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
             statusConsumer, "Test Printer", false, 500);
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
-        hardwarePrinter.goToTargetNozzleTemperature();
+        hardwarePrinter.goToTargetNozzleHeaterTemperature(0);
 
         assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterMode);
 
@@ -64,7 +64,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
         
-        hardwarePrinter.goToTargetNozzleTemperature();
+        hardwarePrinter.goToTargetNozzleHeaterTemperature(0);
         assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterMode);
         hardwarePrinter.switchAllNozzleHeatersOff();
         assertEquals(HeaterMode.OFF, commandInterface.nozzleHeaterMode);

@@ -31,7 +31,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     private float nozzle2YOffset;
     private float nozzle2ZOffset;
     private float nozzle2BOffset;
-    private float lastFilamentTemperature;
+    private float lastFilamentTemperature0;
+    private float lastFilamentTemperature1;
     private float hourCounter;
 
     /**
@@ -57,16 +58,18 @@ public class WriteHeadEEPROM extends RoboxTxPacket
      * @param nozzle2YOffset
      * @param nozzle2ZOffset
      * @param nozzle2BOffset
-     * @param lastFilamentTemperature
+     * @param lastFilamentTemperature0
      * @param hourCounter
      */
     public void populateEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
         float thermistorBeta, float thermistorTCal,
         float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
         float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-        float lastFilamentTemperature, float hourCounter)
+        float lastFilamentTemperature0, float lastFilamentTemperature1, float hourCounter)
     {
 
+        //TODO make work for DMH, lastTemp1 not being added to payload
+        
         this.headTypeCode = headTypeCode;
         this.headUniqueID = headUniqueID;
         this.maximumTemperature = maximumTemperature;
@@ -80,7 +83,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         this.nozzle2YOffset = nozzle2YOffset;
         this.nozzle2ZOffset = nozzle2ZOffset;
         this.nozzle2BOffset = nozzle2BOffset;
-        this.lastFilamentTemperature = lastFilamentTemperature;
+        this.lastFilamentTemperature0 = lastFilamentTemperature0;
+        this.lastFilamentTemperature1 = lastFilamentTemperature1;
         this.hourCounter = hourCounter;
 
         StringBuilder payload = new StringBuilder();
@@ -102,7 +106,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         payload.append(decimalFloatFormatter.format(nozzle2ZOffset));
         payload.append(decimalFloatFormatter.format(nozzle2BOffset));
         payload.append(String.format("%1$32s", " "));
-        payload.append(decimalFloatFormatter.format(lastFilamentTemperature));
+        payload.append(decimalFloatFormatter.format(lastFilamentTemperature0));
         payload.append(decimalFloatFormatter.format(hourCounter));
 
         this.setMessagePayload(payload.toString());
@@ -112,14 +116,20 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     {
         //TODO modify to cater for different number of nozzles/heaters
 
-        NozzleHeater heater = head.getNozzleHeaters().get(0);
+        NozzleHeater heater0 = head.getNozzleHeaters().get(0);
+        float lastFilamentTemperature1 = 0;
+        if (head.getNozzleHeaters().size() > 1) {
+             NozzleHeater heater1 = head.getNozzleHeaters().get(1);
+             lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
+        }
+       
         ArrayList<Nozzle> nozzles = head.getNozzles();
 
         populateEEPROM(head.typeCodeProperty().get(),
                        head.uniqueIDProperty().get(),
-                       heater.maximumTemperatureProperty().get(),
-                       heater.betaProperty().get(),
-                       heater.tCalProperty().get(),
+                       heater0.maximumTemperatureProperty().get(),
+                       heater0.betaProperty().get(),
+                       heater0.tCalProperty().get(),
                        nozzles.get(0).xOffsetProperty().get(),
                        nozzles.get(0).yOffsetProperty().get(),
                        nozzles.get(0).zOffsetProperty().get(),
@@ -128,7 +138,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
                        nozzles.get(1).yOffsetProperty().get(),
                        nozzles.get(1).zOffsetProperty().get(),
                        nozzles.get(1).bOffsetProperty().get(),
-                       heater.lastFilamentTemperatureProperty().get(),
+                       heater0.lastFilamentTemperatureProperty().get(),
+                       lastFilamentTemperature1,
                        head.headHoursProperty().get());
     }
 
@@ -262,7 +273,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
 
     public float getLastFilamentTemperature()
     {
-        return lastFilamentTemperature;
+        return lastFilamentTemperature0;
     }
 
     public float getHourCounter()

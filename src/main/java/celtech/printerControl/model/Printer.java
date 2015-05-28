@@ -5,9 +5,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -26,7 +24,6 @@ import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionMana
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
@@ -84,16 +81,16 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty();
 
-    /**
+    /*
      * Purge
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
     public void resetPurgeTemperature(PrinterSettings printerSettings);
-    
+
     public PurgeStateTransitionManager startPurge() throws PrinterException;
 
-    /**
+    /*
      * Calibrate head
      */
     public ReadOnlyBooleanProperty canCalibrateHeadProperty();
@@ -104,8 +101,8 @@ public interface Printer extends RoboxResponseConsumer
 
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException;
 
-    /*
-     * Remove head
+    /**
+     * Remove head.
      */
     public ReadOnlyBooleanProperty canRemoveHeadProperty();
 
@@ -176,8 +173,8 @@ public interface Printer extends RoboxResponseConsumer
 
     public void goToTargetBedTemperature();
 
-    public void goToTargetNozzleTemperature();
-
+    public void goToTargetNozzleHeaterTemperature(int nozzleHeaterNumber);
+    
     public void goToZPosition(double position);
 
     public void goToXYPosition(double xPosition, double yPosition);
@@ -185,16 +182,23 @@ public interface Printer extends RoboxResponseConsumer
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition);
 
     public void homeX();
+
     public void homeY();
+
     public void homeZ();
 
     public void probeX();
+
     public float getXDelta() throws PrinterException;
+
     public void probeY();
+
     public float getYDelta() throws PrinterException;
+
     public void probeZ();
+
     public float getZDelta() throws PrinterException;
-    
+
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException;
 
     public void levelGantryRaw();
@@ -288,61 +292,61 @@ public interface Printer extends RoboxResponseConsumer
     public void resume() throws PrinterException;
 
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param macroName
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException;
-    
+
     /**
      * This method 'prints' a GCode file. A print job is created and the printer will manage
      * extrusion dynamically. The printer will register as an error handler for the duration of the
@@ -355,6 +359,7 @@ public interface Printer extends RoboxResponseConsumer
      * @throws PrinterException
      */
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
+
     public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException;
 
     public void callbackWhenNotBusy(TaskResponder responder);
@@ -391,9 +396,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void setBedTargetTemperature(int targetTemperature);
 
-    public void setNozzleFirstLayerTargetTemperature(int targetTemperature);
-
-    public void setNozzleTargetTemperature(int targetTemperature);
+    public void setNozzleHeaterTargetTemperature(int nozzleHeaterNumber, int targetTemperature);
 
     /**
      *
@@ -491,7 +494,7 @@ public interface Printer extends RoboxResponseConsumer
      * @param nozzle2YOffset
      * @param nozzle2ZOffset
      * @param nozzle2BOffset
-     * @param lastFilamentTemperature
+     * @param lastFilamentTemperature0
      * @param hourCounter
      * @return
      * @throws RoboxCommsException
@@ -500,7 +503,8 @@ public interface Printer extends RoboxResponseConsumer
         float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
         float nozzle1YOffset,
         float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset,
-        float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
+        float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature0,
+        float lastFilamentTemperature1, float hourCounter) throws RoboxCommsException;
 
     /**
      *
@@ -573,11 +577,11 @@ public interface Printer extends RoboxResponseConsumer
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
     public void changeFeedRateMultiplier(double feedRate) throws PrinterException;
-    
+
     public void changeFilamentInfo(String extruderLetter,
         double filamentDiameter,
         double extrusionMultiplier) throws PrinterException;
-    
+
     public void registerErrorConsumer(ErrorConsumer errorConsumer,
         List<FirmwareError> errorsOfInterest);
 
@@ -601,13 +605,15 @@ public interface Printer extends RoboxResponseConsumer
     public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 
     public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
-    
+
     /**
-     * This method is intended to be used by commissioning tools and should not be called in normal operation
-     * @param suppress 
+     * This method is intended to be used by commissioning tools and should not be called in normal
+     * operation
+     *
+     * @param suppress
      */
     public void suppressEEPROMAndSDErrorHandling(boolean suppress);
-    
+
     public PrinterMetaStatus getPrinterMetaStatus();
 
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);

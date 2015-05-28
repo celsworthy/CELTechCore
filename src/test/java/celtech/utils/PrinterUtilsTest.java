@@ -80,7 +80,7 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         project.getPrinterSettings().setFilament0(filament0);
         project.getPrinterSettings().setFilament1(filament1);
 
-        TestPrinter printer = new TestPrinter(1);
+        TestPrinter printer = new TestPrinter(2);
         HeadFile headFile = new HeadFile();
         NozzleHeaterData nozzleHeaterData0 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData0);

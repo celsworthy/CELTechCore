@@ -9,6 +9,8 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -41,33 +43,50 @@ public class PurgeActions extends StateTransitionActions
 
     private HeadEEPROMDataResponse savedHeadData;
 
-    private float reelNozzleTemperature = 0;
-    private final IntegerProperty lastDisplayTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty currentDisplayTemperature = new SimpleIntegerProperty(0);
-    private final IntegerProperty purgeTemperature = new SimpleIntegerProperty(0);
+    private final List<Float> reelNozzleTemperature;
+    private final List<IntegerProperty> lastDisplayTemperature;
+    private final List<IntegerProperty> currentDisplayTemperature;
+    private final List<IntegerProperty> purgeTemperature;
 
     /**
      * The filament that will be used during the purge, either the filament on the current reel or a
      * custom filament loaded on the SettingsScreen that will be used for a print that has been
      * requested.
      */
-    private Filament purgeFilament;
+    private final List<Filament> purgeFilament;
 
     PurgeActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
         PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
+        
+        purgeTemperature = new ArrayList<>();
+        lastDisplayTemperature = new ArrayList<>();
+        currentDisplayTemperature = new ArrayList<>();
+        reelNozzleTemperature = new ArrayList<>();
+        purgeFilament = new ArrayList<>();
+        for (int i = 0; i < getNumNozzleHeaters(); i++)
+        {
+            purgeTemperature.add(new SimpleIntegerProperty(0));
+            lastDisplayTemperature.add(new SimpleIntegerProperty(0));
+            currentDisplayTemperature.add(new SimpleIntegerProperty(0));
+            reelNozzleTemperature.add(new Float(0));
+            purgeFilament.add(null);
+        }
+        
     }
-
-    
 
     @Override
     public void initialise()
     {
-        reelNozzleTemperature = 0;
-        lastDisplayTemperature.set(0);
-        currentDisplayTemperature.set(0);
+        
+        for (int i = 0; i < getNumNozzleHeaters(); i++)
+        {
+            lastDisplayTemperature.get(i).set(0);
+            currentDisplayTemperature.get(i).set(0);
+            reelNozzleTemperature.set(i, 0f);
+        }
         savedHeadData = null;
     }
 
@@ -102,9 +121,14 @@ public class PurgeActions extends StateTransitionActions
         savedHeadData = printer.readHeadEEPROM();
     }
 
+    private int getNumNozzleHeaters()
+    {
+        return printer.headProperty().get().getNozzleHeaters().size();
+    }
+
     void doHeatingAction() throws InterruptedException, PurgeException
     {
-        steno.debug("purge temperature set to " + purgeTemperature.get());
+        
         //Set the bed to 90 degrees C
         int desiredBedTemperature = 90;
         printer.setBedTargetTemperature(desiredBedTemperature);
@@ -118,18 +142,26 @@ public class PurgeActions extends StateTransitionActions
             throw new PurgeException("Bed heat failed");
         }
 
-        printer.setNozzleTargetTemperature(purgeTemperature.get());
-        printer.goToTargetNozzleTemperature();
-        //TODO modify to support multiple heaters
-        boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
-            printer.headProperty().get().getNozzleHeaters().get(0).
-            nozzleTemperatureProperty(),
-            null, purgeTemperature.get(), 5, 300, userOrErrorCancellable);
-
-        if (extruderHeatFailed)
+        for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
-            throw new PurgeException("Extruder heat failed");
+            steno.debug("purge temperature set to " + purgeTemperature.get(i).get());
+            printer.setNozzleHeaterTargetTemperature(i, purgeTemperature.get(i).get());
+            printer.goToTargetNozzleHeaterTemperature(i);
         }
+
+        for (int i = 0; i < getNumNozzleHeaters(); i++)
+        {
+            boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
+                printer.headProperty().get().getNozzleHeaters().get(i).
+                nozzleTemperatureProperty(),
+                null, purgeTemperature.get(i).get(), 5, 300, userOrErrorCancellable);
+
+            if (extruderHeatFailed)
+            {
+                throw new PurgeException("Extruder heat failed");
+            }
+        }
+
     }
 
     void doRunPurgeAction() throws PrinterException
@@ -153,7 +185,8 @@ public class PurgeActions extends StateTransitionActions
             savedHeadData.getNozzle2YOffset(),
             savedHeadData.getNozzle2ZOffset(),
             savedHeadData.getNozzle2BOffset(),
-            reelNozzleTemperature,
+            reelNozzleTemperature.get(0),
+            reelNozzleTemperature.get(1),
             savedHeadData.getHeadHours());
         printer.readHeadEEPROM();
         resetPrinter();
@@ -192,40 +225,40 @@ public class PurgeActions extends StateTransitionActions
         printer.switchOffHeadLEDs();
     }
 
-    public ReadOnlyIntegerProperty getLastMaterialTemperatureProperty()
+    public ReadOnlyIntegerProperty getLastMaterialTemperatureProperty(int nozzleHeaterNumber)
     {
-        return lastDisplayTemperature;
+        return lastDisplayTemperature.get(nozzleHeaterNumber);
     }
 
-    public ReadOnlyIntegerProperty getCurrentMaterialTemperatureProperty()
+    public ReadOnlyIntegerProperty getCurrentMaterialTemperatureProperty(int nozzleHeaterNumber)
     {
-        return currentDisplayTemperature;
+        return currentDisplayTemperature.get(nozzleHeaterNumber);
     }
 
-    public ReadOnlyIntegerProperty getPurgeTemperatureProperty()
+    public ReadOnlyIntegerProperty getPurgeTemperatureProperty(int nozzleHeaterNumber)
     {
-        return purgeTemperature;
+        return purgeTemperature.get(nozzleHeaterNumber);
     }
 
-    public void setPurgeTemperature(int newPurgeTemperature)
+    public void setPurgeTemperature(int nozzleHeaterNumber, int newPurgeTemperature)
     {
-        purgeTemperature.set(newPurgeTemperature);
+        purgeTemperature.get(nozzleHeaterNumber).set(newPurgeTemperature);
     }
 
-    public void setPurgeFilament(Filament filament) throws PrintException
+    public void setPurgeFilament(int nozzleHeaterNumber, Filament filament) throws PrintException
     {
-        purgeFilament = filament;
-        updatePurgeTemperature();
+        purgeFilament.set(nozzleHeaterNumber, filament);
+        updatePurgeTemperature(nozzleHeaterNumber);
     }
 
-    private void updatePurgeTemperature() throws PrintException
+    private void updatePurgeTemperature(int nozzleHeaterNumber) throws PrintException
     {
         // The nozzle should be heated to a temperature halfway between the last
         //temperature stored on the head and the current required temperature stored
         // on the reel
-        if (purgeFilament != null)
+        if (purgeFilament.get(nozzleHeaterNumber) != null)
         {
-            reelNozzleTemperature = purgeFilament.getNozzleTemperature();
+            reelNozzleTemperature.set(nozzleHeaterNumber, (float) purgeFilament.get(0).getNozzleTemperature());
         } else
         {
             throw new PrintException("The purge filament must be set");
@@ -233,15 +266,16 @@ public class PurgeActions extends StateTransitionActions
 
         if (savedHeadData != null)
         {
-            float temperatureDifference = reelNozzleTemperature
-                - savedHeadData.getLastFilamentTemperature();
-            lastDisplayTemperature.set((int) savedHeadData.getLastFilamentTemperature());
-            currentDisplayTemperature.set((int) reelNozzleTemperature);
-            purgeTemperature.set((int) Math.min(savedHeadData.getMaximumTemperature(),
-                                                Math.max(180.0,
-                                                         savedHeadData.
-                                                         getLastFilamentTemperature()
-                                                         + (temperatureDifference / 2))));
+            float temperatureDifference = reelNozzleTemperature.get(nozzleHeaterNumber)
+                - savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber);
+            lastDisplayTemperature.get(nozzleHeaterNumber).set(
+                (int) savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber));
+            currentDisplayTemperature.get(nozzleHeaterNumber).set(
+                reelNozzleTemperature.get(nozzleHeaterNumber).intValue());
+            purgeTemperature.get(nozzleHeaterNumber).set((int) Math.min(savedHeadData.getMaximumTemperature(),
+                    Math.max(180.0,
+                             savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber)
+                             + (temperatureDifference / 2))));
         }
 
     }

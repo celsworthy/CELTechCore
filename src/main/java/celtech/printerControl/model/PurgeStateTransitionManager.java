@@ -23,29 +23,30 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
               PurgeState.CANCELLING, PurgeState.CANCELLED, PurgeState.FAILED);
     }
 
-    public void setPurgeTemperature(int purgeTemperature)
+    public void setPurgeTemperature(int nozzleHeaterNumber, int purgeTemperature)
     {
-        ((PurgeActions) actions).setPurgeTemperature(purgeTemperature);
+        ((PurgeActions) actions).setPurgeTemperature(nozzleHeaterNumber, purgeTemperature);
     }
 
-    public ReadOnlyIntegerProperty getLastMaterialTemperature()
+    public ReadOnlyIntegerProperty getLastMaterialTemperature(int nozzleHeaterNumber)
     {
-        return ((PurgeActions) actions).getLastMaterialTemperatureProperty();
+        return ((PurgeActions) actions).getLastMaterialTemperatureProperty(nozzleHeaterNumber);
     }
 
-    public ReadOnlyIntegerProperty getCurrentMaterialTemperature()
+    public ReadOnlyIntegerProperty getCurrentMaterialTemperature(int nozzleHeaterNumber)
     {
-        return ((PurgeActions) actions).getCurrentMaterialTemperatureProperty();
+        return ((PurgeActions) actions).getCurrentMaterialTemperatureProperty(nozzleHeaterNumber);
     }
 
-    public ReadOnlyIntegerProperty getPurgeTemperature()
+    public ReadOnlyIntegerProperty getPurgeTemperature(int nozzleHeaterNumber)
     {
-        return ((PurgeActions) actions).getPurgeTemperatureProperty();
+        return ((PurgeActions) actions).getPurgeTemperatureProperty(nozzleHeaterNumber);
     }
 
-    public void setPurgeFilament(Filament filament) throws PrintException
+    public void setPurgeFilament(int nozzleHeaterNumber, Filament filament) throws PrintException
     {
-        ((PurgeActions) actions).setPurgeFilament(filament);
+        ((PurgeActions) actions).setPurgeFilament(nozzleHeaterNumber, filament);
     }
-
+    
+   
 }

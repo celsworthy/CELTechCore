@@ -268,7 +268,7 @@ public class Head implements Cloneable, RepairableComponent
             nozzleHeaters.get(0).beta.set(eepromData.getBeta());
             nozzleHeaters.get(0).tcal.set(eepromData.getTCal());
             nozzleHeaters.get(0).lastFilamentTemperature.
-                set(eepromData.getLastFilamentTemperature());
+                set(eepromData.getLastFilamentTemperature(0));
             nozzleHeaters.get(0).maximumTemperature.set(eepromData.getMaximumTemperature());
         }
 

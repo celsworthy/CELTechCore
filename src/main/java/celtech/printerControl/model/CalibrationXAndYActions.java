@@ -103,7 +103,8 @@ public class CalibrationXAndYActions extends StateTransitionActions
                                                 savedHeadData.getNozzle2YOffset(),
                                                 savedHeadData.getNozzle2ZOffset(),
                                                 savedHeadData.getNozzle2BOffset(),
-                                                savedHeadData.getLastFilamentTemperature(),
+                                                savedHeadData.getLastFilamentTemperature(0),
+                                                savedHeadData.getLastFilamentTemperature(1),
                                                 savedHeadData.getHeadHours());
             } catch (RoboxCommsException ex)
             {
@@ -145,7 +146,8 @@ public class CalibrationXAndYActions extends StateTransitionActions
                                             + nozzle2YCorrection,
                                             savedHeadData.getNozzle2ZOffset(),
                                             savedHeadData.getNozzle2BOffset(),
-                                            savedHeadData.getLastFilamentTemperature(),
+                                            savedHeadData.getLastFilamentTemperature(0),
+                                            savedHeadData.getLastFilamentTemperature(1),
                                             savedHeadData.getHeadHours());
 
         } catch (RoboxCommsException ex)
