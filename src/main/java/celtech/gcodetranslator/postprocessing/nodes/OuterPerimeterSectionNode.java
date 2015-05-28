@@ -7,12 +7,15 @@ package celtech.gcodetranslator.postprocessing.nodes;
 public class OuterPerimeterSectionNode extends GCodeEventNode
 {
 
+    public static final String designator = ";TYPE:WALL-OUTER";
+
     public OuterPerimeterSectionNode()
     {
     }
-        @Override
+
+    @Override
     public String renderForOutput()
     {
-        return toString();
+        return designator;
     }
 }

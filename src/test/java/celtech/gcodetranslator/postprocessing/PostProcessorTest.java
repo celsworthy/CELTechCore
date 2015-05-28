@@ -1,5 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
+import celtech.configuration.datafileaccessors.HeadContainer;
+import celtech.printerControl.model.Head;
 import java.net.URL;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -48,7 +50,8 @@ public class PostProcessorTest
         URL inputURL = this.getClass().getResource("/postprocessor/baseTest.gcode");
         String inputFilename = inputURL.getFile();
         String outputFilename = inputFilename + ".out";
-        PostProcessor instance = new PostProcessor(inputFilename, outputFilename);
+        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
+        PostProcessor instance = new PostProcessor(inputFilename, outputFilename, singleMaterialHead);
         instance.processInput();
     }
 
