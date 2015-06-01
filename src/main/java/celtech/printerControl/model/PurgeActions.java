@@ -144,7 +144,7 @@ public class PurgeActions extends StateTransitionActions
 
         for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
-            steno.debug("purge temperature set to " + purgeTemperature.get(i).get() + " for heater " + i);
+            System.out.println("purge temperature set to " + purgeTemperature.get(i).get() + " for heater " + i);
             printer.setNozzleHeaterTargetTemperature(i, purgeTemperature.get(i).get());
             printer.goToTargetNozzleHeaterTemperature(i);
         }
@@ -152,8 +152,7 @@ public class PurgeActions extends StateTransitionActions
         for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
             boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
-                printer.headProperty().get().getNozzleHeaters().get(i).
-                nozzleTemperatureProperty(),
+                printer.headProperty().get().getNozzleHeaters().get(i).nozzleTemperatureProperty(),
                 null, purgeTemperature.get(i).get(), 5, 300, userOrErrorCancellable);
 
             if (extruderHeatFailed)
@@ -247,6 +246,7 @@ public class PurgeActions extends StateTransitionActions
 
     public void setPurgeFilament(int nozzleHeaterNumber, Filament filament) throws PrintException
     {
+        System.out.println("set purge temp for " + nozzleHeaterNumber + " " + filament);
         purgeFilament.set(nozzleHeaterNumber, filament);
         updatePurgeTemperature(nozzleHeaterNumber);
     }
@@ -276,6 +276,7 @@ public class PurgeActions extends StateTransitionActions
                     Math.max(180.0,
                              savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber)
                              + (temperatureDifference / 2))));
+            System.out.println("purge temp has been set to " + purgeTemperature.get(nozzleHeaterNumber).get());
         }
 
     }

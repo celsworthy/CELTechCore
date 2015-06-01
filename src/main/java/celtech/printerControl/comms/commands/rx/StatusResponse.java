@@ -667,6 +667,11 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzle0HeaterMode = nozzleHeaterMode;
     }
 
+    public void setNozzle1HeaterMode(HeaterMode nozzleHeaterMode)
+    {
+        this.nozzle1HeaterMode = nozzleHeaterMode;
+    }
+
     public void setNozzle0HeaterModeString(String nozzleHeaterModeString)
     {
         this.nozzle0HeaterModeString = nozzleHeaterModeString;
@@ -682,6 +687,11 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzle0Temperature = nozzleTemperature;
     }
 
+    public void setNozzle1Temperature(int nozzleTemperature)
+    {
+        this.nozzle1Temperature = nozzleTemperature;
+    }
+
     public void setNozzle0TargetTemperatureString(String nozzleTargetTemperatureString)
     {
         this.nozzle0TargetTemperatureString = nozzleTargetTemperatureString;
@@ -690,6 +700,11 @@ public class StatusResponse extends RoboxRxPacket
     public void setNozzle0TargetTemperature(int nozzleTargetTemperature)
     {
         this.nozzle0TargetTemperature = nozzleTargetTemperature;
+    }
+
+    public void setNozzle1TargetTemperature(int nozzleTargetTemperature)
+    {
+        this.nozzle1TargetTemperature = nozzleTargetTemperature;
     }
 
     public void setNozzle0FirstLayerTargetTemperatureString(

@@ -1,5 +1,6 @@
 package celtech.coreUI.keycommands;
 
+import celtech.printerControl.comms.DummyPrinterCommandInterface;
 import java.util.ArrayList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -31,21 +32,27 @@ public class HiddenKey
             case DIGIT1:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", "DEFAULT");
+                    triggerListeners("dummy:", DummyPrinterCommandInterface.defaultRoboxAttachCommand);
                 }
                 break;
             case DIGIT2:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", "ATTACH EXTRUDER 1");
+                    triggerListeners("dummy:", DummyPrinterCommandInterface.defaultRoboxAttachCommand2);
                 }
-                break;  
+                break;    
             case DIGIT3:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", "DEFAULS");
+                    triggerListeners("dummy:", "ATTACH EXTRUDER 1");
                 }
-                break;                 
+                break;  
+            case DIGIT4:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:", "ATTACH REEL RBX-PLA-OR022 1");
+                }
+                break;                  
             case B:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
