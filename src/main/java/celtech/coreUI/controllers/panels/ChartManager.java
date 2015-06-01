@@ -70,8 +70,7 @@ class ChartManager
         + "-fx-scale-x: 2; "
         + "-fx-scale-y: 2; ";
 
-    private final String graphLineCSS
-        = "-fx-stroke-width: 3; ";
+    private final String graphLineCSS  = "-fx-stroke-width: 3; ";
 
     public ChartManager(LineChart<Number, Number> chart)
     {
@@ -80,10 +79,10 @@ class ChartManager
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
         
         nozzleBugColour.add("#8c0000");
-        nozzleBugColour.add("#af0000");
+        nozzleBugColour.add("#006e96");
         
         nozzleLineColour.add("#ff0000");
-        nozzleLineColour.add("#dd2200");
+        nozzleLineColour.add("#0096e1");
         
     }
 

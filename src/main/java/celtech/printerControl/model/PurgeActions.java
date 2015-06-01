@@ -43,7 +43,7 @@ public class PurgeActions extends StateTransitionActions
 
     private HeadEEPROMDataResponse savedHeadData;
 
-    private final List<Float> reelNozzleTemperature;
+    private final List<Float> nozzleFilamentTemperature;
     private final List<IntegerProperty> lastDisplayTemperature;
     private final List<IntegerProperty> currentDisplayTemperature;
     private final List<IntegerProperty> purgeTemperature;
@@ -64,14 +64,14 @@ public class PurgeActions extends StateTransitionActions
         purgeTemperature = new ArrayList<>();
         lastDisplayTemperature = new ArrayList<>();
         currentDisplayTemperature = new ArrayList<>();
-        reelNozzleTemperature = new ArrayList<>();
+        nozzleFilamentTemperature = new ArrayList<>();
         purgeFilament = new ArrayList<>();
         for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
             purgeTemperature.add(new SimpleIntegerProperty(0));
             lastDisplayTemperature.add(new SimpleIntegerProperty(0));
             currentDisplayTemperature.add(new SimpleIntegerProperty(0));
-            reelNozzleTemperature.add(new Float(0));
+            nozzleFilamentTemperature.add(new Float(0));
             purgeFilament.add(null);
         }
         
@@ -85,7 +85,7 @@ public class PurgeActions extends StateTransitionActions
         {
             lastDisplayTemperature.get(i).set(0);
             currentDisplayTemperature.get(i).set(0);
-            reelNozzleTemperature.set(i, 0f);
+            nozzleFilamentTemperature.set(i, 0f);
         }
         savedHeadData = null;
     }
@@ -170,6 +170,11 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException
     {
+        float reel1FilamentTemperature = 0;
+        if (nozzleFilamentTemperature.size() > 1) {
+            reel1FilamentTemperature = nozzleFilamentTemperature.get(1);
+        }
+        
         printer.transmitWriteHeadEEPROM(
             savedHeadData.getTypeCode(),
             savedHeadData.getUniqueID(),
@@ -184,8 +189,8 @@ public class PurgeActions extends StateTransitionActions
             savedHeadData.getNozzle2YOffset(),
             savedHeadData.getNozzle2ZOffset(),
             savedHeadData.getNozzle2BOffset(),
-            reelNozzleTemperature.get(0),
-            reelNozzleTemperature.get(1),
+            nozzleFilamentTemperature.get(0),
+            reel1FilamentTemperature,
             savedHeadData.getHeadHours());
         printer.readHeadEEPROM();
         resetPrinter();
@@ -258,7 +263,7 @@ public class PurgeActions extends StateTransitionActions
         // on the reel
         if (purgeFilament.get(nozzleHeaterNumber) != null)
         {
-            reelNozzleTemperature.set(nozzleHeaterNumber, (float) purgeFilament.get(0).getNozzleTemperature());
+            nozzleFilamentTemperature.set(nozzleHeaterNumber, (float) purgeFilament.get(nozzleHeaterNumber).getNozzleTemperature());
         } else
         {
             throw new PrintException("The purge filament must be set");
@@ -266,12 +271,12 @@ public class PurgeActions extends StateTransitionActions
 
         if (savedHeadData != null)
         {
-            float temperatureDifference = reelNozzleTemperature.get(nozzleHeaterNumber)
+            float temperatureDifference = nozzleFilamentTemperature.get(nozzleHeaterNumber)
                 - savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber);
             lastDisplayTemperature.get(nozzleHeaterNumber).set(
                 (int) savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber));
             currentDisplayTemperature.get(nozzleHeaterNumber).set(
-                reelNozzleTemperature.get(nozzleHeaterNumber).intValue());
+                nozzleFilamentTemperature.get(nozzleHeaterNumber).intValue());
             purgeTemperature.get(nozzleHeaterNumber).set((int) Math.min(savedHeadData.getMaximumTemperature(),
                     Math.max(180.0,
                              savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber)

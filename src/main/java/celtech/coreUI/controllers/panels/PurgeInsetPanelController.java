@@ -72,6 +72,8 @@ public class PurgeInsetPanelController implements Initializable
     private Filament currentMaterial0;
     private Filament currentMaterial1;
 
+    BooleanBinding purgeTwoNozzleHeaters;
+
     PurgeStateTransitionManager transitionManager;
 
     Map<StateTransitionManager.GUIName, Region> namesToButtons = new HashMap<>();
@@ -81,12 +83,12 @@ public class PurgeInsetPanelController implements Initializable
         {
             transitionManager.setPurgeTemperature(0, newValue.intValue());
         };
-    
+
     private final ChangeListener<Number> purgeTempEntryListener1
         = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             transitionManager.setPurgeTemperature(1, newValue.intValue());
-        };    
+        };
 
     @FXML
     private VBox diagramContainer;
@@ -330,7 +332,10 @@ public class PurgeInsetPanelController implements Initializable
         purgeStatus.setVisible(true);
         purgeStatus.setText(state.getStepTitle());
         purgeTemperature0.intValueProperty().removeListener(purgeTempEntryListener0);
-        purgeTemperature1.intValueProperty().removeListener(purgeTempEntryListener1);
+        if (purgeTwoNozzleHeaters.get())
+        {
+            purgeTemperature1.intValueProperty().removeListener(purgeTempEntryListener1);
+        }
         switch (state)
         {
             case IDLE:
@@ -339,11 +344,16 @@ public class PurgeInsetPanelController implements Initializable
                 break;
             case CONFIRM_TEMPERATURE:
                 showCurrentMaterial0();
-                showCurrentMaterial1();
                 purgeTemperature0.intValueProperty().addListener(purgeTempEntryListener0);
-                purgeTemperature1.intValueProperty().addListener(purgeTempEntryListener1);
                 purgeDetailsGrid0.setVisible(true);
-                purgeDetailsGrid1.setVisible(true);
+
+                if (purgeTwoNozzleHeaters.get())
+                {
+                    showCurrentMaterial1();
+                    purgeTemperature1.intValueProperty().addListener(purgeTempEntryListener1);
+                }
+
+                purgeDetailsGrid1.setVisible(purgeTwoNozzleHeaters.get());
                 break;
             case HEATING:
                 break;
@@ -394,11 +404,14 @@ public class PurgeInsetPanelController implements Initializable
         BooleanBinding reel0Present = Bindings.valueAt(printer.reelsProperty(), 0).isNotNull();
         BooleanBinding reel1Present = Bindings.valueAt(printer.reelsProperty(), 1).isNotNull();
 
+        purgeTwoNozzleHeaters = Bindings.size(
+            printer.headProperty().get().getNozzleHeaters()).greaterThan(1);
+
         cmbCurrentMaterial0.visibleProperty().bind(reel0Present.not());
         textCurrentMaterial0.visibleProperty().bind(reel0Present);
-        
+
         cmbCurrentMaterial1.visibleProperty().bind(reel1Present.not());
-        textCurrentMaterial1.visibleProperty().bind(reel1Present);        
+        textCurrentMaterial1.visibleProperty().bind(reel1Present);
 
         progressDisplay.bindToPrinter(printer);
     }
@@ -426,7 +439,7 @@ public class PurgeInsetPanelController implements Initializable
             purgeTemperature0.textProperty().set("-1");
         }
     }
-    
+
     /**
      * If a reel is loaded then show and select its material, else show and select the material from
      * the combo box. This should be called whenever a reel is loaded/unloaded or changed.
@@ -449,7 +462,7 @@ public class PurgeInsetPanelController implements Initializable
             transitionManager.setPurgeTemperature(1, -1);
             purgeTemperature1.textProperty().set("-1");
         }
-    }    
+    }
 
     //TODO DMH
     private void installTag(Printer printer, GraphicButtonWithLabel button)
@@ -501,14 +514,19 @@ public class PurgeInsetPanelController implements Initializable
 
             lastMaterialTemperature0.textProperty().bind(
                 transitionManager.getLastMaterialTemperature(0).asString());
-            
-            currentMaterialTemperature1.textProperty().unbind();
-            lastMaterialTemperature1.textProperty().unbind();
-            currentMaterialTemperature1.textProperty().bind(
-                transitionManager.getCurrentMaterialTemperature(1).asString());
 
-            lastMaterialTemperature1.textProperty().bind(
-                transitionManager.getLastMaterialTemperature(1).asString());            
+            if (purgeTwoNozzleHeaters.get())
+            {
+
+                currentMaterialTemperature1.textProperty().unbind();
+                lastMaterialTemperature1.textProperty().unbind();
+                currentMaterialTemperature1.textProperty().bind(
+                    transitionManager.getCurrentMaterialTemperature(1).asString());
+
+                lastMaterialTemperature1.textProperty().bind(
+                    transitionManager.getLastMaterialTemperature(1).asString());
+
+            }
 
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
             {
@@ -543,7 +561,7 @@ public class PurgeInsetPanelController implements Initializable
             {
                 selectMaterial0(newValue);
             });
-        
+
         cmbCurrentMaterial1.setCellFactory(
             (ListView<Filament> param) -> new FilamentCell());
 
@@ -553,7 +571,7 @@ public class PurgeInsetPanelController implements Initializable
             (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
             {
                 selectMaterial1(newValue);
-            });        
+            });
 
     }
 
@@ -579,7 +597,7 @@ public class PurgeInsetPanelController implements Initializable
             purgeTemperature0.setText(transitionManager.getPurgeTemperature(0).asString().get());
         }
     }
-    
+
     /**
      * Tell the purge state machine about the (changed) current material, and update the relevant
      * text fields.
@@ -601,7 +619,7 @@ public class PurgeInsetPanelController implements Initializable
                 + currentMaterial1.getMaterial().getFriendlyName());
             purgeTemperature1.setText(transitionManager.getPurgeTemperature(1).asString().get());
         }
-    }    
+    }
 
     private void repopulateCmbCurrentMaterials()
     {

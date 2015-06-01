@@ -17,6 +17,8 @@ import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -40,8 +42,8 @@ public class Head implements Cloneable, RepairableComponent
     protected final StringProperty uniqueID = new SimpleStringProperty("");
     protected final FloatProperty headHours = new SimpleFloatProperty(0);
 
-    protected final ArrayList<NozzleHeater> nozzleHeaters = new ArrayList<>();
-    protected final ArrayList<Nozzle> nozzles = new ArrayList<>();
+    protected final ObservableList<NozzleHeater> nozzleHeaters = FXCollections.observableArrayList();
+    protected final List<Nozzle> nozzles = new ArrayList<>();
 
     public Head()
     {
@@ -155,12 +157,12 @@ public class Head implements Cloneable, RepairableComponent
         return headHours;
     }
 
-    public ArrayList<NozzleHeater> getNozzleHeaters()
+    public ObservableList<NozzleHeater> getNozzleHeaters()
     {
         return nozzleHeaters;
     }
 
-    public ArrayList<Nozzle> getNozzles()
+    public List<Nozzle> getNozzles()
     {
         return nozzles;
     }

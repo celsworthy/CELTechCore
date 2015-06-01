@@ -9,7 +9,7 @@ import celtech.printerControl.model.Nozzle;
 import celtech.printerControl.model.NozzleHeater;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -123,7 +123,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
              lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
         }
        
-        ArrayList<Nozzle> nozzles = head.getNozzles();
+        List<Nozzle> nozzles = head.getNozzles();
 
         populateEEPROM(head.typeCodeProperty().get(),
                        head.uniqueIDProperty().get(),
