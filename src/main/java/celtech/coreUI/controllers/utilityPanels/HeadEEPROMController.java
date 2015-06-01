@@ -153,6 +153,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                 headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
                 headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
                 nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
+                "", "",
                 nozzle2XOffsetVal, nozzle2YOffsetVal,
                 nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
                 lastFilamentTemperatureVal0, lastFilamentTemperatureVal1, headHourCounterVal);

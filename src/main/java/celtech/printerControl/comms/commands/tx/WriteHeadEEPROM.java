@@ -27,6 +27,10 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     private float nozzle1YOffset;
     private float nozzle1ZOffset;
     private float nozzle1BOffset;
+
+    private String filament0ID;
+    private String filament1ID;
+
     private float nozzle2XOffset;
     private float nozzle2YOffset;
     private float nozzle2ZOffset;
@@ -35,41 +39,19 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     private float lastFilamentTemperature1;
     private float hourCounter;
 
-    /**
-     *
-     */
     public WriteHeadEEPROM()
     {
         super(TxPacketTypeEnum.WRITE_HEAD_EEPROM, false, false);
     }
 
-    /**
-     *
-     * @param headTypeCode
-     * @param headUniqueID
-     * @param maximumTemperature
-     * @param thermistorBeta
-     * @param thermistorTCal
-     * @param nozzle1XOffset
-     * @param nozzle1YOffset
-     * @param nozzle1ZOffset
-     * @param nozzle1BOffset
-     * @param nozzle2XOffset
-     * @param nozzle2YOffset
-     * @param nozzle2ZOffset
-     * @param nozzle2BOffset
-     * @param lastFilamentTemperature0
-     * @param hourCounter
-     */
     public void populateEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
         float thermistorBeta, float thermistorTCal,
         float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
+        String filament0ID, String filament1ID,
         float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
         float lastFilamentTemperature0, float lastFilamentTemperature1, float hourCounter)
     {
 
-        //TODO make work for DMH, lastTemp1 not being added to payload
-        
         this.headTypeCode = headTypeCode;
         this.headUniqueID = headUniqueID;
         this.maximumTemperature = maximumTemperature;
@@ -79,6 +61,10 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         this.nozzle1YOffset = nozzle1YOffset;
         this.nozzle1ZOffset = nozzle1ZOffset;
         this.nozzle1BOffset = nozzle1BOffset;
+
+        this.filament0ID = filament0ID;
+        this.filament1ID = filament1ID;
+
         this.nozzle2XOffset = nozzle2XOffset;
         this.nozzle2YOffset = nozzle2YOffset;
         this.nozzle2ZOffset = nozzle2ZOffset;
@@ -100,12 +86,15 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         payload.append(decimalFloatFormatter.format(nozzle1YOffset));
         payload.append(decimalFloatFormatter.format(nozzle1ZOffset));
         payload.append(decimalFloatFormatter.format(nozzle1BOffset));
-        payload.append(String.format("%1$16s", " "));
+        payload.append(String.format("%1$-8s", filament0ID));
+        payload.append(String.format("%1$-8s", filament1ID));
         payload.append(decimalFloatFormatter.format(nozzle2XOffset));
         payload.append(decimalFloatFormatter.format(nozzle2YOffset));
         payload.append(decimalFloatFormatter.format(nozzle2ZOffset));
         payload.append(decimalFloatFormatter.format(nozzle2BOffset));
-        payload.append(String.format("%1$32s", " "));
+        payload.append(String.format("%1$24s", " "));
+        // N.B. This is the only place (when writing) where filament temps for 1 and 0 are reversed order
+        payload.append(decimalFloatFormatter.format(lastFilamentTemperature1));
         payload.append(decimalFloatFormatter.format(lastFilamentTemperature0));
         payload.append(decimalFloatFormatter.format(hourCounter));
 
@@ -114,15 +103,16 @@ public class WriteHeadEEPROM extends RoboxTxPacket
 
     public void populateEEPROM(Head head)
     {
-        //TODO modify to cater for different number of nozzles/heaters
-
         NozzleHeater heater0 = head.getNozzleHeaters().get(0);
         float lastFilamentTemperature1 = 0;
-        if (head.getNozzleHeaters().size() > 1) {
-             NozzleHeater heater1 = head.getNozzleHeaters().get(1);
-             lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
+        String filament1ID = "";
+        if (head.getNozzleHeaters().size() > 1)
+        {
+            NozzleHeater heater1 = head.getNozzleHeaters().get(1);
+            lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
+            filament1ID = heater1.filamentIDProperty().get();
         }
-       
+
         List<Nozzle> nozzles = head.getNozzles();
 
         populateEEPROM(head.typeCodeProperty().get(),
@@ -134,6 +124,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
                        nozzles.get(0).yOffsetProperty().get(),
                        nozzles.get(0).zOffsetProperty().get(),
                        nozzles.get(0).bOffsetProperty().get(),
+                       heater0.filamentIDProperty().get(),
+                       filament1ID,
                        nozzles.get(1).xOffsetProperty().get(),
                        nozzles.get(1).yOffsetProperty().get(),
                        nozzles.get(1).zOffsetProperty().get(),
@@ -143,10 +135,6 @@ public class WriteHeadEEPROM extends RoboxTxPacket
                        head.headHoursProperty().get());
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public byte[] toByteArray()
     {
@@ -195,11 +183,6 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         return outputArray;
     }
 
-    /**
-     *
-     * @param byteData
-     * @return
-     */
     @Override
     public boolean populatePacket(byte[] byteData)
     {
@@ -271,15 +254,29 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         return nozzle2BOffset;
     }
 
-    public float getLastFilamentTemperature()
+    public float getLastFilamentTemperature0()
     {
         return lastFilamentTemperature0;
+    }
+
+    public float getLastFilamentTemperature1()
+    {
+        return lastFilamentTemperature1;
+    }
+
+    public String getFilament0ID()
+    {
+        return filament0ID;
+    }
+
+    public String getFilament1ID()
+    {
+        return filament1ID;
     }
 
     public float getHourCounter()
     {
         return hourCounter;
     }
-    
-    
+
 }

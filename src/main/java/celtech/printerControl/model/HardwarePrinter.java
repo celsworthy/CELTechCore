@@ -1585,32 +1585,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
-    /**
-     *
-     * @param headTypeCode
-     * @param headUniqueID
-     * @param maximumTemperature
-     * @param thermistorBeta
-     * @param thermistorTCal
-     * @param nozzle1XOffset
-     * @param nozzle1YOffset
-     * @param nozzle1ZOffset
-     * @param nozzle1BOffset
-     * @param nozzle2XOffset
-     * @param nozzle2YOffset
-     * @param nozzle2ZOffset
-     * @param nozzle2BOffset
-     * @param lastFilamentTemperature
-     * @param hourCounter
-     * @return
-     * @throws RoboxCommsException
-     */
     @Override
     public AckResponse transmitWriteHeadEEPROM(
         String headTypeCode, String headUniqueID,
         float maximumTemperature,
         float thermistorBeta, float thermistorTCal,
         float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
+        String filament0ID, String filament1ID,
         float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
         float lastFilamentTemperature0, float lastFilamentTemperature1, float hourCounter) throws RoboxCommsException
     {
@@ -1625,6 +1606,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                        nozzle1YOffset,
                                        nozzle1ZOffset,
                                        nozzle1BOffset,
+                                       filament0ID,
+                                       filament1ID,
                                        nozzle2XOffset,
                                        nozzle2YOffset,
                                        nozzle2ZOffset,

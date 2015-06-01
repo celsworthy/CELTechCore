@@ -422,7 +422,8 @@ public class CommandInterfaceTestPrinter implements Printer
     @Override
     public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
         float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
-        float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset,
+        float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset, 
+        String filamentID0, String filamentID1, float nozzle2XOffset,
         float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
         float lastFilamentTemperature0, float lastFilamentTemperature1,
         float hourCounter) throws RoboxCommsException

@@ -70,12 +70,13 @@ public class Head implements Cloneable, RepairableComponent
 
         return createdHead;
     }
-    
-    protected NozzleHeater makeNozzleHeater(NozzleHeaterData nozzleHeaterData) {
+
+    protected NozzleHeater makeNozzleHeater(NozzleHeaterData nozzleHeaterData)
+    {
         return new NozzleHeater(nozzleHeaterData.getMaximum_temperature_C(),
-                                                       nozzleHeaterData.getBeta(),
-                                                       nozzleHeaterData.getTcal(),
-                                                       0, 0, 0, 0);
+                                nozzleHeaterData.getBeta(),
+                                nozzleHeaterData.getTcal(),
+                                0, 0, 0, 0, "");
     }
 
     private void updateFromHeadFileData(HeadFile headData)
@@ -104,8 +105,7 @@ public class Head implements Cloneable, RepairableComponent
             });
     }
 
-    /**
-     */
+
     private Head(String typeCode,
         String friendlyName,
         String uniqueID,
@@ -121,37 +121,21 @@ public class Head implements Cloneable, RepairableComponent
         this.nozzles.addAll(nozzles);
     }
 
-    /**
-     *
-     * @return
-     */
     public StringProperty typeCodeProperty()
     {
         return typeCode;
     }
 
-    /**
-     *
-     * @return
-     */
     public StringProperty nameProperty()
     {
         return name;
     }
 
-    /**
-     *
-     * @return
-     */
     public StringProperty uniqueIDProperty()
     {
         return uniqueID;
     }
 
-    /**
-     *
-     * @return
-     */
     public FloatProperty headHoursProperty()
     {
         return headHours;
@@ -167,65 +151,37 @@ public class Head implements Cloneable, RepairableComponent
         return nozzles;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty bPositionProperty()
     {
         return BPosition;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyIntegerProperty nozzleInUseProperty()
     {
         return nozzleInUse;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty headXPositionProperty()
     {
         return headXPosition;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty headYPositionProperty()
     {
         return headYPosition;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty headZPositionProperty()
     {
         return headZPosition;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public String toString()
     {
         return name.get();
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public Head clone()
     {
@@ -258,20 +214,18 @@ public class Head implements Cloneable, RepairableComponent
 
     public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
     {
-        //TODO update for multiple nozzles/heater
-        // This only supports the initial RBX01-SM head since this is the only data from the printer at the moment...
-
         typeCode.set(eepromData.getTypeCode());
         uniqueID.set(eepromData.getUniqueID());
         headHours.set(eepromData.getHeadHours());
 
-        if (nozzleHeaters.size() > 0)
+        for (int i = 0; i < nozzleHeaters.size(); i++)
         {
-            nozzleHeaters.get(0).beta.set(eepromData.getBeta());
-            nozzleHeaters.get(0).tcal.set(eepromData.getTCal());
-            nozzleHeaters.get(0).lastFilamentTemperature.
-                set(eepromData.getLastFilamentTemperature(0));
-            nozzleHeaters.get(0).maximumTemperature.set(eepromData.getMaximumTemperature());
+            nozzleHeaters.get(i).beta.set(eepromData.getBeta());
+            nozzleHeaters.get(i).tcal.set(eepromData.getTCal());
+            nozzleHeaters.get(i).lastFilamentTemperature.
+                set(eepromData.getLastFilamentTemperature(i));
+            nozzleHeaters.get(i).maximumTemperature.set(eepromData.getMaximumTemperature());
+            nozzleHeaters.get(i).filamentID.set(eepromData.getFilamentID(i));
         }
 
         if (nozzles.size() > 0)
@@ -395,6 +349,7 @@ public class Head implements Cloneable, RepairableComponent
                 heater.nozzleFirstLayerTargetTemperature.set(0);
                 heater.nozzleTargetTemperature.set(0);
                 heater.nozzleTemperature.set(0);
+                heater.filamentID.set("");
 
                 nozzleHeaterIndex++;
             }

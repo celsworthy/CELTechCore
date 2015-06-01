@@ -27,7 +27,7 @@ public class TestHead extends Head
         return new TestNozzleHeater(nozzleHeaterData.getMaximum_temperature_C(),
                                     nozzleHeaterData.getBeta(),
                                     nozzleHeaterData.getTcal(),
-                                    0, 0, 0, 0);
+                                    0, 0, 0, 0, "");
     }
 
     public class TestNozzleHeater extends NozzleHeater
@@ -39,10 +39,11 @@ public class TestHead extends Head
             float lastFilamentTemperature,
             int nozzleTemperature,
             int nozzleFirstLayerTargetTemperature,
-            int nozzleTargetTemperature)
+            int nozzleTargetTemperature,
+            String filamentID)
         {
             super(maximumTemperature, beta, tcal, lastFilamentTemperature, nozzleTemperature,
-                  nozzleFirstLayerTargetTemperature, nozzleTargetTemperature);
+                  nozzleFirstLayerTargetTemperature, nozzleTargetTemperature, filamentID);
         }
 
         public FloatProperty lastFilamentTemperatureProperty()

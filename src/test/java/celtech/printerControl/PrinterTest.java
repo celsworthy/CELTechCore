@@ -131,6 +131,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
                 "RBX01-SM", "XZYA",
                 250f, 5f, 6f,
                 nozzle1XOffset, 7f, 0.2f, 1.1f,
+                "", "",
                 100f, 7f, 0.2f, 1f,
                 210f, 210f, 45f);
 

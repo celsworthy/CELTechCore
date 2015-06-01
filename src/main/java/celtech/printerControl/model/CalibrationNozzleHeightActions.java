@@ -95,6 +95,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                         nozzle1Data.getDefaultYOffset(),
                                         0,
                                         savedHeadData.getNozzle1BOffset(),
+                                        savedHeadData.getFilamentID(0),
+                                        savedHeadData.getFilamentID(1),
                                         nozzle2Data.getDefaultXOffset(),
                                         nozzle2Data.getDefaultYOffset(),
                                         0,
@@ -313,7 +315,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         } catch (CalibrationException | PrinterException ex)
         {
             steno.error("Error in failed action: " + ex);
-        } 
+        }
         printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
@@ -346,6 +348,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                                 savedHeadData.getNozzle1YOffset(),
                                                 savedHeadData.getNozzle1ZOffset(),
                                                 savedHeadData.getNozzle1BOffset(),
+                                                savedHeadData.getFilamentID(0),
+                                                savedHeadData.getFilamentID(1),
                                                 savedHeadData.getNozzle2XOffset(),
                                                 savedHeadData.getNozzle2YOffset(),
                                                 savedHeadData.getNozzle2ZOffset(),
@@ -373,6 +377,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                         savedHeadData.getNozzle1YOffset(),
                                         (float) (-zco.get() - (0.5 * zDifference)),
                                         savedHeadData.getNozzle1BOffset(),
+                                        savedHeadData.getFilamentID(0),
+                                        savedHeadData.getFilamentID(1),
                                         savedHeadData.getNozzle2XOffset(),
                                         savedHeadData.getNozzle2YOffset(),
                                         (float) (-zco.get() + (0.5 * zDifference)),

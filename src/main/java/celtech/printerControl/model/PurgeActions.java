@@ -185,6 +185,8 @@ public class PurgeActions extends StateTransitionActions
             savedHeadData.getNozzle1YOffset(),
             savedHeadData.getNozzle1ZOffset(),
             savedHeadData.getNozzle1BOffset(),
+            savedHeadData.getFilamentID(0),
+            savedHeadData.getFilamentID(1),
             savedHeadData.getNozzle2XOffset(),
             savedHeadData.getNozzle2YOffset(),
             savedHeadData.getNozzle2ZOffset(),

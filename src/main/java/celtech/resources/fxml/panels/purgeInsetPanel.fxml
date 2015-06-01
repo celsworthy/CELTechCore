@@ -8,7 +8,7 @@
 <?import javafx.scene.text.*?>
 <?import celtech.coreUI.components.buttons.*?>
 
-<VBox fx:id="container" maxHeight="1E308" maxWidth="1E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PurgeInsetPanelController">
+<VBox fx:id="container" maxHeight="1E308" maxWidth="1E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PurgeInsetPanelController">
     <children>
         <BorderPane maxHeight="1E308" maxWidth="1E308" pickOnBounds="false" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
             <VBox.margin>
@@ -108,6 +108,9 @@
                                            </children>
                                        </GridPane>
                                    </children>
+                           <VBox.margin>
+                              <Insets top="30.0" />
+                           </VBox.margin>
                                 </HBox>
                                 <VBox fx:id="diagramContainer" alignment="BOTTOM_LEFT" VBox.vgrow="ALWAYS" />
                             </children>

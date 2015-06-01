@@ -242,7 +242,8 @@ public class TestCommandInterface extends CommandInterface
         headResponse.setNozzle2YOffset(message.getNozzle2YOffset());
         headResponse.setNozzle2ZOffset(message.getNozzle2ZOffset());
         headResponse.setNozzle2BOffset(message.getNozzle2BOffset());
-        headResponse.setLastFilamentTemperature(message.getLastFilamentTemperature());
+        headResponse.setLastFilamentTemperature0(message.getLastFilamentTemperature0());
+        headResponse.setLastFilamentTemperature1(message.getLastFilamentTemperature1());
         headResponse.setHoursUsed(message.getHourCounter());
 
     }
