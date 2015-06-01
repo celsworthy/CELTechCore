@@ -53,7 +53,7 @@ public class NozzleChartData
         updateNozzleReadout();
     };
 
-    public NozzleChartData(XYChart.Series<Number, Number> nozzleTemperatureData,
+    public NozzleChartData(int nozzleNumber, XYChart.Series<Number, Number> nozzleTemperatureData,
         ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty,
         ReadOnlyIntegerProperty nozzleTargetTemperatureProperty,
         ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
@@ -80,7 +80,7 @@ public class NozzleChartData
         this.nozzleReadout = nozzleReadout;
 
         degreesC = Lookup.i18n("misc.degreesC");
-        legendNozzleStartingText = Lookup.i18n("printerStatus.temperatureGraphNozzleLabel");
+        legendNozzleStartingText = Lookup.i18n("printerStatus.temperatureGraphNozzleLabel" + nozzleNumber);
 
         updateNozzleTargetPoint();
     }

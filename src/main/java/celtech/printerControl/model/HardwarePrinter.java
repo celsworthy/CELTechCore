@@ -3470,24 +3470,30 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                          */
                         if (head.get().nozzleHeaters.size() > 0)
                         {
-                            //TODO modify for multiple heaters
-                            head.get().nozzleHeaters.get(0).nozzleTemperature.set(
+                            NozzleHeater nozzleHeater0 = head.get().nozzleHeaters.get(0);
+                            nozzleHeater0.nozzleTemperature.set(
                                 statusResponse.getNozzle0Temperature());
-                            head.get().nozzleHeaters.get(0).nozzleFirstLayerTargetTemperature.
-                                set(
-                                    statusResponse.getNozzle0FirstLayerTargetTemperature());
-                            head.get().nozzleHeaters.get(0).nozzleTargetTemperature.set(
+                            nozzleHeater0.nozzleFirstLayerTargetTemperature.
+                                set(statusResponse.getNozzle0FirstLayerTargetTemperature());
+                            nozzleHeater0.nozzleTargetTemperature.set(
                                 statusResponse.getNozzle0TargetTemperature());
+                            nozzleHeater0.heaterMode.set(
+                                statusResponse.getNozzle0HeaterMode());
 
-                            //TODO modify for multiple heaters
-                            if (head.get().getNozzleHeaters().size() > 0)
+                            if (head.get().getNozzleHeaters().size() > 1)
                             {
-                                head.get().getNozzleHeaters().get(0).heaterMode.set(
-                                    statusResponse.getNozzle0HeaterMode());
+                                NozzleHeater nozzleHeater1 = head.get().nozzleHeaters.get(1);
+                                nozzleHeater1.nozzleTemperature.set(
+                                    statusResponse.getNozzle1Temperature());
+                                nozzleHeater1.nozzleFirstLayerTargetTemperature.
+                                    set(statusResponse.getNozzle1FirstLayerTargetTemperature());
+                                nozzleHeater1.nozzleTargetTemperature.set(
+                                    statusResponse.getNozzle1TargetTemperature());
+                                nozzleHeater1.heaterMode.set(
+                                    statusResponse.getNozzle1HeaterMode());
                             }
-                            head.get().nozzleHeaters
-                                .stream()
-                                .forEach(heater -> heater.updateGraphData());
+                            head.get().nozzleHeaters.stream().forEach(
+                                heater -> heater.updateGraphData());
                         }
 
                         /*

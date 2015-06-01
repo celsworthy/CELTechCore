@@ -178,27 +178,34 @@
 
                 <GridPane fx:id="legendContainer" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="0.0">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="33.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="29.0" />
                     </columnConstraints>
                     <rowConstraints>
                         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
-                        <Label fx:id="legendNozzle" text="">
+                        <Label fx:id="legendNozzleS" text="" GridPane.columnIndex="0">
                             <styleClass>
                                 <String fx:value="graph-red" />
                                 <String fx:value="temperatureChartLegend" />
                             </styleClass>
                         </Label>
-                        <Label fx:id="legendBed" text="B" GridPane.columnIndex="1">
+                        <Label fx:id="legendNozzleT" text="" GridPane.columnIndex="1">
+                            <styleClass>
+                                <String fx:value="graph-blue" />
+                                <String fx:value="temperatureChartLegend" />
+                            </styleClass>
+                        </Label>
+                        <Label fx:id="legendBed" text="B" GridPane.columnIndex="2">
                             <styleClass>
                                 <String fx:value="graph-yellow" />
                                 <String fx:value="temperatureChartLegend" />
                             </styleClass>
                         </Label>
-                        <Label fx:id="legendAmbient" text="A" GridPane.columnIndex="2">
+                        <Label fx:id="legendAmbient" text="A" GridPane.columnIndex="3">
                             <styleClass>
                                 <String fx:value="graph-green" />
                                 <String fx:value="temperatureChartLegend" />
