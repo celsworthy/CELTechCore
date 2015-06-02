@@ -238,6 +238,8 @@ public class TestCommandInterface extends CommandInterface
         headResponse.setNozzle1YOffset(message.getNozzle1YOffset());
         headResponse.setNozzle1ZOffset(message.getNozzle1ZOffset());
         headResponse.setNozzle1BOffset(message.getNozzle1BOffset());
+        headResponse.setFilament0ID(message.getFilament0ID());
+        headResponse.setFilament1ID(message.getFilament1ID());
         headResponse.setNozzle2XOffset(message.getNozzle2XOffset());
         headResponse.setNozzle2YOffset(message.getNozzle2YOffset());
         headResponse.setNozzle2ZOffset(message.getNozzle2ZOffset());

@@ -226,6 +226,11 @@ public class Head implements Cloneable, RepairableComponent
                 set(eepromData.getLastFilamentTemperature(i));
             nozzleHeaters.get(i).maximumTemperature.set(eepromData.getMaximumTemperature());
             nozzleHeaters.get(i).filamentID.set(eepromData.getFilamentID(i));
+            
+            System.out.println("head nozzle last temp set: " + i + " " +  nozzleHeaters.get(i).lastFilamentTemperature.get());
+            if (nozzleHeaters.get(i).lastFilamentTemperature.get() == 0) {
+                Thread.dumpStack();
+            }
         }
 
         if (nozzles.size() > 0)
@@ -412,32 +417,32 @@ public class Head implements Cloneable, RepairableComponent
         uniqueID.set(idToCreate);
     }
 
-    public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
-    {
-        boolean matches = false;
-
-        //TODO fix for multiple heaters/nozzles
-        if (response.getTypeCode().equals(typeCodeProperty().get())
-            && response.getHeadHours() == headHoursProperty().get()
-            && response.getMaximumTemperature() == getNozzleHeaters()
-            .get(0)
-            .maximumTemperatureProperty().get()
-            && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
-            && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
-            && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
-            && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
-            && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
-            && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
-            && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
-            && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
-            && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
-            && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
-            && response.getUniqueID().equals(uniqueIDProperty().get()))
-        {
-            matches = true;
-        }
-
-        return matches;
-    }
+//    public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
+//    {
+//        boolean matches = false;
+//
+//        //TODO fix for multiple heaters/nozzles
+//        if (response.getTypeCode().equals(typeCodeProperty().get())
+//            && response.getHeadHours() == headHoursProperty().get()
+//            && response.getMaximumTemperature() == getNozzleHeaters()
+//            .get(0)
+//            .maximumTemperatureProperty().get()
+//            && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
+//            && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
+//            && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
+//            && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
+//            && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
+//            && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
+//            && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
+//            && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
+//            && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
+//            && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
+//            && response.getUniqueID().equals(uniqueIDProperty().get()))
+//        {
+//            matches = true;
+//        }
+//
+//        return matches;
+//    }
 
 }

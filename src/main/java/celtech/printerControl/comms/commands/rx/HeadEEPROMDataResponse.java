@@ -34,7 +34,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     private float nozzle1YOffset = 0;
     private float nozzle1ZOffset = 0;
     private float nozzle1BOffset = 0;
-    
+
     private String filament0ID = "";
     private String filament1ID = "";
 
@@ -56,6 +56,8 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     public boolean populatePacket(byte[] byteData)
     {
         boolean success = false;
+
+        System.out.println("Head data incoming is " + byteData.toString());
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
@@ -203,7 +205,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += 24;
 
             String lastFilamentTemperatureString1 = new String(byteData, byteOffset,
-                                                              decimalFloatFormatBytes, charsetToUse);
+                                                               decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -215,9 +217,9 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse last filament temperature 1 - "
                     + lastFilamentTemperatureString1);
             }
-            
+
             String lastFilamentTemperatureString0 = new String(byteData, byteOffset,
-                                                              decimalFloatFormatBytes, charsetToUse);
+                                                               decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -228,7 +230,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             {
                 steno.error("Couldn't parse last filament temperature 0 - "
                     + lastFilamentTemperatureString0);
-            }            
+            }
 
             String hoursUsedString = new String(byteData, byteOffset, decimalFloatFormatBytes,
                                                 charsetToUse);
@@ -350,9 +352,10 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             throw new RuntimeException("unrecognised nozzle heater number: " + nozzleHeaterNumber);
         }
     }
-    
-    public String getFilamentID(int nozzleHeaterNumber) {
-         if (nozzleHeaterNumber == 0)
+
+    public String getFilamentID(int nozzleHeaterNumber)
+    {
+        if (nozzleHeaterNumber == 0)
         {
             return filament0ID;
         } else if (nozzleHeaterNumber == 1)
@@ -372,11 +375,20 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
         if (attachedHead.getNozzleHeaters().size() > 0)
         {
-            NozzleHeater heater = attachedHead.getNozzleHeaters().get(0);
-            maximumTemperature = heater.maximumTemperatureProperty().get();
-            thermistorBeta = heater.betaProperty().get();
-            thermistorTCal = heater.tCalProperty().get();
-            lastFilamentTemperature0 = heater.lastFilamentTemperatureProperty().get();
+            NozzleHeater heater0 = attachedHead.getNozzleHeaters().get(0);
+            maximumTemperature = heater0.maximumTemperatureProperty().get();
+            thermistorBeta = heater0.betaProperty().get();
+            thermistorTCal = heater0.tCalProperty().get();
+            lastFilamentTemperature0 = heater0.lastFilamentTemperatureProperty().get();
+            filament0ID = heater0.filamentIDProperty().get();
+
+            if (attachedHead.getNozzleHeaters().size() > 1)
+            {
+                NozzleHeater heater1 = attachedHead.getNozzleHeaters().get(1);
+                lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
+                filament1ID = heater1.filamentIDProperty().get();
+            }
+
         }
         hoursUsed = attachedHead.headHoursProperty().get();
 
@@ -466,11 +478,21 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     {
         this.lastFilamentTemperature0 = lastFilamentTemperature;
     }
-    
+
     public void setLastFilamentTemperature1(float lastFilamentTemperature)
     {
         this.lastFilamentTemperature1 = lastFilamentTemperature;
-    }    
+    }
+
+    public void setFilament0ID(String filamentID)
+    {
+        filament0ID = filamentID;
+    }
+
+    public void setFilament1ID(String filamentID)
+    {
+        filament1ID = filamentID;
+    }
 
     public void setHoursUsed(float hoursUsed)
     {
@@ -499,7 +521,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         nozzle1YOffset = headWriteCommand.getNozzle1YOffset();
         nozzle1ZOffset = headWriteCommand.getNozzle1ZOffset();
         nozzle1BOffset = headWriteCommand.getNozzle1BOffset();
-        
+
         filament0ID = headWriteCommand.getFilament0ID();
         filament1ID = headWriteCommand.getFilament1ID();
 

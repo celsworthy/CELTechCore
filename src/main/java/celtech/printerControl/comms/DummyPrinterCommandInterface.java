@@ -145,7 +145,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         if (nozzleHeaterModeT != HeaterMode.OFF && currentNozzleTemperatureT
             < nozzleTargetTemperatureT)
         {
-            currentNozzleTemperatureT += 10;
+            currentNozzleTemperatureT += 7;
             if (currentNozzleTemperatureT > nozzleTargetTemperatureT)
             {
                 currentNozzleTemperatureT = nozzleTargetTemperatureT;
@@ -153,7 +153,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         } else if (nozzleHeaterModeT == HeaterMode.OFF && currentNozzleTemperatureT
             > ROOM_TEMPERATURE)
         {
-            currentNozzleTemperatureT -= 10;
+            currentNozzleTemperatureT -= 7;
             if (currentNozzleTemperatureT < ROOM_TEMPERATURE)
             {
                 currentNozzleTemperatureT = ROOM_TEMPERATURE;

@@ -126,7 +126,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
         response.setUniqueID("XYZ1");
         testCommandInterface.addHead(response);
 
-        float nozzle1XOffset = 7.4f;
+        float nozzle1XOffset = 14.2f;
         printer.transmitWriteHeadEEPROM(
                 "RBX01-SM", "XZYA",
                 250f, 5f, 6f,
@@ -134,7 +134,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
                 "", "",
                 100f, 7f, 0.2f, 1f,
                 210f, 210f, 45f);
-
+        
         assertEquals(nozzle1XOffset, printer.headProperty().get().getNozzles().get(0).xOffsetProperty().get(), 0.001);
     }
 

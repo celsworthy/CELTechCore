@@ -20,9 +20,6 @@
                         <VBox alignment="CENTER" maxWidth="1000.0" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" BorderPane.alignment="CENTER">
                             <children>
                                 <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
-                                    <font>
-                                        <Font name="Segoe UI" size="18.0" />
-                                    </font>
                                     <VBox.margin>
                                         <Insets bottom="30.0" />
                                     </VBox.margin>
@@ -31,9 +28,6 @@
                                     <children>
                                         <Text fx:id="resettingPrinter" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="resettingPrinter" text="%misc.resettingPrinter" visible="false" />
                                         <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeInstructions" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
-                                            <font>
-                                                <Font name="Segoe UI" size="18.0" />
-                                            </font>
                                             <VBox.margin>
                                                 <Insets bottom="30.0" />
                                             </VBox.margin>

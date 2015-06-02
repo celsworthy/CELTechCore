@@ -261,7 +261,7 @@ public class PurgeActions extends StateTransitionActions
     private void updatePurgeTemperature(int nozzleHeaterNumber) throws PrintException
     {
         // The nozzle should be heated to a temperature halfway between the last
-        //temperature stored on the head and the current required temperature stored
+        // temperature stored on the head and the current required temperature stored
         // on the reel
         if (purgeFilament.get(nozzleHeaterNumber) != null)
         {

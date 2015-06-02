@@ -1,14 +1,19 @@
 {
   "version" : 1,
-  "name" : "Single Material 0.8mm/0.3mm",
-  "typeCode" : "RBX01-SM",
+  "name" : "Dual Material 0.8mm/0.4mm",
+  "typeCode" : "RBX01-DM",
   "nozzleHeaters" : [ {
     "maximum_temperature_C" : 260,
     "beta" : 4380.0,
     "tcal" : 19193.0
-  } ],
+  },
+  {
+    "maximum_temperature_C" : 260,
+    "beta" : 4380.0,
+    "tcal" : 19193.0
+  }   ],
   "nozzles" : [ {
-    "diameter" : 0.3,
+    "diameter" : 0.4,
     "defaultXOffset" : 15,
 	"minXOffset" : 14,
 	"maxXOffset" : 16,
@@ -21,9 +26,9 @@
     "defaultBOffset" : 1.1,
 	"minBOffset" : 0.7,
 	"maxBOffset" : 2.0,
-	"associatedExtruder" : "E"
+	"associatedExtruder" : "D"
   }, {
-    "diameter" : 0.8,
+    "diameter" : 0.4,
     "defaultXOffset" : 1,
 	"minXOffset" : 0.5,
 	"maxXOffset" : 1.5,

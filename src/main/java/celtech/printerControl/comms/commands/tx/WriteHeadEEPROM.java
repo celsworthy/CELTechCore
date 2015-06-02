@@ -93,11 +93,11 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         payload.append(decimalFloatFormatter.format(nozzle2ZOffset));
         payload.append(decimalFloatFormatter.format(nozzle2BOffset));
         payload.append(String.format("%1$24s", " "));
-        // N.B. This is the only place (when writing) where filament temps for 1 and 0 are reversed order
+        // N.B. This is the only place in code (when writing) where filament temps for 1 and 0 are reversed order
         payload.append(decimalFloatFormatter.format(lastFilamentTemperature1));
         payload.append(decimalFloatFormatter.format(lastFilamentTemperature0));
         payload.append(decimalFloatFormatter.format(hourCounter));
-
+        System.out.println("Payload is " + payload.toString());
         this.setMessagePayload(payload.toString());
     }
 

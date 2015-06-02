@@ -1280,7 +1280,7 @@ public class PrintEngine implements ControllableService
             stopServicesTask.get();
         } catch (InterruptedException | ExecutionException ex)
         {
-            steno.error("Error while stopping services");
+            steno.error("Error while stopping services: " + ex);
         }
     }
 
