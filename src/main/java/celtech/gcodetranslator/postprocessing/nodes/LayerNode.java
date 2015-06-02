@@ -30,7 +30,7 @@ public class LayerNode extends GCodeEventNode
     @Override
     public String toString()
     {
-        return "Layer->"  + layerNumber;
+        return ";Layer "  + layerNumber;
     }
         @Override
     public String renderForOutput()

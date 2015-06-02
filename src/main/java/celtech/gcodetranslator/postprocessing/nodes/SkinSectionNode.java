@@ -4,12 +4,12 @@ package celtech.gcodetranslator.postprocessing.nodes;
  *
  * @author Ian
  */
-public class OuterPerimeterSectionNode extends SectionNode
+public class SkinSectionNode extends SectionNode
 {
 
-    public static final String designator = ";TYPE:WALL-OUTER";
+    public static final String designator = ";TYPE:SKIN";
 
-    public OuterPerimeterSectionNode()
+    public SkinSectionNode()
     {
     }
 

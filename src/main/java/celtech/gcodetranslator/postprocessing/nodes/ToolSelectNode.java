@@ -4,9 +4,8 @@ package celtech.gcodetranslator.postprocessing.nodes;
  *
  * @author Ian
  */
-public class ToolSelectNode extends GCodeEventNode
+public class ToolSelectNode extends CommentableNode
 {
-
     private int toolNumber = -1;
 
     public int getToolNumber()
@@ -18,10 +17,14 @@ public class ToolSelectNode extends GCodeEventNode
     {
         this.toolNumber = toolNumber;
     }
-
+     
     @Override
     public String renderForOutput()
     {
-        return toString();
+        String stringToReturn = "T" + getToolNumber();
+
+        stringToReturn += super.renderForOutput();
+
+        return stringToReturn;
     }
 }

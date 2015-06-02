@@ -6,12 +6,15 @@ import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.IslandNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.PreambleNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
-import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnrecognisedLineNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
@@ -58,25 +61,205 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         },
                         Newline()
                 ),
+                //                Optional(
+                //                        Sequence(
+                //                                Preamble(),
+                //                                (Action) (Context context1) ->
+                //                                {
+                //                                    if (!context1.getValueStack().isEmpty())
+                //                                    {
+                //                                        GCodeEventNode node = (GCodeEventNode) context1.getValueStack().pop();
+                //                                        TreeUtils.addChild(thisLayer, node);
+                //                                    }
+                //                                    return true;
+                //                                }
+                //                        )
+                //                ),
                 OneOrMore(
                         FirstOf(
-                                CuraFillSection(),
-                                CuraInnerPerimeterSection(),
-                                CuraOuterPerimeterSection(),
+                                ObjectSection(),
                                 ChildDirective()
                         ),
                         (Action) (Context context1) ->
                         {
                             if (!context1.getValueStack().isEmpty())
                             {
-                                steno.info("Adding child to layer");
                                 GCodeEventNode node = (GCodeEventNode) context1.getValueStack().pop();
                                 TreeUtils.addChild(thisLayer, node);
                             }
                             return true;
                         }
+                )
+        );
+    }
+
+    Rule Preamble()
+    {
+        return Sequence(
+                OneOrMore(CommentDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        PreambleNode node = new PreambleNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.getChildren().add(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    // T1 or T12 or T123...
+    Rule ObjectSection()
+    {
+        ObjectSectionActionClass objectSectionAction = new ObjectSectionActionClass();
+        Var<Integer> objectNumber = new Var<>(0);
+
+        return Sequence(FirstOf(
+                        Sequence('T', OneOrMore(Digit()),
+                                objectNumber.set(Integer.valueOf(match())),
+                                Newline()
+                        ),
+                        FirstOf(Test(FillSectionNode.designator),
+                                Test(InnerPerimeterSectionNode.designator),
+                                Test(OuterPerimeterSectionNode.designator))
                 ),
-                EOI
+                objectSectionAction,
+                OneOrMore(
+                        Sequence(
+                                FirstOf(
+                                        FillSection(),
+                                        InnerPerimeterSection(),
+                                        OuterPerimeterSection()
+                                ),
+                                new Action()
+                                {
+                                    @Override
+                                    public boolean run(Context context)
+                                    {
+                                        TreeUtils.addChild(objectSectionAction.getNode(), (GCodeEventNode) context.getValueStack().pop());
+                                        return true;
+                                    }
+                                }
+                        )
+                ),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context
+                    )
+                    {
+                        ObjectDelineationNode node = objectSectionAction.getNode();
+                        node.setObjectNumber(objectNumber.get());
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Cura fill Section
+    //;TYPE:FILL
+    Rule FillSection()
+    {
+        return Sequence(
+                FillSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        FillSectionNode node = new FillSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Cura skin Section
+    //;TYPE:SKIN
+    Rule SkinSection()
+    {
+        return Sequence(
+                SkinSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        SkinSectionNode node = new SkinSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Cura outer perimeter section
+    //;TYPE:WALL-OUTER
+    Rule OuterPerimeterSection()
+    {
+        return Sequence(
+                OuterPerimeterSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        OuterPerimeterSectionNode node = new OuterPerimeterSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Cura inner perimeter section
+    //;TYPE:WALL-INNER
+    Rule InnerPerimeterSection()
+    {
+        return Sequence(
+                InnerPerimeterSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        InnerPerimeterSectionNode node = new InnerPerimeterSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
         );
     }
 
@@ -133,28 +316,6 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         {
                             node.setSNumber(sValue.get());
                         }
-                        context.getValueStack().push(node);
-                        return true;
-                    }
-                }
-        );
-    }
-
-    // T1 or T12 or T123...
-    Rule ToolSelect()
-    {
-        Var<Integer> toolNumber = new Var<>();
-
-        return Sequence('T', OneOrMore(Digit()),
-                toolNumber.set(Integer.valueOf(match())),
-                Newline(),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        ToolSelectNode node = new ToolSelectNode();
-                        node.setToolNumber(toolNumber.get());
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -439,114 +600,13 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 Newline());
     }
 
-    /*
-     * Cura specific
-     */
-    //Cura fill Section
-    //;TYPE:FILL
-    Rule CuraFillSection()
-    {
-        FillSectionActionClass createSectionAction = new FillSectionActionClass();
-
-        return Sequence(
-                FillSectionNode.designator,
-                createSectionAction,
-                Newline(),
-                OneOrMore(ChildDirective(),
-                        (Action) (Context context1) ->
-                        {
-                            if (!context1.getValueStack().isEmpty())
-                            {
-                                TreeUtils.addChild(createSectionAction.getNode(), (GCodeEventNode) context1.getValueStack().pop());
-                            }
-                            return true;
-                        }
-                ),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        context.getValueStack().push(createSectionAction.getNode());
-                        return true;
-                    }
-                }
-        );
-    }
-
-    //Cura outer perimeter section
-    //;TYPE:WALL-OUTER
-    Rule CuraOuterPerimeterSection()
-    {
-        OuterPerimeterSectionActionClass createSectionAction = new OuterPerimeterSectionActionClass();
-
-        return Sequence(
-                OuterPerimeterSectionNode.designator,
-                createSectionAction,
-                Newline(),
-                OneOrMore(ChildDirective(),
-                        (Action) (Context context1) ->
-                        {
-                            if (!context1.getValueStack().isEmpty())
-                            {
-                                TreeUtils.addChild(createSectionAction.getNode(), (GCodeEventNode) context1.getValueStack().pop());
-                            }
-                            return true;
-                        }
-                ),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        context.getValueStack().push(createSectionAction.getNode());
-                        return true;
-                    }
-                }
-        );
-    }
-
-    //Cura inner perimeter section
-    //;TYPE:WALL-INNER
-    Rule CuraInnerPerimeterSection()
-    {
-        InnerPerimeterSectionActionClass createSectionAction = new InnerPerimeterSectionActionClass();
-
-        return Sequence(
-                InnerPerimeterSectionNode.designator,
-                createSectionAction,
-                Newline(),
-                OneOrMore(ChildDirective(),
-                        (Action) (Context context1) ->
-                        {
-                            if (!context1.getValueStack().isEmpty())
-                            {
-                                TreeUtils.addChild(createSectionAction.getNode(), (GCodeEventNode) context1.getValueStack().pop());
-                            }
-                            return true;
-                        }
-                ),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        context.getValueStack().push(createSectionAction.getNode());
-                        return true;
-                    }
-                }
-        );
-    }
-
     @SuppressSubnodes
     Rule ChildDirective()
     {
-        return FirstOf(
-                CommentDirective(),
+        return FirstOf(CommentDirective(),
                 MCode(),
                 LayerChangeDirective(),
                 GCodeDirective(),
-                ToolSelect(),
                 RetractDirective(),
                 UnretractDirective(),
                 TravelDirective(),
@@ -634,7 +694,11 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     @SuppressSubnodes
     Rule UnrecognisedLine()
     {
-        return Sequence(ZeroOrMore(ANY),
+        return Sequence(
+                TestNot(FillSectionNode.designator),
+                TestNot(InnerPerimeterSectionNode.designator),
+                TestNot(OuterPerimeterSectionNode.designator),
+                ZeroOrMore(ANY),
                 push(new UnrecognisedLineNode()),
                 Newline());
     }

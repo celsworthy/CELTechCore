@@ -105,11 +105,11 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         List<String> createdMeshFiles = null;
 
         // Output multiple files if we are using Cura
-//        if (slicerType == SlicerType.Cura)
-//        {
-//            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-//                                                          false);
-//        } else
+        if (slicerType == SlicerType.Cura)
+        {
+            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+                                                          false);
+        } else
         {
             createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
                     true);

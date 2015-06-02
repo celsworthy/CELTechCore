@@ -13,7 +13,7 @@ public class NozzleProxy
     private NozzleState state = NozzleState.CLOSED;
     private double currentPosition = 0;
 
-    NozzleProxy(NozzleParameters nozzleParameters)
+    public NozzleProxy(NozzleParameters nozzleParameters)
     {
         this.nozzleParameters = nozzleParameters;
     }
@@ -79,5 +79,14 @@ public class NozzleProxy
     {
         this.currentPosition = currentPosition;
     }
+    
+    public boolean isOpen()
+    {
+        return state == NozzleState.OPEN;
+    }
 
+    public boolean isClosed()
+    {
+        return state == NozzleState.CLOSED;
+    }
 }

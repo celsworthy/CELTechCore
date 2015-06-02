@@ -4,7 +4,7 @@ package celtech.gcodetranslator.postprocessing.nodes;
  *
  * @author Ian
  */
-public class FillSectionNode extends GCodeEventNode
+public class FillSectionNode extends SectionNode
 {
 
     public static final String designator = ";TYPE:FILL";
@@ -16,6 +16,6 @@ public class FillSectionNode extends GCodeEventNode
     @Override
     public String renderForOutput()
     {
-        return designator;
+        return designator + " " + super.renderForOutput();
     }
 }
