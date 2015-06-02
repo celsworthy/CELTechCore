@@ -1,11 +1,13 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.NozzleProxy;
+import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
@@ -21,6 +23,8 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
+import celtech.printerControl.comms.commands.GCodeMacros;
+import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.model.Head;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,8 +33,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import libertysystems.stenographer.Stenographer;
@@ -100,6 +107,8 @@ public class PostProcessor
             fileReader = new BufferedReader(new FileReader(gcodeFileToProcess));
             writer = new BufferedWriter(new FileWriter(gcodeOutputFile));
 
+            prependPrePrintHeader(writer);
+
             StringBuilder layerBuffer = new StringBuilder();
             int layerCounter = 0;
             LayerParseResult lastLayerParseResult = new LayerParseResult(Optional.empty(), null);
@@ -133,6 +142,8 @@ public class PostProcessor
 
             //This catches the last layer - if we had no data it won't do anything
             parseLayer(layerBuffer, lastLayerParseResult, writer);
+
+            appendPostPrintFooter(writer);
         } catch (IOException ex)
         {
             steno.error("Error reading post-processor input file: " + gcodeFileToProcess);
@@ -605,5 +616,46 @@ public class PostProcessor
         }
 
         return nozzleInUse;
+    }
+
+    private void prependPrePrintHeader(BufferedWriter writer)
+    {
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
+        try
+        {
+            writer.write("; File post-processed by the CEL Tech Roboxiser on "
+                    + formatter.format(new Date()) + "\n");
+            writer.write("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
+
+            writer.write(";\n; Pre print gcode\n");
+
+            for (String macroLine : GCodeMacros.getMacroContents("before_print"))
+            {
+                writer.write(macroLine);
+                writer.newLine();
+            }
+            
+            writer.write("; End of Pre print gcode\n");
+        } catch (IOException | MacroLoadException ex)
+        {
+            steno.error("Failed to add pre-print header in post processor - " + ex.getMessage());
+        }
+    }
+
+    private void appendPostPrintFooter(BufferedWriter writer)
+    {
+        try
+        {
+            writer.write(";\n; Post print gcode\n");
+            for (String macroLine : GCodeMacros.getMacroContents("after_print"))
+            {
+                writer.write(macroLine);
+                writer.newLine();
+            }
+            writer.write("; End of Post print gcode\n");
+        } catch (IOException | MacroLoadException ex)
+        {
+            steno.error("Failed to add post-print footer in post processor - " + ex.getMessage());
+        }
     }
 }

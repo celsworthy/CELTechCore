@@ -43,7 +43,7 @@ public class TestHead extends Head
             String filamentID)
         {
             super(maximumTemperature, beta, tcal, lastFilamentTemperature, nozzleTemperature,
-                  nozzleFirstLayerTargetTemperature, nozzleTargetTemperature, filamentID);
+                  nozzleFirstLayerTargetTemperature, nozzleTargetTemperature);
         }
 
         public FloatProperty lastFilamentTemperatureProperty()
