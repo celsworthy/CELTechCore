@@ -4,6 +4,7 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.Filament;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javax.print.PrintException;
 
@@ -47,6 +48,25 @@ public class PurgeStateTransitionManager extends StateTransitionManager<PurgeSta
     {
         ((PurgeActions) actions).setPurgeFilament(nozzleHeaterNumber, filament);
     }
+
+    public void setPurgeNozzleHeater0(boolean selected)
+    {
+        ((PurgeActions) actions).setPurgeNozzleHeater0(selected);
+    }
+
+    public ReadOnlyBooleanProperty getPurgeNozzleHeater0()
+    {
+        return ((PurgeActions) actions).getPurgeNozzleHeater0();
+    }
     
-   
+    public ReadOnlyBooleanProperty getPurgeNozzleHeater1()
+    {
+        return ((PurgeActions) actions).getPurgeNozzleHeater1();
+    }    
+
+    public void setPurgeNozzleHeater1(boolean selected)
+    {
+        ((PurgeActions) actions).setPurgeNozzleHeater1(selected);
+    }
+
 }

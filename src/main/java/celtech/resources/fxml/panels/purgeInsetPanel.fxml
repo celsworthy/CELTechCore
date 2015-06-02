@@ -47,6 +47,7 @@
                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
                                            </rowConstraints>
                                            <children>
                                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="3">
@@ -70,6 +71,7 @@
                                                        <ComboBox id="purgeFilamentCombo" fx:id="cmbCurrentMaterial0" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
                                                    </children>
                                                </StackPane>
+                                    <ToggleButton fx:id="purgeThisNozzle0" mnemonicParsing="false" styleClass="purgeToggle" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
                                            </children>
                                        </GridPane>
                                        <GridPane fx:id="purgeDetailsGrid1" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
@@ -83,6 +85,7 @@
                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
                                            </rowConstraints>
                                            <children>
                                                <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature1" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="3" />
@@ -99,6 +102,7 @@
                                                        <ComboBox id="purgeFilamentCombo" fx:id="cmbCurrentMaterial1" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
                                                    </children>
                                                </StackPane>
+                                    <ToggleButton fx:id="purgeThisNozzle1" mnemonicParsing="false" styleClass="purgeToggle" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
                                            </children>
                                        </GridPane>
                                    </children>

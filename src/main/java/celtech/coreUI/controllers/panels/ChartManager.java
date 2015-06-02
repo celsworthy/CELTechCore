@@ -369,7 +369,6 @@ class ChartManager
         ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
         ReadOnlyIntegerProperty nozzleTemperatureProperty)
     {
-        System.out.println("add nozzle heater"  + nozzleNumber);
         NozzleChartData nozzleChartData = new NozzleChartData(nozzleNumber, nozzleTemperatureData,
                                                               nozzleHeaterModeProperty,
                                                               nozzleTargetTemperatureProperty,

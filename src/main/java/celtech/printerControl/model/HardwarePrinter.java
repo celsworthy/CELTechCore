@@ -1001,12 +1001,30 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished,
+        Cancellable cancellable) throws PrinterException
     {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired("Purge Material",
-                                                       PrinterStatus.PURGING_HEAD,
-                                                       PrinterStatus.IDLE,
-                                                       blockUntilFinished, cancellable);
+        String macroName = "";
+        if (head.get().nozzleHeaters.size() == 1)
+        {
+            macroName = "Purge Material Single";
+        } else {
+            switch (nozzleHeaters) {
+                case NOZZLE_HEATER_0:
+                    macroName = "Purge Material Dual 0";
+                    break;
+                case NOZZLE_HEATER_1:    
+                    macroName = "Purge Material Dual 1";
+                    break;  
+               case NOZZLE_HEATER_BOTH:    
+                    macroName = "Purge Material Dual Both";
+                    break;                         
+            }
+        }
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(macroName,
+                                                           PrinterStatus.PURGING_HEAD,
+                                                           PrinterStatus.IDLE,
+                                                           blockUntilFinished, cancellable);
     }
 
     @Override
@@ -1505,20 +1523,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return response;
     }
 
-    /**
-     *
-     * @param filamentID
-     * @param reelFirstLayerNozzleTemperature
-     * @param reelNozzleTemperature
-     * @param reelFirstLayerBedTemperature
-     * @param reelBedTemperature
-     * @param reelAmbientTemperature
-     * @param reelFilamentDiameter
-     * @param reelFilamentMultiplier
-     * @param reelFeedRateMultiplier
-     * @param reelRemainingFilament
-     * @throws RoboxCommsException
-     */
     @Override
     public void transmitWriteReelEEPROM(int reelNumber,
         String filamentID,
@@ -1624,15 +1628,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     /*
      * Higher level controls
      */
-    /**
-     *
-     * @param nozzle0FirstLayerTarget
-     * @param nozzle0Target
-     * @param bedFirstLayerTarget
-     * @param bedTarget
-     * @param ambientTarget
-     * @throws RoboxCommsException
-     */
+
     @Override
     public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
         double nozzle1FirstLayerTarget, double nozzle1Target,
@@ -1647,10 +1643,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         commandInterface.writeToPrinter(setTemperatures);
     }
 
-    /**
-     *
-     * @return @throws RoboxCommsException
-     */
     @Override
     public ListFilesResponse transmitListFiles() throws RoboxCommsException
     {
@@ -1659,10 +1651,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return (ListFilesResponse) commandInterface.writeToPrinter(listFiles);
     }
 
-    /**
-     *
-     * @return @throws RoboxCommsException
-     */
     @Override
     public StatusResponse transmitStatusRequest() throws RoboxCommsException
     {
@@ -2251,10 +2239,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
-    /**
-     *
-     * @throws celtech.printerControl.model.PrinterException
-     */
     @Override
     public void switchOnHeadLEDs() throws PrinterException
     {
@@ -2541,11 +2525,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
-    /**
-     *
-     * @param headToWrite
-     * @throws RoboxCommsException
-     */
     @Override
     public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
     {
@@ -2557,10 +2536,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         readHeadEEPROM();
     }
 
-    /**
-     *
-     * @return @throws RoboxCommsException
-     */
     @Override
     public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException
     {
@@ -2713,11 +2688,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
-    /**
-     *
-     * @param colour
-     * @throws celtech.printerControl.model.PrinterException
-     */
     @Override
     public void setAmbientLEDColour(Color colour) throws PrinterException
     {
@@ -2735,11 +2705,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
-    /**
-     *
-     * @param colour
-     * @throws celtech.printerControl.model.PrinterException
-     */
     @Override
     public void setReelLEDColour(Color colour) throws PrinterException
     {
@@ -2755,10 +2720,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
-    /**
-     *
-     * @return @throws celtech.printerControl.model.PrinterException
-     */
     @Override
     public PrinterIDResponse readPrinterID() throws PrinterException
     {
@@ -2777,10 +2738,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return idResponse;
     }
 
-    /**
-     *
-     * @return @throws celtech.printerControl.model.PrinterException
-     */
+
     @Override
     public FirmwareResponse readFirmwareVersion() throws PrinterException
     {
@@ -2798,11 +2756,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         return response;
     }
 
-    /**
-     *
-     * @param nozzleNumber
-     * @throws PrinterException
-     */
     @Override
     public void selectNozzle(int nozzleNumber) throws PrinterException
     {
@@ -2948,8 +2901,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     /**
-     *
-     * @param error
      * @return True if the filament slip routine has been called the max number of times for this
      * print
      */

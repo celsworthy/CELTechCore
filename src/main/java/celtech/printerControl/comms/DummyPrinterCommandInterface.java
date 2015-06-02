@@ -548,7 +548,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 }
             } else if (messageData.startsWith("M104 T"))
             {
-                System.out.println("message data is " + messageData);
                 if (messageData.substring(6).length() > 0)
                 {
                     nozzleTargetTemperatureT = Integer.parseInt(messageData.substring(6));

@@ -993,12 +993,12 @@
 
 .purgeInstructions {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 22px;
+    -fx-font-size: 18px;
 }
 
 .purgeTitle {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 36px;
+    -fx-font-size: 24px;
 }
 
 #purgeTemperature {
@@ -1007,7 +1007,7 @@
 
 .resettingPrinter {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 36px;
+    -fx-font-size: 24px;
     -fx-fill: white;
 }
 
@@ -1018,6 +1018,19 @@
 
 #purgeTextCurrentFilament {
     -fx-fill: white;
+}
+
+.purgeToggle {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-color: white;
+    -fx-text-fill: black;
+    -fx-background-color: dark_grey;
+}
+
+.purgeToggle:selected {
+    -fx-color: dark_grey;
+    -fx-background-color: white;
+    -fx-text-fill: black;
 }
 
 /**
@@ -2060,8 +2073,8 @@ modal-dialogue{
 }
 
 .cmbCleanCombo .combo-box-popup .list-view .list-cell {
-     -fx-background-color: white;
-     -fx-text-fill: black;
+    -fx-background-color: white;
+    -fx-text-fill: black;
 }
 
 .cmbCleanCombo:hover {

@@ -11,8 +11,10 @@ import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javax.print.PrintException;
 import libertysystems.stenographer.Stenographer;
@@ -47,7 +49,9 @@ public class PurgeActions extends StateTransitionActions
     private final List<IntegerProperty> lastDisplayTemperature;
     private final List<IntegerProperty> currentDisplayTemperature;
     private final List<IntegerProperty> purgeTemperature;
-
+    
+    private BooleanProperty purgeNozzleHeater0 = new SimpleBooleanProperty(false);
+    private BooleanProperty purgeNozzleHeater1 = new SimpleBooleanProperty(false);
     /**
      * The filament that will be used during the purge, either the filament on the current reel or a
      * custom filament loaded on the SettingsScreen that will be used for a print that has been
@@ -88,6 +92,8 @@ public class PurgeActions extends StateTransitionActions
             nozzleFilamentTemperature.set(i, 0f);
         }
         savedHeadData = null;
+        purgeNozzleHeater0.set(false);
+        purgeNozzleHeater1.set(false);
     }
 
     private void resetPrinter() throws PrinterException
@@ -144,7 +150,6 @@ public class PurgeActions extends StateTransitionActions
 
         for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
-            System.out.println("purge temperature set to " + purgeTemperature.get(i).get() + " for heater " + i);
             printer.setNozzleHeaterTargetTemperature(i, purgeTemperature.get(i).get());
             printer.goToTargetNozzleHeaterTemperature(i);
         }
@@ -165,7 +170,16 @@ public class PurgeActions extends StateTransitionActions
 
     void doRunPurgeAction() throws PrinterException
     {
-        printer.purgeMaterial(true, userOrErrorCancellable);
+        if (! purgeNozzleHeater0.get() && ! purgeNozzleHeater1.get()) {
+            throw new RuntimeException("At least one nozzle must be purged");
+        }
+        Printer.NozzleHeaters nozzleHeaters = Printer.NozzleHeaters.NOZZLE_HEATER_0;
+        if (purgeNozzleHeater0.get() && purgeNozzleHeater1.get()) {
+            nozzleHeaters = Printer.NozzleHeaters.NOZZLE_HEATER_BOTH;
+        } else if (purgeNozzleHeater1.get()) {
+            nozzleHeaters = Printer.NozzleHeaters.NOZZLE_HEATER_1;
+        }
+        printer.purgeMaterial(nozzleHeaters, true, userOrErrorCancellable);
     }
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException
@@ -253,10 +267,31 @@ public class PurgeActions extends StateTransitionActions
 
     public void setPurgeFilament(int nozzleHeaterNumber, Filament filament) throws PrintException
     {
-        System.out.println("set purge temp for " + nozzleHeaterNumber + " " + filament);
         purgeFilament.set(nozzleHeaterNumber, filament);
         updatePurgeTemperature(nozzleHeaterNumber);
     }
+    
+    void setPurgeNozzleHeater0(boolean selected)
+    {
+        System.out.println("set pnh0 to " + selected);
+        purgeNozzleHeater0.set(selected);
+    }
+    
+    BooleanProperty getPurgeNozzleHeater0()
+    {
+        return purgeNozzleHeater0;
+    }    
+
+    void setPurgeNozzleHeater1(boolean selected)
+    {
+        System.out.println("set pnh1 to " + selected);
+        purgeNozzleHeater1.set(selected);
+    }    
+    
+    BooleanProperty getPurgeNozzleHeater1()
+    {
+        return purgeNozzleHeater1;
+    }       
 
     private void updatePurgeTemperature(int nozzleHeaterNumber) throws PrintException
     {
@@ -283,7 +318,6 @@ public class PurgeActions extends StateTransitionActions
                     Math.max(180.0,
                              savedHeadData.getLastFilamentTemperature(nozzleHeaterNumber)
                              + (temperatureDifference / 2))));
-            System.out.println("purge temp has been set to " + purgeTemperature.get(nozzleHeaterNumber).get());
         }
 
     }

@@ -17,7 +17,6 @@ import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
 import celtech.utils.tasks.Cancellable;
@@ -264,10 +263,10 @@ public class PrinterUtils
     }
 
     /**
-     * For each nozzle chamber/heater check if a purge is necessary. Return true if one or more
+     * For each head chamber/heater check if a purge is necessary. Return true if one or more
      * nozzle heaters require a purge.
      */
-    public boolean isPurgeNecessary(Printer printer, Project project)
+    public static boolean isPurgeNecessary(Printer printer, Project project)
     {
         boolean purgeIsNecessary = false;
         for (int i = 0; i < printer.headProperty().get().getNozzleHeaters().size(); i++)
@@ -285,7 +284,7 @@ public class PrinterUtils
     /**
      * Return true if the given nozzle heater requires a purge.
      */
-    private boolean isPurgeNecessaryForNozzleHeater(Project project, Printer printer,
+    public static boolean isPurgeNecessaryForNozzleHeater(Project project, Printer printer,
         int nozzleHeaterNumber)
     {
         float targetNozzleTemperature = 0;

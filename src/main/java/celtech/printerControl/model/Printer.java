@@ -42,6 +42,10 @@ import javafx.scene.paint.Color;
  */
 public interface Printer extends RoboxResponseConsumer
 {
+    
+    enum NozzleHeaters {
+        NOZZLE_HEATER_0, NOZZLE_HEATER_1, NOZZLE_HEATER_BOTH;
+    }
 
     public ReadOnlyObjectProperty<Head> headProperty();
 
@@ -216,7 +220,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
-    public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 

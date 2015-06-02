@@ -28,6 +28,7 @@ import celtech.printerControl.model.StateTransition;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
 import celtech.utils.PrinterListChangesListener;
+import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -46,6 +48,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -155,6 +158,12 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private ProgressDisplay progressDisplay;
+    
+    @FXML
+    private ToggleButton purgeThisNozzle0;
+    
+    @FXML
+    private ToggleButton purgeThisNozzle1;
 
     @FXML
     void start(ActionEvent event)
@@ -394,6 +403,7 @@ public class PurgeInsetPanelController implements Initializable
             cmbCurrentMaterial1.visibleProperty().unbind();
             textCurrentMaterial1.visibleProperty().unbind();
             proceedButton.disableProperty().unbind();
+            purgeThisNozzle0.onActionProperty().unbind();
         }
 
         this.printer = printer;
@@ -490,12 +500,44 @@ public class PurgeInsetPanelController implements Initializable
         cmbCurrentMaterial0.setValue(printerSettings.getFilament0());
         selectMaterial1(printerSettings.getFilament1());
         cmbCurrentMaterial1.setValue(printerSettings.getFilament1());
+        
+        setPurgeForRequiredNozzles(project);
+        
         startPurge();
+    }
+
+    /**
+     * If a nozzle needs purging then set the appropriate flag to true.
+     */
+    private void setPurgeForRequiredNozzles(Project project)
+    {
+        if (printer.headProperty().get().getNozzleHeaters().size() == 1)
+        {
+            purgeThisNozzle0.setSelected(true);
+            purgeThisNozzle1.setSelected(false);
+        } else
+        {
+            purgeThisNozzle0.setSelected(false);
+            purgeThisNozzle1.setSelected(false);
+            if (PrinterUtils.isPurgeNecessaryForNozzleHeater(project, printer, 0))
+            {
+                purgeThisNozzle0.setSelected(true);
+            }
+            if (PrinterUtils.isPurgeNecessaryForNozzleHeater(project, printer, 1))
+            {
+                purgeThisNozzle1.setSelected(true);
+            }            
+        }
     }
 
     public void purge(Printer printer)
     {
         bindPrinter(printer);
+        
+        // default to purging both nozzles.
+        purgeThisNozzle0.setSelected(true);
+        purgeThisNozzle1.setSelected(true);
+        
         startPurge();
     }
 
@@ -514,7 +556,21 @@ public class PurgeInsetPanelController implements Initializable
 
             lastMaterialTemperature0.textProperty().bind(
                 transitionManager.getLastMaterialTemperature(0).asString());
-
+            
+            purgeThisNozzle0.onActionProperty().set(
+                (EventHandler<ActionEvent>) (ActionEvent event) ->
+            {
+                transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
+            });
+            transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
+            
+            purgeThisNozzle1.onActionProperty().set(
+                (EventHandler<ActionEvent>) (ActionEvent event) ->
+            {
+                transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+            }); 
+            transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+            
             if (purgeTwoNozzleHeaters.get())
             {
 

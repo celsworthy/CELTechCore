@@ -57,8 +57,6 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     {
         boolean success = false;
 
-        System.out.println("Head data incoming is " + byteData.toString());
-
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();
 
         try

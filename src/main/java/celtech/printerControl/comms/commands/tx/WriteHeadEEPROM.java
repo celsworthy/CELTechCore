@@ -97,7 +97,6 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         payload.append(decimalFloatFormatter.format(lastFilamentTemperature1));
         payload.append(decimalFloatFormatter.format(lastFilamentTemperature0));
         payload.append(decimalFloatFormatter.format(hourCounter));
-        System.out.println("Payload is " + payload.toString());
         this.setMessagePayload(payload.toString());
     }
 
