@@ -68,7 +68,7 @@ public class PurgeInsetPanelController implements Initializable
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         PurgeInsetPanelController.class.getName());
-
+    
     private Project project = null;
     private Printer printer = null;
     private DiagramHandler diagramHandler;
@@ -475,7 +475,7 @@ public class PurgeInsetPanelController implements Initializable
         return printer.headProperty().get().getNozzleHeaters().size() == 2;
     }
 
-    private void installTag(PurgeStateTransitionManager transitionManager,
+    private void installTagAndDisabledStatusForButton(PurgeStateTransitionManager transitionManager,
         Printer printer, GraphicButtonWithLabel button)
     {
 
@@ -491,7 +491,7 @@ public class PurgeInsetPanelController implements Initializable
         BooleanBinding notPurgingAndNotIdle = Bindings.and(
             printer.printerStatusProperty().isNotEqualTo(PrinterStatus.PURGING_HEAD),
             printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE));
-
+        
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage", doorIsOpen);
 
         if (!headHasTwoNozzleHeaters(printer))
@@ -503,7 +503,7 @@ public class PurgeInsetPanelController implements Initializable
             button.disableProperty().bind(isDisabled);
         } else
         {
-
+            
             BooleanBinding extruder1NotLoaded = printer.extrudersProperty().get(1).
                 filamentLoadedProperty().not();
 
@@ -551,6 +551,10 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
+    /**
+     * This is called when the user wants to print and the system has detected that a purge
+     * is required.
+     */
     public void purgeAndPrint(Project project, PrinterSettings printerSettings, Printer printerToUse)
     {
         this.project = project;
@@ -655,8 +659,8 @@ public class PurgeInsetPanelController implements Initializable
             transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
             transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
 
-            installTag(transitionManager, printer, startPurgeButton);
-            installTag(transitionManager, printer, proceedButton);
+            installTagAndDisabledStatusForButton(transitionManager, printer, startPurgeButton);
+            installTagAndDisabledStatusForButton(transitionManager, printer, proceedButton);
 
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
