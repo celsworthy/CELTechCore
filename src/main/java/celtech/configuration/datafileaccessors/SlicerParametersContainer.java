@@ -138,7 +138,7 @@ public class SlicerParametersContainer
     }
 
     /**
-     * save the given user profile which has had its name changed. This amounts to a delete and add
+     * Save the given user profile which has had its name changed. This amounts to a delete and add
      * new.
      *
      * @param profile

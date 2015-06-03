@@ -959,8 +959,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedRotationTwist = in.readDouble();
         int notUsed = in.readInt();
 
-        double storedScaleY = 1d;
-        double storedScaleZ = 1d;
+        double storedScaleY = storedScaleX;
+        double storedScaleZ = storedScaleX;
         double storedRotationLean = 0d;
         double storedRotationTurn = 0d;
         if (in.available() > 0)
