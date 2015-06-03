@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -46,7 +48,7 @@ public class FilamentContainer
 
     private static final String nameProperty = "name";
     private static final String materialProperty = "material";
-    private static final String reelIDProperty = "reelID";
+    private static final String filamentIDProperty = "reelID";
     private static final String diameterProperty = "diameter_mm";
     private static final String costGBPPerKGProperty = "cost_gbp_per_kg";
     private static final String filamentMultiplierProperty = "filament_multiplier";
@@ -98,6 +100,7 @@ public class FilamentContainer
 
     private void loadFilamentData()
     {
+        completeFilamentMap.clear();
         completeFilamentList.clear();
         appFilamentList.clear();
         userFilamentList.clear();
@@ -145,7 +148,7 @@ public class FilamentContainer
                     filamentProperties.load(fileInputStream);
 
                     String name = filamentProperties.getProperty(nameProperty).trim();
-                    String reelID = filamentProperties.getProperty(reelIDProperty).trim();
+                    String filamentID = filamentProperties.getProperty(filamentIDProperty).trim();
                     String material = filamentProperties.getProperty(materialProperty).trim();
                     String diameterString = filamentProperties.getProperty(diameterProperty).trim();
                     String filamentMultiplierString = filamentProperties.getProperty(
@@ -173,7 +176,7 @@ public class FilamentContainer
 
                     if (name != null
                         && material != null
-                        && reelID != null
+                        && filamentID != null
                         && diameterString != null
                         && feedRateMultiplierString != null
                         && filamentMultiplierString != null
@@ -201,7 +204,7 @@ public class FilamentContainer
                             Filament newFilament = new Filament(
                                 name,
                                 selectedMaterial,
-                                reelID,
+                                filamentID,
                                 diameter,
                                 filamentMultiplier,
                                 feedRateMultiplier,
@@ -215,7 +218,10 @@ public class FilamentContainer
                                 filamentsAreMutable);
 
                             filamentList.add(newFilament);
-                            completeFilamentMap.put(reelID, newFilament);
+
+                            System.out.println("ingest filament " + filamentID);
+
+                            completeFilamentMap.put(filamentID, newFilament);
 
                         } catch (IllegalArgumentException ex)
                         {
@@ -287,10 +293,10 @@ public class FilamentContainer
             {
                 String userReelID = Filament.generateUserReelID();
                 filament.setFilamentID(userReelID);
-                filamentProperties.setProperty(reelIDProperty, userReelID);
+                filamentProperties.setProperty(filamentIDProperty, userReelID);
             } else
             {
-                filamentProperties.setProperty(reelIDProperty, filament.getFilamentID());
+                filamentProperties.setProperty(filamentIDProperty, filament.getFilamentID());
             }
             filamentProperties.setProperty(costGBPPerKGProperty, floatConverter.format(
                                            filament.getCostGBPPerKG()));
@@ -318,6 +324,7 @@ public class FilamentContainer
             filamentProperties.setProperty(displayColourProperty, webColour);
 
             String newFilename = constructFilePath(filament);
+            System.out.println("new file name is " + newFilename);
             Optional<String> previousFileName = getCurrentFileNameForFilamentID(
                 filament.getFilamentID());
 
@@ -342,8 +349,15 @@ public class FilamentContainer
     public void deleteFilament(Filament filament)
     {
         assert (filament.isMutable());
+        System.out.println("path to delete is " + constructFilePath(filament));
         File filamentToDelete = new File(constructFilePath(filament));
-        FileUtils.deleteQuietly(filamentToDelete);
+        try
+        {
+            Files.delete(filamentToDelete.toPath());
+        } catch (IOException ex)
+        {
+            steno.error("Error deleting filament: " + constructFilePath(filament));
+        }
         loadFilamentData();
     }
 
@@ -403,21 +417,21 @@ public class FilamentContainer
         return completeFilamentList;
     }
 
-    /**
-     *
-     * @return
-     */
     public ObservableList<Filament> getUserFilamentList()
     {
         return userFilamentList;
     }
 
-    /**
-     *
-     * @return
-     */
     public ObservableList<Filament> getAppFilamentList()
     {
         return appFilamentList;
+    }
+
+    /**
+     * For testing only.
+     */
+    protected void reload()
+    {
+        loadFilamentData();
     }
 }

@@ -372,6 +372,7 @@ public class Filament implements Serializable, Cloneable
     public void setFilamentID(String value)
     {
         this.filamentID.set(value);
+        detectAndSetMutable();
     }
 
     /**

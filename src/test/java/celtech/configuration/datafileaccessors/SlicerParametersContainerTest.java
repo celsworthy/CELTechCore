@@ -24,15 +24,12 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
     @Before
     public void clearUserProfileDir()
     {
-        System.out.println("USD " + userStorageFolderPath + " exists " + new File(userStorageFolderPath).exists());
         String userProfileDir = ApplicationConfiguration.getUserPrintProfileDirectory();
-        System.out.println("UPD " + userProfileDir + " exists " + new File(userProfileDir).exists());
         File[] files = new File(userProfileDir).listFiles();
         if (files != null && files.length > 0)
         {
             for (File profileFile : files)
             {
-                System.out.println("Delete file " + profileFile);
                 profileFile.delete();
             }
         }
