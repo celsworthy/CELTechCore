@@ -109,5 +109,40 @@ public class FilamentContainerTest extends JavaFXConfiguredTest
         assertNotSame(filamentCopy, editedFilament);
         
     }       
+    
+    @Test
+    public void testCreateNewFilamentAndChangeNameAndSave()
+    {
+        String NEW_ID = "U1234569";
+        FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+        ObservableList<Filament> userFilaments = filamentContainer.getUserFilamentList();
+        ObservableList<Filament> completeFilaments = filamentContainer.getCompleteFilamentList();
+        int numFilaments = completeFilaments.size();
+        Filament greenABSFilament = filamentContainer.getFilamentByID("RBX-ABS-GR499");
+
+        Filament filamentCopy = greenABSFilament.clone();
+        filamentCopy.setFilamentID(NEW_ID);
+        filamentCopy.setFriendlyFilamentName("GREEN COPY");
+
+        filamentContainer.saveFilament(filamentCopy);
+        assertEquals(numFilaments + 1, completeFilaments.size());
+        assertEquals(1, userFilaments.size());
+        
+        String newName = "GREEN COPY 3";
+        filamentCopy.setFriendlyFilamentName(newName);
+        filamentContainer.saveFilament(filamentCopy);
+        assertEquals(numFilaments + 1, completeFilaments.size());
+        assertEquals(1, userFilaments.size());
+        
+        filamentContainer.reload();
+        
+        Filament editedFilament = filamentContainer.getFilamentByID(NEW_ID);
+        assertEquals(newName, editedFilament.getFriendlyFilamentName());
+        assertNotSame(filamentCopy, editedFilament);
+        
+        assertEquals(numFilaments + 1, completeFilaments.size());
+        assertEquals(1, userFilaments.size());
+        
+    }        
 
 }
