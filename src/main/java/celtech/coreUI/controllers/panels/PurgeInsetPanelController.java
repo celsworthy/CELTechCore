@@ -158,10 +158,10 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private ProgressDisplay progressDisplay;
-    
+
     @FXML
     private ToggleButton purgeThisNozzle0;
-    
+
     @FXML
     private ToggleButton purgeThisNozzle1;
 
@@ -215,9 +215,6 @@ public class PurgeInsetPanelController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         populateNamesToButtons();
-
-        startPurgeButton.installTag();
-        proceedButton.installTag();
 
         diagramHandler = new DiagramHandler(diagramContainer, resources);
         diagramHandler.initialise();
@@ -360,8 +357,10 @@ public class PurgeInsetPanelController implements Initializable
                 {
                     showCurrentMaterial1();
                     purgeTemperature1.intValueProperty().addListener(purgeTempEntryListener1);
+                } else
+                {
+                    purgeThisNozzle0.setVisible(false);
                 }
-
                 purgeDetailsGrid1.setVisible(purgeTwoNozzleHeaters.get());
                 break;
             case HEATING:
@@ -408,9 +407,6 @@ public class PurgeInsetPanelController implements Initializable
 
         this.printer = printer;
 
-        installTag(printer, startPurgeButton);
-        installTag(printer, proceedButton);
-
         BooleanBinding reel0Present = Bindings.valueAt(printer.reelsProperty(), 0).isNotNull();
         BooleanBinding reel1Present = Bindings.valueAt(printer.reelsProperty(), 1).isNotNull();
 
@@ -445,8 +441,8 @@ public class PurgeInsetPanelController implements Initializable
             selectMaterial0(currentMaterial0);
         } else
         {
-            transitionManager.setPurgeTemperature(0, -1);
-            purgeTemperature0.textProperty().set("-1");
+            transitionManager.setPurgeTemperature(0, 0);
+            purgeTemperature0.textProperty().set("0");
         }
     }
 
@@ -469,27 +465,90 @@ public class PurgeInsetPanelController implements Initializable
             selectMaterial1(currentMaterial1);
         } else
         {
-            transitionManager.setPurgeTemperature(1, -1);
-            purgeTemperature1.textProperty().set("-1");
+            transitionManager.setPurgeTemperature(1, 0);
+            purgeTemperature1.textProperty().set("0");
         }
     }
 
-    //TODO DMH
-    private void installTag(Printer printer, GraphicButtonWithLabel button)
+    private boolean headHasTwoNozzleHeaters(Printer printer)
     {
-        button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                           printer.getPrinterAncillarySystems().doorOpenProperty().and(
-                                               Lookup.getUserPreferences().safetyFeaturesOnProperty()));
-        button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                           printer.extrudersProperty().get(0).
-                                           filamentLoadedProperty().not());
+        return printer.headProperty().get().getNozzleHeaters().size() == 2;
+    }
 
-        button.disableProperty().bind(Bindings.and(
+    private void installTag(PurgeStateTransitionManager transitionManager,
+        Printer printer, GraphicButtonWithLabel button)
+    {
+
+        button.uninstallTag();
+        button.installTag();
+
+        BooleanBinding doorIsOpen = printer.getPrinterAncillarySystems().doorOpenProperty().and(
+            Lookup.getUserPreferences().safetyFeaturesOnProperty());
+
+        BooleanBinding extruder0NotLoaded = printer.extrudersProperty().get(0).
+            filamentLoadedProperty().not();
+
+        BooleanBinding notPurgingAndNotIdle = Bindings.and(
             printer.printerStatusProperty().isNotEqualTo(PrinterStatus.PURGING_HEAD),
-            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE))
-            .or(printer.getPrinterAncillarySystems().doorOpenProperty().and(
-                    Lookup.getUserPreferences().safetyFeaturesOnProperty()))
-            .or(printer.extrudersProperty().get(0).filamentLoadedProperty().not()));
+            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE));
+
+        button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage", doorIsOpen);
+
+        if (!headHasTwoNozzleHeaters(printer))
+        {
+            button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
+                                               extruder0NotLoaded);
+
+            BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen).or(extruder0NotLoaded);
+            button.disableProperty().bind(isDisabled);
+        } else
+        {
+
+            BooleanBinding extruder1NotLoaded = printer.extrudersProperty().get(1).
+                filamentLoadedProperty().not();
+
+            BooleanBinding purgingNozzleHeater0 = new BooleanBinding()
+            {
+                {
+                    super.bind(transitionManager.getPurgeNozzleHeater0());
+                }
+
+                @Override
+                protected boolean computeValue()
+                {
+                    return transitionManager.getPurgeNozzleHeater0().get();
+                }
+            };
+
+            BooleanBinding purgingNozzleHeater1 = new BooleanBinding()
+            {
+                {
+                    super.bind(transitionManager.getPurgeNozzleHeater1());
+                }
+
+                @Override
+                protected boolean computeValue()
+                {
+                    return transitionManager.getPurgeNozzleHeater1().get();
+                }
+            };
+
+            if (button == proceedButton)
+            {
+
+                button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage0",
+                                                   purgingNozzleHeater0.and(extruder0NotLoaded));
+
+                button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage1",
+                                                   purgingNozzleHeater1.and(extruder1NotLoaded));
+
+                BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen)
+                    .or(purgingNozzleHeater0.and(extruder0NotLoaded))
+                    .or(purgingNozzleHeater1.and(extruder1NotLoaded))
+                    .or(purgingNozzleHeater0.not().and(purgingNozzleHeater1.not()));
+                button.disableProperty().bind(isDisabled);
+            }
+        }
     }
 
     public void purgeAndPrint(Project project, PrinterSettings printerSettings, Printer printerToUse)
@@ -500,9 +559,9 @@ public class PurgeInsetPanelController implements Initializable
         cmbCurrentMaterial0.setValue(printerSettings.getFilament0());
         selectMaterial1(printerSettings.getFilament1());
         cmbCurrentMaterial1.setValue(printerSettings.getFilament1());
-        
+
         setPurgeForRequiredNozzles(project);
-        
+
         startPurge();
     }
 
@@ -511,7 +570,7 @@ public class PurgeInsetPanelController implements Initializable
      */
     private void setPurgeForRequiredNozzles(Project project)
     {
-        if (printer.headProperty().get().getNozzleHeaters().size() == 1)
+        if (!headHasTwoNozzleHeaters(printer))
         {
             purgeThisNozzle0.setSelected(true);
             purgeThisNozzle1.setSelected(false);
@@ -526,18 +585,18 @@ public class PurgeInsetPanelController implements Initializable
             if (PrinterUtils.isPurgeNecessaryForNozzleHeater(project, printer, 1))
             {
                 purgeThisNozzle1.setSelected(true);
-            }            
+            }
         }
     }
 
     public void purge(Printer printer)
     {
         bindPrinter(printer);
-        
+
         // default to purging both nozzles.
         purgeThisNozzle0.setSelected(true);
         purgeThisNozzle1.setSelected(true);
-        
+
         startPurge();
     }
 
@@ -556,21 +615,19 @@ public class PurgeInsetPanelController implements Initializable
 
             lastMaterialTemperature0.textProperty().bind(
                 transitionManager.getLastMaterialTemperature(0).asString());
-            
+
             purgeThisNozzle0.onActionProperty().set(
                 (EventHandler<ActionEvent>) (ActionEvent event) ->
-            {
-                transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
-            });
-            transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
-            
+                {
+                    transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
+                });
+
             purgeThisNozzle1.onActionProperty().set(
                 (EventHandler<ActionEvent>) (ActionEvent event) ->
-            {
-                transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
-            }); 
-            transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
-            
+                {
+                    transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+                });
+
             if (purgeTwoNozzleHeaters.get())
             {
 
@@ -593,9 +650,14 @@ public class PurgeInsetPanelController implements Initializable
                 }
             });
 
-            setupProceedButton();
-
             transitionManager.start();
+
+            transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
+            transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+
+            installTag(transitionManager, printer, startPurgeButton);
+            installTag(transitionManager, printer, proceedButton);
+
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
         {
@@ -705,37 +767,6 @@ public class PurgeInsetPanelController implements Initializable
         {
             // this should only happen in SceneBuilder            
         }
-    }
-
-    //TODO make work for DMH
-    /**
-     * The proceed button should be disabled on the CONFIRM_TEMPERATURE page if the purge
-     * temperature is not greater than 0.
-     */
-    private void setupProceedButton()
-    {
-        BooleanBinding proceedDisabled = new BooleanBinding()
-        {
-            {
-                super.bind(transitionManager.stateGUITProperty(),
-                           transitionManager.getPurgeTemperature(0));
-            }
-
-            @Override
-            protected boolean computeValue()
-            {
-                if (!transitionManager.stateGUITProperty().get().equals(CONFIRM_TEMPERATURE))
-                {
-                    return false;
-                }
-                if (transitionManager.getPurgeTemperature(0).greaterThan(0).get())
-                {
-                    return false;
-                }
-                return true;
-            }
-        };
-        proceedButton.disableProperty().bind(proceedDisabled);
     }
 
     public static class FilamentCell extends ListCell<Filament>

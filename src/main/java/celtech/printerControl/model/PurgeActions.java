@@ -50,8 +50,8 @@ public class PurgeActions extends StateTransitionActions
     private final List<IntegerProperty> currentDisplayTemperature;
     private final List<IntegerProperty> purgeTemperature;
     
-    private BooleanProperty purgeNozzleHeater0 = new SimpleBooleanProperty(false);
-    private BooleanProperty purgeNozzleHeater1 = new SimpleBooleanProperty(false);
+    private final BooleanProperty purgeNozzleHeater0;
+    private final BooleanProperty purgeNozzleHeater1;
     /**
      * The filament that will be used during the purge, either the filament on the current reel or a
      * custom filament loaded on the SettingsScreen that will be used for a print that has been
@@ -78,6 +78,9 @@ public class PurgeActions extends StateTransitionActions
             nozzleFilamentTemperature.add(new Float(0));
             purgeFilament.add(null);
         }
+        
+        purgeNozzleHeater0 = new SimpleBooleanProperty(false);
+        purgeNozzleHeater1 = new SimpleBooleanProperty(false);
         
     }
 
@@ -273,7 +276,6 @@ public class PurgeActions extends StateTransitionActions
     
     void setPurgeNozzleHeater0(boolean selected)
     {
-        System.out.println("set pnh0 to " + selected);
         purgeNozzleHeater0.set(selected);
     }
     
@@ -284,7 +286,6 @@ public class PurgeActions extends StateTransitionActions
 
     void setPurgeNozzleHeater1(boolean selected)
     {
-        System.out.println("set pnh1 to " + selected);
         purgeNozzleHeater1.set(selected);
     }    
     
