@@ -69,7 +69,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
                 testProject);
-        instance.processInput();
+        boolean success = instance.processInput();
+        assertTrue(success);
     }
 
     @Test
@@ -126,7 +127,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
                 testProject);
-        
+
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
 
@@ -170,7 +171,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
                 testProject);
-        
+
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
 
@@ -329,7 +330,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
                 testProject);
-        
+
         assertEquals(2, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());
         assertEquals(3, object2.getChildren().size());
@@ -479,7 +480,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
                 testProject);
-        
+
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
         assertTrue(testLayer.getChildren().get(1) instanceof ToolSelectNode);
@@ -494,7 +495,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        postProcessor.insertOpenAndCloseNodes(testLayer);
+        LayerParseResult lastLayerParseResult = null;
+
+        postProcessor.insertOpenAndCloseNodes(testLayer, null);
 
 //        postProcessor.outputNodes(testLayer, 0);
         assertEquals(3, testLayer.getChildren().size());
@@ -650,7 +653,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
                 testProject);
-        
+
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
         assertTrue(testLayer.getChildren().get(1) instanceof ToolSelectNode);
@@ -665,7 +668,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(5, fill2.getChildren().size());
 
-        postProcessor.insertOpenAndCloseNodes(testLayer);
+        LayerParseResult lastLayerParseResult = null;
+
+        postProcessor.insertOpenAndCloseNodes(testLayer, lastLayerParseResult);
 
 //        postProcessor.outputNodes(testLayer, 0);
         assertEquals(3, testLayer.getChildren().size());
