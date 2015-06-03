@@ -108,7 +108,6 @@ public class FilamentContainerTest extends JavaFXConfiguredTest
         assertEquals(67, editedFilament.getBedTemperature());
         assertNotSame(filamentCopy, editedFilament);
         
-        
     }       
 
 }
