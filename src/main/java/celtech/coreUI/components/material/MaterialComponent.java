@@ -89,7 +89,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     @FXML
     private SVGPath svgLoaded;
-    
+
     @FXML
     private Text materialColour;
 
@@ -162,8 +162,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         return selectedFilamentProperty;
     }
-    
-    private boolean filamentLoaded() {
+
+    private boolean filamentLoaded()
+    {
         return printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get();
     }
 
@@ -326,14 +327,30 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         repopulateCmbMaterials();
 
         filamentContainer.getUserFilamentList().addListener(
-            (ListChangeListener.Change<? extends Filament> c) ->
+            (ListChangeListener.Change<? extends Filament> change) ->
             {
-                if (filamentContainer.getUserFilamentList().size() > 0)
+
+                while (change.next())
                 {
-                    // it's very important not to call this with an empty FilamentContainer
-                    // filament list as project filament selections then get cleared.
-                    repopulateCmbMaterials();
+                    if (change.wasAdded())
+                    {
+                        for (Filament filament : change.getAddedSubList())
+                        {
+                            cmbMaterials.getItems().add(filament);
+                        }
+                    } else if (change.wasRemoved())
+                    {
+                        for (Filament filament : change.getRemoved())
+                        {
+                            cmbMaterials.getItems().remove(filament);
+                        }
+                    } else if (change.wasReplaced())
+                    {
+                    } else if (change.wasUpdated())
+                    {
+                    }
                 }
+
             });
 
         cmbMaterials.valueProperty().addListener(
@@ -601,9 +618,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private void showDetails(String numberMaterial, String materialRemainingString,
         String materialColourString, Color colour, boolean filamentLoaded)
     {
-        
+
         svgLoaded.setVisible(filamentLoaded);
-        
+
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
@@ -635,7 +652,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                     Color.BLACK, true);
     }
 
-     /**
+    /**
      * Indicate that no reel is attached and no filament is loaded.
      */
     private void showFilamentNotLoaded()
