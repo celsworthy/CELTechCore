@@ -1,16 +1,19 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.NozzleProxy;
+import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
@@ -21,6 +24,8 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
+import celtech.printerControl.comms.commands.GCodeMacros;
+import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.model.Head;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,8 +34,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import libertysystems.stenographer.Stenographer;
@@ -87,18 +95,23 @@ public class PostProcessor
 //        featureSet.enableFeature(PostProcessorFeature.REPLENISH_BEFORE_OPEN);
         featureSet.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         featureSet.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+        featureSet.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
     }
 
-    public void processInput()
+    public boolean processInput()
     {
         BufferedReader fileReader = null;
         BufferedWriter writer = null;
+
+        boolean succeeded = false;
 
         //Cura has line delineators like this ';LAYER:1'
         try
         {
             fileReader = new BufferedReader(new FileReader(gcodeFileToProcess));
             writer = new BufferedWriter(new FileWriter(gcodeOutputFile));
+
+            prependPrePrintHeader(writer);
 
             StringBuilder layerBuffer = new StringBuilder();
             int layerCounter = 0;
@@ -109,10 +122,19 @@ public class PostProcessor
                 lineRead = lineRead.trim();
                 if (lineRead.matches(";LAYER:[0-9]+"))
                 {
+                    //Parse anything that has gone before
                     LayerParseResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
+
+                    //Now output the LAST layer - it was held until now in case it needed to be modified before output
+                    writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+
                     if (parseResult.getNozzleStateAtEndOfLayer().isPresent())
                     {
                         lastLayerParseResult = parseResult;
+                        if (lastLayerParseResult.getLayerData().getLayerNumber() == 1)
+                        {
+                            outputTemperatureCommands(writer);
+                        }
                     } else
                     {
                         lastLayerParseResult = new LayerParseResult(lastLayerParseResult.getNozzleStateAtEndOfLayer(), parseResult.getLayerData());
@@ -132,10 +154,24 @@ public class PostProcessor
             }
 
             //This catches the last layer - if we had no data it won't do anything
-            parseLayer(layerBuffer, lastLayerParseResult, writer);
+            LayerParseResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
+            //Now output the LAST layer - it was held until now in case it needed to be modified before output
+            writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+            //Now output the final result
+            writeLayerToFile(parseResult.getLayerData(), writer);
+
+            appendPostPrintFooter(writer);
+
+            succeeded = true;
         } catch (IOException ex)
         {
             steno.error("Error reading post-processor input file: " + gcodeFileToProcess);
+        } catch (RuntimeException ex)
+        {
+            if (ex.getCause() != null)
+            {
+                steno.error(ex.getMessage());
+            }
         } finally
         {
             if (fileReader != null)
@@ -160,6 +196,8 @@ public class PostProcessor
                 }
             }
         }
+
+        return succeeded;
     }
 
     private LayerParseResult parseLayer(StringBuilder layerBuffer, LayerParseResult lastLayerParseResult, BufferedWriter writer)
@@ -169,7 +207,6 @@ public class PostProcessor
         // Parse the last layer if it exists...
         if (layerBuffer.length() > 0)
         {
-            steno.info("Parsing layer");
             GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
             BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
             ParsingResult result = runner.run(layerBuffer.toString());
@@ -181,7 +218,6 @@ public class PostProcessor
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
                 parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult);
-                writeLayerToFile(layerNode, writer);
             }
         } else
         {
@@ -215,17 +251,20 @@ public class PostProcessor
 
     private void writeLayerToFile(LayerNode layerNode, BufferedWriter writer)
     {
-        layerNode.stream().forEach(node ->
+        if (layerNode != null)
         {
-            try
+            layerNode.stream().forEach(node ->
             {
-                writer.write(node.renderForOutput());
-                writer.newLine();
-            } catch (IOException ex)
-            {
-                steno.error("Error outputting post processed data at node " + node.renderForOutput());
-            }
-        });
+                try
+                {
+                    writer.write(node.renderForOutput());
+                    writer.newLine();
+                } catch (IOException ex)
+                {
+                    throw new RuntimeException("Error outputting post processed data at node " + node.renderForOutput(), ex);
+                }
+            });
+        }
     }
 
     private LayerParseResult postProcess(LayerNode layerNode, LayerParseResult lastLayerParseResult)
@@ -233,25 +272,8 @@ public class PostProcessor
         // We never want unretracts
         removeUnretractNodes(layerNode);
 
-//        if (layerNode.getLayerNumber() == 0)
-//        {
-//            //First layer
-//            //Look for travels that exceed 2mm and close/open the nozzle as necessary
-//
-//            if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
-//            {
-//                // Look to see if a first layer nozzle has been selected
-//                if (slicerParameters.getFirstLayerNozzle() > -1)
-//                {
-//                    currentNozzleProxy = nozzleProxies.get(slicerParameters.getFirstLayerNozzle());
-//                } else
-//                {
-//                    currentNozzleProxy
-//                }
-//            }
-//        }
         insertNozzleControlSectionsByTask(layerNode);
-        insertOpenAndCloseNodes(layerNode);
+        insertOpenAndCloseNodes(layerNode, lastLayerParseResult);
 
         Optional<NozzleProxy> nozzleInUseAtEndOfLayer = determineNozzleStateAtEndOfLayer(layerNode);
         return new LayerParseResult(nozzleInUseAtEndOfLayer, layerNode);
@@ -266,7 +288,6 @@ public class PostProcessor
                 return node instanceof UnretractNode;
             }).forEach(node ->
             {
-                steno.info("Removing unretract node: " + node.renderForOutput() + " from parent " + node.getParent().renderForOutput());
                 TreeUtils.removeChild(node.getParent(), node);
             });
         }
@@ -300,6 +321,26 @@ public class PostProcessor
     {
         if (featureSet.isEnabled(PostProcessorFeature.CLOSE_ON_TASK_CHANGE))
         {
+            //TODO put in first layer forced nozzle select
+            //
+//        if (layerNode.getLayerNumber() == 0)
+//        {
+//            //First layer
+//            //Look for travels that exceed 2mm and close/open the nozzle as necessary
+//
+//            if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+//            {
+//                // Look to see if a first layer nozzle has been selected
+//                if (slicerParameters.getFirstLayerNozzle() > -1)
+//                {
+//                    currentNozzleProxy = nozzleProxies.get(slicerParameters.getFirstLayerNozzle());
+//                } else
+//                {
+//                    currentNozzleProxy
+//                }
+//            }
+//        }
+
             // Find all of the sections in this layer
             List<GCodeEventNode> sectionNodes = layerNode.stream()
                     .filter(node -> node instanceof SectionNode)
@@ -328,7 +369,7 @@ public class PostProcessor
 
                 } catch (UnableToFindSectionNodeException ex)
                 {
-                    steno.error("Error attempting to insert nozzle control sections by task - " + ex.getMessage());
+                    throw new RuntimeException("Error attempting to insert nozzle control sections by task - " + ex.getMessage(), ex);
                 }
             }
 
@@ -340,7 +381,7 @@ public class PostProcessor
                                 ObjectDelineationNode objNode = (ObjectDelineationNode) node;
                                 if (!objNode.getChildren().isEmpty())
                                 {
-                                    steno.error("Transfer of children from object " + objNode.getObjectNumber() + " failed");
+                                    throw new RuntimeException("Transfer of children from object " + objNode.getObjectNumber() + " failed");
                                 }
                                 objNode.removeFromParent();
                     });
@@ -382,7 +423,7 @@ public class PostProcessor
         }
     }
 
-    protected void insertOpenAndCloseNodes(LayerNode layerNode)
+    protected void insertOpenAndCloseNodes(LayerNode layerNode, LayerParseResult lastLayerParseResult)
     {
         layerNode.stream()
                 .filter(node -> node instanceof ToolSelectNode)
@@ -404,13 +445,33 @@ public class PostProcessor
                                                 try
                                                 {
                                                     Optional<GCodeEventNode> priorExtrusionNode = findPriorExtrusion(retractNode);
-                                                    insertNozzleCloseFullyAfterEvent(priorExtrusionNode.orElseThrow(NodeProcessingException::new), nozzleInUse);
+                                                    if (priorExtrusionNode.isPresent())
+                                                    {
+                                                        insertNozzleCloseFullyAfterEvent(priorExtrusionNode.get(), nozzleInUse);
 
-                                                    Optional<GCodeEventNode> nextExtrusionNode = findNextExtrusion(retractNode);
-                                                    insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.orElseThrow(NodeProcessingException::new), nozzleInUse);
+                                                        Optional<GCodeEventNode> nextExtrusionNode = findNextExtrusion(retractNode);
+                                                        insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.orElseThrow(NodeProcessingException::new), nozzleInUse);
+                                                    } else
+                                                    {
+                                                        LayerNode lastLayer = lastLayerParseResult.getLayerData();
+
+                                                        //Look for the last extrusion on the previous layer
+                                                        if (lastLayer.getLayerNumber() < 0)
+                                                        {
+                                                            // There wasn't a last layer - this is a lone retract at the start of the file
+                                                            steno.warning("Discarding retract from layer " + layerNode.getLayerNumber());
+                                                        } else
+                                                        {
+                                                            Optional<GCodeEventNode> priorExtrusionNodeLastLayer = findLastExtrusionEventInLayer(lastLayer);
+                                                            insertNozzleCloseFullyAfterEvent(priorExtrusionNodeLastLayer.orElseThrow(NodeProcessingException::new), nozzleInUse);
+
+                                                            Optional<GCodeEventNode> nextExtrusionNode = findNextExtrusion(retractNode);
+                                                            insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.orElseThrow(NodeProcessingException::new), nozzleInUse);
+                                                        }
+                                                    }
                                                 } catch (NodeProcessingException ex)
                                                 {
-                                                    steno.error("Failed to process retract on layer " + layerNode.getLayerNumber() + " this will affect open and close");
+                                                    throw new RuntimeException("Failed to process retract on layer " + layerNode.getLayerNumber() + " this will affect open and close", ex);
                                                 }
                                                 retractNode.removeFromParent();
                                     });
@@ -475,7 +536,7 @@ public class PostProcessor
                                 }
                             } catch (NodeProcessingException ex)
                             {
-                                steno.error("Failed to insert opens and closes on layer " + layerNode.getLayerNumber() + " tool " + toolSelectNode.getToolNumber());
+                                throw new RuntimeException("Failed to insert opens and closes on layer " + layerNode.getLayerNumber() + " tool " + toolSelectNode.getToolNumber(), ex);
                             }
                 }
                 );
@@ -580,6 +641,33 @@ public class PostProcessor
         return nextExtrusion;
     }
 
+    private Optional<GCodeEventNode> findLastExtrusionEventInLayer(LayerNode layerNode)
+    {
+        Optional<GCodeEventNode> lastExtrusionNode = Optional.empty();
+
+        List<GCodeEventNode> toolSelectNodes = layerNode
+                .stream()
+                .filter(node -> node instanceof ToolSelectNode)
+                .collect(Collectors.toList());
+
+        if (!toolSelectNodes.isEmpty())
+        {
+            ToolSelectNode lastToolSelect = (ToolSelectNode) toolSelectNodes.get(toolSelectNodes.size() - 1);
+
+            List<GCodeEventNode> extrusionNodes = lastToolSelect
+                    .stream()
+                    .filter(node -> node instanceof ExtrusionNode)
+                    .collect(Collectors.toList());
+
+            if (!extrusionNodes.isEmpty())
+            {
+                lastExtrusionNode = Optional.of(extrusionNodes.get(extrusionNodes.size() - 1));
+            }
+        }
+
+        return lastExtrusionNode;
+    }
+
     private Optional<NozzleProxy> determineNozzleStateAtEndOfLayer(LayerNode layerNode)
     {
         Optional<NozzleProxy> nozzleInUse = Optional.empty();
@@ -605,5 +693,65 @@ public class PostProcessor
         }
 
         return nozzleInUse;
+    }
+
+    private void prependPrePrintHeader(BufferedWriter writer)
+    {
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
+        try
+        {
+            writer.write("; File post-processed by the CEL Tech Roboxiser on "
+                    + formatter.format(new Date()) + "\n");
+            writer.write("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
+
+            writer.write(";\n; Pre print gcode\n");
+
+            for (String macroLine : GCodeMacros.getMacroContents("before_print"))
+            {
+                writer.write(macroLine);
+                writer.newLine();
+            }
+
+            writer.write("; End of Pre print gcode\n");
+        } catch (IOException | MacroLoadException ex)
+        {
+            throw new RuntimeException("Failed to add pre-print header in post processor - " + ex.getMessage(), ex);
+        }
+    }
+
+    private void appendPostPrintFooter(BufferedWriter writer)
+    {
+        try
+        {
+            writer.write(";\n; Post print gcode\n");
+            for (String macroLine : GCodeMacros.getMacroContents("after_print"))
+            {
+                writer.write(macroLine);
+                writer.newLine();
+            }
+            writer.write("; End of Post print gcode\n");
+        } catch (IOException | MacroLoadException ex)
+        {
+            throw new RuntimeException("Failed to add post-print footer in post processor - " + ex.getMessage(), ex);
+        }
+    }
+
+    private void outputTemperatureCommands(BufferedWriter writer)
+    {
+        try
+        {
+            MCodeNode nozzleTemp = new MCodeNode(104);
+            nozzleTemp.setComment("Go to nozzle temperature from loaded reel - don't wait");
+            writer.write(nozzleTemp.renderForOutput());
+            writer.newLine();
+
+            MCodeNode bedTemp = new MCodeNode(140);
+            bedTemp.setComment("Go to bed temperature from loaded reel - don't wait");
+            writer.write(bedTemp.renderForOutput());
+            writer.newLine();
+        } catch (IOException ex)
+        {
+            throw new RuntimeException("Failed to add post layer 1 temperature commands in post processor - " + ex.getMessage(), ex);
+        }
     }
 }
