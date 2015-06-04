@@ -72,8 +72,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
 
-    private static final int START_SCALING_WINDOW_HEIGHT = 800;
-    private static final double MINIMUM_SCALE_FACTOR = 0.8;
+    private static final int START_SCALING_WINDOW_HEIGHT = 1024;
+    private static final double MINIMUM_SCALE_FACTOR = 0.7;
 
     private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private static final ProjectManager projectManager = ProjectManager.getInstance();
@@ -815,6 +815,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         rootAnchorPane.setScaleX(scaleFactor);
         rootAnchorPane.setScaleY(scaleFactor);
+        rootAnchorPane.setScaleZ(scaleFactor);
 
         rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
         rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
