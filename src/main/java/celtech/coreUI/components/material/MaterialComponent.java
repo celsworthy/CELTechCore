@@ -156,6 +156,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         break;
                 }
             });
+
+        setUpFilamentLoadedListener();
     }
 
     public ReadOnlyObjectProperty<Filament> getSelectedFilamentProperty()
@@ -240,7 +242,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             {
                 if (extruderNumber == 0)
                 {
-                    System.out.println("set project fil to " + newValue);
                     undoableProject.setExtruder0Filament(newValue);
                 } else
                 {
@@ -359,12 +360,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             {
                 if (newValue instanceof Filament)
                 {
-                    System.out.println("XXX cmb set filament to " + cmbMaterials.getValue());
                     selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
                     removeUnknownFromCombo();
                 } else
                 {
-                    System.out.println("XXX cmb set filament to null");
                     // must be "Unknown"
                     selectedFilamentProperty.set(null);
                 }
@@ -386,7 +385,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             currentFilamentId = ((Filament) currentValue).getFilamentID();
         }
-        System.out.println("current filament id is " + currentFilamentId);
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
         ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
@@ -424,7 +422,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         if (mode == Mode.LAYOUT)
         {
-            System.out.println("reselect filament id " + currentFilamentId);
             reselectFilamentId(currentFilamentId);
         }
 
@@ -721,6 +718,25 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
+    private void setUpFilamentLoadedListener()
+    {
+        if (printer != null && printer.extrudersProperty().get(extruderNumber) != null)
+        {
+            printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().addListener(
+                new ChangeListener<Boolean>()
+                {
+
+                    @Override
+                    public void changed(
+                        ObservableValue<? extends Boolean> observable, Boolean oldValue,
+                        Boolean newValue)
+                    {
+                        updateGUIForModeAndPrinterExtruder();
+                        }
+                });
+        }
+    }
+
     // PrinterListChangesNotifier
     @Override
     public void whenPrinterAdded(Printer printer)
@@ -773,12 +789,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
+        if (this.printer == printer)
+        {
+            setUpFilamentLoadedListener();
+        }
     }
 
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-
     }
-
 }
