@@ -9,6 +9,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
@@ -589,6 +590,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             {
                 updateFilamentColoursForModeAndTargetPrinter();
             });
+        
+        project.getPrinterSettings().getPrintSupportOverrideProperty().addListener(
+            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+            {
+                updateFilamentColoursForModeAndTargetPrinter();
+            });
 
         /**
          * Listen for adding and removing of models from the project
@@ -698,63 +705,63 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                           printAreaHeight,
                           lineWidth);
         lhf.setMaterial(boundsBoxMaterial);
-        lhf.setTranslateY(-printAreaHeight/2);
+        lhf.setTranslateY(-printAreaHeight / 2);
 
         Box rhf = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
         rhf.setMaterial(boundsBoxMaterial);
-        rhf.setTranslateY(-printAreaHeight/2);
+        rhf.setTranslateY(-printAreaHeight / 2);
         rhf.setTranslateX(printAreaWidth);
 
         Box lhb = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
         lhb.setMaterial(boundsBoxMaterial);
-        lhb.setTranslateY(-printAreaHeight/2);
+        lhb.setTranslateY(-printAreaHeight / 2);
         lhb.setTranslateZ(printAreaDepth);
 
         Box rhb = new Box(lineWidth,
                           printAreaHeight,
                           lineWidth);
         rhb.setMaterial(boundsBoxMaterial);
-        rhb.setTranslateY(-printAreaHeight/2);
+        rhb.setTranslateY(-printAreaHeight / 2);
         rhb.setTranslateX(printAreaWidth);
         rhb.setTranslateZ(printAreaDepth);
 
         Box lhftTOlhbt = new Box(lineWidth,
-                          lineWidth,
-                          printBedData.getPrintVolumeBounds().getDepth());
+                                 lineWidth,
+                                 printBedData.getPrintVolumeBounds().getDepth());
         lhftTOlhbt.setMaterial(boundsBoxMaterial);
         lhftTOlhbt.setTranslateY(-printAreaHeight);
         lhftTOlhbt.setTranslateZ(printAreaDepth / 2);
 
         Box rhftTOrhbt = new Box(lineWidth,
-                          lineWidth,
-                          printBedData.getPrintVolumeBounds().getDepth());
+                                 lineWidth,
+                                 printBedData.getPrintVolumeBounds().getDepth());
         rhftTOrhbt.setMaterial(boundsBoxMaterial);
         rhftTOrhbt.setTranslateX(printAreaWidth);
         rhftTOrhbt.setTranslateY(-printAreaHeight);
         rhftTOrhbt.setTranslateZ(printAreaDepth / 2);
 
         Box lhftTOrhft = new Box(printAreaWidth,
-                          lineWidth,
-                          lineWidth);
+                                 lineWidth,
+                                 lineWidth);
         lhftTOrhft.setMaterial(boundsBoxMaterial);
         lhftTOrhft.setTranslateX(printAreaWidth / 2);
         lhftTOrhft.setTranslateY(-printAreaHeight);
 
         Box lhbtTOrhbt = new Box(printAreaWidth,
-                          lineWidth,
-                          lineWidth);
+                                 lineWidth,
+                                 lineWidth);
         lhbtTOrhbt.setMaterial(boundsBoxMaterial);
         lhbtTOrhbt.setTranslateX(printAreaWidth / 2);
         lhbtTOrhbt.setTranslateY(-printAreaHeight);
         lhbtTOrhbt.setTranslateZ(printAreaDepth);
 
         boxGroup.getChildren().addAll(lhf, rhf, lhb, rhb,
-                                                     lhftTOlhbt, rhftTOrhbt,
-                                                     lhftTOrhft, lhbtTOrhbt);
+                                      lhftTOlhbt, rhftTOrhbt,
+                                      lhftTOrhft, lhbtTOrhbt);
 
         return boxGroup;
     }
@@ -962,20 +969,36 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
      * If either the chosen filaments, application mode or project printsettings printer changes
      * then this must be called. In LAYOUT mode the filament colours should reflect the project
      * filament colours In SETTINGS mode the filament colours should reflect the project print
-     * settings filament colours.
+     * settings filament colours, taking into account the support type.
      */
     private void updateFilamentColoursForModeAndTargetPrinter()
     {
-        Printer selectedPrinter = project.getPrinterSettings().getSelectedPrinter();
+        PrinterSettings printerSettings = project.getPrinterSettings();
+        Printer selectedPrinter = printerSettings.getSelectedPrinter();
 
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
-            extruder0Filament = project.getPrinterSettings().getFilament0();
-            extruder1Filament = project.getPrinterSettings().getFilament1();
-            if (selectedPrinter != null && targetPrinterHasOneExtruder())
+            if (printerSettings.getPrintSupportOverride()
+                == SlicerParametersFile.SupportType.NO_SUPPORT
+                || printerSettings.getPrintSupportOverride()
+                == SlicerParametersFile.SupportType.OBJECT_MATERIAL)
             {
-                extruder1Filament = extruder0Filament;
+                extruder0Filament = project.getPrinterSettings().getFilament0();
+                extruder1Filament = project.getPrinterSettings().getFilament1();
+            } else {
+                if (printerSettings.getPrintSupportOverride()
+                == SlicerParametersFile.SupportType.MATERIAL_1) {
+                    extruder0Filament = project.getPrinterSettings().getFilament1();
+                    extruder1Filament = project.getPrinterSettings().getFilament1();
+                } else {
+                    extruder0Filament = project.getPrinterSettings().getFilament0();
+                    extruder1Filament = project.getPrinterSettings().getFilament0();
+                }
             }
+            if (selectedPrinter != null && targetPrinterHasOneExtruder())
+                {
+                    extruder1Filament = extruder0Filament;
+                }
         } else
         {
             extruder0Filament = project.getExtruder0FilamentProperty().get();

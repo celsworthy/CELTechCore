@@ -38,7 +38,7 @@ public class PrinterSettings
 
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private SupportType printSupportOverride = SupportType.NO_SUPPORT;
+    private ObjectProperty<SupportType> printSupportOverride = new SimpleObjectProperty<>(SupportType.NO_SUPPORT);
     private boolean raftOverride = false;
 
     public PrinterSettings()
@@ -48,7 +48,7 @@ public class PrinterSettings
             ApplicationConfiguration.draftSettingsProfileName);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
-        printSupportOverride = SupportType.NO_SUPPORT;
+        printSupportOverride.set(SupportType.NO_SUPPORT);
     }
 
     private void toggleDataChanged()
@@ -182,7 +182,7 @@ public class PrinterSettings
         SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
-        profileCopy.setGenerateSupportMaterial(printSupportOverride != SupportType.NO_SUPPORT);
+        profileCopy.setGenerateSupportMaterial(printSupportOverride.get() != SupportType.NO_SUPPORT);
         profileCopy.setPrintRaft(raftOverride);
         return profileCopy;
     }
@@ -217,14 +217,19 @@ public class PrinterSettings
 
     public SupportType getPrintSupportOverride()
     {
-        return printSupportOverride;
+        return printSupportOverride.get();
     }
+    
+    public ObjectProperty<SupportType> getPrintSupportOverrideProperty()
+    {
+        return printSupportOverride;
+    }    
 
     public void setPrintSupportOverride(SupportType printSupportOverride)
     {
-        if (this.printSupportOverride != printSupportOverride)
+        if (this.printSupportOverride.get() != printSupportOverride)
         {
-            this.printSupportOverride = printSupportOverride;
+            this.printSupportOverride.set(printSupportOverride);
             toggleDataChanged();
         }
     }
