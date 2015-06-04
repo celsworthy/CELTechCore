@@ -182,7 +182,7 @@ public class PrinterSettings
         SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
-        profileCopy.setGenerateSupportMaterial(printSupportOverride);
+        profileCopy.setGenerateSupportMaterial(printSupportOverride != SupportType.NO_SUPPORT);
         profileCopy.setPrintRaft(raftOverride);
         return profileCopy;
     }

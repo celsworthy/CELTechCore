@@ -33,18 +33,19 @@ public class SlicerParametersFile
          * Print the support in the same material as the object.
          */
         OBJECT_MATERIAL("supportType.objectMaterial");
-        
+
         String description;
-        
-        SupportType(String description) {
+
+        SupportType(String description)
+        {
             this.description = Lookup.i18n(description);
         }
-        
+
         @Override
-        public String toString() {
+        public String toString()
+        {
             return description;
         }
-        
     }
 
     private int version = 4;
@@ -85,7 +86,7 @@ public class SlicerParametersFile
     /*
      * Support
      */
-    private SupportType generateSupportMaterial;
+    private boolean generateSupportMaterial;
     private int supportOverhangThreshold_degrees;
     private int forcedSupportForFirstNLayers = 0;
     private SupportPattern supportPattern;
@@ -423,12 +424,12 @@ public class SlicerParametersFile
         firePropertyChange("supportInterfaceNozzle", null, supportInterfaceNozzle);
     }
 
-    public SupportType getGenerateSupportMaterial()
+    public boolean getGenerateSupportMaterial()
     {
         return generateSupportMaterial;
     }
 
-    public void setGenerateSupportMaterial(SupportType generateSupportMaterial)
+    public void setGenerateSupportMaterial(boolean generateSupportMaterial)
     {
         if (this.generateSupportMaterial == generateSupportMaterial)
         {
