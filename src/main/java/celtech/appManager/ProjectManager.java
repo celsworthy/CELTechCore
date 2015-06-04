@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import static org.apache.commons.lang.StringEscapeUtils.escapeJava;
 
 /**
  *
@@ -150,7 +151,7 @@ public class ProjectManager implements Savable, Serializable
         File[] projectFiles = projectDir.listFiles(fileFilter);
         for (File file : projectFiles)
         {
-            String[] fileNameElements = file.getAbsolutePath().split(File.separator);
+            String[] fileNameElements = file.getAbsolutePath().split(escapeJava(File.separator));
             String fileName = fileNameElements[fileNameElements.length - 1];
             String projectName = fileName.substring(0, fileName.length() - 6);
             availableProjectNames.add(projectName);
