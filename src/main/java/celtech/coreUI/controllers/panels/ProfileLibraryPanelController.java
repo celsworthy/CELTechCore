@@ -6,7 +6,6 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
@@ -185,9 +184,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private RestrictedNumberField solidLayersBottom;
-
-    @FXML
-    private RestrictedNumberField forcedSupportLayers;
 
     @FXML
     private RestrictedNumberField solidLayersTop;
@@ -819,11 +815,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
             });
-        forcedSupportLayers.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FORCED_SUPPORT_LAYERS);
-            });
+
         supportPattern.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1065,11 +1057,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
             });
-        forcedSupportLayers.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FORCED_SUPPORT_LAYERS);
-            });
+
         supportPattern.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1287,7 +1275,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         minPrintSpeed.textProperty().addListener(dirtyStringListener);
         minFanSpeed.textProperty().addListener(dirtyStringListener);
         infillEveryN.textProperty().addListener(dirtyStringListener);
-        forcedSupportLayers.textProperty().addListener(dirtyStringListener);
         supportPatternSpacing.textProperty().addListener(dirtyStringListener);
         smallPerimeterSpeed.textProperty().addListener(dirtyStringListener);
         maxFanSpeed.textProperty().addListener(dirtyStringListener);
@@ -1372,7 +1359,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         //Support tab
         supportOverhangThreshold.intValueProperty().set(
             parametersFile.getSupportOverhangThreshold_degrees());
-        forcedSupportLayers.intValueProperty().set(parametersFile.getForcedSupportForFirstNLayers());
         supportPattern.valueProperty().set(parametersFile.getSupportPattern());
         supportPatternSpacing.floatValueProperty().set(parametersFile.getSupportPatternSpacing_mm());
         supportPatternAngle.intValueProperty().set(parametersFile.getSupportPatternAngle_degrees());
@@ -1459,8 +1445,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         //Support tab
         supportOverhangThreshold.setDisable(!slicerMappings.isMapped(slicerType,
                                                                      "supportOverhangThreshold_degrees"));
-        forcedSupportLayers.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                "forcedSupportForFirstNLayers"));
+
         supportPatternSpacing.setDisable(!slicerMappings.isMapped(slicerType,
                                                                   "supportPatternSpacing_mm"));
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
@@ -1568,8 +1553,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(
             supportOverhangThreshold.intValueProperty().get());
-        settingsToUpdate.setForcedSupportForFirstNLayers(
-            forcedSupportLayers.intValueProperty().get());
         settingsToUpdate.setSupportPattern(supportPattern.valueProperty().get());
         settingsToUpdate.setSupportPatternSpacing_mm(
             supportPatternSpacing.floatValueProperty().get());

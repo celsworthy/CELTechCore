@@ -4,7 +4,6 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
-import celtech.coreUI.controllers.PrinterSettings;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public class SlicerParametersFile
      */
     private SupportType generateSupportMaterial;
     private int supportOverhangThreshold_degrees;
-    private int forcedSupportForFirstNLayers;
+    private int forcedSupportForFirstNLayers = 0;
     private SupportPattern supportPattern;
     private float supportPatternSpacing_mm;
     private int supportPatternAngle_degrees;

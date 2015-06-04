@@ -193,39 +193,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void setupOverrides()
     {
-//        supportComboBox.setLabelFormatter(new StringConverter<Double>()
-//        {
-//            @Override
-//            public String toString(Double n)
-//            {
-//                String returnedText = "";
-//
-//                if (n <= 0)
-//                {
-//                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
-//                } else
-//                {
-//                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
-//                }
-//                return returnedText;
-//            }
-//
-//            @Override
-//            public Double fromString(String s)
-//            {
-//                double returnVal = 0;
-//
-//                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
-//                {
-//                    returnVal = 0;
-//                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
-//                {
-//                    returnVal = 1;
-//                }
-//                return returnVal;
-//            }
-//        }
-//        );
+        
+        supportComboBox.getItems().addAll(SupportType.values());
 
         supportComboBox.valueProperty().addListener(
             (ObservableValue<? extends Object> ov, Object lastSupportValue, Object newSupportValue) ->
