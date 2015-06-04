@@ -1,5 +1,6 @@
 package celtech.configuration.fileRepresentation;
 
+import celtech.Lookup;
 import celtech.configuration.SlicerType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
@@ -19,19 +20,31 @@ public class SlicerParametersFile
     public enum SupportType
     {
 
-        NO_SUPPORT,
+        NO_SUPPORT("supportType.noSupport"),
         /**
          * Use material 1 as support. Implies all objects printed with material 2.
          */
-        MATERIAL_1,
+        MATERIAL_1("supportType.material1"),
         /**
          * Use material 2 as support. Implies all objects printed with material 1.
          */
-        MATERIAL_2,
+        MATERIAL_2("supportType.material2"),
         /**
          * Print the support in the same material as the object.
          */
-        OBJECT_MATERIAL;
+        OBJECT_MATERIAL("supportType.objectMaterial");
+        
+        String description;
+        
+        SupportType(String description) {
+            this.description = Lookup.i18n(description);
+        }
+        
+        @Override
+        public String toString() {
+            return description;
+        }
+        
     }
 
     private int version = 4;
