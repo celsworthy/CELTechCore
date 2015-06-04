@@ -69,6 +69,11 @@ public class SlicerParametersContainer
         profiles = ingestProfiles(userprofiles, true);
         userProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
+        
+        for (SlicerParametersFile profile : completeProfileList)
+        {
+            profileMap.put(profile.getProfileName(), profile);
+        }
     }
 
     private static ArrayList<SlicerParametersFile> ingestProfiles(File[] userprofiles,

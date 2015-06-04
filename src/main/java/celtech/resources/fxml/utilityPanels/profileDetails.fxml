@@ -8,7 +8,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="480.0" spacing="5.0" styleClass="innerPanel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="480.0" spacing="5.0" styleClass="innerPanel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <HBox alignment="CENTER">
             <children>
@@ -70,7 +70,6 @@
                                         <RowConstraints />
                                         <RowConstraints />
                                         <RowConstraints />
-                                        <RowConstraints />
                                     </rowConstraints>
                                     <children>
                                         <Label styleClass="colon" text="%extrusion.layerHeight" />
@@ -96,8 +95,6 @@
                                         <Label minWidth="-1.0" styleClass="colon" text="%extrusion.solidLayersBottom" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="5" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%sidePanel_settings.numberOfPerimeters" GridPane.rowIndex="6" />
                                         <RestrictedNumberField fx:id="numberOfPerimeters" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%extrusion.brimWidth" GridPane.rowIndex="7" />
-                                        <RestrictedNumberField fx:id="brimWidth" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                         <ComboBox fx:id="fillPatternChoice" prefWidth="127.0" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                     </children>
                                 </GridPane>
@@ -423,62 +420,59 @@
                                 </HBox>
                                 <GridPane id="Content" fx:id="supportGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
                                     <children>
-                                        <CheckBox fx:id="supportMaterialEnabled" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="CheckBox" GridPane.columnIndex="1" />
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.overhangThreshold" GridPane.rowIndex="1" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.overhangThreshold" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1">
                                             <children>
                                                 <RestrictedNumberField id="retractLength" fx:id="supportOverhangThreshold" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" />
                                                 <Label text="%misc.degrees" GridPane.rowIndex="2" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.forceSupportLayers" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="2" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.forceSupportLayers" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="1" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                             <children>
                                                 <RestrictedNumberField id="retractLength" fx:id="forcedSupportLayers" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="1" />
                                                 <Label text="%support.layers" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%support.supportPattern" GridPane.rowIndex="3" />
-                                        <ComboBox id="fillPatternComboBox" fx:id="supportPattern" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                        <Label minWidth="-1.0" styleClass="colon" text="%support.supportPattern" GridPane.rowIndex="2" />
+                                        <ComboBox id="fillPatternComboBox" fx:id="supportPattern" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                         </ComboBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.patternSpacing" GridPane.rowIndex="4" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.patternSpacing" GridPane.rowIndex="3" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                             <children>
                                                 <RestrictedNumberField id="retractLength" fx:id="supportPatternSpacing" allowedDecimalPlaces="1" maxLength="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                                 <Label text="%misc.mm" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.patternAngle" GridPane.rowIndex="5" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.patternAngle" GridPane.rowIndex="4" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                             <children>
                                                 <RestrictedNumberField id="retractLength" fx:id="supportPatternAngle" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.degrees" />
                                             </children>
                                         </HBox>
-                                        <Label layoutX="31.0" layoutY="61.0" minWidth="95.0" styleClass="colon" text="%support.supportEnabled" textAlignment="RIGHT" wrapText="true" />
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.raftBaseLinewidth" GridPane.rowIndex="6" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.raftBaseLinewidth" GridPane.rowIndex="5" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                             <children>
                                                 <RestrictedNumberField id="raftBaseLinewidth" fx:id="raftBaseLinewidth" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="1.0" />
                                                 <Label text="%misc.mm" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.raftAirGapLayer0" GridPane.rowIndex="7" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.raftAirGapLayer0" GridPane.rowIndex="6" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                             <children>
                                                 <RestrictedNumberField id="raftAirGapLayer0" fx:id="raftAirGapLayer0" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="0.285" />
                                                 <Label text="%misc.mm" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.interfaceLayers" GridPane.rowIndex="8" />
-                              <RestrictedNumberField id="interfaceLayers" fx:id="interfaceLayers" maxLength="2" maxWidth="50.0" prefWidth="50.0" text="1" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                        <Label minWidth="95.0" styleClass="colon" text="%support.interfaceLayers" GridPane.rowIndex="7" />
+                              <RestrictedNumberField id="interfaceLayers" fx:id="interfaceLayers" maxLength="2" maxWidth="50.0" prefWidth="50.0" text="1" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                     </children>
                                     <columnConstraints>
                                         <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
                                         <ColumnConstraints percentWidth="50.0" />
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints />
                                         <RowConstraints />
                                         <RowConstraints />
                                         <RowConstraints />
@@ -624,7 +618,7 @@
                                         <Label alignment="TOP_RIGHT" minWidth="115.0" styleClass="colon" text="%speed.smallPerimeters" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                             <children>
-                                                <RestrictedNumberField  fx:id="smallPerimeterSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="smallPerimeterSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -640,7 +634,7 @@
                                         <Label styleClass="colon" text="%speed.infill" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                             <children>
-                                                <RestrictedNumberField  fx:id="infillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="infillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -648,7 +642,7 @@
                                         <Label styleClass="colon" text="%speed.solidInfill" GridPane.columnIndex="0" GridPane.rowIndex="5" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                             <children>
-                                                <RestrictedNumberField  fx:id="solidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="solidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -656,7 +650,7 @@
                                         <Label styleClass="colon" text="%speed.topSolidInfill" GridPane.columnIndex="0" GridPane.rowIndex="6" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                             <children>
-                                                <RestrictedNumberField  fx:id="topSolidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="topSolidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -664,7 +658,7 @@
                                         <Label styleClass="colon" text="%speed.supportMaterial" GridPane.columnIndex="0" GridPane.rowIndex="7" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                             <children>
-                                                <RestrictedNumberField  fx:id="supportMaterialSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="supportMaterialSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -672,7 +666,7 @@
                                         <Label styleClass="colon" text="%speed.bridges" GridPane.columnIndex="0" GridPane.rowIndex="8" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
                                             <children>
-                                                <RestrictedNumberField  fx:id="bridgesSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="bridgesSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -680,14 +674,14 @@
                                         <Label styleClass="colon" text="%speed.gapFill" GridPane.columnIndex="0" GridPane.rowIndex="9" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
                                             <children>
-                                                <RestrictedNumberField  fx:id="gapFillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="gapFillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
                                         <Label styleClass="colon" text="%speed.interface" GridPane.columnIndex="0" GridPane.rowIndex="10" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
                                             <children>
-                                                <RestrictedNumberField  fx:id="interfaceSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
+                                                <RestrictedNumberField fx:id="interfaceSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
@@ -707,6 +701,7 @@
                                         <RowConstraints />
                                         <RowConstraints />
                                         <RowConstraints />
+                              <RowConstraints />
                                     </rowConstraints>
                                 </GridPane>
                             </children>

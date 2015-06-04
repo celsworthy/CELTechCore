@@ -6,6 +6,7 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
@@ -180,9 +181,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private RestrictedNumberField supportMaterialSpeed;
 
     @FXML
-    private RestrictedNumberField brimWidth;
-
-    @FXML
     private RestrictedNumberField minFanSpeed;
 
     @FXML
@@ -267,9 +265,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private RestrictedNumberField nozzleEjectionVolume1;
 
     @FXML
-    private CheckBox supportMaterialEnabled;
-
-    @FXML
     private RestrictedNumberField numberOfPerimeters;
 
     @FXML
@@ -313,9 +308,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
-    
+
     @FXML
-    private RestrictedNumberField interfaceSpeed;    
+    private RestrictedNumberField interfaceSpeed;
 
     @FXML
     private RestrictedNumberField supportExtrusionWidth;
@@ -369,6 +364,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             isDirty.set(true);
         };
 
+    private final ChangeListener<Object> dirtyObjectListener
+        = (ObservableValue<? extends Object> ov, Object t, Object t1) ->
+        {
+            isDirty.set(true);
+        };
+
     private final float minPoint8ExtrusionWidth = 0.5f;
     private final float defaultPoint8ExtrusionWidth = 0.8f;
     private final float maxPoint8ExtrusionWidth = 1.2f;
@@ -417,7 +418,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         setupSupportNozzleChoice();
 
         setupSlicerChooser();
-        
+
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
         forceNozzleFirstLayerOptions.addAll(nozzleOptions);
@@ -753,11 +754,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.NUMBER_OF_PERIMETERS);
             });
-        brimWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIM_WIDTH);
-            });
         firstLayerExtrusionWidth.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -817,11 +813,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
-            });
-        supportMaterialEnabled.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
             });
         supportOverhangThreshold.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -922,7 +913,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.INTERFACE_SPEED);
-            });        
+            });
         disableFanForFirstNLayers.focusedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1007,11 +998,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.NUMBER_OF_PERIMETERS);
             });
-        brimWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIM_WIDTH);
-            });
+
         firstLayerExtrusionWidth.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1072,11 +1059,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
             });
-        supportMaterialEnabled.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
-            });
+
         supportOverhangThreshold.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1176,7 +1159,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.INTERFACE_SPEED);
-            });        
+            });
         disableFanForFirstNLayers.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -1213,7 +1196,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 showHelpText(Fields.INTERFACE_LAYERS);
-            });        
+            });
     }
 
     private void showHelpText(Fields field)
@@ -1284,7 +1267,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
         enableFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
         solidInfillSpeed.textProperty().addListener(dirtyStringListener);
-        supportMaterialEnabled.textProperty().addListener(dirtyStringListener);
         supportOverhangThreshold.textProperty().addListener(dirtyStringListener);
         solidLayersTop.textProperty().addListener(dirtyStringListener);
         solidLayersBottom.textProperty().addListener(dirtyStringListener);
@@ -1299,50 +1281,27 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 isDirty.set(true);
             });
 
-        supportMaterialSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        brimWidth.textProperty()
-            .addListener(dirtyStringListener);
-        infillSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        minPrintSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        minFanSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        infillEveryN.textProperty()
-            .addListener(dirtyStringListener);
-        forcedSupportLayers.textProperty()
-            .addListener(dirtyStringListener);
-        supportPatternSpacing.textProperty()
-            .addListener(dirtyStringListener);
-        smallPerimeterSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        maxFanSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        disableFanForFirstNLayers.textProperty()
-            .addListener(dirtyStringListener);
-        bridgesFanSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        bridgesSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        interfaceSpeed.textProperty()
-            .addListener(dirtyStringListener);        
-        layerHeight.textProperty()
-            .addListener(dirtyStringListener);
-        externalPerimeterSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        supportPatternAngle.textProperty()
-            .addListener(dirtyStringListener);
+        supportMaterialSpeed.textProperty().addListener(dirtyStringListener);
 
-        supportMaterialEnabled.selectedProperty()
-            .addListener(dirtyBooleanListener);
-        enableAutoCooling.selectedProperty()
-            .addListener(dirtyBooleanListener);
-
-        perimeterNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
-        fillNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
+        infillSpeed.textProperty().addListener(dirtyStringListener);
+        minPrintSpeed.textProperty().addListener(dirtyStringListener);
+        minFanSpeed.textProperty().addListener(dirtyStringListener);
+        infillEveryN.textProperty().addListener(dirtyStringListener);
+        forcedSupportLayers.textProperty().addListener(dirtyStringListener);
+        supportPatternSpacing.textProperty().addListener(dirtyStringListener);
+        smallPerimeterSpeed.textProperty().addListener(dirtyStringListener);
+        maxFanSpeed.textProperty().addListener(dirtyStringListener);
+        disableFanForFirstNLayers.textProperty().addListener(dirtyStringListener);
+        bridgesFanSpeed.textProperty().addListener(dirtyStringListener);
+        bridgesSpeed.textProperty().addListener(dirtyStringListener);
+        interfaceSpeed.textProperty().addListener(dirtyStringListener);
+        layerHeight.textProperty().addListener(dirtyStringListener);
+        externalPerimeterSpeed.textProperty().addListener(dirtyStringListener);
+        supportPatternAngle.textProperty().addListener(dirtyStringListener);
+        enableAutoCooling.selectedProperty().addListener(dirtyBooleanListener);
+        perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
+            dirtyStringListener);
+        fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         supportNozzleChoice.getSelectionModel()
             .selectedItemProperty().addListener(dirtyStringListener);
         supportInterfaceNozzleChoice.getSelectionModel()
@@ -1360,7 +1319,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         nozzleOpenVolume1.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume1.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen1.textProperty().addListener(dirtyStringListener);
-        
+
         raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
         raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
         interfaceLayers.textProperty().addListener(dirtyStringListener);
@@ -1387,7 +1346,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         solidLayersTop.intValueProperty().set(parametersFile.getSolidLayersAtTop());
         solidLayersBottom.intValueProperty().set(parametersFile.getSolidLayersAtBottom());
         numberOfPerimeters.intValueProperty().set(parametersFile.getNumberOfPerimeters());
-        brimWidth.intValueProperty().set(parametersFile.getBrimWidth_mm());
 
         //Nozzle tab
         firstLayerExtrusionWidth.floatValueProperty().set(
@@ -1412,7 +1370,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             parametersFile.getSupportInterfaceNozzle());
 
         //Support tab
-        supportMaterialEnabled.selectedProperty().set(parametersFile.getGenerateSupportMaterial());
         supportOverhangThreshold.intValueProperty().set(
             parametersFile.getSupportOverhangThreshold_degrees());
         forcedSupportLayers.intValueProperty().set(parametersFile.getForcedSupportForFirstNLayers());
@@ -1468,7 +1425,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     /**
      * Enable/Disable fields appropriately according to the selected slicer.
-     * @param slicerType 
+     *
+     * @param slicerType
      */
     private void updateFieldsForSelectedSlicer(SlicerType slicerType)
     {
@@ -1483,7 +1441,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         solidLayersTop.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtTop"));
         solidLayersBottom.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtBottom"));
         numberOfPerimeters.setDisable(!slicerMappings.isMapped(slicerType, "numberOfPerimeters"));
-        brimWidth.setDisable(!slicerMappings.isMapped(slicerType, "brimWidth_mm"));
 
         //Nozzle tab
         firstLayerExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
@@ -1508,19 +1465,23 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                                                                   "supportPatternSpacing_mm"));
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
                                                                 "supportPatternAngle_degrees"));
-        
+
         SupportPattern currentSupportPattern = supportPattern.getValue();
-        if (slicerType == SlicerType.Slic3r) {
+        if (slicerType == SlicerType.Slic3r)
+        {
             supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
             supportPattern.setValue(currentSupportPattern);
-        } else {
+        } else
+        {
             supportPattern.getItems().clear();
             supportPattern.getItems().add(SupportPattern.RECTILINEAR);
             supportPattern.getItems().add(SupportPattern.RECTILINEAR_GRID);
-            if (currentSupportPattern == SupportPattern.RECTILINEAR || 
-                currentSupportPattern == SupportPattern.RECTILINEAR_GRID) {
+            if (currentSupportPattern == SupportPattern.RECTILINEAR || currentSupportPattern
+                == SupportPattern.RECTILINEAR_GRID)
+            {
                 supportPattern.setValue(currentSupportPattern);
-            } else {
+            } else
+            {
                 supportPattern.setValue(SupportPattern.RECTILINEAR);
             }
         }
@@ -1575,7 +1536,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         settingsToUpdate.setSolidLayersAtTop(solidLayersTop.intValueProperty().get());
         settingsToUpdate.setSolidLayersAtBottom(solidLayersBottom.intValueProperty().get());
         settingsToUpdate.setNumberOfPerimeters(numberOfPerimeters.intValueProperty().get());
-        settingsToUpdate.setBrimWidth_mm(brimWidth.intValueProperty().get());
 
         //Nozzle tab
         settingsToUpdate.setFirstLayerExtrusionWidth_mm(
@@ -1604,7 +1564,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
 
         //Support tab
-        settingsToUpdate.setGenerateSupportMaterial(supportMaterialEnabled.isSelected());
         settingsToUpdate.setSupportInterfaceNozzle(
             supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(

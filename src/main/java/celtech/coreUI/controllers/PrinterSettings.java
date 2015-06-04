@@ -4,6 +4,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import javafx.beans.property.BooleanProperty;
@@ -24,7 +25,6 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PrinterSettings
 {
-
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterSettings.class.getName());
 
@@ -38,17 +38,17 @@ public class PrinterSettings
 
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private boolean printSupportOverride = false;
+    private SupportType printSupportOverride = SupportType.NO_SUPPORT;
     private boolean raftOverride = false;
 
     public PrinterSettings()
     {
         customSettingsName.set("");
-        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getSettingsByProfileName(
+        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettingsByProfileName(
             ApplicationConfiguration.draftSettingsProfileName);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
-        printSupportOverride = draftParametersFile.getGenerateSupportMaterial();
+        printSupportOverride = SupportType.NO_SUPPORT;
     }
 
     private void toggleDataChanged()
@@ -215,12 +215,12 @@ public class PrinterSettings
         }
     }
 
-    public boolean getPrintSupportOverride()
+    public SupportType getPrintSupportOverride()
     {
         return printSupportOverride;
     }
 
-    public void setPrintSupportOverride(boolean printSupportOverride)
+    public void setPrintSupportOverride(SupportType printSupportOverride)
     {
         if (this.printSupportOverride != printSupportOverride)
         {

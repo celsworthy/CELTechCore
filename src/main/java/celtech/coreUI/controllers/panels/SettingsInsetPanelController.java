@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -55,7 +56,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private ComboBox<SlicerParametersFile> customProfileChooser;
 
     @FXML
-    private Slider supportSlider;
+    private ComboBox<SupportType> supportComboBox;
 
     @FXML
     private Slider raftSlider;
@@ -132,19 +133,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         @Override
         public void propertyChange(PropertyChangeEvent evt)
         {
-            if (evt.getPropertyName().equals("brimWidth_mm"))
-            {
-                brimSlider.valueProperty().set(((Number) evt.getNewValue()).intValue());
-            } else if (evt.getPropertyName().equals("fillDensity_normalised"))
+            if (evt.getPropertyName().equals("fillDensity_normalised"))
             {
                 fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
                     * 100);
-            } else if (evt.getPropertyName().equals("generateSupportMaterial"))
-            {
-                boolean supportEnabled = (Boolean) evt.getNewValue();
-                double value = supportEnabled ? 1d : 0d;
-                supportSlider.valueProperty().set(value);
-            }
+            } 
         }
     };
 
@@ -200,47 +193,46 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void setupOverrides()
     {
-        supportSlider.setLabelFormatter(new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double n)
-            {
-                String returnedText = "";
+//        supportComboBox.setLabelFormatter(new StringConverter<Double>()
+//        {
+//            @Override
+//            public String toString(Double n)
+//            {
+//                String returnedText = "";
+//
+//                if (n <= 0)
+//                {
+//                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
+//                } else
+//                {
+//                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
+//                }
+//                return returnedText;
+//            }
+//
+//            @Override
+//            public Double fromString(String s)
+//            {
+//                double returnVal = 0;
+//
+//                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
+//                {
+//                    returnVal = 0;
+//                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
+//                {
+//                    returnVal = 1;
+//                }
+//                return returnVal;
+//            }
+//        }
+//        );
 
-                if (n <= 0)
-                {
-                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
-                } else
-                {
-                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
-                }
-                return returnedText;
-            }
-
-            @Override
-            public Double fromString(String s)
-            {
-                double returnVal = 0;
-
-                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
-                {
-                    returnVal = 0;
-                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
-                {
-                    returnVal = 1;
-                }
-                return returnVal;
-            }
-        }
-        );
-
-        supportSlider.valueProperty().addListener(
-            (ObservableValue<? extends Number> ov, Number lastSupportValue, Number newSupportValue) ->
+        supportComboBox.valueProperty().addListener(
+            (ObservableValue<? extends Object> ov, Object lastSupportValue, Object newSupportValue) ->
             {
                 if (lastSupportValue != newSupportValue)
                 {
-                    boolean supportSelected = (newSupportValue.doubleValue() >= 1.0);
-                    printerSettings.setPrintSupportOverride(supportSelected);
+                    printerSettings.setPrintSupportOverride((SupportType) newSupportValue);
                 }
             });
 
@@ -309,7 +301,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
         brimSlider.setValue(printerSettings.getBrimOverride());
-        supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
+        supportComboBox.setValue(printerSettings.getPrintSupportOverride());
         raftSlider.setValue(printerSettings.getRaftOverride() ? 1: 0);
     }
 
@@ -348,7 +340,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
-        boolean saveSupports = printerSettings.getPrintSupportOverride();
+        SupportType saveSupports = printerSettings.getPrintSupportOverride();
         boolean savePrintRaft = printerSettings.getRaftOverride();
 
         // printer settings name is cleared by combo population so must be saved
@@ -382,7 +374,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
-        supportSlider.setValue(saveSupports ? 1 : 0);
+        supportComboBox.setValue(saveSupports);
         raftSlider.setValue(savePrintRaft ? 1 : 0);
 
     }
