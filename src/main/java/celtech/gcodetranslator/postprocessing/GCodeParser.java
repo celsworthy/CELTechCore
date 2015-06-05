@@ -13,7 +13,11 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.PreambleNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnrecognisedLineNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
@@ -38,6 +42,8 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
 
     private final Stenographer steno = StenographerFactory.getStenographer(GCodeParser.class.getName());
     private LayerNode thisLayer = new LayerNode();
+    private int feedrateInForce = -1;
+    protected Var<Integer> currentObject = new Var<>(-1);
 
     public LayerNode getLayerNode()
     {
@@ -77,6 +83,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 OneOrMore(
                         FirstOf(
                                 ObjectSection(),
+                                OrphanObjectSection(),
                                 ChildDirective()
                         ),
                         (Action) (Context context1) ->
@@ -119,23 +126,29 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         ObjectSectionActionClass objectSectionAction = new ObjectSectionActionClass();
         Var<Integer> objectNumber = new Var<>(0);
 
-        return Sequence(FirstOf(
-                        Sequence('T', OneOrMore(Digit()),
-                                objectNumber.set(Integer.valueOf(match())),
-                                Newline()
-                        ),
-                        FirstOf(Test(FillSectionNode.designator),
-                                Test(InnerPerimeterSectionNode.designator),
-                                Test(OuterPerimeterSectionNode.designator))
+        return Sequence(
+                Sequence('T', OneOrMore(Digit()),
+                        objectNumber.set(Integer.valueOf(match())),
+                        currentObject.set(Integer.valueOf(match())),
+                        Newline()
                 ),
                 objectSectionAction,
+                Optional(
+                        Sequence(TravelDirective(),
+                                new Action()
+                                {
+                                    @Override
+                                    public boolean run(Context context)
+                                    {
+                                        TreeUtils.addChild(objectSectionAction.getNode(), (GCodeEventNode) context.getValueStack().pop());
+                                        return true;
+                                    }
+                                }
+                        )
+                ),
                 OneOrMore(
                         Sequence(
-                                FirstOf(
-                                        FillSection(),
-                                        InnerPerimeterSection(),
-                                        OuterPerimeterSection()
-                                ),
+                                AnySection(),
                                 new Action()
                                 {
                                     @Override
@@ -155,6 +168,71 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                     {
                         ObjectDelineationNode node = objectSectionAction.getNode();
                         node.setObjectNumber(objectNumber.get());
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    // No preceding T command - can happen at the start of a file or start of a layer if the tool use is continued from the previous
+    Rule OrphanObjectSection()
+    {
+        OrphanObjectSectionActionClass orphanObjectSectionAction = new OrphanObjectSectionActionClass();
+
+        return Sequence(
+                // Orphan - make this part of the current object
+                IsASection(),
+                orphanObjectSectionAction,
+                OneOrMore(
+                        Sequence(
+                                FirstOf(
+                                        TravelDirective(),
+                                        AnySection()
+                                ),
+                                new Action()
+                                {
+                                    @Override
+                                    public boolean run(Context context)
+                                    {
+                                        TreeUtils.addChild(orphanObjectSectionAction.getNode(), (GCodeEventNode) context.getValueStack().pop());
+                                        return true;
+                                    }
+                                }
+                        )
+                ),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context
+                    )
+                    {
+                        OrphanObjectDelineationNode node = orphanObjectSectionAction.getNode();
+                        node.setPotentialObjectNumber(currentObject.get());
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Orphan section
+    //No type
+    Rule OrphanSection()
+    {
+        return Sequence(
+                NotASection(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        OrphanSectionNode node = new OrphanSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -212,7 +290,55 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         );
     }
 
-    //Cura outer perimeter section
+    //Cura support Section
+    Rule SupportSection()
+    {
+        return Sequence(
+                SupportSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        SkinSectionNode node = new SkinSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Cura support interface Section
+    Rule SupportInterfaceSection()
+    {
+        return Sequence(
+                SupportInterfaceSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        SkinSectionNode node = new SkinSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+//Cura outer perimeter section
     //;TYPE:WALL-OUTER
     Rule OuterPerimeterSection()
     {
@@ -260,6 +386,40 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                     }
                 }
         );
+    }
+
+    Rule NotASection()
+    {
+        return Sequence(
+                TestNot(FillSectionNode.designator),
+                TestNot(InnerPerimeterSectionNode.designator),
+                TestNot(OuterPerimeterSectionNode.designator),
+                TestNot(SkinSectionNode.designator),
+                TestNot(SupportInterfaceSectionNode.designator),
+                TestNot(SupportSectionNode.designator));
+    }
+
+    Rule AnySection()
+    {
+        return FirstOf(
+                FillSection(),
+                InnerPerimeterSection(),
+                OuterPerimeterSection(),
+                SkinSection(),
+                SupportInterfaceSection(),
+                SupportSection(),
+                OrphanSection());
+    }
+
+    Rule IsASection()
+    {
+        return FirstOf(
+                Test(FillSectionNode.designator),
+                Test(InnerPerimeterSectionNode.designator),
+                Test(OuterPerimeterSectionNode.designator),
+                Test(SkinSectionNode.designator),
+                Test(SupportSectionNode.designator),
+                Test(SupportInterfaceSectionNode.designator));
     }
 
     // ;Blah blah blah\n
@@ -347,8 +507,8 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     // G1 F1800 E-0.50000
     Rule RetractDirective()
     {
-        Var<Double> dValue = new Var<>();
-        Var<Double> eValue = new Var<>();
+        Var<Float> dValue = new Var<>();
+        Var<Float> eValue = new Var<>();
         Var<Integer> fValue = new Var<>();
 
         return Sequence("G1 ",
@@ -358,11 +518,11 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 OneOrMore(
                         FirstOf(
                                 Sequence("D", NegativeFloatingPointNumber(),
-                                        dValue.set(Double.valueOf(match())),
+                                        dValue.set(Float.valueOf(match())),
                                         Optional(' ')
                                 ),
                                 Sequence("E", NegativeFloatingPointNumber(),
-                                        eValue.set(Double.valueOf(match())),
+                                        eValue.set(Float.valueOf(match())),
                                         Optional(' '))
                         )
                 ),
@@ -396,8 +556,8 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     // G1 F1800 E0.50000
     Rule UnretractDirective()
     {
-        Var<Double> dValue = new Var<>();
-        Var<Double> eValue = new Var<>();
+        Var<Float> dValue = new Var<>();
+        Var<Float> eValue = new Var<>();
         Var<Integer> fValue = new Var<>();
 
         return Sequence("G1 ",
@@ -407,11 +567,11 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 OneOrMore(
                         FirstOf(
                                 Sequence("D", PositiveFloatingPointNumber(),
-                                        dValue.set(Double.valueOf(match())),
+                                        dValue.set(Float.valueOf(match())),
                                         Optional(' ')
                                 ),
                                 Sequence("E", PositiveFloatingPointNumber(),
-                                        eValue.set(Double.valueOf(match())),
+                                        eValue.set(Float.valueOf(match())),
                                         Optional(' '))
                         )
                 ),
@@ -514,8 +674,8 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
         Var<Double> xValue = new Var<>();
         Var<Double> yValue = new Var<>();
         Var<Double> zValue = new Var<>();
-        Var<Double> eValue = new Var<>();
-        Var<Double> dValue = new Var<>();
+        Var<Float> eValue = new Var<>();
+        Var<Float> dValue = new Var<>();
 
         return Sequence("G1 ",
                 Optional(
@@ -533,11 +693,11 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 OneOrMore(
                         FirstOf(
                                 Sequence("D", PositiveFloatingPointNumber(),
-                                        dValue.set(Double.valueOf(match())),
+                                        dValue.set(Float.valueOf(match())),
                                         Optional(' ')
                                 ),
                                 Sequence("E", PositiveFloatingPointNumber(),
-                                        eValue.set(Double.valueOf(match())),
+                                        eValue.set(Float.valueOf(match())),
                                         Optional(' ')
                                 )
                         )
@@ -683,23 +843,54 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     @SuppressSubnodes
     Rule Feedrate(Var<Integer> feedrate)
     {
-        return Sequence('F', OneOrMore(Digit()),
-                feedrate.set(Integer.valueOf(match())),
-                Optional(' '));
+        return FirstOf(
+                Sequence(
+                        'F', OneOrMore(Digit()),
+                        feedrate.set(Integer.valueOf(match())),
+                        Optional(' '),
+                        new Action()
+                        {
+                            @Override
+                            public boolean run(Context context)
+                            {
+                                feedrateInForce = feedrate.get();
+                                return true;
+                            }
+                        }
+                ),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        feedrate.set(feedrateInForce);
+                        return true;
+                    }
+                }
+        );
     }
 
     //Anything else we didn't parse... must always be the last thing we look for
     // blah blah \n
+    //we mustn't match a line beginning with T as this is the start of an object
     @SuppressSubnodes
     Rule UnrecognisedLine()
     {
         return Sequence(
-                TestNot(FillSectionNode.designator),
-                TestNot(InnerPerimeterSectionNode.designator),
-                TestNot(OuterPerimeterSectionNode.designator),
-                ZeroOrMore(ANY),
-                push(new UnrecognisedLineNode()),
-                Newline());
+                NotASection(),
+                OneOrMore(NoneOf("T\n")),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        String line = context.getMatch();
+                        context.getValueStack().push(new UnrecognisedLineNode(line));
+                        return true;
+                    }
+                },
+                Newline()
+        );
     }
 
     @SuppressSubnodes

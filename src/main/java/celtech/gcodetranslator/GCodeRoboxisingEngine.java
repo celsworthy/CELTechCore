@@ -27,14 +27,14 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
 {
 
     private final Stenographer steno = StenographerFactory
-        .getStenographer(GCodeTranslationEventHandler.class.getName());
+            .getStenographer(GCodeTranslationEventHandler.class.getName());
 
     private final Pattern passThroughPattern = Pattern
-        .compile("\\b(?:M106 S[0-9.]+|M107|G[0-9]{1,}.*|M[0-9]{2,})(?:[\\s]*;.*)?");
+            .compile("\\b(?:M106 S[0-9.]+|M107|G[0-9]{1,}.*|M[0-9]{2,})(?:[\\s]*;.*)?");
 
     private final Pattern removePattern = Pattern
-        .compile(
-            "\\b(?:M104 S[0-9.]+(?:\\sT[0-9]+)?|M109 S[0-9.]+(?:\\sT[0-9]+)?|M107)(?:[\\s]*;.*)?");
+            .compile(
+                    "\\b(?:M104 S[0-9.]+(?:\\sT[0-9]+)?|M109 S[0-9.]+(?:\\sT[0-9]+)?|M107)(?:[\\s]*;.*)?");
 
     protected GCodeOutputWriter outputWriter;
     private final GCodeFileParser gcodeParser = new GCodeFileParser();
@@ -88,8 +88,8 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
      * @return
      */
     public final RoboxiserResult roboxiseFile(String inputFilename,
-        String outputFilename,
-        SlicerParametersFile settings, DoubleProperty percentProgress)
+            String outputFilename,
+            SlicerParametersFile settings, DoubleProperty percentProgress)
     {
         RoboxiserResult result = new RoboxiserResult();
         result.setSuccess(false);
@@ -102,9 +102,9 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
             {
                 SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
                 outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on "
-                    + formatter.format(new Date()) + "\n");
+                        + formatter.format(new Date()) + "\n");
                 outputWriter.
-                    writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
+                        writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
 
                 outputWriter.writeOutput(";\n; Pre print gcode\n");
                 for (String macroLine : GCodeMacros.getMacroContents("before_print"))
@@ -128,23 +128,27 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
             } catch (MacroLoadException ex)
             {
                 steno.error(
-                    "Error roboxising file - couldn't add before print header due to circular macro reference "
-                    + inputFilename + " " + ex);
+                        "Error roboxising file - couldn't add before print header due to circular macro reference "
+                        + inputFilename + " " + ex);
             }
 
             result.setSuccess(success);
+            
             /**
-             * TODO: layerNumberToLineNumber uses lines numbers from the GCode file so are a little
-             * less than the line numbers for each layer after roboxisation. As a quick fix for now
-             * set the line number of the last layer to the actual maximum line number.
+             * TODO: layerNumberToLineNumber uses lines numbers from the GCode
+             * file so are a little less than the line numbers for each layer
+             * after roboxisation. As a quick fix for now set the line number of
+             * the last layer to the actual maximum line number.
              */
             layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
-                                        getNumberOfLinesOutput());
+                    getNumberOfLinesOutput());
             int numLines = outputWriter.getNumberOfLinesOutput();
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-                numLines,
-                volumeUsed, lineNumberOfFirstExtrusion,
-                layerNumberToLineNumber, layerNumberToPredictedDuration);
+                    numLines,
+                    volumeUsed,
+                    0,
+                    lineNumberOfFirstExtrusion,
+                    layerNumberToLineNumber, layerNumberToPredictedDuration);
 
             result.setRoboxisedStatistics(roboxisedStatistics);
         }
@@ -166,7 +170,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
         {
             slicerType = Lookup.getUserPreferences().getSlicerType();
         }
-        
+
         layerNumberToLineNumber = new ArrayList<>();
         layerNumberToDistanceTravelled = new ArrayList<>();
         layerNumberToPredictedDuration = new ArrayList<>();

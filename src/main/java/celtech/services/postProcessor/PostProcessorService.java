@@ -1,5 +1,6 @@
 package celtech.services.postProcessor;
 
+import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
@@ -15,6 +16,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
     private String printJobUUID = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
+    private Project project = null;
 
     /**
      *
@@ -43,10 +45,15 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
         this.printerToUse = printerToUse;
     }
 
+    public void setProject(Project project)
+    {
+        this.project = project;
+    }
+    
     @Override
     protected Task<GCodePostProcessingResult> createTask()
     {
-        return new PostProcessorTask(printJobUUID, settings, printerToUse);
+        return new PostProcessorTask(printJobUUID, settings, printerToUse, project);
     }
 
     /**

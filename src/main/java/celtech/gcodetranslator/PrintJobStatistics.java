@@ -17,7 +17,8 @@ public class PrintJobStatistics
 {
 
     private final int numberOfLines;
-    private final double volumeUsed;
+    private final double eVolumeUsed;
+    private final double dVolumeUsed;
     private final List<Integer> layerNumberToLineNumber;
     private final List<Double> layerNumberToPredictedDuration;
     private final int lineNumberOfFirstExtrusion;
@@ -25,20 +26,23 @@ public class PrintJobStatistics
     public PrintJobStatistics()
     {
         numberOfLines = 0;
-        volumeUsed = 0;
+        eVolumeUsed = 0;
+        dVolumeUsed = 0;
         lineNumberOfFirstExtrusion = 0;
         layerNumberToLineNumber = null;
         layerNumberToPredictedDuration = null;
     }
 
     public PrintJobStatistics(int numberOfLines, 
-        double volumeUsed,
+        double eVolumeUsed,
+        double dVolumeUsed,
         int lineNumberOfFirstExtrusion,
         List<Integer> layerNumberToLineNumber,
         List<Double> layerNumberToPredictedDuration)
     {
         this.numberOfLines = numberOfLines;
-        this.volumeUsed = volumeUsed;
+        this.eVolumeUsed = eVolumeUsed;
+        this.dVolumeUsed = dVolumeUsed;
         this.lineNumberOfFirstExtrusion = lineNumberOfFirstExtrusion;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
         this.layerNumberToPredictedDuration = layerNumberToPredictedDuration;
@@ -60,11 +64,19 @@ public class PrintJobStatistics
     }
 
     /**
-     * @return the volumeUsed
+     * @return the volumeUsed for Extruder E
      */
-    public double getVolumeUsed()
+    public double getEVolumeUsed()
     {
-        return volumeUsed;
+        return eVolumeUsed;
+    }
+
+    /**
+     * @return the volumeUsed for Extruder D
+     */
+    public double getDVolumeUsed()
+    {
+        return dVolumeUsed;
     }
 
     /**

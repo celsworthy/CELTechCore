@@ -1,14 +1,12 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
-import static celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode.designator;
-
 /**
  *
  * @author Ian
  */
 public class SupportSectionNode extends SectionNode
 {
-    public static final String designator ="???";
+    public static final String designator =";TYPE:SUPPORT";
     
     public SupportSectionNode()
     {

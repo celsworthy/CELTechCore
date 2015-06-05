@@ -28,6 +28,6 @@ public class NozzleValvePositionNode extends GCodeEventNode
         NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
         threeDPformatter.setGroupingUsed(false);
-        return "B" + desiredValvePosition;
+        return "G0 B" + desiredValvePosition;
     }
 }

@@ -19,4 +19,16 @@ public class ExtrusionNode extends MovementNode
         
         return stringToReturn.toString();
     }
+    
+    public void extrudeUsingEOnly()
+    {
+        setE(getE() + getD());
+        dNotInUse();
+    }
+
+    public void extrudeUsingDOnly()
+    {
+        setD(getE() + getD());
+        eNotInUse();
+    }
 }

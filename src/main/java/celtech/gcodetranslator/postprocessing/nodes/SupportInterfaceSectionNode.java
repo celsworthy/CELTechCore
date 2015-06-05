@@ -8,7 +8,7 @@ import static celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode.desig
  */
 public class SupportInterfaceSectionNode extends SectionNode
 {
-    public static final String designator ="???";
+    public static final String designator =";TYPE:SUPPORT-INTERFACE";
     
     public SupportInterfaceSectionNode()
     {

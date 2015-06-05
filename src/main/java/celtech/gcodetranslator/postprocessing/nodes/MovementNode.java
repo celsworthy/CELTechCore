@@ -3,6 +3,7 @@ package celtech.gcodetranslator.postprocessing.nodes;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
@@ -21,12 +22,13 @@ public abstract class MovementNode extends CommentableNode
     private double z;
 
     private boolean isFeedRateSet = false;
-    private double feedRate = 0;
+    private double feedRate_mmPerMin = 0;
+    private double feedRate_mmPerSec = 0;
 
     private boolean isESet = false;
-    private double e = 0;
+    private float e = 0;
     private boolean isDSet = false;
-    private double d = 0;
+    private float d = 0;
 
     /**
      *
@@ -86,29 +88,39 @@ public abstract class MovementNode extends CommentableNode
     }
 
     /**
-     *
+     * Feedrate is in mm per minute
      * @return
      */
-    public double getFeedRate()
+    public double getFeedRate_mmPerMin()
     {
-        return feedRate;
+        return feedRate_mmPerMin;
+    }
+
+    /**
+     * Feedrate in mm per second
+     * @return
+     */
+    public double getFeedRate_mmPerSec()
+    {
+        return feedRate_mmPerSec;
     }
 
     /**
      *
-     * @param feedRate
+     * @param feedRate_mmPerMin
      */
-    public void setFeedRate(double feedRate)
+    public void setFeedRate(double feedRate_mmPerMin)
     {
         isFeedRateSet = true;
-        this.feedRate = feedRate;
+        this.feedRate_mmPerMin = feedRate_mmPerMin;
+        this.feedRate_mmPerSec = feedRate_mmPerMin / 60;
     }
 
     /**
      *
      * @return
      */
-    public double getE()
+    public float getE()
     {
         return e;
     }
@@ -117,17 +129,29 @@ public abstract class MovementNode extends CommentableNode
      *
      * @param value
      */
-    public void setE(double value)
+    public void setE(float value)
     {
         isESet = true;
         this.e = value;
+    }
+    
+    public void eNotInUse()
+    {
+        this.e = 0;
+        isESet = false;
+    }
+
+    public void dNotInUse()
+    {
+        this.d = 0;
+        isDSet = false;
     }
 
     /**
      *
      * @return
      */
-    public double getD()
+    public float getD()
     {
         isDSet = true;
         return d;
@@ -137,7 +161,7 @@ public abstract class MovementNode extends CommentableNode
      *
      * @param value
      */
-    public void setD(double value)
+    public void setD(float value)
     {
         this.d = value;
     }
@@ -162,7 +186,7 @@ public abstract class MovementNode extends CommentableNode
         if (isFeedRateSet)
         {
             stringToReturn.append('F');
-            stringToReturn.append(threeDPformatter.format(feedRate));
+            stringToReturn.append(threeDPformatter.format(feedRate_mmPerMin));
             stringToReturn.append(' ');
         }
 
@@ -205,5 +229,17 @@ public abstract class MovementNode extends CommentableNode
         stringToReturn.append(super.renderForOutput());
 
         return stringToReturn.toString();
+    }
+    
+    public double timeToReach(MovementNode destinationNode)
+    {
+        Vector2D source = new Vector2D(x, y);
+        Vector2D destination = new Vector2D(destinationNode.getX(), destinationNode.getY());
+        
+        double distance = source.distance(destination);
+        
+        double time = distance / feedRate_mmPerSec;
+        
+        return time;
     }
 }

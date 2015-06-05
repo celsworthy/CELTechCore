@@ -1,23 +1,30 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.appManager.Project;
+import static celtech.Lookup.setPostProcessorOutputWriterFactory;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.slicer.NozzleParameters;
+import celtech.gcodetranslator.LiveGCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
+import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
-import celtech.printerControl.model.Head;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -62,15 +69,42 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         URL inputURL = this.getClass().getResource("/postprocessor/curaTwoObjects.gcode");
         String inputFilename = inputURL.getFile();
         String outputFilename = inputFilename + ".out";
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
+        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
         PostProcessor instance = new PostProcessor(inputFilename,
                 outputFilename,
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
-        boolean success = instance.processInput();
-        assertTrue(success);
+                modelExtruderAssociation);
+        RoboxiserResult result = instance.processInput();
+        assertTrue(result.isSuccess());
+    }
+
+    /**
+     * Test of processInput method, of class PostProcessor.
+     */
+    @Test
+    public void testComplexInput()
+    {
+        System.out.println("complexInput");
+        URL inputURL = this.getClass().getResource("/postprocessor/complexTest.gcode");
+        String inputFilename = inputURL.getFile();
+        String outputFilename = inputFilename + ".out";
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-DM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+        modelExtruderAssociation.add(0);
+        modelExtruderAssociation.add(1);
+
+        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
+        PostProcessor instance = new PostProcessor(inputFilename,
+                outputFilename,
+                singleMaterialHead,
+                SlicerParametersContainer.getSettingsByProfileName("Draft"),
+                modelExtruderAssociation);
+        RoboxiserResult result = instance.processInput();
+        assertTrue(result.isSuccess());
     }
 
     @Test
@@ -85,19 +119,211 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         testLayer.addChild(0, unretractNode2);
         testLayer.addChild(0, unretractNode1);
 
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
         PostProcessor postProcessor = new PostProcessor("",
                 "",
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
+                modelExtruderAssociation);
 
         assertEquals(3, testLayer.getChildren().size());
 
         postProcessor.removeUnretractNodes(testLayer);
 
         assertEquals(0, testLayer.getChildren().size());
+    }
+
+    @Test
+    public void testRehomeOrphanSections()
+    {
+        LayerNode testLayer = new LayerNode();
+        ObjectDelineationNode object1 = new ObjectDelineationNode();
+        object1.setObjectNumber(1);
+        
+        OrphanSectionNode orphanSection1 = new OrphanSectionNode();
+        FillSectionNode fill = new FillSectionNode();
+        OuterPerimeterSectionNode outer = new OuterPerimeterSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+
+        orphanSection1.addChild(0, extrusionNode1);
+        orphanSection1.addChild(1, extrusionNode2);
+        orphanSection1.addChild(2, extrusionNode3);
+
+        fill.addChild(0, extrusionNode4);
+        fill.addChild(1, extrusionNode5);
+        fill.addChild(2, extrusionNode6);
+        
+        outer.addChild(0, extrusionNode7);
+
+        object1.addChild(0, outer);
+        object1.addChild(1, orphanSection1);
+        object1.addChild(2, fill);
+
+        testLayer.addChild(0, object1);
+
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
+        PostProcessor postProcessor = new PostProcessor("",
+                "",
+                singleMaterialHead,
+                SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
+                modelExtruderAssociation);
+
+        assertEquals(1, testLayer.getChildren().size());
+        assertEquals(3, object1.getChildren().size());
+        assertSame(outer, object1.getChildren().get(0));
+        assertSame(orphanSection1, object1.getChildren().get(1));
+        assertSame(fill, object1.getChildren().get(2));
+
+        postProcessor.insertNozzleControlSectionsByTask(testLayer);
+
+        assertEquals(2, testLayer.getChildren().size());
+        assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
+        assertTrue(testLayer.getChildren().get(1) instanceof ToolSelectNode);
+        
+        ToolSelectNode tool1 = (ToolSelectNode)testLayer.getChildren().get(0);
+        ToolSelectNode tool2 = (ToolSelectNode)testLayer.getChildren().get(1);
+        
+        assertEquals(2, tool1.getChildren().size());
+        assertEquals(1, tool2.getChildren().size());
+        
+        assertSame(outer, tool1.getChildren().get(0));
+        assertTrue(tool1.getChildren().get(1) instanceof OuterPerimeterSectionNode);
+        
+        assertSame(fill, tool2.getChildren().get(0));        
+    }
+
+    @Test
+    public void testRehomeOrphanObjects_startOfFile()
+    {
+        LayerNode testLayer = new LayerNode();
+        OrphanObjectDelineationNode orphan1 = new OrphanObjectDelineationNode();
+        orphan1.setPotentialObjectNumber(0);
+        
+        ObjectDelineationNode object1 = new ObjectDelineationNode();
+        object1.setObjectNumber(1);
+
+        OuterPerimeterSectionNode outer = new OuterPerimeterSectionNode();
+        FillSectionNode fill = new FillSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+
+        outer.addChild(0, extrusionNode1);
+        outer.addChild(1, extrusionNode2);
+        outer.addChild(2, extrusionNode3);
+
+        fill.addChild(0, extrusionNode4);
+        fill.addChild(1, extrusionNode5);
+        fill.addChild(2, extrusionNode6);
+
+        orphan1.addChild(0, outer);
+        object1.addChild(0, fill);
+
+        testLayer.addChild(0, orphan1);
+        testLayer.addChild(1, object1);
+
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
+        PostProcessor postProcessor = new PostProcessor("",
+                "",
+                singleMaterialHead,
+                SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
+                modelExtruderAssociation);
+
+        assertEquals(2, testLayer.getChildren().size());
+        assertSame(outer, orphan1.getChildren().get(0));
+
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0);
+
+        postProcessor.rehomeOrphanObjects(testLayer, lastLayerParseResult);
+
+        assertEquals(2, testLayer.getChildren().size());
+        assertTrue(testLayer.getChildren().get(0) instanceof ObjectDelineationNode);
+        ObjectDelineationNode resultNode = (ObjectDelineationNode) testLayer.getChildren().get(0);
+        assertEquals(0, resultNode.getObjectNumber());
+
+        assertSame(outer, resultNode.getChildren().get(0));
+
+        assertSame(object1, testLayer.getChildren().get(1));
+        assertSame(fill, object1.getChildren().get(0));
+    }
+
+    @Test
+    public void testRehomeOrphanObjects_sameObjectAsLastLayer()
+    {
+        LayerNode testLayer = new LayerNode();
+        testLayer.setLayerNumber(0);
+        OrphanObjectDelineationNode orphan1 = new OrphanObjectDelineationNode();
+        orphan1.setPotentialObjectNumber(10);
+        
+        ObjectDelineationNode object1 = new ObjectDelineationNode();
+        object1.setObjectNumber(0);
+
+        OuterPerimeterSectionNode outer = new OuterPerimeterSectionNode();
+        FillSectionNode fill = new FillSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+
+        outer.addChild(0, extrusionNode1);
+        outer.addChild(1, extrusionNode2);
+        outer.addChild(2, extrusionNode3);
+
+        fill.addChild(0, extrusionNode4);
+        fill.addChild(1, extrusionNode5);
+        fill.addChild(2, extrusionNode6);
+
+        orphan1.addChild(0, outer);
+        object1.addChild(0, fill);
+
+        testLayer.addChild(0, orphan1);
+        testLayer.addChild(1, object1);
+
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
+        PostProcessor postProcessor = new PostProcessor("",
+                "",
+                singleMaterialHead,
+                SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
+                modelExtruderAssociation);
+
+        assertEquals(2, testLayer.getChildren().size());
+        assertSame(outer, orphan1.getChildren().get(0));
+
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10);
+
+        postProcessor.rehomeOrphanObjects(testLayer, lastLayerParseResult);
+
+        assertEquals(2, testLayer.getChildren().size());
+        assertTrue(testLayer.getChildren().get(0) instanceof ObjectDelineationNode);
+        ObjectDelineationNode resultNode = (ObjectDelineationNode) testLayer.getChildren().get(0);
+        assertEquals(10, resultNode.getObjectNumber());
+
+        assertSame(outer, resultNode.getChildren().get(0));
+
+        assertSame(object1, testLayer.getChildren().get(1));
+        assertSame(fill, object1.getChildren().get(0));
     }
 
     @Test
@@ -120,13 +346,14 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         testLayer.addChild(1, outer);
         testLayer.addChild(2, fill);
 
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
         PostProcessor postProcessor = new PostProcessor("",
                 "",
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
+                modelExtruderAssociation);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
@@ -164,13 +391,14 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         testLayer.addChild(1, outer);
         testLayer.addChild(2, fill);
 
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
         PostProcessor postProcessor = new PostProcessor("",
                 "",
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
+                modelExtruderAssociation);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
@@ -195,9 +423,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         testLayer.setLayerNumber(1);
 
         ObjectDelineationNode object1 = new ObjectDelineationNode();
-        object1.setObjectNumber(1);
+        object1.setObjectNumber(11);
         ObjectDelineationNode object2 = new ObjectDelineationNode();
-        object2.setObjectNumber(2);
+        object2.setObjectNumber(22);
 
         InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
         InnerPerimeterSectionNode inner2 = new InnerPerimeterSectionNode();
@@ -323,13 +551,14 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         //  -------   -------   -------   ---------    ---------    ---------
         //  |  |  |   |  |  |   |  |  |   |   |   |    |   |   |    |   |   |
         //  e1 e2 e3  e4 e5 e6  e7 e8 e9  e10 e11 e12  e13 e14 e15  e16 e17 e18
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
         PostProcessor postProcessor = new PostProcessor("",
                 "",
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
+                modelExtruderAssociation);
 
         assertEquals(2, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());
@@ -341,9 +570,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        postProcessor.insertNozzleControlSectionsByTask(testLayer);
+        int lastObjectNumber = postProcessor.insertNozzleControlSectionsByTask(testLayer);
 
-//        postProcessor.outputNodes(testLayer, 0);
+        assertEquals(22, lastObjectNumber);
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
         assertTrue(testLayer.getChildren().get(1) instanceof ToolSelectNode);
@@ -365,6 +594,152 @@ public class PostProcessorTest extends JavaFXConfiguredTest
 
         assertSame(inner2, tool3.getChildren().get(0));
         assertSame(outer2, tool3.getChildren().get(1));
+    }
+
+    @Test
+    public void testInsertNozzleControlSectionsByObject()
+    {
+        LayerNode testLayer = new LayerNode();
+        testLayer.setLayerNumber(1);
+
+        ObjectDelineationNode object1 = new ObjectDelineationNode();
+        object1.setObjectNumber(0);
+        ObjectDelineationNode object2 = new ObjectDelineationNode();
+        object2.setObjectNumber(1);
+
+        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
+        InnerPerimeterSectionNode inner2 = new InnerPerimeterSectionNode();
+        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
+        OuterPerimeterSectionNode outer2 = new OuterPerimeterSectionNode();
+        FillSectionNode fill1 = new FillSectionNode();
+        FillSectionNode fill2 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        ExtrusionNode extrusionNode10 = new ExtrusionNode();
+        ExtrusionNode extrusionNode11 = new ExtrusionNode();
+        ExtrusionNode extrusionNode12 = new ExtrusionNode();
+        ExtrusionNode extrusionNode13 = new ExtrusionNode();
+        ExtrusionNode extrusionNode14 = new ExtrusionNode();
+        ExtrusionNode extrusionNode15 = new ExtrusionNode();
+        ExtrusionNode extrusionNode16 = new ExtrusionNode();
+        ExtrusionNode extrusionNode17 = new ExtrusionNode();
+        ExtrusionNode extrusionNode18 = new ExtrusionNode();
+
+        object1.addChild(0, inner1);
+        object1.addChild(1, outer1);
+        object1.addChild(2, fill1);
+
+        object2.addChild(0, fill2);
+        object2.addChild(1, inner2);
+        object2.addChild(2, outer2);
+
+        inner1.addChild(0, extrusionNode1);
+        inner1.addChild(1, extrusionNode2);
+        inner1.addChild(2, extrusionNode3);
+
+        outer1.addChild(0, extrusionNode4);
+        outer1.addChild(1, extrusionNode5);
+        outer1.addChild(2, extrusionNode6);
+
+        fill1.addChild(0, extrusionNode7);
+        fill1.addChild(1, extrusionNode8);
+        fill1.addChild(2, extrusionNode9);
+
+        inner2.addChild(0, extrusionNode10);
+        inner2.addChild(1, extrusionNode11);
+        inner2.addChild(2, extrusionNode12);
+
+        outer2.addChild(0, extrusionNode13);
+        outer2.addChild(1, extrusionNode14);
+        outer2.addChild(2, extrusionNode15);
+
+        fill2.addChild(0, extrusionNode16);
+        fill2.addChild(1, extrusionNode17);
+        fill2.addChild(2, extrusionNode18);
+
+        testLayer.addChild(0, object1);
+        testLayer.addChild(1, object2);
+
+        // INPUT
+        //                             layer
+        //                               |
+        //             -------------------------------------
+        //             |                                   |
+        //           object1                            object2
+        //             |                                   |
+        //     ---------------------         ----------------------------
+        //     |         |         |         |             |            |
+        //   inner1    outer1    fill1     fill2         inner2       outer2
+        //     |         |         |         |             |            |
+        //  -------   -------   -------   ---------    ---------    ---------
+        //  |  |  |   |  |  |   |  |  |   |   |   |    |   |   |    |   |   |
+        //  e1 e2 e3  e4 e5 e6  e7 e8 e9  e10 e11 e12  e13 e14 e15  e16 e17 e18
+        // OUTPUT for object-based tool selection - support in object material
+        //
+        //                             layer
+        //                               |
+        //               ------------------------------------
+        //               |                                  |
+        //             tool(0)                            tool(1)
+        //               |                                  |
+        //     ---------------------          ----------------------------
+        //     |         |         |          |             |            |
+        //   inner     outer      fill      fill          inner        outer
+        //     |         |         |          |             |            |
+        //  -------   -------   -------   ---------    ---------    ---------
+        //  |  |  |   |  |  |   |  |  |   |   |   |    |   |   |    |   |   |
+        //  e1 e2 e3  e4 e5 e6  e7 e8 e9  e10 e11 e12  e13 e14 e15  e16 e17 e18
+        HeadFile dualMaterialHead = HeadContainer.getHeadByID("RBX01-DM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+        //Object 0 is on extruder 0
+        modelExtruderAssociation.add(0);
+        //Object 1 is on extruder 1
+        modelExtruderAssociation.add(1);
+
+        PostProcessor postProcessor = new PostProcessor("",
+                "",
+                dualMaterialHead,
+                SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
+                modelExtruderAssociation);
+
+        assertEquals(2, testLayer.getChildren().size());
+        assertEquals(3, object1.getChildren().size());
+        assertEquals(3, object2.getChildren().size());
+        assertEquals(3, inner1.getChildren().size());
+        assertEquals(3, outer1.getChildren().size());
+        assertEquals(3, fill1.getChildren().size());
+        assertEquals(3, inner2.getChildren().size());
+        assertEquals(3, outer2.getChildren().size());
+        assertEquals(3, fill2.getChildren().size());
+
+        int lastObjectNumber = postProcessor.insertNozzleControlSectionsByObject(testLayer);
+
+        assertEquals(1, lastObjectNumber);
+        assertEquals(2, testLayer.getChildren().size());
+        assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
+        assertTrue(testLayer.getChildren().get(1) instanceof ToolSelectNode);
+
+        ToolSelectNode tool1 = (ToolSelectNode) testLayer.getChildren().get(0);
+        ToolSelectNode tool2 = (ToolSelectNode) testLayer.getChildren().get(1);
+
+        assertEquals(3, tool1.getChildren().size());
+        assertEquals(3, tool2.getChildren().size());
+
+        assertSame(inner1, tool1.getChildren().get(0));
+        assertSame(outer1, tool1.getChildren().get(1));
+        assertSame(fill1, tool1.getChildren().get(2));
+
+        assertSame(fill2, tool2.getChildren().get(0));
+        assertSame(inner2, tool2.getChildren().get(1));
+        assertSame(outer2, tool2.getChildren().get(2));
     }
 
     @Test
@@ -473,13 +848,14 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         //  ------------   ------------    ------------    --------------    ----------   --------------------
         //  |    |  |  |   |  |  |    |    |    |  |  |    |   |   |    |    |    |   |   |    |   |   |     |
         //  open e1 e2 e3  e4 e5 e6 close  open e7 e8 e9  e10 e11 e12 close  open e13 e14 e15  e16 e17 e18 close
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
         PostProcessor postProcessor = new PostProcessor("",
                 "",
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
+                modelExtruderAssociation);
 
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
@@ -495,7 +871,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        LayerParseResult lastLayerParseResult = null;
+        LayerPostProcessResult lastLayerParseResult = null;
 
         postProcessor.insertOpenAndCloseNodes(testLayer, null);
 
@@ -646,13 +1022,14 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         //    ----------   -----------------------      ----------   --------------------------      ------------------     -------------------
         //    |  |  |  |   |  |    |    |   |    |      |  |  |  |   |     |     |  |   |     |      |  |   |   |     |     |   |   |   |     |
         //  open e1 e2 e3  e4 e5 close open e6 close  open e7 e8 e9  e10 close open e11 e12 close  open e13 e14 e15 close  open e16 e17 e18 close
-        Head singleMaterialHead = new Head(HeadContainer.getHeadByID("RBX01-SM"));
-        Project testProject = new Project();
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+        List<Integer> modelExtruderAssociation = new ArrayList<>();
+
         PostProcessor postProcessor = new PostProcessor("",
                 "",
                 singleMaterialHead,
                 SlicerParametersContainer.getSettingsByProfileName("Draft_1"),
-                testProject);
+                modelExtruderAssociation);
 
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
@@ -668,7 +1045,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(5, fill2.getChildren().size());
 
-        LayerParseResult lastLayerParseResult = null;
+        LayerPostProcessResult lastLayerParseResult = null;
 
         postProcessor.insertOpenAndCloseNodes(testLayer, lastLayerParseResult);
 

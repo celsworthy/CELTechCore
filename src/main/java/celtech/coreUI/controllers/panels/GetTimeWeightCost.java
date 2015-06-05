@@ -8,10 +8,12 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
 import celtech.gcodetranslator.PrintJobStatistics;
+import celtech.printerControl.model.Head;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -29,8 +31,8 @@ import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
- * This class uses SlicerTask and PostProcessorTask to get the estimated time, weight and cost for
- * the given project and settings.
+ * This class uses SlicerTask and PostProcessorTask to get the estimated time,
+ * weight and cost for the given project and settings.
  *
  * @author tony
  */
@@ -38,7 +40,7 @@ public class GetTimeWeightCost
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        GetTimeWeightCost.class.getName());
+            GetTimeWeightCost.class.getName());
 
     private final Project project;
     private final Label lblTime;
@@ -52,7 +54,7 @@ public class GetTimeWeightCost
     private Random random = new Random();
 
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
+            Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         this.project = project;
         this.lblTime = lblTime;
@@ -62,17 +64,17 @@ public class GetTimeWeightCost
         this.cancellable = cancellable;
 
         temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
-            + ApplicationConfiguration.timeAndCostFileSubpath
-            + random.nextInt(10000)
-            + File.separator;
+                + ApplicationConfiguration.timeAndCostFileSubpath
+                + random.nextInt(10000)
+                + File.separator;
 
         new File(temporaryDirectory).mkdirs();
 
         cancellable.cancelled().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showCancelled();
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showCancelled();
+                });
     }
 
     private void showCancelled()
@@ -96,7 +98,7 @@ public class GetTimeWeightCost
     {
 
         steno.debug("launch time cost process for project " + project + " and settings "
-            + settings.getProfileName());
+                + settings.getProfileName());
 
         if (isCancelled())
         {
@@ -104,7 +106,8 @@ public class GetTimeWeightCost
         }
 
         boolean succeeded = doSlicing(project, settings);
-        if (! succeeded) {
+        if (!succeeded)
+        {
             return;
         }
 
@@ -114,11 +117,15 @@ public class GetTimeWeightCost
         }
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
-            settings.getProfileName(),
-            settings, temporaryDirectory,
-            null, null);
+                settings.getProfileName(),
+                settings,
+                temporaryDirectory,
+                //TODO this should use the printer selected on the settings page
+                Lookup.getCurrentlySelectedPrinterProperty().get(),
+                project,
+                null);
         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
-            getPrintJobStatistics();
+                getPrintJobStatistics();
 
         if (isCancelled())
         {
@@ -138,12 +145,12 @@ public class GetTimeWeightCost
     private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
     {
         double duration = printJobStatistics.getLayerNumberToPredictedDuration().stream().
-            mapToDouble(
-                Double::doubleValue).sum();
+                mapToDouble(
+                        Double::doubleValue).sum();
 
         String formattedDuration = formatDuration(duration);
 
-        double volumeUsed = printJobStatistics.getVolumeUsed();
+        double volumeUsed = printJobStatistics.getEVolumeUsed();
         //TODO make work with dual extruders
         Filament filament = project.getPrinterSettings().getFilament0();
 
@@ -191,24 +198,24 @@ public class GetTimeWeightCost
         }
 
         SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
-            slicerTypeToUse);
+                slicerTypeToUse);
 
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
         configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()
-            + ApplicationConfiguration.xPrintOffset),
-                                    (float) (centreOfPrintedObject.getZ()
-                                    + ApplicationConfiguration.yPrintOffset));
+                + ApplicationConfiguration.xPrintOffset),
+                (float) (centreOfPrintedObject.getZ()
+                + ApplicationConfiguration.yPrintOffset));
         configWriter.generateConfigForSlicer(settings,
-                                             temporaryDirectory
-                                             + settings.getProfileName()
-                                             + ApplicationConfiguration.printProfileFileExtension);
+                temporaryDirectory
+                + settings.getProfileName()
+                + ApplicationConfiguration.printProfileFileExtension);
 
         SliceResult sliceResult = SlicerTask.doSlicing(settings.getProfileName(), settings,
-                                                       temporaryDirectory,
-                                                       project,
-                                                       PrintQualityEnumeration.DRAFT,
-                                                       null, null, steno);
+                temporaryDirectory,
+                project,
+                PrintQualityEnumeration.DRAFT,
+                null, null, steno);
         return sliceResult.isSuccess();
     }
 
