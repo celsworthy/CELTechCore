@@ -227,6 +227,7 @@ public class PrinterSettings
 
     public void setPrintSupportOverride(SupportType printSupportOverride)
     {
+        System.out.println("set support to " + printSupportOverride);
         if (this.printSupportOverride.get() != printSupportOverride)
         {
             this.printSupportOverride.set(printSupportOverride);
