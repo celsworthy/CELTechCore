@@ -1,5 +1,6 @@
 package celtech.configuration.fileRepresentation;
 
+import celtech.Lookup;
 import celtech.configuration.SlicerType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
@@ -15,6 +16,37 @@ import java.util.List;
  */
 public class SlicerParametersFile
 {
+
+    public enum SupportType
+    {
+
+        NO_SUPPORT("supportType.noSupport"),
+        /**
+         * Use material 1 as support. Implies all objects printed with material 2.
+         */
+        MATERIAL_1("supportType.material1"),
+        /**
+         * Use material 2 as support. Implies all objects printed with material 1.
+         */
+        MATERIAL_2("supportType.material2"),
+        /**
+         * Print the support in the same material as the object.
+         */
+        OBJECT_MATERIAL("supportType.objectMaterial");
+
+        String description;
+
+        SupportType(String description)
+        {
+            this.description = Lookup.i18n(description);
+        }
+
+        @Override
+        public String toString()
+        {
+            return description;
+        }
+    }
 
     private int version = 4;
     private String profileName;
@@ -56,7 +88,7 @@ public class SlicerParametersFile
      */
     private boolean generateSupportMaterial;
     private int supportOverhangThreshold_degrees;
-    private int forcedSupportForFirstNLayers;
+    private int forcedSupportForFirstNLayers = 0;
     private SupportPattern supportPattern;
     private float supportPatternSpacing_mm;
     private int supportPatternAngle_degrees;
@@ -87,25 +119,27 @@ public class SlicerParametersFile
     private int coolIfLayerTimeLessThan_secs;
     private int slowDownIfLayerTimeLessThan_secs;
     private int minPrintSpeed_mm_per_s;
-    
+
     /*
-    * Raft
-    */
+     * Raft
+     */
     private boolean printRaft;
     private float raftBaseLinewidth_mm;
     private float raftAirGapLayer0_mm;
     private int interfaceLayers;
     private float raftBaseThickness_mm = 0.3f;
-    
+
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
-    
-    public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+
+    public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener)
+    {
         propertyChangeListeners.add(propertyChangeListener);
     }
-    
-    public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+
+    public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener)
+    {
         propertyChangeListeners.remove(propertyChangeListener);
-    }    
+    }
 
     public int getVersion()
     {
@@ -169,7 +203,8 @@ public class SlicerParametersFile
 
     public void setFillDensity_normalised(float fillDensity_normalised)
     {
-        if (this.fillDensity_normalised == fillDensity_normalised) {
+        if (this.fillDensity_normalised == fillDensity_normalised)
+        {
             return;
         }
         this.fillDensity_normalised = fillDensity_normalised;
@@ -238,9 +273,10 @@ public class SlicerParametersFile
 
     public void setBrimWidth_mm(int brimWidth_mm)
     {
-        if (this.brimWidth_mm == brimWidth_mm) {
+        if (this.brimWidth_mm == brimWidth_mm)
+        {
             return;
-        }        
+        }
         this.brimWidth_mm = brimWidth_mm;
         firePropertyChange("brimWidth_mm", null, brimWidth_mm);
     }
@@ -395,13 +431,14 @@ public class SlicerParametersFile
 
     public void setGenerateSupportMaterial(boolean generateSupportMaterial)
     {
-        if (this.generateSupportMaterial == generateSupportMaterial) {
+        if (this.generateSupportMaterial == generateSupportMaterial)
+        {
             return;
-        }        
+        }
         this.generateSupportMaterial = generateSupportMaterial;
         firePropertyChange("generateSupportMaterial", null, generateSupportMaterial);
     }
-    
+
     public boolean getPrintRaft()
     {
         return printRaft;
@@ -409,64 +446,73 @@ public class SlicerParametersFile
 
     public void setPrintRaft(boolean printRaft)
     {
-        if (this.printRaft == printRaft) {
+        if (this.printRaft == printRaft)
+        {
             return;
-        }        
+        }
         this.printRaft = printRaft;
         firePropertyChange("printRaft", null, printRaft);
-    }   
-    
-    public float getRaftBaseLinewidth_mm() {
+    }
+
+    public float getRaftBaseLinewidth_mm()
+    {
         return raftBaseLinewidth_mm;
     }
-    
+
     public void setRaftBaseLinewidth_mm(float raftBaseLinewidth_mm)
     {
-        if (this.raftBaseLinewidth_mm == raftBaseLinewidth_mm) {
+        if (this.raftBaseLinewidth_mm == raftBaseLinewidth_mm)
+        {
             return;
-        }        
+        }
         this.raftBaseLinewidth_mm = raftBaseLinewidth_mm;
         firePropertyChange("raftBaseLinewidth_mm", null, raftBaseLinewidth_mm);
-    }      
-    
-    public float getRaftAirGapLayer0_mm() {
+    }
+
+    public float getRaftAirGapLayer0_mm()
+    {
         return raftAirGapLayer0_mm;
     }
-    
+
     public void setRaftAirGapLayer0_mm(float raftAirGapLayer0_mm)
     {
-        if (this.raftAirGapLayer0_mm == raftAirGapLayer0_mm) {
+        if (this.raftAirGapLayer0_mm == raftAirGapLayer0_mm)
+        {
             return;
-        }        
+        }
         this.raftAirGapLayer0_mm = raftAirGapLayer0_mm;
         firePropertyChange("raftAirGapLayer0_mm", null, raftAirGapLayer0_mm);
-    }  
-    
-    public int getInterfaceLayers() {
+    }
+
+    public int getInterfaceLayers()
+    {
         return interfaceLayers;
     }
-    
+
     public void setInterfaceLayers(int interfaceLayers)
     {
-        if (this.interfaceLayers == interfaceLayers) {
+        if (this.interfaceLayers == interfaceLayers)
+        {
             return;
-        }        
+        }
         this.interfaceLayers = interfaceLayers;
         firePropertyChange("interfaceLayers", null, interfaceLayers);
-    }     
-    
-    public float getRaftBaseThickness_mm() {
+    }
+
+    public float getRaftBaseThickness_mm()
+    {
         return raftBaseThickness_mm;
     }
-    
+
     public void setRaftBaseThickness_mm(float raftBaseThickness_mm)
     {
-        if (this.raftBaseThickness_mm == raftBaseThickness_mm) {
+        if (this.raftBaseThickness_mm == raftBaseThickness_mm)
+        {
             return;
-        }        
+        }
         this.raftBaseThickness_mm = raftBaseThickness_mm;
         firePropertyChange("raftBaseThickness_mm", null, raftBaseThickness_mm);
-    }         
+    }
 
     public int getSupportOverhangThreshold_degrees()
     {
@@ -476,7 +522,8 @@ public class SlicerParametersFile
     public void setSupportOverhangThreshold_degrees(int supportOverhangThreshold_degrees)
     {
         this.supportOverhangThreshold_degrees = supportOverhangThreshold_degrees;
-        firePropertyChange("supportOverhangThreshold_degrees", null, supportOverhangThreshold_degrees);
+        firePropertyChange("supportOverhangThreshold_degrees", null,
+                           supportOverhangThreshold_degrees);
     }
 
     public int getForcedSupportForFirstNLayers()
@@ -665,7 +712,7 @@ public class SlicerParametersFile
         this.maxFanSpeed_percent = maxFanSpeed_percent;
         firePropertyChange("maxFanSpeed_percent", null, maxFanSpeed_percent);
     }
-    
+
     public int getInterfaceSpeed_mm_per_s()
     {
         return interfaceSpeed_mm_per_s;
@@ -675,7 +722,7 @@ public class SlicerParametersFile
     {
         this.interfaceSpeed_mm_per_s = interfaceSpeed_mm_per_s;
         firePropertyChange("interfaceSpeed_mm_per_s", null, interfaceSpeed_mm_per_s);
-    }    
+    }
 
     public int getBridgeFanSpeed_percent()
     {
@@ -718,7 +765,8 @@ public class SlicerParametersFile
     public void setSlowDownIfLayerTimeLessThan_secs(int slowDownIfLayerTimeLessThan_secs)
     {
         this.slowDownIfLayerTimeLessThan_secs = slowDownIfLayerTimeLessThan_secs;
-        firePropertyChange("slowDownIfLayerTimeLessThan_secs", null, slowDownIfLayerTimeLessThan_secs);
+        firePropertyChange("slowDownIfLayerTimeLessThan_secs", null,
+                           slowDownIfLayerTimeLessThan_secs);
     }
 
     public int getMinPrintSpeed_mm_per_s()
@@ -776,14 +824,15 @@ public class SlicerParametersFile
         clone.supportExtrusionWidth_mm = supportExtrusionWidth_mm;
 
         clone.nozzleParameters = new ArrayList<>();
-        nozzleParameters.stream().forEach(nozzleParameter -> clone.nozzleParameters.add(nozzleParameter.clone()));
+        nozzleParameters.stream().forEach(nozzleParameter -> clone.nozzleParameters.add(
+            nozzleParameter.clone()));
 
         clone.firstLayerNozzle = firstLayerNozzle;
         clone.perimeterNozzle = perimeterNozzle;
         clone.fillNozzle = fillNozzle;
         clone.supportNozzle = supportNozzle;
         clone.supportInterfaceNozzle = supportInterfaceNozzle;
-        
+
         clone.maxClosesBeforeNozzleReselect = maxClosesBeforeNozzleReselect;
 
         /*
@@ -822,10 +871,10 @@ public class SlicerParametersFile
         clone.coolIfLayerTimeLessThan_secs = coolIfLayerTimeLessThan_secs;
         clone.slowDownIfLayerTimeLessThan_secs = slowDownIfLayerTimeLessThan_secs;
         clone.minPrintSpeed_mm_per_s = minPrintSpeed_mm_per_s;
-        
+
         /*
-        * Raft
-        */
+         * Raft
+         */
         clone.raftAirGapLayer0_mm = raftAirGapLayer0_mm;
         clone.raftBaseLinewidth_mm = raftBaseLinewidth_mm;
         clone.raftBaseThickness_mm = raftBaseThickness_mm;

@@ -69,6 +69,11 @@ public class SlicerParametersContainer
         profiles = ingestProfiles(userprofiles, true);
         userProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
+        
+        for (SlicerParametersFile profile : completeProfileList)
+        {
+            profileMap.put(profile.getProfileName(), profile);
+        }
     }
 
     private static ArrayList<SlicerParametersFile> ingestProfiles(File[] userprofiles,
@@ -138,7 +143,7 @@ public class SlicerParametersContainer
     }
 
     /**
-     * save the given user profile which has had its name changed. This amounts to a delete and add
+     * Save the given user profile which has had its name changed. This amounts to a delete and add
      * new.
      *
      * @param profile

@@ -89,7 +89,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     @FXML
     private SVGPath svgLoaded;
-    
+
     @FXML
     private Text materialColour;
 
@@ -156,14 +156,17 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                         break;
                 }
             });
+
+        setUpFilamentLoadedListener();
     }
 
     public ReadOnlyObjectProperty<Filament> getSelectedFilamentProperty()
     {
         return selectedFilamentProperty;
     }
-    
-    private boolean filamentLoaded() {
+
+    private boolean filamentLoaded()
+    {
         return printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get();
     }
 
@@ -239,7 +242,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             {
                 if (extruderNumber == 0)
                 {
-                    System.out.println("set project fil to " + newValue);
                     undoableProject.setExtruder0Filament(newValue);
                 } else
                 {
@@ -327,14 +329,30 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         repopulateCmbMaterials();
 
         filamentContainer.getUserFilamentList().addListener(
-            (ListChangeListener.Change<? extends Filament> c) ->
+            (ListChangeListener.Change<? extends Filament> change) ->
             {
-                if (filamentContainer.getUserFilamentList().size() > 0)
+
+                while (change.next())
                 {
-                    // it's very important not to call this with an empty FilamentContainer
-                    // filament list as project filament selections then get cleared.
-                    repopulateCmbMaterials();
+                    if (change.wasAdded())
+                    {
+                        for (Filament filament : change.getAddedSubList())
+                        {
+                            cmbMaterials.getItems().add(filament);
+                        }
+                    } else if (change.wasRemoved())
+                    {
+                        for (Filament filament : change.getRemoved())
+                        {
+                            cmbMaterials.getItems().remove(filament);
+                        }
+                    } else if (change.wasReplaced())
+                    {
+                    } else if (change.wasUpdated())
+                    {
+                    }
                 }
+
             });
 
         cmbMaterials.valueProperty().addListener(
@@ -342,12 +360,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             {
                 if (newValue instanceof Filament)
                 {
-                    System.out.println("XXX cmb set filament to " + cmbMaterials.getValue());
                     selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
                     removeUnknownFromCombo();
                 } else
                 {
-                    System.out.println("XXX cmb set filament to null");
                     // must be "Unknown"
                     selectedFilamentProperty.set(null);
                 }
@@ -369,7 +385,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             currentFilamentId = ((Filament) currentValue).getFilamentID();
         }
-        System.out.println("current filament id is " + currentFilamentId);
 
         ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
         ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
@@ -407,7 +422,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         if (mode == Mode.LAYOUT)
         {
-            System.out.println("reselect filament id " + currentFilamentId);
             reselectFilamentId(currentFilamentId);
         }
 
@@ -606,9 +620,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private void showDetails(String numberMaterial, String materialRemainingString,
         String materialColourString, Color colour, boolean filamentLoaded)
     {
-        
+
         svgLoaded.setVisible(filamentLoaded);
-        
+
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
@@ -640,7 +654,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                     Color.BLACK, true);
     }
 
-     /**
+    /**
      * Indicate that no reel is attached and no filament is loaded.
      */
     private void showFilamentNotLoaded()
@@ -704,6 +718,25 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
+    private void setUpFilamentLoadedListener()
+    {
+        if (printer != null && printer.extrudersProperty().get(extruderNumber) != null)
+        {
+            printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().addListener(
+                new ChangeListener<Boolean>()
+                {
+
+                    @Override
+                    public void changed(
+                        ObservableValue<? extends Boolean> observable, Boolean oldValue,
+                        Boolean newValue)
+                    {
+                        updateGUIForModeAndPrinterExtruder();
+                        }
+                });
+        }
+    }
+
     // PrinterListChangesNotifier
     @Override
     public void whenPrinterAdded(Printer printer)
@@ -756,12 +789,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
+        if (this.printer == printer)
+        {
+            setUpFilamentLoadedListener();
+        }
     }
 
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-
     }
-
 }

@@ -50,7 +50,6 @@
   "fillNozzle" : 1,
   "supportNozzle" : 0,
   "supportInterfaceNozzle" : 0,
-  "generateSupportMaterial" : false,
   "supportOverhangThreshold_degrees" : 40,
   "forcedSupportForFirstNLayers" : 0,
   "supportPattern" : "RECTILINEAR",

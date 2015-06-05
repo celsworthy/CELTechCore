@@ -5,6 +5,7 @@ import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -35,16 +36,16 @@ public class DiagnosticPanelController implements Initializable
 
     @FXML
     private Label extruder2Index;
-    
+
     @FXML
     private Label extruder2Label;
-    
+
     @FXML
     private Label extruder2LoadedLabel;
-    
+
     @FXML
     private Label extruder2IndexLabel;
-    
+
     @FXML
     private Label reelButtonSwitch;
 
@@ -157,6 +158,47 @@ public class DiagnosticPanelController implements Initializable
         {
             connectedPrinter = printer;
 
+            StringBinding extruder1LoadedText = new StringBinding()
+            {
+                {
+                    super.bind(printer.extrudersProperty().get(0).filamentLoadedProperty(),
+                               Lookup.getUserPreferences().detectLoadedFilamentProperty());
+                }
+
+                @Override
+                protected String computeValue()
+                {
+                    if (! Lookup.getUserPreferences().detectLoadedFilamentProperty().get())
+                    {
+                        return "N/A";
+                    } else
+                    {
+                        return printer.extrudersProperty().get(0).filamentLoadedProperty().asString().get();
+                    }
+                }
+            };
+            
+            StringBinding extruder2LoadedText = new StringBinding()
+            {
+                {
+                    super.bind(printer.extrudersProperty().get(1).filamentLoadedProperty(),
+                               Lookup.getUserPreferences().detectLoadedFilamentProperty());
+                }
+
+                @Override
+                protected String computeValue()
+                {
+                    if (! Lookup.getUserPreferences().detectLoadedFilamentProperty().get())
+                    {
+                        return "N/A";
+                    } else
+                    {
+                        return printer.extrudersProperty().get(1).filamentLoadedProperty().asString().get();
+                    }
+                }
+            };
+            
+
             printerID.textProperty().bind(printer.getPrinterIdentity().printerUniqueIDProperty());
             xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
                 xStopSwitchProperty().asString());
@@ -170,11 +212,10 @@ public class DiagnosticPanelController implements Initializable
                 asString());
             reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
                 reelButtonProperty().asString());
-            //TODO modify to work with multiple extruders
+
             extruder1Loaded.visibleProperty().bind(printer.extrudersProperty().get(0).
                 isFittedProperty());
-            extruder1Loaded.textProperty().bind(printer.extrudersProperty().get(0).
-                filamentLoadedProperty().asString());
+            extruder1Loaded.textProperty().bind(extruder1LoadedText);
             extruder1Index.visibleProperty().bind(printer.extrudersProperty().get(0).
                 isFittedProperty());
             extruder1Index.textProperty().bind(printer.extrudersProperty().get(0).
@@ -187,8 +228,7 @@ public class DiagnosticPanelController implements Initializable
                 isFittedProperty());
             extruder2Loaded.visibleProperty().bind(printer.extrudersProperty().get(1).
                 isFittedProperty());
-            extruder2Loaded.textProperty().bind(printer.extrudersProperty().get(1).
-                filamentLoadedProperty().asString());
+            extruder2Loaded.textProperty().bind(extruder2LoadedText);
             extruder2Index.visibleProperty().bind(printer.extrudersProperty().get(1).
                 isFittedProperty());
             extruder2Index.textProperty().bind(printer.extrudersProperty().get(1).

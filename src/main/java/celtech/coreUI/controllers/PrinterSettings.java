@@ -4,6 +4,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import javafx.beans.property.BooleanProperty;
@@ -24,7 +25,6 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PrinterSettings
 {
-
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterSettings.class.getName());
 
@@ -38,17 +38,17 @@ public class PrinterSettings
 
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private boolean printSupportOverride = false;
+    private ObjectProperty<SupportType> printSupportOverride = new SimpleObjectProperty<>(SupportType.NO_SUPPORT);
     private boolean raftOverride = false;
 
     public PrinterSettings()
     {
         customSettingsName.set("");
-        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getSettingsByProfileName(
+        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettingsByProfileName(
             ApplicationConfiguration.draftSettingsProfileName);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
-        printSupportOverride = draftParametersFile.getGenerateSupportMaterial();
+        printSupportOverride.set(SupportType.NO_SUPPORT);
     }
 
     private void toggleDataChanged()
@@ -182,7 +182,7 @@ public class PrinterSettings
         SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
-        profileCopy.setGenerateSupportMaterial(printSupportOverride);
+        profileCopy.setGenerateSupportMaterial(printSupportOverride.get() != SupportType.NO_SUPPORT);
         profileCopy.setPrintRaft(raftOverride);
         return profileCopy;
     }
@@ -215,16 +215,22 @@ public class PrinterSettings
         }
     }
 
-    public boolean getPrintSupportOverride()
+    public SupportType getPrintSupportOverride()
+    {
+        return printSupportOverride.get();
+    }
+    
+    public ObjectProperty<SupportType> getPrintSupportOverrideProperty()
     {
         return printSupportOverride;
-    }
+    }    
 
-    public void setPrintSupportOverride(boolean printSupportOverride)
+    public void setPrintSupportOverride(SupportType printSupportOverride)
     {
-        if (this.printSupportOverride != printSupportOverride)
+        System.out.println("set support to " + printSupportOverride);
+        if (this.printSupportOverride.get() != printSupportOverride)
         {
-            this.printSupportOverride = printSupportOverride;
+            this.printSupportOverride.set(printSupportOverride);
             toggleDataChanged();
         }
     }

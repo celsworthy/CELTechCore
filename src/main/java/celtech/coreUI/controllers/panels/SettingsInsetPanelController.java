@@ -7,26 +7,35 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.Reel;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.utils.PrinterListChangesListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
@@ -55,7 +64,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private ComboBox<SlicerParametersFile> customProfileChooser;
 
     @FXML
-    private Slider supportSlider;
+    private ComboBox<SupportType> supportComboBox;
 
     @FXML
     private Slider raftSlider;
@@ -69,6 +78,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @FXML
     private Label createProfileLabel;
 
+    @FXML
+    private CheckBox cbSupport;
+
     private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.draftSettingsProfileName);
     private final SlicerParametersFile normalSettings = SlicerParametersContainer.
@@ -77,6 +89,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
         ApplicationConfiguration.fineSettingsProfileName);
 
+    private Printer currentPrinter;
     private Project currentProject;
     private PrinterSettings printerSettings;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
@@ -93,11 +106,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             setupOverrides();
 
-//            Lookup.getSelectedProjectProperty().addListener(
-//                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-//                {
-//                    whenProjectChanged(newValue);
-//                });
+            Lookup.getCurrentlySelectedPrinterProperty().addListener(
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                {
+                    whenPrinterChanged(newValue);
+                });
 
             ApplicationStatus.getInstance().modeProperty().addListener(
                 (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
@@ -113,13 +126,69 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             SlicerParametersContainer.getUserProfileList().addListener(
                 (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-            {
-                showPleaseCreateProfile(
-                    SlicerParametersContainer.getUserProfileList().isEmpty());
-            });
+                {
+                    showPleaseCreateProfile(
+                        SlicerParametersContainer.getUserProfileList().isEmpty());
+                });
 
             showPleaseCreateProfile(
                 SlicerParametersContainer.getUserProfileList().isEmpty());
+
+            whenPrinterChanged(Lookup.getCurrentlySelectedPrinterProperty().get());
+
+            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
+            {
+
+                @Override
+                public void whenPrinterAdded(Printer printer)
+                {
+                }
+
+                @Override
+                public void whenPrinterRemoved(Printer printer)
+                {
+                }
+
+                @Override
+                public void whenHeadAdded(Printer printer)
+                {
+                }
+
+                @Override
+                public void whenHeadRemoved(Printer printer, Head head)
+                {
+                }
+
+                @Override
+                public void whenReelAdded(Printer printer, int reelIndex)
+                {
+                }
+
+                @Override
+                public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+                {
+                }
+
+                @Override
+                public void whenReelChanged(Printer printer, Reel reel)
+                {
+                }
+
+                @Override
+                public void whenExtruderAdded(Printer printer, int extruderIndex)
+                {
+                    if (printer == currentPrinter)
+                    {
+                        updateSupportCombo(printer);
+                    }
+                }
+
+                @Override
+                public void whenExtruderRemoved(Printer printer, int extruderIndex)
+                {
+                }
+            });
+
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -132,18 +201,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         @Override
         public void propertyChange(PropertyChangeEvent evt)
         {
-            if (evt.getPropertyName().equals("brimWidth_mm"))
-            {
-                brimSlider.valueProperty().set(((Number) evt.getNewValue()).intValue());
-            } else if (evt.getPropertyName().equals("fillDensity_normalised"))
+            if (evt.getPropertyName().equals("fillDensity_normalised"))
             {
                 fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
                     * 100);
-            } else if (evt.getPropertyName().equals("generateSupportMaterial"))
-            {
-                boolean supportEnabled = (Boolean) evt.getNewValue();
-                double value = supportEnabled ? 1d : 0d;
-                supportSlider.valueProperty().set(value);
             }
         }
     };
@@ -198,49 +259,45 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
     }
 
+//    private void getNumNozzleHeaters() {
+//        return Loo.
+//    }
     private void setupOverrides()
     {
-        supportSlider.setLabelFormatter(new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double n)
-            {
-                String returnedText = "";
+        supportComboBox.getItems().addAll(SupportType.values());
+        supportComboBox.getItems().remove(SupportType.NO_SUPPORT);
 
-                if (n <= 0)
-                {
-                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialNo");
-                } else
-                {
-                    returnedText = Lookup.i18n("sidePanel_settings.supportMaterialAuto");
-                }
-                return returnedText;
-            }
-
-            @Override
-            public Double fromString(String s)
-            {
-                double returnVal = 0;
-
-                if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialNo")))
-                {
-                    returnVal = 0;
-                } else if (s.equals(Lookup.i18n("sidePanel_settings.supportMaterialAuto")))
-                {
-                    returnVal = 1;
-                }
-                return returnVal;
-            }
-        }
-        );
-
-        supportSlider.valueProperty().addListener(
-            (ObservableValue<? extends Number> ov, Number lastSupportValue, Number newSupportValue) ->
+        supportComboBox.valueProperty().addListener(
+            (ObservableValue<? extends Object> ov, Object lastSupportValue, Object newSupportValue) ->
             {
                 if (lastSupportValue != newSupportValue)
                 {
-                    boolean supportSelected = (newSupportValue.doubleValue() >= 1.0);
-                    printerSettings.setPrintSupportOverride(supportSelected);
+                    printerSettings.setPrintSupportOverride((SupportType) newSupportValue);
+                }
+            });
+
+        cbSupport.selectedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
+            {
+                if (currentPrinter != null && selected && getNumExtruders(currentPrinter) == 2)
+                {
+                    supportComboBox.setDisable(false);
+                    if (supportComboBox.getValue() == null) {
+                        // this happens for new projects
+                        supportComboBox.setValue(SupportType.OBJECT_MATERIAL);
+                    }
+                    printerSettings.setPrintSupportOverride(supportComboBox.getValue());
+                } else if (currentPrinter != null && selected && getNumExtruders(currentPrinter)
+                == 1)
+                {
+                    printerSettings.setPrintSupportOverride(SupportType.OBJECT_MATERIAL);
+                } else if (selected) //selected but no printer connected
+                {
+                    printerSettings.setPrintSupportOverride(SupportType.OBJECT_MATERIAL);
+                } else
+                {
+                    supportComboBox.setDisable(true);
+                    printerSettings.setPrintSupportOverride(SupportType.NO_SUPPORT);
                 }
             });
 
@@ -305,14 +362,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             });
     }
 
-    private void populateQualityOverrideControls(PrinterSettings printerSettings)
-    {
-        fillDensitySlider.setValue(printerSettings.getFillDensityOverride() * 100.0);
-        brimSlider.setValue(printerSettings.getBrimOverride());
-        supportSlider.setValue(printerSettings.getPrintSupportOverride() ? 1 : 0);
-        raftSlider.setValue(printerSettings.getRaftOverride() ? 1: 0);
-    }
-
     @FXML
     void editPrintProfile(ActionEvent event)
     {
@@ -324,7 +373,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
      */
     private void clearSettingsIfNoCustomProfileAvailable()
     {
-
         if (SlicerParametersContainer.getUserProfileList().size() == 0)
         {
             if (printerSettings != null)
@@ -333,7 +381,37 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
         }
     }
-    
+
+    private void whenPrinterChanged(Printer printer)
+    {
+        currentPrinter = printer;
+        if (printer != null)
+        {
+            updateSupportCombo(printer);
+        }
+    }
+
+    private int getNumExtruders(Printer printer)
+    {
+        int numExtruders = 1;
+        if (printer.extrudersProperty().get(1).isFittedProperty().get())
+        {
+            numExtruders = 2;
+        }
+        return numExtruders;
+    }
+
+    private void updateSupportCombo(Printer printer)
+    {
+        if (getNumExtruders(printer) == 1 || !cbSupport.isSelected())
+        {
+            supportComboBox.setDisable(true);
+        } else
+        {
+            supportComboBox.setDisable(false);
+        }
+    }
+
     @Override
     public void setProject(Project project)
     {
@@ -348,13 +426,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
-        boolean saveSupports = printerSettings.getPrintSupportOverride();
+        SupportType saveSupports = printerSettings.getPrintSupportOverride();
         boolean savePrintRaft = printerSettings.getRaftOverride();
 
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
-
-        populateQualityOverrideControls(printerSettings);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
@@ -382,9 +458,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
-        supportSlider.setValue(saveSupports ? 1 : 0);
         raftSlider.setValue(savePrintRaft ? 1 : 0);
-
+        
+        if (saveSupports != SupportType.NO_SUPPORT)
+        {
+            supportComboBox.setValue(saveSupports);
+        }
+        cbSupport.setSelected(saveSupports == SupportType.NO_SUPPORT ? false : true);
     }
 
     private void enableCustomChooser(boolean enable)

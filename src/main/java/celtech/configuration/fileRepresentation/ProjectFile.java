@@ -2,6 +2,7 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Date;
 
@@ -13,7 +14,7 @@ public class ProjectFile
     private Date lastModifiedDate;
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private boolean printSupportOverride = false;
+    private SupportType printSupportOverride = SupportType.NO_SUPPORT;
     private boolean printRaft = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;
@@ -71,12 +72,12 @@ public class ProjectFile
         this.fillDensityOverride = fillDensityOverride;
     }
 
-    public boolean getPrintSupportOverride()
+    public SupportType getPrintSupportOverride()
     {
         return printSupportOverride;
     }
 
-    public void setPrintSupportOverride(boolean printSupportOverride)
+    public void setPrintSupportOverride(SupportType printSupportOverride)
     {
         this.printSupportOverride = printSupportOverride;
     }

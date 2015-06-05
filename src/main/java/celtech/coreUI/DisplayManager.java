@@ -72,37 +72,37 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
 
-    private static final int START_SCALING_WINDOW_HEIGHT = 800;
-    private static final double MINIMUM_SCALE_FACTOR = 0.8;
+    private static final int START_SCALING_WINDOW_HEIGHT = 1024;
+    private static final double MINIMUM_SCALE_FACTOR = 0.7;
 
-    private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private static final ProjectManager projectManager = ProjectManager.getInstance();
+    private static ApplicationStatus applicationStatus;
+    private static ProjectManager projectManager;
 
-    private static DisplayManager instance = null;
-    private static Stage mainStage = null;
-    private static Scene scene = null;
+    private static DisplayManager instance;
+    private static Stage mainStage;
+    private static Scene scene;
 
-    private HBox mainHolder = null;
-    private StackPane sidePanelContainer = null;
-    private final HashMap<ApplicationMode, Pane> insetPanels = new HashMap<>();
-    private final HashMap<ApplicationMode, HBox> sidePanels = new HashMap<>();
-    private final HashMap<ApplicationMode, HBox> slideOutPanels = new HashMap<>();
+    private HBox mainHolder;
+    private StackPane sidePanelContainer;
+    private final HashMap<ApplicationMode, Pane> insetPanels;
+    private final HashMap<ApplicationMode, HBox> sidePanels;
+    private final HashMap<ApplicationMode, HBox> slideOutPanels;
     private final StackPane rhPanel;
     private final SlideoutAndProjectHolder slideoutAndProjectHolder;
-    private final HashMap<ApplicationMode, Initializable> insetPanelControllers = new HashMap<>();
-    private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers = new HashMap<>();
-    private final HashMap<ApplicationMode, Initializable> slideOutControllers = new HashMap<>();
+    private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
+    private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers;
+    private final HashMap<ApplicationMode, Initializable> slideOutControllers;
 
-    private static TabPane tabDisplay = null;
-    private static SingleSelectionModel<Tab> tabDisplaySelectionModel = null;
-    private static Tab printerStatusTab = null;
-    private static Tab addPageTab = null;
-    private Tab lastLayoutTab = null;
+    private static TabPane tabDisplay;
+    private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
+    private static Tab printerStatusTab;
+    private static Tab addPageTab;
+    private Tab lastLayoutTab;
 
-    private final HashMap<String, SidePanelManager> sidePanelControllerCache = new HashMap<>();
-    private final HashMap<String, HBox> sidePanelCache = new HashMap<>();
-    private final HashMap<String, Initializable> slideoutPanelControllerCache = new HashMap<>();
-    private final HashMap<String, HBox> slideoutPanelCache = new HashMap<>();
+    private final HashMap<String, SidePanelManager> sidePanelControllerCache;
+    private final HashMap<String, HBox> sidePanelCache;
+    private final HashMap<String, Initializable> slideoutPanelControllerCache;
+    private final HashMap<String, HBox> slideoutPanelCache;
 
     /*
      * Project loading
@@ -114,14 +114,29 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static final String addDummyPrinterCommand = "AddDummy";
     private static final String dummyCommandPrefix = "dummy:";
 
+    private StackPane rootStackPane;
     private AnchorPane rootAnchorPane;
     private Pane spinnerContainer;
     private Spinner spinner;
 
-    private BooleanProperty nodesMayHaveMoved = new SimpleBooleanProperty(false);
+    private BooleanProperty nodesMayHaveMoved;
 
     private DisplayManager()
     {
+        this.rootStackPane = new StackPane();
+        this.nodesMayHaveMoved = new SimpleBooleanProperty(false);
+        this.slideoutPanelCache = new HashMap<>();
+        this.slideoutPanelControllerCache = new HashMap<>();
+        this.sidePanelCache = new HashMap<>();
+        this.sidePanelControllerCache = new HashMap<>();
+        this.slideOutControllers = new HashMap<>();
+        this.sidePanelControllers = new HashMap<>();
+        this.insetPanelControllers = new HashMap<>();
+        this.slideOutPanels = new HashMap<>();
+        this.sidePanels = new HashMap<>();
+        this.insetPanels = new HashMap<>();
+        applicationStatus = ApplicationStatus.getInstance();
+        projectManager = ProjectManager.getInstance();
         this.slideoutAndProjectHolder = new SlideoutAndProjectHolder();
         this.rhPanel = new StackPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
@@ -258,7 +273,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         if (instance == null)
         {
+            try {
             instance = new DisplayManager();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         return instance;
@@ -284,11 +303,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.setVisible(false);
         spinner.stopSpinning();
     }
-
-    /**
-     * This StackPane is required for scaling at small window sizes
-     */
-    private StackPane rootStackPane = new StackPane();
 
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
@@ -815,6 +829,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         rootAnchorPane.setScaleX(scaleFactor);
         rootAnchorPane.setScaleY(scaleFactor);
+        rootAnchorPane.setScaleZ(scaleFactor);
 
         rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
         rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);

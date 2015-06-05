@@ -248,11 +248,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headType.setText(head.nameProperty().get().trim());
         headUniqueID.setText(head.uniqueIDProperty().get().trim());
         lastFilamentTemperature0.setText(String.format("%.0f",
-                           head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
+                                                       head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
         if (head.getNozzleHeaters().size() > 1)
         {
             lastFilamentTemperature1.setText(String.format("%.0f",
-                           head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get()));
+                                                           head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get()));
         }
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
         //TODO modify to work with multiple heaters
@@ -422,9 +422,14 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         head.getNozzles().get(1).yOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(1).zOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(1).bOffsetProperty().addListener(headChangeListener);
-        //TODO modify for multiple heaters
+
         head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(
             headChangeListener);
+        if (head.getNozzleHeaters().size() > 1)
+        {
+            head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(
+                headChangeListener);
+        }
     }
 
     private void removeHeadChangeListeners(Head head)
