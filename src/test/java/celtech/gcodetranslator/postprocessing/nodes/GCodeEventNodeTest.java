@@ -92,7 +92,88 @@ public class GCodeEventNodeTest
      * Test of stream method, of class GCodeEventNode.
      */
     @Test
-    public void testStreamChildrenBackwards()
+    public void testStreamChildrenAndMe()
+    {
+        System.out.println("streamChildrenAndMe");
+        GCodeEventNode nodeA = new GCodeEventNodeTestImpl("nodeA");
+        GCodeEventNode nodeB1 = new GCodeEventNodeTestImpl("nodeB1");
+        GCodeEventNode nodeB2 = new GCodeEventNodeTestImpl("nodeB2");
+        GCodeEventNode nodeB3 = new GCodeEventNodeTestImpl("nodeB3");
+        GCodeEventNode nodeC1 = new GCodeEventNodeTestImpl("nodeC1");
+        GCodeEventNode nodeC2 = new GCodeEventNodeTestImpl("nodeC2");
+        GCodeEventNode nodeC3 = new GCodeEventNodeTestImpl("nodeC3");
+        GCodeEventNode nodeC4 = new GCodeEventNodeTestImpl("nodeC4");
+        GCodeEventNode nodeC5 = new GCodeEventNodeTestImpl("nodeC5");
+        GCodeEventNode nodeC6 = new GCodeEventNodeTestImpl("nodeC6");
+        GCodeEventNode nodeC7 = new GCodeEventNodeTestImpl("nodeC7");
+        GCodeEventNode nodeC8 = new GCodeEventNodeTestImpl("nodeC8");
+        GCodeEventNode nodeC9 = new GCodeEventNodeTestImpl("nodeC9");
+        GCodeEventNode nodeD1 = new GCodeEventNodeTestImpl("nodeD1");
+        GCodeEventNode nodeD2 = new GCodeEventNodeTestImpl("nodeD2");
+        GCodeEventNode nodeD3 = new GCodeEventNodeTestImpl("nodeD3");
+
+        nodeB1.addChild(0, nodeC1);
+        nodeB1.addChild(1, nodeC2);
+        nodeB1.addChild(2, nodeC3);
+
+        nodeB2.addChild(0, nodeC4);
+        nodeB2.addChild(1, nodeC5);
+        nodeB2.addChild(2, nodeC6);
+
+        nodeB3.addChild(0, nodeC7);
+        nodeB3.addChild(1, nodeC8);
+        nodeB3.addChild(2, nodeC9);
+
+        nodeC7.addChild(0, nodeD1);
+        nodeC7.addChild(1, nodeD2);
+        nodeC7.addChild(2, nodeD3);
+
+        nodeA.addChild(0, nodeB1);
+        nodeA.addChild(1, nodeB2);
+        nodeA.addChild(2, nodeB3);
+
+        // From C8 should be C8
+        Stream<GCodeEventNode> result1 = nodeC8.streamChildrenAndMe();
+
+        ArrayList<GCodeEventNode> resultList1 = new ArrayList<>();
+        result1.forEach(node -> resultList1.add(node));
+
+        assertEquals(1, resultList1.size());
+        assertSame(nodeC8, resultList1.get(0));
+
+        // From C7 should be C7, D1, D2, D3
+        Stream<GCodeEventNode> result2 = nodeC7.streamChildrenAndMe();
+
+        ArrayList<GCodeEventNode> resultList2 = new ArrayList<>();
+        result2.forEach(node -> resultList2.add(node));
+
+        assertEquals(4, resultList2.size());
+        assertSame(nodeC7, resultList2.get(0));
+        assertSame(nodeD1, resultList2.get(1));
+        assertSame(nodeD2, resultList2.get(2));
+        assertSame(nodeD3, resultList2.get(3));
+
+        // From B3 should be B3,C7,D1,D2,D3,C8,C9
+        Stream<GCodeEventNode> result3 = nodeB3.streamChildrenAndMe();
+
+        ArrayList<GCodeEventNode> resultList3 = new ArrayList<>();
+        result3.forEach(node -> resultList3.add(node));
+
+        assertEquals(7, resultList3.size());
+        assertSame(nodeB3, resultList3.get(0));
+        assertSame(nodeC7, resultList3.get(1));
+        assertSame(nodeD1, resultList3.get(2));
+        assertSame(nodeD2, resultList3.get(3));
+        assertSame(nodeD3, resultList3.get(4));
+        assertSame(nodeC8, resultList3.get(5));
+        assertSame(nodeC9, resultList3.get(6));
+    }
+
+    /**
+     * Test of stream method, of class GCodeEventNode.
+     */
+    @Test
+    public void testStreamChildrenAndMeBackwards()
     {
         System.out.println("streamChildrenBackwards");
         GCodeEventNode nodeA = new GCodeEventNodeTestImpl("nodeA");
