@@ -907,10 +907,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             colour1 = extruder1Filament.getDisplayColour();
         }
-
-        // just for 1.01.05
-        colour0 = ApplicationMaterials.roboxBlue;
-        colour1 = ApplicationMaterials.roboxBlue;
         
         model.setColour(colour0, colour1);
     }
