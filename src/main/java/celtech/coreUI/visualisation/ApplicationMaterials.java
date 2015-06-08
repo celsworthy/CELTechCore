@@ -17,7 +17,7 @@ import javafx.scene.paint.PhongMaterial;
 public class ApplicationMaterials
 {
 
-    private static final Color roboxBlue = Color.rgb(38,125,216);
+    public static final Color roboxBlue = Color.rgb(38,125,216);
     private static final PhongMaterial defaultModelMaterial = new PhongMaterial(roboxBlue);
     private static final PhongMaterial selectedModelMaterial = new PhongMaterial(Color.LAWNGREEN);
     private static final PhongMaterial collidedModelMaterial = new PhongMaterial(Color.DARKORANGE);
