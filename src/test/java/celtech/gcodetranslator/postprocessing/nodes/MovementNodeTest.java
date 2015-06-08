@@ -54,12 +54,12 @@ public class MovementNodeTest
         MovementNode sourceNode = new MovementNodeImpl();
         sourceNode.setX(0);
         sourceNode.setY(0);
-        sourceNode.setFeedRate(600);
+        sourceNode.setFeedRate_mmPerMin(600);
 
         MovementNode destinationNode = new MovementNodeImpl();
         destinationNode.setX(10);
         destinationNode.setY(0);
-        destinationNode.setFeedRate(0);
+        destinationNode.setFeedRate_mmPerMin(0);
 
         double result = sourceNode.timeToReach(destinationNode);
 
@@ -68,10 +68,10 @@ public class MovementNodeTest
         //Should be half the time
         sourceNode.setX(0);
         sourceNode.setY(0);
-        sourceNode.setFeedRate(6000);
+        sourceNode.setFeedRate_mmPerMin(6000);
         destinationNode.setX(10);
         destinationNode.setY(0);
-        destinationNode.setFeedRate(0);
+        destinationNode.setFeedRate_mmPerMin(0);
 
         double result2 = sourceNode.timeToReach(destinationNode);
 
@@ -79,10 +79,10 @@ public class MovementNodeTest
 
         sourceNode.setX(0);
         sourceNode.setY(0);
-        sourceNode.setFeedRate(600);
+        sourceNode.setFeedRate_mmPerMin(600);
         destinationNode.setX(3);
         destinationNode.setY(4);
-        destinationNode.setFeedRate(0);
+        destinationNode.setFeedRate_mmPerMin(0);
 
         double result3 = sourceNode.timeToReach(destinationNode);
 

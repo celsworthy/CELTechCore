@@ -70,7 +70,7 @@ public class MCodeNode extends CommentableNode
             stringToReturn += " S" + sNumber;
         }
 
-        stringToReturn += super.renderForOutput();
+        stringToReturn += renderComments();
 
         return stringToReturn;
     }

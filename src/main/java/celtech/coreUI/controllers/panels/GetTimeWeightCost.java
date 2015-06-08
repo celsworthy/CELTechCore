@@ -118,7 +118,6 @@ public class GetTimeWeightCost
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
                 settings.getProfileName(),
-                settings,
                 temporaryDirectory,
                 //TODO this should use the printer selected on the settings page
                 Lookup.getCurrentlySelectedPrinterProperty().get(),

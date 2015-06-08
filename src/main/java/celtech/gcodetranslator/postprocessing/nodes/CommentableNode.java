@@ -8,7 +8,7 @@ public abstract class CommentableNode extends GCodeEventNode
 {
     //This comment field is only used if a subclass has an inline comment
 
-    private String comment = null;
+    private String comment = "";
 
     public CommentableNode()
     {
@@ -28,12 +28,16 @@ public abstract class CommentableNode extends GCodeEventNode
     {
         this.comment = comment;
     }
+    
+    public void appendComment(String comment)
+    {
+        this.comment += " " + comment;
+    }
 
-    @Override
-    public String renderForOutput()
+    public String renderComments()
     {
         StringBuilder stringToReturn = new StringBuilder();
-        if (getComment() != null)
+        if (getComment().length() > 0)
         {
             stringToReturn.append(" ; ");
             stringToReturn.append(getComment());

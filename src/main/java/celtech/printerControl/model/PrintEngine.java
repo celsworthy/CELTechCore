@@ -191,7 +191,6 @@ public class PrintEngine implements ControllableService
                 postProcessorService.reset();
                 postProcessorService.setPrintJobUUID(
                         result.getPrintJobUUID());
-                postProcessorService.setSettings(result.getSettings());
                 postProcessorService.setPrinterToUse(
                         result.getPrinterToUse());
                 postProcessorService.setProject(result.getProject());

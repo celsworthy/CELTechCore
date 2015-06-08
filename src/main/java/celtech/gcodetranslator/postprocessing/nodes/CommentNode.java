@@ -11,5 +11,11 @@ public class CommentNode extends CommentableNode
     {
         super(comment);
     }
+
+    @Override
+    public String renderForOutput()
+    {
+        return renderComments();
+    }
     
 }

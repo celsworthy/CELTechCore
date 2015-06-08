@@ -23,7 +23,7 @@ public class ToolSelectNode extends CommentableNode
     {
         String stringToReturn = "T" + getToolNumber();
 
-        stringToReturn += super.renderForOutput();
+        stringToReturn += getComment();
 
         return stringToReturn;
     }

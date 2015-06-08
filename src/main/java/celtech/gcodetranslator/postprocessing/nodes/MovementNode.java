@@ -109,11 +109,22 @@ public abstract class MovementNode extends CommentableNode
      *
      * @param feedRate_mmPerMin
      */
-    public void setFeedRate(double feedRate_mmPerMin)
+    public void setFeedRate_mmPerMin(double feedRate_mmPerMin)
     {
         isFeedRateSet = true;
         this.feedRate_mmPerMin = feedRate_mmPerMin;
         this.feedRate_mmPerSec = feedRate_mmPerMin / 60;
+    }
+
+    /**
+     *
+     * @param feedRate_mmPerSec
+     */
+    public void setFeedRate_mmPerSec(double feedRate_mmPerSec)
+    {
+        isFeedRateSet = true;
+        this.feedRate_mmPerSec = feedRate_mmPerSec;
+        this.feedRate_mmPerMin = feedRate_mmPerSec * 60;
     }
 
     /**
@@ -135,12 +146,22 @@ public abstract class MovementNode extends CommentableNode
         this.e = value;
     }
     
+    public boolean isEInUse()
+    {
+        return isESet;
+    }
+    
     public void eNotInUse()
     {
         this.e = 0;
         isESet = false;
     }
 
+    public boolean isDInUse()
+    {
+        return isDSet;
+    }
+    
     public void dNotInUse()
     {
         this.d = 0;
@@ -222,11 +243,7 @@ public abstract class MovementNode extends CommentableNode
         {
             stringToReturn.append('E');
             stringToReturn.append(fiveDPformatter.format(e));
-            stringToReturn.append(' ');
         }
-
-        // Allow comments to be added
-        stringToReturn.append(super.renderForOutput());
 
         return stringToReturn.toString();
     }
@@ -241,5 +258,10 @@ public abstract class MovementNode extends CommentableNode
         double time = distance / feedRate_mmPerSec;
         
         return time;
+    }
+    
+    public Vector2D toVector2D()
+    {
+        return new Vector2D(x, y);
     }
 }

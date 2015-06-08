@@ -14,7 +14,6 @@ import javafx.concurrent.Task;
 public class PostProcessorService extends Service<GCodePostProcessingResult> implements ControllableService
 {
     private String printJobUUID = null;
-    private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
     private Project project = null;
 
@@ -25,15 +24,6 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
     public void setPrintJobUUID(String printJobUUID)
     {
         this.printJobUUID = printJobUUID;
-    }
-
-    /**
-     *
-     * @param settings
-     */
-    public void setSettings(SlicerParametersFile settings)
-    {
-        this.settings = settings;
     }
 
     /**
@@ -53,7 +43,7 @@ public class PostProcessorService extends Service<GCodePostProcessingResult> imp
     @Override
     protected Task<GCodePostProcessingResult> createTask()
     {
-        return new PostProcessorTask(printJobUUID, settings, printerToUse, project);
+        return new PostProcessorTask(printJobUUID, printerToUse, project);
     }
 
     /**

@@ -312,6 +312,123 @@ public class GCodeEventNodeTest
     }
 
     /**
+     * Test of streamSiblingsFromHere method, of class GCodeEventNode.
+     */
+    @Test
+    public void testStreamSiblingsFromHere()
+    {
+        System.out.println("streamSiblingsFromHere");
+        GCodeEventNode nodeA = new GCodeEventNodeTestImpl("nodeA");
+        GCodeEventNode nodeB1 = new GCodeEventNodeTestImpl("nodeB1");
+        GCodeEventNode nodeB2 = new GCodeEventNodeTestImpl("nodeB2");
+        GCodeEventNode nodeB3 = new GCodeEventNodeTestImpl("nodeB3");
+        GCodeEventNode nodeC1 = new GCodeEventNodeTestImpl("nodeC1");
+        GCodeEventNode nodeC2 = new GCodeEventNodeTestImpl("nodeC2");
+        GCodeEventNode nodeC3 = new GCodeEventNodeTestImpl("nodeC3");
+        GCodeEventNode nodeC4 = new GCodeEventNodeTestImpl("nodeC4");
+        GCodeEventNode nodeC5 = new GCodeEventNodeTestImpl("nodeC5");
+        GCodeEventNode nodeC6 = new GCodeEventNodeTestImpl("nodeC6");
+        GCodeEventNode nodeC7 = new GCodeEventNodeTestImpl("nodeC7");
+        GCodeEventNode nodeC8 = new GCodeEventNodeTestImpl("nodeC8");
+        GCodeEventNode nodeC9 = new GCodeEventNodeTestImpl("nodeC9");
+
+        nodeB1.addChild(0, nodeC3);
+        nodeB1.addChild(0, nodeC2);
+        nodeB1.addChild(0, nodeC1);
+
+        nodeB2.addChild(0, nodeC6);
+        nodeB2.addChild(0, nodeC5);
+        nodeB2.addChild(0, nodeC4);
+
+        nodeB3.addChild(0, nodeC9);
+        nodeB3.addChild(0, nodeC8);
+        nodeB3.addChild(0, nodeC7);
+
+        nodeA.addChild(0, nodeB3);
+        nodeA.addChild(0, nodeB2);
+        nodeA.addChild(0, nodeB1);
+
+        //Stream from here node C5 should yield a stream of:
+        //C6
+        try
+        {
+            Stream<GCodeEventNode> result = nodeC5.streamSiblingsFromHere();
+
+            ArrayList<GCodeEventNode> resultList = new ArrayList<>();
+            result.forEach(node ->
+            {
+                System.out.println("Adding node " + node.toString());
+                resultList.add(node);
+            });
+
+            assertEquals(1, resultList.size());
+            assertSame(nodeC6, resultList.get(0));
+        } catch (NodeProcessingException ex)
+        {
+            fail("Node processing exception");
+        }
+    }
+
+    /**
+     * Test of streamSiblingsBackwardsFromHere method, of class GCodeEventNode.
+     */
+    @Test
+    public void testStreamSiblingsBackwardsFromHere()
+    {
+        System.out.println("streamSiblingsBackwardsFromHere");
+        GCodeEventNode nodeA = new GCodeEventNodeTestImpl("nodeA");
+        GCodeEventNode nodeB1 = new GCodeEventNodeTestImpl("nodeB1");
+        GCodeEventNode nodeB2 = new GCodeEventNodeTestImpl("nodeB2");
+        GCodeEventNode nodeB3 = new GCodeEventNodeTestImpl("nodeB3");
+        GCodeEventNode nodeC1 = new GCodeEventNodeTestImpl("nodeC1");
+        GCodeEventNode nodeC2 = new GCodeEventNodeTestImpl("nodeC2");
+        GCodeEventNode nodeC3 = new GCodeEventNodeTestImpl("nodeC3");
+        GCodeEventNode nodeC4 = new GCodeEventNodeTestImpl("nodeC4");
+        GCodeEventNode nodeC5 = new GCodeEventNodeTestImpl("nodeC5");
+        GCodeEventNode nodeC6 = new GCodeEventNodeTestImpl("nodeC6");
+        GCodeEventNode nodeC7 = new GCodeEventNodeTestImpl("nodeC7");
+        GCodeEventNode nodeC8 = new GCodeEventNodeTestImpl("nodeC8");
+        GCodeEventNode nodeC9 = new GCodeEventNodeTestImpl("nodeC9");
+
+        nodeB1.addChild(0, nodeC3);
+        nodeB1.addChild(0, nodeC2);
+        nodeB1.addChild(0, nodeC1);
+
+        nodeB2.addChild(0, nodeC6);
+        nodeB2.addChild(0, nodeC5);
+        nodeB2.addChild(0, nodeC4);
+
+        nodeB3.addChild(0, nodeC7);
+        nodeB3.addChild(1, nodeC8);
+        nodeB3.addChild(2, nodeC9);
+
+        nodeA.addChild(0, nodeB3);
+        nodeA.addChild(0, nodeB2);
+        nodeA.addChild(0, nodeB1);
+
+        //Stream from here node C9 should yield a stream of:
+        //C8, C7
+        try
+        {
+            Stream<GCodeEventNode> result = nodeC9.streamSiblingsBackwardsFromHere();
+
+            ArrayList<GCodeEventNode> resultList = new ArrayList<>();
+            result.forEach(node ->
+            {
+                System.out.println("Adding node " + node.toString());
+                resultList.add(node);
+            });
+
+            assertEquals(2, resultList.size());
+            assertSame(nodeC8, resultList.get(0));
+            assertSame(nodeC7, resultList.get(1));
+        } catch (NodeProcessingException ex)
+        {
+            fail("Node processing exception");
+        }
+    }
+
+    /**
      * Test of addSiblingBefore method, of class GCodeEventNode.
      */
     @Test

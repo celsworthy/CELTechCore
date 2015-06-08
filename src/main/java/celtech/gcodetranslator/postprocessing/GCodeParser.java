@@ -543,7 +543,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         }
                         if (fValue.isSet())
                         {
-                            node.setFeedRate(fValue.get());
+                            node.setFeedRate_mmPerMin(fValue.get());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -593,7 +593,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         }
                         if (fValue.isSet())
                         {
-                            node.setFeedRate(fValue.get());
+                            node.setFeedRate_mmPerMin(fValue.get());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -641,7 +641,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
 
                         if (fValue.isSet())
                         {
-                            node.setFeedRate(fValue.get());
+                            node.setFeedRate_mmPerMin(fValue.get());
                         }
 
                         if (xValue.isSet())
@@ -712,7 +712,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
 
                         if (fValue.isSet())
                         {
-                            node.setFeedRate(fValue.get());
+                            node.setFeedRate_mmPerMin(fValue.get());
                         }
 
                         if (xValue.isSet())

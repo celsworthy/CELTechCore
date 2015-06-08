@@ -6,10 +6,11 @@ package celtech.gcodetranslator.postprocessing.nodes;
  */
 public class SectionNode extends CommentableNode
 {
+
     @Override
     public String renderForOutput()
     {
-        return super.renderForOutput();
+        return "";
     }
-    
+
 }
