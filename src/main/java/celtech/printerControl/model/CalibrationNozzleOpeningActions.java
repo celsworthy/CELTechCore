@@ -82,9 +82,9 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         if (headReferenceData != null)
         {
             steno.info("Setting B offsets to defaults ("
-                + headReferenceData.getNozzles().get(0).getDefaultBOffset()
+                + headReferenceData.getNozzles().get(0).getMinBOffset()
                 + " - "
-                + headReferenceData.getNozzles().get(1).getDefaultBOffset()
+                + headReferenceData.getNozzles().get(1).getMinBOffset()
                 + ")");
             printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                                             savedHeadData.getUniqueID(),
@@ -133,6 +133,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                                             savedHeadData.getLastFilamentTemperature(1),
                                             savedHeadData.getHeadHours());
         }
+        printer.readHeadEEPROM();
 
         printer.goToTargetNozzleHeaterTemperature(0);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))

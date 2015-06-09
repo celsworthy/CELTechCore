@@ -303,36 +303,33 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canInitiateNewState.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
         canCancel.bind(
-            printerStatus.isNotEqualTo(PrinterStatus.CANCELLING)
-            .and(
-                printerStatus.isEqualTo(PrinterStatus.PAUSED)
-                .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
-                .or(printEngine.postProcessorService.runningProperty())
-                .or(printEngine.slicerService.runningProperty())
-                .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
+                printerStatus.isNotEqualTo(PrinterStatus.CANCELLING)
+                .and(
+                        printerStatus.isEqualTo(PrinterStatus.PAUSED)
+                        .or(printerStatus.isEqualTo(PrinterStatus.PAUSING))
+                        .or(printEngine.postProcessorService.runningProperty())
+                        .or(printEngine.slicerService.runningProperty())
+                        .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
+                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
+                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))
+                        .or(printEngine.printInProgressProperty())));
+
+        canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
+                .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))
+                .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING))
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
-                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_NOZZLE))
-                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_BED))
-                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))
-            ));
-
-        canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
-            .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))
-            .or(printerStatus.isEqualTo(PrinterStatus.CANCELLING))
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
-            .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
-            .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD)));
+                .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
+        );
 
         canPause.bind(printerStatus.isEqualTo(PrinterStatus.PRINTING)
-            .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
-            .or(printEngine.sendingDataToPrinter)
-            .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE))
-            .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_NOZZLE))
-            .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_BED))
-            .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING)));
+                .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
+                .or(printEngine.sendingDataToPrinter)
+                .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE))
+                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING)));
 
         canCalibrateHead.bind(head.isNotNull()
             .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
@@ -1723,8 +1720,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
              */
             if (dataIngested && lastPacket)
             {
-                steno.debug("Final complete chunk:" + outputBuffer.toString() + " seq:"
-                    + dataFileSequenceNumber);
+                steno.trace("Final complete chunk:" + outputBuffer.toString() + " seq:"
+                        + dataFileSequenceNumber);
                 AckResponse response = transmitDataFileEnd(outputBuffer.toString(),
                                                            dataFileSequenceNumber);
                 if (response.isError())
@@ -1740,7 +1737,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                 if (dataFileSequenceNumber >= dataFileSequenceNumberStartPoint)
                 {
-                    steno.debug("Sending chunk seq:" + dataFileSequenceNumber);
+                    steno.trace("Sending chunk seq:" + dataFileSequenceNumber);
 
                     AckResponse response = transmitDataFileChunk(outputBuffer.toString(),
                                                                  dataFileSequenceNumber);
