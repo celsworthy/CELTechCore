@@ -43,7 +43,7 @@
                         <Insets />
                     </StackPane.margin>
                 </HBox>
-                <Label id="largeProgressCurrentValue" fx:id="largeProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="23%" />
+                <Label id="largeProgressCurrentValue" fx:id="largeProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="" />
             </children>
             <BorderPane.margin>
                 <Insets left="30.0" right="30.0" />

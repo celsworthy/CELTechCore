@@ -108,6 +108,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
                                                 savedHeadData.getLastFilamentTemperature(0),
                                                 savedHeadData.getLastFilamentTemperature(1),
                                                 savedHeadData.getHeadHours());
+                printer.readHeadEEPROM();
             } catch (RoboxCommsException ex)
             {
                 steno.error("Unable to restore head! " + ex);

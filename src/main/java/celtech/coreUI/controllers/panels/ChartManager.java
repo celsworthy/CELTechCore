@@ -307,13 +307,7 @@ class ChartManager
 
         if (legendBed != null && bedTemperatureProperty != null)
         {
-            if (bedTemperatureProperty.get() >= ApplicationConfiguration.minTempToDisplayOnGraph)
-            {
-                legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
-            } else
-            {
-                legendBedText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");
-            }
+            legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
         }
 
         if (legendAmbient != null && ambientTemperatureProperty != null)

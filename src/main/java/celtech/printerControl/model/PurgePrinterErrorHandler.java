@@ -15,7 +15,7 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The PurgePrinterErrorHandlerOrig listens for printer errors and if they occur then cause the user
+ * The PurgePrinterErrorHandler listens for printer errors and if they occur then cause the user
  * to get a Continue/Abort dialog.
  *
  * @author tony
@@ -28,6 +28,7 @@ public class PurgePrinterErrorHandler
 
     private final Printer printer;
     private final Cancellable errorCancellable;
+    private boolean showingFilamentSlipErrorDialog = false;
 
     public PurgePrinterErrorHandler(Printer printer, Cancellable errorCancellable)
     {
@@ -62,14 +63,28 @@ public class PurgePrinterErrorHandler
             } else if (error == FirmwareError.D_FILAMENT_SLIP
                 || error == FirmwareError.E_FILAMENT_SLIP)
             {
+                if (showingFilamentSlipErrorDialog) {
+                    return;
+                }
+                showingFilamentSlipErrorDialog = true;
+                String errorTitle = Lookup.i18n("purgeMaterial.filamentSlipTitle");
+                String errorMessage = Lookup.i18n("purgeMaterial.filamentSlipMessage");
+                String extruderName = "1";
+                if (error == FirmwareError.D_FILAMENT_SLIP) {
+                    extruderName = "2";
+                }
+                errorTitle = errorTitle.replace("%s", extruderName);
+                errorMessage = errorMessage.replace("%s", extruderName);
                 Optional<PrinterErrorChoice> response = Lookup.getSystemNotificationHandler().
                     showPrinterErrorDialog(
-                        error.getLocalisedErrorTitle(),
-                        error.getLocalisedErrorMessage(),
+                        errorTitle,
+                        errorMessage,
                         true,
                         true,
                         false,
                         false);
+                
+                showingFilamentSlipErrorDialog = false;
 
                 boolean abort = false;
 
