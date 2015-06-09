@@ -429,7 +429,7 @@ public class CalibrationInsetPanelController implements Initializable,
             String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
             calibrationProgressTemp.setCurrentValue(currentTempStr);
             calibrationProgressTemp.setTargetValue(targetTempStr);
-            calibrationProgressTemp.setProgress((currentExtruderTemperature / targetTemperature) * 100);
+            calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
         }
     }
 
