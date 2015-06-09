@@ -406,25 +406,6 @@ public class CalibrationInsetPanelController implements Initializable,
                 currentExtruderTemperature = newValue.doubleValue();
             };
 
-    private void updateCalibrationProgressTemp()
-    {
-        if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
-        {
-
-            int currentTemp = (int) currentExtruderTemperature;
-            if (currentTemp > targetTemperature)
-            {
-                currentTemp = targetTemperature;
-            }
-
-            String targetTempStr = targetTemperature + Lookup.i18n("misc.degreesC");
-            String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
-            calibrationProgressTemp.setCurrentValue(currentTempStr);
-            calibrationProgressTemp.setTargetValue(targetTempStr);
-            calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
-        }
-    }
-
     private final ChangeListener<Number> targetETCListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         targetETC = newValue.intValue();
