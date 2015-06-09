@@ -666,10 +666,8 @@ public class PrintEngine implements ControllableService
 
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-        configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()
-                + ApplicationConfiguration.xPrintOffset),
-                (float) (centreOfPrintedObject.getZ()
-                + ApplicationConfiguration.yPrintOffset));
+        configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
+                (float) (centreOfPrintedObject.getZ()));
         configWriter.generateConfigForSlicer(settingsToUse,
                 printJobDirectoryName
                 + File.separator
