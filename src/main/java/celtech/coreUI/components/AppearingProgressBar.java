@@ -59,13 +59,11 @@ public class AppearingProgressBar extends BorderPane implements Initializable
     private DisplayMode displayMode = DisplayMode.PERCENT;
     private ChangeListener<Number> progressChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
     {
-        System.out.println("Current value is now " + t1.doubleValue());
         redraw();
     };
 
     private ChangeListener<Number> targetChangeListener = (ObservableValue<? extends Number> ov, Number t, Number t1) ->
     {
-        System.out.println("Target value is now " + t1.doubleValue());
         redraw();
     };
 
