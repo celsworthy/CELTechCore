@@ -15,14 +15,14 @@ public class ExtrusionNode extends MovementNode
     private double b;
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public boolean isBSet()
     {
         return isBSet;
     }
-    
+
     /**
      *
      * @return
@@ -61,7 +61,7 @@ public class ExtrusionNode extends MovementNode
             stringToReturn.append(" B");
             stringToReturn.append(twoDPformatter.format(b));
         }
-        
+
         stringToReturn.append(renderComments());
 
         return stringToReturn.toString();
@@ -77,5 +77,45 @@ public class ExtrusionNode extends MovementNode
     {
         setD(getE() + getD());
         eNotInUse();
+    }
+
+    public ExtrusionNode clone()
+    {
+        ExtrusionNode returnedNode = new ExtrusionNode();
+
+        if (isBSet)
+        {
+            returnedNode.setB(b);
+        }
+
+        if (super.isDInUse())
+        {
+            returnedNode.setD(super.getD());
+        }
+
+        if (super.isEInUse())
+        {
+            returnedNode.setE(super.getE());
+        }
+
+        if (super.isFeedrateSet())
+        {
+            returnedNode.setFeedRate_mmPerMin(super.getFeedRate_mmPerMin());
+        }
+
+        if (super.isXSet())
+        {
+            returnedNode.setX(super.getX());
+        }
+        if (super.isYSet())
+        {
+            returnedNode.setY(super.getY());
+        }
+        if (super.isZSet())
+        {
+            returnedNode.setZ(super.getZ());
+        }
+
+        return returnedNode;
     }
 }

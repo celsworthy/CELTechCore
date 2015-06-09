@@ -22,6 +22,7 @@ import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
+import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
@@ -46,6 +47,8 @@ import org.junit.Test;
  */
 public class PostProcessorTest extends JavaFXConfiguredTest
 {
+
+    private double epsilon = 0.001;
 
     public PostProcessorTest()
     {
@@ -162,23 +165,41 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         FillSectionNode fill2 = new FillSectionNode();
 
         ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.setE(1f);
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.setE(1f);
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.setE(1f);
         ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.setE(1f);
         ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.setE(1f);
         ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.setE(1f);
         ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.setE(1f);
         ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.setE(1f);
         ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        extrusionNode9.setE(1f);
         ExtrusionNode extrusionNode10 = new ExtrusionNode();
+        extrusionNode10.setE(1f);
         ExtrusionNode extrusionNode11 = new ExtrusionNode();
+        extrusionNode11.setE(1f);
         ExtrusionNode extrusionNode12 = new ExtrusionNode();
+        extrusionNode12.setE(1f);
         ExtrusionNode extrusionNode13 = new ExtrusionNode();
+        extrusionNode13.setE(1f);
         ExtrusionNode extrusionNode14 = new ExtrusionNode();
+        extrusionNode14.setE(1f);
         ExtrusionNode extrusionNode15 = new ExtrusionNode();
+        extrusionNode15.setE(1f);
         ExtrusionNode extrusionNode16 = new ExtrusionNode();
+        extrusionNode16.setE(1f);
         ExtrusionNode extrusionNode17 = new ExtrusionNode();
+        extrusionNode17.setE(1f);
         ExtrusionNode extrusionNode18 = new ExtrusionNode();
+        extrusionNode18.setE(1f);
 
         tool1.addChild(0, inner1);
         tool1.addChild(1, outer1);
@@ -1505,8 +1526,6 @@ public class PostProcessorTest extends JavaFXConfiguredTest
 
         postProcessor.closeToEndOfFill(extrusionNode9, testProxy);
 
-        postProcessor.outputNodes(fill1, 0);
-
         assertEquals(10, fill1.getChildren().size());
 
         assertTrue(fill1.getChildren().get(5) instanceof ExtrusionNode);
@@ -1539,71 +1558,15 @@ public class PostProcessorTest extends JavaFXConfiguredTest
     }
 
     @Test
-    public void testCloseFromHereTowardsEndOfSection()
+    public void testAddClosesUsingSpecifiedNode_backward()
     {
-        ToolSelectNode tool1 = new ToolSelectNode();
-
-        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
-        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
-
-        ExtrusionNode extrusionNode1 = new ExtrusionNode();
-        extrusionNode1.setX(0);
-        extrusionNode1.setY(0);
-
-        ExtrusionNode extrusionNode2 = new ExtrusionNode();
-        extrusionNode2.setX(10);
-        extrusionNode2.setY(0);
-
-        ExtrusionNode extrusionNode3 = new ExtrusionNode();
-        extrusionNode3.setX(10);
-        extrusionNode3.setY(10);
-
-        ExtrusionNode extrusionNode4 = new ExtrusionNode();
-        extrusionNode4.setX(0);
-        extrusionNode4.setY(10);
-
-        TravelNode travel1 = new TravelNode();
-        travel1.setX(1);
-        travel1.setY(9);
-
-        outer1.addChild(0, extrusionNode1);
-        outer1.addChild(1, extrusionNode2);
-        outer1.addChild(2, extrusionNode3);
-        outer1.addChild(3, extrusionNode4);
-        outer1.addChild(4, travel1);
-
-        ExtrusionNode extrusionNode5 = new ExtrusionNode();
-        extrusionNode5.setX(1);
-        extrusionNode5.setY(1);
-        extrusionNode5.setE(1);
-
-        ExtrusionNode extrusionNode6 = new ExtrusionNode();
-        extrusionNode6.setX(9);
-        extrusionNode6.setY(1);
-        extrusionNode6.setE(1);
-
-        ExtrusionNode extrusionNode7 = new ExtrusionNode();
-        extrusionNode7.setX(9);
-        extrusionNode7.setY(9);
-        extrusionNode7.setE(1);
-
-        ExtrusionNode extrusionNode8 = new ExtrusionNode();
-        extrusionNode8.setX(1);
-        extrusionNode8.setY(9);
-        extrusionNode8.setE(1);
-
-        inner1.addChild(0, extrusionNode5);
-        inner1.addChild(1, extrusionNode6);
-        inner1.addChild(2, extrusionNode7);
-        inner1.addChild(3, extrusionNode8);
-
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare();
 
         NozzleParameters nozzleParams = new NozzleParameters();
-        nozzleParams.setEjectionVolume(0.5f);
+        nozzleParams.setEjectionVolume(0.15f);
 
         NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
 
         HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
 
@@ -1623,103 +1586,32 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 testProject,
                 ppFeatures);
 
-        postProcessor.closeFromHereTowardsEndOfSection(extrusionNode6, testProxy);
+        postProcessor.addClosesUsingSpecifiedNode(tool1.getChildren().get(1).getChildren().get(4),
+                tool1.getChildren().get(0).getChildren().get(4),
+                testProxy, false);
 
-        postProcessor.outputNodes(inner1, 0);
+        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
+        assertEquals(7, outerResult.getChildren().size());
 
-//        assertEquals(10, fill1.getChildren().size());
-//
-//        assertTrue(fill1.getChildren().get(5) instanceof ExtrusionNode);
-//        ExtrusionNode node0 = (ExtrusionNode) fill1.getChildren().get(5);
-//        assertFalse(node0.isBSet());
-//        assertEquals(0.001, node0.getE(), 0.0001);
-//
-//        assertTrue(fill1.getChildren().get(6) instanceof ExtrusionNode);
-//        ExtrusionNode node1 = (ExtrusionNode) fill1.getChildren().get(6);
-//        assertFalse(node1.isBSet());
-//        assertEquals(0.0005, node1.getE(), 0.0001);
-//
-//        assertTrue(fill1.getChildren().get(7) instanceof ExtrusionNode);
-//        ExtrusionNode node2 = (ExtrusionNode) fill1.getChildren().get(7);
-//        assertTrue(node2.isBSet());
-//        assertEquals(0.67, node2.getB(), 0.01);
-//        assertFalse(node2.isEInUse());
-//
-//        assertTrue(fill1.getChildren().get(8) instanceof ExtrusionNode);
-//        ExtrusionNode node3 = (ExtrusionNode) fill1.getChildren().get(8);
-//        assertTrue(node3.isBSet());
-//        assertEquals(0.33, node3.getB(), 0.01);
-//        assertFalse(node3.isEInUse());
-//
-//        assertTrue(fill1.getChildren().get(9) instanceof ExtrusionNode);
-//        ExtrusionNode node4 = (ExtrusionNode) fill1.getChildren().get(9);
-//        assertTrue(node4.isBSet());
-//        assertEquals(0.0, node4.getB(), 0.01);
-//        assertFalse(node4.isEInUse());
+        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
+        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
+        assertEquals(1, extrusionResult1.getX(), epsilon);
+        assertEquals(9, extrusionResult1.getY(), epsilon);
+        assertFalse(extrusionResult1.isEInUse());
+        assertEquals(0.333, extrusionResult1.getB(), epsilon);
+
+        assertTrue(outerResult.getChildren().get(6) instanceof ExtrusionNode);
+        ExtrusionNode extrusionResult2 = (ExtrusionNode) outerResult.getChildren().get(6);
+        assertEquals(5, extrusionResult2.getX(), epsilon);
+        assertEquals(9, extrusionResult2.getY(), epsilon);
+        assertFalse(extrusionResult2.isEInUse());
+        assertEquals(0, extrusionResult2.getB(), epsilon);
     }
 
     @Test
     public void testFindClosestExtrusionNode()
     {
-        ToolSelectNode tool1 = new ToolSelectNode();
-
-        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
-        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
-
-        TravelNode travel1 = new TravelNode();
-        travel1.setX(0);
-        travel1.setY(0);
-        
-        ExtrusionNode extrusionNode1 = new ExtrusionNode();
-        extrusionNode1.setX(10);
-        extrusionNode1.setY(0);
-
-        ExtrusionNode extrusionNode2 = new ExtrusionNode();
-        extrusionNode2.setX(10);
-        extrusionNode2.setY(10);
-
-        ExtrusionNode extrusionNode3 = new ExtrusionNode();
-        extrusionNode3.setX(0);
-        extrusionNode3.setY(10);
-
-        ExtrusionNode extrusionNode4 = new ExtrusionNode();
-        extrusionNode4.setX(0);
-        extrusionNode4.setY(0);
-
-        outer1.addChild(0, travel1);
-        outer1.addChild(1, extrusionNode1);
-        outer1.addChild(2, extrusionNode2);
-        outer1.addChild(3, extrusionNode3);
-        outer1.addChild(4, extrusionNode4);
-
-        TravelNode travel2 = new TravelNode();
-        travel2.setX(1);
-        travel2.setY(1);
-
-        ExtrusionNode extrusionNode5 = new ExtrusionNode();
-        extrusionNode5.setX(9);
-        extrusionNode5.setY(1);
-
-        ExtrusionNode extrusionNode6 = new ExtrusionNode();
-        extrusionNode6.setX(9);
-        extrusionNode6.setY(9);
-
-        ExtrusionNode extrusionNode7 = new ExtrusionNode();
-        extrusionNode7.setX(1);
-        extrusionNode7.setY(9);
-
-        ExtrusionNode extrusionNode8 = new ExtrusionNode();
-        extrusionNode8.setX(1);
-        extrusionNode8.setY(1);
-
-        inner1.addChild(0, travel2);
-        inner1.addChild(1, extrusionNode5);
-        inner1.addChild(2, extrusionNode6);
-        inner1.addChild(3, extrusionNode7);
-        inner1.addChild(4, extrusionNode8);
-
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare();
 
         NozzleParameters nozzleParams = new NozzleParameters();
         nozzleParams.setEjectionVolume(0.003f);
@@ -1744,10 +1636,11 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 testProject,
                 ppFeatures);
 
-        Optional<IntersectionResult> result = postProcessor.findClosestExtrusionNode(extrusionNode4, inner1);
+        Optional<IntersectionResult> result = postProcessor.findClosestExtrusionNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
+                ((SectionNode) tool1.getChildren().get(0)));
 
         assertTrue(result.isPresent());
-        assertSame(extrusionNode8, result.get().getClosestNode());
+        assertSame(tool1.getChildren().get(0).getChildren().get(4), result.get().getClosestNode());
         assertEquals(1, result.get().getIntersectionPoint().getX(), 0.01);
         assertEquals(5, result.get().getIntersectionPoint().getY(), 0.01);
     }
@@ -1755,70 +1648,13 @@ public class PostProcessorTest extends JavaFXConfiguredTest
     @Test
     public void testCloseInwardFromOuterPerimeter()
     {
-        ToolSelectNode tool1 = new ToolSelectNode();
-
-        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
-        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
-
-        TravelNode travel1 = new TravelNode();
-        travel1.setX(0);
-        travel1.setY(0);
-        
-        ExtrusionNode extrusionNode1 = new ExtrusionNode();
-        extrusionNode1.setX(10);
-        extrusionNode1.setY(0);
-
-        ExtrusionNode extrusionNode2 = new ExtrusionNode();
-        extrusionNode2.setX(10);
-        extrusionNode2.setY(10);
-
-        ExtrusionNode extrusionNode3 = new ExtrusionNode();
-        extrusionNode3.setX(0);
-        extrusionNode3.setY(10);
-
-        ExtrusionNode extrusionNode4 = new ExtrusionNode();
-        extrusionNode4.setX(0);
-        extrusionNode4.setY(0);
-
-        outer1.addChild(0, travel1);
-        outer1.addChild(1, extrusionNode1);
-        outer1.addChild(2, extrusionNode2);
-        outer1.addChild(3, extrusionNode3);
-        outer1.addChild(4, extrusionNode4);
-
-        TravelNode travel2 = new TravelNode();
-        travel2.setX(1);
-        travel2.setY(1);
-
-        ExtrusionNode extrusionNode5 = new ExtrusionNode();
-        extrusionNode5.setX(9);
-        extrusionNode5.setY(1);
-
-        ExtrusionNode extrusionNode6 = new ExtrusionNode();
-        extrusionNode6.setX(9);
-        extrusionNode6.setY(9);
-
-        ExtrusionNode extrusionNode7 = new ExtrusionNode();
-        extrusionNode7.setX(1);
-        extrusionNode7.setY(9);
-
-        ExtrusionNode extrusionNode8 = new ExtrusionNode();
-        extrusionNode8.setX(1);
-        extrusionNode8.setY(1);
-
-        inner1.addChild(0, travel2);
-        inner1.addChild(1, extrusionNode5);
-        inner1.addChild(2, extrusionNode6);
-        inner1.addChild(3, extrusionNode7);
-        inner1.addChild(4, extrusionNode8);
-
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare();
 
         NozzleParameters nozzleParams = new NozzleParameters();
-        nozzleParams.setEjectionVolume(0.003f);
+        nozzleParams.setEjectionVolume(0.15f);
 
         NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+        testProxy.setCurrentPosition(1.0);
 
         HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
 
@@ -1838,112 +1674,102 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 testProject,
                 ppFeatures);
 
-        postProcessor.closeInwardFromOuterPerimeter(extrusionNode4, testProxy);
+        postProcessor.closeInwardFromOuterPerimeter(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)), testProxy);
 
-        assertEquals(ppFeatures, outer1);
+        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
+        assertEquals(8, outerResult.getChildren().size());
+
+        assertTrue(outerResult.getChildren().get(5) instanceof TravelNode);
+        TravelNode travelResult1 = (TravelNode) outerResult.getChildren().get(5);
+        assertEquals(1, travelResult1.getX(), epsilon);
+        assertEquals(1, travelResult1.getY(), epsilon);
+
+        assertTrue(outerResult.getChildren().get(6) instanceof ExtrusionNode);
+        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(6);
+        assertEquals(1, extrusionResult1.getX(), epsilon);
+        assertEquals(9, extrusionResult1.getY(), epsilon);
+        assertFalse(extrusionResult1.isEInUse());
+        assertEquals(0.333, extrusionResult1.getB(), epsilon);
+
+        assertTrue(outerResult.getChildren().get(7) instanceof ExtrusionNode);
+        ExtrusionNode extrusionResult2 = (ExtrusionNode) outerResult.getChildren().get(7);
+        assertEquals(5, extrusionResult2.getX(), epsilon);
+        assertEquals(9, extrusionResult2.getY(), epsilon);
+        assertFalse(extrusionResult2.isEInUse());
+        assertEquals(0, extrusionResult2.getB(), epsilon);
     }
 
-//    @Test
-//    public void testCloseToEndOfFill_noPriorSibling()
-//    {
-//        FillSectionNode fill1 = new FillSectionNode();
-//
-//        ExtrusionNode extrusionNode1 = new ExtrusionNode();
-//        extrusionNode1.setE(0.001f);
-//
-//        ExtrusionNode extrusionNode2 = new ExtrusionNode();
-//        extrusionNode2.setE(0.001f);
-//
-//        ExtrusionNode extrusionNode3 = new ExtrusionNode();
-//        extrusionNode3.setE(0.001f);
-//
-//        ExtrusionNode extrusionNode4 = new ExtrusionNode();
-//        extrusionNode4.setE(0.001f);
-//
-//        ExtrusionNode extrusionNode5 = new ExtrusionNode();
-//        extrusionNode5.setE(0.001f);
-//
-//        ExtrusionNode extrusionNode6 = new ExtrusionNode();
-//        extrusionNode6.setE(0.001f);
-//        extrusionNode6.setX(0);
-//        extrusionNode6.setY(0);
-//
-//        ExtrusionNode extrusionNode7 = new ExtrusionNode();
-//        extrusionNode7.setE(0.0015f);
-//        extrusionNode7.setX(10);
-//        extrusionNode7.setY(0);
-//
-//        ExtrusionNode extrusionNode8 = new ExtrusionNode();
-//        extrusionNode8.setE(0.001f);
-//
-//        ExtrusionNode extrusionNode9 = new ExtrusionNode();
-//        extrusionNode9.setE(0.001f);
-//
-//        fill1.addChild(0, extrusionNode1);
-//        fill1.addChild(1, extrusionNode2);
-//        fill1.addChild(2, extrusionNode3);
-//        fill1.addChild(3, extrusionNode4);
-//        fill1.addChild(4, extrusionNode5);
-//        fill1.addChild(5, extrusionNode6);
-//        fill1.addChild(6, extrusionNode7);
-//        fill1.addChild(7, extrusionNode8);
-//        fill1.addChild(8, extrusionNode9);
-//
-//        NozzleParameters nozzleParams = new NozzleParameters();
-//        nozzleParams.setEjectionVolume(0.003f);
-//
-//        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
-//
-//        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
-//
-//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-//        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
-//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-//
-//        Project testProject = new Project();
-//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-//
-//        PostProcessor postProcessor = new PostProcessor("",
-//                "",
-//                singleMaterialHead,
-//                testProject,
-//                ppFeatures);
-//
-//        postProcessor.closeToEndOfFill(extrusionNode9, testProxy);
-//        
-//        postProcessor.outputNodes(fill1, 0);
-//
-//        assertEquals(10, fill1.getChildren().size());
-//
-//        assertTrue(fill1.getChildren().get(5) instanceof ExtrusionNode);
-//        ExtrusionNode node0 = (ExtrusionNode) fill1.getChildren().get(5);
-//        assertFalse(node0.isBSet());
-//        assertEquals(0.001, node0.getE(), 0.0001);
-//
-//        assertTrue(fill1.getChildren().get(6) instanceof ExtrusionNode);
-//        ExtrusionNode node1 = (ExtrusionNode) fill1.getChildren().get(6);
-//        assertFalse(node1.isBSet());
-//        assertEquals(0.0005, node1.getE(), 0.0001);
-//
-//        assertTrue(fill1.getChildren().get(7) instanceof ExtrusionNode);
-//        ExtrusionNode node2 = (ExtrusionNode) fill1.getChildren().get(7);
-//        assertTrue(node2.isBSet());
-//        assertEquals(0.67, node2.getB(), 0.01);
-//        assertFalse(node2.isEInUse());
-//
-//        assertTrue(fill1.getChildren().get(8) instanceof ExtrusionNode);
-//        ExtrusionNode node3 = (ExtrusionNode) fill1.getChildren().get(8);
-//        assertTrue(node3.isBSet());
-//        assertEquals(0.33, node3.getB(), 0.01);
-//        assertFalse(node3.isEInUse());
-//
-//        assertTrue(fill1.getChildren().get(9) instanceof ExtrusionNode);
-//        ExtrusionNode node4 = (ExtrusionNode) fill1.getChildren().get(9);
-//        assertTrue(node4.isBSet());
-//        assertEquals(0.0, node4.getB(), 0.01);
-//        assertFalse(node4.isEInUse());
-//    }
+    private ToolSelectNode setupToolNodeWithInnerAndOuterSquare()
+    {
+        ToolSelectNode tool1 = new ToolSelectNode();
+
+        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
+        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
+
+        TravelNode travel1 = new TravelNode();
+        travel1.setX(0);
+        travel1.setY(0);
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.setX(10);
+        extrusionNode1.setY(0);
+        extrusionNode1.setE(0.1f);
+
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.setX(10);
+        extrusionNode2.setY(10);
+        extrusionNode2.setE(0.1f);
+
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.setX(0);
+        extrusionNode3.setY(10);
+        extrusionNode3.setE(0.1f);
+
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.setX(0);
+        extrusionNode4.setY(0);
+        extrusionNode4.setE(0.1f);
+
+        outer1.addChild(0, travel1);
+        outer1.addChild(1, extrusionNode1);
+        outer1.addChild(2, extrusionNode2);
+        outer1.addChild(3, extrusionNode3);
+        outer1.addChild(4, extrusionNode4);
+
+        TravelNode travel2 = new TravelNode();
+        travel2.setX(1);
+        travel2.setY(1);
+
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.setX(9);
+        extrusionNode5.setY(1);
+        extrusionNode5.setE(0.1f);
+
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.setX(9);
+        extrusionNode6.setY(9);
+        extrusionNode6.setE(0.1f);
+
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.setX(1);
+        extrusionNode7.setY(9);
+        extrusionNode7.setE(0.1f);
+
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.setX(1);
+        extrusionNode8.setY(1);
+        extrusionNode8.setE(0.1f);
+
+        inner1.addChild(0, travel2);
+        inner1.addChild(1, extrusionNode5);
+        inner1.addChild(2, extrusionNode6);
+        inner1.addChild(3, extrusionNode7);
+        inner1.addChild(4, extrusionNode8);
+
+        tool1.addChild(0, inner1);
+        tool1.addChild(1, outer1);
+
+        return tool1;
+    }
+
 }
