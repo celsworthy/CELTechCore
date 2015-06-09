@@ -82,7 +82,6 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     private void clearZOffsetsOnHead() throws RoboxCommsException
     {
         HeadFile headDataFile = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
-        //TODO modify to support multiple nozzles
         NozzleData nozzle1Data = headDataFile.getNozzles().get(0);
         NozzleData nozzle2Data = headDataFile.getNozzles().get(1);
 
@@ -101,6 +100,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                                         savedHeadData.getNozzle2BOffset(),
                                         savedHeadData.getLastFilamentTemperature(),
                                         savedHeadData.getHeadHours());
+        printer.readHeadEEPROM();
     }
 
     private void heatNozzle() throws InterruptedException, PrinterException

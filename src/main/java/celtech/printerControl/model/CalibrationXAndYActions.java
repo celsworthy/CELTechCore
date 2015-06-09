@@ -105,6 +105,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
                                                 savedHeadData.getNozzle2BOffset(),
                                                 savedHeadData.getLastFilamentTemperature(),
                                                 savedHeadData.getHeadHours());
+                printer.readHeadEEPROM();
             } catch (RoboxCommsException ex)
             {
                 steno.error("Unable to restore head! " + ex);
