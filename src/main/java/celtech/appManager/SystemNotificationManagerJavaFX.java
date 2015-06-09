@@ -795,7 +795,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         }
     }
 
-    @Override
+     @Override
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
         boolean showContinueOption, boolean showAbortOption, boolean showRetryOption,
         boolean showOKOption)
