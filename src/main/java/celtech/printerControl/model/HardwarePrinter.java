@@ -314,9 +314,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
-                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_NOZZLE))
-                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_BED))
-                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))));
+                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))
+                        .or(printEngine.printInProgressProperty())));
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))
@@ -331,8 +330,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
                 .or(printEngine.sendingDataToPrinter)
                 .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE))
-                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_NOZZLE))
-                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.HEATING_BED))
                 .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING)));
 
         canCalibrateHead.bind(head.isNotNull()
@@ -1747,7 +1744,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
              */
             if (dataIngested && lastPacket)
             {
-                steno.debug("Final complete chunk:" + outputBuffer.toString() + " seq:"
+                steno.trace("Final complete chunk:" + outputBuffer.toString() + " seq:"
                         + dataFileSequenceNumber);
                 AckResponse response = transmitDataFileEnd(outputBuffer.toString(),
                         dataFileSequenceNumber);
@@ -1764,7 +1761,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                 if (dataFileSequenceNumber >= dataFileSequenceNumberStartPoint)
                 {
-                    steno.debug("Sending chunk seq:" + dataFileSequenceNumber);
+                    steno.trace("Sending chunk seq:" + dataFileSequenceNumber);
 
                     AckResponse response = transmitDataFileChunk(outputBuffer.toString(),
                             dataFileSequenceNumber);
