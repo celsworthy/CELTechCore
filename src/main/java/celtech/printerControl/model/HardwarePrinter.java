@@ -314,8 +314,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
                         .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
-                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))
-                        .or(printEngine.printInProgressProperty())));
+                        .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))));
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(printerStatus.isEqualTo(PrinterStatus.PAUSED))
@@ -330,7 +329,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(printerStatus.isEqualTo(PrinterStatus.RESUMING))
                 .or(printEngine.sendingDataToPrinter)
                 .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE))
-                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING)));
+                .or(metaStatus.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING))
+                .or(printEngine.printInProgressProperty()));
 
         canCalibrateHead.bind(head.isNotNull()
                 .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
