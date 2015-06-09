@@ -7,7 +7,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
-import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
