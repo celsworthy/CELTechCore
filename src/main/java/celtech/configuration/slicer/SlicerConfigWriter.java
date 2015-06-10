@@ -231,7 +231,7 @@ public abstract class SlicerConfigWriter
                 for (int elementCounter = 1; elementCounter < valueElements.length; elementCounter++)
                 {
                     boolean optionalOperatorDetected = false;
-                    
+
                     String operation = valueElements[elementCounter];
                     String operator = operation.substring(0, 1);
                     String variable = operation.substring(1);
@@ -241,13 +241,13 @@ public abstract class SlicerConfigWriter
                         String[] optionalAssignmentString = operation.substring(1).split(optionalDivider);
                         if (optionalAssignmentString.length == 2)
                         {
+                            optionalOperatorDetected = true;
                             if (optionalAssignmentString[0].contains(equivalenceDivider))
                             {
                                 String[] optionalCheckParts = optionalAssignmentString[0].split(equivalenceDivider);
 
                                 if (optionalCheckParts.length == 2)
                                 {
-                                    optionalOperatorDetected = true;
                                     try
                                     {
                                         Method getMethod = getVariableMethod(optionalCheckParts[0]);
