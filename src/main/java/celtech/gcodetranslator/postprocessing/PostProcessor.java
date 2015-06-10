@@ -604,7 +604,7 @@ public class PostProcessor
 
                     if (!siblingBefore.isPresent())
                     {
-                        throw new RuntimeException("Unable to find prior sibling when splitting extrusion");
+                        throw new RuntimeException("Unable to find prior sibling when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
                     }
 
                     if (siblingBefore.get() instanceof MovementNode)
@@ -652,7 +652,12 @@ public class PostProcessor
         }
     }
 
-    protected void addClosesUsingSpecifiedNode(GCodeEventNode nodeToAddClosesTo, GCodeEventNode nodeToCopyCloseFrom, final NozzleProxy nozzleInUse, boolean towardsEnd)
+    protected void addClosesUsingSpecifiedNode(GCodeEventNode nodeToAddClosesTo,
+            GCodeEventNode nodeToCopyCloseFrom,
+            final NozzleProxy nozzleInUse,
+            boolean towardsEnd,
+            double availableVolume,
+            boolean closeOverAvailableVolume)
     {
         List<ExtrusionNode> extrusionNodesToCopy = null;
 
@@ -678,6 +683,7 @@ public class PostProcessor
                         .filter(extrusionnode -> extrusionnode instanceof ExtrusionNode)
                         .map(ExtrusionNode.class::cast)
                         .collect(Collectors.toList());
+                extrusionNodesToCopy.add(extrusionNodesToCopy.size(), (ExtrusionNode)nodeToCopyCloseFrom);
             }
         } catch (NodeProcessingException ex)
         {
@@ -690,7 +696,7 @@ public class PostProcessor
 
         double runningTotalOfExtrusion = 0;
         double currentNozzlePosition = nozzleInUse.getCurrentPosition();
-        double closePermm3Volume = 1 / volumeToCloseOver;
+        double closePermm3Volume = closeOverAvailableVolume == false ? currentNozzlePosition / volumeToCloseOver : currentNozzlePosition / availableVolume;
         double requiredVolumeToCloseOver = currentNozzlePosition / closePermm3Volume;
 
         ExtrusionNode lastExtrusionNode = null;
@@ -714,8 +720,8 @@ public class PostProcessor
             } else if (comparisonResult == MathUtils.EQUAL)
             {
                 //All done
-                currentNozzlePosition = currentNozzlePosition - copy.getE() * closePermm3Volume;
-                double bValue = currentNozzlePosition;
+                currentNozzlePosition = 0;
+                double bValue = 0;
                 copy.setB(bValue);
                 runningTotalOfExtrusion += copy.getE();
                 //No extrusion during a close
@@ -757,7 +763,7 @@ public class PostProcessor
         }
     }
 
-    protected void closeInwardFromOuterPerimeter(GCodeEventNode node, final NozzleProxy nozzleInUse)
+    protected void closeInwardFromOuterPerimeter(final GCodeEventNode node, final NozzleProxy nozzleInUse)
     {
         //Pick the earliest possible InnerPerimeter
 
@@ -795,7 +801,7 @@ public class PostProcessor
 
                         if (forwardExtrusionTotal >= volumeToCloseOver)
                         {
-                            addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, true);
+                            addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, true, forwardExtrusionTotal, false);
                         } else
                         {
                             //Try backwards
@@ -807,10 +813,17 @@ public class PostProcessor
 
                             if (backwardExtrusionTotal >= volumeToCloseOver)
                             {
-                                addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, false);
+                                addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, false, backwardExtrusionTotal, false);
                             } else
                             {
-                                throw new RuntimeException("Failed to find long enough section for close from node " + node.renderForOutput());
+                                //Close over the largest available volume - no lower limit!!
+                                if (forwardExtrusionTotal > backwardExtrusionTotal)
+                                {
+                                    addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, true, forwardExtrusionTotal, true);
+                                } else
+                                {
+                                    addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, false, backwardExtrusionTotal, true);
+                                }
                             }
                         }
                     } catch (NodeProcessingException ex)
