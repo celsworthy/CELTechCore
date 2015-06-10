@@ -62,7 +62,7 @@ public class STLImporter
         boolean fileIsBinary;
         boolean modelIsTooLarge = false;
 
-        steno.info("Starting STL load");
+        steno.debug("Starting STL load");
 
         //Note that FileReader is used, not File, since File is not Closeable
         try
@@ -108,7 +108,7 @@ public class STLImporter
             steno.error("Couldn't find or open " + modelFile.getName());
         }
 
-        steno.info("loaded and processing mesh");
+        steno.debug("loaded and processing mesh");
 
         if (parentTask == null || (!parentTask.isCancelled()))
         {
@@ -122,9 +122,9 @@ public class STLImporter
             ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
 
             BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
-            steno.info("Model bounds are : " + bounds);
+            steno.debug("Model bounds are : " + bounds);
             ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
-            steno.info("Model orig bounds are : " + originalBounds);
+            steno.debug("Model orig bounds are : " + originalBounds);
             modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
             ModelLoadResult result = new ModelLoadResult(modelIsTooLarge,
@@ -216,7 +216,7 @@ public class STLImporter
         byte[] facetData = new byte[50]; // Each face has 50 bytes of data
         int progressPercent = 0;
 
-        steno.info("Processing binary STL");
+        steno.debug("Processing binary STL");
 
         TriangleMesh triangleMesh = new TriangleMesh();
         HashMap<Vector3D, Integer> graph = new HashMap<>();
@@ -300,7 +300,7 @@ public class STLImporter
                 }
             }
 
-            steno.info("Started with " + numberOfFacets * 3 + " vertices and now have "
+            steno.debug("Started with " + numberOfFacets * 3 + " vertices and now have "
                 + graph.size());
 
             float[] tempVertexPointArray = new float[3];
@@ -339,7 +339,7 @@ public class STLImporter
                 smoothingGroups[i] = 0;
             }
             triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
-            steno.info("The mesh contains " + triangleMesh.getPoints().size() / 3
+            steno.debug("The mesh contains " + triangleMesh.getPoints().size() / 3
                 + " points, " + triangleMesh.getTexCoords().size() / 2 + " tex coords and "
                 + triangleMesh.getFaces().size() / 6 + " faces");
 
@@ -429,7 +429,7 @@ public class STLImporter
 
             reader.close();
 
-            steno.info("Started with " + facetCounter * 3 + " vertices and now have "
+            steno.debug("Started with " + facetCounter * 3 + " vertices and now have "
                 + graph.size());
 
             float[] tempVertexPointArray = new float[3];
@@ -468,7 +468,7 @@ public class STLImporter
                 smoothingGroups[i] = 0;
             }
             triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
-            steno.info("The mesh contains " + triangleMesh.getPoints().size()
+            steno.debug("The mesh contains " + triangleMesh.getPoints().size()
                 + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
                 + triangleMesh.getFaces().size() + " faces");
 
