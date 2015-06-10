@@ -117,9 +117,9 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
 
                 outputWriter.close();
 
-                steno.info("Finished roboxising " + inputFilename);
-                steno.info("Total extrusion volume " + totalExtrudedVolume + " mm3");
-                steno.info("Total XY movement distance " + totalXYMovement + " mm");
+                steno.debug("Finished roboxising " + inputFilename);
+                steno.debug("Total extrusion volume " + totalExtrudedVolume + " mm3");
+                steno.debug("Total XY movement distance " + totalXYMovement + " mm");
 
                 success = true;
             } catch (IOException ex)
