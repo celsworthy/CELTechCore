@@ -229,4 +229,38 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         assertTrue(outputData.contains("raft_layers = 0"));
     }
 
+    @Test
+    public void testGenerateConfigForSparseInfillOffCuraFine() throws IOException
+    {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.FINE);
+        printerSettings.setFillDensityOverride(0);
+
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
+            + TEMPFILENAME;
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("sparseInfillLineDistance=-1"));
+    }
+
+    @Test
+    public void testGenerateConfigForSparseInfillOnCuraFine() throws IOException
+    {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.FINE);
+        printerSettings.setFillDensityOverride(0.5f);
+
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
+            + TEMPFILENAME;
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(), destinationFile);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("sparseInfillLineDistance=800"));
+    }
+
 }

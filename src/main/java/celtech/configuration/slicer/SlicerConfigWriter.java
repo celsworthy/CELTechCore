@@ -167,7 +167,7 @@ public abstract class SlicerConfigWriter
             }
         } catch (FileNotFoundException ex)
         {
-            steno.error("Couldn't open slic3r settings file for writing - " + destinationFile + " : " + ex.getMessage());
+            steno.error("Couldn't open slicer settings file for writing - " + destinationFile + " : " + ex.getMessage());
         } catch (IOException ex)
         {
             steno.error("IO Exception whilst writing slic3r settings - " + destinationFile + " : " + ex.getMessage());
@@ -230,6 +230,8 @@ public abstract class SlicerConfigWriter
             {
                 for (int elementCounter = 1; elementCounter < valueElements.length; elementCounter++)
                 {
+                    boolean optionalOperatorDetected = false;
+
                     String operation = valueElements[elementCounter];
                     String operator = operation.substring(0, 1);
                     String variable = operation.substring(1);
@@ -239,6 +241,7 @@ public abstract class SlicerConfigWriter
                         String[] optionalAssignmentString = operation.substring(1).split(optionalDivider);
                         if (optionalAssignmentString.length == 2)
                         {
+                            optionalOperatorDetected = true;
                             if (optionalAssignmentString[0].contains(equivalenceDivider))
                             {
                                 String[] optionalCheckParts = optionalAssignmentString[0].split(equivalenceDivider);
@@ -280,7 +283,7 @@ public abstract class SlicerConfigWriter
                                         }
                                     } catch (NoSuchMethodException ex)
                                     {
-                                        steno.warning("Failed to get method for " + optionalCheckParts[0]);
+                                        steno.warning("Failed to get method for " + optionalCheckParts[0] + " in " + operationString);
                                     }
                                 }
                             } else
@@ -307,7 +310,7 @@ public abstract class SlicerConfigWriter
                         }
                     }
 
-                    if (!doneProcessing)
+                    if (!doneProcessing && !optionalOperatorDetected)
                     {
 
                         Method getMethod;
@@ -342,7 +345,7 @@ public abstract class SlicerConfigWriter
                                 okToProcess = true;
                             } catch (NumberFormatException ex1)
                             {
-                                steno.warning("Failed to get get method or numeric value for " + variable);
+                                steno.warning("Failed to get get method or numeric value for " + variable + " in " + operationString);
                             }
                         }
 

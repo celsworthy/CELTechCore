@@ -152,7 +152,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 break;
         }
 
-        steno.info("Selected slicer is " + slicerType + " : " + Thread.currentThread().getName());
+        steno.debug("Selected slicer is " + slicerType + " : " + Thread.currentThread().getName());
 
         switch (machineType)
         {
@@ -283,13 +283,13 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 switch (exitStatus)
                 {
                     case 0:
-                        steno.info("Slicer terminated successfully ");
+                        steno.debug("Slicer terminated successfully ");
                         succeeded = true;
                         break;
                     default:
-                        steno.info("Failure when invoking slicer with command line: " + String.join(
+                        steno.error("Failure when invoking slicer with command line: " + String.join(
                                 " ", commands));
-                        steno.info("Slicer terminated with unknown exit code " + exitStatus);
+                        steno.error("Slicer terminated with unknown exit code " + exitStatus);
                         break;
                 }
             } catch (IOException ex)
