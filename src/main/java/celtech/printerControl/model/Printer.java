@@ -303,6 +303,10 @@ public interface Printer extends RoboxResponseConsumer
      */
     public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
     
+    public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
     /**
      * 
      * @param blockUntilFinished

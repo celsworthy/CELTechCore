@@ -22,6 +22,9 @@ public enum PrinterStatus
     HOMING("printerStatus.macro.homing"),
     EJECTING_STUCK_MATERIAL("printerStatus.macro.ejectStuckMaterial"),
     LEVELLING_GANTRY("printerStatus.macro.levellingGantry"),
+    TEST_X("printerStatus.macro.testX"),
+    TEST_Y("printerStatus.macro.testY"),
+    TEST_Z("printerStatus.macro.testZ"),
     LEVELLING_Y("printerStatus.macro.levellingY"),
     //
     PAUSING("printerStatus.pausing"),
