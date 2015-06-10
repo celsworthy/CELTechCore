@@ -60,6 +60,8 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     @Override
     protected GCodePostProcessingResult call() throws Exception
     {
+        GCodePostProcessingResult postProcessingResult = null;
+        
         try
         {
             updateMessage("");
@@ -69,16 +71,14 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     {
                         updateProgress(newValue.doubleValue(), 100.0);
                     });
-            GCodePostProcessingResult postProcessingResult = doPostProcessing(printJobUUID,
+            postProcessingResult = doPostProcessing(printJobUUID,
                     printJobDirectory, printerToUse, project, taskProgress);
-            return postProcessingResult;
         } catch (Exception ex)
         {
             ex.printStackTrace();
             steno.error("Error in post processing");
         }
-        return null;
-
+            return postProcessingResult;
     }
 
     public static GCodePostProcessingResult doPostProcessing(String printJobUUID,
@@ -129,8 +129,11 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     ppFeatures);
 
             RoboxiserResult roboxiserResult = postProcessor.processInput();
-            roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
-            postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+            if (roboxiserResult.isSuccess())
+            {
+                roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+                postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+            }
         } else
         {
             GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();

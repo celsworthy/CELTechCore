@@ -123,19 +123,23 @@ public class GetTimeWeightCost
                 Lookup.getCurrentlySelectedPrinterProperty().get(),
                 project,
                 null);
-        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
-                getPrintJobStatistics();
-
-        if (isCancelled())
+        
+        if (result != null
+                && result.getRoboxiserResult().isSuccess())
         {
-            return;
+            PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
+                    getPrintJobStatistics();
+
+            if (isCancelled())
+            {
+                return;
+            }
+
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                updateFieldsForStatistics(printJobStatistics);
+            });
         }
-
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            updateFieldsForStatistics(printJobStatistics);
-        });
-
     }
 
     /**
@@ -202,7 +206,7 @@ public class GetTimeWeightCost
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
         configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
-                                    (float) (centreOfPrintedObject.getZ()));
+                (float) (centreOfPrintedObject.getZ()));
         configWriter.generateConfigForSlicer(settings,
                 temporaryDirectory
                 + settings.getProfileName()

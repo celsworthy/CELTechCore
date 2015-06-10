@@ -610,8 +610,8 @@ public class PostProcessor
                     if (siblingBefore.get() instanceof MovementNode)
                     {
                         // We can work out how to split this extrusion
-                        ExtrusionNode priorExtrusion = (ExtrusionNode) siblingBefore.get();
-                        Vector2D firstPoint = new Vector2D(priorExtrusion.getX(), priorExtrusion.getY());
+                        MovementNode priorMovement = (MovementNode) siblingBefore.get();
+                        Vector2D firstPoint = new Vector2D(priorMovement.getX(), priorMovement.getY());
                         Vector2D secondPoint = new Vector2D(extrusionNodeBeingExamined.getX(), extrusionNodeBeingExamined.getY());
 
                         double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeBeingExamined.getE() - volumeToCloseOver;
