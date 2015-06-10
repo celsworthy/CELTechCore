@@ -258,11 +258,19 @@ public abstract class GCodeEventNode extends MutableTreeNodeImpl<GCodeEventNode>
         parent.removeChild(myIndex);
     }
     
+    /**
+     * Adds a child node at the end of the list of this node's children
+     * @param node 
+     */
     public void addChildAtEnd(GCodeEventNode node)
     {
         addChild(getChildren().size(), node);
     }
     
+    /**
+     * Looks at the children of this node's parent and finds the next node in the list regardless of type
+     * @return 
+     */
     public Optional<GCodeEventNode> getSiblingBefore()
     {
         Optional<GCodeEventNode> siblingBefore = Optional.empty();
@@ -276,7 +284,11 @@ public abstract class GCodeEventNode extends MutableTreeNodeImpl<GCodeEventNode>
         
         return siblingBefore;
     }
-    
+
+    /**
+     * Looks at the children of this node's parent and finds the previous node in the list regardless of type
+     * @return 
+     */
     public Optional<GCodeEventNode> getSiblingAfter()
     {
         Optional<GCodeEventNode> siblingAfter = Optional.empty();

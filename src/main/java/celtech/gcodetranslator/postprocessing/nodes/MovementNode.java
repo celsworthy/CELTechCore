@@ -14,10 +14,10 @@ public abstract class MovementNode extends CommentableNode
 
     private boolean isXSet = false;
     private double x;
-    
+
     private boolean isYSet = false;
     private double y;
-    
+
     private boolean isZSet = false;
     private double z;
 
@@ -29,6 +29,11 @@ public abstract class MovementNode extends CommentableNode
     private float e = 0;
     private boolean isDSet = false;
     private float d = 0;
+
+    public boolean isXSet()
+    {
+        return isXSet;
+    }
 
     /**
      *
@@ -47,6 +52,11 @@ public abstract class MovementNode extends CommentableNode
     {
         isXSet = true;
         this.x = x;
+    }
+
+    public boolean isYSet()
+    {
+        return isYSet;
     }
 
     /**
@@ -68,6 +78,11 @@ public abstract class MovementNode extends CommentableNode
         this.y = y;
     }
 
+    public boolean isZSet()
+    {
+        return isZSet;
+    }
+
     /**
      *
      * @return
@@ -87,8 +102,14 @@ public abstract class MovementNode extends CommentableNode
         this.z = z;
     }
 
+    public boolean isFeedrateSet()
+    {
+        return isFeedRateSet;
+    }
+
     /**
      * Feedrate is in mm per minute
+     *
      * @return
      */
     public double getFeedRate_mmPerMin()
@@ -98,6 +119,7 @@ public abstract class MovementNode extends CommentableNode
 
     /**
      * Feedrate in mm per second
+     *
      * @return
      */
     public double getFeedRate_mmPerSec()
@@ -142,15 +164,22 @@ public abstract class MovementNode extends CommentableNode
      */
     public void setE(float value)
     {
-        isESet = true;
-        this.e = value;
+        if (value == 0)
+        {
+            isESet = false;
+            this.e = 0;
+        } else
+        {
+            isESet = true;
+            this.e = value;
+        }
     }
-    
+
     public boolean isEInUse()
     {
         return isESet;
     }
-    
+
     public void eNotInUse()
     {
         this.e = 0;
@@ -161,7 +190,7 @@ public abstract class MovementNode extends CommentableNode
     {
         return isDSet;
     }
-    
+
     public void dNotInUse()
     {
         this.d = 0;
@@ -184,7 +213,15 @@ public abstract class MovementNode extends CommentableNode
      */
     public void setD(float value)
     {
-        this.d = value;
+        if (value == 0)
+        {
+            isDSet = false;
+            this.d = 0;
+        } else
+        {
+            isDSet = true;
+            this.d = value;
+        }
     }
 
     /**
@@ -217,7 +254,7 @@ public abstract class MovementNode extends CommentableNode
             stringToReturn.append(threeDPformatter.format(x));
             stringToReturn.append(' ');
         }
-        
+
         if (isYSet)
         {
             stringToReturn.append('Y');
@@ -247,19 +284,19 @@ public abstract class MovementNode extends CommentableNode
 
         return stringToReturn.toString();
     }
-    
+
     public double timeToReach(MovementNode destinationNode)
     {
         Vector2D source = new Vector2D(x, y);
         Vector2D destination = new Vector2D(destinationNode.getX(), destinationNode.getY());
-        
+
         double distance = source.distance(destination);
-        
+
         double time = distance / feedRate_mmPerSec;
-        
+
         return time;
     }
-    
+
     public Vector2D toVector2D()
     {
         return new Vector2D(x, y);
