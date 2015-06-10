@@ -14,7 +14,7 @@ public enum RxPacketTypeEnum
     /**
      *
      */
-    STATUS_RESPONSE((byte)0xE1, 212, false, 0),
+    STATUS_RESPONSE((byte)0xE1, 213, false, 0),
 
     /**
      *
