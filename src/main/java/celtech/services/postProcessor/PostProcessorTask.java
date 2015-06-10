@@ -87,8 +87,6 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             Project project,
             DoubleProperty taskProgress) throws IOException
     {
-        GCodePostProcessingResult postProcessingResult = null;
-
         SlicerType selectedSlicer = null;
         if (project.getPrinterSettings().getSettings().getSlicerOverride() != null)
         {
@@ -101,6 +99,8 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID, printJobDirectory);
         String gcodeFileToProcess = printJob.getGCodeFileLocation();
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
+
+        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, new RoboxiserResult());
 
         if (selectedSlicer == SlicerType.Cura)
         {

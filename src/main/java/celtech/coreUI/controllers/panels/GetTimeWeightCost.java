@@ -140,6 +140,10 @@ public class GetTimeWeightCost
                 updateFieldsForStatistics(printJobStatistics);
             });
         }
+        else
+        {
+            throw new RuntimeException("Failed to calculate cost/weight");
+        }
     }
 
     /**
