@@ -222,6 +222,25 @@ public interface Printer extends RoboxResponseConsumer
 
     public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
+    public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;

@@ -275,6 +275,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         commandInterface.setPrinter(this);
         commandInterface.start();
+        
+        registerErrorConsumerAllErrors(this);
     }
 
     private void setupBindings()
@@ -1023,6 +1025,35 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                            PrinterStatus.IDLE,
                                                            blockUntilFinished, cancellable);
     }
+    
+    @Override
+    public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("x_test",
+                PrinterStatus.TEST_X,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }    
+    
+    @Override
+    public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("y_test",
+                PrinterStatus.TEST_Y,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }    
+    
+        @Override
+    public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("z_test",
+                PrinterStatus.TEST_Z,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }    
+
+    
 
     @Override
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException

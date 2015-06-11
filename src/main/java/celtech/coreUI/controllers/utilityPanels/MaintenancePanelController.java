@@ -111,6 +111,43 @@ public class MaintenancePanelController implements Initializable
             }
         }
     }
+    
+@FXML
+    void testX(ActionEvent event)
+    {
+        try
+        {
+            connectedPrinter.testX(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't level gantry");
+        }
+    }
+
+        @FXML
+    void testY(ActionEvent event)
+    {
+        try
+        {
+            connectedPrinter.testY(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't level gantry");
+        }
+    }
+    
+    @FXML
+    void testZ(ActionEvent event)
+    {
+        try
+        {
+            connectedPrinter.testZ(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't level gantry");
+        }
+    }    
+    
 
     @FXML
     void macroButtonPress(ActionEvent event)
