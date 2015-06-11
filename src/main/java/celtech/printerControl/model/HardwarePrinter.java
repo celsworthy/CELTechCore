@@ -276,6 +276,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         commandInterface.setPrinter(this);
         commandInterface.start();
+        
+        registerErrorConsumerAllErrors(this);
     }
 
     private void setupBindings()
