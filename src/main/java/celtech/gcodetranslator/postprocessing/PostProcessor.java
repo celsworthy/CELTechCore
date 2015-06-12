@@ -450,6 +450,8 @@ public class PostProcessor
         insertOpenAndCloseNodes(layerNode, lastLayerParseResult);
 
         assignExtrusionToCorrectExtruder(layerNode);
+        
+        suppressUnnecessaryToolChanges(layerNode, lastLayerParseResult);
 
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
@@ -775,7 +777,7 @@ public class PostProcessor
             {
                 if (lastExtrusionNode == null)
                 {
-                    throw new RuntimeException("No prior node to extrapolate from");
+                    throw new RuntimeException("No prior node to extrapolate from when closing around node " + ((Renderable)extrusionNodeToCopy).renderForOutput());
                 }
 
                 // We can work out how to split this extrusion
@@ -1671,5 +1673,32 @@ public class PostProcessor
 
         return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer,
                 -1);
+    }
+
+    protected void suppressUnnecessaryToolChanges(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult)
+    {
+        List<ToolSelectNode> toolSelectNodes = layerNode.stream()
+                .filter(node -> node instanceof ToolSelectNode)
+                .map(ToolSelectNode.class::cast)
+                .collect(Collectors.toList());
+        
+        int lastToolNumber = -1;
+        if (lastLayerPostProcessResult.getNozzleStateAtEndOfLayer().isPresent())
+        {
+            lastToolNumber = lastLayerPostProcessResult.getNozzleStateAtEndOfLayer().get().getNozzleReferenceNumber();
+        }
+        
+        for (ToolSelectNode toolSelectNode : toolSelectNodes)
+        {
+            if (lastToolNumber >= 0)
+            {
+                if (lastToolNumber == toolSelectNode.getToolNumber())
+                {
+                    toolSelectNode.suppressNodeOutput(true);
+                }
+            }
+            
+            lastToolNumber = toolSelectNode.getToolNumber();
+        }
     }
 }

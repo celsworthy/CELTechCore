@@ -8,7 +8,9 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
  */
 public class ToolSelectNode extends GCodeEventNode implements Renderable
 {
+
     private int toolNumber = -1;
+    private boolean outputSuppressed = false;
 
     public int getToolNumber()
     {
@@ -19,13 +21,27 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
     {
         this.toolNumber = toolNumber;
     }
-     
+
+    public void suppressNodeOutput(boolean suppress)
+    {
+        outputSuppressed = suppress;
+    }
+    
+    public boolean isNodeOutputSuppressed()
+    {
+        return outputSuppressed;
+    }
+
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "T" + getToolNumber();
+        String stringToReturn = "";
 
-        stringToReturn += getCommentText();
+        if (!outputSuppressed)
+        {
+            stringToReturn += "T" + getToolNumber();
+            stringToReturn += getCommentText();
+        }
 
         return stringToReturn;
     }

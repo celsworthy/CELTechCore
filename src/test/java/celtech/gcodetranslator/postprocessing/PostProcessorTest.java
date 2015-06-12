@@ -2473,6 +2473,53 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         assertEquals(0, extrusionResult2.getNozzlePosition().getB(), movementEpsilon);
     }
 
+    @Test
+    public void testSuppressUnnecessaryToolChanges()
+    {
+        ToolSelectNode tool1 = new ToolSelectNode();
+        tool1.setToolNumber(4);
+
+        ToolSelectNode tool2 = new ToolSelectNode();
+        tool2.setToolNumber(4);
+
+        LayerNode layer = new LayerNode();
+
+        layer.addChild(0, tool1);
+        layer.addChild(1, tool2);
+
+        NozzleParameters nozzleParams = new NozzleParameters();
+        nozzleParams.setEjectionVolume(0.15f);
+
+        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+        testProxy.setCurrentPosition(1.0);
+
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+
+        Project testProject = new Project();
+        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+
+        PostProcessor postProcessor = new PostProcessor("",
+                "",
+                singleMaterialHead,
+                testProject,
+                ppFeatures);
+
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), layer, 0, 0, 0, 0);
+
+        postProcessor.suppressUnnecessaryToolChanges(layer, lastLayerParseResult);
+
+        assertEquals(2, layer.getChildren().size());
+        assertFalse(tool1.isNodeOutputSuppressed());
+        assertTrue(tool2.isNodeOutputSuppressed());
+    }
+
     private ToolSelectNode setupToolNodeWithInnerAndOuterSquare()
     {
         ToolSelectNode tool1 = new ToolSelectNode();
