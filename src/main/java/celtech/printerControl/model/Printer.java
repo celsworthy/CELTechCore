@@ -221,15 +221,31 @@ public interface Printer extends RoboxResponseConsumer
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-
+    
+    public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
+    /**
+     * 
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException 
+     */
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
-    public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    
     public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException;
 
     /**

@@ -275,6 +275,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         commandInterface.setPrinter(this);
         commandInterface.start();
+        
+        registerErrorConsumerAllErrors(this);
     }
 
     private void setupBindings()
@@ -1023,6 +1025,60 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                            PrinterStatus.IDLE,
                                                            blockUntilFinished, cancellable);
     }
+    
+    @Override
+    public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("x_test",
+                PrinterStatus.TEST_X,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }    
+    
+    @Override
+    public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("y_test",
+                PrinterStatus.TEST_Y,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }    
+    
+        @Override
+    public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("z_test",
+                PrinterStatus.TEST_Z,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }    
+
+            @Override
+    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("speed_test",
+                PrinterStatus.SPEED_TEST,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }   
+    
+            @Override
+    public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("T0 Nozzle Clean",
+                PrinterStatus.NOZZLE_CLEAN,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }     
+    
+            @Override
+    public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("T1 Nozzle Clean",
+                PrinterStatus.NOZZLE_CLEAN,
+                PrinterStatus.IDLE,
+                blockUntilFinished, cancellable);
+    }        
 
     @Override
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
@@ -1051,13 +1107,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired("eject_stuck_material",
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("eject_stuck_material_e",
                                                        PrinterStatus.EJECTING_STUCK_MATERIAL,
                                                        PrinterStatus.IDLE,
                                                        blockUntilFinished, cancellable);
     }
+    
+    @Override
+    public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired("eject_stuck_material_d",
+                                                       PrinterStatus.EJECTING_STUCK_MATERIAL,
+                                                       PrinterStatus.IDLE,
+                                                       blockUntilFinished, cancellable);
+    }    
 
     @Override
     public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException

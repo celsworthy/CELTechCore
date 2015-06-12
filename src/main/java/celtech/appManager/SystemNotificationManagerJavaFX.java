@@ -1073,7 +1073,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.error("Eject failed - user chose to eject stuck material");
                     try
                     {
-                        printer.ejectStuckMaterial(false, null);
+                        printer.ejectStuckMaterialE(false, null);
                     } catch (PrinterException ex)
                     {
                         steno.error("Error when automatically invoking eject stuck material");
