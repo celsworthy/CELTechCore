@@ -17,10 +17,4 @@ public class GCodeDirectiveNode extends GCodeEventNode
     {
         this.gValue = gValue;
     }
-    
-    @Override
-    public String renderForOutput()
-    {
-        return toString();
-    }
 }

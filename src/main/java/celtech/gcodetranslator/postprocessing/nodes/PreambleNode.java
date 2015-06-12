@@ -16,10 +16,4 @@ public class PreambleNode extends GCodeEventNode
     {
         return "Preamble";
     }
-
-    @Override
-    public String renderForOutput()
-    {
-        return toString();
-    }
 }

@@ -1,19 +1,16 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class OrphanSectionNode extends SectionNode
+public class OrphanSectionNode extends SectionNode implements Renderable
 {
-
-    public OrphanSectionNode()
-    {
-    }
-
     @Override
     public String renderForOutput()
     {
-        return ";Orphan section " + super.renderForOutput();
+        return ";Orphan section";
     }
 }

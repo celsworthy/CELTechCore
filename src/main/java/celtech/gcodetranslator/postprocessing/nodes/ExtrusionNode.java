@@ -1,120 +1,93 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
+import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Feedrate;
+import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
+import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
+import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
  * @author Ian
  */
-public class ExtrusionNode extends MovementNode
+public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, MovementProvider, FeedrateProvider, NozzlePositionProvider, SupportsPrintTimeCalculation, Renderable
 {
 
-    private boolean isBSet = false;
-    private double b;
+    private Extrusion extrusion = new Extrusion();
+    private Movement movement = new Movement();
+    private Feedrate feedrate = new Feedrate();
+    private NozzlePosition nozzlePosition = new NozzlePosition();
 
-    /**
-     *
-     * @return
-     */
-    public boolean isBSet()
+    @Override
+    public Extrusion getExtrusion()
     {
-        return isBSet;
+        return extrusion;
     }
 
-    /**
-     *
-     * @return
-     */
-    public double getB()
+    @Override
+    public Movement getMovement()
     {
-        return b;
+        return movement;
     }
 
-    /**
-     *
-     * @param b
-     */
-    public void setB(double b)
+    @Override
+    public Feedrate getFeedrate()
     {
-        isBSet = true;
-        this.b = b;
+        return feedrate;
     }
 
-    //Extrusion events should always use G1
+    @Override
+    public NozzlePosition getNozzlePosition()
+    {
+        return nozzlePosition;
+    }
+
     @Override
     public String renderForOutput()
     {
-        NumberFormat twoDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
-        twoDPformatter.setMaximumFractionDigits(2);
-        twoDPformatter.setGroupingUsed(false);
+        StringBuilder stringToOutput = new StringBuilder();
 
-        StringBuilder stringToReturn = new StringBuilder();
-
-        stringToReturn.append("G1 ");
-
-        stringToReturn.append(super.renderForOutput());
-
-        if (isBSet)
-        {
-            stringToReturn.append(" B");
-            stringToReturn.append(twoDPformatter.format(b));
-        }
-
-        stringToReturn.append(renderComments());
-
-        return stringToReturn.toString();
+        stringToOutput.append("G1 ");
+        stringToOutput.append(feedrate.renderForOutput());
+        stringToOutput.append(' ');
+        stringToOutput.append(movement.renderForOutput());
+        stringToOutput.append(' ');
+        stringToOutput.append(extrusion.renderForOutput());
+        stringToOutput.append(' ');
+        stringToOutput.append(nozzlePosition.renderForOutput());
+        stringToOutput.append(' ');
+        stringToOutput.append(getCommentText());
+        return stringToOutput.toString().trim();
     }
 
-    public void extrudeUsingEOnly()
+    @Override
+    public double timeToReach(SupportsPrintTimeCalculation destinationNode)
     {
-        setE(getE() + getD());
-        dNotInUse();
+        Vector2D source = movement.toVector2D();
+        Vector2D destination = new Vector2D(((MovementProvider)destinationNode).getMovement().getX(), ((MovementProvider)destinationNode).getMovement().getY());
+
+        double distance = source.distance(destination);
+
+        double time = distance / feedrate.getFeedRate_mmPerSec();
+
+        return time;
     }
 
-    public void extrudeUsingDOnly()
-    {
-        setD(getE() + getD());
-        eNotInUse();
-    }
-
+    @Override
     public ExtrusionNode clone()
     {
         ExtrusionNode returnedNode = new ExtrusionNode();
-
-        if (isBSet)
-        {
-            returnedNode.setB(b);
-        }
-
-        if (super.isDInUse())
-        {
-            returnedNode.setD(super.getD());
-        }
-
-        if (super.isEInUse())
-        {
-            returnedNode.setE(super.getE());
-        }
-
-        if (super.isFeedrateSet())
-        {
-            returnedNode.setFeedRate_mmPerMin(super.getFeedRate_mmPerMin());
-        }
-
-        if (super.isXSet())
-        {
-            returnedNode.setX(super.getX());
-        }
-        if (super.isYSet())
-        {
-            returnedNode.setY(super.getY());
-        }
-        if (super.isZSet())
-        {
-            returnedNode.setZ(super.getZ());
-        }
+        returnedNode.extrusion = extrusion.clone();
+        returnedNode.movement = movement.clone();
+        returnedNode.feedrate = feedrate.clone();
+        returnedNode.nozzlePosition = nozzlePosition.clone();
+        returnedNode.setCommentText(getCommentText());
 
         return returnedNode;
     }

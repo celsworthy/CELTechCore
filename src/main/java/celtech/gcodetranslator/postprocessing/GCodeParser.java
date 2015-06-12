@@ -535,15 +535,15 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         RetractNode node = new RetractNode();
                         if (dValue.isSet())
                         {
-                            node.setD(dValue.get());
+                            node.getExtrusion().setD(dValue.get());
                         }
                         if (eValue.isSet())
                         {
-                            node.setE(eValue.get());
+                            node.getExtrusion().setE(eValue.get());
                         }
                         if (fValue.isSet())
                         {
-                            node.setFeedRate_mmPerMin(fValue.get());
+                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -585,15 +585,15 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         UnretractNode node = new UnretractNode();
                         if (dValue.isSet())
                         {
-                            node.setD(dValue.get());
+                            node.getExtrusion().setD(dValue.get());
                         }
                         if (eValue.isSet())
                         {
-                            node.setE(eValue.get());
+                            node.getExtrusion().setE(eValue.get());
                         }
                         if (fValue.isSet())
                         {
-                            node.setFeedRate_mmPerMin(fValue.get());
+                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -641,22 +641,22 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
 
                         if (fValue.isSet())
                         {
-                            node.setFeedRate_mmPerMin(fValue.get());
+                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
 
                         if (xValue.isSet())
                         {
-                            node.setX(xValue.get());
+                            node.getMovement().setX(xValue.get());
                         }
 
                         if (yValue.isSet())
                         {
-                            node.setY(yValue.get());
+                            node.getMovement().setY(yValue.get());
                         }
 
                         if (zValue.isSet())
                         {
-                            node.setZ(zValue.get());
+                            node.getMovement().setZ(zValue.get());
                         }
 
                         context.getValueStack().push(node);
@@ -712,32 +712,32 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
 
                         if (fValue.isSet())
                         {
-                            node.setFeedRate_mmPerMin(fValue.get());
+                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
 
                         if (xValue.isSet())
                         {
-                            node.setX(xValue.get());
+                            node.getMovement().setX(xValue.get());
                         }
 
                         if (yValue.isSet())
                         {
-                            node.setY(yValue.get());
+                            node.getMovement().setY(yValue.get());
                         }
 
                         if (zValue.isSet())
                         {
-                            node.setZ(zValue.get());
+                            node.getMovement().setZ(zValue.get());
                         }
 
                         if (dValue.isSet())
                         {
-                            node.setD(dValue.get());
+                            node.getExtrusion().setD(dValue.get());
                         }
 
                         if (eValue.isSet())
                         {
-                            node.setE(eValue.get());
+                            node.getExtrusion().setE(eValue.get());
                         }
 
                         context.getValueStack()

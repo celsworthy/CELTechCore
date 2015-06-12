@@ -1,20 +1,28 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
+import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Feedrate;
+import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
+
 /**
  *
  * @author Ian
  */
-public class UnretractNode extends MovementNode
+public class UnretractNode extends GCodeEventNode implements ExtrusionProvider, FeedrateProvider
 {
-    //Uetracts should always use G1
+    private final Feedrate feedrate = new Feedrate();
+    private final Extrusion extrusion = new Extrusion();
 
     @Override
-    public String renderForOutput()
+    public Extrusion getExtrusion()
     {
-        String stringToReturn = "G1 ";
-        
-        stringToReturn += super.renderForOutput();
-        
-        return stringToReturn;
+        return extrusion;
+    }
+
+    @Override
+    public Feedrate getFeedrate()
+    {
+        return feedrate;
     }
 }

@@ -120,6 +120,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
             ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
             ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
+            ppFeatures.enableFeature(PostProcessorFeature.REPLENISH_BEFORE_OPEN);
 
             PostProcessor postProcessor = new PostProcessor(
                     gcodeFileToProcess,

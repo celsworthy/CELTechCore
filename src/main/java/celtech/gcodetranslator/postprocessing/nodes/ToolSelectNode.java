@@ -1,10 +1,12 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class ToolSelectNode extends CommentableNode
+public class ToolSelectNode extends GCodeEventNode implements Renderable
 {
     private int toolNumber = -1;
 
@@ -23,7 +25,7 @@ public class ToolSelectNode extends CommentableNode
     {
         String stringToReturn = "T" + getToolNumber();
 
-        stringToReturn += getComment();
+        stringToReturn += getCommentText();
 
         return stringToReturn;
     }

@@ -17,10 +17,4 @@ public class GCodeEventNodeTestImpl extends GCodeEventNode
     {
         this.name = name;
     }
-
-    @Override
-    public String renderForOutput()
-    {
-        return name;
-    }
 }

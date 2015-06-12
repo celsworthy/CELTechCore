@@ -1,20 +1,20 @@
-package celtech.gcodetranslator.postprocessing.nodes;
+package celtech.gcodetranslator.postprocessing.nodes.providers;
 
 /**
  *
  * @author Ian
  */
-public abstract class CommentableNode extends GCodeEventNode
+public final class Comment
 {
     //This comment field is only used if a subclass has an inline comment
 
     private String comment = "";
 
-    public CommentableNode()
+    public Comment()
     {
     }
-    
-    public CommentableNode(String comment)
+
+    public Comment(String comment)
     {
         this.comment = comment;
     }
@@ -28,7 +28,7 @@ public abstract class CommentableNode extends GCodeEventNode
     {
         this.comment = comment;
     }
-    
+
     public void appendComment(String comment)
     {
         this.comment += " " + comment;
@@ -39,10 +39,18 @@ public abstract class CommentableNode extends GCodeEventNode
         StringBuilder stringToReturn = new StringBuilder();
         if (getComment().length() > 0)
         {
-            stringToReturn.append(" ; ");
+            stringToReturn.append("; ");
             stringToReturn.append(getComment());
         }
 
         return stringToReturn.toString();
+    }
+    
+    public Comment clone()
+    {
+        Comment newNode = new Comment();
+        newNode.comment = this.comment;
+        
+        return newNode;
     }
 }

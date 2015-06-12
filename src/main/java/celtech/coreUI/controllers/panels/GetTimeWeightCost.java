@@ -151,11 +151,7 @@ public class GetTimeWeightCost
      */
     private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
     {
-        double duration = printJobStatistics.getLayerNumberToPredictedDuration().stream().
-                mapToDouble(
-                        Double::doubleValue).sum();
-
-        String formattedDuration = formatDuration(duration);
+        String formattedDuration = formatDuration(printJobStatistics.getPredictedDuration());
 
         double volumeUsed = printJobStatistics.getEVolumeUsed();
         //TODO make work with dual extruders

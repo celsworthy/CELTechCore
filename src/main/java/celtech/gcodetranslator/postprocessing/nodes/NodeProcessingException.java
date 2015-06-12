@@ -1,5 +1,7 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
@@ -22,6 +24,17 @@ public class NodeProcessingException extends Exception
      * @param msg the detail message.
      */
     public NodeProcessingException(String msg, GCodeEventNode node)
+    {
+        super(msg + " whilst processing node:" + node.toString());
+    }
+
+    /**
+     * Constructs an instance of <code>NodeProcessingException</code> with the
+     * specified detail message.
+     *
+     * @param msg the detail message.
+     */
+    public NodeProcessingException(String msg, Renderable node)
     {
         super(msg + " whilst processing node:" + node.renderForOutput());
     }

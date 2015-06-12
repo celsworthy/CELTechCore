@@ -1,21 +1,23 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class InnerPerimeterSectionNode extends SectionNode
+public class InnerPerimeterSectionNode extends SectionNode implements Renderable
 {
 
     public static final String designator = ";TYPE:WALL-INNER";
 
-    public InnerPerimeterSectionNode()
-    {
-    }
-
     @Override
     public String renderForOutput()
     {
-        return designator + " " + super.renderForOutput();
+        StringBuilder stringToOutput = new StringBuilder();
+        stringToOutput.append(designator);
+        stringToOutput.append(' ');
+        stringToOutput.append(getCommentText());
+        return designator;
     }
 }

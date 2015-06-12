@@ -21,6 +21,7 @@ public class PrintJobStatistics
     private final double dVolumeUsed;
     private final List<Integer> layerNumberToLineNumber;
     private final List<Double> layerNumberToPredictedDuration;
+    private final double predictedDuration;
     private final int lineNumberOfFirstExtrusion;
 
     public PrintJobStatistics()
@@ -31,6 +32,7 @@ public class PrintJobStatistics
         lineNumberOfFirstExtrusion = 0;
         layerNumberToLineNumber = null;
         layerNumberToPredictedDuration = null;
+        predictedDuration = 0;
     }
 
     public PrintJobStatistics(int numberOfLines, 
@@ -38,7 +40,8 @@ public class PrintJobStatistics
         double dVolumeUsed,
         int lineNumberOfFirstExtrusion,
         List<Integer> layerNumberToLineNumber,
-        List<Double> layerNumberToPredictedDuration)
+        List<Double> layerNumberToPredictedDuration, 
+        double predictedDuration)
     {
         this.numberOfLines = numberOfLines;
         this.eVolumeUsed = eVolumeUsed;
@@ -46,6 +49,7 @@ public class PrintJobStatistics
         this.lineNumberOfFirstExtrusion = lineNumberOfFirstExtrusion;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
         this.layerNumberToPredictedDuration = layerNumberToPredictedDuration;
+        this.predictedDuration = predictedDuration;
     }
 
     public void writeToFile(String statisticsFileLocation) throws IOException
@@ -101,6 +105,14 @@ public class PrintJobStatistics
     public int getLineNumberOfFirstExtrusion()
     {
         return lineNumberOfFirstExtrusion;
+    }
+
+    /**
+     * @return the predictedDuration
+     */
+    public double getPredictedDuration()
+    {
+        return predictedDuration;
     }
 
     /**

@@ -43,7 +43,8 @@ public class PrintJobStatisticsTest
                 volumeUsed,
                 0,
                 lineNumberOfFirstExtrusion, layerNumberToLineNumber,
-                layerNumberToPredictedDuration);
+                layerNumberToPredictedDuration,
+                6.9);
 
         File testFile = temporaryFolder.newFile();
         printJobStatistics.writeToFile(testFile.getAbsolutePath());

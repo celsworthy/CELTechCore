@@ -1,21 +1,23 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class FillSectionNode extends SectionNode
+public class FillSectionNode extends SectionNode implements Renderable
 {
 
     public static final String designator = ";TYPE:FILL";
 
-    public FillSectionNode()
-    {
-    }
-
     @Override
     public String renderForOutput()
     {
-        return designator + " " + super.renderForOutput();
+        StringBuilder stringToOutput = new StringBuilder();
+        stringToOutput.append(designator);
+        stringToOutput.append(' ');
+        stringToOutput.append(getCommentText());
+        return designator;
     }
 }

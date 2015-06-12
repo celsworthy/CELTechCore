@@ -4,13 +4,6 @@ package celtech.gcodetranslator.postprocessing.nodes;
  *
  * @author Ian
  */
-public class SectionNode extends CommentableNode
+public class SectionNode extends GCodeEventNode
 {
-
-    @Override
-    public String renderForOutput()
-    {
-        return "";
-    }
-
 }

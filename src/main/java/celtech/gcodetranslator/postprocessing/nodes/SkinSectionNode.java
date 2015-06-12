@@ -1,21 +1,23 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class SkinSectionNode extends SectionNode
+public class SkinSectionNode extends SectionNode implements Renderable
 {
 
     public static final String designator = ";TYPE:SKIN";
 
-    public SkinSectionNode()
-    {
-    }
-
     @Override
     public String renderForOutput()
     {
-        return designator + " " + super.renderForOutput();
+        StringBuilder stringToOutput = new StringBuilder();
+        stringToOutput.append(designator);
+        stringToOutput.append(' ');
+        stringToOutput.append(getCommentText());
+        return designator;
     }
 }

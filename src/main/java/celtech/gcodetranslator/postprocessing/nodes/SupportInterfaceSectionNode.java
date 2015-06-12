@@ -1,12 +1,12 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
-import static celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode.designator;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 
 /**
  *
  * @author Ian
  */
-public class SupportInterfaceSectionNode extends SectionNode
+public class SupportInterfaceSectionNode extends SectionNode implements Renderable
 {
     public static final String designator =";TYPE:SUPPORT-INTERFACE";
     
@@ -17,6 +17,9 @@ public class SupportInterfaceSectionNode extends SectionNode
     @Override
     public String renderForOutput()
     {
-        return designator + " " + super.renderForOutput();
+        StringBuilder stringToOutput = new StringBuilder();
+        stringToOutput.append(designator);
+        stringToOutput.append(getCommentText());
+        return designator;
     }
 }

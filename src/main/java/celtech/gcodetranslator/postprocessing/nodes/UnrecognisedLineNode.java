@@ -1,10 +1,12 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class UnrecognisedLineNode extends GCodeEventNode
+public class UnrecognisedLineNode extends GCodeEventNode implements Renderable
 {
     private final String discardedLine;
 
@@ -12,11 +14,15 @@ public class UnrecognisedLineNode extends GCodeEventNode
     {
         this.discardedLine = discardedLine;
     }
+    
+    public String getDiscardedLine()
+    {
+        return discardedLine;
+    }
 
     @Override
     public String renderForOutput()
     {
-        return "; DISCARDED:: " + discardedLine;
+        return "; " + discardedLine;
     }
-
 }

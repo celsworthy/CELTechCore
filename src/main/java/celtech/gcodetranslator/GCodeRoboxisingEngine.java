@@ -133,7 +133,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
             }
 
             result.setSuccess(success);
-            
+
             /**
              * TODO: layerNumberToLineNumber uses lines numbers from the GCode
              * file so are a little less than the line numbers for each layer
@@ -143,12 +143,18 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
             layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
                     getNumberOfLinesOutput());
             int numLines = outputWriter.getNumberOfLinesOutput();
+
+            double predictedDuration = layerNumberToPredictedDuration.stream().
+                    mapToDouble(
+                            Double::doubleValue).sum();
+
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
                     numLines,
                     volumeUsed,
                     0,
                     lineNumberOfFirstExtrusion,
-                    layerNumberToLineNumber, layerNumberToPredictedDuration);
+                    layerNumberToLineNumber, layerNumberToPredictedDuration,
+                    predictedDuration);
 
             result.setRoboxisedStatistics(roboxisedStatistics);
         }

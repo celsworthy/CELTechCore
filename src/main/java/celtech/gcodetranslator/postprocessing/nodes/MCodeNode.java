@@ -1,11 +1,15 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.providers.Comment;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+
 /**
  *
  * @author Ian
  */
-public class MCodeNode extends CommentableNode
+public class MCodeNode extends GCodeEventNode implements Renderable
 {
+
     private int mNumber;
     private boolean sNumberPresent = false;
     private int sNumber;
@@ -18,7 +22,7 @@ public class MCodeNode extends CommentableNode
     {
         this.mNumber = mNumber;
     }
-    
+
     /**
      *
      * @return
@@ -63,15 +67,19 @@ public class MCodeNode extends CommentableNode
     @Override
     public String renderForOutput()
     {
-        String stringToReturn = "M" + getMNumber();
+        StringBuilder stringToOutput = new StringBuilder();
+
+        stringToOutput.append("M");
+        stringToOutput.append(getMNumber());
 
         if (sNumberPresent)
         {
-            stringToReturn += " S" + sNumber;
+            stringToOutput.append(" S");
+            stringToOutput.append(sNumber);
         }
+        stringToOutput.append(' ');
+        stringToOutput.append(getCommentText());
 
-        stringToReturn += renderComments();
-
-        return stringToReturn;
+        return stringToOutput.toString().trim();
     }
 }

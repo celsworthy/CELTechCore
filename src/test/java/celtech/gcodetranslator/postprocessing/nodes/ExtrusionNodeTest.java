@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.gcodetranslator.postprocessing.nodes;
 
 import org.junit.After;
@@ -51,23 +46,69 @@ public class ExtrusionNodeTest
     {
         System.out.println("clone");
         ExtrusionNode instance = new ExtrusionNode();
-        instance.setB(4);
-        instance.setX(1);
-        instance.setY(2);
-        instance.setZ(3);
-        instance.setFeedRate_mmPerMin(14);
-        instance.setD(5);
-        instance.setE(6);
+        instance.getNozzlePosition().setB(4);
+        instance.getMovement().setX(1);
+        instance.getMovement().setY(2);
+        instance.getMovement().setZ(3);
+        instance.getFeedrate().setFeedRate_mmPerMin(14);
+        instance.getExtrusion().setD(5);
+        instance.getExtrusion().setE(6);
 
         ExtrusionNode result = instance.clone();
         double epsilon = 0.001;
-        assertEquals(4, result.getB(), epsilon);
-        assertEquals(1, result.getX(), epsilon);
-        assertEquals(2, result.getY(), epsilon);
-        assertEquals(3, result.getZ(), epsilon);
-        assertEquals(14, result.getFeedRate_mmPerMin(), epsilon);
-        assertEquals(5, result.getD(), epsilon);
-        assertEquals(6, result.getE(), epsilon);
+        assertEquals(4, result.getNozzlePosition().getB(), epsilon);
+        assertEquals(1, result.getMovement().getX(), epsilon);
+        assertEquals(2, result.getMovement().getY(), epsilon);
+        assertEquals(3, result.getMovement().getZ(), epsilon);
+        assertEquals(14, result.getFeedrate().getFeedRate_mmPerMin(), epsilon);
+        assertEquals(5, result.getExtrusion().getD(), epsilon);
+        assertEquals(6, result.getExtrusion().getE(), epsilon);
     }
 
+    /**
+     * Test of timeToReach method, of class ExtrusionNode.
+     */
+    @Test
+    public void testTimeToReach()
+    {
+        System.out.println("timeToReach");
+
+        ExtrusionNode sourceNode = new ExtrusionNode();
+        sourceNode.getMovement().setX(0);
+        sourceNode.getMovement().setY(0);
+        sourceNode.getFeedrate().setFeedRate_mmPerMin(600);
+
+        ExtrusionNode destinationNode = new ExtrusionNode();
+        destinationNode.getMovement().setX(10);
+        destinationNode.getMovement().setY(0);
+        destinationNode.getFeedrate().setFeedRate_mmPerMin(0);
+
+        double result = sourceNode.timeToReach(destinationNode);
+
+        assertEquals(1, result, 0.0);
+
+        //Should be half the time
+        sourceNode.getMovement().setX(0);
+        sourceNode.getMovement().setY(0);
+        sourceNode.getFeedrate().setFeedRate_mmPerMin(6000);
+        destinationNode.getMovement().setX(10);
+        destinationNode.getMovement().setY(0);
+        destinationNode.getFeedrate().setFeedRate_mmPerMin(0);
+
+        double result2 = sourceNode.timeToReach(destinationNode);
+
+        assertEquals(0.1, result2, 0.0);
+
+        sourceNode.getMovement().setX(0);
+        sourceNode.getMovement().setY(0);
+        sourceNode.getFeedrate().setFeedRate_mmPerMin(600);
+        destinationNode.getMovement().setX(3);
+        destinationNode.getMovement().setY(4);
+        destinationNode.getFeedrate().setFeedRate_mmPerMin(0);
+
+        double result3 = sourceNode.timeToReach(destinationNode);
+
+        assertEquals(0.5, result3, 0.0);
+
+    }
 }
