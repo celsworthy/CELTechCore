@@ -26,6 +26,8 @@ public enum PrinterStatus
     TEST_Y("printerStatus.macro.testY"),
     TEST_Z("printerStatus.macro.testZ"),
     LEVELLING_Y("printerStatus.macro.levellingY"),
+    SPEED_TEST("printerStatus.macro.speedTest"),
+    NOZZLE_CLEAN("printerStatus.macro.nozzleClean"),
     //
     PAUSING("printerStatus.pausing"),
     PAUSED("printerStatus.paused"),

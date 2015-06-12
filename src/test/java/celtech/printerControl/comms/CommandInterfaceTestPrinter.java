@@ -874,7 +874,7 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -893,6 +893,30 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -452,6 +452,9 @@ public class PurgeInsetPanelController implements Initializable
      */
     private void showCurrentMaterial1()
     {
+        if (! purgeTwoNozzleHeaters.get()) {
+            return;
+        }
         if (printer.reelsProperty().containsKey(1))
         {
             currentMaterial1 = Lookup.getFilamentContainer().getFilamentByID(

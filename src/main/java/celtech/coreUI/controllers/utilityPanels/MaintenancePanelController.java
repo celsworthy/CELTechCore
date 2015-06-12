@@ -19,6 +19,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -56,7 +58,13 @@ public class MaintenancePanelController implements Initializable
 
     private final BooleanProperty printingDisabled = new SimpleBooleanProperty(false);
     private final BooleanProperty noHead = new SimpleBooleanProperty(false);
-    private final BooleanProperty noFilamentOrPrintingDisabled = new SimpleBooleanProperty(false);
+    private BooleanProperty dualHead = new SimpleBooleanProperty(false);
+    ;
+    private BooleanProperty singleHead = new SimpleBooleanProperty(false);
+    ;
+    private final BooleanProperty noFilamentE = new SimpleBooleanProperty(false);
+    private final BooleanProperty noFilamentD = new SimpleBooleanProperty(false);
+    private final BooleanProperty noFilamentEOrD = new SimpleBooleanProperty(false);
 
     @FXML
     private AnchorPane container;
@@ -74,7 +82,10 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton T1CleanButton;
 
     @FXML
-    private Button EjectStuckMaterialButton;
+    private Button EjectStuckMaterialButton1;
+
+    @FXML
+    private Button EjectStuckMaterialButton2;
 
     @FXML
     private GCodeMacroButton SpeedTestButton;
@@ -98,16 +109,31 @@ public class MaintenancePanelController implements Initializable
     private GCodeMacroButton ZTestButton;
 
     @FXML
-    void ejectStuckMaterial(ActionEvent event)
+    void ejectStuckMaterial1(ActionEvent event)
     {
         if (connectedPrinter != null)
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(false, null);
+                connectedPrinter.ejectStuckMaterialE(false, null);
             } catch (PrinterException ex)
             {
-                steno.info("Error attempting to run eject stuck material");
+                steno.info("Error attempting to run eject stuck material E");
+            }
+        }
+    }
+
+    @FXML
+    void ejectStuckMaterial2(ActionEvent event)
+    {
+        if (connectedPrinter != null)
+        {
+            try
+            {
+                connectedPrinter.ejectStuckMaterialD(false, null);
+            } catch (PrinterException ex)
+            {
+                steno.info("Error attempting to run eject stuck material D");
             }
         }
     }
@@ -161,44 +187,38 @@ public class MaintenancePanelController implements Initializable
     }
 
     @FXML
-    void macroButtonPress(ActionEvent event)
+    void speedTest(ActionEvent event)
     {
-        if (event.getSource() instanceof GCodeMacroButton)
+        try
         {
-            GCodeMacroButton button = (GCodeMacroButton) event.getSource();
-            String macroName = button.getMacroName();
-
-            if (macroName != null)
-            {
-//                try
-//                {
-//                    connectedPrinter.executeMacro(macroName);
-//                } catch (PrinterException ex)
-//                {
-//                    steno.error("Error sending macro : " + macroName);
-//                }
-            }
+            connectedPrinter.speedTest(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't speed test");
         }
     }
 
     @FXML
-    void macroButtonPressNoPurgeCheck(ActionEvent event)
+    void t0NozzleClean(ActionEvent event)
     {
-        if (event.getSource() instanceof GCodeMacroButton)
+        try
         {
-            GCodeMacroButton button = (GCodeMacroButton) event.getSource();
-            String macroName = button.getMacroName();
+            connectedPrinter.t0NozzleClean(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't clean nozzle 0");
+        }
+    }
 
-            if (macroName != null)
-            {
-//                try
-//                {
-//                    connectedPrinter.executeMacroWithoutPurgeCheck(macroName);
-//                } catch (PrinterException ex)
-//                {
-//                    steno.error("Error sending macro : " + macroName);
-//                }
-            }
+    @FXML
+    void t1NozzleClean(ActionEvent event)
+    {
+        try
+        {
+            connectedPrinter.t1NozzleClean(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't clean nozzle 1");
         }
     }
 
@@ -268,7 +288,7 @@ public class MaintenancePanelController implements Initializable
     }
 
     /**
-     * Initializes the controller class.
+     * Initialises the controller class.
      *
      * @param url
      * @param rb
@@ -289,12 +309,26 @@ public class MaintenancePanelController implements Initializable
             });
 
             YTestButton.disableProperty().bind(printingDisabled);
-            PurgeMaterialButton.disableProperty().bind(noFilamentOrPrintingDisabled.or(noHead));
-            T1CleanButton.disableProperty().bind(noFilamentOrPrintingDisabled.or(noHead));
-            EjectStuckMaterialButton.disableProperty().bind(noFilamentOrPrintingDisabled);
+            PurgeMaterialButton.disableProperty().bind(
+                noFilamentEOrD.or(noHead).or(printingDisabled));
+
+            T0CleanButton.disableProperty().bind(
+                noHead
+                .or(printingDisabled)
+                .or(dualHead.and(noFilamentE))
+                .or(singleHead.and(noFilamentEOrD)));
+            T1CleanButton.disableProperty().bind(
+                noHead
+                .or(printingDisabled)
+                .or(dualHead.and(noFilamentD))
+                .or(singleHead.and(noFilamentEOrD)));
+
+            EjectStuckMaterialButton1.disableProperty().bind(printingDisabled.or(noFilamentE));
+            EjectStuckMaterialButton2.disableProperty().bind(printingDisabled.or(noFilamentD));
+
             SpeedTestButton.disableProperty().bind(printingDisabled);
             XTestButton.disableProperty().bind(printingDisabled);
-            T0CleanButton.disableProperty().bind(noFilamentOrPrintingDisabled.or(noHead));
+
             LevelGantryButton.disableProperty().bind(printingDisabled);
             ZTestButton.disableProperty().bind(printingDisabled);
             loadFirmwareGCodeMacroButton.disableProperty().bind(printingDisabled.or(Lookup.
@@ -376,8 +410,17 @@ public class MaintenancePanelController implements Initializable
                         printingDisabled.set(true);
                         noHead.unbind();
                         noHead.set(true);
-                        noFilamentOrPrintingDisabled.unbind();
-                        noFilamentOrPrintingDisabled.set(true);
+                        noFilamentE.unbind();
+                        noFilamentE.set(true);
+                        noFilamentD.unbind();
+                        noFilamentD.set(true);
+                        noFilamentEOrD.unbind();
+                        noFilamentEOrD.set(true);
+
+                        dualHead.unbind();
+                        dualHead.set(false);
+                        singleHead.unbind();
+                        singleHead.set(false);
                     }
 
                     connectedPrinter = newValue;
@@ -391,11 +434,25 @@ public class MaintenancePanelController implements Initializable
 
                         noHead.bind(connectedPrinter.headProperty().isNull());
 
-                        //TODO modify for multiple extruders
-                        noFilamentOrPrintingDisabled.bind(printingDisabled
-                            .or(connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not()
-                                .and(
-                                    connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not())));
+                        if (noHead.not().get())
+                        {
+                            dualHead.bind(Bindings.size(
+                                    connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
+                                    2));
+                            singleHead.bind(Bindings.size(
+                                    connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
+                                    1));
+                        }
+
+                        noFilamentE.bind(
+                            connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not());
+                        noFilamentD.bind(
+                            connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not());
+
+                        noFilamentEOrD.bind(
+                            connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not()
+                            .and(
+                                connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not()));
                     }
                 });
         } catch (Exception ex)
