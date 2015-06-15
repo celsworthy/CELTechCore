@@ -2,67 +2,36 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
-import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
-import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
-import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
-import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
-import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
-import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
-import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
-import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
-import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
-import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
-import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
-import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.comms.commands.GCodeMacros;
-import celtech.printerControl.comms.commands.MacroLoadException;
-import celtech.utils.Math.MathUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.twod.Line;
-import org.apache.commons.math3.geometry.euclidean.twod.Segment;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.parboiled.Parboiled;
 import static org.parboiled.errors.ErrorUtils.printParseErrors;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.support.ParsingResult;
-import org.parboiled.trees.TreeUtils;
 
 /**
  *
@@ -77,9 +46,6 @@ public class PostProcessor
     private final HeadFile headFile;
     private final Project project;
     private final SlicerParametersFile slicerParametersFile;
-    private final List<Integer> objectToNozzleNumberMap;
-    private final Map<Integer, Integer> extruderToNozzleMap;
-    private final Map<Integer, Integer> nozzleToExtruderMap;
 
     private final List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
@@ -91,8 +57,11 @@ public class PostProcessor
     protected List<Double> layerNumberToPredictedDuration;
     protected double predictedDuration = 0;
 
-    private final int maxNumberOfIntersectionsToConsider;
-    private final float maxDistanceFromEndPoint;
+    private final UtilityMethods postProcessorUtilityMethods;
+    private final NodeManagementUtilities nodeManagementUtilities;
+    private final NozzleAssignmentUtilities nozzleControlUtilities;
+    private final CloseLogic closeLogic;
+    private final NozzleManagementUtilities nozzleUtilities;
 
     public PostProcessor(String gcodeFileToProcess,
             String gcodeOutputFile,
@@ -119,27 +88,6 @@ public class PostProcessor
             nozzleProxies.add(proxy);
         }
 
-        extruderToNozzleMap = new HashMap<>();
-        nozzleToExtruderMap = new HashMap<>();
-        for (int extruderNumber = 0; extruderNumber < 2; extruderNumber++)
-        {
-            Optional<NozzleProxy> proxy = chooseNozzleProxyByExtruderNumber(extruderNumber);
-            if (proxy.isPresent())
-            {
-                extruderToNozzleMap.put(extruderNumber, proxy.get().getNozzleReferenceNumber());
-                nozzleToExtruderMap.put(proxy.get().getNozzleReferenceNumber(), extruderNumber);
-            }
-        }
-
-        objectToNozzleNumberMap = new ArrayList<>();
-        project.getLoadedModels().stream()
-                .map(ModelContainer::getAssociateWithExtruderNumberProperty)
-                .map(ReadOnlyIntegerProperty::get)
-                .forEach(extruderNumber ->
-                        {
-                            objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
-                });
-
         if (headFile.getTypeCode().equals("RBX01-DM"))
         {
             switch (project.getPrinterSettings().getPrintSupportOverride())
@@ -160,10 +108,11 @@ public class PostProcessor
             postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
         }
 
-        maxNumberOfIntersectionsToConsider = project.getPrinterSettings().getSettings().getNumberOfPerimeters();
-        maxDistanceFromEndPoint = project.getPrinterSettings().getSettings().getPerimeterExtrusionWidth_mm()
-                * 1.01f * maxNumberOfIntersectionsToConsider;
-
+        postProcessorUtilityMethods = new UtilityMethods();
+        nodeManagementUtilities = new NodeManagementUtilities(featureSet);
+        nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, project, postProcessingMode);
+        closeLogic = new CloseLogic(project, featureSet);
+        nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
     }
 
     public RoboxiserResult processInput()
@@ -184,13 +133,15 @@ public class PostProcessor
 
         int layerCounter = -1;
 
+        OutputUtilities outputUtilities = new OutputUtilities();
+
         //Cura has line delineators like this ';LAYER:1'
         try
         {
             fileReader = new BufferedReader(new FileReader(gcodeFileToProcess));
             writer = Lookup.getPostProcessorOutputWriterFactory().create(gcodeOutputFile);
 
-            prependPrePrintHeader(writer);
+            outputUtilities.prependPrePrintHeader(writer);
 
             StringBuilder layerBuffer = new StringBuilder();
             LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0);
@@ -207,16 +158,16 @@ public class PostProcessor
                     timeForPrint_secs += parseResult.getTimeForLayer();
 
                     //Now output the LAST layer - it was held until now in case it needed to be modified before output
-                    writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
-                    updateLayerToLineNumber(lastLayerParseResult, writer);
-                    updateLayerToPredictedDuration(lastLayerParseResult, writer);
+                    outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+                    postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
+                    predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
                     if (parseResult.getNozzleStateAtEndOfLayer().isPresent())
                     {
                         lastLayerParseResult = parseResult;
                         if (lastLayerParseResult.getLayerData().getLayerNumber() == 1)
                         {
-                            outputTemperatureCommands(writer);
+                            outputUtilities.outputTemperatureCommands(writer);
                         }
                     } else
                     {
@@ -249,16 +200,16 @@ public class PostProcessor
             timeForPrint_secs += parseResult.getTimeForLayer();
 
             //Now output the LAST layer - it was held until now in case it needed to be modified before output
-            writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
-            updateLayerToLineNumber(lastLayerParseResult, writer);
-            updateLayerToPredictedDuration(lastLayerParseResult, writer);
+            outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+            postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
+            predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
             //Now output the final result
-            writeLayerToFile(parseResult.getLayerData(), writer);
-            updateLayerToLineNumber(parseResult, writer);
-            updateLayerToPredictedDuration(lastLayerParseResult, writer);
+            outputUtilities.writeLayerToFile(parseResult.getLayerData(), writer);
+            postProcessorUtilityMethods.updateLayerToLineNumber(parseResult, layerNumberToLineNumber, writer);
+            predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
-            appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs);
+            outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs);
 
             /**
              * TODO: layerNumberToLineNumber uses lines numbers from the GCode
@@ -323,31 +274,6 @@ public class PostProcessor
         return result;
     }
 
-    private void updateLayerToLineNumber(LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer)
-    {
-        if (lastLayerParseResult.getLayerData() != null)
-        {
-            int layerNumber = lastLayerParseResult.getLayerData().getLayerNumber();
-            if (layerNumber >= 0)
-            {
-                layerNumberToLineNumber.add(layerNumber, writer.getNumberOfLinesOutput());
-            }
-        }
-    }
-
-    private void updateLayerToPredictedDuration(LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer)
-    {
-        if (lastLayerParseResult.getLayerData() != null)
-        {
-            int layerNumber = lastLayerParseResult.getLayerData().getLayerNumber();
-            if (layerNumber >= 0)
-            {
-                layerNumberToPredictedDuration.add(layerNumber, lastLayerParseResult.getTimeForLayer());
-                predictedDuration += lastLayerParseResult.getTimeForLayer();
-            }
-        }
-    }
-
     private LayerPostProcessResult parseLayer(StringBuilder layerBuffer, LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer)
     {
         LayerPostProcessResult parseResultAtEndOfThisLayer = null;
@@ -376,72 +302,22 @@ public class PostProcessor
         return parseResultAtEndOfThisLayer;
     }
 
-    protected void outputNodes(GCodeEventNode node, int level)
-    {
-        //Output me
-        StringBuilder outputBuilder = new StringBuilder();
-
-        for (int levelCount = 0; levelCount < level; levelCount++)
-        {
-            outputBuilder.append('\t');
-        }
-        if (node instanceof Renderable)
-        {
-            outputBuilder.append(((Renderable) node).renderForOutput());
-        } else
-        {
-            outputBuilder.append(node.toString());
-        }
-        System.out.println(outputBuilder.toString());
-
-        //Output my children
-        List<GCodeEventNode> children = node.getChildren();
-        for (GCodeEventNode child : children)
-        {
-            level++;
-            outputNodes(child, level);
-            level--;
-        }
-    }
-
-    private void writeLayerToFile(LayerNode layerNode, GCodeOutputWriter writer)
-    {
-        if (layerNode != null)
-        {
-            layerNode.stream().forEach(node ->
-            {
-                if (node instanceof Renderable)
-                {
-                    Renderable renderableNode = (Renderable) node;
-                    try
-                    {
-                        writer.writeOutput(renderableNode.renderForOutput());
-                        writer.newLine();
-                    } catch (IOException ex)
-                    {
-                        throw new RuntimeException("Error outputting post processed data at node " + renderableNode.renderForOutput(), ex);
-                    }
-                }
-            });
-        }
-    }
-
     private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult)
     {
         // We never want unretracts
-        removeUnretractNodes(layerNode);
+        nodeManagementUtilities.removeUnretractNodes(layerNode);
 
-        rehomeOrphanObjects(layerNode, lastLayerParseResult);
+        nodeManagementUtilities.rehomeOrphanObjects(layerNode, lastLayerParseResult);
 
         int lastObjectNumber = -1;
 
         switch (postProcessingMode)
         {
             case TASK_BASED_NOZZLE_SELECTION:
-                lastObjectNumber = insertNozzleControlSectionsByTask(layerNode);
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode);
                 break;
             case USE_OBJECT_MATERIAL:
-                lastObjectNumber = insertNozzleControlSectionsByObject(layerNode);
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode);
                 break;
             default:
                 break;
@@ -449,78 +325,14 @@ public class PostProcessor
 
         insertOpenAndCloseNodes(layerNode, lastLayerParseResult);
 
-        assignExtrusionToCorrectExtruder(layerNode);
-        
-        suppressUnnecessaryToolChanges(layerNode, lastLayerParseResult);
+        nozzleControlUtilities.assignExtrusionToCorrectExtruder(layerNode);
+
+        postProcessorUtilityMethods.suppressUnnecessaryToolChanges(layerNode, lastLayerParseResult);
 
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
 
         return postProcessResult;
-    }
-
-    protected void removeUnretractNodes(LayerNode layerNode)
-    {
-        if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
-        {
-            layerNode.stream()
-                    .filter(node -> node instanceof UnretractNode)
-                    .forEach(node ->
-                            {
-                                TreeUtils.removeChild(node.getParent(), node);
-                    });
-        }
-    }
-
-    protected void rehomeOrphanObjects(LayerNode layerNode, final LayerPostProcessResult lastLayerParseResult)
-    {
-        // Orphans occur when there is no Tn directive in a layer
-        //
-        // At the start of the file we should treat this as object 0
-        // Subsequently we should look at the last layer to see which object was in force and create an object with the same reference
-
-        layerNode.stream()
-                .filter(node -> node instanceof OrphanObjectDelineationNode)
-                .map(OrphanObjectDelineationNode.class::cast)
-                .forEach(orphanNode ->
-                        {
-                            ObjectDelineationNode newObjectNode = new ObjectDelineationNode();
-
-                            int potentialObjectNumber = orphanNode.getPotentialObjectNumber();
-
-                            if (potentialObjectNumber
-                            < 0)
-                            {
-                                if (layerNode.getLayerNumber() == 0)
-                                {
-                                    // Has to be 0 if we're on the first layer
-                                    potentialObjectNumber = 0;
-                                } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
-                                {
-                                    potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
-                                } else
-                                {
-                                    throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
-                                }
-                            }
-
-                            newObjectNode.setObjectNumber(potentialObjectNumber);
-
-                            //Transfer the children from the orphan to the new node
-                            List<GCodeEventNode> children = orphanNode.getChildren().stream().collect(Collectors.toList());
-                            for (GCodeEventNode childNode : children)
-                            {
-                                childNode.removeFromParent();
-                                newObjectNode.addChildAtEnd(childNode);
-                            }
-
-                            //Add the new node
-                            orphanNode.addSiblingBefore(newObjectNode);
-
-                            //Remove the orphan
-                            orphanNode.removeFromParent();
-                }
-                );
     }
 
     protected void insertNozzleOpenFullyBeforeEvent(GCodeEventNode node, final NozzleProxy nozzleInUse)
@@ -550,713 +362,10 @@ public class PostProcessor
         nozzleInUse.setCurrentPosition(1.0);
         if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
         {
-            insertProgressiveNozzleCloseUpToEvent(node, nozzleInUse);
+            closeLogic.insertProgressiveNozzleCloseUpToEvent(node, nozzleInUse);
         } else
         {
-            insertNozzleCloseFullyAfterEvent(node, nozzleInUse);
-        }
-    }
-
-    protected void insertNozzleCloseFullyAfterEvent(GCodeEventNode node, final NozzleProxy nozzleInUse)
-    {
-        NozzleValvePositionNode newNozzleValvePositionNode = new NozzleValvePositionNode();
-        newNozzleValvePositionNode.getNozzlePosition().setB(nozzleInUse.getNozzleParameters().getClosedPosition());
-        node.addSiblingAfter(newNozzleValvePositionNode);
-    }
-
-    protected void insertProgressiveNozzleCloseUpToEvent(GCodeEventNode node, final NozzleProxy nozzleInUse)
-    {
-        if (node.getParent() instanceof FillSectionNode)
-        {
-            closeToEndOfFill(node, nozzleInUse);
-        } else if (node.getParent() instanceof OuterPerimeterSectionNode)
-        {
-            closeInwardFromOuterPerimeter(node, nozzleInUse);
-        }
-    }
-
-    protected void closeToEndOfFill(final GCodeEventNode node, final NozzleProxy nozzleInUse)
-    {
-        SectionNode thisSection = (SectionNode) (node.getParent());
-
-        float extrusionInSection = thisSection.streamChildrenAndMeBackwards()
-                .filter(extrusionnode -> extrusionnode instanceof ExtrusionNode)
-                .map(ExtrusionProvider.class::cast)
-                .map(ExtrusionProvider::getExtrusion)
-                .map(Extrusion::getE)
-                .reduce(0f, (s1, s2) -> s1 + s2);
-
-        NozzleParameters nozzleParams = nozzleInUse.getNozzleParameters();
-
-        double volumeToCloseOver = nozzleParams.getEjectionVolume();
-
-        if (volumeToCloseOver > extrusionInSection)
-        {
-            volumeToCloseOver = extrusionInSection;
-        }
-
-        //Store the amount of extrusion that has been missed out - needed for unretracts
-        nozzleInUse.setElidedExtrusion(volumeToCloseOver);
-
-        List<MovementProvider> movementNodes = thisSection.streamChildrenAndMeBackwards()
-                .filter(foundNode -> foundNode instanceof MovementProvider)
-                .map(MovementProvider.class::cast)
-                .collect(Collectors.toList());
-
-        double runningTotalOfExtrusion = 0;
-
-        for (int movementNodeCounter = 0; movementNodeCounter < movementNodes.size(); movementNodeCounter++)
-        {
-            if (movementNodes.get(movementNodeCounter) instanceof ExtrusionNode)
-            {
-                ExtrusionNode extrusionNodeBeingExamined = (ExtrusionNode) movementNodes.get(movementNodeCounter);
-
-                int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE(), volumeToCloseOver, 0.00001);
-
-                if (comparisonResult == MathUtils.LESS_THAN)
-                {
-                    //One step along the way
-                    double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                    extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
-                    runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
-                    //No extrusion during a close
-                    extrusionNodeBeingExamined.getExtrusion().eNotInUse();
-                } else if (comparisonResult == MathUtils.EQUAL)
-                {
-                    //All done
-                    double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                    extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
-                    runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
-                    //No extrusion during a close
-                    extrusionNodeBeingExamined.getExtrusion().eNotInUse();
-                    break;
-                } else
-                {
-                    //If we got here then we need to split this extrusion
-                    //We're splitting the last part of the line (we're just looking at it in reverse order as we consider the line from the end
-                    MovementProvider priorMovement = null;
-
-                    if (movementNodeCounter == movementNodes.size() - 1)
-                    {
-                        //We dont have anywhere to go!
-                        try
-                        {
-                            Optional<MovementProvider> priorSectionMovement = findPriorMovementInPreviousSection(extrusionNodeBeingExamined);
-                            priorMovement = priorSectionMovement.get();
-                        } catch (NodeProcessingException ex)
-                        {
-                            throw new RuntimeException("Unable to find prior node when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
-                        }
-
-                    } else
-                    {
-                        priorMovement = movementNodes.get(movementNodeCounter + 1);
-                    }
-
-                    Vector2D firstPoint = new Vector2D(priorMovement.getMovement().getX(), priorMovement.getMovement().getY());
-                    Vector2D secondPoint = new Vector2D(extrusionNodeBeingExamined.getMovement().getX(), extrusionNodeBeingExamined.getMovement().getY());
-
-                    // We can work out how to split this extrusion
-                    double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE() - volumeToCloseOver;
-                    double extrusionInSecondSection = extrusionNodeBeingExamined.getExtrusion().getE() - extrusionInFirstSection;
-
-                    double proportionOfDistanceInSecondSection = extrusionInFirstSection / extrusionNodeBeingExamined.getExtrusion().getE();
-
-                    Vector2D actualVector = secondPoint.subtract(firstPoint);
-                    Vector2D firstSegment = firstPoint.add(proportionOfDistanceInSecondSection,
-                            actualVector);
-
-                    ExtrusionNode newExtrusionNode = new ExtrusionNode();
-                    newExtrusionNode.setCommentText("Remainder pre close over fill");
-                    newExtrusionNode.getExtrusion().setE((float) extrusionInFirstSection);
-                    newExtrusionNode.getMovement().setX(firstSegment.getX());
-                    newExtrusionNode.getMovement().setY(firstSegment.getY());
-                    newExtrusionNode.getFeedrate().setFeedRate_mmPerMin(extrusionNodeBeingExamined.getFeedrate().getFeedRate_mmPerMin());
-
-                    extrusionNodeBeingExamined.addSiblingBefore(newExtrusionNode);
-
-                    extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
-                    extrusionNodeBeingExamined.appendCommentText("Start of close over fill");
-                    double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                    extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
-
-                    runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
-                    //No extrusion during a close
-                    extrusionNodeBeingExamined.getExtrusion().eNotInUse();
-                    break;
-                }
-            }
-        }
-    }
-
-    protected void addClosesUsingSpecifiedNode(GCodeEventNode nodeToAddClosesTo,
-            GCodeEventNode nodeToCopyCloseFrom,
-            final NozzleProxy nozzleInUse,
-            boolean towardsEnd,
-            double availableVolume,
-            boolean closeOverAvailableVolume)
-    {
-        List<ExtrusionNode> extrusionNodesToCopy = null;
-
-        if (nodeToAddClosesTo.getParent() == null
-                || !(nodeToAddClosesTo.getParent() instanceof SectionNode))
-        {
-            String outputMessage;
-
-            if (nodeToAddClosesTo instanceof Renderable)
-            {
-                outputMessage = "Parent of specified node " + ((Renderable) nodeToAddClosesTo).renderForOutput() + " is not a section";
-            } else
-            {
-                outputMessage = "Parent of specified node " + nodeToAddClosesTo.toString() + " is not a section";
-            }
-            throw new RuntimeException(outputMessage);
-        }
-
-        SectionNode parentSectionToAddClosesTo = (SectionNode) nodeToAddClosesTo.getParent();
-
-        try
-        {
-            if (towardsEnd)
-            {
-                extrusionNodesToCopy = nodeToCopyCloseFrom.streamSiblingsFromHere()
-                        .filter(extrusionnode -> extrusionnode instanceof ExtrusionNode)
-                        .map(ExtrusionNode.class::cast)
-                        .collect(Collectors.toList());
-            } else
-            {
-                extrusionNodesToCopy = nodeToCopyCloseFrom.streamSiblingsBackwardsFromHere()
-                        .filter(extrusionnode -> extrusionnode instanceof ExtrusionNode)
-                        .map(ExtrusionNode.class::cast)
-                        .collect(Collectors.toList());
-                extrusionNodesToCopy.add(extrusionNodesToCopy.size(), (ExtrusionNode) nodeToCopyCloseFrom);
-            }
-        } catch (NodeProcessingException ex)
-        {
-            throw new RuntimeException("Failed to stream siblings", ex);
-        }
-
-        NozzleParameters nozzleParams = nozzleInUse.getNozzleParameters();
-
-        double volumeToCloseOver = nozzleParams.getEjectionVolume();
-
-        double runningTotalOfExtrusion = 0;
-        double currentNozzlePosition = nozzleInUse.getCurrentPosition();
-        double closePermm3Volume = closeOverAvailableVolume == false ? currentNozzlePosition / volumeToCloseOver : currentNozzlePosition / availableVolume;
-        double requiredVolumeToCloseOver = currentNozzlePosition / closePermm3Volume;
-
-        ExtrusionNode lastExtrusionNode = null;
-
-        for (ExtrusionNode extrusionNodeToCopy : extrusionNodesToCopy)
-        {
-            int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeToCopy.getExtrusion().getE(), requiredVolumeToCloseOver, 0.00001);
-
-            ExtrusionNode copy = extrusionNodeToCopy.clone();
-            parentSectionToAddClosesTo.addChildAtEnd(copy);
-
-            if (comparisonResult == MathUtils.LESS_THAN)
-            {
-                //One step along the way
-                currentNozzlePosition = currentNozzlePosition - copy.getExtrusion().getE() * closePermm3Volume;
-                double bValue = currentNozzlePosition;
-                copy.getNozzlePosition().setB(bValue);
-                runningTotalOfExtrusion += copy.getExtrusion().getE();
-                //No extrusion during a close
-                copy.getExtrusion().eNotInUse();
-            } else if (comparisonResult == MathUtils.EQUAL)
-            {
-                //All done
-                currentNozzlePosition = 0;
-                double bValue = 0;
-                copy.getNozzlePosition().setB(bValue);
-                runningTotalOfExtrusion += copy.getExtrusion().getE();
-                //No extrusion during a close
-                copy.getExtrusion().eNotInUse();
-                break;
-            } else
-            {
-                if (lastExtrusionNode == null)
-                {
-                    throw new RuntimeException("No prior node to extrapolate from when closing around node " + ((Renderable)extrusionNodeToCopy).renderForOutput());
-                }
-
-                // We can work out how to split this extrusion
-                Vector2D firstPoint = new Vector2D(lastExtrusionNode.getMovement().getX(), lastExtrusionNode.getMovement().getY());
-                Vector2D secondPoint = new Vector2D(extrusionNodeToCopy.getMovement().getX(), extrusionNodeToCopy.getMovement().getY());
-
-                double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeToCopy.getExtrusion().getE() - volumeToCloseOver;
-
-                double proportionOfDistanceInFirstSection = extrusionInFirstSection / extrusionNodeToCopy.getExtrusion().getE();
-
-                Vector2D actualVector = secondPoint.subtract(firstPoint);
-                Vector2D firstSegment = firstPoint.add(proportionOfDistanceInFirstSection,
-                        actualVector);
-
-                copy.getMovement().setX(firstSegment.getX());
-                copy.getMovement().setY(firstSegment.getY());
-                copy.getExtrusion().setE(0);
-                copy.getExtrusion().setD(0);
-                copy.appendCommentText("End of close segment");
-                copy.getNozzlePosition().setB(0);
-
-                runningTotalOfExtrusion += copy.getExtrusion().getE();
-
-                //No extrusion during a close
-                copy.getExtrusion().eNotInUse();
-                break;
-            }
-
-            lastExtrusionNode = extrusionNodeToCopy;
-        }
-
-        //Store the amount of extrusion that has been missed out - needed for unretracts
-        nozzleInUse.setElidedExtrusion(volumeToCloseOver);
-    }
-
-    protected void closeInwardFromOuterPerimeter(final GCodeEventNode node, final NozzleProxy nozzleInUse)
-    {
-        //Pick the earliest possible InnerPerimeter
-
-        Optional<GCodeEventNode> priorSection = node.getParent().getSiblingBefore();
-        if (priorSection.isPresent())
-        {
-            if (priorSection.get() instanceof InnerPerimeterSectionNode)
-            {
-                //We can use this
-                Optional<IntersectionResult> result = findClosestExtrusionNode((ExtrusionNode) node, (SectionNode) (priorSection.get()));
-                if (result.isPresent())
-                {
-                    //Found a node
-                    //Add a travel to the intersection point
-                    TravelNode travelToClosestNode = new TravelNode();
-                    travelToClosestNode.getFeedrate().setFeedRate_mmPerMin(400);
-                    travelToClosestNode.getMovement().setX(result.get().getClosestNode().getMovement().getX());
-                    travelToClosestNode.getMovement().setY(result.get().getClosestNode().getMovement().getY());
-                    node.addSiblingAfter(travelToClosestNode);
-
-                    //We'll close in the direction that has most space
-                    int indexOfFoundNode = priorSection.get().getChildren().indexOf(result.get().getClosestNode());
-
-                    double volumeToCloseOver = nozzleInUse.getNozzleParameters().getEjectionVolume();
-
-                    try
-                    {
-
-                        //Try forwards first
-                        float forwardExtrusionTotal = result.get().getClosestNode().streamSiblingsFromHere()
-                                .filter(searchNode -> searchNode instanceof ExtrusionNode)
-                                .map(ExtrusionProvider.class::cast)
-                                .map(ExtrusionProvider::getExtrusion)
-                                .map(Extrusion::getE)
-                                .reduce(0f, (s1, s2) -> s1 + s2);
-
-                        if (forwardExtrusionTotal >= volumeToCloseOver)
-                        {
-                            addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, true, forwardExtrusionTotal, false);
-                        } else
-                        {
-                            //Try backwards
-                            float backwardExtrusionTotal = result.get().getClosestNode().streamSiblingsBackwardsFromHere()
-                                    .filter(searchNode -> searchNode instanceof ExtrusionNode)
-                                    .map(ExtrusionProvider.class::cast)
-                                    .map(ExtrusionProvider::getExtrusion)
-                                    .map(Extrusion::getE)
-                                    .reduce(0f, (s1, s2) -> s1 + s2);
-
-                            if (backwardExtrusionTotal >= volumeToCloseOver)
-                            {
-                                addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, false, backwardExtrusionTotal, false);
-                            } else
-                            {
-                                //Close over the largest available volume - no lower limit!!
-                                if (forwardExtrusionTotal > backwardExtrusionTotal)
-                                {
-                                    addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, true, forwardExtrusionTotal, true);
-                                } else
-                                {
-                                    addClosesUsingSpecifiedNode(node, result.get().getClosestNode(), nozzleInUse, false, backwardExtrusionTotal, true);
-                                }
-                            }
-                        }
-                    } catch (NodeProcessingException ex)
-                    {
-                        String outputMessage;
-                        if (node instanceof Renderable)
-                        {
-                            Renderable renderableNode = (Renderable) node;
-                            outputMessage = "Failure to find correct direction to traverse in for node " + renderableNode.renderForOutput();
-                        } else
-                        {
-                            outputMessage = "Failure to find correct direction to traverse in for node " + node.toString();
-                        }
-                        throw new RuntimeException(outputMessage);
-                    }
-                } else
-                {
-                    String outputMessage;
-                    if (node instanceof Renderable)
-                    {
-                        Renderable renderableNode = (Renderable) node;
-                        outputMessage = "Couldn't find closest node when looking for inner perimeter close trajectory " + renderableNode.renderForOutput();
-                    } else
-                    {
-                        outputMessage = "Couldn't find closest node when looking for inner perimeter close trajectory " + node.toString();
-                    }
-                    throw new RuntimeException(outputMessage);
-                }
-
-            } else
-            {
-                String outputMessage;
-                if (node instanceof Renderable)
-                {
-                    Renderable renderableNode = (Renderable) node;
-                    outputMessage = "Error attempting close - no prior sibling for node " + renderableNode.renderForOutput();
-                } else
-                {
-                    outputMessage = "Error attempting close - no prior sibling for node " + node.toString();
-                }
-                throw new RuntimeException(outputMessage);
-            }
-        }
-    }
-
-    protected Optional<IntersectionResult> findClosestExtrusionNode(ExtrusionNode node, SectionNode priorSection)
-    {
-        ExtrusionNode closestNode = null;
-        Vector2D intersectionPoint = null;
-        Optional<IntersectionResult> result = Optional.empty();
-
-        //If we got here then we need to split this extrusion
-        Optional<GCodeEventNode> siblingBefore = node.getSiblingBefore();
-
-        if (!siblingBefore.isPresent())
-        {
-            throw new RuntimeException("Unable to find prior sibling when looking for inward move");
-        }
-
-        if (siblingBefore.get() instanceof ExtrusionNode)
-        {
-            // We can work out how to split this extrusion
-            ExtrusionNode priorExtrusion = (ExtrusionNode) siblingBefore.get();
-
-            //Get an orthogonal to the extrusion we're considering
-            Vector2D priorPoint = priorExtrusion.getMovement().toVector2D();
-            Vector2D thisPoint = ((MovementProvider) node).getMovement().toVector2D();
-
-            Segment orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, priorPoint, thisPoint);
-            Vector2D orthogonalSegmentMidpoint = MathUtils.findMidPoint(orthogonalSegment.getStart(),
-                    orthogonalSegment.getEnd());
-
-            List<ExtrusionNode> extrusionNodesUnderConsideration = priorSection.stream()
-                    .filter(extrusionnode -> extrusionnode instanceof ExtrusionNode)
-                    .map(ExtrusionNode.class::cast)
-                    .collect(Collectors.toList());
-
-            Vector2D lastPointConsidered = null;
-
-            double closestDistanceSoFar = 999;
-
-            for (ExtrusionNode extrusionNodeUnderConsideration : extrusionNodesUnderConsideration)
-            {
-                Vector2D extrusionPoint = extrusionNodeUnderConsideration.getMovement().toVector2D();
-
-                if (lastPointConsidered != null)
-                {
-                    Segment segmentUnderConsideration = new Segment(lastPointConsidered,
-                            extrusionPoint, new Line(
-                                    lastPointConsidered,
-                                    extrusionPoint, 1e-12));
-
-                    Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
-                            orthogonalSegment, segmentUnderConsideration);
-
-                    if (tempIntersectionPoint != null)
-                    {
-                        double distanceFromMidPoint = tempIntersectionPoint.distance(
-                                orthogonalSegmentMidpoint);
-
-                        if (distanceFromMidPoint < closestDistanceSoFar)
-                        {
-                            closestNode = extrusionNodeUnderConsideration;
-                            closestDistanceSoFar = distanceFromMidPoint;
-                            intersectionPoint = tempIntersectionPoint;
-                        }
-                    }
-                }
-
-                lastPointConsidered = extrusionPoint;
-            }
-        } else
-        {
-            //Default to using the Outer...
-            throw new RuntimeException("Error attempting close - have to use outer perimeter " + node.renderForOutput());
-        }
-
-        if (closestNode != null
-                && intersectionPoint != null)
-        {
-            result = Optional.of(new IntersectionResult(closestNode, intersectionPoint));
-        }
-
-        return result;
-    }
-
-    /**
-     *
-     * @param layerNode
-     * @return The reference number of the last object in the layer
-     */
-    protected int insertNozzleControlSectionsByTask(LayerNode layerNode)
-    {
-        int lastObjectReferenceNumber = -1;
-
-        if (featureSet.isEnabled(PostProcessorFeature.CLOSE_ON_TASK_CHANGE))
-        {
-            //TODO put in first layer forced nozzle select
-            //
-//        if (layerNode.getLayerNumber() == 0)
-//        {
-//            //First layer
-//            //Look for travels that exceed 2mm and close/open the nozzle as necessary
-//
-//            if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
-//            {
-//                // Look to see if a first layer nozzle has been selected
-//                if (slicerParameters.getFirstLayerNozzle() > -1)
-//                {
-//                    currentNozzleProxy = nozzleProxies.get(slicerParameters.getFirstLayerNozzle());
-//                } else
-//                {
-//                    currentNozzleProxy
-//                }
-//            }
-//        }
-            //We'll need at least one of these per layer
-            ToolSelectNode toolSelectNode = null;
-
-            // Find all of the objects in this layer
-            List<ObjectDelineationNode> objectNodes = layerNode.stream()
-                    .filter(node -> node instanceof ObjectDelineationNode)
-                    .map(ObjectDelineationNode.class::cast)
-                    .collect(Collectors.toList());
-
-            if (objectNodes.size()
-                    > 0)
-            {
-                lastObjectReferenceNumber = objectNodes.get(objectNodes.size() - 1).getObjectNumber();
-            }
-
-            SectionNode lastSectionNode = null;
-
-            for (ObjectDelineationNode objectNode : objectNodes)
-            {
-                List<GCodeEventNode> childNodes = objectNode.getChildren().stream().collect(Collectors.toList());
-
-                for (GCodeEventNode childNode : childNodes)
-                {
-                    if (childNode instanceof SectionNode)
-                    {
-                        SectionNode sectionNodeBeingExamined = (SectionNode) childNode;
-
-                        NozzleProxy requiredNozzle = null;
-
-                        try
-                        {
-                            if (sectionNodeBeingExamined instanceof OrphanSectionNode)
-                            {
-                                if (lastSectionNode == null)
-                                {
-                                    throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber() + " as last section didn't exist");
-                                }
-
-                                requiredNozzle = chooseNozzleProxyByTask(lastSectionNode);
-                                try
-                                {
-                                    SectionNode replacementSection = lastSectionNode.getClass().newInstance();
-
-                                    // Move the child nodes to the replacement section
-                                    List<GCodeEventNode> sectionChildren = sectionNodeBeingExamined.stream().collect(Collectors.toList());
-                                    for (GCodeEventNode child : sectionChildren)
-                                    {
-                                        child.removeFromParent();
-                                        replacementSection.addChildAtEnd(child);
-                                    }
-
-                                    sectionNodeBeingExamined.removeFromParent();
-                                    lastSectionNode.addSiblingAfter(replacementSection);
-                                    sectionNodeBeingExamined = replacementSection;
-                                } catch (InstantiationException | IllegalAccessException ex)
-                                {
-                                    throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber(), ex);
-                                }
-                            } else
-                            {
-                                requiredNozzle = chooseNozzleProxyByTask(sectionNodeBeingExamined);
-                            }
-
-                            if (toolSelectNode == null
-                                    || toolSelectNode.getToolNumber() != requiredNozzle.getNozzleReferenceNumber())
-                            {
-                                //Need to create a new Tool Select Node
-                                toolSelectNode = new ToolSelectNode();
-                                toolSelectNode.setToolNumber(requiredNozzle.getNozzleReferenceNumber());
-                                layerNode.addChildAtEnd(toolSelectNode);
-                            }
-
-                            sectionNodeBeingExamined.removeFromParent();
-                            toolSelectNode.addChildAtEnd(sectionNodeBeingExamined);
-
-                        } catch (UnableToFindSectionNodeException ex)
-                        {
-                            throw new RuntimeException("Error attempting to insert nozzle control sections by task - " + ex.getMessage(), ex);
-                        }
-
-                        lastSectionNode = sectionNodeBeingExamined;
-                    } else
-                    {
-                        //Probably a travel node - move it over without changing it
-                        childNode.removeFromParent();
-                        toolSelectNode.addChildAtEnd(childNode);
-                    }
-                }
-
-                if (!objectNode.getChildren().isEmpty())
-                {
-                    throw new RuntimeException("Transfer of children from object " + objectNode.getObjectNumber() + " failed");
-                }
-                objectNode.removeFromParent();
-            }
-        }
-
-        return lastObjectReferenceNumber;
-    }
-
-    protected int insertNozzleControlSectionsByObject(LayerNode layerNode)
-    {
-        int lastObjectReferenceNumber = -1;
-
-        // Find all of the objects in this layer
-        List<ObjectDelineationNode> objectNodes = layerNode.stream()
-                .filter(node -> node instanceof ObjectDelineationNode)
-                .map(ObjectDelineationNode.class::cast)
-                .collect(Collectors.toList());
-
-        if (objectNodes.size()
-                > 0)
-        {
-            lastObjectReferenceNumber = objectNodes.get(objectNodes.size() - 1).getObjectNumber();
-        }
-
-        //We'll need at least one of these per layer
-        ToolSelectNode toolSelectNode = null;
-
-        SectionNode lastSectionNode = null;
-
-        for (GCodeEventNode objectNode : objectNodes)
-        {
-            ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
-
-            NozzleProxy requiredNozzle = nozzleProxies.get(objectToNozzleNumberMap.get(objectNodeBeingExamined.getObjectNumber()));
-
-            if (toolSelectNode == null
-                    || toolSelectNode.getToolNumber() != requiredNozzle.getNozzleReferenceNumber())
-            {
-                //Need to create a new Tool Select Node
-                toolSelectNode = new ToolSelectNode();
-                toolSelectNode.setToolNumber(requiredNozzle.getNozzleReferenceNumber());
-                layerNode.addChildAtEnd(toolSelectNode);
-            }
-
-            objectNodeBeingExamined.removeFromParent();
-            List<GCodeEventNode> sectionNodes = objectNodeBeingExamined.getChildren().stream().collect(Collectors.toList());
-
-            for (GCodeEventNode childNode : sectionNodes)
-            {
-                if (childNode instanceof SectionNode)
-                {
-                    SectionNode sectionNodeUnderExamination = (SectionNode) childNode;
-
-                    if (sectionNodeUnderExamination instanceof OrphanSectionNode)
-                    {
-                        if (lastSectionNode == null)
-                        {
-                            throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber() + " as last section didn't exist");
-                        }
-
-                        try
-                        {
-                            requiredNozzle = chooseNozzleProxyByTask(lastSectionNode);
-
-                            SectionNode replacementSection = lastSectionNode.getClass().newInstance();
-
-                            // Move the child nodes to the replacement section
-                            List<GCodeEventNode> sectionChildren = sectionNodes.stream().collect(Collectors.toList());
-                            for (GCodeEventNode child : sectionChildren)
-                            {
-                                child.removeFromParent();
-                                replacementSection.addChildAtEnd(child);
-                            }
-
-                            sectionNodeUnderExamination.removeFromParent();
-                            lastSectionNode.addSiblingAfter(replacementSection);
-                            sectionNodeUnderExamination = replacementSection;
-                        } catch (InstantiationException | IllegalAccessException | UnableToFindSectionNodeException ex)
-                        {
-                            throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber(), ex);
-                        }
-                    }
-
-                    sectionNodeUnderExamination.removeFromParent();
-                    toolSelectNode.addChildAtEnd(sectionNodeUnderExamination);
-
-                    lastSectionNode = sectionNodeUnderExamination;
-                } else
-                {
-                    //Probably a travel node - move it over without changing it
-                    childNode.removeFromParent();
-                    toolSelectNode.addChildAtEnd(childNode);
-                }
-            }
-        }
-
-        return lastObjectReferenceNumber;
-    }
-
-    protected void assignExtrusionToCorrectExtruder(LayerNode layerNode)
-    {
-        // Don't change anything if we're in task-based selection as this always uses extruder E
-        if (postProcessingMode != PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
-        {
-            layerNode.stream()
-                    .filter(node -> node instanceof ToolSelectNode)
-                    .map(ToolSelectNode.class::cast)
-                    .forEach(toolSelectNode ->
-                            {
-                                switch (nozzleToExtruderMap.get(toolSelectNode.getToolNumber()))
-                                {
-                                    case 0:
-                                        toolSelectNode.stream()
-                                        .filter(node -> node instanceof ExtrusionProvider)
-                                        .map(ExtrusionProvider.class::cast)
-                                        .map(ExtrusionProvider::getExtrusion)
-                                        .forEach(extrusionNode ->
-                                                {
-                                                    extrusionNode.extrudeUsingEOnly();
-                                        });
-                                        break;
-                                    case 1:
-                                        toolSelectNode.stream()
-                                        .filter(node -> node instanceof ExtrusionProvider)
-                                        .map(ExtrusionProvider.class::cast)
-                                        .map(ExtrusionProvider::getExtrusion)
-                                        .forEach(extrusionNode ->
-                                                {
-                                                    extrusionNode.extrudeUsingDOnly();
-                                        });
-                                        break;
-                                }
-                    });
+            closeLogic.insertNozzleCloseFullyAfterEvent(node, nozzleInUse);
         }
     }
 
@@ -1281,12 +390,12 @@ public class PostProcessor
                                                 RetractNode retractNode = (RetractNode) foundnode;
                                                 try
                                                 {
-                                                    Optional<GCodeEventNode> priorExtrusionNode = findPriorExtrusion(retractNode);
+                                                    Optional<GCodeEventNode> priorExtrusionNode = nodeManagementUtilities.findPriorExtrusion(retractNode);
                                                     if (priorExtrusionNode.isPresent())
                                                     {
                                                         insertNozzleCloses(priorExtrusionNode.get(), nozzleInUse);
 
-                                                        Optional<GCodeEventNode> nextExtrusionNode = findNextExtrusion(retractNode);
+                                                        Optional<GCodeEventNode> nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
                                                         if (nextExtrusionNode.isPresent())
                                                         {
                                                             insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
@@ -1305,10 +414,10 @@ public class PostProcessor
                                                             steno.warning("Discarding retract from layer " + layerNode.getLayerNumber());
                                                         } else
                                                         {
-                                                            Optional<GCodeEventNode> priorExtrusionNodeLastLayer = findLastExtrusionEventInLayer(lastLayer);
+                                                            Optional<GCodeEventNode> priorExtrusionNodeLastLayer = nodeManagementUtilities.findLastExtrusionEventInLayer(lastLayer);
                                                             insertNozzleCloses(priorExtrusionNodeLastLayer.orElseThrow(NodeProcessingException::new), nozzleInUse);
 
-                                                            Optional<GCodeEventNode> nextExtrusionNode = findNextExtrusion(retractNode);
+                                                            Optional<GCodeEventNode> nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
                                                             if (nextExtrusionNode.isPresent())
                                                             {
                                                                 //Only do this if there appears to be somewhere to open...
@@ -1325,7 +434,7 @@ public class PostProcessor
                                 }
 
                                 //Insert an open at the start if there isn't already an open preceding the first extrusion
-                                GCodeEventNode firstExtrusionNode = findNextExtrusion(toolSelectNode).orElseThrow(NodeProcessingException::new);
+                                GCodeEventNode firstExtrusionNode = nodeManagementUtilities.findNextExtrusion(toolSelectNode).orElseThrow(NodeProcessingException::new);
 
                                 boolean needToAddInitialOpen = false;
 
@@ -1354,7 +463,7 @@ public class PostProcessor
                                 }
 
                                 //Insert a close at the end if there isn't already a close following the last extrusion
-                                GCodeEventNode lastExtrusionNode = findPriorExtrusion(toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1)).orElseThrow(NodeProcessingException::new);
+                                GCodeEventNode lastExtrusionNode = nodeManagementUtilities.findPriorExtrusion(toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1)).orElseThrow(NodeProcessingException::new);
 
                                 boolean needToAddFinalClose = false;
 
@@ -1389,260 +498,9 @@ public class PostProcessor
                 );
     }
 
-    private NozzleProxy chooseNozzleProxyByTask(final GCodeEventNode node) throws UnableToFindSectionNodeException
-    {
-        NozzleProxy nozzleProxy = null;
-
-        //Go up through the parents until we either reach the top or find a section node
-        GCodeEventNode foundNode = null;
-        GCodeEventNode searchNode = node;
-
-        do
-        {
-            if (searchNode instanceof SectionNode)
-            {
-                foundNode = searchNode;
-                break;
-            } else
-            {
-                if (searchNode.hasParent())
-                {
-                    searchNode = searchNode.getParent();
-                }
-            }
-        } while (searchNode.hasParent());
-
-        if (foundNode == null)
-        {
-            String outputMessage;
-            if (node instanceof Renderable)
-            {
-                outputMessage = "Unable to find section parent of " + ((Renderable)node).renderForOutput();
-            }
-            else
-            {
-                outputMessage = "Unable to find section parent of " + node.toString();
-            }
-            throw new UnableToFindSectionNodeException(outputMessage);
-        }
-
-        if (foundNode instanceof FillSectionNode)
-        {
-            nozzleProxy = nozzleProxies.get(slicerParametersFile.getFillNozzle());
-        } else if (foundNode instanceof OuterPerimeterSectionNode)
-        {
-            nozzleProxy = nozzleProxies.get(slicerParametersFile.getPerimeterNozzle());
-        } else if (foundNode instanceof InnerPerimeterSectionNode)
-        {
-            nozzleProxy = nozzleProxies.get(slicerParametersFile.getPerimeterNozzle());
-        } else if (foundNode instanceof SupportSectionNode)
-        {
-            nozzleProxy = nozzleProxies.get(slicerParametersFile.getSupportNozzle());
-        } else if (foundNode instanceof SupportInterfaceSectionNode)
-        {
-            nozzleProxy = nozzleProxies.get(slicerParametersFile.getSupportInterfaceNozzle());
-        } else
-        {
-            nozzleProxy = nozzleProxies.get(slicerParametersFile.getFillNozzle());
-        }
-        return nozzleProxy;
-    }
-
-    private Optional<NozzleProxy> chooseNozzleProxyByExtruderNumber(final int extruderNumber)
-    {
-        Optional<NozzleProxy> nozzleProxy = Optional.empty();
-
-        String extruderLetter = "";
-
-        switch (extruderNumber)
-        {
-            case 0:
-                extruderLetter = "E";
-                break;
-            case 1:
-                extruderLetter = "D";
-                break;
-        }
-
-        for (int nozzleIndex = 0; nozzleIndex < headFile.getNozzles().size(); nozzleIndex++)
-        {
-            NozzleData nozzleData = headFile.getNozzles().get(nozzleIndex);
-            if (nozzleData.getAssociatedExtruder().equals(extruderLetter))
-            {
-                nozzleProxy = Optional.of(nozzleProxies.get(nozzleIndex));
-                break;
-            }
-        }
-
-        return nozzleProxy;
-    }
-
-    private Optional<GCodeEventNode> findNextExtrusion(GCodeEventNode node) throws NodeProcessingException
-    {
-        Optional<GCodeEventNode> nextExtrusion = node.streamFromHere()
-                .filter(filteredNode -> filteredNode instanceof ExtrusionNode)
-                .findFirst();
-
-        return nextExtrusion;
-    }
-
-    private Optional<GCodeEventNode> findPriorExtrusion(GCodeEventNode node) throws NodeProcessingException
-    {
-        Optional<GCodeEventNode> nextExtrusion = node.streamBackwardsFromHere()
-                .filter(filteredNode -> filteredNode instanceof ExtrusionNode)
-                .findFirst();
-
-        return nextExtrusion;
-    }
-
-    private Optional<MovementProvider> findPriorMovementInPreviousSection(GCodeEventNode node) throws NodeProcessingException
-    {
-        GCodeEventNode nodeParent = node.getParent();
-
-        if (nodeParent == null
-                || !(nodeParent instanceof SectionNode))
-        {
-            throw new NodeProcessingException("Parent of is not present or not a section", node);
-        }
-
-        Optional<GCodeEventNode> previousSection = nodeParent.getSiblingBefore();
-
-        if (!previousSection.isPresent())
-        {
-            throw new NodeProcessingException("Couldn't find a prior section", node);
-
-        }
-
-        Optional<MovementProvider> nextExtrusion = previousSection.get().streamChildrenAndMeBackwards()
-                .filter(filteredNode -> filteredNode instanceof MovementProvider)
-                .findFirst()
-                .map(MovementProvider.class::cast);
-
-        return nextExtrusion;
-    }
-
-    private Optional<GCodeEventNode> findLastExtrusionEventInLayer(LayerNode layerNode)
-    {
-        Optional<GCodeEventNode> lastExtrusionNode = Optional.empty();
-
-        List<GCodeEventNode> toolSelectNodes = layerNode
-                .stream()
-                .filter(node -> node instanceof ToolSelectNode)
-                .collect(Collectors.toList());
-
-        if (!toolSelectNodes.isEmpty())
-        {
-            ToolSelectNode lastToolSelect = (ToolSelectNode) toolSelectNodes.get(toolSelectNodes.size() - 1);
-
-            List<GCodeEventNode> extrusionNodes = lastToolSelect
-                    .stream()
-                    .filter(node -> node instanceof ExtrusionNode)
-                    .collect(Collectors.toList());
-
-            if (!extrusionNodes.isEmpty())
-            {
-                lastExtrusionNode = Optional.of(extrusionNodes.get(extrusionNodes.size() - 1));
-            }
-        }
-
-        return lastExtrusionNode;
-    }
-
-    private Optional<NozzleProxy> determineNozzleStateAtEndOfLayer(LayerNode layerNode)
-    {
-        Optional<NozzleProxy> nozzleInUse = Optional.empty();
-
-        List<GCodeEventNode> toolSelectNodes = layerNode
-                .stream()
-                .filter(node -> node instanceof ToolSelectNode)
-                .collect(Collectors.toList());
-
-        if (!toolSelectNodes.isEmpty())
-        {
-            ToolSelectNode lastToolSelect = (ToolSelectNode) toolSelectNodes.get(toolSelectNodes.size() - 1);
-
-            Optional<GCodeEventNode> lastNozzleValePositionNode = lastToolSelect.streamChildrenAndMeBackwards().filter(node -> node instanceof NozzleValvePositionNode).findFirst();
-
-            if (lastNozzleValePositionNode.isPresent())
-            {
-                NozzleValvePositionNode nozzleNode = (NozzleValvePositionNode) lastNozzleValePositionNode.get();
-                NozzleProxy proxy = nozzleProxies.get(lastToolSelect.getToolNumber());
-                proxy.setCurrentPosition(nozzleNode.getNozzlePosition().getB());
-                nozzleInUse = Optional.of(proxy);
-            }
-        }
-
-        return nozzleInUse;
-    }
-
-    private void prependPrePrintHeader(GCodeOutputWriter writer)
-    {
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
-        try
-        {
-            writer.writeOutput("; File post-processed by the CEL Tech Roboxiser on "
-                    + formatter.format(new Date()) + "\n");
-            writer.writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
-
-            writer.writeOutput(";\n; Pre print gcode\n");
-
-            for (String macroLine : GCodeMacros.getMacroContents("before_print"))
-            {
-                writer.writeOutput(macroLine);
-                writer.newLine();
-            }
-
-            writer.writeOutput("; End of Pre print gcode\n");
-        } catch (IOException | MacroLoadException ex)
-        {
-            throw new RuntimeException("Failed to add pre-print header in post processor - " + ex.getMessage(), ex);
-        }
-    }
-
-    private void appendPostPrintFooter(GCodeOutputWriter writer, final float totalEVolume, final float totalDVolume, final double totalTimeInSecs)
-    {
-        try
-        {
-            writer.writeOutput(";\n; Post print gcode\n");
-            for (String macroLine : GCodeMacros.getMacroContents("after_print"))
-            {
-                writer.writeOutput(macroLine);
-                writer.newLine();
-            }
-            writer.writeOutput("; End of Post print gcode\n");
-            writer.writeOutput(";\n");
-            writer.writeOutput("; Volume of material - Extruder E - " + totalEVolume + "\n");
-            writer.writeOutput("; Volume of material - Extruder D - " + totalDVolume + "\n");
-            writer.writeOutput("; Total print time estimate - " + totalTimeInSecs + " seconds\n");
-            writer.writeOutput(";\n");
-        } catch (IOException | MacroLoadException ex)
-        {
-            throw new RuntimeException("Failed to add post-print footer in post processor - " + ex.getMessage(), ex);
-        }
-    }
-
-    private void outputTemperatureCommands(GCodeOutputWriter writer)
-    {
-        try
-        {
-            MCodeNode nozzleTemp = new MCodeNode(104);
-            nozzleTemp.setCommentText("Go to nozzle temperature from loaded reel - don't wait");
-            writer.writeOutput(nozzleTemp.renderForOutput());
-            writer.newLine();
-
-            MCodeNode bedTemp = new MCodeNode(140);
-            bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
-            writer.writeOutput(bedTemp.renderForOutput());
-            writer.newLine();
-        } catch (IOException ex)
-        {
-            throw new RuntimeException("Failed to add post layer 1 temperature commands in post processor - " + ex.getMessage(), ex);
-        }
-    }
-
     private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode)
     {
-        Optional<NozzleProxy> lastNozzleInUse = determineNozzleStateAtEndOfLayer(layerNode);
+        Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
 
         float eValue = layerNode.stream()
                 .filter(node -> node instanceof ExtrusionNode)
@@ -1665,7 +523,8 @@ public class PostProcessor
 
         double timeForLayer = 0;
         for (int movementCounter = 0;
-                movementCounter < movementNodes.size() - 1; movementCounter++)
+                movementCounter < movementNodes.size()
+                - 1; movementCounter++)
         {
             double time = movementNodes.get(movementCounter).timeToReach(movementNodes.get(movementCounter + 1));
             timeForLayer += time;
@@ -1673,32 +532,5 @@ public class PostProcessor
 
         return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer,
                 -1);
-    }
-
-    protected void suppressUnnecessaryToolChanges(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult)
-    {
-        List<ToolSelectNode> toolSelectNodes = layerNode.stream()
-                .filter(node -> node instanceof ToolSelectNode)
-                .map(ToolSelectNode.class::cast)
-                .collect(Collectors.toList());
-        
-        int lastToolNumber = -1;
-        if (lastLayerPostProcessResult.getNozzleStateAtEndOfLayer().isPresent())
-        {
-            lastToolNumber = lastLayerPostProcessResult.getNozzleStateAtEndOfLayer().get().getNozzleReferenceNumber();
-        }
-        
-        for (ToolSelectNode toolSelectNode : toolSelectNodes)
-        {
-            if (lastToolNumber >= 0)
-            {
-                if (lastToolNumber == toolSelectNode.getToolNumber())
-                {
-                    toolSelectNode.suppressNodeOutput(true);
-                }
-            }
-            
-            lastToolNumber = toolSelectNode.getToolNumber();
-        }
     }
 }

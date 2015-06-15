@@ -122,6 +122,33 @@ public abstract class GCodeEventNode extends MutableTreeNodeImpl<GCodeEventNode>
         return reversedChildList.stream();
     }
 
+    public Stream<GCodeEventNode> streamSiblingsAndMeFromHere() throws NodeProcessingException
+    {
+        if (getParent() == null)
+        {
+            throw new NodeProcessingException("No parent", this);
+        }
+
+        int startingChildIndex = getParent().getChildren().indexOf(this);
+        int maxIndex = getParent().getChildren().size();
+
+        return getParent().getChildren().subList(startingChildIndex, maxIndex).stream();
+    }
+
+    public Stream<GCodeEventNode> streamSiblingsAndMeBackwardsFromHere() throws NodeProcessingException
+    {
+        if (getParent() == null)
+        {
+            throw new NodeProcessingException("No parent", this);
+        }
+
+        int startingChildIndex = getParent().getChildren().indexOf(this);
+
+        List<GCodeEventNode> reversedChildList = reversedView(getParent().getChildren().subList(0, startingChildIndex + 1));
+
+        return reversedChildList.stream();
+    }
+
     private Stream<GCodeEventNode> streamFromHere(GCodeEventNode sourceNode) throws NodeProcessingException
     {
         Stream<GCodeEventNode> finalStream = Stream.empty();
