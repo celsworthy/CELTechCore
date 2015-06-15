@@ -73,6 +73,13 @@ public class HiddenKey
                     // trigger D_FILAMENT_SLIP
                     triggerListeners("dummy:", "ERROR D_FILAMENT_SLIP");
                 }
+            case S:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger detach printer
+                    triggerListeners("dummy:", "DETACH PRINTER");
+                }                
+                
                 break;                 
 
         }

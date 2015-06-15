@@ -23,7 +23,6 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;

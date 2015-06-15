@@ -2,7 +2,6 @@ package celtech.printerControl.comms;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PauseStatus;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
