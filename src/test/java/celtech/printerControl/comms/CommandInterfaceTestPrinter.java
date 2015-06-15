@@ -5,7 +5,6 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -35,7 +34,6 @@ import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionMana
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
