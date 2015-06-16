@@ -15,6 +15,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -58,7 +60,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         DIAMETER("diameter"), MULTIPLIER("multiplier"), FEED_RATE_MULTIPLIER("feedRateMultiplier"),
         FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"),
         FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp"),
-        COST_GBP_PER_KG("costGBPPerKG");
+        COST_GBP_PER_KG("costGBPPerKG"), REMAINING_FILAMENT_M("remainingFilamentM");
 
         private final String helpTextId;
 
@@ -94,6 +96,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>();
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
+    private final BooleanProperty remainingOnReelEdited = new SimpleBooleanProperty(false);
 
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
@@ -148,6 +151,9 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private RestrictedNumberField costGBPPerKG;
+
+    @FXML
+    private RestrictedNumberField remainingOnReelM;
 
     @FXML
     private RestrictedNumberField feedRateMultiplier;
@@ -397,8 +403,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         firstLayerNozzleTemperature.intValueProperty().set(0);
         nozzleTemperature.intValueProperty().set(0);
         costGBPPerKG.floatValueProperty().set(0);
+        remainingOnReelM.floatValueProperty().set(0);
 //        colour.setValue(filament.getDisplayColour());
         isDirty.set(false);
+        remainingOnReelEdited.set(false);
     }
 
     private void setupWidgetChangeListeners()
@@ -434,6 +442,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         nozzleTemperature.textProperty().addListener(dirtyStringListener);
         ambientTemperature.textProperty().addListener(dirtyStringListener);
         costGBPPerKG.textProperty().addListener(dirtyStringListener);
+        remainingOnReelM.textProperty().addListener(dirtyStringListener);
+        remainingOnReelM.textProperty().addListener(remainingOnReelListener);
     }
 
     private void setupWidgetEditableBindings()
@@ -451,6 +461,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         nozzleTemperature.disableProperty().bind(isEditable.not());
         ambientTemperature.disableProperty().bind(isEditable.not());
         costGBPPerKG.disableProperty().bind(isEditable.not());
+        remainingOnReelM.disableProperty().bind(isEditable.not());
     }
 
     private void showHelpText(Fields field)
@@ -520,6 +531,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 showHelpText(Fields.COST_GBP_PER_KG);
             });
+        remainingOnReelM.focusedProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.REMAINING_FILAMENT_M);
+            });
 
         name.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -576,6 +592,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             {
                 showHelpText(Fields.AMBIENT_TEMP);
             });
+        remainingOnReelM.hoverProperty().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                showHelpText(Fields.REMAINING_FILAMENT_M);
+            });
         costGBPPerKG.hoverProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -588,6 +609,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         = (ObservableValue<? extends String> ov, String t, String t1) ->
         {
             isDirty.set(true);
+        };
+    private final ChangeListener<String> remainingOnReelListener
+        = (ObservableValue<? extends String> ov, String t, String t1) ->
+        {
+            remainingOnReelEdited.set(true);
         };
 
     private final ChangeListener<MaterialType> dirtyMaterialTypeListener
@@ -625,6 +651,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         nozzleTemperature.intValueProperty().set(filament.getNozzleTemperature());
         colour.setValue(filament.getDisplayColour());
         costGBPPerKG.floatValueProperty().set(filament.getCostGBPPerKG());
+        remainingOnReelM.textProperty().set("-");
         isDirty.set(false);
     }
 
@@ -738,8 +765,22 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             }
             float remainingFilament = getRemainingFilament(0);
             Filament filament = cmbFilament.getValue();
+            if (state.get() == State.CUSTOM && remainingOnReelEdited.get())
+            {
+                try
+                {
+                    remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
+                } catch (ParseException ex)
+                {
+                   steno.error("parsing remaining filament");
+                }
+            }
+
             filament.setRemainingFilament(remainingFilament);
+
             currentPrinter.get().transmitWriteReelEEPROM(0, filament);
+
+            remainingOnReelEdited.set(false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Unable to write to Reel 0 " + ex);
@@ -755,9 +796,21 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 whenSavePressed();
             }
             float remainingFilament = getRemainingFilament(1);
+            if (state.get() == State.CUSTOM && remainingOnReelEdited.get())
+            {
+                try
+                {
+                    remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
+                } catch (ParseException ex)
+                {
+                   steno.error("parsing remaining filament");
+                }
+            }
+
             Filament filament = cmbFilament.getValue();
             filament.setRemainingFilament(remainingFilament);
             currentPrinter.get().transmitWriteReelEEPROM(1, filament);
+            remainingOnReelEdited.set(false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Unable to write to Reel 1 " + ex);
