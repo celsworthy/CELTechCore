@@ -4,8 +4,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
-import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -28,7 +28,6 @@ public class PrinterSettings
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterSettings.class.getName());
 
-    private final ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private final ObjectProperty<Filament> selectedFilament0 = new SimpleObjectProperty<>(null);
     private final ObjectProperty<Filament> selectedFilament1 = new SimpleObjectProperty<>(null);
     private final StringProperty customSettingsName = new SimpleStringProperty();
@@ -38,7 +37,7 @@ public class PrinterSettings
 
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private ObjectProperty<SupportType> printSupportOverride = new SimpleObjectProperty<>(SupportType.NO_SUPPORT);
+    private final ObjectProperty<SupportType> printSupportOverride = new SimpleObjectProperty<>(SupportType.NO_SUPPORT);
     private boolean raftOverride = false;
 
     public PrinterSettings()
@@ -59,21 +58,6 @@ public class PrinterSettings
     public ReadOnlyBooleanProperty getDataChanged()
     {
         return dataChanged;
-    }
-
-    public void setSelectedPrinter(Printer value)
-    {
-        selectedPrinter.set(value);
-    }
-
-    public Printer getSelectedPrinter()
-    {
-        return selectedPrinter.get();
-    }
-
-    public ObjectProperty<Printer> selectedPrinterProperty()
-    {
-        return selectedPrinter;
     }
 
     public void setFilament0(Filament filament)
@@ -153,7 +137,7 @@ public class PrinterSettings
         return customSettingsName;
     }
 
-    public SlicerParametersFile getSettings()
+    public SlicerParametersFile getSettings(HeadType headType)
     {
         switch (printQuality.get())
         {

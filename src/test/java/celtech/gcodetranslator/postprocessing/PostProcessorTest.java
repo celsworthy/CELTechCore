@@ -6,6 +6,7 @@ import celtech.TestUtils;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
@@ -86,7 +87,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
@@ -127,7 +129,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
@@ -169,7 +172,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 "",
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
@@ -224,7 +228,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 "",
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
@@ -279,7 +284,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 "",
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
@@ -423,7 +429,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 "",
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
@@ -606,7 +613,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 "",
                 singleMaterialHead,
                 testProject,
-                ppFeatures);
+                ppFeatures,
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         assertEquals(3, testLayer.getChildren().size());
         assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);

@@ -445,7 +445,7 @@ public class Project implements Serializable
         extruder0Filament.set(DEFAULT_FILAMENT);
         extruder1Filament.set(DEFAULT_FILAMENT);
 
-        Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
+        Printer printer = Lookup.getSelectedPrinterProperty().get();
         if (printer != null)
         {
             if (printer.reelsProperty().containsKey(0))

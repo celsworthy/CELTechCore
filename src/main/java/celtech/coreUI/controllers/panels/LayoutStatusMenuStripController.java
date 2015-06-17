@@ -49,7 +49,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
@@ -182,7 +181,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void printPressed(ActionEvent event)
     {
-        Printer printer = printerSettings.getSelectedPrinter();
+        Printer printer = Lookup.getSelectedPrinterProperty().get();
 
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
@@ -362,7 +361,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void ejectFilament(ActionEvent event)
     {
 
-        Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
+        Printer printer = Lookup.getSelectedPrinterProperty().get();
         if (printer.extrudersProperty().get(0).filamentLoadedProperty().get()
             && printer.extrudersProperty().get(1).filamentLoadedProperty().get())
         {
@@ -371,19 +370,25 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             String cm1Text;
             String cm2Text;
-            
-            if (printer.reelsProperty().containsKey(0)) {
-                cm1Text = "1: " + printer.reelsProperty().get(0).friendlyFilamentNameProperty().get();
-            } else {
+
+            if (printer.reelsProperty().containsKey(0))
+            {
+                cm1Text = "1: "
+                    + printer.reelsProperty().get(0).friendlyFilamentNameProperty().get();
+            } else
+            {
                 cm1Text = "1: " + Lookup.i18n("materialComponent.unknown");
             }
-            
-            if (printer.reelsProperty().containsKey(1)) {
-                cm2Text = "2: " + printer.reelsProperty().get(1).friendlyFilamentNameProperty().get();
-            } else {
+
+            if (printer.reelsProperty().containsKey(1))
+            {
+                cm2Text = "2: "
+                    + printer.reelsProperty().get(1).friendlyFilamentNameProperty().get();
+            } else
+            {
                 cm2Text = "2: " + Lookup.i18n("materialComponent.unknown");
-            }            
-            
+            }
+
             MenuItem cmItem1 = new MenuItem(cm1Text);
             MenuItem cmItem2 = new MenuItem(cm2Text);
             cmItem1.setOnAction((ActionEvent e) ->
@@ -625,6 +630,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 whenProjectChanges(newValue);
             });
 
+        Lookup.getSelectedPrinterProperty().addListener(
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+            {
+                currentSettingsPrinter = newValue;
+            });
+        currentSettingsPrinter = Lookup.getSelectedPrinterProperty().get();
+
         Lookup.getPrinterListChangesNotifier().addListener(this);
     }
 
@@ -686,7 +698,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     ChangeListener<Printer> printerSettingsListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
     {
-        currentSettingsPrinter = newValue;
         if (newValue != null)
         {
             whenProjectOrSettingsPrinterChange();
@@ -704,7 +715,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         if (printerSettings != null)
         {
-            printerSettings.selectedPrinterProperty().addListener(printerSettingsListener);
+            Lookup.getSelectedPrinterProperty().addListener(printerSettingsListener);
         }
     }
 
@@ -776,9 +787,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void createStatusPrinterListener()
     {
-        currentStatusPrinter = Lookup.getCurrentlySelectedPrinterProperty().get();
+        currentStatusPrinter = Lookup.getSelectedPrinterProperty().get();
 
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(
+        Lookup.getSelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 if (newValue != null)
@@ -811,7 +822,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
                     ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).
                         canEjectProperty().not().and(newValue.extrudersProperty().get(1).
-                        canEjectProperty().not()));
+                            canEjectProperty().not()));
 
                     // These buttons should only be available in advanced mode
                     fineNozzleButton.disableProperty().bind(
@@ -893,7 +904,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void unbindProject(Project project)
     {
-        printerSettings.selectedPrinterProperty().removeListener(printerSettingsListener);
+        Lookup.getSelectedPrinterProperty().removeListener(printerSettingsListener);
         layoutSubmode.removeListener(layoutSubmodeListener);
         project.removeProjectChangesListener(projectChangesListener);
         undoButton.disableProperty().unbind();
@@ -946,7 +957,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         selectedProject = project;
         undoableSelectedProject = new UndoableProject(project);
         printerSettings = project.getPrinterSettings();
-        currentSettingsPrinter = printerSettings.getSelectedPrinter();
+        currentSettingsPrinter = Lookup.getSelectedPrinterProperty().get();
         modelSelection = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 

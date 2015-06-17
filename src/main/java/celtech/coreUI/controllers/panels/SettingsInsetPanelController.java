@@ -106,7 +106,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             setupOverrides();
 
-            Lookup.getCurrentlySelectedPrinterProperty().addListener(
+            Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     whenPrinterChanged(newValue);
@@ -134,7 +134,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             showPleaseCreateProfile(
                 SlicerParametersContainer.getUserProfileList().isEmpty());
 
-            whenPrinterChanged(Lookup.getCurrentlySelectedPrinterProperty().get());
+            whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
 
             Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
             {
@@ -453,7 +453,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printerSettings.getSettingsNameProperty().addListener(
             (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
             {
-                customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
+                Head currentHead = currentPrinter.headProperty().get();
+                SlicerParametersFile.HeadType headType = SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD;
+                if (currentHead != null) {
+                    headType = currentHead.headTypeProperty().get();
+                }
+                customProfileChooser.getSelectionModel().select(printerSettings.getSettings(headType));
             });
 
         brimSlider.setValue(saveBrim);

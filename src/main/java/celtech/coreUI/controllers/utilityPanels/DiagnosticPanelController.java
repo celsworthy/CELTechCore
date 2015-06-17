@@ -87,7 +87,7 @@ public class DiagnosticPanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        Lookup.getSelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
 
             @Override

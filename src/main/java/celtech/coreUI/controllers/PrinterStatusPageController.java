@@ -307,13 +307,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         resumePrintButton.setVisible(false);
         cancelPrintButton.setVisible(false);
         
-        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
+        if (Lookup.getSelectedPrinterProperty().get() != null)
         {
-            Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
+            Printer printer = Lookup.getSelectedPrinterProperty().get();
             processPrinterStatusChange(printer.printerStatusProperty().get());
         }
         
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(
+        Lookup.getSelectedPrinterProperty().addListener(
             new ChangeListener<Printer>()
             {
                 @Override

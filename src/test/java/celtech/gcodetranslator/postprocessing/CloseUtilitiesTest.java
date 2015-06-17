@@ -2,6 +2,7 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
@@ -32,7 +33,7 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
         
-        CloseUtilities closeUtilities = new CloseUtilities(testProject);
+        CloseUtilities closeUtilities = new CloseUtilities(testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
                 ((SectionNode) tool1.getChildren().get(0)));

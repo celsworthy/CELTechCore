@@ -584,7 +584,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         setupFilamentListeners(project);
         setupPrintSettingsFilamentListeners(project);
         updateFilamentColoursForModeAndTargetPrinter();
-        project.getPrinterSettings().selectedPrinterProperty().addListener(
+        Lookup.getSelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 updateFilamentColoursForModeAndTargetPrinter();
@@ -960,7 +960,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private boolean targetPrinterHasOneExtruder()
     {
         boolean extruder1IsFitted
-            = project.getPrinterSettings().getSelectedPrinter().extrudersProperty().get(
+            = Lookup.getSelectedPrinterProperty().get().extrudersProperty().get(
                 1).isFittedProperty().get();
         return !extruder1IsFitted;
     }
@@ -974,7 +974,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void updateFilamentColoursForModeAndTargetPrinter()
     {
         PrinterSettings printerSettings = project.getPrinterSettings();
-        Printer selectedPrinter = printerSettings.getSelectedPrinter();
+        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
 
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {

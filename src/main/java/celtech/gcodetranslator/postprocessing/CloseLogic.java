@@ -1,6 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
@@ -12,7 +13,6 @@ import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
-import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
@@ -41,12 +41,12 @@ public class CloseLogic
     private final NodeManagementUtilities nodeManagementUtilities;
 
     public CloseLogic(Project project,
-            PostProcessorFeatureSet featureSet)
+            PostProcessorFeatureSet featureSet, HeadType headType)
     {
         this.project = project;
         this.featureSet = featureSet;
 
-        closeUtilities = new CloseUtilities(project);
+        closeUtilities = new CloseUtilities(project, headType);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
     }
 

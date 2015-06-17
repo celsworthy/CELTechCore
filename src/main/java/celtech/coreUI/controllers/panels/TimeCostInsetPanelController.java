@@ -7,9 +7,12 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.SimpleCancellable;
@@ -108,6 +111,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 //                {
 //                    whenProjectChanged(newValue);
 //                });
+            
             ApplicationStatus.getInstance().modeProperty().addListener(
                 (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
                 {
@@ -301,7 +305,13 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                 && !currentProject.getPrinterSettings().getSettingsName().equals(""))
             {
-                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
+                Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
+                Head currentHead = currentPrinter.headProperty().get();
+                HeadType headType = HeadType.SINGLE_MATERIAL_HEAD;
+                if (currentHead != null) {
+                    headType = currentHead.headTypeProperty().get();
+                }
+                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(headType);
                 updateFieldsForProfile(project, customSettings, lblCustomTime,
                                        lblCustomWeight,
                                        lblCustomCost, cancellable);

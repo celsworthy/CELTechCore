@@ -72,10 +72,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
                 }
                 previouslySelectedPrinter = currentPrinter.get();
 
-                if (printerSettings != null)
-                {
-                    printerSettings.setSelectedPrinter(currentPrinter.get());
-                }
                 if (currentPrinter.get() != null)
                 {
                     bindPrinter(currentPrinter.get());
@@ -263,11 +259,6 @@ public class SettingsSidePanelController implements Initializable, SidePanelMana
 
         currentProject = project;
         printerSettings = project.getPrinterSettings();
-
-        if (printerSettings.getSelectedPrinter() == null && currentPrinter.get() != null)
-        {
-            printerSettings.setSelectedPrinter(currentPrinter.get());
-        }
 
         printerSettings.setFilament0(filament0.get());
         printerSettings.setFilament0(filament1.get());

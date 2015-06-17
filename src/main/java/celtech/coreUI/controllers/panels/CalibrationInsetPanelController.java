@@ -497,7 +497,7 @@ public class CalibrationInsetPanelController implements Initializable,
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
         this.calibrationMode = calibrationMode;
-        switchToPrinter(Lookup.getCurrentlySelectedPrinterProperty().get());
+        switchToPrinter(Lookup.getSelectedPrinterProperty().get());
         configureStartButtonForMode(calibrationMode, currentPrinter);
         switch (calibrationMode)
         {

@@ -177,7 +177,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     public void initialize(URL location, ResourceBundle resources)
     {
 
-        currentPrinter.bind(Lookup.getCurrentlySelectedPrinterProperty());
+        currentPrinter.bind(Lookup.getSelectedPrinterProperty());
 
         canSave.bind(isValid.and(isDirty).and(
             state.isEqualTo(State.NEW).

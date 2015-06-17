@@ -197,7 +197,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
             setUpWriteEnabledAfterEdits();
 
-            Lookup.getCurrentlySelectedPrinterProperty().addListener(
+            Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     if (newValue != oldValue)
@@ -209,10 +209,10 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
             Lookup.getPrinterListChangesNotifier().addListener(this);
 
-            if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
+            if (Lookup.getSelectedPrinterProperty().get() != null)
             {
                 setSelectedPrinter(
-                    Lookup.getCurrentlySelectedPrinterProperty().get());
+                    Lookup.getSelectedPrinterProperty().get());
             }
 
         } catch (Exception ex)

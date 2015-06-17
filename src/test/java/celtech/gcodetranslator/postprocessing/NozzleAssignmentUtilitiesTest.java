@@ -5,6 +5,7 @@ import celtech.TestUtils;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
@@ -141,17 +142,17 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings().getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings().getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
-                testProject.getPrinterSettings().getSettings(),
+                testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD),
                 singleMaterialHead,
                 ppFeatures,
                 testProject,
@@ -289,10 +290,10 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings().getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings().getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
@@ -307,7 +308,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
-                testProject.getPrinterSettings().getSettings(),
+                testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD),
                 dualMaterialHead,
                 ppFeatures,
                 testProject,
@@ -499,17 +500,17 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings().getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings().getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
-                testProject.getPrinterSettings().getSettings(),
+                testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD),
                 singleMaterialHead,
                 ppFeatures,
                 testProject,

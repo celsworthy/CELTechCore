@@ -6,6 +6,7 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
@@ -49,7 +50,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 {
 
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
-
+    
     enum Fields
     {
 
@@ -130,6 +131,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private VBox container;
+    
+    @FXML
+    private ComboBox<HeadType> cmbHeadType;    
 
     @FXML
     private ComboBox<SlicerParametersFile> cmbPrintProfile;
@@ -414,6 +418,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         setupSupportNozzleChoice();
 
         setupSlicerChooser();
+        
+        setupHeadType();
 
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
@@ -426,6 +432,19 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         FXMLUtilities.addColonsToLabels(container);
 
         setupHelpTextListeners();
+    }
+    
+    private void setupHeadType() {
+        cmbHeadType.getItems().add(HeadType.SINGLE_MATERIAL_HEAD);
+        cmbHeadType.getItems().add(HeadType.DUAL_MATERIAL_HEAD);
+        cmbHeadType.setValue(HeadType.SINGLE_MATERIAL_HEAD);
+        
+        cmbHeadType.valueProperty().addListener(
+            (ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
+        {
+            repopulateCmbPrintProfile();
+            selectPrintProfile();
+        });
     }
 
     private void setupPrintProfileCombo()
@@ -440,7 +459,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         cmbPrintProfile.valueProperty().addListener(
             (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
             {
-                selectPrintProfile(newValue);
+                selectPrintProfile();
             });
     }
 
@@ -460,8 +479,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         }
     }
 
-    private void selectPrintProfile(SlicerParametersFile printProfile)
+    private void selectPrintProfile()
     {
+        SlicerParametersFile printProfile = cmbPrintProfile.getValue();
+        
         if (printProfile == null)
         {
             return;

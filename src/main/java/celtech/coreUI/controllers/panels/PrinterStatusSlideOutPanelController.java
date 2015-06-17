@@ -71,7 +71,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        Lookup.getCurrentlySelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
+        Lookup.getSelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
         populateGCodeArea();
 
-        Lookup.getCurrentlySelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
         {
             if (t1 != null)
             {
@@ -136,7 +136,7 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 //                }
 //            }
 //        });
-        gcodeEditParent.visibleProperty().bind(Lookup.getCurrentlySelectedPrinterProperty().isNotNull());
+        gcodeEditParent.visibleProperty().bind(Lookup.getSelectedPrinterProperty().isNotNull());
 
 //        sendGCodeButton.setDefaultButton(true);
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent t) ->
@@ -185,10 +185,10 @@ public class PrinterStatusSlideOutPanelController implements Initializable, Slid
 
     private void populateGCodeArea()
     {
-        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
+        if (Lookup.getSelectedPrinterProperty().get() != null)
         {
             gcodeTranscript.setText("");
-            for (String gcodeLine : Lookup.getCurrentlySelectedPrinterProperty().get().gcodeTranscriptProperty())
+            for (String gcodeLine : Lookup.getSelectedPrinterProperty().get().gcodeTranscriptProperty())
             {
                 gcodeTranscript.appendText(gcodeLine);
             }
