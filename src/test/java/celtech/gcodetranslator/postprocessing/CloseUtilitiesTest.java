@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class CloseUtilitiesTest extends JavaFXConfiguredTest
 {
     @Test
-    public void testFindClosestExtrusionNode()
+    public void testFindClosestMovementNode()
     {
         ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare();
 
@@ -34,13 +34,14 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         
         CloseUtilities closeUtilities = new CloseUtilities(testProject);
 
-        Optional<IntersectionResult> result = closeUtilities.findClosestExtrusionNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
+        Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
                 ((SectionNode) tool1.getChildren().get(0)));
-
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
         assertTrue(result.isPresent());
         assertSame(tool1.getChildren().get(0).getChildren().get(4), result.get().getClosestNode());
         assertEquals(1, result.get().getIntersectionPoint().getX(), 0.01);
-        assertEquals(5, result.get().getIntersectionPoint().getY(), 0.01);
+        assertEquals(2.5, result.get().getIntersectionPoint().getY(), 0.01);
     }
 
     private ToolSelectNode setupToolNodeWithInnerAndOuterSquare()

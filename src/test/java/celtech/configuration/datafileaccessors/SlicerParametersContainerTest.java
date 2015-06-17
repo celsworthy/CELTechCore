@@ -40,7 +40,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
     public void testLoadProfiles()
     {
         SlicerParametersContainer.getInstance();
-        assertEquals(4, SlicerParametersContainer.getApplicationProfileList().size());
+        assertEquals(5, SlicerParametersContainer.getApplicationProfileList().size());
         assertEquals(0, SlicerParametersContainer.getUserProfileList().size());
     }
 
@@ -60,7 +60,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.saveProfile(draftCopy);
         assertEquals(1, userProfiles.size());
-        assertEquals(5, completeProfiles.size());
+        assertEquals(6, completeProfiles.size());
 
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettingsByProfileName(
             NEW_NAME);
@@ -84,7 +84,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.deleteUserProfile(NEW_NAME);
         assertEquals(0, userProfiles.size());
-        assertEquals(4, completeProfiles.size());
+        assertEquals(5, completeProfiles.size());
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettingsByProfileName(
             NEW_NAME);
         Assert.assertNull(retrievedProfile);
@@ -137,11 +137,11 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         draftCopy.setProfileName(CHANGED_NAME);
         SlicerParametersContainer.saveProfile(draftCopy);
         assertEquals(1, userProfiles.size());
-        assertEquals(5, completeProfiles.size());
+        assertEquals(6, completeProfiles.size());
 
         SlicerParametersContainer.reload();
         assertEquals(1, userProfiles.size());
-        assertEquals(5, completeProfiles.size());        
+        assertEquals(6, completeProfiles.size());        
         SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettingsByProfileName(
             CHANGED_NAME);
         assertEquals(5, newEditedProfile.getBrimWidth_mm());

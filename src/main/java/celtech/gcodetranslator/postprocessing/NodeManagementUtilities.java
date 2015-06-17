@@ -6,10 +6,13 @@ import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
+import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,13 +24,14 @@ import org.parboiled.trees.TreeUtils;
  */
 public class NodeManagementUtilities
 {
+
     private final PostProcessorFeatureSet featureSet;
 
     public NodeManagementUtilities(PostProcessorFeatureSet featureSet)
     {
         this.featureSet = featureSet;
     }
-    
+
     protected void removeUnretractNodes(LayerNode layerNode)
     {
         if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
@@ -38,6 +42,35 @@ public class NodeManagementUtilities
                             {
                                 TreeUtils.removeChild(node.getParent(), node);
                     });
+        }
+    }
+
+    protected void calculatePerRetractExtrusionAndNode(LayerNode layerNode)
+    {
+        List<GCodeEventNode> nodes = layerNode.stream().collect(Collectors.toList());
+
+        ExtrusionNode lastExtrusionNode = null;
+        double extrusionInRetract = 0;
+
+        for (GCodeEventNode node : nodes)
+        {
+            if (node instanceof ExtrusionNode)
+            {
+                ExtrusionNode extrusionNode = (ExtrusionNode) node;
+                extrusionInRetract += extrusionNode.getExtrusion().getE();
+                lastExtrusionNode = extrusionNode;
+            } else if (node instanceof RetractNode)
+            {
+                RetractNode retractNode = (RetractNode) node;
+                retractNode.setExtrusionSinceLastRetract(extrusionInRetract);
+                extrusionInRetract = 0;
+
+                if (lastExtrusionNode != null)
+                {
+                    retractNode.setPriorExtrusionNode(lastExtrusionNode);
+                    lastExtrusionNode = null;
+                }
+            }
         }
     }
 
@@ -171,6 +204,41 @@ public class NodeManagementUtilities
         }
 
         return lastExtrusionNode;
+    }
+
+    public double findAvailableExtrusion(GCodeEventNode lastExtrusionNode, boolean forwards) throws NodeProcessingException
+    {
+        double availableExtrusion = 0;
+        List<GCodeEventNode> nozzlePositionProviders;
+
+        if (forwards)
+        {
+            //Go backwards until we see a nozzle provider that has 
+            nozzlePositionProviders = lastExtrusionNode.streamSiblingsAndMeFromHere()
+                    .filter(node -> node instanceof NozzlePositionProvider)
+                    .collect(Collectors.toList());
+        } else
+        {
+            //Go backwards until we see a nozzle provider that has 
+            nozzlePositionProviders = lastExtrusionNode.streamSiblingsAndMeBackwardsFromHere()
+                    .filter(node -> node instanceof NozzlePositionProvider)
+                    .collect(Collectors.toList());
+        }
+        
+        for (GCodeEventNode node : nozzlePositionProviders)
+        {
+            NozzlePositionProvider provider = (NozzlePositionProvider) node;
+            if (provider.getNozzlePosition().isBSet())
+            {
+                break;
+            } else if (node instanceof ExtrusionNode)
+            {
+                ExtrusionNode extrusionNode = (ExtrusionNode) node;
+                availableExtrusion += extrusionNode.getExtrusion().getE();
+            }
+        }
+        
+        return availableExtrusion;
     }
 
 }

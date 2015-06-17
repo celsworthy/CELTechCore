@@ -176,6 +176,11 @@ public abstract class GCodeEventNode extends MutableTreeNodeImpl<GCodeEventNode>
         return finalStream;
     }
 
+    /**
+     * This method traverses the tree backwards
+     * @return
+     * @throws NodeProcessingException 
+     */
     public Stream<GCodeEventNode> streamBackwardsFromHere() throws NodeProcessingException
     {
         //Add me to the stream

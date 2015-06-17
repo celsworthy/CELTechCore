@@ -16,6 +16,7 @@ import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
@@ -323,6 +324,8 @@ public class PostProcessor
                 break;
         }
 
+        nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layerNode);
+
         insertOpenAndCloseNodes(layerNode, lastLayerParseResult);
 
         nozzleControlUtilities.assignExtrusionToCorrectExtruder(layerNode);
@@ -356,17 +359,28 @@ public class PostProcessor
         node.addSiblingBefore(newNozzleValvePositionNode);
     }
 
-    protected void insertNozzleCloses(GCodeEventNode node, final NozzleProxy nozzleInUse)
+    /**
+     *
+     * @param extrusionUpToClose
+     * @param node
+     * @param nozzleInUse
+     * @return True if the close succeeded
+     */
+    protected boolean insertNozzleCloses(double extrusionUpToClose, GCodeEventNode node, final NozzleProxy nozzleInUse)
     {
+        boolean closeSucceeeded = false;
+
         //Assume the nozzle is always fully open...
         nozzleInUse.setCurrentPosition(1.0);
         if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
         {
-            closeLogic.insertProgressiveNozzleCloseUpToEvent(node, nozzleInUse);
+            closeSucceeeded = closeLogic.insertProgressiveNozzleCloseUpToEvent(extrusionUpToClose, node, nozzleInUse);
         } else
         {
-            closeLogic.insertNozzleCloseFullyAfterEvent(node, nozzleInUse);
+            closeSucceeeded = closeLogic.insertNozzleCloseFullyAfterEvent(node, nozzleInUse);
         }
+
+        return closeSucceeeded;
     }
 
     protected void insertOpenAndCloseNodes(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult)
@@ -387,21 +401,26 @@ public class PostProcessor
                                     .filter(foundnode -> foundnode instanceof RetractNode)
                                     .forEach(foundnode ->
                                             {
+                                                boolean closeSucceeded = false;
                                                 RetractNode retractNode = (RetractNode) foundnode;
+                                                Optional<GCodeEventNode> nextExtrusionNode = Optional.empty();
                                                 try
                                                 {
                                                     Optional<GCodeEventNode> priorExtrusionNode = nodeManagementUtilities.findPriorExtrusion(retractNode);
                                                     if (priorExtrusionNode.isPresent())
                                                     {
-                                                        insertNozzleCloses(priorExtrusionNode.get(), nozzleInUse);
+                                                        closeSucceeded = insertNozzleCloses(retractNode.getExtrusionSinceLastRetract(), priorExtrusionNode.get(), nozzleInUse);
 
-                                                        Optional<GCodeEventNode> nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
-                                                        if (nextExtrusionNode.isPresent())
+                                                        if (closeSucceeded)
                                                         {
-                                                            insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
-                                                        } else
-                                                        {
-                                                            steno.warning("No next extrusion found in layer " + layerNode.getLayerNumber() + " near node " + retractNode.toString() + " therefore not attempting to reopen nozzle");
+                                                            nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
+                                                            if (nextExtrusionNode.isPresent())
+                                                            {
+                                                                insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
+                                                            } else
+                                                            {
+                                                                steno.warning("No next extrusion found in layer " + layerNode.getLayerNumber() + " near node " + retractNode.toString() + " therefore not attempting to reopen nozzle");
+                                                            }
                                                         }
                                                     } else
                                                     {
@@ -415,13 +434,22 @@ public class PostProcessor
                                                         } else
                                                         {
                                                             Optional<GCodeEventNode> priorExtrusionNodeLastLayer = nodeManagementUtilities.findLastExtrusionEventInLayer(lastLayer);
-                                                            insertNozzleCloses(priorExtrusionNodeLastLayer.orElseThrow(NodeProcessingException::new), nozzleInUse);
-
-                                                            Optional<GCodeEventNode> nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
-                                                            if (nextExtrusionNode.isPresent())
+                                                            if (!priorExtrusionNodeLastLayer.isPresent())
                                                             {
-                                                                //Only do this if there appears to be somewhere to open...
-                                                                insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
+                                                                throw new NodeProcessingException("No suitable prior extrusion in previous layer", node);
+                                                            }
+                                                            double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(priorExtrusionNodeLastLayer.get(), false);
+
+                                                            closeSucceeded = insertNozzleCloses(availableExtrusion, priorExtrusionNodeLastLayer.get(), nozzleInUse);
+
+                                                            if (closeSucceeded)
+                                                            {
+                                                                nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
+                                                                if (nextExtrusionNode.isPresent())
+                                                                {
+                                                                    //Only do this if there appears to be somewhere to open...
+                                                                    insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -429,7 +457,22 @@ public class PostProcessor
                                                 {
                                                     throw new RuntimeException("Failed to process retract on layer " + layerNode.getLayerNumber() + " this will affect open and close", ex);
                                                 }
-                                                retractNode.removeFromParent();
+
+                                                if (closeSucceeded)
+                                                {
+                                                    retractNode.removeFromParent();
+                                                } else
+                                                {
+                                                    retractNode.appendCommentText("Retract retained");
+                                                    if (nextExtrusionNode.isPresent())
+                                                    {
+                                                        //Insert an unretract to complement the retract
+                                                        UnretractNode newUnretract = new UnretractNode();
+                                                        newUnretract.getExtrusion().setE(Math.abs(retractNode.getExtrusion().getE()));
+                                                        newUnretract.setCommentText("Compensation for retract");
+                                                        nextExtrusionNode.get().addSiblingBefore(newUnretract);
+                                                    }
+                                                }
                                     });
                                 }
 
@@ -488,7 +531,9 @@ public class PostProcessor
 
                                 if (needToAddFinalClose)
                                 {
-                                    insertNozzleCloses(lastExtrusionNode, nozzleInUse);
+                                    double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusionNode, false);
+
+                                    insertNozzleCloses(availableExtrusion, lastExtrusionNode, nozzleInUse);
                                 }
                             } catch (NodeProcessingException ex)
                             {
@@ -503,14 +548,14 @@ public class PostProcessor
         Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
 
         float eValue = layerNode.stream()
-                .filter(node -> node instanceof ExtrusionNode)
+                .filter(node -> node instanceof ExtrusionProvider)
                 .map(ExtrusionProvider.class::cast)
                 .map(ExtrusionProvider::getExtrusion)
                 .map(Extrusion::getE)
                 .reduce(0f, Float::sum);
 
         float dValue = layerNode.stream()
-                .filter(node -> node instanceof ExtrusionNode)
+                .filter(node -> node instanceof ExtrusionProvider)
                 .map(ExtrusionProvider.class::cast)
                 .map(ExtrusionProvider::getExtrusion)
                 .map(Extrusion::getD)

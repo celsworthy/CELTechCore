@@ -4,6 +4,7 @@ import celtech.appManager.Project;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.utils.Math.MathUtils;
 import java.util.List;
@@ -33,9 +34,9 @@ public class CloseUtilities
                 * 1.01f * maxNumberOfIntersectionsToConsider;
     }
 
-    protected Optional<IntersectionResult> findClosestExtrusionNode(ExtrusionNode node, SectionNode priorSection)
+    protected Optional<IntersectionResult> findClosestMovementNode(ExtrusionNode node, SectionNode priorSection)
     {
-        ExtrusionNode closestNode = null;
+        GCodeEventNode closestNode = null;
         Vector2D intersectionPoint = null;
         Optional<IntersectionResult> result = Optional.empty();
 
@@ -47,38 +48,42 @@ public class CloseUtilities
             throw new RuntimeException("Unable to find prior sibling when looking for inward move");
         }
 
-        if (siblingBefore.get() instanceof ExtrusionNode)
+        if (siblingBefore.get() instanceof MovementProvider)
         {
             // We can work out how to split this extrusion
-            ExtrusionNode priorExtrusion = (ExtrusionNode) siblingBefore.get();
+            Movement priorMovement = ((MovementProvider) siblingBefore.get()).getMovement();
 
             //Get an orthogonal to the extrusion we're considering
-            Vector2D priorPoint = priorExtrusion.getMovement().toVector2D();
+            Vector2D priorPoint = priorMovement.toVector2D();
             Vector2D thisPoint = ((MovementProvider) node).getMovement().toVector2D();
 
-            Segment orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, priorPoint, thisPoint);
+            // We want the orthogonal line to be closer to the specified end point rather than the prior point
+            Vector2D vectorFromPriorToThis = thisPoint.subtract(priorPoint);
+            Vector2D halfwayBetweenPriorAndThisPoint = priorPoint.add(vectorFromPriorToThis.scalarMultiply(0.5));
+
+            Segment orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, halfwayBetweenPriorAndThisPoint, thisPoint);
             Vector2D orthogonalSegmentMidpoint = MathUtils.findMidPoint(orthogonalSegment.getStart(),
                     orthogonalSegment.getEnd());
 
-            List<ExtrusionNode> extrusionNodesUnderConsideration = priorSection.stream()
-                    .filter(extrusionnode -> extrusionnode instanceof ExtrusionNode)
-                    .map(ExtrusionNode.class::cast)
+            List<GCodeEventNode> extrusionNodesUnderConsideration = priorSection.stream()
+                    .filter(extrusionnode -> extrusionnode instanceof MovementProvider)
                     .collect(Collectors.toList());
 
-            Vector2D lastPointConsidered = null;
+            GCodeEventNode lastNodeConsidered = null;
 
             double closestDistanceSoFar = 999;
 
-            for (ExtrusionNode extrusionNodeUnderConsideration : extrusionNodesUnderConsideration)
+            for (GCodeEventNode nodeUnderConsideration : extrusionNodesUnderConsideration)
             {
-                Vector2D extrusionPoint = extrusionNodeUnderConsideration.getMovement().toVector2D();
+                MovementProvider movementProvider = (MovementProvider) nodeUnderConsideration;
+                Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
 
-                if (lastPointConsidered != null)
+                if (lastNodeConsidered != null)
                 {
-                    Segment segmentUnderConsideration = new Segment(lastPointConsidered,
-                            extrusionPoint, new Line(
-                                    lastPointConsidered,
-                                    extrusionPoint, 1e-12));
+                    Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
+                    Segment segmentUnderConsideration = new Segment(lastPoint,
+                            extrusionPoint,
+                            new Line(lastPoint, extrusionPoint, 1e-12));
 
                     Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
                             orthogonalSegment, segmentUnderConsideration);
@@ -90,19 +95,27 @@ public class CloseUtilities
 
                         if (distanceFromMidPoint < closestDistanceSoFar)
                         {
-                            closestNode = extrusionNodeUnderConsideration;
+                            //Which node was closest - the last one or this one?
+                            if (tempIntersectionPoint.distance(lastPoint) < 
+                                    tempIntersectionPoint.distance(extrusionPoint))
+                            {
+                                closestNode = lastNodeConsidered;
+                            }
+                            else
+                            {
+                                closestNode = nodeUnderConsideration;
+                            }
                             closestDistanceSoFar = distanceFromMidPoint;
                             intersectionPoint = tempIntersectionPoint;
                         }
                     }
                 }
 
-                lastPointConsidered = extrusionPoint;
+                lastNodeConsidered = nodeUnderConsideration;
             }
         } else
         {
-            //Default to using the Outer...
-            throw new RuntimeException("Error attempting close - have to use outer perimeter " + node.renderForOutput());
+            throw new RuntimeException("Prior sibling was not a movement provider " + node.renderForOutput());
         }
 
         if (closestNode != null
