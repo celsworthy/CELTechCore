@@ -444,7 +444,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             (ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
         {
             repopulateCmbPrintProfile();
-            selectPrintProfile();
+            selectFirstPrintProfile();
         });
     }
 
@@ -508,7 +508,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         {
              ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
              HeadType headType = cmbHeadType.getValue();
-             List filesForHeadType = parametersFiles.stream().filter(f -> f.getHeadType().equals(headType)).collect(Collectors.toList());
+             List filesForHeadType = parametersFiles.stream()
+                 .filter(f -> f.getHeadType() != null && f.getHeadType().equals(headType)).collect(Collectors.toList());
              cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
         } catch (NoClassDefFoundError exception)
         {
