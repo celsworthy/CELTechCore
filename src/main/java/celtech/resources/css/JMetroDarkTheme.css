@@ -2664,3 +2664,11 @@ color-picker-label .text-field {
 .timeCostIcons SVGPath {
     -fx-fill: robox_blue;
 }
+
+/**
+* Menu Item
+*/
+.menu-item {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 14px;
+}

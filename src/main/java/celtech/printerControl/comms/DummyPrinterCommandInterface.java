@@ -597,6 +597,16 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 {
                     steno.info("Dummy printer didn't understand error " + errorString);
                 }
+            } else if (messageData.startsWith("M121")) {
+                String extruderAxis = messageData.replaceAll("M121", "").trim();
+                switch(extruderAxis) {
+                    case "E":
+                        currentStatus.setFilament1SwitchStatus(false);
+                        break;
+                    case "D":
+                        currentStatus.setFilament2SwitchStatus(false);
+                        break;
+                }
             }
 
             response = (RoboxRxPacket) gcodeResponse;
