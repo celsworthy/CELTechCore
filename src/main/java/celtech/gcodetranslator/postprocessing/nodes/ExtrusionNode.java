@@ -23,6 +23,8 @@ public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, 
     private Movement movement = new Movement();
     private Feedrate feedrate = new Feedrate();
     private NozzlePosition nozzlePosition = new NozzlePosition();
+    //Elided extrusion is populated when a close is inserted just before this node
+    private double elidedExtrusion = 0;
 
     @Override
     public Extrusion getExtrusion()
@@ -48,6 +50,16 @@ public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, 
         return nozzlePosition;
     }
 
+    public double getElidedExtrusion()
+    {
+        return elidedExtrusion;
+    }
+
+    public void setElidedExtrusion(double elidedExtrusion)
+    {
+        this.elidedExtrusion = elidedExtrusion;
+    }
+
     @Override
     public String renderForOutput()
     {
@@ -70,7 +82,7 @@ public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, 
     public double timeToReach(SupportsPrintTimeCalculation destinationNode)
     {
         Vector2D source = movement.toVector2D();
-        Vector2D destination = new Vector2D(((MovementProvider)destinationNode).getMovement().getX(), ((MovementProvider)destinationNode).getMovement().getY());
+        Vector2D destination = new Vector2D(((MovementProvider) destinationNode).getMovement().getX(), ((MovementProvider) destinationNode).getMovement().getY());
 
         double distance = source.distance(destination);
 

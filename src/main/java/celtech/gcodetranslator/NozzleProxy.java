@@ -12,7 +12,6 @@ public class NozzleProxy
     private NozzleParameters nozzleParameters;
     private NozzleState state = NozzleState.CLOSED;
     private double currentPosition = 0;
-    private double elidedExtrusion = 0;
 
     public NozzleProxy(NozzleParameters nozzleParameters)
     {
@@ -89,22 +88,5 @@ public class NozzleProxy
     public boolean isClosed()
     {
         return state == NozzleState.CLOSED;
-    }
-
-    public void setElidedExtrusion(double elidedExtrusion)
-    {
-        this.elidedExtrusion = elidedExtrusion;
-    }
-    
-    public double getElidedExtrusion()
-    {
-        return elidedExtrusion;
-    }
-    
-    public double getAndClearElidedExtrusion()
-    {
-        double returnValue = elidedExtrusion;
-        elidedExtrusion = 0;
-        return returnValue;
     }
 }

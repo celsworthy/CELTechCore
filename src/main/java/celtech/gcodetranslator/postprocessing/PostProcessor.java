@@ -109,7 +109,7 @@ public class PostProcessor
             postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
         }
 
-        postProcessorUtilityMethods = new UtilityMethods();
+        postProcessorUtilityMethods = new UtilityMethods(featureSet, project);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, project, postProcessingMode);
         closeLogic = new CloseLogic(project, featureSet);
@@ -326,221 +326,19 @@ public class PostProcessor
 
         nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layerNode);
 
-        insertOpenAndCloseNodes(layerNode, lastLayerParseResult);
+        closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies);
+
+        postProcessorUtilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(layerNode, lastLayerParseResult, nozzleProxies);
+
+        //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
+        postProcessorUtilityMethods.insertOpenNodes(layerNode, lastLayerParseResult);
 
         nozzleControlUtilities.assignExtrusionToCorrectExtruder(layerNode);
-
-        postProcessorUtilityMethods.suppressUnnecessaryToolChanges(layerNode, lastLayerParseResult);
 
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
 
         return postProcessResult;
-    }
-
-    protected void insertNozzleOpenFullyBeforeEvent(GCodeEventNode node, final NozzleProxy nozzleInUse)
-    {
-        // Insert a replenish if required
-        if (featureSet.isEnabled(PostProcessorFeature.REPLENISH_BEFORE_OPEN))
-        {
-            float elidedExtrusion = (float) nozzleInUse.getAndClearElidedExtrusion();
-
-            if (elidedExtrusion > 0)
-            {
-                ReplenishNode replenishNode = new ReplenishNode();
-                replenishNode.getExtrusion().setE(elidedExtrusion);
-                replenishNode.setCommentText("Replenishing elided extrusion");
-                node.addSiblingBefore(replenishNode);
-            }
-        }
-
-        NozzleValvePositionNode newNozzleValvePositionNode = new NozzleValvePositionNode();
-        newNozzleValvePositionNode.getNozzlePosition().setB(nozzleInUse.getNozzleParameters().getOpenPosition());
-        node.addSiblingBefore(newNozzleValvePositionNode);
-    }
-
-    /**
-     *
-     * @param extrusionUpToClose
-     * @param node
-     * @param nozzleInUse
-     * @return True if the close succeeded
-     */
-    protected boolean insertNozzleCloses(double extrusionUpToClose, GCodeEventNode node, final NozzleProxy nozzleInUse)
-    {
-        boolean closeSucceeeded = false;
-
-        //Assume the nozzle is always fully open...
-        nozzleInUse.setCurrentPosition(1.0);
-        if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
-        {
-            closeSucceeeded = closeLogic.insertProgressiveNozzleCloseUpToEvent(extrusionUpToClose, node, nozzleInUse);
-        } else
-        {
-            closeSucceeeded = closeLogic.insertNozzleCloseFullyAfterEvent(node, nozzleInUse);
-        }
-
-        return closeSucceeeded;
-    }
-
-    protected void insertOpenAndCloseNodes(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult)
-    {
-        layerNode.stream()
-                .filter(node -> node instanceof ToolSelectNode)
-                .forEach(node ->
-                        {
-                            ToolSelectNode toolSelectNode = (ToolSelectNode) node;
-                            NozzleProxy nozzleInUse = nozzleProxies.get(toolSelectNode.getToolNumber());
-
-                            try
-                            {
-                                if (featureSet.isEnabled(PostProcessorFeature.CLOSES_ON_RETRACT))
-                                {
-                                    // Find all of the retracts in this layer
-                                    layerNode.stream()
-                                    .filter(foundnode -> foundnode instanceof RetractNode)
-                                    .forEach(foundnode ->
-                                            {
-                                                boolean closeSucceeded = false;
-                                                RetractNode retractNode = (RetractNode) foundnode;
-                                                Optional<GCodeEventNode> nextExtrusionNode = Optional.empty();
-                                                try
-                                                {
-                                                    Optional<GCodeEventNode> priorExtrusionNode = nodeManagementUtilities.findPriorExtrusion(retractNode);
-                                                    if (priorExtrusionNode.isPresent())
-                                                    {
-                                                        closeSucceeded = insertNozzleCloses(retractNode.getExtrusionSinceLastRetract(), priorExtrusionNode.get(), nozzleInUse);
-
-                                                        if (closeSucceeded)
-                                                        {
-                                                            nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
-                                                            if (nextExtrusionNode.isPresent())
-                                                            {
-                                                                insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
-                                                            } else
-                                                            {
-                                                                steno.warning("No next extrusion found in layer " + layerNode.getLayerNumber() + " near node " + retractNode.toString() + " therefore not attempting to reopen nozzle");
-                                                            }
-                                                        }
-                                                    } else
-                                                    {
-                                                        LayerNode lastLayer = lastLayerParseResult.getLayerData();
-
-                                                        //Look for the last extrusion on the previous layer
-                                                        if (lastLayer.getLayerNumber() < 0)
-                                                        {
-                                                            // There wasn't a last layer - this is a lone retract at the start of the file
-                                                            steno.warning("Discarding retract from layer " + layerNode.getLayerNumber());
-                                                        } else
-                                                        {
-                                                            Optional<GCodeEventNode> priorExtrusionNodeLastLayer = nodeManagementUtilities.findLastExtrusionEventInLayer(lastLayer);
-                                                            if (!priorExtrusionNodeLastLayer.isPresent())
-                                                            {
-                                                                throw new NodeProcessingException("No suitable prior extrusion in previous layer", node);
-                                                            }
-                                                            double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(priorExtrusionNodeLastLayer.get(), false);
-
-                                                            closeSucceeded = insertNozzleCloses(availableExtrusion, priorExtrusionNodeLastLayer.get(), nozzleInUse);
-
-                                                            if (closeSucceeded)
-                                                            {
-                                                                nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
-                                                                if (nextExtrusionNode.isPresent())
-                                                                {
-                                                                    //Only do this if there appears to be somewhere to open...
-                                                                    insertNozzleOpenFullyBeforeEvent(nextExtrusionNode.get(), nozzleInUse);
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                } catch (NodeProcessingException ex)
-                                                {
-                                                    throw new RuntimeException("Failed to process retract on layer " + layerNode.getLayerNumber() + " this will affect open and close", ex);
-                                                }
-
-                                                if (closeSucceeded)
-                                                {
-                                                    retractNode.removeFromParent();
-                                                } else
-                                                {
-                                                    retractNode.appendCommentText("Retract retained");
-                                                    if (nextExtrusionNode.isPresent())
-                                                    {
-                                                        //Insert an unretract to complement the retract
-                                                        UnretractNode newUnretract = new UnretractNode();
-                                                        newUnretract.getExtrusion().setE(Math.abs(retractNode.getExtrusion().getE()));
-                                                        newUnretract.setCommentText("Compensation for retract");
-                                                        nextExtrusionNode.get().addSiblingBefore(newUnretract);
-                                                    }
-                                                }
-                                    });
-                                }
-
-                                //Insert an open at the start if there isn't already an open preceding the first extrusion
-                                GCodeEventNode firstExtrusionNode = nodeManagementUtilities.findNextExtrusion(toolSelectNode).orElseThrow(NodeProcessingException::new);
-
-                                boolean needToAddInitialOpen = false;
-
-                                Optional potentialOpenNode = firstExtrusionNode.getSiblingBefore();
-                                if (!potentialOpenNode.isPresent())
-                                {
-                                    //There was no node before the first extrusion event - add one
-                                    needToAddInitialOpen = true;
-                                } else
-                                {
-                                    //There was an event - was it an open?
-                                    if (potentialOpenNode.get() instanceof NozzleValvePositionNode)
-                                    {
-                                        NozzleValvePositionNode nozzleNode = (NozzleValvePositionNode) potentialOpenNode.get();
-                                        if (nozzleNode.getNozzlePosition().getB() != nozzleInUse.getNozzleParameters().getOpenPosition())
-                                        {
-                                            //It wasn't an open - add one
-                                            needToAddInitialOpen = true;
-                                        }
-                                    }
-                                }
-
-                                if (needToAddInitialOpen)
-                                {
-                                    insertNozzleOpenFullyBeforeEvent(firstExtrusionNode, nozzleInUse);
-                                }
-
-                                //Insert a close at the end if there isn't already a close following the last extrusion
-                                GCodeEventNode lastExtrusionNode = nodeManagementUtilities.findPriorExtrusion(toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1)).orElseThrow(NodeProcessingException::new);
-
-                                boolean needToAddFinalClose = false;
-
-                                Optional potentialCloseNode = lastExtrusionNode.getSiblingAfter();
-                                if (!potentialCloseNode.isPresent())
-                                {
-                                    //There was no node after the last extrusion event - add one
-                                    needToAddFinalClose = true;
-                                } else
-                                {
-                                    //There was an event - was it a close?
-                                    if (potentialCloseNode.get() instanceof NozzleValvePositionNode)
-                                    {
-                                        NozzleValvePositionNode nozzleNode = (NozzleValvePositionNode) potentialCloseNode.get();
-                                        if (nozzleNode.getNozzlePosition().getB() != nozzleInUse.getNozzleParameters().getClosedPosition())
-                                        {
-                                            //It wasn't a close - add one
-                                            needToAddFinalClose = true;
-                                        }
-                                    }
-                                }
-
-                                if (needToAddFinalClose)
-                                {
-                                    double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusionNode, false);
-
-                                    insertNozzleCloses(availableExtrusion, lastExtrusionNode, nozzleInUse);
-                                }
-                            } catch (NodeProcessingException ex)
-                            {
-                                throw new RuntimeException("Failed to insert opens and closes on layer " + layerNode.getLayerNumber() + " tool " + toolSelectNode.getToolNumber(), ex);
-                            }
-                }
-                );
     }
 
     private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode)
