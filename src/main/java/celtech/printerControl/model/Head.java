@@ -244,6 +244,35 @@ public class Head implements Cloneable, RepairableComponent
             nozzles.get(1).bOffset.set(eepromData.getNozzle2BOffset());
         }
     }
+    
+    public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
+    {
+        boolean matches = false;
+
+        if (response.getTypeCode().equals(typeCodeProperty().get())
+            && response.getHeadHours() == headHoursProperty().get()
+            
+            && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
+            && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
+            && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
+            && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
+            && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
+            && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
+            && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
+            && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
+            
+            && response.getMaximumTemperature() == getNozzleHeaters().get(0)
+                                                    .maximumTemperatureProperty().get()
+            && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
+            && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
+            
+            && response.getUniqueID().equals(uniqueIDProperty().get()))
+        {
+            matches = true;
+        }
+
+        return matches;
+    }
 
     @Override
     public RepairResult bringDataInBounds()

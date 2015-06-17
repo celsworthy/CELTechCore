@@ -1,6 +1,7 @@
 package celtech.appManager;
 
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;

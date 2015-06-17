@@ -3,6 +3,8 @@ package celtech.coreUI.components;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,6 +23,15 @@ import javafx.stage.StageStyle;
  */
 public class ChoiceLinkDialogBox extends VBox
 {
+    
+    public class PrinterDisconnectedException extends Exception {
+
+        public PrinterDisconnectedException(String message)
+        {
+            super(message);
+        }
+        
+    }
 
     @FXML
     private HyperlinkedLabel title;
@@ -34,9 +45,41 @@ public class ChoiceLinkDialogBox extends VBox
     private Stage dialogStage = null;
 
     private Optional<ChoiceLinkButton> chosenButton = Optional.empty();
-
-    public ChoiceLinkDialogBox()
+    
+    private final boolean closeOnPrinterDisconnect;
+    
+    private boolean closedDueToPrinterDisconnect = false;
+    
+    private static List<ChoiceLinkDialogBox> openDialogs = new ArrayList<>();
+    
+    /**
+     * When the printer is disconnected close all related dialog boxes.
+     */
+    public static void whenPrinterDisconnected() {
+        for (ChoiceLinkDialogBox openDialog : new ArrayList<>(openDialogs))
+        {
+            if (openDialog.closeOnPrinterDisconnect) {
+                openDialog.closeDueToPrinterDisconnect();
+            }
+        }
+    } 
+    
+    public void closeDueToPrinterDisconnect() {
+        closedDueToPrinterDisconnect = true;
+        close();
+    }
+    
+    public boolean closedDueToPrinterDisconnect() {
+        return closedDueToPrinterDisconnect;
+    }
+    
+    public ChoiceLinkDialogBox(boolean closeOnPrinterDisconnect)
     {
+        
+        this.closeOnPrinterDisconnect = closeOnPrinterDisconnect;
+        
+        openDialogs.add(this);
+        
         dialogStage = new Stage(StageStyle.UNDECORATED);
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
@@ -118,9 +161,15 @@ public class ChoiceLinkDialogBox extends VBox
      *
      * @return
      */
-    public Optional<ChoiceLinkButton> getUserInput()
+    public Optional<ChoiceLinkButton> getUserInput() throws PrinterDisconnectedException
     {
         dialogStage.showAndWait();
+        openDialogs.remove(this);
+        
+        if (closedDueToPrinterDisconnect) {
+            
+            throw new PrinterDisconnectedException("Printer disconnected");
+        }
 
         return chosenButton;
     }
@@ -136,6 +185,7 @@ public class ChoiceLinkDialogBox extends VBox
 
     public void close()
     {
+        openDialogs.remove(this);
         dialogStage.close();
     }
 }

@@ -15,6 +15,7 @@ import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
+import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
@@ -33,6 +34,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -51,7 +53,23 @@ public class Lookup
     private static final Stenographer steno = StenographerFactory.getStenographer(
         Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
-    private static final ObservableList<Printer> connectedPrinters = FXCollections.observableArrayList();
+    private static final ObservableList<Printer> connectedPrinters;
+
+    static
+    {
+        connectedPrinters = FXCollections.observableArrayList();
+        connectedPrinters.addListener((ListChangeListener.Change<? extends Printer> change) ->
+        {
+            while (change.next())
+            {
+                if (change.wasRemoved())
+                {
+                    ChoiceLinkDialogBox.whenPrinterDisconnected();
+                }
+            }
+        });
+    }
+
     /**
      * The UserPreferences being used by the application.
      */
@@ -66,7 +84,7 @@ public class Lookup
      */
     private static final ObjectProperty<Printer> currentlySelectedPrinterProperty = new SimpleObjectProperty<>();
     /**
-     * The activeProject is the project that has most recently been selected on the ProjectTab
+     * The selectedProject is the project that has most recently been selected on the ProjectTab
      * control.
      */
     private static final ObjectProperty<Project> selectedProject = new SimpleObjectProperty<>();

@@ -166,11 +166,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 steno.error("Error shutting down printer");
             }
         }
-
-        
     }
-
-
 
     /**
      *
@@ -211,13 +207,9 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         final Printer printerToRemove = activePrinters.get(portName);
         activePrinters.remove(portName);
 
-        Platform.runLater(new Runnable()
+        Platform.runLater(() ->
         {
-            @Override
-            public void run()
-            {
-                Lookup.getConnectedPrinters().remove(printerToRemove);
-            }
+            Lookup.getConnectedPrinters().remove(printerToRemove);
         });
     }
 

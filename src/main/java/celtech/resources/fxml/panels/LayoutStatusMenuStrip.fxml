@@ -45,7 +45,7 @@
                                 <FlowPane fx:id="statusButtonHBox" alignment="CENTER" prefWrapLength="200">
                                     <children>
                                         <GraphicButtonWithLabel fx:id="unlockDoorButton" fxmlFileName="unlockDoorButton" labelText="%buttonText.unlockDoor" onAction="#unlockDoor" />
-                                        <GraphicButtonWithLabel fx:id="ejectFilamentButton" fxmlFileName="ejectFilamentButton" labelText="%buttonText.ejectFilament" onAction="#ejectFilament0" />
+                                        <GraphicButtonWithLabel fx:id="ejectFilamentButton" fxmlFileName="ejectFilamentButton" labelText="%buttonText.ejectFilament" onAction="#ejectFilament" />
                                         <StackPane>
                                             <children>
                                                 <GraphicButtonWithLabel fx:id="fineNozzleButton" fxmlFileName="fineNozzleButton" labelText="%buttonText.fineNozzle" onAction="#selectNozzle0" />
