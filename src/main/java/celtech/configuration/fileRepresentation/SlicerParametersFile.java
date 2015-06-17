@@ -9,7 +9,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import org.codehaus.jackson.annotate.JsonValue;
 
 /**
  *
@@ -31,11 +30,6 @@ public class SlicerParametersFile
         {
             this.helpText = helpText;
             this.headTypeCode = headTypeCode;
-        }
-        
-        @JsonValue
-        public String getName() {
-            return headTypeCode;
         }
 
         @Override
@@ -838,6 +832,7 @@ public class SlicerParametersFile
         SlicerParametersFile clone = new SlicerParametersFile();
 
         clone.profileName = profileName;
+        clone.headType = headType;
         clone.slicerOverride = slicerOverride;
 
         /*

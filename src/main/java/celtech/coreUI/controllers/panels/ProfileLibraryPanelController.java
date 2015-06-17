@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -402,6 +403,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
 
         setupWidgetChangeListeners();
+        
+        setupHeadType();
 
         setupPrintProfileCombo();
 
@@ -418,8 +421,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         setupSupportNozzleChoice();
 
         setupSlicerChooser();
-        
-        setupHeadType();
 
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
@@ -505,7 +506,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         try
         {
-            cmbPrintProfile.setItems(SlicerParametersContainer.getCompleteProfileList());
+             ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
+             HeadType headType = cmbHeadType.getValue();
+             List filesForHeadType = parametersFiles.stream().filter(f -> f.getHeadType().equals(headType)).collect(Collectors.toList());
+             cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
@@ -516,16 +520,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         slicerChooser.setItems(FXCollections.observableArrayList(CustomSlicerType.values()));
 
-        slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
+        slicerChooser.valueProperty().addListener(
+            (ObservableValue<? extends CustomSlicerType> ov, CustomSlicerType lastSlicer, CustomSlicerType newSlicer) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends CustomSlicerType> ov,
-                CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
+            if (lastSlicer != newSlicer)
             {
-                if (lastSlicer != newSlicer)
-                {
-                    updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
-                }
+                updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
             }
         });
     }
