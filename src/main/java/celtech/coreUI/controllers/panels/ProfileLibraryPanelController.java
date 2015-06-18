@@ -13,13 +13,10 @@ import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -460,6 +457,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 selectPrintProfile();
             });
+        
+        selectPrintProfile();
     }
 
     private void selectFirstPrintProfile()
@@ -1731,24 +1730,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         slicerParametersFile.setFillPattern(FillPattern.LINE);
         slicerParametersFile.setSupportPattern(SupportPattern.RECTILINEAR);
         return slicerParametersFile;
-    }
-
-    void whenCopyPressed()
-    {
-        SlicerParametersFile parametersFile = SlicerParametersContainer.getSettings(
-            currentProfileName, currentHeadType).clone();
-        Set<String> allCurrentNames = new HashSet<>();
-        SlicerParametersContainer.getCompleteProfileList().forEach(
-            (SlicerParametersFile printProfile) ->
-            {
-                allCurrentNames.add(printProfile.getProfileName());
-            });
-        String newName = DeDuplicator.suggestNonDuplicateNameCopy(parametersFile.getProfileName(),
-                                                                  allCurrentNames);
-        parametersFile.setProfileName(newName);
-        SlicerParametersContainer.saveProfile(parametersFile);
-        repopulateCmbPrintProfile();
-        cmbPrintProfile.setValue(SlicerParametersContainer.getSettings(newName, currentHeadType));
     }
 
     void whenDeletePressed()
