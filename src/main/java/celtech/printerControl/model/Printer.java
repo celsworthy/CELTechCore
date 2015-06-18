@@ -42,8 +42,10 @@ import javafx.scene.paint.Color;
  */
 public interface Printer extends RoboxResponseConsumer
 {
-    
-    enum NozzleHeaters {
+
+    enum NozzleHeaters
+    {
+
         NOZZLE_HEATER_0, NOZZLE_HEATER_1, NOZZLE_HEATER_BOTH;
     }
 
@@ -154,7 +156,7 @@ public interface Printer extends RoboxResponseConsumer
     public void goToTargetBedTemperature();
 
     public void goToTargetNozzleHeaterTemperature(int nozzleHeaterNumber);
-    
+
     public void goToZPosition(double position);
 
     public void goToXYPosition(double xPosition, double yPosition);
@@ -221,20 +223,24 @@ public interface Printer extends RoboxResponseConsumer
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
@@ -245,18 +251,19 @@ public interface Printer extends RoboxResponseConsumer
     public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException;
 
     /**
-     * This method 'prints' a GCode file. A print job is created and the printer will manage
-     * extrusion dynamically. The printer will register as an error handler for the duration of the
-     * 'print'.
+     * This method 'prints' a GCode file. A print job is created and the printer
+     * will manage extrusion dynamically. The printer will register as an error
+     * handler for the duration of the 'print'.
      *
-     * @see executeMacro executeMacro - if you wish to run a macro rather than execute a print job
+     * @see executeMacro executeMacro - if you wish to run a macro rather than
+     * execute a print job
      * @param fileName
-     * @param monitorForErrors Indicates whether the printer should automatically manage error
-     * handling (e.g. auto reduction of print speed)
+     * @param monitorForErrors Indicates whether the printer should
+     * automatically manage error handling (e.g. auto reduction of print speed)
      * @throws PrinterException
      */
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
@@ -304,7 +311,7 @@ public interface Printer extends RoboxResponseConsumer
     public void switchToRelativeMoveMode();
 
     public ListFilesResponse transmitListFiles() throws RoboxCommsException;
-  
+
     public AckResponse transmitReportErrors() throws RoboxCommsException;
 
     public void transmitResetErrors() throws RoboxCommsException;
@@ -312,32 +319,31 @@ public interface Printer extends RoboxResponseConsumer
     /*
      * Higher level controls
      */
-
     public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
-        double nozzle1FirstLayerTarget, double nozzle1Target,
-        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
+            double nozzle1FirstLayerTarget, double nozzle1Target,
+            double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
 
     public StatusResponse transmitStatusRequest() throws RoboxCommsException;
 
     public boolean transmitUpdateFirmware(final String firmwareID) throws PrinterException;
 
     public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
-        float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
-        float nozzle1YOffset,
-        float nozzle1ZOffset, float nozzle1BOffset, 
-        String filament0ID, String filament1ID, float nozzle2XOffset, float nozzle2YOffset,
-        float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature0,
-        float lastFilamentTemperature1, float hourCounter) throws RoboxCommsException;
+            float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
+            float nozzle1YOffset,
+            float nozzle1ZOffset, float nozzle1BOffset,
+            String filament0ID, String filament1ID, float nozzle2XOffset, float nozzle2YOffset,
+            float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature0,
+            float lastFilamentTemperature1, float hourCounter) throws RoboxCommsException;
 
     public AckResponse transmitWriteReelEEPROM(int reelNumber, Filament filament) throws RoboxCommsException;
 
     public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
-        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
-        float reelFirstLayerBedTemperature,
-        float reelBedTemperature,
-        float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier,
-        float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
-        MaterialType materialType, Color displayColour) throws RoboxCommsException;
+            float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+            float reelFirstLayerBedTemperature,
+            float reelBedTemperature,
+            float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier,
+            float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
+            MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
     public void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
@@ -377,11 +383,11 @@ public interface Printer extends RoboxResponseConsumer
     public void changeFeedRateMultiplier(double feedRate) throws PrinterException;
 
     public void changeFilamentInfo(String extruderLetter,
-        double filamentDiameter,
-        double extrusionMultiplier) throws PrinterException;
+            double filamentDiameter,
+            double extrusionMultiplier) throws PrinterException;
 
     public void registerErrorConsumer(ErrorConsumer errorConsumer,
-        List<FirmwareError> errorsOfInterest);
+            List<FirmwareError> errorsOfInterest);
 
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer);
 
@@ -394,8 +400,9 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyObjectProperty busyStatusProperty();
 
     /**
-     * Causes a reduction in feedrate until the minimum value is reached. Returns false if the limit
-     * has not been reached and true if it has (implying further action is needed by the caller)
+     * Causes a reduction in feedrate until the minimum value is reached.
+     * Returns false if the limit has not been reached and true if it has
+     * (implying further action is needed by the caller)
      *
      * @param error
      * @return
@@ -405,12 +412,31 @@ public interface Printer extends RoboxResponseConsumer
     public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
 
     /**
-     * This method is intended to be used by commissioning tools and should not be called in normal
-     * operation
+     * This method is intended to be used by commissioning tools and should not
+     * be called in normal operation. Causes the specified list of firmware
+     * errors to be suppressed. The printer will not take any action if these
+     * errors occur, beyond clearing the error flags in the firmware. This
+     * method adds to the set of firmware errors that are being suppressed.
+     *
+     * @param firmwareErrors
+     */
+    public void suppressFirmwareErrors(FirmwareError... firmwareErrors);
+
+    /**
+     * This method is intended to be used by commissioning tools and should not
+     * be called in normal operation. Cancel the suppression of firmware error
+     * detection. All errors will be handled normally after calling this method.
+     */
+    public void cancelFirmwareErrorSuppression();
+
+    /**
+     * This method is intended to be used by commissioning tools and should not
+     * be called in normal operation. Prevents the printer from repairing reel
+     * or head eeprom data.
      *
      * @param suppress
      */
-    public void suppressEEPROMAndSDErrorHandling(boolean suppress);
+    public void suppressEEPROMErrorCorrection(boolean suppress);
 
     public PrinterMetaStatus getPrinterMetaStatus();
 
