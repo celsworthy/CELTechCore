@@ -126,6 +126,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
+    private HeadType currentHeadType;
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ProfileLibraryPanelController.class.getName());
@@ -438,14 +439,16 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private void setupHeadType() {
         cmbHeadType.getItems().add(HeadType.SINGLE_MATERIAL_HEAD);
         cmbHeadType.getItems().add(HeadType.DUAL_MATERIAL_HEAD);
-        cmbHeadType.setValue(HeadType.SINGLE_MATERIAL_HEAD);
         
         cmbHeadType.valueProperty().addListener(
             (ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
         {
+            currentHeadType = newValue;
             repopulateCmbPrintProfile();
             selectFirstPrintProfile();
         });
+        
+        cmbHeadType.setValue(HeadType.SINGLE_MATERIAL_HEAD);
     }
 
     private void setupPrintProfileCombo()
@@ -1696,8 +1699,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         isDirty.set(false);
         repopulateCmbPrintProfile();
         state.set(ProfileLibraryPanelController.State.CUSTOM);
-        cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
-            parametersFile.getProfileName()));
+        cmbPrintProfile.setValue(SlicerParametersContainer.getSettings(
+            parametersFile.getProfileName(), parametersFile.getHeadType()));
     }
 
     void whenNewPressed()
@@ -1713,13 +1716,13 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
-        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
-            getSettingsByProfileName(currentProfileName).clone();
+        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType).clone();
 
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
         currentProfileName = "";
+        currentHeadType = null;
         profileNameField.pseudoClassStateChanged(ERROR, true);
     }
 
@@ -1737,8 +1740,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     void whenCopyPressed()
     {
-        SlicerParametersFile parametersFile = SlicerParametersContainer.getSettingsByProfileName(
-            currentProfileName).clone();
+        SlicerParametersFile parametersFile = SlicerParametersContainer.getSettings(
+            currentProfileName, currentHeadType).clone();
         Set<String> allCurrentNames = new HashSet<>();
         SlicerParametersContainer.getCompleteProfileList().forEach(
             (SlicerParametersFile printProfile) ->
@@ -1750,14 +1753,14 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         parametersFile.setProfileName(newName);
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
-        cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(newName));
+        cmbPrintProfile.setValue(SlicerParametersContainer.getSettings(newName, currentHeadType));
     }
 
     void whenDeletePressed()
     {
         if (state.get() != ProfileLibraryPanelController.State.NEW)
         {
-            SlicerParametersContainer.deleteUserProfile(currentProfileName);
+            SlicerParametersContainer.deleteUserProfile(currentProfileName, currentHeadType);
         }
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();

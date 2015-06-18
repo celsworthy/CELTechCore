@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -154,6 +155,11 @@ public class SlicerParametersFile
     private float raftBaseThickness_mm = 0.3f;
 
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
+    
+    @JsonIgnore
+    public String getProfileKey() {
+        return profileName + "#" + headType.name();
+    }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener)
     {

@@ -1,6 +1,7 @@
 {
   "version" : 4,
   "profileName" : "Draft",
+  "headType": "SINGLE_MATERIAL_HEAD",
   "slicerOverride" : null,
   "firstLayerHeight_mm" : 0.2,
   "layerHeight_mm" : 0.3,
@@ -22,7 +23,7 @@
     "name" : null,
     "closedPosition" : 0.0,
     "openPosition" : 1.0,
-    "diameter" : 0.3,
+    "diameter" : 0.8,
     "openOverVolume" : 0.0,
     "preejectionVolume" : 0.0,
     "ejectionVolume" : 0.6,
@@ -46,7 +47,7 @@
     "travelBeforeForcedClose" : 0.0
   } ],
   "firstLayerNozzle" : 1,
-  "perimeterNozzle" : 0,
+  "perimeterNozzle" : 1,
   "fillNozzle" : 1,
   "supportNozzle" : 0,
   "supportInterfaceNozzle" : 0,

@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
@@ -22,7 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -33,9 +33,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
@@ -81,17 +79,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @FXML
     private CheckBox cbSupport;
 
-    private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.draftSettingsProfileName);
-    private final SlicerParametersFile normalSettings = SlicerParametersContainer.
-        getSettingsByProfileName(
-            ApplicationConfiguration.normalSettingsProfileName);
-    private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.fineSettingsProfileName);
-
     private Printer currentPrinter;
     private Project currentProject;
     private PrinterSettings printerSettings;
+    private HeadType currentHeadType = HeadType.SINGLE_MATERIAL_HEAD;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
 
     /**
@@ -388,6 +379,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         if (printer != null)
         {
             updateSupportCombo(printer);
+            currentHeadType = printer.headProperty().get().headTypeProperty().get();
         }
     }
 
@@ -436,8 +428,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             if (savePrinterSettingsName.length() > 0)
             {
-                SlicerParametersFile chosenProfile = SlicerParametersContainer.
-                    getSettingsByProfileName(savePrinterSettingsName);
+                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettings(savePrinterSettingsName, currentHeadType);
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
@@ -490,15 +481,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         switch (quality)
         {
             case DRAFT:
-                settings = draftSettings;
+                settings = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case NORMAL:
-                settings = normalSettings;
+                settings = SlicerParametersContainer.getSettings(ApplicationConfiguration.normalSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case FINE:
-                settings = fineSettings;
+                settings = SlicerParametersContainer.getSettings(ApplicationConfiguration.fineSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case CUSTOM:
@@ -538,8 +529,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             return null;
         } else
         {
-            return SlicerParametersContainer.getSettingsByProfileName(
-                customSettingsName);
+            return SlicerParametersContainer.getSettings(customSettingsName, currentHeadType);
         }
     }
 

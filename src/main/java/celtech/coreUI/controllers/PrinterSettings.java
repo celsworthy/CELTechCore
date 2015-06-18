@@ -43,8 +43,8 @@ public class PrinterSettings
     public PrinterSettings()
     {
         customSettingsName.set("");
-        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettingsByProfileName(
-            ApplicationConfiguration.draftSettingsProfileName);
+        SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettings(
+            ApplicationConfiguration.draftSettingsProfileName, HeadType.SINGLE_MATERIAL_HEAD);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
         printSupportOverride.set(SupportType.NO_SUPPORT);
@@ -139,23 +139,28 @@ public class PrinterSettings
 
     public SlicerParametersFile getSettings(HeadType headType)
     {
+        SlicerParametersFile settings = null;
         switch (printQuality.get())
         {
             case DRAFT:
-                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
-                    ApplicationConfiguration.draftSettingsProfileName));
+                settings = SlicerParametersContainer.getSettings(
+                    ApplicationConfiguration.draftSettingsProfileName, headType);
+                break;
             case NORMAL:
-                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
-                    ApplicationConfiguration.normalSettingsProfileName));
+                settings = SlicerParametersContainer.getSettings(
+                    ApplicationConfiguration.normalSettingsProfileName, headType);
+                break;
             case FINE:
-                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
-                    ApplicationConfiguration.fineSettingsProfileName));
+                settings = SlicerParametersContainer.getSettings(
+                    ApplicationConfiguration.fineSettingsProfileName, headType);
+                break;
             case CUSTOM:
-                return applyOverrides(SlicerParametersContainer.getSettingsByProfileName(
-                    customSettingsName.get()));
+                settings = SlicerParametersContainer.getSettings(
+                    customSettingsName.get(), headType);
+                break;
 
         }
-        throw new RuntimeException("Unknown print quality");
+        return applyOverrides(settings);
     }
 
     /**
