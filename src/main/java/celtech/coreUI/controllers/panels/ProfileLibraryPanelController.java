@@ -3,6 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.CustomSlicerType;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -366,12 +367,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             isDirty.set(true);
         };
 
-    private final ChangeListener<Object> dirtyObjectListener
-        = (ObservableValue<? extends Object> ov, Object t, Object t1) ->
-        {
-            isDirty.set(true);
-        };
-
     private final float minPoint8ExtrusionWidth = 0.5f;
     private final float defaultPoint8ExtrusionWidth = 0.8f;
     private final float maxPoint8ExtrusionWidth = 1.2f;
@@ -448,7 +443,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             selectFirstPrintProfile();
         });
         
-        cmbHeadType.setValue(HeadType.SINGLE_MATERIAL_HEAD);
+        cmbHeadType.setValue(HeadContainer.defaultHeadType);
     }
 
     private void setupPrintProfileCombo()

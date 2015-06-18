@@ -129,6 +129,13 @@ public class SlicerParametersContainer
             newSettings.setVersion(4);
             doSaveEditedUserProfile(newSettings);
         }
+        
+        if (newSettings.getVersion() < 5) {
+            steno.info("Convert " + newSettings.getProfileName() + " profile to version 5");
+            newSettings.setHeadType(HeadContainer.defaultHeadType);
+            newSettings.setVersion(5);
+            doSaveEditedUserProfile(newSettings);
+        }
     }
 
     public static void saveProfile(SlicerParametersFile settingsToSave)

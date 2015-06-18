@@ -2,6 +2,7 @@ package celtech.coreUI.controllers;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
@@ -44,7 +45,7 @@ public class PrinterSettings
     {
         customSettingsName.set("");
         SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettings(
-            ApplicationConfiguration.draftSettingsProfileName, HeadType.SINGLE_MATERIAL_HEAD);
+            ApplicationConfiguration.draftSettingsProfileName, HeadContainer.defaultHeadType);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
         printSupportOverride.set(SupportType.NO_SUPPORT);

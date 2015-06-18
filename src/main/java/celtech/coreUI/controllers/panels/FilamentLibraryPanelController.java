@@ -9,14 +9,13 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
+import celtech.utils.PrinterListChangesAdapter;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -221,28 +220,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private void setupPrinterChangesListener()
     {
-        listener = new PrinterListChangesListener()
+        listener = new PrinterListChangesAdapter()
         {
-
-            @Override
-            public void whenPrinterAdded(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenPrinterRemoved(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenHeadAdded(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenHeadRemoved(Printer printer, Head head)
-            {
-            }
 
             @Override
             public void whenReelAdded(Printer printer, int reelIndex)
@@ -271,15 +250,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 }
             }
 
-            @Override
-            public void whenExtruderAdded(Printer printer, int extruderIndex)
-            {
-            }
-
-            @Override
-            public void whenExtruderRemoved(Printer printer, int extruderIndex)
-            {
-            }
         };
         Lookup.getPrinterListChangesNotifier().addListener(listener);
     }

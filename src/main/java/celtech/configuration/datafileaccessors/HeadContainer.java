@@ -3,6 +3,7 @@ package celtech.configuration.datafileaccessors;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeadFileFilter;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class HeadContainer
     private static final ObservableMap<String, HeadFile> completeHeadMap = FXCollections.observableHashMap();
     private static final ObjectMapper mapper = new ObjectMapper();
     public static final String defaultHeadID = "RBX01-SM";
+    public static final SlicerParametersFile.HeadType defaultHeadType = SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD;
 
     private HeadContainer()
     {

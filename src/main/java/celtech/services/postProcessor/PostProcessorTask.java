@@ -83,7 +83,12 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             DoubleProperty taskProgress) throws IOException
     {
         SlicerType selectedSlicer = null;
-        HeadType headType = printer.headProperty().get().headTypeProperty().get();
+        HeadType headType;
+        if (printer != null && printer.headProperty().get() != null) {
+            headType = printer.headProperty().get().headTypeProperty().get();
+        } else {
+            headType = HeadContainer.defaultHeadType;
+        }
         if (project.getPrinterSettings().getSettings(headType).getSlicerOverride() != null)
         {
             selectedSlicer = project.getPrinterSettings().getSettings(headType).getSlicerOverride();
@@ -124,7 +129,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     headFileToUse,
                     project,
                     ppFeatures,
-                    printer.headProperty().get().headTypeProperty().get());
+                    headType);
 
             RoboxiserResult roboxiserResult = postProcessor.processInput();
             if (roboxiserResult.isSuccess())
