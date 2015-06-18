@@ -4,6 +4,7 @@ import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
@@ -199,15 +200,15 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings().getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings().getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10);
 
         utilityMethods.insertOpenNodes(testLayer, lastLayerParseResult);
@@ -407,15 +408,15 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings().getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings().getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
@@ -503,15 +504,15 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings().getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings().getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testProxy, layer, 0, 0, 0, 10);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(layer, lastLayerParseResult, nozzleProxies);
@@ -557,7 +558,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
 
         assertEquals(3, testLayer.getChildren().size());
@@ -600,7 +601,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
 
         assertEquals(3, testLayer.getChildren().size());
@@ -643,7 +644,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         extrusionNode1.setElidedExtrusion(0.4);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
         OutputUtilities output = new OutputUtilities();

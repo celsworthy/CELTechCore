@@ -4,11 +4,11 @@ import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
-import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
@@ -68,7 +68,8 @@ public class PostProcessor
             String gcodeOutputFile,
             HeadFile headFile,
             Project project,
-            PostProcessorFeatureSet postProcessorFeatureSet)
+            PostProcessorFeatureSet postProcessorFeatureSet,
+            HeadType headType)
     {
         this.gcodeFileToProcess = gcodeFileToProcess;
         this.gcodeOutputFile = gcodeOutputFile;
@@ -76,7 +77,7 @@ public class PostProcessor
         this.project = project;
         this.featureSet = postProcessorFeatureSet;
 
-        this.slicerParametersFile = project.getPrinterSettings().getSettings();
+        this.slicerParametersFile = project.getPrinterSettings().getSettings(headType);
 
         nozzleProxies.clear();
 
@@ -109,10 +110,10 @@ public class PostProcessor
             postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
         }
 
-        postProcessorUtilityMethods = new UtilityMethods(featureSet, project);
+        postProcessorUtilityMethods = new UtilityMethods(featureSet, project, headType);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, project, postProcessingMode);
-        closeLogic = new CloseLogic(project, featureSet);
+        closeLogic = new CloseLogic(project, featureSet, headType);
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
     }
 

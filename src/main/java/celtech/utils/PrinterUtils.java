@@ -469,13 +469,8 @@ public class PrinterUtils
     public static void setCancelledIfPrinterDisconnected(Printer printerToMonitor,
         Cancellable cancellable)
     {
-        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
+        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
         {
-            @Override
-            public void whenPrinterAdded(Printer printer)
-            {
-            }
-
             @Override
             public void whenPrinterRemoved(Printer printer)
             {
@@ -483,41 +478,6 @@ public class PrinterUtils
                 {
                     cancellable.cancelled().set(true);
                 }
-            }
-
-            @Override
-            public void whenHeadAdded(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenHeadRemoved(Printer printer, Head head)
-            {
-            }
-
-            @Override
-            public void whenReelAdded(Printer printer, int reelIndex)
-            {
-            }
-
-            @Override
-            public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
-            {
-            }
-
-            @Override
-            public void whenReelChanged(Printer printer, Reel reel)
-            {
-            }
-
-            @Override
-            public void whenExtruderAdded(Printer printer, int extruderIndex)
-            {
-            }
-
-            @Override
-            public void whenExtruderRemoved(Printer printer, int extruderIndex)
-            {
             }
         });
     }

@@ -269,12 +269,12 @@ public class Lookup
         return connectedPrinters;
     }
 
-    public static ReadOnlyObjectProperty<Printer> getCurrentlySelectedPrinterProperty()
+    public static ReadOnlyObjectProperty<Printer> getSelectedPrinterProperty()
     {
         return currentlySelectedPrinterProperty;
     }
 
-    public static void setCurrentlySelectedPrinter(Printer currentlySelectedPrinter)
+    public static void setSelectedPrinter(Printer currentlySelectedPrinter)
     {
         currentlySelectedPrinterProperty.set(currentlySelectedPrinter);
     }

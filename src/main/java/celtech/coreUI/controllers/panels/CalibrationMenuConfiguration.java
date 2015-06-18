@@ -62,7 +62,7 @@ public class CalibrationMenuConfiguration
         calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"),
                                 doXYAlignmentCalibration, null);
 
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(selectedPrinterListener);
+        Lookup.getSelectedPrinterProperty().addListener(selectedPrinterListener);
     }
 
     private ChangeListener<Printer> selectedPrinterListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter) ->

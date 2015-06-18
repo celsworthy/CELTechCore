@@ -10,6 +10,7 @@ import celtech.configuration.PauseStatus;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrinterStatus;
@@ -22,7 +23,6 @@ import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.TransferGCodeToPrinterService;
 import celtech.services.roboxmoviemaker.MovieMakerTask;
 import celtech.services.slicer.AbstractSlicerService;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
@@ -612,7 +612,9 @@ public class PrintEngine implements ControllableService
 
     private boolean printFromScratch(Project project, boolean acceptedPrintRequest)
     {
-        SlicerParametersFile settingsToUse = project.getPrinterSettings().getSettings().clone();
+        Head currentHead = associatedPrinter.headProperty().get();
+        HeadType headType = currentHead.headTypeProperty().get();
+        SlicerParametersFile settingsToUse = project.getPrinterSettings().getSettings(headType).clone();
 
         //Create the print job directory
         String printUUID = SystemUtils.generate16DigitID();

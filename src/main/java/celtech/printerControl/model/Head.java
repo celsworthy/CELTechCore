@@ -4,6 +4,8 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
@@ -11,10 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -31,6 +35,10 @@ public class Head implements Cloneable, RepairableComponent
 
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.
         getName());
+    
+    protected ObjectProperty<HeadType> headType = new SimpleObjectProperty<>(
+        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+    
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headZPosition = new SimpleFloatProperty(0);
@@ -129,6 +137,11 @@ public class Head implements Cloneable, RepairableComponent
     public StringProperty nameProperty()
     {
         return name;
+    }
+    
+    public ObjectProperty<HeadType> headTypeProperty()
+    {
+        return headType;
     }
 
     public StringProperty uniqueIDProperty()

@@ -3,21 +3,21 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.CustomSlicerType;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.utils.DeDuplicator;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -49,7 +49,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 {
 
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
-
+    
     enum Fields
     {
 
@@ -124,12 +124,16 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
+    private HeadType currentHeadType;
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ProfileLibraryPanelController.class.getName());
 
     @FXML
     private VBox container;
+    
+    @FXML
+    private ComboBox<HeadType> cmbHeadType;    
 
     @FXML
     private ComboBox<SlicerParametersFile> cmbPrintProfile;
@@ -360,12 +364,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             isDirty.set(true);
         };
 
-    private final ChangeListener<Object> dirtyObjectListener
-        = (ObservableValue<? extends Object> ov, Object t, Object t1) ->
-        {
-            isDirty.set(true);
-        };
-
     private final float minPoint8ExtrusionWidth = 0.5f;
     private final float defaultPoint8ExtrusionWidth = 0.8f;
     private final float maxPoint8ExtrusionWidth = 1.2f;
@@ -398,6 +396,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
 
         setupWidgetChangeListeners();
+        
+        setupHeadType();
 
         setupPrintProfileCombo();
 
@@ -427,6 +427,21 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         setupHelpTextListeners();
     }
+    
+    private void setupHeadType() {
+        cmbHeadType.getItems().add(HeadType.SINGLE_MATERIAL_HEAD);
+        cmbHeadType.getItems().add(HeadType.DUAL_MATERIAL_HEAD);
+        
+        cmbHeadType.valueProperty().addListener(
+            (ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
+        {
+            currentHeadType = newValue;
+            repopulateCmbPrintProfile();
+            selectFirstPrintProfile();
+        });
+        
+        cmbHeadType.setValue(HeadContainer.defaultHeadType);
+    }
 
     private void setupPrintProfileCombo()
     {
@@ -440,8 +455,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         cmbPrintProfile.valueProperty().addListener(
             (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
             {
-                selectPrintProfile(newValue);
+                selectPrintProfile();
             });
+        
+        selectPrintProfile();
     }
 
     private void selectFirstPrintProfile()
@@ -460,8 +477,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         }
     }
 
-    private void selectPrintProfile(SlicerParametersFile printProfile)
+    private void selectPrintProfile()
     {
+        SlicerParametersFile printProfile = cmbPrintProfile.getValue();
+        
         if (printProfile == null)
         {
             return;
@@ -484,7 +503,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         try
         {
-            cmbPrintProfile.setItems(SlicerParametersContainer.getCompleteProfileList());
+             ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
+             HeadType headType = cmbHeadType.getValue();
+             List filesForHeadType = parametersFiles.stream()
+                 .filter(f -> f.getHeadType() != null && f.getHeadType().equals(headType)).collect(Collectors.toList());
+             cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
@@ -495,16 +518,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         slicerChooser.setItems(FXCollections.observableArrayList(CustomSlicerType.values()));
 
-        slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
+        slicerChooser.valueProperty().addListener(
+            (ObservableValue<? extends CustomSlicerType> ov, CustomSlicerType lastSlicer, CustomSlicerType newSlicer) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends CustomSlicerType> ov,
-                CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
+            if (lastSlicer != newSlicer)
             {
-                if (lastSlicer != newSlicer)
-                {
-                    updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
-                }
+                updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
             }
         });
     }
@@ -1674,8 +1693,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         isDirty.set(false);
         repopulateCmbPrintProfile();
         state.set(ProfileLibraryPanelController.State.CUSTOM);
-        cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
-            parametersFile.getProfileName()));
+        cmbPrintProfile.setValue(SlicerParametersContainer.getSettings(
+            parametersFile.getProfileName(), parametersFile.getHeadType()));
     }
 
     void whenNewPressed()
@@ -1691,13 +1710,13 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
-        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
-            getSettingsByProfileName(currentProfileName).clone();
+        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType).clone();
 
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
         currentProfileName = "";
+        currentHeadType = null;
         profileNameField.pseudoClassStateChanged(ERROR, true);
     }
 
@@ -1713,29 +1732,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         return slicerParametersFile;
     }
 
-    void whenCopyPressed()
-    {
-        SlicerParametersFile parametersFile = SlicerParametersContainer.getSettingsByProfileName(
-            currentProfileName).clone();
-        Set<String> allCurrentNames = new HashSet<>();
-        SlicerParametersContainer.getCompleteProfileList().forEach(
-            (SlicerParametersFile printProfile) ->
-            {
-                allCurrentNames.add(printProfile.getProfileName());
-            });
-        String newName = DeDuplicator.suggestNonDuplicateNameCopy(parametersFile.getProfileName(),
-                                                                  allCurrentNames);
-        parametersFile.setProfileName(newName);
-        SlicerParametersContainer.saveProfile(parametersFile);
-        repopulateCmbPrintProfile();
-        cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(newName));
-    }
-
     void whenDeletePressed()
     {
         if (state.get() != ProfileLibraryPanelController.State.NEW)
         {
-            SlicerParametersContainer.deleteUserProfile(currentProfileName);
+            SlicerParametersContainer.deleteUserProfile(currentProfileName, currentHeadType);
         }
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();

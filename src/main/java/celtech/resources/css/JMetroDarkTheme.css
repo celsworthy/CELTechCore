@@ -2456,11 +2456,11 @@ color-picker-label .text-field {
 * Print Profiles
 */
 
-#cmbPrintProfile {
+.cmbPrintProfile {
     -fx-pref-width: 290;
 }
 
-#cmbPrintProfile .combo-box .list-cell {
+.cmbPrintProfile .combo-box .list-cell {
     -fx-pref-width: 290;
 }
 

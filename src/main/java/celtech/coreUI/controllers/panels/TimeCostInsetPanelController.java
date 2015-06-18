@@ -5,12 +5,17 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.utils.PrinterListChangesAdapter;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.SimpleCancellable;
 import java.io.File;
@@ -76,19 +81,15 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private RadioButton rbFine;
     @FXML
     private RadioButton rbCustom;
+    @FXML
+    private Label headType;
 
     private ToggleGroup qualityToggleGroup;
 
-    private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.draftSettingsProfileName);
-    private final SlicerParametersFile normalSettings = SlicerParametersContainer.
-        getSettingsByProfileName(
-            ApplicationConfiguration.normalSettingsProfileName);
-    private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.fineSettingsProfileName);
-
     private Project currentProject;
     private PrinterSettings printerSettings;
+    private Printer currentPrinter;
+    private HeadType currentHeadType;
 
     private TimeCostThreadManager timeCostThreadManager;
 
@@ -100,6 +101,30 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     {
         try
         {
+            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
+            {
+
+                @Override
+                public void whenHeadAdded(Printer printer)
+                {
+                    System.out.println("head added");
+                    if (printer == currentPrinter)
+                    {
+                        updateHeadType(currentPrinter);
+                    }
+                }
+
+            });
+
+            Lookup.getSelectedPrinterProperty().addListener(
+                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                    {
+                        currentPrinter = newValue;
+                        updateHeadType(newValue);
+                    }
+                );
+
+            updateHeadType(Lookup.getSelectedPrinterProperty().get());
 
             timeCostThreadManager = new TimeCostThreadManager();
 
@@ -108,23 +133,25 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 //                {
 //                    whenProjectChanged(newValue);
 //                });
-            ApplicationStatus.getInstance().modeProperty().addListener(
-                (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-                {
-                    if (newValue == ApplicationMode.SETTINGS)
+            ApplicationStatus.getInstance()
+                .modeProperty().addListener(
+                    (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
                     {
-                        timeCostInsetRoot.setVisible(true);
-                        if (Lookup.getSelectedProjectProperty().get() == currentProject)
+                        if (newValue == ApplicationMode.SETTINGS)
                         {
-                            updateFields(currentProject);
+                            timeCostInsetRoot.setVisible(true);
+                            if (Lookup.getSelectedProjectProperty().get() == currentProject)
+                            {
+                                updateFields(currentProject);
+                            }
+                        } else
+                        {
+                            timeCostInsetRoot.setVisible(false);
+                            timeCostThreadManager.cancelRunningTimeCostTasks();
                         }
-                    } else
-                    {
-                        timeCostInsetRoot.setVisible(false);
-                        timeCostThreadManager.cancelRunningTimeCostTasks();
-                    }
 
-                });
+                    }
+                );
 
 //            if (Lookup.getSelectedProjectProperty().get() != null)
 //            {
@@ -135,6 +162,24 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         } catch (Exception ex)
         {
             ex.printStackTrace();
+        }
+    }
+
+    private void updateHeadType(Printer printer)
+    {
+        HeadType headTypeBefore = currentHeadType;
+        System.out.println("update head type for " + printer);
+        if (printer != null && printer.headProperty().get() != null)
+        {
+            currentHeadType = printer.headProperty().get().headTypeProperty().get();
+        } else
+        {
+            currentHeadType = HeadContainer.defaultHeadType;
+        }
+        if (headTypeBefore != currentHeadType)
+        {
+            headType.setText("Estimates for head type: " + currentHeadType.toString());
+            updateFields(currentProject);
         }
     }
 
@@ -301,7 +346,15 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                 && !currentProject.getPrinterSettings().getSettingsName().equals(""))
             {
-                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings();
+                Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
+                Head currentHead = currentPrinter.headProperty().get();
+                HeadType headType = HeadContainer.defaultHeadType;
+                if (currentHead != null)
+                {
+                    headType = currentHead.headTypeProperty().get();
+                }
+                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
+                    headType);
                 updateFieldsForProfile(project, customSettings, lblCustomTime,
                                        lblCustomWeight,
                                        lblCustomCost, cancellable);
@@ -310,21 +363,30 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     return;
                 }
             }
-            updateFieldsForProfile(project, draftSettings, lblDraftTime,
+            SlicerParametersFile settings = SlicerParametersContainer.getSettings(
+                ApplicationConfiguration.draftSettingsProfileName,
+                currentHeadType);
+            updateFieldsForProfile(project, settings, lblDraftTime,
                                    lblDraftWeight,
                                    lblDraftCost, cancellable);
             if (cancellable.cancelled().get())
             {
                 return;
             }
-            updateFieldsForProfile(project, normalSettings, lblNormalTime,
+            settings = SlicerParametersContainer.getSettings(
+                ApplicationConfiguration.normalSettingsProfileName,
+                currentHeadType);
+            updateFieldsForProfile(project, settings, lblNormalTime,
                                    lblNormalWeight,
                                    lblNormalCost, cancellable);
             if (cancellable.cancelled().get())
             {
                 return;
             }
-            updateFieldsForProfile(project, fineSettings, lblFineTime,
+            settings = SlicerParametersContainer.getSettings(
+                ApplicationConfiguration.fineSettingsProfileName,
+                currentHeadType);
+            updateFieldsForProfile(project, settings, lblFineTime,
                                    lblFineWeight,
                                    lblFineCost, cancellable);
         };

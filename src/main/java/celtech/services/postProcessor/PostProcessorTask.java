@@ -6,23 +6,18 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.gcodetranslator.GCodeRoboxiser;
 import celtech.gcodetranslator.GCodeRoboxisingEngine;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.PostProcessor;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeature;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeatureSet;
-import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.PrintJob;
-import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -83,14 +78,20 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
 
     public static GCodePostProcessingResult doPostProcessing(String printJobUUID,
             String printJobDirectory,
-            Printer printerToUse,
+            Printer printer,
             Project project,
             DoubleProperty taskProgress) throws IOException
     {
         SlicerType selectedSlicer = null;
-        if (project.getPrinterSettings().getSettings().getSlicerOverride() != null)
+        HeadType headType;
+        if (printer != null && printer.headProperty().get() != null) {
+            headType = printer.headProperty().get().headTypeProperty().get();
+        } else {
+            headType = HeadContainer.defaultHeadType;
+        }
+        if (project.getPrinterSettings().getSettings(headType).getSlicerOverride() != null)
         {
-            selectedSlicer = project.getPrinterSettings().getSettings().getSlicerOverride();
+            selectedSlicer = project.getPrinterSettings().getSettings(headType).getSlicerOverride();
         } else
         {
             selectedSlicer = Lookup.getUserPreferences().getSlicerType();
@@ -100,18 +101,18 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         String gcodeFileToProcess = printJob.getGCodeFileLocation();
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
 
-        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, new RoboxiserResult());
+        GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, new RoboxiserResult());
 
         if (selectedSlicer == SlicerType.Cura)
         {
             HeadFile headFileToUse = null;
-            if (printerToUse == null
-                    || printerToUse.headProperty().get() == null)
+            if (printer == null
+                    || printer.headProperty().get() == null)
             {
                 headFileToUse = HeadContainer.getHeadByID(HeadContainer.defaultHeadID);
             } else
             {
-                headFileToUse = HeadContainer.getHeadByID(printerToUse.headProperty().get().typeCodeProperty().get());
+                headFileToUse = HeadContainer.getHeadByID(printer.headProperty().get().typeCodeProperty().get());
             }
 
             PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
@@ -127,21 +128,22 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     gcodeOutputFile,
                     headFileToUse,
                     project,
-                    ppFeatures);
+                    ppFeatures,
+                    headType);
 
             RoboxiserResult roboxiserResult = postProcessor.processInput();
             if (roboxiserResult.isSuccess())
             {
                 roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
-                postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+                postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, roboxiserResult);
             }
         } else
         {
             GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
             RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
-                    gcodeFileToProcess, gcodeOutputFile, project.getPrinterSettings().getSettings(), taskProgress);
+                    gcodeFileToProcess, gcodeOutputFile, project.getPrinterSettings().getSettings(headType), taskProgress);
             roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
-            postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+            postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, roboxiserResult);
         }
 
         return postProcessingResult;

@@ -5,8 +5,10 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
@@ -16,13 +18,12 @@ import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.PrinterListChangesListener;
+import celtech.utils.PrinterListChangesAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -33,9 +34,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
@@ -81,17 +80,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @FXML
     private CheckBox cbSupport;
 
-    private final SlicerParametersFile draftSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.draftSettingsProfileName);
-    private final SlicerParametersFile normalSettings = SlicerParametersContainer.
-        getSettingsByProfileName(
-            ApplicationConfiguration.normalSettingsProfileName);
-    private final SlicerParametersFile fineSettings = SlicerParametersContainer.getSettingsByProfileName(
-        ApplicationConfiguration.fineSettingsProfileName);
-
     private Printer currentPrinter;
     private Project currentProject;
     private PrinterSettings printerSettings;
+    private HeadType currentHeadType = HeadContainer.defaultHeadType;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
 
     /**
@@ -106,7 +98,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             setupOverrides();
 
-            Lookup.getCurrentlySelectedPrinterProperty().addListener(
+            Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     whenPrinterChanged(newValue);
@@ -134,45 +126,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             showPleaseCreateProfile(
                 SlicerParametersContainer.getUserProfileList().isEmpty());
 
-            whenPrinterChanged(Lookup.getCurrentlySelectedPrinterProperty().get());
+            whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
 
-            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
+            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
             {
-
-                @Override
-                public void whenPrinterAdded(Printer printer)
-                {
-                }
-
-                @Override
-                public void whenPrinterRemoved(Printer printer)
-                {
-                }
-
-                @Override
-                public void whenHeadAdded(Printer printer)
-                {
-                }
-
-                @Override
-                public void whenHeadRemoved(Printer printer, Head head)
-                {
-                }
-
-                @Override
-                public void whenReelAdded(Printer printer, int reelIndex)
-                {
-                }
-
-                @Override
-                public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
-                {
-                }
-
-                @Override
-                public void whenReelChanged(Printer printer, Reel reel)
-                {
-                }
 
                 @Override
                 public void whenExtruderAdded(Printer printer, int extruderIndex)
@@ -182,11 +139,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         updateSupportCombo(printer);
                     }
                 }
-
-                @Override
-                public void whenExtruderRemoved(Printer printer, int extruderIndex)
-                {
-                }
+         
             });
 
         } catch (Exception ex)
@@ -195,17 +148,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
     }
 
-    PropertyChangeListener customSettingsListener = new PropertyChangeListener()
+    PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->
     {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt)
+        if (evt.getPropertyName().equals("fillDensity_normalised"))
         {
-            if (evt.getPropertyName().equals("fillDensity_normalised"))
-            {
-                fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
-                    * 100);
-            }
+            fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
+                * 100);
         }
     };
 
@@ -282,7 +230,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 if (currentPrinter != null && selected && getNumExtruders(currentPrinter) == 2)
                 {
                     supportComboBox.setDisable(false);
-                    if (supportComboBox.getValue() == null) {
+                    if (supportComboBox.getValue() == null)
+                    {
                         // this happens for new projects
                         supportComboBox.setValue(SupportType.OBJECT_MATERIAL);
                     }
@@ -388,6 +337,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         if (printer != null)
         {
             updateSupportCombo(printer);
+            if (printer.headProperty().get() != null)
+            {
+                currentHeadType = printer.headProperty().get().headTypeProperty().get();
+            } else {
+                currentHeadType = HeadContainer.defaultHeadType;
+            }
         }
     }
 
@@ -436,8 +391,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             if (savePrinterSettingsName.length() > 0)
             {
-                SlicerParametersFile chosenProfile = SlicerParametersContainer.
-                    getSettingsByProfileName(savePrinterSettingsName);
+                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettings(
+                    savePrinterSettingsName, currentHeadType);
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
@@ -453,13 +408,20 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printerSettings.getSettingsNameProperty().addListener(
             (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
             {
-                customProfileChooser.getSelectionModel().select(printerSettings.getSettings());
+                Head currentHead = currentPrinter.headProperty().get();
+                SlicerParametersFile.HeadType headType = SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD;
+                if (currentHead != null)
+                {
+                    headType = currentHead.headTypeProperty().get();
+                }
+                customProfileChooser.getSelectionModel().select(
+                    printerSettings.getSettings(headType));
             });
 
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
         raftSlider.setValue(savePrintRaft ? 1 : 0);
-        
+
         if (saveSupports != SupportType.NO_SUPPORT)
         {
             supportComboBox.setValue(saveSupports);
@@ -485,15 +447,18 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         switch (quality)
         {
             case DRAFT:
-                settings = draftSettings;
+                settings = SlicerParametersContainer.getSettings(
+                    ApplicationConfiguration.draftSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case NORMAL:
-                settings = normalSettings;
+                settings = SlicerParametersContainer.getSettings(
+                    ApplicationConfiguration.normalSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case FINE:
-                settings = fineSettings;
+                settings = SlicerParametersContainer.getSettings(
+                    ApplicationConfiguration.fineSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case CUSTOM:
@@ -533,8 +498,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             return null;
         } else
         {
-            return SlicerParametersContainer.getSettingsByProfileName(
-                customSettingsName);
+            return SlicerParametersContainer.getSettings(customSettingsName, currentHeadType);
         }
     }
 

@@ -120,7 +120,7 @@ public class GetTimeWeightCost
                 settings.getProfileName(),
                 temporaryDirectory,
                 //TODO this should use the printer selected on the settings page
-                Lookup.getCurrentlySelectedPrinterProperty().get(),
+                Lookup.getSelectedPrinterProperty().get(),
                 project,
                 null);
         

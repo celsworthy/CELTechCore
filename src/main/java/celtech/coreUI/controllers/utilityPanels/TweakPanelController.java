@@ -59,7 +59,7 @@ public class TweakPanelController implements Initializable
     {
         speedSliderHBox.setVisible(false);
 
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(
+        Lookup.getSelectedPrinterProperty().addListener(
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
             {
                 whenPrinterSelected(newValue);

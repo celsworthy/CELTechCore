@@ -12,7 +12,22 @@
     <children>
         <HBox alignment="CENTER">
             <children>
-                <ComboBox id="cmbPrintProfile" fx:id="cmbPrintProfile" prefWidth="150.0" styleClass="cmbCleanCombo" />
+            <VBox spacing="15.0">
+               <children>
+                      <ComboBox fx:id="cmbHeadType" prefWidth="150.0">
+                     <styleClass>
+                        <String fx:value="cmbPrintProfile" />
+                        <String fx:value="cmbCleanCombo" />
+                     </styleClass>
+                  </ComboBox>
+                  <ComboBox fx:id="cmbPrintProfile" prefWidth="150.0">
+                     <styleClass>
+                        <String fx:value="cmbPrintProfile" />
+                        <String fx:value="cmbCleanCombo" />
+                     </styleClass>
+                  </ComboBox>
+               </children>
+            </VBox>
             </children>
             <padding>
                 <Insets bottom="10.0" top="10.0" />

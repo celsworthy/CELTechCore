@@ -1,6 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
@@ -44,12 +45,12 @@ public class CloseLogic
     private final NodeManagementUtilities nodeManagementUtilities;
 
     public CloseLogic(Project project,
-            PostProcessorFeatureSet featureSet)
+            PostProcessorFeatureSet featureSet, HeadType headType)
     {
         this.project = project;
         this.featureSet = featureSet;
 
-        closeUtilities = new CloseUtilities(project);
+        closeUtilities = new CloseUtilities(project, headType);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
     }
 

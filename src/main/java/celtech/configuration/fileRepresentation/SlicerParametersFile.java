@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -16,6 +17,29 @@ import java.util.List;
  */
 public class SlicerParametersFile
 {
+
+    public enum HeadType
+    {
+
+        SINGLE_MATERIAL_HEAD("RBX01-SM", "singleMaterialHead"),
+        DUAL_MATERIAL_HEAD("RBX01-DM", "dualMaterialHead");
+
+        private final String helpText;
+        private final String headTypeCode;
+
+        HeadType(String headTypeCode, String helpText)
+        {
+            this.helpText = helpText;
+            this.headTypeCode = headTypeCode;
+        }
+
+        @Override
+        public String toString()
+        {
+            return Lookup.i18n("headType." + helpText);
+        }
+
+    }
 
     public enum SupportType
     {
@@ -50,6 +74,7 @@ public class SlicerParametersFile
 
     private int version = 4;
     private String profileName;
+    private HeadType headType;
     private SlicerType slicerOverride;
 
     /*
@@ -130,6 +155,11 @@ public class SlicerParametersFile
     private float raftBaseThickness_mm = 0.3f;
 
     private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
+    
+    @JsonIgnore
+    public String getProfileKey() {
+        return profileName + "#" + headType.name();
+    }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener)
     {
@@ -161,6 +191,17 @@ public class SlicerParametersFile
     {
         this.profileName = profileName;
         firePropertyChange("profileName", null, profileName);
+    }
+    
+    public HeadType getHeadType()
+    {
+        return headType;
+    }
+
+    public void setHeadType(HeadType headType)
+    {
+        this.headType = headType;
+        firePropertyChange("headType", null, headType);
     }
 
     public SlicerType getSlicerOverride()
@@ -797,6 +838,7 @@ public class SlicerParametersFile
         SlicerParametersFile clone = new SlicerParametersFile();
 
         clone.profileName = profileName;
+        clone.headType = headType;
         clone.slicerOverride = slicerOverride;
 
         /*

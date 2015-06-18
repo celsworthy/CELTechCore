@@ -3,6 +3,7 @@ package celtech.configuration.datafileaccessors;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileFileFilter;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,10 +44,14 @@ public class SlicerParametersContainer
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
         loadProfileData();
     }
+    
+    private static String getSettingsKey(String profileName, HeadType headType) {
+        return profileName + "#" + headType.name();
+    }
 
-    public static String constructFilePath(String profileName)
+    public static String constructFilePath(String profileName, HeadType headType)
     {
-        return ApplicationConfiguration.getUserPrintProfileDirectory() + profileName
+        return ApplicationConfiguration.getUserPrintProfileDirectory() + getSettingsKey(profileName, headType)
             + ApplicationConfiguration.printProfileFileExtension;
     }
 
@@ -60,34 +65,34 @@ public class SlicerParametersContainer
         File applicationDirHandle = new File(
             ApplicationConfiguration.getApplicationPrintProfileDirectory());
         File[] applicationprofiles = applicationDirHandle.listFiles(new PrintProfileFileFilter());
-        ArrayList<SlicerParametersFile> profiles = ingestProfiles(applicationprofiles, false);
+        ArrayList<SlicerParametersFile> profiles = ingestProfiles(applicationprofiles);
         appProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
 
         File userDirHandle = new File(ApplicationConfiguration.getUserPrintProfileDirectory());
         File[] userprofiles = userDirHandle.listFiles(new PrintProfileFileFilter());
-        profiles = ingestProfiles(userprofiles, true);
+        profiles = ingestProfiles(userprofiles);
         userProfileList.addAll(profiles);
         completeProfileList.addAll(profiles);
         
         for (SlicerParametersFile profile : completeProfileList)
         {
-            profileMap.put(profile.getProfileName(), profile);
+            profileMap.put(profile.getProfileKey(), profile);
         }
     }
 
-    private static ArrayList<SlicerParametersFile> ingestProfiles(File[] userprofiles,
-        boolean mutableProfiles)
+    private static ArrayList<SlicerParametersFile> ingestProfiles(File[] userprofiles)
     {
+        System.out.println("ingest");
         ArrayList<SlicerParametersFile> profileList = new ArrayList<>();
 
         for (File profileFile : userprofiles)
         {
-            SlicerParametersFile newSettings = new SlicerParametersFile();
-            String profileName = profileFile.getName().replaceAll(
+            SlicerParametersFile newSettings = null;
+            String profileKey = profileFile.getName().replaceAll(
                 ApplicationConfiguration.printProfileFileExtension, "");
 
-            if (profileMap.containsKey(profileName) == false)
+            if (profileMap.containsKey(profileKey) == false)
             {
                 try
                 {
@@ -96,14 +101,15 @@ public class SlicerParametersContainer
                     convertToCurrentVersion(newSettings);
                     
                     profileList.add(newSettings);
-                    profileMap.put(profileName, newSettings);
-                } catch (IOException ex)
+                    profileMap.put(newSettings.getProfileKey(), newSettings);
+                    System.out.println("loaded profile " + newSettings.getProfileKey());
+                } catch (Exception ex)
                 {
-                    steno.error("Error reading profile " + profileName + ": " + ex.getMessage());
+                    steno.error("Error reading profile " + profileKey + ": " + ex.getMessage());
                 }
             } else
             {
-                steno.warning("Profile with name " + profileName
+                steno.warning("Profile with name " + profileKey
                     + " has already been loaded - ignoring " + profileFile.getAbsolutePath());
             }
         }
@@ -123,11 +129,18 @@ public class SlicerParametersContainer
             newSettings.setVersion(4);
             doSaveEditedUserProfile(newSettings);
         }
+        
+        if (newSettings.getVersion() < 5) {
+            steno.info("Convert " + newSettings.getProfileName() + " profile to version 5");
+            newSettings.setHeadType(HeadContainer.defaultHeadType);
+            newSettings.setVersion(5);
+            doSaveEditedUserProfile(newSettings);
+        }
     }
 
     public static void saveProfile(SlicerParametersFile settingsToSave)
     {
-        if (!profileMap.containsKey(settingsToSave.getProfileName()))
+        if (!profileMap.containsKey(settingsToSave.getProfileKey()))
         {
             if (userProfileList.contains(settingsToSave))
             {
@@ -152,19 +165,21 @@ public class SlicerParametersContainer
     {
         // The original name can be retrieved from profileMap
         String originalName = "";
+        HeadType originalHeadType = null;
         for (Map.Entry<String, SlicerParametersFile> entrySet : profileMap.entrySet())
         {
             String name = entrySet.getKey();
             SlicerParametersFile value = entrySet.getValue();
             if (value == profile) {
-                originalName = name;
+                originalName = profile.getProfileName();
+                originalHeadType = profile.getHeadType();
                 break;
             }
         }
         if (originalName.equals("")) {
             steno.error("Severe error saving profile of changed name.");
         } else {
-            deleteUserProfile(originalName);
+            deleteUserProfile(originalName, originalHeadType);
             doAddNewUserProfile(profile);
         }
     }
@@ -179,7 +194,7 @@ public class SlicerParametersContainer
         doSaveEditedUserProfile(profile);
         userProfileList.add(profile);
         completeProfileList.add(profile);
-        profileMap.put(profile.getProfileName(), profile);
+        profileMap.put(profile.getProfileKey(), profile);
     }
 
     /**
@@ -190,7 +205,7 @@ public class SlicerParametersContainer
         try
         {
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-            mapper.writeValue(new File(constructFilePath(profile.getProfileName())), profile);
+            mapper.writeValue(new File(constructFilePath(profile.getProfileName(), profile.getHeadType())), profile);
         } catch (IOException ex)
         {
             steno.error("Error whilst saving profile " + profile.getProfileName());
@@ -202,7 +217,7 @@ public class SlicerParametersContainer
         try
         {
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-            mapper.writeValue(new File(constructFilePath(settingsToSave.getProfileName())),
+            mapper.writeValue(new File(constructFilePath(settingsToSave.getProfileName(), settingsToSave.getHeadType())),
                               settingsToSave);
         } catch (IOException ex)
         {
@@ -210,14 +225,16 @@ public class SlicerParametersContainer
         }
     }
 
-    public static void deleteUserProfile(String profileName)
+    public static void deleteUserProfile(String profileName, HeadType headType)
     {
-        File profileToDelete = new File(constructFilePath(profileName));
+        SlicerParametersFile deletedProfile = getSettings(profileName, headType);
+        assert(deletedProfile != null);
+        File profileToDelete = new File(constructFilePath(profileName, headType));
         profileToDelete.delete();
-        SlicerParametersFile deletedProfile = getSettingsByProfileName(profileName);
+        
         userProfileList.remove(deletedProfile);
         completeProfileList.remove(deletedProfile);
-        profileMap.remove(profileName);
+        profileMap.remove(deletedProfile.getProfileKey());
     }
 
     public static SlicerParametersContainer getInstance()
@@ -230,14 +247,14 @@ public class SlicerParametersContainer
         return instance;
     }
 
-    public static SlicerParametersFile getSettingsByProfileName(String profileName)
+    public static SlicerParametersFile getSettings(String profileName, HeadType headType)
     {
         if (instance == null)
         {
             instance = new SlicerParametersContainer();
         }
 
-        return profileMap.get(profileName);
+        return profileMap.get(getSettingsKey(profileName, headType));
     }
 
     public static ObservableList<SlicerParametersFile> getCompleteProfileList()

@@ -398,7 +398,7 @@ public class MaintenancePanelController implements Initializable
                 Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
             });
 
-            Lookup.getCurrentlySelectedPrinterProperty().addListener(
+            Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     if (connectedPrinter != null)

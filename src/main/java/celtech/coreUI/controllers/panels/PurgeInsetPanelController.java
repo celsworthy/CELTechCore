@@ -11,7 +11,6 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PurgeState;
@@ -27,7 +26,7 @@ import celtech.printerControl.model.Reel;
 import celtech.printerControl.model.StateTransition;
 import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.StateTransitionManager.GUIName;
-import celtech.utils.PrinterListChangesListener;
+import celtech.utils.PrinterListChangesAdapter;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.util.HashMap;
@@ -223,28 +222,8 @@ public class PurgeInsetPanelController implements Initializable
 
         setupMaterialCombos();
 
-        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesListener()
+        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
         {
-
-            @Override
-            public void whenPrinterAdded(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenPrinterRemoved(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenHeadAdded(Printer printer)
-            {
-            }
-
-            @Override
-            public void whenHeadRemoved(Printer printer, Head head)
-            {
-            }
 
             @Override
             public void whenReelAdded(Printer printer, int reelIndex)
@@ -274,16 +253,6 @@ public class PurgeInsetPanelController implements Initializable
                     PurgeInsetPanelController.this.showCurrentMaterial0();
                     PurgeInsetPanelController.this.showCurrentMaterial1();
                 }
-            }
-
-            @Override
-            public void whenExtruderAdded(Printer printer, int extruderIndex)
-            {
-            }
-
-            @Override
-            public void whenExtruderRemoved(Printer printer, int extruderIndex)
-            {
             }
         });
     }

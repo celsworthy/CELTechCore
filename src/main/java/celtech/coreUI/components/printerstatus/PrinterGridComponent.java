@@ -237,7 +237,7 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
         } else
         {
             selectPrinter(null);
-            Lookup.setCurrentlySelectedPrinter(null);
+            Lookup.setSelectedPrinter(null);
         }
     }
 
