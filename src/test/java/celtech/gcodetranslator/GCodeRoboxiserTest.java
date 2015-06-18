@@ -36,7 +36,8 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testShortPathPartialOpenAndClose() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
+                                                                                SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
@@ -67,7 +68,8 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathBox() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
+                                                                                SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
@@ -152,7 +154,8 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathConcentricBox() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
+                                                                                SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
@@ -385,7 +388,8 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     @Test
     public void testInsertTravelAndClosePathBoxScenario2() throws IOException, URISyntaxException
     {
-        SlicerParametersFile parameters = SlicerParametersContainer.getSettingsByProfileName(ApplicationConfiguration.draftSettingsProfileName);
+        SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
+                                                                                SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
         parameters.setSlicerOverride(SlicerType.Cura);
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
@@ -538,7 +542,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 //        String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath()
 //            + "out";
 //
-//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettings(DRAFT_SETTINGS);
 //        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 //        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
 //            inputURL.getFile(), outputFilePath,
@@ -554,7 +558,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 //        String outputFilePath = temporaryFolder.newFile("pyramid.gcode").getCanonicalPath()
 //            + "out";
 //
-//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettings(DRAFT_SETTINGS);
 //        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 //        RoboxiserResult roboxiserResult = gCodeRoboxiser.roboxiseFile(
 //            url.getFile(),
@@ -583,7 +587,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 //        URL expectedDataURL = this.getClass().getResource(
 //            "/pyramid.expectedroboxgcode");
 //
-//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettingsByProfileName(DRAFT_SETTINGS);
+//        SlicerParametersFile SlicerParametersFile = SlicerParametersContainer.getSettings(DRAFT_SETTINGS);
 //        
 //        DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 //        gCodeRoboxiser.roboxiseFile(inputURL.getFile(), outputFilePath,
