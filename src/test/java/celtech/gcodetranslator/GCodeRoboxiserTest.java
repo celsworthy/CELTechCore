@@ -17,7 +17,6 @@ import celtech.gcodetranslator.events.NozzleOpenFullyEvent;
 import celtech.gcodetranslator.events.TravelEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Rule;
