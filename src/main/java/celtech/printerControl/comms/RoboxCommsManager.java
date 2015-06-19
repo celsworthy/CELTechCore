@@ -21,7 +21,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private static RoboxCommsManager instance = null;
     private boolean keepRunning = true;
-    
+
     private final String printerToSearchFor = "Robox";
     private final String roboxVendorID = "16D0";
     private final String roboxProductID = "081B";
@@ -36,13 +36,18 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private String dummyPrinterPort = "DummyPrinterPort";
 
     private int dummyPrinterCounter = 0;
-    
+
     private final DeviceDetector deviceDetector;
 
-    private RoboxCommsManager(String pathToBinaries, boolean suppressPrinterIDChecks)
+    private boolean doNotCheckForPresenceOfHead = false;
+
+    private RoboxCommsManager(String pathToBinaries,
+            boolean suppressPrinterIDChecks,
+            boolean doNotCheckForPresenceOfHead)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
-        
+        this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
+
         deviceDetector = new DeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
 
         this.setName("Robox Comms Manager");
@@ -67,7 +72,23 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         if (instance == null)
         {
-            instance = new RoboxCommsManager(pathToBinaries, false);
+            instance = new RoboxCommsManager(pathToBinaries, false, false);
+        }
+
+        return instance;
+    }
+
+    /**
+     *
+     * @param pathToBinaries
+     * @param doNotCheckForHeadPresence
+     * @return
+     */
+    public static RoboxCommsManager getInstance(String pathToBinaries, boolean doNotCheckForHeadPresence)
+    {
+        if (instance == null)
+        {
+            instance = new RoboxCommsManager(pathToBinaries, false, doNotCheckForHeadPresence);
         }
 
         return instance;
@@ -123,28 +144,29 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private Printer makeHardwarePrinter(String port)
     {
         final UserPreferences userPreferences = Lookup.getUserPreferences();
-        HardwarePrinter.FilamentLoadedGetter filamentLoadedGetter = 
-            (StatusResponse statusResponse, int extruderNumber) ->
-        {
-            if (! userPreferences.getDetectLoadedFilament())
-            {
-                // if this preference has been deselected then always say that the filament
-                // has been detected as loaded.
-                return true;
-            } else
-            {
-                if (extruderNumber == 1)
+        HardwarePrinter.FilamentLoadedGetter filamentLoadedGetter
+                = (StatusResponse statusResponse, int extruderNumber) ->
                 {
-                    return statusResponse.isFilament1SwitchStatus();
-                } else
-                {
-                    return statusResponse.isFilament2SwitchStatus();
-                }
-            }
-        };
+                    if (!userPreferences.getDetectLoadedFilament())
+                    {
+                        // if this preference has been deselected then always say that the filament
+                        // has been detected as loaded.
+                        return true;
+                    } else
+                    {
+                        if (extruderNumber == 1)
+                        {
+                            return statusResponse.isFilament1SwitchStatus();
+                        } else
+                        {
+                            return statusResponse.isFilament2SwitchStatus();
+                        }
+                    }
+                };
         Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
-                                                 this, port, suppressPrinterIDChecks,
-                                                 sleepBetweenStatusChecksMS), filamentLoadedGetter);
+                this, port, suppressPrinterIDChecks,
+                sleepBetweenStatusChecksMS), filamentLoadedGetter,
+                doNotCheckForPresenceOfHead);
         return newPrinter;
     }
 
@@ -154,7 +176,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public void shutdown()
     {
         keepRunning = false;
-        
+
         for (Printer printer : Lookup.getConnectedPrinters())
         {
             steno.info("Shutdown printer " + printer);
@@ -218,12 +240,12 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         dummyPrinterCounter++;
         String actualPrinterPort = dummyPrinterPort + " " + dummyPrinterCounter;
         Printer nullPrinter = new HardwarePrinter(this,
-                                                  new DummyPrinterCommandInterface(this,
-                                                                                   actualPrinterPort,
-                                                                                   suppressPrinterIDChecks,
-                                                                                   sleepBetweenStatusChecksMS,
-                                                                                   "DP "
-                                                                                   + dummyPrinterCounter));
+                new DummyPrinterCommandInterface(this,
+                        actualPrinterPort,
+                        suppressPrinterIDChecks,
+                        sleepBetweenStatusChecksMS,
+                        "DP "
+                        + dummyPrinterCounter));
         pendingPrinters.put(actualPrinterPort, nullPrinter);
         dummyPrinters.add(nullPrinter);
     }
@@ -237,10 +259,10 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         return dummyPrinters;
     }
-    
+
     /**
-     * 
-     * @param milliseconds 
+     *
+     * @param milliseconds
      */
     public void setSleepBetweenStatusChecks(int milliseconds)
     {

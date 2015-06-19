@@ -82,9 +82,11 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -209,14 +211,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final String secondExtruderLetter = "D";
     private final int secondExtruderNumber = 1;
 
-    private boolean suppressEEPROMAndSDErrorHandling = false;
-
     /*
      * Error handling
      */
     private final Map<ErrorConsumer, List<FirmwareError>> errorConsumers = new WeakHashMap<>();
     private boolean processErrors = false;
     private final FilamentLoadedGetter filamentLoadedGetter;
+    private Set<FirmwareError> suppressedFirmwareErrors = new HashSet<>();
+    private boolean repairCorruptEEPROMData = true;
+    private boolean doNotCheckForPresenceOfHead = false;
 
     @Override
     public PrinterMetaStatus getPrinterMetaStatus()
@@ -249,15 +252,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         return statusResponse.isFilament2SwitchStatus();
                     }
-                });
+                }, false);
     }
 
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
-            CommandInterface commandInterface, FilamentLoadedGetter filamentLoadedGetter)
+            CommandInterface commandInterface, FilamentLoadedGetter filamentLoadedGetter,
+            boolean doNotCheckForPresenceOfHead)
     {
         this.printerStatusConsumer = printerStatusConsumer;
         this.commandInterface = commandInterface;
         this.filamentLoadedGetter = filamentLoadedGetter;
+        this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
 
         printEngine = new PrintEngine(this);
 
@@ -277,7 +282,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         commandInterface.setPrinter(this);
         commandInterface.start();
-        
+
         registerErrorConsumerAllErrors(this);
     }
 
@@ -983,7 +988,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 PrinterStatus.IDLE,
                 blockUntilFinished, cancellable);
     }
-    
+
     @Override
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
@@ -991,8 +996,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 PrinterStatus.TEST_X,
                 PrinterStatus.IDLE,
                 blockUntilFinished, cancellable);
-    }    
-    
+    }
+
     @Override
     public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
@@ -1000,18 +1005,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 PrinterStatus.TEST_Y,
                 PrinterStatus.IDLE,
                 blockUntilFinished, cancellable);
-    }    
-    
-        @Override
+    }
+
+    @Override
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired("z_test",
                 PrinterStatus.TEST_Z,
                 PrinterStatus.IDLE,
                 blockUntilFinished, cancellable);
-    }    
-
-    
+    }
 
     @Override
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
@@ -3231,9 +3234,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void suppressEEPROMAndSDErrorHandling(boolean suppress)
+    public void suppressFirmwareErrors(FirmwareError... firmwareErrors)
     {
-        suppressEEPROMAndSDErrorHandling = suppress;
+        for (FirmwareError firmwareError : firmwareErrors)
+        {
+            suppressedFirmwareErrors.add(firmwareError);
+        }
+    }
+
+    @Override
+    public void cancelFirmwareErrorSuppression()
+    {
+        suppressedFirmwareErrors.clear();
+    }
+
+    @Override
+    public void suppressEEPROMErrorCorrection(boolean suppress)
+    {
+        repairCorruptEEPROMData = !suppress;
     }
 
     @Override
@@ -3274,12 +3292,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 case ACK_WITH_ERRORS:
                     AckResponse ackResponse = (AckResponse) rxPacket;
+
                     steno.trace(ackResponse.toString());
 
                     if (ackResponse.isError())
                     {
                         List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
                                 getFirmwareErrors());
+
                         // Copy the error consumer list to stop concurrent modification exceptions if the consumer deregisters itself
                         Map<ErrorConsumer, List<FirmwareError>> errorsToIterateThrough = new WeakHashMap<>(
                                 errorConsumers);
@@ -3296,33 +3316,39 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         if (processErrors)
                         {
                             steno.debug(ackResponse.getErrorsAsString());
-
                             errorsFound.stream()
                                     .forEach(foundError ->
                                             {
                                                 errorWasConsumed = false;
-                                                errorsToIterateThrough.forEach((consumer, errorList) ->
-                                                        {
-                                                            if (errorList.contains(foundError) || errorList.
-                                                            contains(FirmwareError.ALL_ERRORS))
-                                                            {
-                                                                steno.debug("Error:" + foundError.name()
-                                                                        + " passed to " + consumer.toString());
-                                                                consumer.consumeError(foundError);
-                                                                errorWasConsumed = true;
-                                                            }
-                                                });
 
-                                                if (!errorWasConsumed)
+                                                if (suppressedFirmwareErrors.contains(foundError)
+                                                || (foundError == FirmwareError.HEAD_POWER_EEPROM && doNotCheckForPresenceOfHead))
                                                 {
-                                                    steno.info("Default action for error:" + foundError.
-                                                            name());
-                                                    systemNotificationManager.
-                                                    processErrorPacketFromPrinter(
-                                                            foundError, printer);
+                                                    steno.debug("Error:" + foundError.
+                                                            name() + " suppressed");
+                                                } else
+                                                {
+                                                    errorsToIterateThrough.forEach((consumer, errorList) ->
+                                                            {
+                                                                if (errorList.contains(foundError)
+                                                                || errorList.contains(FirmwareError.ALL_ERRORS))
+                                                                {
+                                                                    steno.debug("Error:" + foundError.name()
+                                                                            + " passed to " + consumer.toString());
+                                                                    consumer.consumeError(foundError);
+                                                                    errorWasConsumed = true;
+                                                                }
+                                                    });
+                                                    if (!errorWasConsumed)
+                                                    {
+                                                        steno.info("Default action for error:" + foundError.
+                                                                name());
+                                                        systemNotificationManager.
+                                                        processErrorPacketFromPrinter(
+                                                                foundError, printer);
+                                                    }
                                                 }
                                     });
-
                             steno.trace(ackResponse.toString());
                         } else
                         {
@@ -3371,7 +3397,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerAncillarySystems.updateGraphData();
                     printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
 
-                    if (!statusResponse.isSDCardPresent() && !suppressEEPROMAndSDErrorHandling)
+                    if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(FirmwareError.SD_CARD))
                     {
                         Lookup.getSystemNotificationHandler().showNoSDCardDialog();
                     }
@@ -3633,7 +3659,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                     HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
 
-                    if (!suppressEEPROMAndSDErrorHandling)
+                    if (repairCorruptEEPROMData)
                     {
                         if (Head.isTypeCodeValid(headResponse.getTypeCode()))
                         {
@@ -3702,7 +3728,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             }
                         } else
                         {
-                            if (!suppressEEPROMAndSDErrorHandling)
+                            if (repairCorruptEEPROMData)
                             {
                                 // Either not set or type code doesn't match Robox head type code
                                 Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog(

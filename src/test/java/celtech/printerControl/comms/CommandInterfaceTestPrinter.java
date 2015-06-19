@@ -807,12 +807,6 @@ public class CommandInterfaceTestPrinter implements Printer
     }
 
     @Override
-    public void suppressEEPROMAndSDErrorHandling(boolean suppress)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -898,6 +892,24 @@ public class CommandInterfaceTestPrinter implements Printer
 
     @Override
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void suppressFirmwareErrors(FirmwareError... firmwareErrors)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void cancelFirmwareErrorSuppression()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void suppressEEPROMErrorCorrection(boolean suppress)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

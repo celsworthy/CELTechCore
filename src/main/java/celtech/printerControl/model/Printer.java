@@ -607,11 +607,32 @@ public interface Printer extends RoboxResponseConsumer
     public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
     
     /**
-     * This method is intended to be used by commissioning tools and should not be called in normal operation
-     * @param suppress 
+     * This method is intended to be used by commissioning tools and should not
+     * be called in normal operation. Causes the specified list of firmware
+     * errors to be suppressed. The printer will not take any action if these
+     * errors occur, beyond clearing the error flags in the firmware. This
+     * method adds to the set of firmware errors that are being suppressed.
+     *
+     * @param firmwareErrors
      */
-    public void suppressEEPROMAndSDErrorHandling(boolean suppress);
-    
+    public void suppressFirmwareErrors(FirmwareError... firmwareErrors);
+
+    /**
+     * This method is intended to be used by commissioning tools and should not
+     * be called in normal operation. Cancel the suppression of firmware error
+     * detection. All errors will be handled normally after calling this method.
+     */
+    public void cancelFirmwareErrorSuppression();
+
+    /**
+     * This method is intended to be used by commissioning tools and should not
+     * be called in normal operation. Prevents the printer from repairing reel
+     * or head eeprom data.
+     *
+     * @param suppress
+     */
+    public void suppressEEPROMErrorCorrection(boolean suppress);
+
     public PrinterMetaStatus getPrinterMetaStatus();
 
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
