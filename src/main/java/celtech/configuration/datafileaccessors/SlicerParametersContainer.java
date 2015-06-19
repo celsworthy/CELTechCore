@@ -163,15 +163,13 @@ public class SlicerParametersContainer
      */
     private static void doSaveAndChangeUserProfileName(SlicerParametersFile profile)
     {
-        // The original name can be retrieved from profileMap
         String originalName = "";
         HeadType originalHeadType = null;
         for (Map.Entry<String, SlicerParametersFile> entrySet : profileMap.entrySet())
         {
-            String name = entrySet.getKey();
+            originalName = entrySet.getKey().split("#")[0];
             SlicerParametersFile value = entrySet.getValue();
             if (value == profile) {
-                originalName = profile.getProfileName();
                 originalHeadType = profile.getHeadType();
                 break;
             }

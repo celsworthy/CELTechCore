@@ -32,6 +32,10 @@ public class SlicerParametersFile
             this.helpText = helpText;
             this.headTypeCode = headTypeCode;
         }
+        
+        public String getHeadTypeCode() {
+            return headTypeCode;
+        }
 
         @Override
         public String toString()
@@ -72,7 +76,7 @@ public class SlicerParametersFile
         }
     }
 
-    private int version = 4;
+    private int version = 5;
     private String profileName;
     private HeadType headType;
     private SlicerType slicerOverride;

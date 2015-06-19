@@ -35,10 +35,10 @@ public class Head implements Cloneable, RepairableComponent
 
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.
         getName());
-    
+
     protected ObjectProperty<HeadType> headType = new SimpleObjectProperty<>(
         SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
-    
+
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headZPosition = new SimpleFloatProperty(0);
@@ -90,6 +90,14 @@ public class Head implements Cloneable, RepairableComponent
     private void updateFromHeadFileData(HeadFile headData)
     {
         this.typeCode.set(headData.getTypeCode());
+        for (HeadType headType : HeadType.values())
+        {
+            if (headType.getHeadTypeCode().equals(typeCode.get()))
+            {
+                this.headType.set(headType);
+                break;
+            }
+        }
         this.name.set(headData.getName());
 
         nozzleHeaters.clear();
@@ -113,7 +121,6 @@ public class Head implements Cloneable, RepairableComponent
             });
     }
 
-
     private Head(String typeCode,
         String friendlyName,
         String uniqueID,
@@ -122,6 +129,14 @@ public class Head implements Cloneable, RepairableComponent
         List<Nozzle> nozzles)
     {
         this.typeCode.set(typeCode);
+        for (HeadType headType : HeadType.values())
+        {
+            if (headType.getHeadTypeCode().equals(typeCode))
+            {
+                this.headType.set(headType);
+                break;
+            }
+        }
         this.name.set(friendlyName);
         this.uniqueID.set(uniqueID);
         this.headHours.set(headHours);
@@ -138,7 +153,7 @@ public class Head implements Cloneable, RepairableComponent
     {
         return name;
     }
-    
+
     public ObjectProperty<HeadType> headTypeProperty()
     {
         return headType;
@@ -228,6 +243,14 @@ public class Head implements Cloneable, RepairableComponent
     public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
     {
         typeCode.set(eepromData.getTypeCode());
+        for (HeadType headType : HeadType.values())
+        {
+            if (headType.getHeadTypeCode().equals(typeCode.get()))
+            {
+                this.headType.set(headType);
+                break;
+            }
+        }
         uniqueID.set(eepromData.getUniqueID());
         headHours.set(eepromData.getHeadHours());
 
@@ -257,14 +280,13 @@ public class Head implements Cloneable, RepairableComponent
             nozzles.get(1).bOffset.set(eepromData.getNozzle2BOffset());
         }
     }
-    
+
     public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
     {
         boolean matches = false;
 
         if (response.getTypeCode().equals(typeCodeProperty().get())
             && response.getHeadHours() == headHoursProperty().get()
-            
             && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
             && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
             && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
@@ -273,12 +295,10 @@ public class Head implements Cloneable, RepairableComponent
             && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
             && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
             && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
-            
             && response.getMaximumTemperature() == getNozzleHeaters().get(0)
-                                                    .maximumTemperatureProperty().get()
+            .maximumTemperatureProperty().get()
             && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
             && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
-            
             && response.getUniqueID().equals(uniqueIDProperty().get()))
         {
             matches = true;
@@ -481,5 +501,4 @@ public class Head implements Cloneable, RepairableComponent
 //
 //        return matches;
 //    }
-
 }

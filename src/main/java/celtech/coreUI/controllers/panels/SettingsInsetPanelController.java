@@ -16,15 +16,17 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.Reel;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.PrinterListChangesAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -132,6 +134,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             {
 
                 @Override
+                public void whenHeadAdded(Printer printer)
+                {
+                    if (printer == currentPrinter)
+                    {
+                        whenPrinterChanged(printer);
+                    }
+                }
+
+                @Override
                 public void whenExtruderAdded(Printer printer, int extruderIndex)
                 {
                     if (printer == currentPrinter)
@@ -139,7 +150,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         updateSupportCombo(printer);
                     }
                 }
-         
+
             });
 
         } catch (Exception ex)
@@ -164,7 +175,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         customProfileChooser.setCellFactory(profileChooserCellFactory);
         customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
-        customProfileChooser.setItems(SlicerParametersContainer.getUserProfileList());
+        populateCustomProfileChooser();
 
         clearSettingsIfNoCustomProfileAvailable();
 
@@ -191,6 +202,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             {
                 clearSettingsIfNoCustomProfileAvailable();
             });
+    }
+
+    private void populateCustomProfileChooser()
+    {
+        List filesForHeadType = SlicerParametersContainer.getUserProfileList().stream().
+            filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(
+                    currentHeadType)).
+            collect(Collectors.toList());
+        customProfileChooser.setItems(FXCollections.observableArrayList(filesForHeadType));
     }
 
     private void whenCustomProfileChanges(SlicerParametersFile newValue)
@@ -340,9 +360,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             if (printer.headProperty().get() != null)
             {
                 currentHeadType = printer.headProperty().get().headTypeProperty().get();
-            } else {
+                System.out.println("set head type to " + currentHeadType);
+            } else
+            {
                 currentHeadType = HeadContainer.defaultHeadType;
             }
+            populateCustomProfileChooser();
         }
     }
 

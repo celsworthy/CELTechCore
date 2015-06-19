@@ -44,7 +44,7 @@
             </rowConstraints>
             <children>
                 <ComboBox fx:id="slicerChooser" prefWidth="111.0" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefHeight="25.0" restrict="-_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" />
+                <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefHeight="25.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" />
                 <Label styleClass="colon" text="%sidePanel_settings.Profilename" />
                 <Label styleClass="colon" text="%sidePanel_settings.slicerType" GridPane.rowIndex="1" />
             </children>

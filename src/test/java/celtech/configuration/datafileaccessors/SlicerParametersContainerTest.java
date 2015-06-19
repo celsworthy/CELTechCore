@@ -118,36 +118,36 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
     }
     
-//    @Test
-//    public void testCreateNewProfileAndChangeNameAndSave()
-//    {
-//        String NEW_NAME = "draftCopy1";
-//        SlicerParametersContainer.getInstance();
-//        ObservableList<SlicerParametersFile> userProfiles = SlicerParametersContainer.getUserProfileList();
-//        ObservableList<SlicerParametersFile> completeProfiles = SlicerParametersContainer.getCompleteProfileList();
-//        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(
-//            ApplicationConfiguration.draftSettingsProfileName, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
-//
-//        SlicerParametersFile draftCopy = draftSlicerParametersFile.clone();
-//        draftCopy.setProfileName(NEW_NAME);
-//
-//        SlicerParametersContainer.saveProfile(draftCopy);
-//
-//        draftCopy.setBrimWidth_mm(5);
-//        String CHANGED_NAME = "draftCopy2";
-//        draftCopy.setProfileName(CHANGED_NAME);
-//        SlicerParametersContainer.saveProfile(draftCopy);
-//        assertEquals(1, userProfiles.size());
-//        assertEquals(6, completeProfiles.size());
-//
-//        SlicerParametersContainer.reload();
-//        assertEquals(1, userProfiles.size());
-//        assertEquals(6, completeProfiles.size());        
-//        SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(
-//            CHANGED_NAME, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
-//        assertEquals(5, newEditedProfile.getBrimWidth_mm());
-//        assertNotSame(draftCopy, newEditedProfile);
-//
-//    }    
+    @Test
+    public void testCreateNewProfileAndChangeNameAndSave()
+    {
+        String NEW_NAME = "draftCopy1";
+        SlicerParametersContainer.getInstance();
+        ObservableList<SlicerParametersFile> userProfiles = SlicerParametersContainer.getUserProfileList();
+        ObservableList<SlicerParametersFile> completeProfiles = SlicerParametersContainer.getCompleteProfileList();
+        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(
+            ApplicationConfiguration.draftSettingsProfileName, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+
+        SlicerParametersFile draftCopy = draftSlicerParametersFile.clone();
+        draftCopy.setProfileName(NEW_NAME);
+
+        SlicerParametersContainer.saveProfile(draftCopy);
+
+        draftCopy.setBrimWidth_mm(5);
+        String CHANGED_NAME = "draftCopy2";
+        draftCopy.setProfileName(CHANGED_NAME);
+        SlicerParametersContainer.saveProfile(draftCopy);
+        assertEquals(1, userProfiles.size());
+        assertEquals(6, completeProfiles.size());
+
+        SlicerParametersContainer.reload();
+        assertEquals(1, userProfiles.size());
+        assertEquals(6, completeProfiles.size());        
+        SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(
+            CHANGED_NAME, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        assertEquals(5, newEditedProfile.getBrimWidth_mm());
+        assertNotSame(draftCopy, newEditedProfile);
+
+    }    
 
 }
