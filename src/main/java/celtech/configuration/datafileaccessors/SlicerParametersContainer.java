@@ -83,7 +83,6 @@ public class SlicerParametersContainer
 
     private static ArrayList<SlicerParametersFile> ingestProfiles(File[] userprofiles)
     {
-        System.out.println("ingest");
         ArrayList<SlicerParametersFile> profileList = new ArrayList<>();
 
         for (File profileFile : userprofiles)
@@ -102,7 +101,6 @@ public class SlicerParametersContainer
                     
                     profileList.add(newSettings);
                     profileMap.put(newSettings.getProfileKey(), newSettings);
-                    System.out.println("loaded profile " + newSettings.getProfileKey());
                 } catch (Exception ex)
                 {
                     steno.error("Error reading profile " + profileKey + ": " + ex.getMessage());

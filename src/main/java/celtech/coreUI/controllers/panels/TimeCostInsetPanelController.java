@@ -168,7 +168,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private void updateHeadType(Printer printer)
     {
         HeadType headTypeBefore = currentHeadType;
-        System.out.println("update head type for " + printer);
         if (printer != null && printer.headProperty().get() != null)
         {
             currentHeadType = printer.headProperty().get().headTypeProperty().get();

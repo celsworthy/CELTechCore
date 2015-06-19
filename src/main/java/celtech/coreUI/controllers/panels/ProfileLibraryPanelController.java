@@ -49,7 +49,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 {
 
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
-    
+
     enum Fields
     {
 
@@ -124,16 +124,16 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
-    private HeadType currentHeadType;
+    private ObjectProperty<HeadType> currentHeadType = new SimpleObjectProperty<>();
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ProfileLibraryPanelController.class.getName());
 
     @FXML
     private VBox container;
-    
+
     @FXML
-    private ComboBox<HeadType> cmbHeadType;    
+    private ComboBox<HeadType> cmbHeadType;
 
     @FXML
     private ComboBox<SlicerParametersFile> cmbPrintProfile;
@@ -370,6 +370,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final float minPoint3ExtrusionWidth = 0.2f;
     private final float defaultPoint3ExtrusionWidth = 0.3f;
     private final float maxPoint3ExtrusionWidth = 0.6f;
+    private final float minDualHeadExtrusionWidth = 0.4f;
+    private final float maxDualHeadExtrusionWidth = 0.8f;
+    private final float defaultDualHeadExtrusionWidth = 0.6f;
 
     private SlicerMappings slicerMappings;
 
@@ -396,7 +399,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
 
         setupWidgetChangeListeners();
-        
+
         setupHeadType();
 
         setupPrintProfileCombo();
@@ -426,21 +429,88 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         FXMLUtilities.addColonsToLabels(container);
 
         setupHelpTextListeners();
+
+        setupWidgetsForHeadType();
     }
-    
-    private void setupHeadType() {
+
+    private void setupHeadType()
+    {
         cmbHeadType.getItems().add(HeadType.SINGLE_MATERIAL_HEAD);
         cmbHeadType.getItems().add(HeadType.DUAL_MATERIAL_HEAD);
-        
+
         cmbHeadType.valueProperty().addListener(
             (ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
-        {
-            currentHeadType = newValue;
-            repopulateCmbPrintProfile();
-            selectFirstPrintProfile();
-        });
-        
+            {
+                currentHeadType.set(newValue);
+                repopulateCmbPrintProfile();
+                selectFirstPrintProfile();
+                setSliderLimits(newValue);
+            });
+
         cmbHeadType.setValue(HeadContainer.defaultHeadType);
+    }
+
+    private void bringValueWithDualHeadTypeLimits(RestrictedNumberField field) {
+        float currentWidth = field.floatValueProperty().get();
+                if (currentWidth < minDualHeadExtrusionWidth || currentWidth
+                    > maxDualHeadExtrusionWidth)
+                {
+                    field.floatValueProperty().set(
+                        defaultDualHeadExtrusionWidth);
+                }
+    }
+    
+    private void setSliderLimits(HeadType headType)
+    {
+        switch (headType)
+        {
+            case SINGLE_MATERIAL_HEAD:
+                setFirstLayerExtrusionWidthLimits(
+                    firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
+                setSupportExtrusionWidthLimits(
+                    supportNozzleChoice.getSelectionModel().getSelectedIndex());
+                setInfillExtrusionWidthLimits(
+                    fillNozzleChoice.getSelectionModel().getSelectedIndex());
+                setPerimeterExtrusionWidthLimits(
+                    perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
+                break;
+            case DUAL_MATERIAL_HEAD:
+                bringValueWithDualHeadTypeLimits(firstLayerExtrusionWidth);
+                bringValueWithDualHeadTypeLimits(supportExtrusionWidth);
+                bringValueWithDualHeadTypeLimits(infillExtrusionWidth);
+                bringValueWithDualHeadTypeLimits(solidInfillExtrusionWidth);
+                bringValueWithDualHeadTypeLimits(topSolidInfillExtrusionWidth);
+                bringValueWithDualHeadTypeLimits(perimeterExtrusionWidth);
+     
+                firstLayerExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
+                firstLayerExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
+                supportExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
+                supportExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
+                infillExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
+                infillExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
+                solidInfillExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
+                solidInfillExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
+                topSolidInfillExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
+                topSolidInfillExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
+                perimeterExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
+                perimeterExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
+                break;
+
+        }
+    }
+
+    private void setupWidgetsForHeadType()
+    {
+        firstLayerNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
+            HeadType.DUAL_MATERIAL_HEAD));
+        perimeterNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
+            HeadType.DUAL_MATERIAL_HEAD));
+        fillNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
+            HeadType.DUAL_MATERIAL_HEAD));
+        supportNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
+            HeadType.DUAL_MATERIAL_HEAD));
+        supportInterfaceNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
+            HeadType.DUAL_MATERIAL_HEAD));
     }
 
     private void setupPrintProfileCombo()
@@ -457,7 +527,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             {
                 selectPrintProfile();
             });
-        
+
         selectPrintProfile();
     }
 
@@ -480,7 +550,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private void selectPrintProfile()
     {
         SlicerParametersFile printProfile = cmbPrintProfile.getValue();
-        
+
         if (printProfile == null)
         {
             return;
@@ -503,12 +573,13 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         try
         {
-             ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
-             HeadType headType = cmbHeadType.getValue();
-             List filesForHeadType = parametersFiles.stream().
-                 filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(headType)).
-                 collect(Collectors.toList());
-             cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
+            ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
+            HeadType headType = cmbHeadType.getValue();
+            List filesForHeadType = parametersFiles.stream().
+                filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(
+                        headType)).
+                collect(Collectors.toList());
+            cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
         } catch (NoClassDefFoundError exception)
         {
             // this should only happen in SceneBuilder            
@@ -521,12 +592,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         slicerChooser.valueProperty().addListener(
             (ObservableValue<? extends CustomSlicerType> ov, CustomSlicerType lastSlicer, CustomSlicerType newSlicer) ->
-        {
-            if (lastSlicer != newSlicer)
             {
-                updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
-            }
-        });
+                if (lastSlicer != newSlicer)
+                {
+                    updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
+                }
+            });
     }
 
     private void setupFirstLayerNozzleChoice()
@@ -535,33 +606,38 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                float currentWidth = firstLayerExtrusionWidth.floatValueProperty().get();
-                switch (newValue.intValue())
-                {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            firstLayerExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            firstLayerExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
+                setFirstLayerExtrusionWidthLimits(newValue);
             });
+    }
+
+    private void setFirstLayerExtrusionWidthLimits(Number newValue)
+    {
+        float currentWidth = firstLayerExtrusionWidth.floatValueProperty().get();
+        switch (newValue.intValue())
+        {
+            case 0:
+                // The point 3 nozzle has been selected
+                if (currentWidth < minPoint3ExtrusionWidth || currentWidth
+                    > maxPoint3ExtrusionWidth)
+                {
+                    firstLayerExtrusionWidth.floatValueProperty().set(
+                        defaultPoint3ExtrusionWidth);
+                }
+                firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                break;
+            case 1:
+                // The point 8 nozzle has been selected
+                if (currentWidth < minPoint8ExtrusionWidth || currentWidth
+                    > maxPoint8ExtrusionWidth)
+                {
+                    firstLayerExtrusionWidth.floatValueProperty().set(
+                        defaultPoint8ExtrusionWidth);
+                }
+                firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                break;
+        }
     }
 
     private void setupSupportNozzleChoice()
@@ -572,33 +648,38 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             .selectedIndexProperty().addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
-                    float currentWidth = supportExtrusionWidth.floatValueProperty().get();
-                    switch (newValue.intValue())
-                    {
-                        case 0:
-                            // The point 3 nozzle has been selected
-                            if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                            > maxPoint3ExtrusionWidth)
-                            {
-                                supportExtrusionWidth.floatValueProperty().set(
-                                    defaultPoint3ExtrusionWidth);
-                            }
-                            supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                            supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                            break;
-                        case 1:
-                            // The point 8 nozzle has been selected
-                            if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                            > maxPoint8ExtrusionWidth)
-                            {
-                                supportExtrusionWidth.floatValueProperty().set(
-                                    defaultPoint8ExtrusionWidth);
-                            }
-                            supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                            supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                            break;
-                    }
+                    setSupportExtrusionWidthLimits(newValue);
                 });
+    }
+
+    private void setSupportExtrusionWidthLimits(Number newValue)
+    {
+        float currentWidth = supportExtrusionWidth.floatValueProperty().get();
+        switch (newValue.intValue())
+        {
+            case 0:
+                // The point 3 nozzle has been selected
+                if (currentWidth < minPoint3ExtrusionWidth || currentWidth
+                    > maxPoint3ExtrusionWidth)
+                {
+                    supportExtrusionWidth.floatValueProperty().set(
+                        defaultPoint3ExtrusionWidth);
+                }
+                supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                break;
+            case 1:
+                // The point 8 nozzle has been selected
+                if (currentWidth < minPoint8ExtrusionWidth || currentWidth
+                    > maxPoint8ExtrusionWidth)
+                {
+                    supportExtrusionWidth.floatValueProperty().set(
+                        defaultPoint8ExtrusionWidth);
+                }
+                supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                break;
+        }
     }
 
     private void setupFillNozzleChoice()
@@ -607,73 +688,78 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         fillNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                float currentInfillWidth = infillExtrusionWidth.floatValueProperty().get();
-                float currentSolidInfillWidth = solidInfillExtrusionWidth.floatValueProperty().get();
-                float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().
-                get();
-                switch (newValue.intValue())
-                {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (currentInfillWidth < minPoint3ExtrusionWidth || currentInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            infillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        if (currentSolidInfillWidth < minPoint3ExtrusionWidth
-                        || currentSolidInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            solidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        if (currentTopSolidInfillWidth < minPoint3ExtrusionWidth
-                        || currentTopSolidInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            topSolidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-
-                        infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (currentInfillWidth < minPoint8ExtrusionWidth || currentInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            infillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        if (currentSolidInfillWidth < minPoint8ExtrusionWidth
-                        || currentSolidInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            solidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        if (currentTopSolidInfillWidth < minPoint8ExtrusionWidth
-                        || currentTopSolidInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            topSolidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
+                setInfillExtrusionWidthLimits(newValue);
             });
+    }
+
+    private void setInfillExtrusionWidthLimits(Number newValue)
+    {
+        float currentInfillWidth = infillExtrusionWidth.floatValueProperty().get();
+        float currentSolidInfillWidth = solidInfillExtrusionWidth.floatValueProperty().get();
+        float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().
+            get();
+        switch (newValue.intValue())
+        {
+            case 0:
+                // The point 3 nozzle has been selected
+                if (currentInfillWidth < minPoint3ExtrusionWidth || currentInfillWidth
+                    > maxPoint3ExtrusionWidth)
+                {
+                    infillExtrusionWidth.floatValueProperty().set(
+                        defaultPoint3ExtrusionWidth);
+                }
+                if (currentSolidInfillWidth < minPoint3ExtrusionWidth
+                    || currentSolidInfillWidth
+                    > maxPoint3ExtrusionWidth)
+                {
+                    solidInfillExtrusionWidth.floatValueProperty().set(
+                        defaultPoint3ExtrusionWidth);
+                }
+                if (currentTopSolidInfillWidth < minPoint3ExtrusionWidth
+                    || currentTopSolidInfillWidth
+                    > maxPoint3ExtrusionWidth)
+                {
+                    topSolidInfillExtrusionWidth.floatValueProperty().set(
+                        defaultPoint3ExtrusionWidth);
+                }
+
+                infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                break;
+            case 1:
+                // The point 8 nozzle has been selected
+                if (currentInfillWidth < minPoint8ExtrusionWidth || currentInfillWidth
+                    > maxPoint8ExtrusionWidth)
+                {
+                    infillExtrusionWidth.floatValueProperty().set(
+                        defaultPoint8ExtrusionWidth);
+                }
+                if (currentSolidInfillWidth < minPoint8ExtrusionWidth
+                    || currentSolidInfillWidth
+                    > maxPoint8ExtrusionWidth)
+                {
+                    solidInfillExtrusionWidth.floatValueProperty().set(
+                        defaultPoint8ExtrusionWidth);
+                }
+                if (currentTopSolidInfillWidth < minPoint8ExtrusionWidth
+                    || currentTopSolidInfillWidth
+                    > maxPoint8ExtrusionWidth)
+                {
+                    topSolidInfillExtrusionWidth.floatValueProperty().set(
+                        defaultPoint8ExtrusionWidth);
+                }
+                infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                break;
+        }
     }
 
     private void setupPerimeterNozzleChoice()
@@ -682,33 +768,38 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         perimeterNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
             (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                float currentWidth = perimeterExtrusionWidth.floatValueProperty().get();
-                switch (newValue.intValue())
-                {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            perimeterExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            perimeterExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
+                setPerimeterExtrusionWidthLimits(newValue);
             });
+    }
+
+    private void setPerimeterExtrusionWidthLimits(Number newValue)
+    {
+        float currentWidth = perimeterExtrusionWidth.floatValueProperty().get();
+        switch (newValue.intValue())
+        {
+            case 0:
+                // The point 3 nozzle has been selected
+                if (currentWidth < minPoint3ExtrusionWidth || currentWidth
+                    > maxPoint3ExtrusionWidth)
+                {
+                    perimeterExtrusionWidth.floatValueProperty().set(
+                        defaultPoint3ExtrusionWidth);
+                }
+                perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                break;
+            case 1:
+                // The point 8 nozzle has been selected
+                if (currentWidth < minPoint8ExtrusionWidth || currentWidth
+                    > maxPoint8ExtrusionWidth)
+                {
+                    perimeterExtrusionWidth.floatValueProperty().set(
+                        defaultPoint8ExtrusionWidth);
+                }
+                perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                break;
+        }
     }
 
     private void setupWidgetEditableBindings()
@@ -1711,7 +1802,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
-        SlicerParametersFile slicerParametersFile = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType).clone();
+        SlicerParametersFile slicerParametersFile
+            = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType.get()).clone();
 
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
@@ -1737,7 +1829,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         if (state.get() != ProfileLibraryPanelController.State.NEW)
         {
-            SlicerParametersContainer.deleteUserProfile(currentProfileName, currentHeadType);
+            SlicerParametersContainer.deleteUserProfile(currentProfileName, currentHeadType.get());
         }
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();

@@ -89,15 +89,7 @@ public class Head implements Cloneable, RepairableComponent
 
     private void updateFromHeadFileData(HeadFile headData)
     {
-        this.typeCode.set(headData.getTypeCode());
-        for (HeadType headType : HeadType.values())
-        {
-            if (headType.getHeadTypeCode().equals(typeCode.get()))
-            {
-                this.headType.set(headType);
-                break;
-            }
-        }
+        setTypeCode(headData.getTypeCode());
         this.name.set(headData.getName());
 
         nozzleHeaters.clear();
@@ -128,15 +120,7 @@ public class Head implements Cloneable, RepairableComponent
         List<NozzleHeater> nozzleHeaters,
         List<Nozzle> nozzles)
     {
-        this.typeCode.set(typeCode);
-        for (HeadType headType : HeadType.values())
-        {
-            if (headType.getHeadTypeCode().equals(typeCode))
-            {
-                this.headType.set(headType);
-                break;
-            }
-        }
+        setTypeCode(typeCode);
         this.name.set(friendlyName);
         this.uniqueID.set(uniqueID);
         this.headHours.set(headHours);
@@ -239,18 +223,22 @@ public class Head implements Cloneable, RepairableComponent
 
         return clone;
     }
-
-    public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
-    {
-        typeCode.set(eepromData.getTypeCode());
+    
+    private void setTypeCode(String typeCode) {
+        this.typeCode.set(typeCode);
         for (HeadType headType : HeadType.values())
         {
-            if (headType.getHeadTypeCode().equals(typeCode.get()))
+            if (headType.getHeadTypeCode().equals(typeCode))
             {
                 this.headType.set(headType);
                 break;
             }
         }
+    }
+
+    public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
+    {
+        setTypeCode(eepromData.getTypeCode());
         uniqueID.set(eepromData.getUniqueID());
         headHours.set(eepromData.getHeadHours());
 
@@ -474,31 +462,4 @@ public class Head implements Cloneable, RepairableComponent
         uniqueID.set(idToCreate);
     }
 
-//    public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
-//    {
-//        boolean matches = false;
-//
-//        //TODO fix for multiple heaters/nozzles
-//        if (response.getTypeCode().equals(typeCodeProperty().get())
-//            && response.getHeadHours() == headHoursProperty().get()
-//            && response.getMaximumTemperature() == getNozzleHeaters()
-//            .get(0)
-//            .maximumTemperatureProperty().get()
-//            && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
-//            && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
-//            && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
-//            && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
-//            && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
-//            && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
-//            && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
-//            && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
-//            && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
-//            && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
-//            && response.getUniqueID().equals(uniqueIDProperty().get()))
-//        {
-//            matches = true;
-//        }
-//
-//        return matches;
-//    }
 }

@@ -360,7 +360,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             if (printer.headProperty().get() != null)
             {
                 currentHeadType = printer.headProperty().get().headTypeProperty().get();
-                System.out.println("set head type to " + currentHeadType);
             } else
             {
                 currentHeadType = HeadContainer.defaultHeadType;
