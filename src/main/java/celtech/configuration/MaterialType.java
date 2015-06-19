@@ -26,7 +26,15 @@ public enum MaterialType
     /**
      *
      */
-    SPC("Special", 1.0);
+    SPC("Special", 1.0),
+    /**
+     *
+     */
+    PET("PETG", 1.27),
+        /**
+     *
+     */
+    TPE("TPE", 1.2);
 
     private String friendlyName;
     /**
