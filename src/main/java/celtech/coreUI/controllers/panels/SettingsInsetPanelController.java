@@ -121,6 +121,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             SlicerParametersContainer.getUserProfileList().addListener(
                 (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
                 {
+                    populateCustomProfileChooser();
                     showPleaseCreateProfile(
                         SlicerParametersContainer.getUserProfileList().isEmpty());
                 });
@@ -207,9 +208,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void populateCustomProfileChooser()
     {
         List filesForHeadType = SlicerParametersContainer.getUserProfileList().stream().
-            filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(
-                    currentHeadType)).
-            collect(Collectors.toList());
+            filter(profile -> profile.getHeadType() != null
+             && profile.getHeadType().equals(currentHeadType)).collect(Collectors.toList());
         customProfileChooser.setItems(FXCollections.observableArrayList(filesForHeadType));
     }
 
@@ -227,9 +227,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
     }
 
-//    private void getNumNozzleHeaters() {
-//        return Loo.
-//    }
     private void setupOverrides()
     {
         supportComboBox.getItems().addAll(SupportType.values());

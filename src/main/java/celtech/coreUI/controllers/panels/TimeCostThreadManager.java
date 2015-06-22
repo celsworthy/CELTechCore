@@ -47,7 +47,11 @@ public class TimeCostThreadManager
         this.cancellable = cancellable;
         timeCostFuture = executorService.submit(() ->
         {
+            try {
             runnable.run();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
     }
 

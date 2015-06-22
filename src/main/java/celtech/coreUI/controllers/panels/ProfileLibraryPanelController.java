@@ -1809,7 +1809,6 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         profileNameField.requestFocus();
         profileNameField.selectAll();
         currentProfileName = "";
-        currentHeadType = null;
         profileNameField.pseudoClassStateChanged(ERROR, true);
     }
 

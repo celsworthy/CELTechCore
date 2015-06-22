@@ -12,7 +12,6 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.PrinterListChangesAdapter;
@@ -107,7 +106,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                 @Override
                 public void whenHeadAdded(Printer printer)
                 {
-                    System.out.println("head added");
                     if (printer == currentPrinter)
                     {
                         updateHeadType(currentPrinter);
@@ -117,12 +115,12 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             });
 
             Lookup.getSelectedPrinterProperty().addListener(
-                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                    {
-                        currentPrinter = newValue;
-                        updateHeadType(newValue);
-                    }
-                );
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                {
+                    currentPrinter = newValue;
+                    updateHeadType(newValue);
+                }
+            );
 
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
 
@@ -247,6 +245,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             @Override
             public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
             {
+                System.out.println("printer settings changed");
                 updateFields(project);
             }
         };
@@ -345,15 +344,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                 && !currentProject.getPrinterSettings().getSettingsName().equals(""))
             {
-                Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
-                Head currentHead = currentPrinter.headProperty().get();
-                HeadType headType = HeadContainer.defaultHeadType;
-                if (currentHead != null)
-                {
-                    headType = currentHead.headTypeProperty().get();
-                }
                 SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
-                    headType);
+                    currentHeadType);
                 updateFieldsForProfile(project, customSettings, lblCustomTime,
                                        lblCustomWeight,
                                        lblCustomCost, cancellable);
