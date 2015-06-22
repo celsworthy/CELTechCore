@@ -201,6 +201,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private void loadProjectsAtStartup()
     {
+        steno.debug("start load projects");
         // Load up any projects that were open last time we shut down....
         ProjectManager pm = ProjectManager.getInstance();
         List<Project> preloadedProjects = pm.getOpenProjects();
@@ -213,6 +214,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         if (Lookup.getUserPreferences().isFirstUse())
         {
+            steno.debug("get first use stl file");
             File firstUsePrintFile = new File(ApplicationConfiguration.
                 getApplicationModelDirectory().concat(
                     "Robox CEL RB robot.stl"));
@@ -220,10 +222,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             List<File> fileToLoad = new ArrayList<>();
             fileToLoad.add(firstUsePrintFile);
 
+            steno.debug("create first use tab");
             ProjectTab newTab = loadExternalModels(fileToLoad, true, false);
             newTab.getProject().setProjectName(Lookup.i18n("myFirstPrintTitle"));
             Lookup.getUserPreferences().setFirstUse(false);
         }
+        steno.debug("end load projects");
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
@@ -351,6 +355,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
      */
     public void configureDisplayManager(Stage mainStage, String applicationName)
     {
+        steno.debug("start configure display manager");
         this.mainStage = mainStage;
         mainStage.setTitle(applicationName + " - "
             + ApplicationConfiguration.getApplicationVersion());
@@ -384,6 +389,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         rootAnchorPane.getChildren().add(spinnerContainer);
 
         // Load in all of the side panels
+        steno.debug("setup panels for mode");
         for (ApplicationMode mode : ApplicationMode.values())
         {
             setupPanelsForMode(mode);
@@ -599,9 +605,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         mainStage.setScene(scene);
 
+        steno.debug("load projects");
         loadProjectsAtStartup();
 
         rootAnchorPane.layout();
+        
+        steno.debug("end configure display manager");
     }
 
     private void setupPanelsForMode(ApplicationMode mode)

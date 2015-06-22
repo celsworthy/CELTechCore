@@ -69,6 +69,7 @@ public class ProjectManager implements Savable, Serializable
         ProjectManager pm = null;
         try
         {
+            steno.debug("load project manager from " + ApplicationConfiguration.getProjectDirectory() + projectFileName);
             FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
             ObjectInputStream reader = new ObjectInputStream(projectFile);
             pm = new ProjectManager();
