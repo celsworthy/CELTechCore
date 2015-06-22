@@ -1,13 +1,12 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.Math.MathUtils;
 import java.util.List;
 import java.util.Optional;

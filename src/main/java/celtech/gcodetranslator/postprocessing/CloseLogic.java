@@ -1,7 +1,6 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
@@ -22,6 +21,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.Math.MathUtils;
 import java.util.List;
 import java.util.Optional;

@@ -4,7 +4,6 @@ import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
@@ -19,6 +18,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, outer.getChildren().size());
@@ -165,7 +165,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
 
@@ -283,7 +283,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
 
@@ -452,7 +452,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
 
@@ -621,7 +621,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
 
@@ -781,7 +781,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
 
@@ -870,7 +870,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.addClosesUsingSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
                 tool1.getChildren().get(0).getChildren().get(4),
@@ -923,7 +923,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.addClosesUsingSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
                 tool1.getChildren().get(0).getChildren().get(4),
@@ -968,7 +968,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.addClosesUsingSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
                 tool1.getChildren().get(0).getChildren().get(4),
@@ -1076,7 +1076,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("CloseTest");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeUsingSectionTemplate((SectionNode) tool1.getChildren().get(2),
                 ((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
@@ -1128,7 +1128,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("CloseTest");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeUsingSectionTemplate((SectionNode) tool1.getChildren().get(0),
                 ((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
@@ -1489,17 +1489,17 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0);
         
-        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         closeLogic.insertCloseNodes(testLayer, lastLayerParseResult, nozzleProxies);
 

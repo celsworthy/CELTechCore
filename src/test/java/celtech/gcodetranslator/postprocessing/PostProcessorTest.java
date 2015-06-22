@@ -6,26 +6,14 @@ import celtech.TestUtils;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
-import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.RoboxiserResult;
-import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
-import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
-import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
-import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
-import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
-import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -88,7 +76,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 testProject,
                 ppFeatures,
-        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+                HeadType.SINGLE_MATERIAL_HEAD);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
@@ -130,7 +118,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 testProject,
                 ppFeatures,
-        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+                HeadType.SINGLE_MATERIAL_HEAD);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());

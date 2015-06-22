@@ -7,6 +7,7 @@ import celtech.JavaFXConfiguredTest;
 import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(true);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raftBaseThickness=300"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
@@ -55,7 +56,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(true);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raftBaseThickness=300"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
@@ -72,7 +73,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(true);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raftBaseThickness=300"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
@@ -89,7 +90,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(false);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raftBaseThickness=0"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
@@ -106,7 +107,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(false);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raftBaseThickness=0"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
@@ -123,7 +124,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(false);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raftBaseThickness=0"));
         assertTrue(outputData.contains("raftInterfaceThickness=280"));
@@ -140,7 +141,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(true);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         for (String outputData1 : outputData)
         {
@@ -161,7 +162,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(false);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raft_layers = 0"));
     }
@@ -177,7 +178,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(true);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raft_layers = 2"));
     }
@@ -193,7 +194,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(false);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raft_layers = 0"));
     }
@@ -209,7 +210,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(true);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raft_layers = 3"));
     }
@@ -225,7 +226,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         printerSettings.setRaftOverride(false);
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("raft_layers = 0"));
     }
@@ -242,7 +243,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
 
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("sparseInfillLineDistance=-1"));
     }
@@ -259,7 +260,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
 
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
-        configWriter.generateConfigForSlicer(printerSettings.getSettings(SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
+        configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
         assertTrue(outputData.contains("sparseInfillLineDistance=800"));
     }

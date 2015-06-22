@@ -7,12 +7,14 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
+import celtech.printerControl.model.Head.HeadType;
+import static celtech.printerControl.model.Head.HeadType.DUAL_MATERIAL_HEAD;
+import static celtech.printerControl.model.Head.HeadType.SINGLE_MATERIAL_HEAD;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,7 +126,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
-    private ObjectProperty<HeadType> currentHeadType = new SimpleObjectProperty<>();
+    private final ObjectProperty<HeadType> currentHeadType = new SimpleObjectProperty<>();
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ProfileLibraryPanelController.class.getName());

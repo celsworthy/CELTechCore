@@ -1,11 +1,11 @@
 package celtech.printerControl.model;
 
+import celtech.Lookup;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
@@ -32,12 +32,39 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Head implements Cloneable, RepairableComponent
 {
+    
+    public enum HeadType
+    {
+
+        SINGLE_MATERIAL_HEAD("RBX01-SM", "singleMaterialHead"),
+        DUAL_MATERIAL_HEAD("RBX01-DM", "dualMaterialHead");
+
+        private final String helpText;
+        private final String headTypeCode;
+
+        HeadType(String headTypeCode, String helpText)
+        {
+            this.helpText = helpText;
+            this.headTypeCode = headTypeCode;
+        }
+        
+        public String getHeadTypeCode() {
+            return headTypeCode;
+        }
+
+        @Override
+        public String toString()
+        {
+            return Lookup.i18n("headType." + helpText);
+        }
+
+    }
 
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.
         getName());
 
     protected ObjectProperty<HeadType> headType = new SimpleObjectProperty<>(
-        SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD);
+        HeadType.SINGLE_MATERIAL_HEAD);
 
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);

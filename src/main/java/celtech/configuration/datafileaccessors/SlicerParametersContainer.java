@@ -3,7 +3,7 @@ package celtech.configuration.datafileaccessors;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileFileFilter;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
+import celtech.printerControl.model.Head.HeadType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -8,13 +8,13 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.HeadType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.PrinterListChangesAdapter;
@@ -140,6 +140,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     if (printer == currentPrinter)
                     {
                         whenPrinterChanged(printer);
+                        updateSupportCombo(printer);
                     }
                 }
 
@@ -211,6 +212,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             filter(profile -> profile.getHeadType() != null
              && profile.getHeadType().equals(currentHeadType)).collect(Collectors.toList());
         customProfileChooser.setItems(FXCollections.observableArrayList(filesForHeadType));
+        
     }
 
     private void whenCustomProfileChanges(SlicerParametersFile newValue)
@@ -244,17 +246,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         cbSupport.selectedProperty().addListener(
             (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
             {
+                updateSupportCombo(currentPrinter);
                 if (currentPrinter != null && selected && getNumExtruders(currentPrinter) == 2)
                 {
-                    supportComboBox.setDisable(false);
                     if (supportComboBox.getValue() == null)
                     {
                         // this happens for new projects
                         supportComboBox.setValue(SupportType.OBJECT_MATERIAL);
                     }
                     printerSettings.setPrintSupportOverride(supportComboBox.getValue());
-                } else if (currentPrinter != null && selected && getNumExtruders(currentPrinter)
-                == 1)
+                } else if (currentPrinter != null && selected
+                                && getNumExtruders(currentPrinter) == 1)
                 {
                     printerSettings.setPrintSupportOverride(SupportType.OBJECT_MATERIAL);
                 } else if (selected) //selected but no printer connected
@@ -262,7 +264,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     printerSettings.setPrintSupportOverride(SupportType.OBJECT_MATERIAL);
                 } else
                 {
-                    supportComboBox.setDisable(true);
                     printerSettings.setPrintSupportOverride(SupportType.NO_SUPPORT);
                 }
             });
@@ -362,13 +363,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 currentHeadType = HeadContainer.defaultHeadType;
             }
             populateCustomProfileChooser();
+            updateSupportCombo(currentPrinter);
         }
     }
 
     private int getNumExtruders(Printer printer)
     {
         int numExtruders = 1;
-        if (printer.extrudersProperty().get(1).isFittedProperty().get())
+        if (printer != null && printer.extrudersProperty().get(1).isFittedProperty().get())
         {
             numExtruders = 2;
         }
@@ -377,7 +379,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void updateSupportCombo(Printer printer)
     {
-        if (getNumExtruders(printer) == 1 || !cbSupport.isSelected())
+        if (getNumExtruders(printer) < 2 
+            || !cbSupport.isSelected()
+            || currentHeadType == HeadType.SINGLE_MATERIAL_HEAD)
         {
             supportComboBox.setDisable(true);
         } else
@@ -428,7 +432,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
             {
                 Head currentHead = currentPrinter.headProperty().get();
-                SlicerParametersFile.HeadType headType = SlicerParametersFile.HeadType.SINGLE_MATERIAL_HEAD;
+                HeadType headType = HeadType.SINGLE_MATERIAL_HEAD;
                 if (currentHead != null)
                 {
                     headType = currentHead.headTypeProperty().get();

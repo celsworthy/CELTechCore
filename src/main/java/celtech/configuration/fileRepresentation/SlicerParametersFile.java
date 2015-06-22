@@ -5,6 +5,7 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
+import celtech.printerControl.model.Head.HeadType;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -17,34 +18,6 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  */
 public class SlicerParametersFile
 {
-
-    public enum HeadType
-    {
-
-        SINGLE_MATERIAL_HEAD("RBX01-SM", "singleMaterialHead"),
-        DUAL_MATERIAL_HEAD("RBX01-DM", "dualMaterialHead");
-
-        private final String helpText;
-        private final String headTypeCode;
-
-        HeadType(String headTypeCode, String helpText)
-        {
-            this.helpText = helpText;
-            this.headTypeCode = headTypeCode;
-        }
-        
-        public String getHeadTypeCode() {
-            return headTypeCode;
-        }
-
-        @Override
-        public String toString()
-        {
-            return Lookup.i18n("headType." + helpText);
-        }
-
-    }
-
     public enum SupportType
     {
 
