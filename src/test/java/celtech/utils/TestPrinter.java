@@ -76,6 +76,7 @@ public class TestPrinter implements Printer
     void addHead()
     {
         HeadFile headFile = new HeadFile();
+        headFile.setTypeCode("RBX01-SM");
         Head head = new TestHead(headFile);
         headProperty.setValue(head);
     }
