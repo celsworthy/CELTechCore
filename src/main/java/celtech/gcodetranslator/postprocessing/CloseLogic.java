@@ -102,7 +102,7 @@ public class CloseLogic
                 {
                     outputMessage = "Short extrusion - leaving retract in place " + nodeToAppendClosesTo.toString();
                 }
-                steno.info(outputMessage);
+                steno.debug(outputMessage);
             } else
             {
                 // If we have an available fill section to close over and we can close in the required volume then do it
@@ -163,7 +163,7 @@ public class CloseLogic
                     {
                         outputMessage = "Couldn't find closest node when looking for close trajectory from outer perimeter " + nodeToAppendClosesTo.toString();
                     }
-                    steno.info(outputMessage);
+                    steno.debug(outputMessage);
 //                    throw new RuntimeException(outputMessage);
                 }
             }
@@ -305,15 +305,35 @@ public class CloseLogic
                     if (movementNodeCounter == movementNodes.size() - 1)
                     {
                         //We dont have anywhere to go!
+
+                        //Look in the section before this one for a usable movement
                         try
                         {
                             Optional<MovementProvider> priorSectionMovement = nodeManagementUtilities.findPriorMovementInPreviousSection(extrusionNodeBeingExamined);
                             priorMovement = priorSectionMovement.get();
                         } catch (NodeProcessingException ex)
                         {
-                            throw new RuntimeException("Unable to find prior node when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
-                        }
+                            // Didn't find it in a prior section - look at prior siblings in case we have a loose travel we can use...
+                            try
+                            {
+                                List<MovementProvider> priorSiblings = extrusionNodeBeingExamined.streamSiblingsAndMeBackwardsFromHere()
+                                        .filter(priorNode -> priorNode instanceof MovementProvider)
+                                        .map(MovementProvider.class::cast)
+                                        .collect(Collectors.toList());
 
+                                if (priorSiblings.size() > 0)
+                                {
+                                    priorMovement = priorSiblings.get(0);
+                                } else
+                                {
+                                    //Didn't find any prior siblings that are MovementProviders
+                                    throw new RuntimeException("Unable to find prior node when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
+                                }
+                            } catch (NodeProcessingException priorSiblingException)
+                            {
+                                throw new RuntimeException("Unable to find prior node in section or siblings when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
+                            }
+                        }
                     } else
                     {
                         priorMovement = movementNodes.get(movementNodeCounter + 1);

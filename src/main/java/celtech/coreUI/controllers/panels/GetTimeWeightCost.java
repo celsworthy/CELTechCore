@@ -105,7 +105,9 @@ public class GetTimeWeightCost
             return;
         }
 
+        steno.info("Starting slicing");
         boolean succeeded = doSlicing(project, settings);
+        steno.info("Finished slicing");
         if (!succeeded)
         {
             return;

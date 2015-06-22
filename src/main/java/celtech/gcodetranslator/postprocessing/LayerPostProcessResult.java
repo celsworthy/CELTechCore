@@ -17,6 +17,7 @@ public class LayerPostProcessResult
     private final double timeForLayer_secs;
     private final LayerNode layerData;
     private Optional<Integer> lastObjectNumber = Optional.empty();
+    private int lastFeedrateInForce = -1;
 
     public LayerPostProcessResult(Optional<NozzleProxy> nozzleStateAtEndOfLayer,
             LayerNode layerData,
@@ -81,4 +82,21 @@ public class LayerPostProcessResult
         this.lastObjectNumber = Optional.of(lastObjectNumber);
     }
 
+    /**
+     * This is the last feedrate that the parser saw 
+     * @param feedrate
+     */
+    public void setLastFeedrateInForce(int feedrate)
+    {
+        this.lastFeedrateInForce = feedrate;
+    }
+
+    /**
+     * This is the last feedrate that the parser saw
+     * @return 
+     */
+    public int getLastFeedrateInForce()
+    {
+        return lastFeedrateInForce;
+    }
 }

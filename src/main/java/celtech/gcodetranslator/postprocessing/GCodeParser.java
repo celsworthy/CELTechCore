@@ -44,6 +44,16 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
     private LayerNode thisLayer = new LayerNode();
     private int feedrateInForce = -1;
     protected Var<Integer> currentObject = new Var<>(-1);
+    
+    public void setFeedrateInForce(int feedrate)
+    {
+        this.feedrateInForce = feedrate;
+    }
+
+    public int getFeedrateInForce()
+    {
+        return feedrateInForce;
+    }
 
     public LayerNode getLayerNode()
     {
