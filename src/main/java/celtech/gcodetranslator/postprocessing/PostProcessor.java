@@ -17,9 +17,14 @@ import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import celtech.utils.SystemUtils;
+import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,6 +47,17 @@ public class PostProcessor
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(PostProcessor.class.getName());
+
+    private final String unretractTimerName = "Unretract";
+    private final String orphanTimerName = "Orphans";
+    private final String nozzleControlTimerName = "NozzleControl";
+    private final String perRetractTimerName = "PerRetract";
+    private final String closeTimerName = "Close";
+    private final String unnecessaryToolchangeTimerName = "UnnecessaryToolchange";
+    private final String openTimerName = "Open";
+    private final String assignExtrusionTimerName = "AssignExtrusion";
+    private final String layerResultTimerName = "LayerResult";
+
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
     private final HeadFile headFile;
@@ -63,6 +79,8 @@ public class PostProcessor
     private final NozzleAssignmentUtilities nozzleControlUtilities;
     private final CloseLogic closeLogic;
     private final NozzleManagementUtilities nozzleUtilities;
+
+    private final TimeUtils timeUtils = new TimeUtils();
 
     public PostProcessor(String gcodeFileToProcess,
             String gcodeOutputFile,
@@ -136,6 +154,9 @@ public class PostProcessor
         int layerCounter = -1;
 
         OutputUtilities outputUtilities = new OutputUtilities();
+
+        timeUtils.timerStart(this, "PostProcessor");
+        steno.info("Beginning post-processing operation");
 
         //Cura has line delineators like this ';LAYER:1'
         try
@@ -234,6 +255,11 @@ public class PostProcessor
 
             result.setRoboxisedStatistics(roboxisedStatistics);
 
+            outputPostProcessingTimerReport();
+
+            timeUtils.timerStop(this, "PostProcessor");
+            steno.info("Post-processing took " + timeUtils.timeTimeSoFar_ms(this, "PostProcessor") + "ms");
+
             result.setSuccess(true);
         } catch (IOException ex)
         {
@@ -285,6 +311,12 @@ public class PostProcessor
         {
             GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class
             );
+
+            if (lastLayerParseResult != null)
+            {
+                gcodeParser.setFeedrateInForce(lastLayerParseResult.getLastFeedrateInForce());
+            }
+
             BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
             ParsingResult result = runner.run(layerBuffer.toString());
 
@@ -294,7 +326,9 @@ public class PostProcessor
             } else
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
+                int lastFeedrate = gcodeParser.getFeedrateInForce();
                 parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult);
+                parseResultAtEndOfThisLayer.setLastFeedrateInForce(lastFeedrate);
             }
         } else
         {
@@ -307,12 +341,17 @@ public class PostProcessor
     private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult)
     {
         // We never want unretracts
+        timeUtils.timerStart(this, unretractTimerName);
         nodeManagementUtilities.removeUnretractNodes(layerNode);
+        timeUtils.timerStop(this, unretractTimerName);
 
+        timeUtils.timerStart(this, orphanTimerName);
         nodeManagementUtilities.rehomeOrphanObjects(layerNode, lastLayerParseResult);
+        timeUtils.timerStop(this, orphanTimerName);
 
         int lastObjectNumber = -1;
 
+        timeUtils.timerStart(this, nozzleControlTimerName);
         switch (postProcessingMode)
         {
             case TASK_BASED_NOZZLE_SELECTION:
@@ -324,20 +363,33 @@ public class PostProcessor
             default:
                 break;
         }
+        timeUtils.timerStart(this, nozzleControlTimerName);
 
+        timeUtils.timerStart(this, perRetractTimerName);
         nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layerNode);
+        timeUtils.timerStop(this, perRetractTimerName);
 
+        timeUtils.timerStart(this, closeTimerName);
         closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies);
+        timeUtils.timerStop(this, closeTimerName);
 
+        timeUtils.timerStart(this, unnecessaryToolchangeTimerName);
         postProcessorUtilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(layerNode, lastLayerParseResult, nozzleProxies);
+        timeUtils.timerStop(this, unnecessaryToolchangeTimerName);
 
         //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
+        timeUtils.timerStart(this, openTimerName);
         postProcessorUtilityMethods.insertOpenNodes(layerNode, lastLayerParseResult);
+        timeUtils.timerStop(this, openTimerName);
 
+        timeUtils.timerStart(this, assignExtrusionTimerName);
         nozzleControlUtilities.assignExtrusionToCorrectExtruder(layerNode);
+        timeUtils.timerStop(this, assignExtrusionTimerName);
 
+        timeUtils.timerStart(this, layerResultTimerName);
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
+        timeUtils.timerStop(this, layerResultTimerName);
 
         return postProcessResult;
     }
@@ -370,11 +422,48 @@ public class PostProcessor
                 movementCounter < movementNodes.size()
                 - 1; movementCounter++)
         {
-            double time = movementNodes.get(movementCounter).timeToReach(movementNodes.get(movementCounter + 1));
-            timeForLayer += time;
+            try
+            {
+                double time = movementNodes.get(movementCounter).timeToReach((MovementProvider) (movementNodes.get(movementCounter + 1)));
+                timeForLayer += time;
+            } catch (DurationCalculationException ex)
+            {
+                if (ex.getFromNode() instanceof Renderable
+                        && ex.getToNode() instanceof Renderable)
+                {
+                    steno.error("Unable to calculate duration correctly for nodes source:"
+                            + ((Renderable) ex.getFromNode()).renderForOutput()
+                            + " destination:"
+                            + ((Renderable) ex.getToNode()).renderForOutput());
+                } else
+                {
+                    steno.error("Unable to calculate duration correctly for nodes source:"
+                            + ex.getFromNode().getMovement().renderForOutput()
+                            + " destination:"
+                            + ex.getToNode().getMovement().renderForOutput());
+                }
+
+                throw new RuntimeException("Unable to calculate duration correctly on layer "
+                        + layerNode.getLayerNumber(), ex);
+            }
         }
 
-        return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer,
-                -1);
+        return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer, -1);
+    }
+
+    private void outputPostProcessingTimerReport()
+    {
+        steno.info("Post Processor Timer Report");
+        steno.info("============");
+        steno.info(unretractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unretractTimerName));
+        steno.info(orphanTimerName + " " + timeUtils.timeTimeSoFar_ms(this, orphanTimerName));
+        steno.info(nozzleControlTimerName + " " + timeUtils.timeTimeSoFar_ms(this, nozzleControlTimerName));
+        steno.info(perRetractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, perRetractTimerName));
+        steno.info(closeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, closeTimerName));
+        steno.info(unnecessaryToolchangeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unnecessaryToolchangeTimerName));
+        steno.info(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
+        steno.info(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
+        steno.info(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
+        steno.info("============");
     }
 }

@@ -1,5 +1,6 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,7 +84,15 @@ public class ExtrusionNodeTest
         destinationNode.getMovement().setY(0);
         destinationNode.getFeedrate().setFeedRate_mmPerMin(0);
 
-        double result = sourceNode.timeToReach(destinationNode);
+        double result = -1;
+
+        try
+        {
+            result = sourceNode.timeToReach(destinationNode);
+        } catch (DurationCalculationException ex)
+        {
+            fail("Exception during test");
+        }
 
         assertEquals(1, result, 0.0);
 
@@ -95,7 +104,15 @@ public class ExtrusionNodeTest
         destinationNode.getMovement().setY(0);
         destinationNode.getFeedrate().setFeedRate_mmPerMin(0);
 
-        double result2 = sourceNode.timeToReach(destinationNode);
+        double result2 = -1;
+
+        try
+        {
+            result2 = sourceNode.timeToReach(destinationNode);
+        } catch (DurationCalculationException ex)
+        {
+            fail("Exception during test");
+        }
 
         assertEquals(0.1, result2, 0.0);
 
@@ -106,9 +123,16 @@ public class ExtrusionNodeTest
         destinationNode.getMovement().setY(4);
         destinationNode.getFeedrate().setFeedRate_mmPerMin(0);
 
-        double result3 = sourceNode.timeToReach(destinationNode);
+        double result3 = -1;
+
+        try
+        {
+            result3 = sourceNode.timeToReach(destinationNode);
+        } catch (DurationCalculationException ex)
+        {
+            fail("Exception during test");
+        }
 
         assertEquals(0.5, result3, 0.0);
-
     }
 }
