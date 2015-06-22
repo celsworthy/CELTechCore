@@ -3262,12 +3262,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 case ACK_WITH_ERRORS:
                     AckResponse ackResponse = (AckResponse) rxPacket;
+
                     steno.trace(ackResponse.toString());
 
                     if (ackResponse.isError())
                     {
                         List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
                                 getFirmwareErrors());
+
                         // Copy the error consumer list to stop concurrent modification exceptions if the consumer deregisters itself
                         Map<ErrorConsumer, List<FirmwareError>> errorsToIterateThrough = new WeakHashMap<>(
                                 errorConsumers);
@@ -3284,7 +3286,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         if (processErrors)
                         {
                             steno.debug(ackResponse.getErrorsAsString());
-
                             errorsFound.stream()
                                     .forEach(foundError ->
                                             {
@@ -3319,7 +3320,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                     }
                                                 }
                                     });
-
                             steno.trace(ackResponse.toString());
                         } else
                         {
