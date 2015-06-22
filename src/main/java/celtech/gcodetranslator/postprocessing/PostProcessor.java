@@ -9,21 +9,13 @@ import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
-import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
-import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
-import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
-import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
-import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
-import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
-import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
-import celtech.utils.SystemUtils;
 import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -57,6 +49,8 @@ public class PostProcessor
     private final String openTimerName = "Open";
     private final String assignExtrusionTimerName = "AssignExtrusion";
     private final String layerResultTimerName = "LayerResult";
+    private final String parseLayerTimerName = "ParseLayer";
+    private final String writeOutputTimerName = "WriteOutput";
 
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
@@ -181,7 +175,9 @@ public class PostProcessor
                     timeForPrint_secs += parseResult.getTimeForLayer();
 
                     //Now output the LAST layer - it was held until now in case it needed to be modified before output
+                    timeUtils.timerStart(this, writeOutputTimerName);
                     outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+                    timeUtils.timerStop(this, writeOutputTimerName);
                     postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
                     predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
@@ -218,21 +214,28 @@ public class PostProcessor
 
             //This catches the last layer - if we had no data it won't do anything
             LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
+
             finalEVolume += parseResult.getEVolume();
             finalDVolume += parseResult.getDVolume();
             timeForPrint_secs += parseResult.getTimeForLayer();
 
             //Now output the LAST layer - it was held until now in case it needed to be modified before output
+            timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+            timeUtils.timerStop(this, writeOutputTimerName);
             postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
             predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
             //Now output the final result
+            timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.writeLayerToFile(parseResult.getLayerData(), writer);
+            timeUtils.timerStop(this, writeOutputTimerName);
             postProcessorUtilityMethods.updateLayerToLineNumber(parseResult, layerNumberToLineNumber, writer);
             predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
+            timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs);
+            timeUtils.timerStop(this, writeOutputTimerName);
 
             /**
              * TODO: layerNumberToLineNumber uses lines numbers from the GCode
@@ -318,7 +321,9 @@ public class PostProcessor
             }
 
             BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
+            timeUtils.timerStart(this, parseLayerTimerName);
             ParsingResult result = runner.run(layerBuffer.toString());
+            timeUtils.timerStop(this, parseLayerTimerName);
 
             if (result.hasErrors())
             {
@@ -363,7 +368,7 @@ public class PostProcessor
             default:
                 break;
         }
-        timeUtils.timerStart(this, nozzleControlTimerName);
+        timeUtils.timerStop(this, nozzleControlTimerName);
 
         timeUtils.timerStart(this, perRetractTimerName);
         nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layerNode);
@@ -464,6 +469,8 @@ public class PostProcessor
         steno.info(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
         steno.info(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
         steno.info(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
+        steno.info(parseLayerTimerName + " " + timeUtils.timeTimeSoFar_ms(this, parseLayerTimerName));
+        steno.info(writeOutputTimerName + " " + timeUtils.timeTimeSoFar_ms(this, writeOutputTimerName));
         steno.info("============");
     }
 }

@@ -163,7 +163,7 @@ public class CloseLogic
                     {
                         outputMessage = "Couldn't find closest node when looking for close trajectory from outer perimeter " + nodeToAppendClosesTo.toString();
                     }
-                    steno.info(outputMessage);
+                    steno.debug(outputMessage);
 //                    throw new RuntimeException(outputMessage);
                 }
             }
