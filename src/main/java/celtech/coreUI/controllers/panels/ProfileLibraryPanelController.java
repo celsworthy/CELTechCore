@@ -452,7 +452,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         cmbHeadType.setValue(HeadContainer.defaultHeadType);
     }
 
-    private void bringValueWithDualHeadTypeLimits(RestrictedNumberField field) {
+    private void bringValueWithinDualHeadTypeLimits(RestrictedNumberField field) {
         float currentWidth = field.floatValueProperty().get();
                 if (currentWidth < minDualHeadExtrusionWidth || currentWidth
                     > maxDualHeadExtrusionWidth)
@@ -477,12 +477,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                     perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
                 break;
             case DUAL_MATERIAL_HEAD:
-                bringValueWithDualHeadTypeLimits(firstLayerExtrusionWidth);
-                bringValueWithDualHeadTypeLimits(supportExtrusionWidth);
-                bringValueWithDualHeadTypeLimits(infillExtrusionWidth);
-                bringValueWithDualHeadTypeLimits(solidInfillExtrusionWidth);
-                bringValueWithDualHeadTypeLimits(topSolidInfillExtrusionWidth);
-                bringValueWithDualHeadTypeLimits(perimeterExtrusionWidth);
+                bringValueWithinDualHeadTypeLimits(firstLayerExtrusionWidth);
+                bringValueWithinDualHeadTypeLimits(supportExtrusionWidth);
+                bringValueWithinDualHeadTypeLimits(infillExtrusionWidth);
+                bringValueWithinDualHeadTypeLimits(solidInfillExtrusionWidth);
+                bringValueWithinDualHeadTypeLimits(topSolidInfillExtrusionWidth);
+                bringValueWithinDualHeadTypeLimits(perimeterExtrusionWidth);
      
                 firstLayerExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
                 firstLayerExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
@@ -542,6 +542,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         if (SlicerParametersContainer.getCompleteProfileList().contains(printProfile))
         {
+            cmbHeadType.setValue(printProfile.getHeadType());
             cmbPrintProfile.setValue(printProfile);
         } else
         {

@@ -589,7 +589,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             {
                 updateFilamentColoursForModeAndTargetPrinter();
             });
-        
+
         project.getPrinterSettings().getPrintSupportOverrideProperty().addListener(
             (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
             {
@@ -622,34 +622,29 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         bedOuterMaterial.setSpecularColor(Color.WHITE);
 
-        bedOuterMaterial.setSpecularPower(
-            5.0);
+        bedOuterMaterial.setSpecularPower(5.0);
 
         PhongMaterial bedInnerMaterial = new PhongMaterial(Color.GREY);
 
         bedInnerMaterial.setSpecularColor(Color.WHITE);
 
-        bedInnerMaterial.setSpecularPower(
-            .1);
+        bedInnerMaterial.setSpecularPower(.1);
 
         Group bed = new Group();
 
-        bed.setId(
-            "Bed");
+        bed.setId("Bed");
 
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        bed.getChildren()
-            .addAll(bedOuterLoadResult.getModelContainer().getMeshes());
+        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshes());
 
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
         bed.getChildren().add(createBoundingBox());
 
-        bed.getChildren()
-            .addAll(bedInnerLoadResult.getModelContainer().getMeshes());
+        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshes());
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
             ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
@@ -659,8 +654,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         final Xform roboxLogoTransformNode = new Xform();
 
-        roboxLogoTransformNode.setRotateX(
-            -90);
+        roboxLogoTransformNode.setRotateX(-90);
 
         final double logoSide_mm = 100;
         double logoScale = logoSide_mm / roboxLogoImage.getWidth();
@@ -669,18 +663,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         roboxLogoTransformNode.setTz(logoSide_mm
             + PrintBed.getPrintVolumeCentre().getZ() / 2);
-        roboxLogoTransformNode.setTy(
-            -.25);
+        roboxLogoTransformNode.setTy(-.25);
         roboxLogoTransformNode.setTx(PrintBed.getPrintVolumeCentre().getX() / 2);
         roboxLogoTransformNode.getChildren()
             .add(roboxLogoView);
-        roboxLogoTransformNode.setId(
-            "LogoImage");
+        roboxLogoTransformNode.setId("LogoImage");
 
         bed.getChildren()
             .add(roboxLogoTransformNode);
-        bed.setMouseTransparent(
-            true);
+        bed.setMouseTransparent(true);
 
         return bed;
     }
@@ -700,59 +691,45 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         double printAreaWidth = printBedData.getPrintVolumeBounds().getWidth();
         double printAreaDepth = printBedData.getPrintVolumeBounds().getDepth();
 
-        Box lhf = new Box(lineWidth,
-                          printAreaHeight,
-                          lineWidth);
+        Box lhf = new Box(lineWidth, printAreaHeight, lineWidth);
         lhf.setMaterial(boundsBoxMaterial);
         lhf.setTranslateY(-printAreaHeight / 2);
 
-        Box rhf = new Box(lineWidth,
-                          printAreaHeight,
-                          lineWidth);
+        Box rhf = new Box(lineWidth, printAreaHeight, lineWidth);
         rhf.setMaterial(boundsBoxMaterial);
         rhf.setTranslateY(-printAreaHeight / 2);
         rhf.setTranslateX(printAreaWidth);
 
-        Box lhb = new Box(lineWidth,
-                          printAreaHeight,
-                          lineWidth);
+        Box lhb = new Box(lineWidth, printAreaHeight, lineWidth);
         lhb.setMaterial(boundsBoxMaterial);
         lhb.setTranslateY(-printAreaHeight / 2);
         lhb.setTranslateZ(printAreaDepth);
 
-        Box rhb = new Box(lineWidth,
-                          printAreaHeight,
-                          lineWidth);
+        Box rhb = new Box(lineWidth, printAreaHeight, lineWidth);
         rhb.setMaterial(boundsBoxMaterial);
         rhb.setTranslateY(-printAreaHeight / 2);
         rhb.setTranslateX(printAreaWidth);
         rhb.setTranslateZ(printAreaDepth);
 
-        Box lhftTOlhbt = new Box(lineWidth,
-                                 lineWidth,
+        Box lhftTOlhbt = new Box(lineWidth, lineWidth,
                                  printBedData.getPrintVolumeBounds().getDepth());
         lhftTOlhbt.setMaterial(boundsBoxMaterial);
         lhftTOlhbt.setTranslateY(-printAreaHeight);
         lhftTOlhbt.setTranslateZ(printAreaDepth / 2);
 
-        Box rhftTOrhbt = new Box(lineWidth,
-                                 lineWidth,
+        Box rhftTOrhbt = new Box(lineWidth, lineWidth,
                                  printBedData.getPrintVolumeBounds().getDepth());
         rhftTOrhbt.setMaterial(boundsBoxMaterial);
         rhftTOrhbt.setTranslateX(printAreaWidth);
         rhftTOrhbt.setTranslateY(-printAreaHeight);
         rhftTOrhbt.setTranslateZ(printAreaDepth / 2);
 
-        Box lhftTOrhft = new Box(printAreaWidth,
-                                 lineWidth,
-                                 lineWidth);
+        Box lhftTOrhft = new Box(printAreaWidth, lineWidth, lineWidth);
         lhftTOrhft.setMaterial(boundsBoxMaterial);
         lhftTOrhft.setTranslateX(printAreaWidth / 2);
         lhftTOrhft.setTranslateY(-printAreaHeight);
 
-        Box lhbtTOrhbt = new Box(printAreaWidth,
-                                 lineWidth,
-                                 lineWidth);
+        Box lhbtTOrhbt = new Box(printAreaWidth, lineWidth, lineWidth);
         lhbtTOrhbt.setMaterial(boundsBoxMaterial);
         lhbtTOrhbt.setTranslateX(printAreaWidth / 2);
         lhbtTOrhbt.setTranslateY(-printAreaHeight);
@@ -907,7 +884,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             colour1 = extruder1Filament.getDisplayColour();
         }
-        
+
         model.setColour(colour0, colour1);
     }
 
@@ -978,6 +955,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
+            System.out.println("xxx print support is " + printerSettings.getPrintSupportOverride());
             if (printerSettings.getPrintSupportOverride()
                 == SlicerParametersFile.SupportType.NO_SUPPORT
                 || printerSettings.getPrintSupportOverride()
@@ -985,20 +963,23 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             {
                 extruder0Filament = project.getPrinterSettings().getFilament0();
                 extruder1Filament = project.getPrinterSettings().getFilament1();
-            } else {
+            } else
+            {
                 if (printerSettings.getPrintSupportOverride()
-                == SlicerParametersFile.SupportType.MATERIAL_1) {
+                    == SlicerParametersFile.SupportType.MATERIAL_1)
+                {
                     extruder0Filament = project.getPrinterSettings().getFilament1();
                     extruder1Filament = project.getPrinterSettings().getFilament1();
-                } else {
+                } else
+                {
                     extruder0Filament = project.getPrinterSettings().getFilament0();
                     extruder1Filament = project.getPrinterSettings().getFilament0();
                 }
             }
             if (selectedPrinter != null && targetPrinterHasOneExtruder())
-                {
-                    extruder1Filament = extruder0Filament;
-                }
+            {
+                extruder1Filament = extruder0Filament;
+            }
         } else
         {
             extruder0Filament = project.getExtruder0FilamentProperty().get();

@@ -161,6 +161,9 @@ public class PrinterSettings
                 break;
 
         }
+        if (settings == null) {
+            return null;
+        }
         return applyOverrides(settings);
     }
 
