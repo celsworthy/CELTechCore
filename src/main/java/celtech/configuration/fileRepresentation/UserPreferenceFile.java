@@ -17,7 +17,7 @@ public class UserPreferenceFile
     private boolean safetyFeaturesOn = true;
     private String languageTag = "";
     private boolean showTooltips = false;
-    private LogLevel loggingLevel = LogLevel.INFO;
+    private LogLevel loggingLevel = LogLevel.DEBUG;
     private boolean advancedMode = false;
     private boolean firstUse = true;
     private boolean detectLoadedFilament = true;
