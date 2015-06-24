@@ -2,7 +2,6 @@ package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
@@ -600,10 +599,9 @@ public class PrintEngine implements ControllableService
                 }
             });
 
-            TaskController.getInstance().manageTask(movieMakerTask);
-
             Thread movieThread = new Thread(movieMakerTask);
             movieThread.setName("Movie Maker - " + project.getProjectName());
+            movieThread.setDaemon(true);
 //            movieThread.start();
         }
 

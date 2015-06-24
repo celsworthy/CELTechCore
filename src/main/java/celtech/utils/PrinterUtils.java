@@ -8,7 +8,6 @@ package celtech.utils;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.PurgeResponse;
-import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.BusyStatus;
 import celtech.configuration.Filament;
@@ -16,9 +15,7 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
-import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.Reel;
 import celtech.utils.tasks.Cancellable;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -84,7 +81,7 @@ public class PrinterUtils
         if (task != null && !interrupted)
         {
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
-                && task.isCancelled() == false && !TaskController.isShuttingDown())
+                && task.isCancelled() == false && !Lookup.isShuttingDown())
             {
                 try
                 {
@@ -98,7 +95,7 @@ public class PrinterUtils
         } else
         {
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
-                && !TaskController.isShuttingDown())
+                && !Lookup.isShuttingDown())
             {
                 try
                 {
@@ -139,7 +136,7 @@ public class PrinterUtils
         }
 
         while (printJobIDIndicatesPrinting(printerToCheck.printJobIDProperty().get())
-            && !TaskController.isShuttingDown())
+            && !Lookup.isShuttingDown())
         {
             try
             {
@@ -176,8 +173,7 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
-                    isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !Lookup.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -203,8 +199,7 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
-                    isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !Lookup.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -237,8 +232,7 @@ public class PrinterUtils
         {
             StatusResponse response = printerToCheck.transmitStatusRequest();
 
-            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
-                isShuttingDown())
+            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !Lookup.isShuttingDown())
             {
                 Thread.sleep(100);
                 response = printerToCheck.transmitStatusRequest();
@@ -263,8 +257,8 @@ public class PrinterUtils
     }
 
     /**
-     * For each head chamber/heater check if a purge is necessary. Return true if one or more
-     * nozzle heaters require a purge.
+     * For each head chamber/heater check if a purge is necessary. Return true if one or more nozzle
+     * heaters require a purge.
      */
     public static boolean isPurgeNecessary(Printer printer, Project project)
     {
@@ -306,7 +300,7 @@ public class PrinterUtils
             targetNozzleTemperature = settingsFilament.getNozzleTemperature();
         } else
         {
-           throw new RuntimeException("No filament set in printer settings");
+            throw new RuntimeException("No filament set in printer settings");
         }
         // A reel is attached - check to see if the temperature is different from that stored on the head
 
