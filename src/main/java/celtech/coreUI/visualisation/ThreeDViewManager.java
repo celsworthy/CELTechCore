@@ -355,7 +355,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (modelContainer != null)
         {
             int faceNumber = pickResult.getIntersectedFace();
-            undoableProject.snapToGround(modelContainer, faceNumber);
+            undoableProject.snapToGround(modelContainer, (MeshView)pickResult.getIntersectedNode(), faceNumber);
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }

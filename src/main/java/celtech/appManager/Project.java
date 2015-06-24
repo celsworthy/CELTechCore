@@ -565,8 +565,9 @@ public class Project implements Serializable
             double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
             double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
             String modelName = modelContainer.getModelName();
+            //TODO modify to work with multiple mesh views
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
-                (TriangleMesh) modelContainer.getMeshView().getMesh());
+                (TriangleMesh) modelContainer.getMeshViews().get(0).getMesh());
             if (subMeshes.size() > 1)
             {
                 deleteModel(modelContainer);
@@ -791,9 +792,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
-        modelContainer.snapToGround(faceNumber);
+        modelContainer.snapToGround(pickedMesh, faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);

@@ -8,6 +8,7 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
 import java.util.Set;
+import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -167,11 +168,11 @@ public class UndoableProject
         });
     }  
     
-    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
         doTransformCommand(() ->
         {
-            project.snapToGround(modelContainer, faceNumber);
+            project.snapToGround(modelContainer, pickedMesh, faceNumber);
         });
     }    
 
