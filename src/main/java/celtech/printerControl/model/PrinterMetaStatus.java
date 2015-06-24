@@ -1,7 +1,6 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
 import celtech.printerControl.PrinterStatus;
 import celtech.utils.PrinterListChangesListener;
 import javafx.beans.property.BooleanProperty;
@@ -35,22 +34,8 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             PrinterStatus.IDLE);
     private Head attachedHead = null;
 
-    private final ChangeListener<Number> numberValueListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        recalculateStatus();
-    };
-
-    private final ChangeListener<HeaterMode> heaterModeListener = (ObservableValue<? extends HeaterMode> observable, HeaterMode oldValue, HeaterMode newValue) ->
-    {
-        recalculateStatus();
-    };
-
-    private final ChangeListener<PrinterStatus> printerStatusListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
-    {
-        recalculateStatus();
-    };
-
-    private final ChangeListener<Boolean> booleanTriggerListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    private final ChangeListener<Object> changeListener = 
+        (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
     {
         recalculateStatus();
     };
@@ -66,15 +51,15 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         this.printer = printer;
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
-        printer.printerStatusProperty().addListener(printerStatusListener);
+        printer.printerStatusProperty().addListener(changeListener);
 
-        printer.getPrintEngine().slicerService.runningProperty().addListener(booleanTriggerListener);
-        printer.getPrintEngine().postProcessorService.runningProperty().addListener(
-                booleanTriggerListener);
+        printer.getPrintEngine().slicerService.runningProperty().addListener(changeListener);
+        printer.getPrintEngine().postProcessorService.runningProperty().addListener(changeListener);
         printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(
-                booleanTriggerListener);
-        printer.getPrintEngine().printInProgressProperty().addListener(booleanTriggerListener);
-        printer.getPrinterAncillarySystems().bedHeaterMode.addListener(heaterModeListener);
+                changeListener);
+        printer.getPrintEngine().printInProgressProperty().addListener(changeListener);
+        printer.getPrinterAncillarySystems().bedHeaterMode.addListener(changeListener);
+        printer.getPrinterAncillarySystems().bedTemperature.addListener(changeListener);
     }
 
     private void recalculateStatus()
@@ -188,13 +173,13 @@ public class PrinterMetaStatus implements PrinterListChangesListener
     @Override
     public void whenPrinterAdded(Printer printer)
     {
-        printer.getPrinterAncillarySystems().bedTemperature.addListener(numberValueListener);
+//        printer.getPrinterAncillarySystems().bedTemperature.addListener(changeListener);
     }
 
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
-        printer.getPrinterAncillarySystems().bedTemperature.removeListener(numberValueListener);
+//        printer.getPrinterAncillarySystems().bedTemperature.removeListener(changeListener);
     }
 
     @Override
@@ -205,8 +190,8 @@ public class PrinterMetaStatus implements PrinterListChangesListener
             attachedHead = printer.headProperty().get();
             attachedHead.nozzleHeaters.forEach(heater ->
             {
-                heater.heaterMode.addListener(heaterModeListener);
-                heater.nozzleTemperature.addListener(numberValueListener);
+                heater.heaterMode.addListener(changeListener);
+                heater.nozzleTemperature.addListener(changeListener);
             });
         }
     }
@@ -218,8 +203,8 @@ public class PrinterMetaStatus implements PrinterListChangesListener
         {
             attachedHead.nozzleHeaters.forEach(heater ->
             {
-                heater.heaterMode.removeListener(heaterModeListener);
-                heater.nozzleTemperature.removeListener(numberValueListener);
+                heater.heaterMode.removeListener(changeListener);
+                heater.nozzleTemperature.removeListener(changeListener);
             });
             attachedHead = null;
         }
