@@ -88,9 +88,10 @@ public class ProjectManager implements Savable, Serializable
                 }
             }
             reader.close();
-        } catch (IOException ex)
+        } catch (Exception ex)
         {
-            steno.error("Failed to load project manager");
+            ex.printStackTrace();
+            steno.error("Failed to load project manager: " + ex);
         }
         return pm;
     }
@@ -123,13 +124,13 @@ public class ProjectManager implements Savable, Serializable
             reader.close();
 
             loadedProject.getProjectHeader().setProjectPath(projectFile.getParent());
-        } catch (IOException ex)
-        {
-            steno.error("Failed to load project " + projectFile.getAbsolutePath());
         } catch (ClassNotFoundException ex)
         {
             steno.error("Couldn't locate class while loading project " + projectFile.getAbsolutePath());
-        }
+        } catch (Exception ex)
+        {
+            steno.error("Failed to load project " + projectFile.getAbsolutePath());
+        } 
 
         return loadedProject;
     }
