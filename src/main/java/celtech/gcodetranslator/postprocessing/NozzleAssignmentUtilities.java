@@ -53,7 +53,7 @@ public class NozzleAssignmentUtilities
         this.featureSet = featureSet;
         this.project = project;
         this.postProcessingMode = postProcessingMode;
-        
+
         nozzleControlUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
 
         extruderToNozzleMap = new HashMap<>();
@@ -71,7 +71,7 @@ public class NozzleAssignmentUtilities
         objectToNozzleNumberMap = new ArrayList<>();
         for (ModelContainer model : project.getLoadedModels())
         {
-            for (int extruderNumber :model.getMeshExtruderAssociationProperty())
+            for (int extruderNumber : model.getMeshExtruderAssociationProperty())
             {
                 objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
             }
@@ -84,7 +84,7 @@ public class NozzleAssignmentUtilities
 //                            objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
 //                });
     }
-    
+
     protected
             void assignExtrusionToCorrectExtruder(LayerNode layerNode)
     {
