@@ -17,6 +17,7 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Printer;
+import java.util.List;
 import java.util.Set;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.DoubleProperty;
@@ -58,7 +59,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        ThreeDViewManager.class.getName());
+            ThreeDViewManager.class.getName());
 
     private ObservableList<ModelContainer> loadedModels = null;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
@@ -80,7 +81,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private Point3D lastDragPosition = null;
     private final int dragPlaneHalfSize = 500;
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
-                                                     * 2);
+            * 2);
     private final Box scaleDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
 
     private Group gcodeParts = null;
@@ -212,7 +213,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         @Override
         public void changed(ObservableValue<? extends DragMode> observable, DragMode oldValue,
-            DragMode newValue)
+                DragMode newValue)
         {
             switch (newValue)
             {
@@ -274,7 +275,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                 if (intersectedNode instanceof MeshView)
                 {
                     modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
-                    pickedMesh = (MeshView)intersectedNode;
+                    pickedMesh = (MeshView) intersectedNode;
                 }
 
                 switch (layoutSubmode.get())
@@ -300,11 +301,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
         Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(
-            pickedScenePoint);
+                pickedScenePoint);
 
         translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
         Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(
-            pickedScenePoint);
+                pickedScenePoint);
         lastDragPosition = pickedDragPlanePoint;
 
         Point3D bedXToS = bedTranslateXform.localToParent(pickedPoint);
@@ -400,7 +401,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             } else
             {
                 steno.error(
-                    "In translation drag mode but intersected with something other than translation drag plane");
+                        "In translation drag mode but intersected with something other than translation drag plane");
             }
         } else if (dragMode.get() == DragMode.SCALING && event.isPrimaryButtonDown())
         {
@@ -409,7 +410,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             if (intersectedNode != scaleDragPlane)
             {
                 steno.error(
-                    "In scale drag mode but intersected with something other than scale drag plane");
+                        "In scale drag mode but intersected with something other than scale drag plane");
             }
         }
     }
@@ -422,7 +423,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             handleMousePressedEvent(event);
 
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
-            != DragMode.SCALING)
+                != DragMode.SCALING)
         {
             handleMouseDragEvent(event);
 
@@ -451,7 +452,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
         if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
-            && event.getZoomFactor() < 1.2)
+                && event.getZoomFactor() < 1.2)
         {
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
@@ -464,7 +465,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         @Override
         public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode,
-            ApplicationMode newMode)
+                ApplicationMode newMode)
         {
             if (oldMode != newMode)
             {
@@ -493,7 +494,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     };
 
     public ThreeDViewManager(Project project,
-        ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
+            ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.project = project;
         this.undoableProject = new UndoableProject(project);
@@ -519,7 +520,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         // Build SubScene
         subScene = new SubScene(root3D, widthProperty.getValue(), heightProperty.getValue(), true,
-                                SceneAntialiasing.BALANCED);
+                SceneAntialiasing.BALANCED);
         this.subSceneProperty.set(subScene);
         subScene.setFill(Color.TRANSPARENT);
         subScene.setCamera(camera);
@@ -564,39 +565,39 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 
         layoutSubmode.addListener(
-            (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1) ->
-            {
-                if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1
-                == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0 || t1
-                == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
+                (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1) ->
                 {
-                    subScene.setCursor(Cursor.HAND);
-                } else
-                {
-                    subScene.setCursor(Cursor.DEFAULT);
-                }
-            });
+                    if (t1 == LayoutSubmode.SNAP_TO_GROUND || t1
+                    == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0 || t1
+                    == LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1)
+                    {
+                        subScene.setCursor(Cursor.HAND);
+                    } else
+                    {
+                        subScene.setCursor(Cursor.DEFAULT);
+                    }
+                });
 
         dragMode.addListener(dragModeListener);
 
         /**
-         * Set up filament, application mode and printer listeners so that the correct model colours
-         * are displayed.
+         * Set up filament, application mode and printer listeners so that the
+         * correct model colours are displayed.
          */
         setupFilamentListeners(project);
         setupPrintSettingsFilamentListeners(project);
         updateFilamentColoursForModeAndTargetPrinter();
         Lookup.getSelectedPrinterProperty().addListener(
-            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-            {
-                updateFilamentColoursForModeAndTargetPrinter();
-            });
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                });
 
         project.getPrinterSettings().getPrintSupportOverrideProperty().addListener(
-            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-            {
-                updateFilamentColoursForModeAndTargetPrinter();
-            });
+                (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                });
 
         /**
          * Listen for adding and removing of models from the project
@@ -615,22 +616,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private Group buildBed()
     {
         String bedOuterURL = CoreTest.class
-            .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").
-            toExternalForm();
+                .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").
+                toExternalForm();
         String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
-            + "bedInner.obj").toExternalForm();
+                + "bedInner.obj").toExternalForm();
 
-        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.rgb(65, 65, 65));
+        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.web("#0a0a0a"));
 
-        bedOuterMaterial.setSpecularColor(Color.WHITE);
-
-        bedOuterMaterial.setSpecularPower(5.0);
-
-        PhongMaterial bedInnerMaterial = new PhongMaterial(Color.GREY);
-
-        bedInnerMaterial.setSpecularColor(Color.WHITE);
-
-        bedInnerMaterial.setSpecularPower(.1);
+        PhongMaterial bedInnerMaterial = new PhongMaterial(Color.web("#696969"));
+        bedInnerMaterial.setSpecularPower(1.2f);
 
         Group bed = new Group();
 
@@ -639,17 +633,30 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshes());
+        List<MeshView> outerMeshViews = bedOuterLoadResult.getModelContainer().getMeshViews();
+        outerMeshViews
+                .forEach(meshView ->
+                        {
+                            meshView.setMaterial(bedOuterMaterial);
+                });
+
+        bed.getChildren().addAll(outerMeshViews);
 
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
         bed.getChildren().add(createBoundingBox());
 
-        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshes());
+        List<MeshView> innerMeshViews = bedInnerLoadResult.getModelContainer().getMeshViews();
+        innerMeshViews.forEach(meshView ->
+        {
+            meshView.setMaterial(bedInnerMaterial);
+        });
+
+        bed.getChildren().addAll(innerMeshViews);
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
-            ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
+                ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
         final ImageView roboxLogoView = new ImageView();
 
         roboxLogoView.setImage(roboxLogoImage);
@@ -664,15 +671,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         roboxLogoTransformNode.setScale(logoScale);
 
         roboxLogoTransformNode.setTz(logoSide_mm
-            + PrintBed.getPrintVolumeCentre().getZ() / 2);
+                + PrintBed.getPrintVolumeCentre().getZ() / 2);
         roboxLogoTransformNode.setTy(-.25);
         roboxLogoTransformNode.setTx(PrintBed.getPrintVolumeCentre().getX() / 2);
         roboxLogoTransformNode.getChildren()
-            .add(roboxLogoView);
+                .add(roboxLogoView);
         roboxLogoTransformNode.setId("LogoImage");
 
         bed.getChildren()
-            .add(roboxLogoTransformNode);
+                .add(roboxLogoTransformNode);
         bed.setMouseTransparent(true);
 
         return bed;
@@ -682,8 +689,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         PhongMaterial boundsBoxMaterial = new PhongMaterial(Color.BLUE);
         Image illuminationMap = new Image(SelectionHighlighter.class.getResource(
-            ApplicationConfiguration.imageResourcePath + "blueIlluminationMap.png").
-            toExternalForm());
+                ApplicationConfiguration.imageResourcePath + "blueIlluminationMap.png").
+                toExternalForm());
         boundsBoxMaterial.setSelfIlluminationMap(illuminationMap);
 
         Group boxGroup = new Group();
@@ -714,13 +721,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         rhb.setTranslateZ(printAreaDepth);
 
         Box lhftTOlhbt = new Box(lineWidth, lineWidth,
-                                 printBedData.getPrintVolumeBounds().getDepth());
+                printBedData.getPrintVolumeBounds().getDepth());
         lhftTOlhbt.setMaterial(boundsBoxMaterial);
         lhftTOlhbt.setTranslateY(-printAreaHeight);
         lhftTOlhbt.setTranslateZ(printAreaDepth / 2);
 
         Box rhftTOrhbt = new Box(lineWidth, lineWidth,
-                                 printBedData.getPrintVolumeBounds().getDepth());
+                printBedData.getPrintVolumeBounds().getDepth());
         rhftTOrhbt.setMaterial(boundsBoxMaterial);
         rhftTOrhbt.setTranslateX(printAreaWidth);
         rhftTOrhbt.setTranslateY(-printAreaHeight);
@@ -738,8 +745,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         lhbtTOrhbt.setTranslateZ(printAreaDepth);
 
         boxGroup.getChildren().addAll(lhf, rhf, lhb, rhb,
-                                      lhftTOlhbt, rhftTOrhbt,
-                                      lhftTOrhft, lhbtTOrhbt);
+                lhftTOlhbt, rhftTOrhbt,
+                lhftTOrhft, lhbtTOrhbt);
 
         return boxGroup;
     }
@@ -778,7 +785,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void translateSelection(double x, double z)
     {
         undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
-                                          !justEnteredDragMode);
+                !justEnteredDragMode);
     }
 
     /**
@@ -813,7 +820,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                     ModelContainer modelToCollideWith = loadedModels.get(secondaryPrintableNum);
 
                     if (modelToCollide.getBoundsInParent().intersects(
-                        modelToCollideWith.getBoundsInParent()))
+                            modelToCollideWith.getBoundsInParent()))
                     {
                         collidedModels[printableNum] = true;
                         collidedModels[secondaryPrintableNum] = true;
@@ -904,16 +911,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void setupFilamentListeners(Project project)
     {
         project.getExtruder0FilamentProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                updateFilamentColoursForModeAndTargetPrinter();
-            });
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                });
 
         project.getExtruder1FilamentProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                updateFilamentColoursForModeAndTargetPrinter();
-            });
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                });
         updateModelColours();
     }
 
@@ -923,32 +930,33 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void setupPrintSettingsFilamentListeners(Project project)
     {
         project.getPrinterSettings().getFilament0Property().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                updateFilamentColoursForModeAndTargetPrinter();
-            });
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                });
 
         project.getPrinterSettings().getFilament1Property().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                updateFilamentColoursForModeAndTargetPrinter();
-            });
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                {
+                    updateFilamentColoursForModeAndTargetPrinter();
+                });
         updateModelColours();
     }
 
     private boolean targetPrinterHasOneExtruder()
     {
         boolean extruder1IsFitted
-            = Lookup.getSelectedPrinterProperty().get().extrudersProperty().get(
-                1).isFittedProperty().get();
+                = Lookup.getSelectedPrinterProperty().get().extrudersProperty().get(
+                        1).isFittedProperty().get();
         return !extruder1IsFitted;
     }
 
     /**
-     * If either the chosen filaments, application mode or project printsettings printer changes
-     * then this must be called. In LAYOUT mode the filament colours should reflect the project
-     * filament colours In SETTINGS mode the filament colours should reflect the project print
-     * settings filament colours, taking into account the support type.
+     * If either the chosen filaments, application mode or project printsettings
+     * printer changes then this must be called. In LAYOUT mode the filament
+     * colours should reflect the project filament colours In SETTINGS mode the
+     * filament colours should reflect the project print settings filament
+     * colours, taking into account the support type.
      */
     private void updateFilamentColoursForModeAndTargetPrinter()
     {
@@ -959,16 +967,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             System.out.println("xxx print support is " + printerSettings.getPrintSupportOverride());
             if (printerSettings.getPrintSupportOverride()
-                == SlicerParametersFile.SupportType.NO_SUPPORT
-                || printerSettings.getPrintSupportOverride()
-                == SlicerParametersFile.SupportType.OBJECT_MATERIAL)
+                    == SlicerParametersFile.SupportType.NO_SUPPORT
+                    || printerSettings.getPrintSupportOverride()
+                    == SlicerParametersFile.SupportType.OBJECT_MATERIAL)
             {
                 extruder0Filament = project.getPrinterSettings().getFilament0();
                 extruder1Filament = project.getPrinterSettings().getFilament1();
             } else
             {
                 if (printerSettings.getPrintSupportOverride()
-                    == SlicerParametersFile.SupportType.MATERIAL_1)
+                        == SlicerParametersFile.SupportType.MATERIAL_1)
                 {
                     extruder0Filament = project.getPrinterSettings().getFilament1();
                     extruder1Filament = project.getPrinterSettings().getFilament1();

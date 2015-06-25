@@ -20,7 +20,6 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import libertysystems.stenographer.Stenographer;
@@ -136,7 +135,7 @@ public class StaticModelOverlay
         String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
             + "bedInner.obj").toExternalForm();
 
-        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.rgb(65, 65, 65));
+        PhongMaterial bedOuterMaterial = new PhongMaterial(Color.web("#0a0a0a"));
 
         bedOuterMaterial.setSpecularColor(Color.WHITE);
 
@@ -154,12 +153,12 @@ public class StaticModelOverlay
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshes());
+        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshViews());
 
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
-        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshes());
+        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshViews());
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
             ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());

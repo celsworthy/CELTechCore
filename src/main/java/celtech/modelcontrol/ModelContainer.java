@@ -956,21 +956,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      *
      * @return
      */
-    public ObservableList<Node> getMeshes()
-    {
-        if (modelContentsType == ModelContentsEnumeration.MESH)
-        {
-            return meshGroup.getChildren();
-        } else
-        {
-            return null;
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
     public ModelContentsEnumeration getModelContentsType()
     {
         return modelContentsType;
