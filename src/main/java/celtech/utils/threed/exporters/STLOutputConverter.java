@@ -53,35 +53,43 @@ public class STLOutputConverter implements MeshFileOutputConverter
 
         if (outputAsSingleFile)
         {
-            List<ModelContainer> modelContainersToOutput = project.getLoadedModels();
+            List<MeshView> meshViewsToOutput = new ArrayList<>();
+
+            project.getLoadedModels().stream()
+                    .map(ModelContainer::getMeshViews)
+                    .forEach(meshViewList -> meshViewList
+                            .forEach(meshView -> meshViewsToOutput.add(meshView)));
 
             String tempModelFilenameWithPath = printJobDirectory + printJobUUID
                     + ApplicationConfiguration.stlTempFileExtension;
 
             createdFiles.add(tempModelFilenameWithPath);
 
-            outputModelContainersInSingleFile(tempModelFilenameWithPath, modelContainersToOutput);
+            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
         } else
         {
-            for (int i = 0; i < project.getLoadedModels().size(); i++)
+            int modelFileCount = 0;
+            for (ModelContainer modelContainer : project.getLoadedModels())
             {
-                List<ModelContainer> modelContainersToOutput = new ArrayList<>();
-                modelContainersToOutput.add(project.getLoadedModels().get(i));
+                for (MeshView meshView : modelContainer.getMeshViews())
+                {
+                    String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+                            + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
 
-                String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-                        + "-" + i + ApplicationConfiguration.stlTempFileExtension;
-
-                createdFiles.add(tempModelFilenameWithPath);
-
-                outputModelContainersInSingleFile(tempModelFilenameWithPath, modelContainersToOutput);
+                    List<MeshView> meshViewsToOutput = new ArrayList<>();
+                    meshViewsToOutput.add(meshView);
+                    outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
+                    createdFiles.add(tempModelFilenameWithPath);
+                    modelFileCount++;
+                }
             }
         }
 
         return createdFiles;
     }
 
-    private void outputModelContainersInSingleFile(final String tempModelFilenameWithPath,
-            List<ModelContainer> modelContainersToOutput)
+    private void outputMeshViewsInSingleFile(final String tempModelFilenameWithPath,
+            List<MeshView> meshViewsToOutput)
     {
         File fFile = new File(tempModelFilenameWithPath);
 
@@ -96,15 +104,12 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 int totalNumberOfFacets = 0;
                 ByteBuffer headerByteBuffer = null;
 
-                for (ModelContainer modelContainer : modelContainersToOutput)
+                for (MeshView meshView : meshViewsToOutput)
                 {
-                    for (MeshView meshView : modelContainer.getMeshViews())
-                    {
-                        TriangleMesh triangles = (TriangleMesh) meshView.getMesh();
-                        ObservableFaceArray faceArray = triangles.getFaces();
-                        int numberOfFacets = faceArray.size() / 6;
-                        totalNumberOfFacets += numberOfFacets;
-                    }
+                    TriangleMesh triangles = (TriangleMesh) meshView.getMesh();
+                    ObservableFaceArray faceArray = triangles.getFaces();
+                    int numberOfFacets = faceArray.size() / 6;
+                    totalNumberOfFacets += numberOfFacets;
                 }
 
                 //File consists of:
@@ -136,42 +141,40 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 //  3 floats for facet normals
                 //  3 x 3 floats for vertices (x,y,z * 3)
                 //  2 byte spacer
-                for (ModelContainer modelContainer : modelContainersToOutput)
+                for (MeshView meshView : meshViewsToOutput)
                 {
-                    for (MeshView meshView : modelContainer.getMeshViews())
+                    TriangleMesh triangles = (TriangleMesh) meshView.getMesh();
+                    ObservableFaceArray faceArray = triangles.getFaces();
+                    ObservableFloatArray pointArray = triangles.getPoints();
+                    int numberOfFacets = faceArray.size() / 6;
+
+                    for (int facetNumber = 0; facetNumber < numberOfFacets; facetNumber++)
                     {
-                        TriangleMesh triangles = (TriangleMesh) meshView.getMesh();
-                        ObservableFaceArray faceArray = triangles.getFaces();
-                        ObservableFloatArray pointArray = triangles.getPoints();
-                        int numberOfFacets = faceArray.size() / 6;
+                        dataBuffer.rewind();
+                        // Output zero normals
+                        dataBuffer.putFloat(0);
+                        dataBuffer.putFloat(0);
+                        dataBuffer.putFloat(0);
 
-                        for (int facetNumber = 0; facetNumber < numberOfFacets; facetNumber++)
+                        for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
                         {
-                            dataBuffer.rewind();
-                            // Output zero normals
-                            dataBuffer.putFloat(0);
-                            dataBuffer.putFloat(0);
-                            dataBuffer.putFloat(0);
+                            int vertexIndex = faceArray.get((facetNumber * 6) + (vertexNumber * 2));
 
-                            for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
-                            {
-                                int vertexIndex = faceArray.get((facetNumber * 6) + (vertexNumber * 2));
+                            //TODO make this more robust - it assumes a relationship between the MeshView and the ModelContainer
+                            Point3D vertex = ((ModelContainer) meshView.getParent().getParent())
+                                    .transformMeshToRealWorldCoordinates(
+                                            pointArray.get(vertexIndex * 3),
+                                            pointArray.get((vertexIndex * 3) + 1),
+                                            pointArray.get((vertexIndex * 3) + 2));
 
-                                Point3D vertex = modelContainer.
-                                        transformMeshToRealWorldCoordinates(
-                                                pointArray.get(vertexIndex * 3),
-                                                pointArray.get((vertexIndex * 3) + 1),
-                                                pointArray.get((vertexIndex * 3) + 2));
+                            dataBuffer.putFloat((float) vertex.getX());
+                            dataBuffer.putFloat((float) vertex.getZ());
+                            dataBuffer.putFloat(-(float) vertex.getY());
 
-                                dataBuffer.putFloat((float) vertex.getX());
-                                dataBuffer.putFloat((float) vertex.getZ());
-                                dataBuffer.putFloat(-(float) vertex.getY());
-
-                            }
-                            dataBuffer.putShort(blankSpace);
-
-                            dataOutput.write(dataBuffer.array());
                         }
+                        dataBuffer.putShort(blankSpace);
+
+                        dataOutput.write(dataBuffer.array());
                     }
                 }
             } catch (IOException ex)
