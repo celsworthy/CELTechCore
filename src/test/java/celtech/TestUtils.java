@@ -16,7 +16,7 @@ public class TestUtils
     {
         MeshView meshView = new MeshView(new Shape3DRectangle(2, 3));
         ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
-        modelContainer.setUseExtruder0Filament(useExtruder0);
+        modelContainer.setUseExtruder0(null, useExtruder0);
         return modelContainer;
     }
     

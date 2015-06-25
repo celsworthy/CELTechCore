@@ -29,10 +29,12 @@ import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -129,9 +131,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Print the part using the extruder of the given number.
      */
-    private IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
+    private ObservableList<Integer> meshExtruderAssociation;
 
-    private PhongMaterial material;
     private File modelFile;
 
     /**
@@ -152,14 +153,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         initialise(modelFile);
         initialiseTransforms();
+
+        //There's only one mesh
+        //By default associate it with the first extruder
+        meshExtruderAssociation.add(0);
     }
 
     /**
+     * A multiple mesh model Derive a per-mesh extruder number
      *
+     * @param modelFile
      * @param name
      * @param meshes
      */
-    public ModelContainer(File modelFile, List<MeshView> meshes)
+    public ModelContainer(File modelFile, List<MeshView> meshes, List<Integer> extruderAssociation)
     {
         super();
         this.getChildren().add(meshGroup);
@@ -168,6 +175,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         numberOfMeshes = meshes.size();
         initialise(modelFile);
         initialiseTransforms();
+
+        meshExtruderAssociation = FXCollections.observableArrayList(extruderAssociation);
     }
 
     public File getModelFile()
@@ -188,15 +197,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         meshGroup.getChildren().clear();
     }
 
-    public void setUseExtruder0Filament(boolean useExtruder0)
+    public void setUseExtruder0(MeshView pickedMesh, boolean useExtruder0)
     {
-
-        if (useExtruder0)
+        // Set the extruder for the picked mesh
+        if (pickedMesh == null)
         {
-            associateWithExtruderNumber.set(0);
+            //Set one set all if no mesh specified
+            for (int i = 0; i < meshExtruderAssociation.size(); i++)
+            {
+                meshExtruderAssociation.set(i, useExtruder0 ? 0 : 1);
+            }
         } else
         {
-            associateWithExtruderNumber.set(1);
+            int meshIndex = meshGroup.getChildrenUnmodifiable().indexOf(pickedMesh);
+            meshExtruderAssociation.set(meshIndex, useExtruder0 ? 0 : 1);
         }
     }
 
@@ -274,8 +288,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         this.modelFile = modelFile;
         modelId = nextModelId;
         nextModelId += 1;
-        material = ApplicationMaterials.getDefaultModelMaterial();
-        associateWithExtruderNumber.set(0);
+        meshExtruderAssociation = FXCollections.observableArrayList();
         shapeChangeListeners = new ArrayList<>();
         screenExtentsChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
@@ -335,14 +348,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             clonedMeshViews.add(newMeshView);
         }
 
-        ModelContainer copy = new ModelContainer(this.modelFile, clonedMeshViews);
+        ObservableList<Integer> clonedMeshToExtruder = FXCollections.observableArrayList(meshExtruderAssociation);
+
+        ModelContainer copy = new ModelContainer(this.modelFile, clonedMeshViews, clonedMeshToExtruder);
         copy.setXScale(this.getXScale());
         copy.setYScale(this.getYScale());
         copy.setZScale(this.getZScale());
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());
-        copy.setAssociateWithExtruderNumber(associateWithExtruderNumber.get());
         return copy;
     }
 
@@ -512,7 +526,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 meshView.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
             } else
             {
-                meshView.setMaterial(material);
+                //TODO sort me out!
+//                meshView.setMaterial(material);
             }
         }
     }
@@ -829,7 +844,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getRotationTwist());
         // not used (was snapFaceIndex)
         out.writeInt(0);
-        out.writeInt(associateWithExtruderNumber.get());
+        for (int extCount = 0; extCount < meshExtruderAssociation.size(); extCount++)
+        {
+            out.writeInt(meshExtruderAssociation.get(extCount));
+        }
         out.writeDouble(getYScale());
         out.writeDouble(getZScale());
         out.writeDouble(getRotationLean());
@@ -839,7 +857,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException
     {
-        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+        meshExtruderAssociation = FXCollections.emptyObservableList();
 
         String modelName = in.readUTF();
         meshGroup = new Group();
@@ -889,7 +907,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (in.available() > 0)
         {
             // Introduced in version 1.??
-            associateWithExtruderNumber.set(in.readInt());
+            for (int i = 0; i < numberOfMeshes; i++)
+            {
+                meshExtruderAssociation.add(in.readInt());
+            }
             storedScaleY = in.readDouble();
             storedScaleZ = in.readDouble();
             storedRotationLean = in.readDouble();
@@ -1184,7 +1205,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 maxZ = Math.max(pointInParent.getZ(), maxZ);
             }
         }
-        
+
         double newwidth = maxX - minX;
         double newdepth = maxZ - minZ;
         double newheight = maxY - minY;
@@ -1199,8 +1220,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * THIS METHOD IS NOT CURRENTLY IN USE
-     * PROBABLY SHOULD BE BINNED IN FAVOUR OF AN APPROACH SIMILAR TO THE SPLIT FUNCTION
+     * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR
+     * OF AN APPROACH SIMILAR TO THE SPLIT FUNCTION
+     *
      * @return
      */
     public ArrayList<ModelContainer> cutToSize()
@@ -1564,48 +1586,47 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
     }
 
-    public ReadOnlyIntegerProperty getAssociateWithExtruderNumberProperty()
+    public ObservableList<Integer> getMeshExtruderAssociationProperty()
     {
-        return associateWithExtruderNumber;
-    }
-
-    void setAssociateWithExtruderNumber(int associateWithExtruderNumber)
-    {
-        this.associateWithExtruderNumber.set(associateWithExtruderNumber);
+        return meshExtruderAssociation;
     }
 
     /**
      * If this model is associated with the given extruder number then recolour
      * it to the given colour.
+     *
+     * @param displayColourExtruder0
+     * @param displayColourExtruder1
      */
-    public void setColour(Color displayColourExtruder0, Color displayColourExtruder1)
+    public void setColour(final Color displayColourExtruder0, final Color displayColourExtruder1)
     {
-
-        PhongMaterial meshMaterial = null;
-        if (associateWithExtruderNumber.get() == 0)
+        for (int meshNumber = 0; meshNumber < getMeshViews().size(); meshNumber++)
         {
-            if (displayColourExtruder0 == null)
+            MeshView mesh = getMeshViews().get(meshNumber);
+            switch (meshExtruderAssociation.get(meshNumber))
             {
-                meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
-            } else
-            {
-                meshMaterial = getMaterialForColour(displayColourExtruder0);
+                case 0:
+                    if (displayColourExtruder0 == null)
+                    {
+                        mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                    } else
+                    {
+                        mesh.setMaterial(getMaterialForColour(displayColourExtruder0));
+                    }
+                    break;
+                case 1:
+                    if (displayColourExtruder1 == null)
+                    {
+                        mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                    } else
+                    {
+                        mesh.setMaterial(getMaterialForColour(displayColourExtruder1));
+                    }
+                    break;
+                default:
+                    mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                    break;
             }
-        } else
-        {
-            if (displayColourExtruder1 == null)
-            {
-                meshMaterial = ApplicationMaterials.getDefaultModelMaterial();
-            } else
-            {
-                meshMaterial = getMaterialForColour(displayColourExtruder1);
-            }
-        }
-        material = meshMaterial;
-        for (Node mesh : meshGroup.getChildren())
-        {
-            MeshView meshView = (MeshView) mesh;
-            meshView.setMaterial(meshMaterial);
         }
     }
 
@@ -1714,6 +1735,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ObservableList<Node> getMeshGroupChildren()
     {
         return meshGroup.getChildren();
+
     }
 
     /**

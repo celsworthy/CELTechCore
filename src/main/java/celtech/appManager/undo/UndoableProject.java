@@ -13,7 +13,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * UndoableProject wraps Project and puts each change into a Command that can be undone.
+ * UndoableProject wraps Project and puts each change into a Command that can be
+ * undone.
  *
  * @author tony
  */
@@ -21,13 +22,14 @@ public class UndoableProject
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        Stenographer.class.getName());
+            Stenographer.class.getName());
 
     Project project;
     private final CommandStack commandStack;
 
     /**
-     * A point interface (ie only one method) that takes no arguments and returns void.
+     * A point interface (ie only one method) that takes no arguments and
+     * returns void.
      */
     public interface NoArgsVoidFunc
     {
@@ -69,7 +71,7 @@ public class UndoableProject
     }
 
     public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
-        boolean preserveAspectRatio)
+            boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
         {
@@ -78,7 +80,7 @@ public class UndoableProject
     }
 
     public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
-        boolean preserveAspectRatio)
+            boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
         {
@@ -87,7 +89,7 @@ public class UndoableProject
     }
 
     public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
-        boolean preserveAspectRatio)
+            boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
         {
@@ -152,29 +154,29 @@ public class UndoableProject
     }
 
     public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z,
-        boolean canMerge)
+            boolean canMerge)
     {
         doTransformCommand(() ->
         {
             project.translateModelsBy(modelContainers, x, z);
         }, canMerge);
     }
-    
+
     public void autoLayout()
     {
         doTransformCommand(() ->
         {
             project.autoLayout();
         });
-    }  
-    
+    }
+
     public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
         doTransformCommand(() ->
         {
             project.snapToGround(modelContainer, pickedMesh, faceNumber);
         });
-    }    
+    }
 
     public void addModel(ModelContainer modelContainer)
     {
@@ -187,20 +189,20 @@ public class UndoableProject
         DeleteModelsCommand deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
         commandStack.do_(deleteModelCommand);
     }
-    
+
     public void copyModels(Set<ModelContainer> modelContainers)
     {
         CopyModelsCommand copyModelsCommand = new CopyModelsCommand(project, modelContainers);
         commandStack.do_(copyModelsCommand);
-    }    
+    }
 
     public void setExtruder0Filament(Filament filament)
     {
         if (filament != project.getExtruder0FilamentProperty().get())
         {
             SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
-                                                                                           filament,
-                                                                                           0);
+                    filament,
+                    0);
             commandStack.do_(setExtruderCommand);
         }
     }
@@ -210,25 +212,26 @@ public class UndoableProject
         if (filament != project.getExtruder1FilamentProperty().get())
         {
             SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
-                                                                                           filament,
-                                                                                           1);
+                    filament,
+                    1);
             commandStack.do_(setExtruderCommand);
         }
-        
+
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
     {
         SetUserExtruder0Command setUserExtruder0Command = new SetUserExtruder0Command(project,
-                                                                                      modelContainer,
-                                                                                      useExtruder0);
+                modelContainer,
+                pickedMesh,
+                useExtruder0);
         commandStack.do_(setUserExtruder0Command);
     }
-    
+
     public void splitIntoParts(Set<ModelContainer> modelContainers)
     {
         SplitIntoPartsCommand splitIntoPartsCommand = new SplitIntoPartsCommand(project, modelContainers);
         commandStack.do_(splitIntoPartsCommand);
-    }    
+    }
 
 }

@@ -270,21 +270,23 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             if (handleThisEvent)
             {
                 ModelContainer modelContainer = null;
+                MeshView pickedMesh = null;
                 if (intersectedNode instanceof MeshView)
                 {
                     modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
+                    pickedMesh = (MeshView)intersectedNode;
                 }
 
                 switch (layoutSubmode.get())
                 {
                     case SNAP_TO_GROUND:
-                        doSnapToGround(modelContainer, pickResult);
+                        doSnapToGround(modelContainer, pickedMesh, pickResult);
                         break;
                     case ASSOCIATE_WITH_EXTRUDER0:
-                        doAssociateWithExtruder0(modelContainer, true);
+                        doAssociateWithExtruder0(modelContainer, pickedMesh, true);
                         break;
                     case ASSOCIATE_WITH_EXTRUDER1:
-                        doAssociateWithExtruder0(modelContainer, false);
+                        doAssociateWithExtruder0(modelContainer, pickedMesh, false);
                         break;
                     case SELECT:
                         doSelectTranslateModel(intersectedNode, pickedPoint, event);
@@ -341,21 +343,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    private void doAssociateWithExtruder0(ModelContainer modelContainer, boolean useExtruder0)
+    private void doAssociateWithExtruder0(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
     {
         if (modelContainer != null)
         {
-            undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
+            undoableProject.setUseExtruder0Filament(modelContainer, pickedMesh, useExtruder0);
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
-    private void doSnapToGround(ModelContainer modelContainer, PickResult pickResult)
+    private void doSnapToGround(ModelContainer modelContainer, MeshView pickedMesh, PickResult pickResult)
     {
         if (modelContainer != null)
         {
             int faceNumber = pickResult.getIntersectedFace();
-            undoableProject.snapToGround(modelContainer, (MeshView)pickResult.getIntersectedNode(), faceNumber);
+            undoableProject.snapToGround(modelContainer, pickedMesh, faceNumber);
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }

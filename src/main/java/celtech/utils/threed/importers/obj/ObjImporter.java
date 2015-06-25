@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,8 +97,8 @@ public class ObjImporter
     }
 
     private final Map<String, TriangleMesh> meshes = new HashMap<>();
-    private final Map<String, Material> materialsForObjects = new HashMap<>();
-    private final Map<String, Material> materialList = new HashMap<>();
+    private final Map<String, Integer> materialsForObjects = new HashMap<>();
+    private final Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
     private String objFileUrl;
 
     /**
@@ -124,12 +125,18 @@ public class ObjImporter
             read(fileURL.openStream(), filePath);
 
             ArrayList<MeshView> meshes = new ArrayList<>();
+            ArrayList<Integer> extruderAssociations = new ArrayList<>();
+
+            //We will take the 
             for (String key : getMeshes())
             {
                 meshes.add(buildMeshView(key));
+
+                int materialNumber = materialsForObjects.get(key);
+                extruderAssociations.add(materialNumber);
             }
 
-            ModelContainer modelContainer = new ModelContainer(modelFile, meshes);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshes, extruderAssociations);
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);
@@ -174,12 +181,7 @@ public class ObjImporter
     {
         MeshView meshView = new MeshView();
         meshView.setId(key);
-        Material material = materialsForObjects.get(key);
-        if (material == null)
-        {
-            material = ApplicationMaterials.getDefaultModelMaterial();
-        }
-        meshView.setMaterial(material);
+        meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
         meshView.setMesh(meshes.get(key));
         meshView.setCullFace(CullFace.BACK);
         return meshView;
@@ -205,7 +207,7 @@ public class ObjImporter
 
     private FloatArrayList verticesFromFile = new FloatArrayList();
     private IntegerArrayList facesFromFile = new IntegerArrayList();
-    private Material material = new PhongMaterial(Color.WHITE);
+    private int materialNumber = -1;
     private int facesStart = 0;
 
     private void read(InputStream inputStream, final String filePath) throws IOException
@@ -303,23 +305,21 @@ public class ObjImporter
                     // setting materials lib - just take the first one for the moment
                     String materialFilename = line.substring("mtllib ".length()).trim();
                     MtlReader mtlReader = new MtlReader(materialFilename, filePath);
-                    mtlReader.getMaterials().forEach((name, material) ->
+
+                    Map<String, Material> mtlMap = mtlReader.getMaterials();
+
+                    int materialCount = 0;
+                    for (Entry<String, Material> entry : mtlMap.entrySet())
                     {
-                        materialList.put(name, material);
-                    });
+                        materialNameAgainstIndex.put(entry.getKey(), materialCount);
+                        materialCount++;
+                    }
                 } else if (line.startsWith("usemtl "))
                 {
                     // setting new material for next mesh
                     String materialName = line.substring("usemtl ".length());
 
-                    Material m = materialList.get(materialName);
-                    if (m != null)
-                    {
-                        material = m;
-                    } else
-                    {
-                        material = null;
-                    }
+                    materialNumber = materialNameAgainstIndex.get(materialName);
                 } else if (line.isEmpty() || line.startsWith("#"))
                 {
                     // comments and empty lines are ignored
@@ -368,7 +368,6 @@ public class ObjImporter
         {
             addMesh(key);
         }
-
     }
 
     private void addMesh(final String key)
@@ -409,16 +408,13 @@ public class ObjImporter
         mesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
         meshes.put(key, mesh);
-        materialsForObjects.put(key, material);
+        materialsForObjects.put(key, materialNumber);
 
 //        steno.info(
 //                "Added mesh '" + key + "' of " + mesh.getPoints().size() / TriangleMesh.NUM_COMPONENTS_PER_POINT + " vertexes, "
 //                + mesh.getTexCoords().size() / TriangleMesh.NUM_COMPONENTS_PER_TEXCOORD + " uvs, "
-//                + mesh.getFaces().size() / TriangleMesh.NUM_COMPONENTS_PER_FACE + " faces, "
+//                + mesh.getFaces().size() / TriangleMesh.NUM_COMPONENTS_PER_FACE +" faces, "
 //                + mesh.getFaceSmoothingGroups().size() + " smoothing groups.");
-        steno.debug("material diffuse color = " + ((PhongMaterial) material).getDiffuseColor());
-        steno.debug("material diffuse map = " + ((PhongMaterial) material).getDiffuseMap());
-
         steno.debug(
                 "Loaded object mesh " + (newVertices.size() / 3.) + " vertices, "
                 + (newFaces.size() / 6.) + " faces, "
