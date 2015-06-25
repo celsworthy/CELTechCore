@@ -487,7 +487,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                         stopSettingsAnimation();
                         break;
                 }
-                updateFilamentColoursForModeAndTargetPrinter();
+                updateModelColoursForPositionModeAndTargetPrinter();
             }
         }
 
@@ -586,18 +586,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
          */
         setupFilamentListeners(project);
         setupPrintSettingsFilamentListeners(project);
-        updateFilamentColoursForModeAndTargetPrinter();
+        updateModelColoursForPositionModeAndTargetPrinter();
         Lookup.getSelectedPrinterProperty().addListener(
-                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                });
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+            {
+                updateModelColoursForPositionModeAndTargetPrinter();
+            });
 
         project.getPrinterSettings().getPrintSupportOverrideProperty().addListener(
-                (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                });
+            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+            {
+                updateModelColoursForPositionModeAndTargetPrinter();
+            });
 
         /**
          * Listen for adding and removing of models from the project
@@ -894,7 +894,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             colour1 = extruder1Filament.getDisplayColour();
         }
 
-        model.setColour(colour0, colour1);
+        boolean showMisplacedColour = applicationStatus.getMode() == ApplicationMode.LAYOUT;
+        model.updateColour(colour0, colour1, showMisplacedColour);
     }
 
     private void deselectAllModels()
@@ -911,16 +912,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void setupFilamentListeners(Project project)
     {
         project.getExtruder0FilamentProperty().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                });
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                updateModelColoursForPositionModeAndTargetPrinter();
+            });
 
         project.getExtruder1FilamentProperty().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                });
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                updateModelColoursForPositionModeAndTargetPrinter();
+            });
         updateModelColours();
     }
 
@@ -930,16 +931,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void setupPrintSettingsFilamentListeners(Project project)
     {
         project.getPrinterSettings().getFilament0Property().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                });
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                updateModelColoursForPositionModeAndTargetPrinter();
+            });
 
         project.getPrinterSettings().getFilament1Property().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateFilamentColoursForModeAndTargetPrinter();
-                });
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                updateModelColoursForPositionModeAndTargetPrinter();
+            });
         updateModelColours();
     }
 
@@ -952,20 +953,19 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     /**
-     * If either the chosen filaments, application mode or project printsettings
-     * printer changes then this must be called. In LAYOUT mode the filament
-     * colours should reflect the project filament colours In SETTINGS mode the
-     * filament colours should reflect the project print settings filament
-     * colours, taking into account the support type.
+     * If either the chosen filaments, x/y/z position , application mode or printer changes
+     * then this must be called. In LAYOUT mode the filament colours should reflect the project
+     * filament colours except if the position is off the bed then that overrides the project colours.
+     * In SETTINGS mode the filament colours should reflect the project print
+     * settings filament colours, taking into account the support type.
      */
-    private void updateFilamentColoursForModeAndTargetPrinter()
+    private void updateModelColoursForPositionModeAndTargetPrinter()
     {
         PrinterSettings printerSettings = project.getPrinterSettings();
         Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
 
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
-            System.out.println("xxx print support is " + printerSettings.getPrintSupportOverride());
             if (printerSettings.getPrintSupportOverride()
                     == SlicerParametersFile.SupportType.NO_SUPPORT
                     || printerSettings.getPrintSupportOverride()
@@ -1017,12 +1017,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     public void whenAutoLaidOut()
     {
         collideModels();
+        updateModelColoursForPositionModeAndTargetPrinter();
     }
 
     @Override
     public void whenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         collideModels();
+        updateModelColoursForPositionModeAndTargetPrinter();
     }
 
     @Override

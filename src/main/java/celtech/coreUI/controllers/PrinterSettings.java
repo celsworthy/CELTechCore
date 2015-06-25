@@ -122,7 +122,6 @@ public class PrinterSettings
     {
         if (!this.customSettingsName.get().equals(settingsName))
         {
-            steno.debug("change custom printer settings to " + settingsName);
             this.customSettingsName.set(settingsName);
             toggleDataChanged();
         }
