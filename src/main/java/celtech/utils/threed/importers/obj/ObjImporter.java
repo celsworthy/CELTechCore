@@ -41,6 +41,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,7 +68,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class ObjImporter
 {
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(ObjImporter.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        ObjImporter.class.getName());
 
     private ModelLoaderTask parentTask = null;
 
@@ -142,7 +144,6 @@ public class ObjImporter
 //    {
 //        read(inputStream);
 //    }
-
     /**
      *
      * @param parentTask
@@ -150,8 +151,8 @@ public class ObjImporter
      * @param targetProjectTab
      * @return
      */
-        public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad, 
-            Project targetProject)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
+        Project targetProject)
     {
         this.parentTask = parentTask;
         this.objFileUrl = modelFileToLoad;
@@ -161,9 +162,11 @@ public class ObjImporter
         try
         {
             File modelFile = new File(objFileUrl);
-            URL fileURL = new URL(objFileUrl);
 
-            read(fileURL.openStream());
+            try (FileInputStream fileInputStream = new FileInputStream(modelFile))
+            {
+                read(fileInputStream);
+            }
 
             ArrayList<MeshView> meshes = new ArrayList<>();
             for (String key : getMeshes())
@@ -172,9 +175,11 @@ public class ObjImporter
             }
 
             ModelContainer modelContainer = new ModelContainer(modelFile, meshes);
-            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
+            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(
+                modelContainer.getOriginalModelBounds());
 
-            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);
+            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
+                                                  modelFile.getName(), targetProject, modelContainer);
         } catch (IOException ex)
         {
             steno.error("Exception whilst reading obj file " + modelFileToLoad + ":" + ex);
@@ -453,16 +458,17 @@ public class ObjImporter
                 }
             } catch (Exception ex)
             {
-                Logger.getLogger(MtlReader.class.getName()).log(Level.SEVERE, "Failed to parse line:" + line, ex);
+                Logger.getLogger(MtlReader.class.getName()).log(Level.SEVERE,
+                                                                "Failed to parse line:" + line, ex);
             }
         }
         addMesh(key);
 
         steno.debug(
-                "Totally loaded " + (vertexes.size() / 3.) + " vertexes, "
-                + (uvs.size() / 2.) + " uvs, "
-                + (faces.size() / 6.) + " faces, "
-                + smoothingGroups.size() + " smoothing groups.");
+            "Totally loaded " + (vertexes.size() / 3.) + " vertexes, "
+            + (uvs.size() / 2.) + " uvs, "
+            + (faces.size() / 6.) + " faces, "
+            + smoothingGroups.size() + " smoothing groups.");
     }
 
     private void addMesh(String key)
@@ -512,13 +518,14 @@ public class ObjImporter
                 }
             }
             faces.set(i + 1, nuvi);
-         
+
         }
 
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().setAll(newVertexes.toFloatArray());
         mesh.getTexCoords().setAll(newUVs.toFloatArray());
-        mesh.getFaces().setAll(((IntegerArrayList) faces.subList(facesStart, faces.size())).toIntArray());
+        mesh.getFaces().setAll(
+            ((IntegerArrayList) faces.subList(facesStart, faces.size())).toIntArray());
 
 //        int vertexCount = 0;
 //        float[] pointArray = mesh.getPoints().toArray(null);
