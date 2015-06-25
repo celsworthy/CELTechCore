@@ -59,11 +59,10 @@ public class MtlReader {
     /**
      *
      * @param filename
-     * @param parentUrl
+     * @param filePath
      */
-    public MtlReader(String filename, String parentUrl) {
-        baseUrl = parentUrl.substring(0,parentUrl.lastIndexOf('/')+1);
-        String fileUrl = baseUrl + filename;
+    public MtlReader(final String filename, final String filePath) {
+        String fileUrl = filePath + File.separator + filename;
         try {
             URL mtlUrl = new URL(fileUrl);
 //            log("Reading material from filename = " + mtlUrl);

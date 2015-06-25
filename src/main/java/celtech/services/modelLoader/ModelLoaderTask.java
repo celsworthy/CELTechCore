@@ -3,7 +3,6 @@ package celtech.services.modelLoader;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
-import celtech.utils.threed.importers.gcode.GCodeImporterLines;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
@@ -77,11 +76,6 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             {
                 STLImporter reader = new STLImporter();
                 modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProject,
-                                                  percentProgress);
-            } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
-            {
-                GCodeImporterLines reader = new GCodeImporterLines();
-                modelLoadResult = reader.loadFile(this, modelFilePath, targetProject,
                                                   percentProgress);
             }
             modelLoadResultList.add(modelLoadResult);

@@ -5,6 +5,7 @@ package celtech.appManager.undo;
 
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
+import javafx.scene.shape.MeshView;
 
 /**
  *
@@ -12,19 +13,23 @@ import celtech.modelcontrol.ModelContainer;
  */
 public class SetUserExtruder0Command extends Command
 {
-    
+
     Project project;
     ModelContainer modelContainer;
+    MeshView pickedMesh;
     boolean useExtruder0;
 
-    public SetUserExtruder0Command(Project project, ModelContainer modelContainer,
-        boolean useExtruder0)
+    public SetUserExtruder0Command(Project project,
+            ModelContainer modelContainer,
+            MeshView pickedMesh,
+            boolean useExtruder0)
     {
         this.project = project;
         this.modelContainer = modelContainer;
+        this.pickedMesh = pickedMesh;
         this.useExtruder0 = useExtruder0;
     }
-    
+
     @Override
     public void do_()
     {
@@ -34,13 +39,13 @@ public class SetUserExtruder0Command extends Command
     @Override
     public void undo()
     {
-        project.setUseExtruder0Filament(modelContainer, ! useExtruder0);
+        project.setUseExtruder0Filament(modelContainer, pickedMesh, !useExtruder0);
     }
 
     @Override
     public void redo()
     {
-        project.setUseExtruder0Filament(modelContainer, useExtruder0);
+        project.setUseExtruder0Filament(modelContainer, pickedMesh, useExtruder0);
     }
 
     @Override
@@ -54,5 +59,5 @@ public class SetUserExtruder0Command extends Command
     {
         throw new UnsupportedOperationException("Should never be called");
     }
-    
+
 }

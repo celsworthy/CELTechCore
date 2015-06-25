@@ -39,6 +39,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -338,10 +339,12 @@ public class Project implements Serializable
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
-            int extruderNumber = loadedModel.getAssociateWithExtruderNumberProperty().get();
-            if (!usedExtruders.contains(extruderNumber))
+            for(int extruderNumber : loadedModel.getMeshExtruderAssociationProperty())
+            {
+                            if (!usedExtruders.contains(extruderNumber))
             {
                 usedExtruders.add(extruderNumber);
+            }
             }
         }
         return usedExtruders;
@@ -527,22 +530,22 @@ public class Project implements Serializable
         return lastModifiedDate;
     }
 
-    private ChangeListener<Number> modelExtruderNumberListener;
+    private ListChangeListener<Number> modelExtruderNumberListener;
 
     private void addModelListeners(ModelContainer modelContainer)
     {
-        modelExtruderNumberListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        modelExtruderNumberListener = (ListChangeListener.Change<? extends Number> change) ->
         {
             fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
             modelColourChanged.set(!modelColourChanged.get());
         };
-        modelContainer.getAssociateWithExtruderNumberProperty().addListener(
+        modelContainer.getMeshExtruderAssociationProperty().addListener(
             modelExtruderNumberListener);
     }
 
     private void removeModelListeners(ModelContainer modelContainer)
     {
-        modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
+        modelContainer.getMeshExtruderAssociationProperty().removeListener(
             modelExtruderNumberListener);
     }
 
@@ -565,8 +568,9 @@ public class Project implements Serializable
             double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
             double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
             String modelName = modelContainer.getModelName();
+            //TODO modify to work with multiple mesh views
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
-                (TriangleMesh) modelContainer.getMeshView().getMesh());
+                (TriangleMesh) modelContainer.getMeshViews().get(0).getMesh());
             if (subMeshes.size() > 1)
             {
                 deleteModel(modelContainer);
@@ -791,9 +795,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
-        modelContainer.snapToGround(faceNumber);
+        modelContainer.snapToGround(pickedMesh, faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);
@@ -888,9 +892,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
     {
-        modelContainer.setUseExtruder0Filament(useExtruder0);
+        modelContainer.setUseExtruder0(pickedMesh, useExtruder0);
         projectModified();
     }
 

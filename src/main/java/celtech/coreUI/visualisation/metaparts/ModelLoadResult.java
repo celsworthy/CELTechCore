@@ -8,6 +8,7 @@ package celtech.coreUI.visualisation.metaparts;
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.scene.Group;
 
 /**
@@ -34,7 +35,7 @@ public class ModelLoadResult
      * @param modelIsTooLarge
      * @param fullFilename
      * @param filename
-     * @param targetProjectTab
+     * @param targetProject
      * @param modelContainer
      */
     public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, Project targetProject, ModelContainer modelContainer)
@@ -75,16 +76,6 @@ public class ModelLoadResult
     
     /**
      *
-     * @param modelGroup
-     */
-    public void setModelContainer(ModelContainer modelGroup)
-    {
-        this.modelContainer = modelGroup;
-        resultType = ModelLoadResultType.Mesh;
-    }
-
-    /**
-     *
      * @return
      */
     public ModelContainer getModelContainer()
@@ -92,25 +83,6 @@ public class ModelLoadResult
         return modelContainer;
     }
     
-    /**
-     *
-     * @param groupedParts
-     */
-    public void setGroupedParts(Group groupedParts)
-    {
-        this.groupedParts = groupedParts;
-        resultType = ModelLoadResultType.GroupedParts;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public Group getGroupedParts()
-    {
-        return groupedParts;
-    }
-
     /**
      *
      * @return

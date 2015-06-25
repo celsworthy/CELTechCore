@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.collections.ObservableList;
 
 /**
  *
@@ -68,13 +69,20 @@ public class NozzleAssignmentUtilities
         }
 
         objectToNozzleNumberMap = new ArrayList<>();
-        project.getLoadedModels().stream()
-                .map(ModelContainer::getAssociateWithExtruderNumberProperty)
-                .map(ReadOnlyIntegerProperty::get)
-                .forEach(extruderNumber ->
-                        {
-                            objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
-                });
+        for (ModelContainer model : project.getLoadedModels())
+        {
+            for (int extruderNumber :model.getMeshExtruderAssociationProperty())
+            {
+                objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
+            }
+        }
+//        project.getLoadedModels().stream()
+//                .map(ModelContainer::getMeshExtruderAssociationProperty)
+//                .map(ObservableList<Integer>::get)
+//                .forEach(extruderNumber ->
+//                        {
+//                            objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
+//                });
     }
     
     protected
