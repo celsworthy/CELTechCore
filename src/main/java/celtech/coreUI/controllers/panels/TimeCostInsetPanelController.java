@@ -245,7 +245,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             @Override
             public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
             {
-                System.out.println("printer settings changed");
                 updateFields(project);
             }
         };

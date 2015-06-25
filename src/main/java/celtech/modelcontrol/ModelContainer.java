@@ -12,9 +12,6 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
-import celtech.utils.gcode.representation.GCodeElement;
-import celtech.utils.gcode.representation.GCodeMeshData;
-import celtech.utils.gcode.representation.MovementType;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,16 +25,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
@@ -73,7 +63,7 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
  * @author Ian Hudson @ Liberty Systems Limited
  */
 public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
-        ScreenExtentsProvider, CameraViewChangeListener
+    ScreenExtentsProvider, CameraViewChangeListener
 {
 
     private static final long serialVersionUID = 1L;
@@ -135,11 +125,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private File modelFile;
 
-    /**
-     *
-     * @param modelFile
-     * @param meshToAdd
-     */
     public ModelContainer(File modelFile, MeshView meshToAdd)
     {
         super();
@@ -160,11 +145,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * A multiple mesh model Derive a per-mesh extruder number
-     *
-     * @param modelFile
-     * @param name
-     * @param meshes
+     * A multiple mesh model Derive a per-mesh extruder number.
      */
     public ModelContainer(File modelFile, List<MeshView> meshes, List<Integer> extruderAssociation)
     {
@@ -240,14 +221,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setBedCentreOffsetTransform();
 
         /**
-         * Rotations (which are all around the centre of the model) must be
-         * applied before any translations.
+         * Rotations (which are all around the centre of the model) must be applied before any
+         * translations.
          */
         getTransforms().addAll(transformPostRotationYAdjust, transformMoveToPreferred,
-                transformMoveToCentre, transformBedCentre,
-                transformRotateTurnPreferred, transformRotateLeanPreferred,
-                transformRotateTwistPreferred
-        //            ,                   transformRotateSnapToGround
+                               transformMoveToCentre, transformBedCentre,
+                               transformRotateLeanPreferred,
+                               transformRotateTwistPreferred,
+                               transformRotateTurnPreferred
         );
         meshGroup.getTransforms().addAll(transformScalePreferred);
 
@@ -312,8 +293,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Set transformBedCentre according to the position of the centre of the
-     * bed.
+     * Set transformBedCentre according to the position of the centre of the bed.
      */
     private void setBedCentreOffsetTransform()
     {
@@ -348,9 +328,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             clonedMeshViews.add(newMeshView);
         }
 
-        ObservableList<Integer> clonedMeshToExtruder = FXCollections.observableArrayList(meshExtruderAssociation);
+        ObservableList<Integer> clonedMeshToExtruder = FXCollections.observableArrayList(
+            meshExtruderAssociation);
 
-        ModelContainer copy = new ModelContainer(this.modelFile, clonedMeshViews, clonedMeshToExtruder);
+        ModelContainer copy = new ModelContainer(this.modelFile, clonedMeshViews,
+                                                 clonedMeshToExtruder);
         copy.setXScale(this.getXScale());
         copy.setYScale(this.getYScale());
         copy.setZScale(this.getZScale());
@@ -388,7 +370,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
         double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBounds().getHeight()
-                / 2.0;
+            / 2.0;
         double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
         double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
         transformMoveToPreferred.setX(newXPosition);
@@ -401,18 +383,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method checks if the model is off the print bed and if so it adjusts
-     * the transformMoveToPreferred to bring it back to the nearest edge of the
-     * bed.
+     * This method checks if the model is off the print bed and if so it adjusts the
+     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
      */
     private void keepOnBedXZ()
     {
         double deltaX = 0;
 
         double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0
-                + 1;
+            + 1;
         double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
-                - 1;
+            - 1;
         if (getTransformedBounds().getMinX() < minBedX)
         {
             deltaX = -(getTransformedBounds().getMinX() - minBedX);
@@ -426,9 +407,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double deltaZ = 0;
         double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0
-                + 1;
+            + 1;
         double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
-                - 1;
+            - 1;
         if (getTransformedBounds().getMinZ() < minBedZ)
         {
             deltaZ = -(getTransformedBounds().getMinZ() - minBedZ);
@@ -475,7 +456,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double relativeYSize = printableBoundingBox.getHeight() / -printVolumeBounds.getHeight();
         double relativeZSize = printableBoundingBox.getDepth() / printVolumeBounds.getDepth();
         steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize + " Z "
-                + relativeZSize);
+            + relativeZSize);
 
         if (relativeXSize > relativeYSize && relativeXSize > relativeZSize)
         {
@@ -511,25 +492,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void setCollision(boolean hasCollided)
     {
         this.isCollided = hasCollided;
-        updateMaterial();
-    }
-
-    private void updateMaterial()
-    {
-        for (MeshView meshView : getMeshViews())
-        {
-            if (isOffBed.get())
-            {
-                meshView.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
-            } else if (isCollided)
-            {
-                meshView.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
-            } else
-            {
-                //TODO sort me out!
-//                meshView.setMaterial(material);
-            }
-        }
     }
 
     public boolean isCollided()
@@ -548,9 +510,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Rotate the model in Lean and Twist so that the chosen face is pointing
-     * down (ie aligned with the Y axis). Lean is easy to get, and we then use
-     * an optimiser to establish Twist.
+     * Rotate the model in Lean and Twist so that the chosen face is pointing down (ie aligned with
+     * the Y axis). Lean is easy to get, and we then use an optimiser to establish Twist.
      *
      * @param snapFaceIndex
      */
@@ -580,13 +541,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         long start = System.nanoTime();
         BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
         UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(70),
-                new UnivariateObjectiveFunction(
-                        new ApplyTwist(pickedMesh, snapFaceIndex)),
-                GoalType.MINIMIZE,
-                new SearchInterval(0, 360));
+                                                           new UnivariateObjectiveFunction(
+                                                               new ApplyTwist(pickedMesh,
+                                                                              snapFaceIndex)),
+                                                           GoalType.MINIMIZE,
+                                                           new SearchInterval(0, 360));
         steno.debug("optimiser took " + (int) ((System.nanoTime() - start) * 10e-6) + " ms"
-                + " and "
-                + optimizer.getEvaluations() + " evaluations");
+            + " and "
+            + optimizer.getEvaluations() + " evaluations");
         setRotationTwist(pair.getPoint());
 
         dropToBedAndUpdateLastTransformedBounds();
@@ -612,10 +574,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         Point3D getRotatedFaceNormal()
         {
             Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
-                    toPoint3D(faceCentre));
+                toPoint3D(faceCentre));
 
             Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
-                    toPoint3D(faceCentre.add(faceNormal)));
+                toPoint3D(faceCentre.add(faceNormal)));
 
             Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
             return rotatedFaceNormal;
@@ -669,8 +631,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * We present the rotations to the user as Lean - Twist - Turn, however in
-     * the code they are applied in the order twist, lean, turn.
+     * We present the rotations to the user as Lean - Twist - Turn, however in the code they are
+     * applied in the order twist, lean, turn.
      */
     private void updateTransformsFromLeanTwistTurnAngles()
     {
@@ -802,7 +764,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     private void writeObject(ObjectOutputStream out)
-            throws IOException
+        throws IOException
     {
         out.writeUTF(modelName.get());
 
@@ -855,7 +817,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         meshExtruderAssociation = FXCollections.emptyObservableList();
 
@@ -933,7 +895,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     private void readObjectNoData()
-            throws ObjectStreamException
+        throws ObjectStreamException
     {
 
     }
@@ -945,9 +907,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public List<MeshView> getMeshViews()
     {
         List<MeshView> meshViews = meshGroup.getChildrenUnmodifiable().stream()
-                .filter(node -> node instanceof MeshView)
-                .map(MeshView.class::cast)
-                .collect(Collectors.toList());
+            .filter(node -> node instanceof MeshView)
+            .map(MeshView.class::cast)
+            .collect(Collectors.toList());
 
         return meshViews;
     }
@@ -1096,36 +1058,30 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double epsilon = 0.001;
 
         if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
-                || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
-                        epsilon) == MathUtils.MORE_THAN
-                || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
-                || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
-                        epsilon) == MathUtils.MORE_THAN
-                || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
-                || MathUtils.compareDouble(bounds.getMinY(), printBed.getPrintVolumeMinimums().getY(),
-                        epsilon) == MathUtils.LESS_THAN)
+            || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
+                                       epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
+            || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
+                                       epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
+            || MathUtils.compareDouble(bounds.getMinY(), printBed.getPrintVolumeMinimums().getY(),
+                                       epsilon) == MathUtils.LESS_THAN)
         {
             isOffBed.set(true);
         } else
         {
             isOffBed.set(false);
         }
-
-        updateMaterial();
     }
 
-    /**
-     *
-     * @return
-     */
     public BooleanProperty isOffBedProperty()
     {
         return isOffBed;
     }
 
     /**
-     * Calculate max/min X,Y,Z before the transforms have been applied (ie the
-     * original model dimensions before any transforms).
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
+     * dimensions before any transforms).
      */
     private ModelBounds calculateBounds()
     {
@@ -1166,13 +1122,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreZ = minZ + (newdepth / 2);
 
         return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                newheight, newdepth, newcentreX, newcentreY,
-                newcentreZ);
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
     }
 
     /**
-     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the
-     * parent node).
+     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
      */
     public ModelBounds calculateBoundsInParent()
     {
@@ -1215,13 +1170,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreZ = minZ + (newdepth / 2);
 
         return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                newheight, newdepth, newcentreX, newcentreY,
-                newcentreZ);
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
     }
 
     /**
-     * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR
-     * OF AN APPROACH SIMILAR TO THE SPLIT FUNCTION
+     * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR OF AN APPROACH
+     * SIMILAR TO THE SPLIT FUNCTION
      *
      * @return
      */
@@ -1233,7 +1188,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double minPrintableY = printBed.getPrintVolumeMinimums().getY();
         int numberOfBins = (int) Math.
-                ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
+            ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
 
         ArrayList<ModelContainer> outputMeshes = new ArrayList<>();
 
@@ -1253,21 +1208,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             float y1Pos = originalPoints.get(vertex1Ref + 1);
             float z1Pos = originalPoints.get(vertex1Ref + 2);
             int vertex1Bin = (int) Math.floor((Math.abs(y1Pos) + originalModelBounds.getMaxY())
-                    / -minPrintableY);
+                / -minPrintableY);
 
             int vertex2Ref = originalFaces.get(triOffset + 2) * 3;
             float x2Pos = originalPoints.get(vertex2Ref);
             float y2Pos = originalPoints.get(vertex2Ref + 1);
             float z2Pos = originalPoints.get(vertex2Ref + 2);
             int vertex2Bin = (int) Math.floor((Math.abs(y2Pos) + originalModelBounds.getMaxY())
-                    / -minPrintableY);
+                / -minPrintableY);
 
             int vertex3Ref = originalFaces.get(triOffset + 4) * 3;
             float x3Pos = originalPoints.get(vertex3Ref);
             float y3Pos = originalPoints.get(vertex3Ref + 1);
             float z3Pos = originalPoints.get(vertex3Ref + 2);
             int vertex3Bin = (int) Math.floor((Math.abs(y3Pos) + originalModelBounds.getMaxY())
-                    / -minPrintableY);
+                / -minPrintableY);
 
 //            steno.info("Considering " + y1Pos + ":" + y2Pos + ":" + y3Pos);
             if (vertex1Bin == vertex2Bin && vertex1Bin == vertex3Bin)
@@ -1326,8 +1281,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This compareTo implementation compares based on the overall size of the
-     * model.
+     * This compareTo implementation compares based on the overall size of the model.
      */
     @Override
     public int compareTo(Object o) throws ClassCastException
@@ -1346,30 +1300,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return returnVal;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getTotalWidth()
     {
         double totalwidth = originalModelBounds.getWidth() * preferredXScale.get();
         return totalwidth;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getTotalDepth()
     {
         double totaldepth = originalModelBounds.getDepth() * preferredZScale.get();
         return totaldepth;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getTotalSize()
     {
         return getTotalWidth() + getTotalDepth();
@@ -1410,14 +1352,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         Vector3D v3 = convertToVector3D(points, v3PointIndex);
 
         return new Vector3D((v1.getX() + v2.getX() + v3.getX()) / 3.0d,
-                (v1.getY() + v2.getY() + v3.getY()) / 3.0d,
-                (v1.getZ() + v2.getZ() + v3.getZ()) / 3.0d);
+                            (v1.getY() + v2.getY() + v3.getY()) / 3.0d,
+                            (v1.getZ() + v2.getZ() + v3.getZ()) / 3.0d);
     }
 
     private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
     {
         Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
-                + 1), points.get((v1PointIndex * 3) + 2));
+                                   + 1), points.get((v1PointIndex * 3) + 2));
         return v1;
     }
 
@@ -1556,8 +1498,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This method must be called at the end of any operation that changes one
-     * or more of the transforms.
+     * This method must be called at the end of any operation that changes one or more of the
+     * transforms.
      */
     private void notifyShapeChange()
     {
@@ -1592,40 +1534,52 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * If this model is associated with the given extruder number then recolour
-     * it to the given colour.
-     *
-     * @param displayColourExtruder0
-     * @param displayColourExtruder1
+     * If this model is associated with the given extruder number then recolour it to the given
+     * colour, also taking into account if it is misplaced (off the bed).
      */
-    public void setColour(final Color displayColourExtruder0, final Color displayColourExtruder1)
+    public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
+        boolean showMisplacedColour)
     {
         for (int meshNumber = 0; meshNumber < getMeshViews().size(); meshNumber++)
         {
             MeshView mesh = getMeshViews().get(meshNumber);
-            switch (meshExtruderAssociation.get(meshNumber))
+
+            if (showMisplacedColour)
             {
-                case 0:
-                    if (displayColourExtruder0 == null)
-                    {
+                if (isOffBed.get())
+                {
+                    mesh.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
+                } else if (isCollided)
+                {
+                    mesh.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
+                }
+            } 
+            if (! showMisplacedColour || (!isOffBed.get() && !isCollided))
+            {
+                switch (meshExtruderAssociation.get(meshNumber))
+                {
+                    case 0:
+                        if (displayColourExtruder0 == null)
+                        {
+                            mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                        } else
+                        {
+                            mesh.setMaterial(getMaterialForColour(displayColourExtruder0));
+                        }
+                        break;
+                    case 1:
+                        if (displayColourExtruder1 == null)
+                        {
+                            mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                        } else
+                        {
+                            mesh.setMaterial(getMaterialForColour(displayColourExtruder1));
+                        }
+                        break;
+                    default:
                         mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                    } else
-                    {
-                        mesh.setMaterial(getMaterialForColour(displayColourExtruder0));
-                    }
-                    break;
-                case 1:
-                    if (displayColourExtruder1 == null)
-                    {
-                        mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                    } else
-                    {
-                        mesh.setMaterial(getMaterialForColour(displayColourExtruder1));
-                    }
-                    break;
-                default:
-                    mesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                    break;
+                        break;
+                }
             }
         }
     }
@@ -1739,9 +1693,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * State captures the state of all the transforms being applied to this
-     * ModelContainer. It is used as an efficient way of applying Undo and Redo
-     * to changes to a Set of ModelContainers.
+     * State captures the state of all the transforms being applied to this ModelContainer. It is
+     * used as an efficient way of applying Undo and Redo to changes to a Set of ModelContainers.
      */
     public class State
     {
@@ -1757,9 +1710,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         public double preferredRotationLean;
 
         public State(int modelId, double x, double z,
-                double preferredXScale, double preferredYScale, double preferredZScale,
-                double preferredRotationTwist, double preferredRotationTurn,
-                double preferredRotationLean)
+            double preferredXScale, double preferredYScale, double preferredZScale,
+            double preferredRotationTwist, double preferredRotationTurn,
+            double preferredRotationLean)
         {
             this.modelId = modelId;
             this.x = x;
@@ -1792,11 +1745,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public State getState()
     {
         return new State(modelId,
-                transformMoveToPreferred.getX(),
-                transformMoveToPreferred.getZ(),
-                preferredXScale.get(), preferredYScale.get(), preferredZScale.get(),
-                preferredRotationTwist.get(), preferredRotationTurn.get(),
-                preferredRotationLean.get());
+                         transformMoveToPreferred.getX(),
+                         transformMoveToPreferred.getZ(),
+                         preferredXScale.get(), preferredYScale.get(), preferredZScale.get(),
+                         preferredRotationTwist.get(), preferredRotationTurn.get(),
+                         preferredRotationLean.get());
     }
 
     public void setState(State state)
