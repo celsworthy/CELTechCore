@@ -3,6 +3,7 @@
  */
 package celtech.utils;
 
+import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;
@@ -17,7 +18,7 @@ import org.junit.Test;
  *
  * @author tony
  */
-public class PrinterListChangesNotifierTest
+public class PrinterListChangesNotifierTest extends JavaFXConfiguredTest
 {
 
     @Test

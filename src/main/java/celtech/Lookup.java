@@ -54,6 +54,7 @@ public class Lookup
         Lookup.class.getName());
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static final ObservableList<Printer> connectedPrinters;
+    private static boolean shuttingDown = false;
 
     static
     {
@@ -329,4 +330,16 @@ public class Lookup
     {
         return Lookup.extrasMenuInnerPanel;
     }
+
+    public static boolean isShuttingDown()
+    {
+        return shuttingDown;
+    }
+
+    public static void setShuttingDown(boolean shuttingDown)
+    {
+        Lookup.shuttingDown = shuttingDown;
+    }
+    
+    
 }

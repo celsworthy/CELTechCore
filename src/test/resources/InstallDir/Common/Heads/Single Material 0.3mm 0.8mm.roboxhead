@@ -1,6 +1,7 @@
 {
   "version" : 1,
   "name" : "Single Material 0.8mm/0.3mm",
+  "type" : "SINGLE_MATERIAL_HEAD",
   "typeCode" : "RBX01-SM",
   "nozzleHeaters" : [ {
     "maximum_temperature_C" : 260,

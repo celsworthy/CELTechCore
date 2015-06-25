@@ -50,6 +50,7 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
 
         TestPrinter printer = new TestPrinter(1);
         HeadFile headFile = new HeadFile();
+        headFile.setTypeCode("RBX01-SM");
         NozzleHeaterData nozzleHeaterData = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData);
         printer.addHeadForHeadFile(headFile);
@@ -82,6 +83,7 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
 
         TestPrinter printer = new TestPrinter(2);
         HeadFile headFile = new HeadFile();
+        headFile.setTypeCode("RBX01-SM");
         NozzleHeaterData nozzleHeaterData0 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData0);
         NozzleHeaterData nozzleHeaterData1 = new NozzleHeaterData();

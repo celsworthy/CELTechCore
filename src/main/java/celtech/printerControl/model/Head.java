@@ -5,7 +5,6 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
@@ -36,20 +35,14 @@ public class Head implements Cloneable, RepairableComponent
     public enum HeadType
     {
 
-        SINGLE_MATERIAL_HEAD("RBX01-SM", "singleMaterialHead"),
-        DUAL_MATERIAL_HEAD("RBX01-DM", "dualMaterialHead");
+        SINGLE_MATERIAL_HEAD("singleMaterialHead"),
+        DUAL_MATERIAL_HEAD("dualMaterialHead");
 
         private final String helpText;
-        private final String headTypeCode;
 
-        HeadType(String headTypeCode, String helpText)
+        HeadType(String helpText)
         {
             this.helpText = helpText;
-            this.headTypeCode = headTypeCode;
-        }
-        
-        public String getHeadTypeCode() {
-            return headTypeCode;
         }
 
         @Override
@@ -253,14 +246,7 @@ public class Head implements Cloneable, RepairableComponent
     
     private void setTypeCode(String typeCode) {
         this.typeCode.set(typeCode);
-        for (HeadType headType : HeadType.values())
-        {
-            if (headType.getHeadTypeCode().equals(typeCode))
-            {
-                this.headType.set(headType);
-                break;
-            }
-        }
+        headType.set(HeadContainer.getHeadByID(typeCode).getType());
     }
 
     public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)

@@ -1,5 +1,6 @@
 package celtech.configuration.fileRepresentation;
 
+import celtech.printerControl.model.Head.HeadType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +14,20 @@ public class HeadFile
     private int version = 1;
     private String name;
     private String typeCode;
+    private HeadType type;
 
     private List<NozzleHeaterData> nozzleHeaters = new ArrayList<>();
     private List<NozzleData> nozzles = new ArrayList<>();
+
+    public HeadType getType()
+    {
+        return type;
+    }
+
+    public void setType(HeadType type)
+    {
+        this.type = type;
+    }
 
     public int getVersion()
     {
