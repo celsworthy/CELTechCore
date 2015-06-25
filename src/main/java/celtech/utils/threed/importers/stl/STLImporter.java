@@ -210,7 +210,6 @@ public class STLImporter
      */
     public TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
     {
-        DataInputStream inputFileStream;
         ByteBuffer dataBuffer;
         byte[] facetBytes = new byte[4];     // Holds the number of faces
         byte[] facetData = new byte[50]; // Each face has 50 bytes of data
@@ -222,126 +221,128 @@ public class STLImporter
         HashMap<Vector3D, Integer> graph = new HashMap<>();
         try
         {
-            inputFileStream = new DataInputStream(new FileInputStream(stlFile));
-            byte[] asciiHeaderBytes = new byte[80];
-            inputFileStream.read(asciiHeaderBytes);
-            String asciiHeader = new String(asciiHeaderBytes, "UTF-8");
-            steno.debug("The header was: " + asciiHeader);
-
-            inputFileStream.read(facetBytes);                      // We get the 4 bytes
-            dataBuffer = ByteBuffer.wrap(facetBytes);   // ByteBuffer for reading correctly the int
-            dataBuffer.order(ByteOrder.nativeOrder());    // Set the right order
-            int numberOfFacets = dataBuffer.getInt();
-
-            steno.debug("There are " + numberOfFacets + " facets");
-
-            int[] faceIndexArray = new int[6];
-
-            int vertexCounter = 0;
-
-            for (int facetNum = 0; facetNum < numberOfFacets; facetNum++)
+            try (DataInputStream inputFileStream = new DataInputStream(new FileInputStream(stlFile)))
             {
-                if ((parentTask != null) && parentTask.isCancelled())
-                {
-                    break;
-                }
+                byte[] asciiHeaderBytes = new byte[80];
+                inputFileStream.read(asciiHeaderBytes);
+                String asciiHeader = new String(asciiHeaderBytes, "UTF-8");
+                steno.debug("The header was: " + asciiHeader);
 
-                int progressUpdate = (int) (((double) facetNum / (double) numberOfFacets) * 100);
-                if (progressUpdate != progressPercent)
+                inputFileStream.read(facetBytes);                      // We get the 4 bytes
+                dataBuffer = ByteBuffer.wrap(facetBytes);   // ByteBuffer for reading correctly the int
+                dataBuffer.order(ByteOrder.nativeOrder());    // Set the right order
+                int numberOfFacets = dataBuffer.getInt();
+
+                steno.debug("There are " + numberOfFacets + " facets");
+
+                int[] faceIndexArray = new int[6];
+
+                int vertexCounter = 0;
+
+                for (int facetNum = 0; facetNum < numberOfFacets; facetNum++)
                 {
-                    progressPercent = progressUpdate;
-                    if (percentProgressProperty != null)
+                    if ((parentTask != null) && parentTask.isCancelled())
                     {
-                        percentProgressProperty.set(progressPercent);
+                        break;
                     }
-                }
 
-                inputFileStream.read(facetData);              // We get the rest of the file
-                dataBuffer = ByteBuffer.wrap(facetData);      // Now we have all the data in this ByteBuffer
-                dataBuffer.order(ByteOrder.nativeOrder());
-
-                // Read the Normal and place it 3 times (one for each vertex)
-                dataBuffer.getFloat();
-                dataBuffer.getFloat();
-                dataBuffer.getFloat();
-
-                for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
-                {
-                    float inputVertexX, inputVertexY, inputVertexZ;
-
-                    inputVertexX = dataBuffer.getFloat();
-                    inputVertexY = dataBuffer.getFloat();
-                    inputVertexZ = dataBuffer.getFloat();
-
-                    Vector3D generatedVertex = new Vector3D(inputVertexX,
-                                                            -inputVertexZ,
-                                                            inputVertexY);
-
-                    if (!graph.containsKey(generatedVertex))
+                    int progressUpdate = (int) (((double) facetNum / (double) numberOfFacets) * 100);
+                    if (progressUpdate != progressPercent)
                     {
-                        graph.put(generatedVertex, vertexCounter);
-                        faceIndexArray[vertexNumber * 2] = vertexCounter;
-                        vertexCounter++;
-                    } else
-                    {
-                        faceIndexArray[vertexNumber * 2] = graph.get(generatedVertex);
+                        progressPercent = progressUpdate;
+                        if (percentProgressProperty != null)
+                        {
+                            percentProgressProperty.set(progressPercent);
+                        }
                     }
-                }
 
-                // Add the face to the triangle mesh
-                triangleMesh.getFaces().addAll(faceIndexArray, 0, 6);
+                    inputFileStream.read(facetData);              // We get the rest of the file
+                    dataBuffer = ByteBuffer.wrap(facetData);      // Now we have all the data in this ByteBuffer
+                    dataBuffer.order(ByteOrder.nativeOrder());
 
-                // After each facet there are 2 bytes without information
-                // In the last iteration we dont have to skip those bytes..
-                if (facetNum != numberOfFacets - 1)
-                {
-                    dataBuffer.get();
-                    dataBuffer.get();
-                }
-            }
+                    // Read the Normal and place it 3 times (one for each vertex)
+                    dataBuffer.getFloat();
+                    dataBuffer.getFloat();
+                    dataBuffer.getFloat();
 
-            steno.debug("Started with " + numberOfFacets * 3 + " vertices and now have "
-                + graph.size());
-
-            float[] tempVertexPointArray = new float[3];
-            graph.entrySet()
-                .stream()
-                .sorted((s1, s2) ->
+                    for (int vertexNumber = 0; vertexNumber < 3; vertexNumber++)
                     {
-                        if (s1.getValue() == s2.getValue())
+                        float inputVertexX, inputVertexY, inputVertexZ;
+
+                        inputVertexX = dataBuffer.getFloat();
+                        inputVertexY = dataBuffer.getFloat();
+                        inputVertexZ = dataBuffer.getFloat();
+
+                        Vector3D generatedVertex = new Vector3D(inputVertexX,
+                                                                -inputVertexZ,
+                                                                inputVertexY);
+
+                        if (!graph.containsKey(generatedVertex))
                         {
-                            return 0;
-                        } else if (s1.getValue() > s2.getValue())
-                        {
-                            return 1;
+                            graph.put(generatedVertex, vertexCounter);
+                            faceIndexArray[vertexNumber * 2] = vertexCounter;
+                            vertexCounter++;
                         } else
                         {
-                            return -1;
+                            faceIndexArray[vertexNumber * 2] = graph.get(generatedVertex);
                         }
-                })
-                .forEach(vertexEntry ->
+                    }
+
+                    // Add the face to the triangle mesh
+                    triangleMesh.getFaces().addAll(faceIndexArray, 0, 6);
+
+                // After each facet there are 2 bytes without information
+                    // In the last iteration we dont have to skip those bytes..
+                    if (facetNum != numberOfFacets - 1)
                     {
-                        tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
-                        tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
-                        tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
+                        dataBuffer.get();
+                        dataBuffer.get();
+                    }
+                }
 
-                        triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
-                });
+                steno.debug("Started with " + numberOfFacets * 3 + " vertices and now have "
+                    + graph.size());
 
-            FloatArrayList texCoords = new FloatArrayList();
-            texCoords.add(0f);
-            texCoords.add(0f);
-            triangleMesh.getTexCoords().addAll(texCoords.toFloatArray());
+                float[] tempVertexPointArray = new float[3];
+                graph.entrySet()
+                    .stream()
+                    .sorted((s1, s2) ->
+                        {
+                            if (s1.getValue() == s2.getValue())
+                            {
+                                return 0;
+                            } else if (s1.getValue() > s2.getValue())
+                            {
+                                return 1;
+                            } else
+                            {
+                                return -1;
+                            }
+                    })
+                    .forEach(vertexEntry ->
+                        {
+                            tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
+                            tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
+                            tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
 
-            int[] smoothingGroups = new int[numberOfFacets];
-            for (int i = 0; i < smoothingGroups.length; i++)
-            {
-                smoothingGroups[i] = 0;
+                            triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
+                    });
+
+                FloatArrayList texCoords = new FloatArrayList();
+                texCoords.add(0f);
+                texCoords.add(0f);
+                triangleMesh.getTexCoords().addAll(texCoords.toFloatArray());
+
+                int[] smoothingGroups = new int[numberOfFacets];
+                for (int i = 0; i < smoothingGroups.length; i++)
+                {
+                    smoothingGroups[i] = 0;
+                }
+                triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+                steno.debug("The mesh contains " + triangleMesh.getPoints().size() / 3
+                    + " points, " + triangleMesh.getTexCoords().size() / 2 + " tex coords and "
+                    + triangleMesh.getFaces().size() / 6 + " faces");
             }
-            triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
-            steno.debug("The mesh contains " + triangleMesh.getPoints().size() / 3
-                + " points, " + triangleMesh.getTexCoords().size() / 2 + " tex coords and "
-                + triangleMesh.getFaces().size() / 6 + " faces");
 
         } catch (FileNotFoundException ex)
         {
