@@ -41,21 +41,19 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
-import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -68,7 +66,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class ObjImporter
 {
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(ObjImporter.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        ObjImporter.class.getName());
 
     private ModelLoaderTask parentTask = null;
 
@@ -109,20 +108,19 @@ public class ObjImporter
      * @return
      */
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
-            Project targetProject)
+        Project targetProject)
     {
         this.parentTask = parentTask;
         this.objFileUrl = modelFileToLoad;
 
         ModelLoadResult modelLoadResult = null;
 
-        try
+        File modelFile = new File(objFileUrl);
+        
+        try (InputStream fileInputStream = new URL(objFileUrl).openStream())
         {
-            File modelFile = new File(objFileUrl);
-            URL fileURL = new URL(objFileUrl);
             String filePath = modelFile.getParent();
-
-            read(fileURL.openStream(), filePath);
+            read(fileInputStream, filePath);
 
             ArrayList<MeshView> meshes = new ArrayList<>();
             ArrayList<Integer> extruderAssociations = new ArrayList<>();
@@ -136,17 +134,22 @@ public class ObjImporter
                 extruderAssociations.add(materialNumber);
             }
 
-            ModelContainer modelContainer = new ModelContainer(modelFile, meshes, extruderAssociations);
-            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(modelContainer.getOriginalModelBounds());
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshes,
+                                                               extruderAssociations);
+            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(
+                modelContainer.getOriginalModelBounds());
 
-            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad, modelFile.getName(), targetProject, modelContainer);
-        } catch (IOException ex)
+            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
+                                                  modelFile.getName(), targetProject,
+                                                  modelContainer);
+        } catch (Exception ex)
         {
+            ex.printStackTrace();
             steno.error("Exception whilst reading obj file " + modelFileToLoad + ":" + ex);
         }
 
         if (parentTask
-                != null && parentTask.isCancelled())
+            != null && parentTask.isCancelled())
         {
             modelLoadResult = null;
         }
@@ -360,7 +363,7 @@ public class ObjImporter
             } catch (Exception ex)
             {
                 Logger.getLogger(MtlReader.class
-                        .getName()).log(Level.SEVERE, "Failed to parse line:" + line, ex);
+                    .getName()).log(Level.SEVERE, "Failed to parse line:" + line, ex);
             }
         }
 
@@ -416,9 +419,9 @@ public class ObjImporter
 //                + mesh.getFaces().size() / TriangleMesh.NUM_COMPONENTS_PER_FACE +" faces, "
 //                + mesh.getFaceSmoothingGroups().size() + " smoothing groups.");
         steno.debug(
-                "Loaded object mesh " + (newVertices.size() / 3.) + " vertices, "
-                + (newFaces.size() / 6.) + " faces, "
-                + smoothingGroups.length + " smoothing groups.");
+            "Loaded object mesh " + (newVertices.size() / 3.) + " vertices, "
+            + (newFaces.size() / 6.) + " faces, "
+            + smoothingGroups.length + " smoothing groups.");
 
         facesStart = facesFromFile.size();
     }
