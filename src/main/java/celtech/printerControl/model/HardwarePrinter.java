@@ -13,7 +13,6 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;

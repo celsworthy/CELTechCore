@@ -158,7 +158,7 @@ public class Project implements Serializable
                 loadLegacyProjectFile(basePath, project);
             }
             return project;
-        } catch (IOException ex)
+        } catch (Exception ex)
         {
             steno.error("Unable to load project file at " + basePath + " :" + ex);
         }

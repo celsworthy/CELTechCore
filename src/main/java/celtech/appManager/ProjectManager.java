@@ -64,8 +64,8 @@ public class ProjectManager implements Savable, Serializable
         ProjectManager pm = null;
         try
         {
-            FileInputStream projectFile = new FileInputStream(
-                ApplicationConfiguration.getProjectDirectory() + projectFileName);
+            steno.debug("load project manager from " + ApplicationConfiguration.getProjectDirectory() + projectFileName);
+            FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
             ObjectInputStream reader = new ObjectInputStream(projectFile);
             pm = new ProjectManager();
             int numberOfOpenProjects = reader.readInt();
@@ -83,9 +83,10 @@ public class ProjectManager implements Savable, Serializable
                 }
             }
             reader.close();
-        } catch (IOException ex)
+        } catch (Exception ex)
         {
-            steno.error("Failed to load project manager");
+            ex.printStackTrace();
+            steno.error("Failed to load project manager: " + ex);
         }
         return pm;
     }
