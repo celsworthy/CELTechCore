@@ -89,7 +89,7 @@ public class ProjectTab extends Tab
                                             tabDisplayHeightProperty);
         Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
         Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
-//        Node modelActionsInsetPanel = loadInsetPanel("modelActionsInsetPanel.fxml");
+        Node modelActionsInsetPanel = loadInsetPanel("modelActionsInsetPanel.fxml", project);
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
@@ -97,10 +97,10 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         basePane.getChildren().addAll(viewManager.getSubScene(), timeCostInsetPanel,
-                                      settingsInsetPanel);        
+                                      settingsInsetPanel, modelActionsInsetPanel);        
         //Leave this out in 1.01.05
-//        setupDragHandlers();
-//        dimensionLineManager = new DimensionLineManager(basePane, project);
+        setupDragHandlers();
+        dimensionLineManager = new DimensionLineManager(basePane, project);
 
         settingsInsetPanel.setVisible(false);
         timeCostInsetPanel.setVisible(false);
@@ -108,8 +108,8 @@ public class ProjectTab extends Tab
         AnchorPane.setRightAnchor(timeCostInsetPanel, 30.0);
         AnchorPane.setTopAnchor(settingsInsetPanel, 220.0);
         AnchorPane.setRightAnchor(settingsInsetPanel, 30.0);
-//        AnchorPane.setTopAnchor(modelActionsInsetPanel, 30.0);
-//        AnchorPane.setLeftAnchor(modelActionsInsetPanel, 30.0);
+        AnchorPane.setTopAnchor(modelActionsInsetPanel, 30.0);
+        AnchorPane.setLeftAnchor(modelActionsInsetPanel, 30.0);
 
         this.setContent(basePane);
 

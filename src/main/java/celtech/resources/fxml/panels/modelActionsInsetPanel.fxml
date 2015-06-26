@@ -12,8 +12,14 @@
 <?import javafx.scene.shape.*?>
 <?import jfxtras.styles.jmetro8.*?>
 
-<HBox id="modelActionsInsetRoot" fx:id="modelActionsInsetRoot" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.ModelActionsInsetPanelController">
+<HBox id="modelActionsInsetRoot" fx:id="modelActionsInsetRoot" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.ModelActionsInsetPanelController">
    <children>
-      <Button fx:id="splitIntoParts" mnemonicParsing="false" onAction="#doSplit" text="Split Into Parts" />
+      <VBox>
+         <children>
+            <Button fx:id="splitIntoParts" mnemonicParsing="false" onAction="#doSplit" text="Split Into Parts" />
+            <Button fx:id="group" mnemonicParsing="false" onAction="#doGroup" text="Group" />
+            <Button fx:id="ungroup" mnemonicParsing="false" onAction="#doUngroup" text="Ungroup" />
+         </children>
+      </VBox>
    </children>
 </HBox>

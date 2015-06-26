@@ -226,11 +226,11 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 textTranslate.setX(midPoint.getX());
                 textTranslate.setY(midPoint.getY());
-                steno.info("Text rotate");
-                steno.info("Input " + (angle - 90));
-                textRotate.setAngle(normaliseTextAngle(angle));
-                steno.info("Normalised " + normaliseTextAngle(angle));
-                steno.info("<<<<<<<<<<<");
+//                steno.info("Text rotate");
+//                steno.info("Input " + (angle - 90));
+//                textRotate.setAngle(normaliseTextAngle(angle));
+//                steno.info("Normalised " + normaliseTextAngle(angle));
+//                steno.info("<<<<<<<<<<<");
 
                 firstArrowTranslate.setX(leftPoint.getX());
                 firstArrowTranslate.setY(leftPoint.getY());

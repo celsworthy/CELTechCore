@@ -8,6 +8,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
+import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -26,7 +27,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class ModelActionsInsetPanelController implements Initializable
+public class ModelActionsInsetPanelController implements Initializable, ProjectAwareController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -38,6 +39,12 @@ public class ModelActionsInsetPanelController implements Initializable
     @FXML
     private Button splitIntoParts;
 
+    @FXML
+    private Button group;
+
+    @FXML
+    private Button ungroup;
+
     private Project currentProject;
     private UndoableProject undoableProject;
 
@@ -45,12 +52,11 @@ public class ModelActionsInsetPanelController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
 
-        Lookup.getSelectedProjectProperty().addListener(
-            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-            {
-                whenProjectChanged(newValue);
-            });
-
+//        Lookup.getSelectedProjectProperty().addListener(
+//            (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+//            {
+//                whenProjectChanged(newValue);
+//            });
         ApplicationStatus.getInstance().modeProperty().addListener(
             (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
             {
@@ -72,7 +78,9 @@ public class ModelActionsInsetPanelController implements Initializable
 
         ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumModelsSelectedProperty();
         splitIntoParts.disableProperty().bind(numModelsSelected.isEqualTo(0));
-            
+        group.disableProperty().bind(numModelsSelected.isEqualTo(0));
+        ungroup.disableProperty().bind(numModelsSelected.isEqualTo(0));
+
     }
 
     @FXML
@@ -87,6 +95,22 @@ public class ModelActionsInsetPanelController implements Initializable
             Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n(
                 "splitParts.title"), Lookup.i18n("splitParts.message"));
         }
+    }
+
+    @FXML
+    void doGroup(ActionEvent event)
+    {
+    }
+
+    @FXML
+    void doUngroup(ActionEvent event)
+    {
+    }
+
+    @Override
+    public void setProject(Project project)
+    {
+        whenProjectChanged(project);
     }
 
 }

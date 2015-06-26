@@ -568,7 +568,9 @@ public class Project implements Serializable
             double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
             double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
             String modelName = modelContainer.getModelName();
+            
             //TODO modify to work with multiple mesh views
+            
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
                 (TriangleMesh) modelContainer.getMeshViews().get(0).getMesh());
             if (subMeshes.size() > 1)
