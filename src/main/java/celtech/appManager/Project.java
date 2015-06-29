@@ -36,7 +36,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -161,7 +160,7 @@ public class Project implements Serializable
             return project;
         } catch (Exception ex)
         {
-            steno.error("Unable to load project file at " + basePath + " :" + ex);
+            steno.exception("Unable to load project file at " + basePath, ex);
         }
         return null;
     }
@@ -188,8 +187,7 @@ public class Project implements Serializable
             
         } catch (Exception ex)
         {
-            ex.printStackTrace();
-            steno.error("Unable to load old project format file: " + ex);
+            steno.exception("Unable to load old project format file", ex);
         }
     }
 

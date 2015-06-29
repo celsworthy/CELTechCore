@@ -591,7 +591,7 @@ public class ApplicationConfiguration
             installationProperties.load(input);
         } catch (IOException ex)
         {
-            ex.printStackTrace();
+            steno.exception("loading project", ex);
         } finally
         {
             if (input != null)
@@ -599,9 +599,9 @@ public class ApplicationConfiguration
                 try
                 {
                     input.close();
-                } catch (IOException e)
+                } catch (IOException ex)
                 {
-                    e.printStackTrace();
+                    steno.exception("loading project", ex);
                 }
             }
         }

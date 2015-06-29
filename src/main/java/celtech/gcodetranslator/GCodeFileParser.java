@@ -448,8 +448,7 @@ public class GCodeFileParser
                         }
                     } catch (PostProcessingError ex)
                     {
-                        steno.error("Error processing event - aborting - " + eventToOutput);
-                        ex.printStackTrace();
+                        steno.exception("Error processing event - aborting - " + eventToOutput, ex);
                     }
                 }
             }

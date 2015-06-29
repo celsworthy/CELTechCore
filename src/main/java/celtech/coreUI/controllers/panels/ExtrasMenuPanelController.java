@@ -123,8 +123,7 @@ public class ExtrasMenuPanelController implements Initializable
             return innerPanelDetails;
         } catch (IOException ex)
         {
-            ex.printStackTrace();
-            steno.error("Unable to load panel: " + fxmlLocation + " " + ex);
+            steno.exception("Unable to load panel: " + fxmlLocation, ex);
         }
         return null;
     }

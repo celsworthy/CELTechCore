@@ -448,8 +448,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             slideoutAndProjectHolder.populateProjectDisplay(tabDisplay);
         } catch (IOException ex)
         {
-            steno.error("Failed to load printer status page:" + ex);
-            ex.printStackTrace();
+            steno.exception("Failed to load printer status page", ex);
         }
 
         applicationStatus.modeProperty().addListener(
@@ -470,8 +469,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             slideoutAndProjectHolder.populateProjectDisplay(menuStripControls);
         } catch (IOException ex)
         {
-            steno.error("Failed to load menu strip controls:" + ex);
-            ex.printStackTrace();
+            steno.exception("Failed to load menu strip controls", ex);
         }
 
         modelLoadDialog = new ProgressDialog(ModelLoader.modelLoaderService);
@@ -571,10 +569,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             }
         } catch (Exception ex)
         {
-            ex.printStackTrace();
             insetPanels.put(mode, null);
             insetPanelControllers.put(mode, null);
-            steno.warning("Couldn't load inset panel for mode:" + mode + ". " + ex.getMessage());
+            steno.exception("Couldn't load inset panel for mode:" + mode, ex);
         }
 
         SidePanelManager sidePanelController = null;
@@ -596,11 +593,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 sidePanelCache.put(mode.getSidePanelFXMLName(), sidePanel);
             } catch (Exception ex)
             {
-                ex.printStackTrace();
                 sidePanels.put(mode, null);
                 sidePanelControllers.put(mode, null);
-                steno.error("Couldn't load side panel for mode:" + mode + ". "
-                    + ex);
+                steno.exception("Couldn't load side panel for mode:" + mode, ex);
             }
         } else
         {

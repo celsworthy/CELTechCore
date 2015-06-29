@@ -103,8 +103,7 @@ public class LiveTaskExecutor implements TaskExecutor
 
             } catch (Exception ex)
             {
-                ex.printStackTrace();
-                steno.error("Failure running task: " + ex);
+                steno.exception("Failure running task: ", ex);
                 try
                 {
                     if (failureHandler != null)

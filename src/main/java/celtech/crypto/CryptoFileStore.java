@@ -78,8 +78,7 @@ public class CryptoFileStore
                 decryptedText = decrypt(encryptedBase64Text);
             } catch (IOException ex)
             {
-                steno.error("Error decrypting file " + storeFileName);
-                ex.printStackTrace();
+                steno.exception("Error decrypting file " + storeFileName, ex);
             }
         }
 
@@ -130,8 +129,7 @@ public class CryptoFileStore
             encryptedText = new Base64().encodeAsString(encryptedTextBytes);
         } catch (InvalidAlgorithmParameterException | InvalidKeySpecException | InvalidKeyException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException | UnsupportedEncodingException ex)
         {
-            steno.error("Error encrypting");
-            ex.printStackTrace();
+            steno.exception("Error encrypting", ex);
         }
 
         return encryptedText;

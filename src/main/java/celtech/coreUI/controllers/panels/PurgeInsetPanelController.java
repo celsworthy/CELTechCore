@@ -683,8 +683,7 @@ public class PurgeInsetPanelController implements Initializable
                 transitionManager.setPurgeFilament(0, filament);
             } catch (PrintException ex)
             {
-                ex.printStackTrace();
-                steno.error("Error setting purge filament");
+                steno.exception("Error setting purge filament", ex);
             }
             textCurrentMaterial0.setText(currentMaterial0.getLongFriendlyName() + " "
                 + currentMaterial0.getMaterial().getFriendlyName());
@@ -706,8 +705,7 @@ public class PurgeInsetPanelController implements Initializable
                 transitionManager.setPurgeFilament(1, filament);
             } catch (PrintException ex)
             {
-                ex.printStackTrace();
-                steno.error("Error setting purge filament");
+                steno.exception("Error setting purge filament", ex);
             }
             textCurrentMaterial1.setText(currentMaterial1.getLongFriendlyName() + " "
                 + currentMaterial1.getMaterial().getFriendlyName());

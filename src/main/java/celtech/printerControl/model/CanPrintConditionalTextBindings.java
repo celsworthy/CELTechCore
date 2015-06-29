@@ -119,8 +119,7 @@ public class CanPrintConditionalTextBindings
                 //steno.debug("mismatch on 0 detected: " + filamentMismatch);
                 return filamentMismatch;
                 } catch (Exception ex) {
-                    ex.printStackTrace();
-                    steno.error("Error computing conditional text bindings " + ex);
+                    steno.exception("Error computing conditional text bindings ", ex);
                     return false;
                 }
             }

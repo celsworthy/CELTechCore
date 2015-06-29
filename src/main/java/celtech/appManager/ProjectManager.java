@@ -85,8 +85,7 @@ public class ProjectManager implements Savable, Serializable
             reader.close();
         } catch (Exception ex)
         {
-            ex.printStackTrace();
-            steno.error("Failed to load project manager: " + ex);
+            steno.exception("Failed to load project manager", ex);
         }
         return pm;
     }

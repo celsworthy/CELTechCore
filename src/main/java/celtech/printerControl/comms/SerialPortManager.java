@@ -199,8 +199,7 @@ public class SerialPortManager implements SerialPortEventListener
                 serialPort.readBytes(numberOfBytesReceived, READ_TIMEOUT);
             } catch (SerialPortTimeoutException | SerialPortException ex)
             {
-                steno.error("Error whilst auto reading from port " + serialPortToConnectTo);
-                ex.printStackTrace();
+                steno.exception("Error whilst auto reading from port " + serialPortToConnectTo, ex);
             }
         } else
         {

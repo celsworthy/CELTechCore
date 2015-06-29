@@ -177,8 +177,7 @@ public class HardwareCommandInterface extends CommandInterface
                 }
             } catch (SerialPortException ex)
             {
-                steno.error("Serial port exception");
-                ex.printStackTrace();
+                steno.exception("Serial port exception", ex);
                 actionOnCommsFailure();
             }
         } else

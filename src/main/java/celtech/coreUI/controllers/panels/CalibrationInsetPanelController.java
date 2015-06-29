@@ -360,8 +360,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         } catch (IOException ex)
         {
-            ex.printStackTrace();
-            steno.error("Could not load diagram: " + fxmlFileName);
+            steno.exception("Could not load diagram: " + fxmlFileName, ex);
         }
         return loadedDiagramNode;
 

@@ -3800,8 +3800,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             readHeadEEPROM();
                         } catch (RoboxCommsException ex)
                         {
-                            steno.error("Error attempting to read head eeprom");
-                            ex.printStackTrace();
+                            steno.exception("Error attempting to read head eeprom", ex);
                         }
                         break;
                 }
