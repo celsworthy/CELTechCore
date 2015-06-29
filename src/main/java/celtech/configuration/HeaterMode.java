@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package celtech.configuration;
 
 /**
@@ -26,7 +20,12 @@ public enum HeaterMode
     /**
      *
      */
-    FIRST_LAYER(2);
+    FIRST_LAYER(2),
+
+    /**
+     *
+     */
+    FILAMENT_EJECT(3);
 
     /**
      *
