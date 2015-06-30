@@ -5,6 +5,7 @@ package celtech.coreUI.components;
 
 import celtech.Lookup;
 import celtech.configuration.BusyStatus;
+import celtech.configuration.Macro;
 import celtech.configuration.PauseStatus;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
@@ -149,13 +150,16 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.getPrintEngine().macroBeingRun.get().getFriendlyName());
 
-                    if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                    if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
                     {
-                        largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
-                        largeProgressCurrentValue.setVisible(true);
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
+                            largeProgressCurrentValue.setVisible(true);
 
-                        progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
-                        progressBar.setVisible(true);
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressBar.setVisible(true);
+                        }
                     }
                     break;
                 default:
