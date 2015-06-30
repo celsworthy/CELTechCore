@@ -10,36 +10,16 @@ public enum PrinterStatus
 {
 
     IDLE("printerStatus.idle"),
-    HEATING_BED("printerStatus.heatingBed"),
-    HEATING_NOZZLE("printerStatus.heatingNozzle"),
-    SLICING("printerStatus.slicing"),
-    POST_PROCESSING("printerStatus.postProcessing"),
-    //    SENDING_TO_PRINTER("printerStatus.sendingToPrinter"),
     PRINTING("printerStatus.printing"),
     PRINTING_GCODE("printerStatus.printingGCode"),
-    //Macros
     RUNNING_TEST("printerStatus.runningTest"),
-    HOMING("printerStatus.macro.homing"),
-    EJECTING_STUCK_MATERIAL("printerStatus.macro.ejectStuckMaterial"),
-    LEVELLING_GANTRY("printerStatus.macro.levellingGantry"),
-    TEST_X("printerStatus.macro.testX"),
-    TEST_Y("printerStatus.macro.testY"),
-    TEST_Z("printerStatus.macro.testZ"),
-    LEVELLING_Y("printerStatus.macro.levellingY"),
-    //
-    PAUSING("printerStatus.pausing"),
-    PAUSED("printerStatus.paused"),
-    RESUMING("printerStatus.resuming"),
+    RUNNING_MACRO("printerStatus.executingMacro"),
     REMOVING_HEAD("printerStatus.removingHead"),
     PURGING_HEAD("printerStatus.purging"),
-    CANCELLING("printerStatus.cancelling"),
     OPENING_DOOR("printerStatus.openingDoor"),
     CALIBRATING_NOZZLE_ALIGNMENT("printerStatus.calibratingNozzleAlignment"),
     CALIBRATING_NOZZLE_HEIGHT("printerStatus.calibratingNozzleHeight"),
-    CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening"),
-    LOADING_FILAMENT("printerStatus.loadingFilament"),
-    EJECTING_FILAMENT("printerStatus.ejectingFilament"),
-    ERROR("printerStatus.error");
+    CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening");
 
     private final String i18nString;
 

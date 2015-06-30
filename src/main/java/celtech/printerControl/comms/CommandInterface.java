@@ -357,54 +357,7 @@ public abstract class CommandInterface extends Thread
                 steno.error("Connected to an unknown printer that is printing");
             }
 
-            ReadSendFileReport sendFileReport = (ReadSendFileReport) RoboxTxPacketFactory.
-                    createPacket(
-                            TxPacketTypeEnum.READ_SEND_FILE_REPORT);
-
-            try
-            {
-                SendFile sendFileData = (SendFile) writeToPrinter(sendFileReport, true);
-
-                if (sendFileData.getFileID() != null && !sendFileData.getFileID().equals(""))
-                {
-                    steno.info("The printer is printing an incomplete job: File ID: "
-                            + sendFileData.getFileID()
-                            + " Expected sequence number: " + sendFileData.getExpectedSequenceNumber());
-
-                    printerToUse.getPrintEngine().reEstablishTransfer(sendFileData.getFileID(),
-                            sendFileData.
-                            getExpectedSequenceNumber());
-                }
-            } catch (RoboxCommsException ex)
-            {
-                steno.error(
-                        "Error determining whether the printer has a partially transferred job in progress");
-            }
-
-            String printJobID = printerToUse.printJobIDProperty().get();
-
-            printerToUse.getPrintEngine().makeETCCalculatorForJobOfUUID(printJobID);
-            Lookup.getSystemNotificationHandler().
-                    showDetectedPrintInProgressNotification();
-
-            switch (statusResponse.getPauseStatus())
-            {
-                case NOT_PAUSED:
-                    printerToUse.setPrinterStatus(PrinterStatus.PRINTING);
-                    break;
-                case PAUSED:
-                    printerToUse.setPrinterStatus(PrinterStatus.PAUSED);
-                    break;
-                case PAUSE_PENDING:
-                    printerToUse.setPrinterStatus(PrinterStatus.PAUSING);
-                    break;
-                case RESUME_PENDING:
-                    printerToUse.setPrinterStatus(PrinterStatus.RESUMING);
-                    break;
-                default:
-                    printerToUse.setPrinterStatus(PrinterStatus.PRINTING);
-                    break;
-            }
+           
         }
     }
 }

@@ -3,6 +3,8 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.Lookup;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
@@ -44,7 +46,43 @@ public class PrinterComponent extends Pane
     public enum Status
     {
 
-        READY, PRINTING, PAUSED, NOTIFICATION, ERROR
+        READY("printerStatus.idle"),
+        PRINTING("printerStatus.printing"),
+        PAUSED("printerStatus.paused"),
+        NOTIFICATION(""),
+        ERROR("");
+
+        private final String i18nString;
+
+        private Status(String i18nString)
+        {
+            this.i18nString = i18nString;
+        }
+
+        /**
+         *
+         * @return
+         */
+        public String getI18nString()
+        {
+            String stringToOutput = "";
+
+            if (!i18nString.equals(""))
+            {
+                stringToOutput = Lookup.i18n(i18nString);
+            }
+            return stringToOutput;
+        }
+
+        /**
+         *
+         * @return
+         */
+        @Override
+        public String toString()
+        {
+            return getI18nString();
+        }
     }
 
     @FXML
@@ -131,13 +169,19 @@ public class PrinterComponent extends Pane
         printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
         printer.getPrintEngine().progressProperty().addListener(progressListener);
         printer.printerStatusProperty().addListener(
-            (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
-            {
-                updateStatus(newValue);
-            });
+                (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
+                {
+                    updateStatus(newValue, printer.pauseStatusProperty().get());
+                });
+
+        printer.pauseStatusProperty().addListener(
+                (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
+                {
+                    updateStatus(printer.printerStatusProperty().get(), newValue);
+                });
 
         setSize(Size.SIZE_LARGE);
-        updateStatus(printer.printerStatusProperty().get());
+        updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
     }
 
     public void setProgress(double progress)
@@ -172,34 +216,39 @@ public class PrinterComponent extends Pane
         }
     }
 
-    private void updateStatus(PrinterStatus newStatus)
+    private void updateStatus(PrinterStatus printerStatus, PauseStatus pauseStatus)
     {
         Status status;
-        switch (newStatus)
+        switch (printerStatus)
         {
-            case ERROR:
-                status = Status.ERROR;
-                break;
+//            case ERROR:
+//                status = Status.ERROR;
+//                break;
             case OPENING_DOOR:
 //            case POST_PROCESSING:
             case PRINTING:
 //            case SLICING:
                 status = Status.PRINTING;
                 break;
-            case PAUSING:
-            case PAUSED:
-                status = Status.PAUSED;
-                break;
             default:
                 status = Status.READY;
                 break;
         }
+
+        if (pauseStatus == PauseStatus.PAUSED
+                || pauseStatus == PauseStatus.PAUSE_PENDING)
+
+        {
+            status = Status.PAUSED;
+        }
+
         setStatus(status);
-        progressBar.setStatus(newStatus);
+        progressBar.setStatus(status);
     }
 
     /**
-     * Redraw the component. Reposition child nodes according to selection state and size.
+     * Redraw the component. Reposition child nodes according to selection state
+     * and size.
      */
     private void redraw()
     {
@@ -271,7 +320,7 @@ public class PrinterComponent extends Pane
         }
 
         name.setStyle("-fx-font-size: " + fontSize
-            + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
+                + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
         name.setLayoutX(progressBarX);
 
         Font font = name.getFont();
