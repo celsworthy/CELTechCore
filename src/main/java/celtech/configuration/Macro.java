@@ -11,7 +11,7 @@ public enum Macro
 {
     //NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
 
-    CANCEL_PRINT("abort_print", "printerStatus.macro.homing", "M1"),
+    CANCEL_PRINT("abort_print", "printerStatus.macro.cancelling", "M1"),
     HOME_ALL("Home_all", "printerStatus.macro.homing", "M2"),
     EJECT_STUCK_MATERIAL("eject_stuck_material", "printerStatus.macro.ejectStuckMaterial", "M3"),
     LEVEL_GANTRY("level_gantry", "printerStatus.macro.levellingGantry", "M4"),
