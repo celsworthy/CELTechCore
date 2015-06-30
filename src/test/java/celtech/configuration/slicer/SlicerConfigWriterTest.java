@@ -5,12 +5,15 @@ package celtech.configuration.slicer;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.configuration.SlicerType;
+import celtech.configuration.fileRepresentation.SlicerMappingData;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import static org.apache.commons.io.FileUtils.readLines;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +31,85 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    @Test 
+    public void testOptionalOperatorConditionSucceeds() throws IOException {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
+            + TEMPFILENAME;
+        SlicerMappingData mappingData = new SlicerMappingData();
+        mappingData.setDefaults(new ArrayList<>());
+        mappingData.setMappingData(new HashMap<>());
+        mappingData.getMappingData().put("supportAngle", "supportOverhangThreshold_degrees:?generateSupportMaterial=false->-1");
+        configWriter.generateConfigForSlicerWithMappings(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile, mappingData);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("supportAngle=-1"));
+    }
+    
+    @Test 
+    public void testOptionalOperatorConditionFails() throws IOException {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
+        printerSettings.setPrintSupportOverride(SlicerParametersFile.SupportType.OBJECT_MATERIAL);
+        
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
+            + TEMPFILENAME;
+        SlicerMappingData mappingData = new SlicerMappingData();
+        mappingData.setDefaults(new ArrayList<>());
+        mappingData.setMappingData(new HashMap<>());
+        mappingData.getMappingData().put("supportAngle", "supportOverhangThreshold_degrees:?generateSupportMaterial=false->-1");
+        configWriter.generateConfigForSlicerWithMappings(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile, mappingData);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("supportAngle=40"));
+    }    
+    
+    @Test 
+    public void testNoOutputOperatorConditionFails() throws IOException {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
+        printerSettings.setRaftOverride(true);
+        
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
+            + TEMPFILENAME;
+        SlicerMappingData mappingData = new SlicerMappingData();
+        mappingData.setDefaults(new ArrayList<>());
+        mappingData.setMappingData(new HashMap<>());
+        mappingData.getMappingData().put("raftInterfaceLinewidth", "400:?printRaft=false->|");
+        configWriter.generateConfigForSlicerWithMappings(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile, mappingData);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(outputData.contains("raftInterfaceLinewidth=400"));
+    }      
+    
+    @Test 
+    public void testNoOutputOperatorConditionSucceeds() throws IOException {
+        String TEMPFILENAME = "output.roboxprofile";
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+            SlicerType.Cura);
+        PrinterSettings printerSettings = new PrinterSettings();
+        printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
+        printerSettings.setRaftOverride(false);
+        
+        String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
+            + TEMPFILENAME;
+        SlicerMappingData mappingData = new SlicerMappingData();
+        mappingData.setDefaults(new ArrayList<>());
+        mappingData.setMappingData(new HashMap<>());
+        mappingData.getMappingData().put("raftInterfaceLinewidth", "400:?printRaft=false->|");
+        configWriter.generateConfigForSlicerWithMappings(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile, mappingData);
+        List<String> outputData = readLines(new File(destinationFile));
+        assertTrue(! outputData.contains("raftInterfaceLinewidth"));
+    }      
+        
+    
     @Test
     public void testGenerateConfigForRaftOnCuraDraft() throws IOException
     {

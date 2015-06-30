@@ -1,8 +1,11 @@
 package celtech.printerControl.model;
 
 import celtech.appManager.Project;
+import celtech.configuration.BusyStatus;
 import celtech.configuration.Filament;
+import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -16,6 +19,7 @@ import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.comms.events.RoboxResponseConsumer;
@@ -187,6 +191,13 @@ public interface Printer extends RoboxResponseConsumer
 
     public boolean initialiseDataFileSend(String fileID, boolean jobCanBeReprinted) throws DatafileSendAlreadyInProgress, RoboxCommsException;
 
+    public SendFile requestSendFileReport() throws RoboxCommsException;
+
+    /**
+     *
+     * @param jobUUID
+     * @throws RoboxCommsException
+     */
     public void initiatePrint(String jobUUID) throws RoboxCommsException;
 
     public boolean isPrintInitiated();
@@ -220,8 +231,21 @@ public interface Printer extends RoboxResponseConsumer
 
     public void resume() throws PrinterException;
 
+    /**
+     *
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    /**
+     *
+     * @param nozzleHeaters
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
     public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
@@ -244,15 +268,45 @@ public interface Printer extends RoboxResponseConsumer
      */
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    /**
+     *
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    /**
+     *
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
     public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    /**
+     *
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
     public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    /**
+     *
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
     public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
-    public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException;
+    /**
+     *
+     * @param macro
+     * @param cancellable
+     * @throws PrinterException
+     */
+    public void runCommissioningTest(Macro macro, Cancellable cancellable) throws PrinterException;
 
     /**
      * This method 'prints' a GCode file. A print job is created and the printer
@@ -374,7 +428,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public ReadOnlyStringProperty printJobIDProperty();
 
-    public ReadOnlyObjectProperty pauseStatusProperty();
+    public ReadOnlyObjectProperty<PauseStatus> pauseStatusProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
 
@@ -397,7 +451,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public List<Integer> requestDebugData(boolean addToGCodeTranscript);
 
-    public ReadOnlyObjectProperty busyStatusProperty();
+    public ReadOnlyObjectProperty<BusyStatus> busyStatusProperty();
 
     /**
      * Causes a reduction in feedrate until the minimum value is reached.
@@ -437,8 +491,6 @@ public interface Printer extends RoboxResponseConsumer
      * @param suppress
      */
     public void suppressEEPROMErrorCorrection(boolean suppress);
-
-    public PrinterMetaStatus getPrinterMetaStatus();
 
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
 }

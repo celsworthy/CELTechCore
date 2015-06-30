@@ -5,6 +5,7 @@ package celtech.utils;
 
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
@@ -20,6 +21,7 @@ import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.Extruder;
@@ -29,7 +31,6 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterAncillarySystems;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PrinterIdentity;
-import celtech.printerControl.model.PrinterMetaStatus;
 import celtech.printerControl.model.PurgeStateTransitionManager;
 import celtech.printerControl.model.Reel;
 import celtech.printerControl.model.TemperatureAndPWMData;
@@ -919,12 +920,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public PrinterMetaStatus getPrinterMetaStatus()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder taskResponder)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -962,18 +957,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1034,6 +1017,24 @@ public class TestPrinter implements Printer
 
     @Override
     public void suppressEEPROMErrorCorrection(boolean suppress)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SendFile requestSendFileReport() throws RoboxCommsException
+    {
+        return null;
+    }
+
+    @Override
+    public void runCommissioningTest(Macro macro, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

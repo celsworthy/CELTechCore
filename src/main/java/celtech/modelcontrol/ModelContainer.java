@@ -860,12 +860,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedZ = in.readDouble();
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
-        int notUsed = in.readInt();
+        int storedSnapFaceIndexLegacy = in.readInt();
 
         double storedScaleY = storedScaleX;
         double storedScaleZ = storedScaleX;
         double storedRotationLean = 0d;
         double storedRotationTurn = 0d;
+        boolean convertSnapFace = false;
         if (in.available() > 0)
         {
             // Introduced in version 1.??
@@ -877,6 +878,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             storedScaleZ = in.readDouble();
             storedRotationLean = in.readDouble();
             storedRotationTurn = in.readDouble();
+        } else {
+            convertSnapFace = true;
         }
 
         initialiseTransforms();
@@ -889,6 +892,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationLean(storedRotationLean);
         setRotationTwist(storedRotationTwist);
         setRotationTurn(storedRotationTurn);
+        
+        if (convertSnapFace) {
+            snapToGround(getMeshViews().get(0), storedSnapFaceIndexLegacy);
+        }
 
         notifyShapeChange();
         notifyScreenExtentsChange();

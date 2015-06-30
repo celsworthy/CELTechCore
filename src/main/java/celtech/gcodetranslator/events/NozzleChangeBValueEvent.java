@@ -84,7 +84,7 @@ public class NozzleChangeBValueEvent extends GCodeParseEvent
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        String stringToReturn = "G0 B" + threeDPformatter.format(b);
+        String stringToReturn = "G1 B" + threeDPformatter.format(b);
 
         if (e != 0)
         {

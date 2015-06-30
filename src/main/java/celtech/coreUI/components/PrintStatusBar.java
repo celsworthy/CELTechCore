@@ -1,0 +1,202 @@
+/*
+ * Copyright 2014 CEL UK
+ */
+package celtech.coreUI.components;
+
+import celtech.Lookup;
+import celtech.configuration.BusyStatus;
+import celtech.configuration.Macro;
+import celtech.configuration.PauseStatus;
+import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.model.Printer;
+import javafx.beans.binding.StringBinding;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.fxml.Initializable;
+
+/**
+ *
+ * @author tony
+ */
+public class PrintStatusBar extends AppearingProgressBar implements Initializable
+{
+
+    private Printer printer = null;
+
+    private ChangeListener<PrinterStatus> printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> ov, PrinterStatus lastState, PrinterStatus newState) ->
+    {
+        reassessStatus();
+    };
+
+    private ChangeListener<PauseStatus> pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> ov, PauseStatus lastState, PauseStatus newState) ->
+    {
+        reassessStatus();
+    };
+
+    private ChangeListener<BusyStatus> busyStatusChangeListener = (ObservableValue<? extends BusyStatus> ov, BusyStatus lastState, BusyStatus newState) ->
+    {
+        reassessStatus();
+    };
+
+    public PrintStatusBar(Printer printer)
+    {
+        super();
+        this.printer = printer;
+
+        printer.printerStatusProperty().addListener(printerStatusChangeListener);
+        printer.pauseStatusProperty().addListener(pauseStatusChangeListener);
+        printer.busyStatusProperty().addListener(busyStatusChangeListener);
+
+        reassessStatus();
+    }
+
+    private void reassessStatus()
+    {
+        boolean statusProcessed = false;
+        boolean barShouldBeDisplayed = false;
+
+        unbindVariables();
+
+        //Now busy status
+        switch (printer.busyStatusProperty().get())
+        {
+            case NOT_BUSY:
+                break;
+            case BUSY:
+                break;
+            case LOADING_FILAMENT:
+            case UNLOADING_FILAMENT:
+                statusProcessed = true;
+                barShouldBeDisplayed = true;
+                largeProgressDescription.setText(printer.busyStatusProperty().get().getI18nString());
+                progressBar.setVisible(false);
+                largeTargetLegend.setVisible(false);
+                break;
+            default:
+                break;
+        }
+
+        //Pause status takes precedence
+        if (!statusProcessed)
+        {
+            switch (printer.pauseStatusProperty().get())
+            {
+                case NOT_PAUSED:
+                    break;
+                case PAUSED:
+                case PAUSE_PENDING:
+                case RESUME_PENDING:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.pauseStatusProperty().get().getI18nString());
+                    progressBar.setVisible(false);
+                    largeTargetLegend.setVisible(false);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //Now print status
+        if (!statusProcessed)
+        {
+            switch (printer.printerStatusProperty().get())
+            {
+                case IDLE:
+                    break;
+                case PRINTING:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    if (printer.getPrintEngine().etcAvailableProperty().get())
+                    {
+                        largeTargetValue.textProperty().bind(new StringBinding()
+                        {
+                            {
+                                super.bind(printer.getPrintEngine().progressETCProperty());
+                            }
+
+                            @Override
+                            protected String computeValue()
+                            {
+                                int secondsRemaining = printer.getPrintEngine().progressETCProperty().intValue();
+                                secondsRemaining += 30;
+                                if (secondsRemaining > 60)
+                                {
+                                    String hoursMinutes = convertToHoursMinutes(
+                                            secondsRemaining);
+                                    return hoursMinutes;
+                                } else
+                                {
+                                    return Lookup.i18n("dialogs.lessThanOneMinute");
+                                }
+                            }
+                        });
+
+                        largeTargetValue.setVisible(true);
+                        largeTargetLegend.setText(Lookup.i18n("dialogs.progressETCLabel"));
+                        largeTargetLegend.setVisible(true);
+                    }
+
+                    largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
+                    largeProgressCurrentValue.setVisible(true);
+
+                    progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                    progressBar.setVisible(true);
+                    break;
+                case RUNNING_MACRO:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.getPrintEngine().macroBeingRun.get().getFriendlyName());
+
+                    if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
+                            largeProgressCurrentValue.setVisible(true);
+
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressBar.setVisible(true);
+                        }
+                    }
+                    break;
+                default:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+                    break;
+            }
+        }
+
+        if (barShouldBeDisplayed)
+        {
+            startSlidingInToView();
+        } else
+        {
+            startSlidingOutOfView();
+        }
+    }
+
+    private String convertToHoursMinutes(int seconds)
+    {
+        int minutes = (int) (seconds / 60);
+        int hours = minutes / 60;
+        minutes = minutes - (60 * hours);
+        return String.format("%02d:%02d", hours, minutes);
+    }
+
+    public void unbindAll()
+    {
+        if (printer != null)
+        {
+            printer.printerStatusProperty().removeListener(printerStatusChangeListener);
+            printer.pauseStatusProperty().removeListener(pauseStatusChangeListener);
+            printer.busyStatusProperty().removeListener(busyStatusChangeListener);
+            unbindVariables();
+            slideOutOfView();
+            printer = null;
+        }
+    }
+}

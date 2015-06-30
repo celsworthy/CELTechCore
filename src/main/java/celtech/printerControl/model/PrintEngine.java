@@ -5,7 +5,6 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
-import celtech.configuration.PauseStatus;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -28,6 +27,7 @@ import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
 import celtech.printerControl.model.Head.HeadType;
+import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -107,8 +108,6 @@ public class PrintEngine implements ControllableService
     private final StringProperty printProgressMessage = new SimpleStringProperty();
     private final BooleanProperty dialogRequired = new SimpleBooleanProperty(
             false);
-    private final BooleanProperty printInProgress = new SimpleBooleanProperty(
-            false);
     private final DoubleProperty primaryProgressPercent = new SimpleDoubleProperty(
             0);
     private final DoubleProperty secondaryProgressPercent = new SimpleDoubleProperty(
@@ -116,6 +115,7 @@ public class PrintEngine implements ControllableService
     public final BooleanProperty sendingDataToPrinter = new SimpleBooleanProperty(
             false);
     private final ObjectProperty<Date> printJobStartTime = new SimpleObjectProperty<>();
+    public final ObjectProperty<Macro> macroBeingRun = new SimpleObjectProperty<>();
 
     /*
      * 
@@ -354,7 +354,6 @@ public class PrintEngine implements ControllableService
                                         associatedPrinter.getPrinterIdentity().printerFriendlyNameProperty().
                                         get());
                     }
-                    printInProgress.set(true);
                 }
             } else
             {
@@ -408,16 +407,6 @@ public class PrintEngine implements ControllableService
                     updateETCUsingLineNumber(newValue);
                 }
             }
-
-            private void updateETCUsingLineNumber(Number newValue)
-            {
-                if (linesInPrintingFile.get() > 0)
-                {
-                    double percentDone = newValue.doubleValue()
-                            / linesInPrintingFile.doubleValue();
-                    primaryProgressPercent.set(percentDone);
-                }
-            }
         };
 
         slicerService.setOnScheduled(scheduledSliceEventHandler);
@@ -445,6 +434,8 @@ public class PrintEngine implements ControllableService
 
         associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
+
+        detectAlreadyPrinting();
     }
 
     /**
@@ -474,6 +465,16 @@ public class PrintEngine implements ControllableService
         primaryProgressPercent.set(etcCalculator.getPercentCompleteAtLine(lineNumber));
         progressETC.set(etcCalculator.getETCPredicted(lineNumber));
         progressCurrentLayer.set(etcCalculator.getCompletedLayerNumberForLineNumber(lineNumber));
+    }
+
+    private void updateETCUsingLineNumber(Number newValue)
+    {
+        if (linesInPrintingFile.get() > 0)
+        {
+            double percentDone = newValue.doubleValue()
+                    / linesInPrintingFile.doubleValue();
+            primaryProgressPercent.set(percentDone);
+        }
     }
 
     public void makeETCCalculatorForJobOfUUID(String printJobID)
@@ -739,23 +740,8 @@ public class PrintEngine implements ControllableService
             }
         }
         associatedPrinter.initiatePrint(printJob.getJobUUID());
-        printInProgress.set(true);
         acceptedPrintRequest = true;
         return acceptedPrintRequest;
-    }
-
-    private void setPrintInProgress(boolean value)
-    {
-        printInProgress.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public BooleanProperty printInProgressProperty()
-    {
-        return printInProgress;
     }
 
     private void setPrintProgressMessage(String value)
@@ -1005,23 +991,25 @@ public class PrintEngine implements ControllableService
 
     protected boolean runMacroPrintJob(Macro macro) throws MacroPrintException
     {
-        return runMacroPrintJob(macro.getMacroFileName(), true);
+        return runMacroPrintJob(macro, true);
     }
 
     /**
      *
-     * @param macroName
+     * @param macro
      * @param useSDCard
      * @return
      * @throws celtech.printerControl.comms.commands.MacroPrintException
      */
-    protected boolean runMacroPrintJob(String macroName, boolean useSDCard) throws MacroPrintException
+    protected boolean runMacroPrintJob(Macro macro, boolean useSDCard) throws MacroPrintException
     {
+        macroBeingRun.set(macro);
+
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
 
         //Create the print job directory
-        String printUUID = SystemUtils.generate16DigitID();
+        String printUUID = macro.getMacroJobNumber();
         String printJobDirectoryName = ApplicationConfiguration.getApplicationStorageDirectory()
                 + ApplicationConfiguration.macroFileSubpath;
         File printJobDirectory = new File(printJobDirectoryName);
@@ -1036,9 +1024,9 @@ public class PrintEngine implements ControllableService
 
         try
         {
-            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
+            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macro.getMacroFileName());
             // Write the contents of the macro file to the print area
-            FileUtils.writeLines(printjobFile, macroContents, true);
+            FileUtils.writeLines(printjobFile, macroContents, false);
         } catch (IOException ex)
         {
             throw new MacroPrintException("Error writing macro print job file: "
@@ -1048,8 +1036,6 @@ public class PrintEngine implements ControllableService
         {
             throw new MacroPrintException("Error whilst generating macro - " + ex.getMessage());
         }
-
-        steno.info("About to call transfer for " + macroName);
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -1118,7 +1104,7 @@ public class PrintEngine implements ControllableService
         return progressNumLayers;
     }
 
-    protected void goToIdle()
+    private void goToIdle()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -1137,12 +1123,11 @@ public class PrintEngine implements ControllableService
             secondaryProgressPercent.unbind();
             setSecondaryProgressPercent(0);
             sendingDataToPrinter.set(false);
-            setPrintInProgress(false);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Idle"));
         });
     }
 
-    void goToSlicing()
+    private void goToSlicing()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -1154,12 +1139,11 @@ public class PrintEngine implements ControllableService
             secondaryProgressPercent.unbind();
             setSecondaryProgressPercent(0);
             sendingDataToPrinter.set(false);
-            setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Slicing"));
         });
     }
 
-    void goToPostProcessing()
+    private void goToPostProcessing()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -1171,12 +1155,11 @@ public class PrintEngine implements ControllableService
             secondaryProgressPercent.unbind();
             sendingDataToPrinter.set(false);
             setSecondaryProgressPercent(0);
-            setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.PostProcessing"));
         });
     }
 
-    void goToSendingToPrinter()
+    private void goToSendingToPrinter()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
@@ -1188,48 +1171,30 @@ public class PrintEngine implements ControllableService
             setSecondaryProgressPercent(0);
             secondaryProgressPercent.bind(transferGCodeToPrinterService.progressProperty());
             sendingDataToPrinter.set(true);
-            setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.SendingToPrinter"));
         });
     }
 
-    void goToPause()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            setPrintInProgress(true);
-            setPrintProgressTitle(Lookup.i18n("PrintQueue.Paused"));
-        });
-    }
-
-    void goToPrinting()
+    private void goToPrinting()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             printProgressMessage.unbind();
             primaryProgressPercent.unbind();
-            if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
-            {
-                setPrimaryProgressPercent(0);
-            }
+            setPrimaryProgressPercent(0);
             printProgressMessage.set("");
-            setPrintInProgress(true);
             setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
         });
     }
 
-    void goToExecutingMacro()
+    private void goToExecutingMacro()
     {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             printProgressMessage.unbind();
             primaryProgressPercent.unbind();
-            if (associatedPrinter.printerStatusProperty().get() != PrinterStatus.PAUSED)
-            {
-                setPrimaryProgressPercent(0);
-            }
+            setPrimaryProgressPercent(0);
             printProgressMessage.set("");
-            setPrintInProgress(true);
             setPrintProgressTitle(associatedPrinter.printerStatusProperty().get().getI18nString());
         });
     }
@@ -1308,36 +1273,85 @@ public class PrintEngine implements ControllableService
             String printJobID = associatedPrinter.printJobIDProperty().get();
             if (printJobID != null)
             {
-                if (printJobID.codePointAt(0) != 0)
+                if (!printJobID.equals("")
+                        && printJobID.codePointAt(0) != 0)
                 {
                     roboxIsPrinting = true;
-                    makeETCCalculatorForJobOfUUID(printJobID);
                 }
             }
 
             if (roboxIsPrinting)
             {
-                makeETCCalculatorForJobOfUUID(printJobID);
-                if (raiseProgressNotifications
-                        && associatedPrinter.getPrinterMetaStatus().printerStatusProperty().get() != PrinterStatus.PRINTING)
-                {
-                    Lookup.getSystemNotificationHandler().
-                            showDetectedPrintInProgressNotification();
-                }
-                steno.debug("Printer "
-                        + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
-                        + " is printing");
+                boolean incompleteTransfer = false;
 
-                if (associatedPrinter.pauseStatusProperty().get() == PauseStatus.PAUSED)
+                if (!transferGCodeToPrinterService.isRunning())
                 {
-                    associatedPrinter.setPrinterStatus(PrinterStatus.PAUSED);
-                } else
+                    try
+                    {
+                        SendFile sendFileData = (SendFile) associatedPrinter.requestSendFileReport();
+
+                        if (sendFileData.getFileID() != null && !sendFileData.getFileID().equals(""))
+                        {
+                            steno.info("The printer is printing an incomplete job: File ID: "
+                                    + sendFileData.getFileID()
+                                    + " Expected sequence number: " + sendFileData.getExpectedSequenceNumber());
+
+                            reEstablishTransfer(sendFileData.getFileID(),
+                                    sendFileData.
+                                    getExpectedSequenceNumber());
+
+                            associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+
+                            incompleteTransfer = true;
+                        }
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error(
+                                "Error determining whether the printer has a partially transferred job in progress");
+                    }
+                }
+
+                if (!incompleteTransfer)
                 {
-                    printInProgress.set(true);
+                    Optional<Macro> macroRunning = Macro.getMacroForPrintJobID(printJobID);
+
+                    if (macroRunning.isPresent())
+                    {
+                        steno.debug("Printer "
+                                + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
+                                + " is running macro " + macroRunning.get().name());
+
+                        macroBeingRun.set(macroRunning.get());
+                        associatedPrinter.setPrinterStatus(PrinterStatus.RUNNING_MACRO);
+                    } else
+                    {
+                        makeETCCalculatorForJobOfUUID(printJobID);
+
+                        if (etcAvailable.get())
+                        {
+                            updateETCUsingETCCalculator(associatedPrinter.printJobLineNumberProperty().get());
+                        } else
+                        {
+                            updateETCUsingLineNumber(associatedPrinter.printJobLineNumberProperty().get());
+                        }
+
+                        if (raiseProgressNotifications
+                                && associatedPrinter.printerStatusProperty().get() != PrinterStatus.PRINTING)
+                        {
+                            Lookup.getSystemNotificationHandler().
+                                    showDetectedPrintInProgressNotification();
+                        }
+                        steno.debug("Printer "
+                                + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
+                                + " is printing");
+
+                        associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+                    }
                 }
             } else
             {
                 associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
+                macroBeingRun.set(null);
             }
         }
     }
