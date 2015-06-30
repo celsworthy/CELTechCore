@@ -20,7 +20,11 @@ public enum Macro
     TEST_X("x_test", "printerStatus.macro.testX", "M7"),
     TEST_Y("y_test", "printerStatus.macro.testY", "M8"),
     TEST_Z("z_test", "printerStatus.macro.testZ", "M9"),
-    LEVEL_Y("level_Y", "printerStatus.macro.levellingY", "M10");
+    LEVEL_Y("level_Y", "printerStatus.macro.levellingY", "M10"),
+    // Commissionator macros
+    COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
+    COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),
+    COMMISSIONING_ZMOTOR_DIRECTION("commissioning_level_gantry_test", "printerStatus.macro.testZ", "C3");
 
     private String macroFileName;
     private String i18nKey;

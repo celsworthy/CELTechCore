@@ -31,10 +31,10 @@ public enum MaterialType
      *
      */
     PET("PETG", 1.27),
-        /**
+    /**
      *
      */
-    TPE("TPE", 1.2);
+    TPU("TPU", 1.2);
 
     private String friendlyName;
     /**
