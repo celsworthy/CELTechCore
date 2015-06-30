@@ -1276,9 +1276,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Print line number: " + getPrintJobLineNumber());
         outputString.append("\n");
-        outputString.append("Pause status: " + getPauseStatus());
+        outputString.append("Pause status: " + getPauseStatus().name());
         outputString.append("\n");
-        outputString.append("Busy status: " + getBusyStatus());
+        outputString.append("Busy status: " + getBusyStatus().name());
         outputString.append("\n");
         outputString.append("X switch status: " + isxSwitchStatus());
         outputString.append("\n");

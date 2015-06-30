@@ -1,13 +1,14 @@
 package celtech.printerControl.model;
 
 import celtech.appManager.Project;
+import celtech.configuration.BusyStatus;
 import celtech.configuration.Filament;
+import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -18,6 +19,7 @@ import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.comms.events.RoboxResponseConsumer;
@@ -26,7 +28,6 @@ import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionMana
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
@@ -90,7 +91,7 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
     public void resetPurgeTemperature(PrinterSettings printerSettings);
-    
+
     public PurgeStateTransitionManager startPurge() throws PrinterException;
 
     /**
@@ -185,16 +186,23 @@ public interface Printer extends RoboxResponseConsumer
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition);
 
     public void homeX();
+
     public void homeY();
+
     public void homeZ();
 
     public void probeX();
+
     public float getXDelta() throws PrinterException;
+
     public void probeY();
+
     public float getYDelta() throws PrinterException;
+
     public void probeZ();
+
     public float getZDelta() throws PrinterException;
-    
+
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException;
 
     public void levelGantryRaw();
@@ -208,6 +216,8 @@ public interface Printer extends RoboxResponseConsumer
      * @throws RoboxCommsException
      */
     public boolean initialiseDataFileSend(String fileID, boolean jobCanBeReprinted) throws DatafileSendAlreadyInProgress, RoboxCommsException;
+
+    public SendFile requestSendFileReport() throws RoboxCommsException;
 
     /**
      *
@@ -288,77 +298,81 @@ public interface Printer extends RoboxResponseConsumer
     public void resume() throws PrinterException;
 
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void purgeMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
+     *
      * @param blockUntilFinished
      * @param cancellable
-     * @throws PrinterException 
+     * @throws PrinterException
      */
     public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-    
+
     /**
-     * 
-     * @param macroName
-     * @param cancellable
-     * @throws PrinterException 
-     */
-    public void runCommissioningTest(String macroName, Cancellable cancellable) throws PrinterException;
-    
-    /**
-     * This method 'prints' a GCode file. A print job is created and the printer will manage
-     * extrusion dynamically. The printer will register as an error handler for the duration of the
-     * 'print'.
      *
-     * @see executeMacro executeMacro - if you wish to run a macro rather than execute a print job
+     * @param macro
+     * @param cancellable
+     * @throws PrinterException
+     */
+    public void runCommissioningTest(Macro macro, Cancellable cancellable) throws PrinterException;
+
+    /**
+     * This method 'prints' a GCode file. A print job is created and the printer
+     * will manage extrusion dynamically. The printer will register as an error
+     * handler for the duration of the 'print'.
+     *
+     * @see executeMacro executeMacro - if you wish to run a macro rather than
+     * execute a print job
      * @param fileName
-     * @param monitorForErrors Indicates whether the printer should automatically manage error
-     * handling (e.g. auto reduction of print speed)
+     * @param monitorForErrors Indicates whether the printer should
+     * automatically manage error handling (e.g. auto reduction of print speed)
      * @throws PrinterException
      */
     public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
+
     public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException;
 
     public void callbackWhenNotBusy(TaskResponder responder);
@@ -463,8 +477,8 @@ public interface Printer extends RoboxResponseConsumer
      * @throws RoboxCommsException
      */
     public void transmitSetTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
-        double nozzle1FirstLayerTarget, double nozzle1Target,
-        double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
+            double nozzle1FirstLayerTarget, double nozzle1Target,
+            double bedFirstLayerTarget, double bedTarget, double ambientTarget) throws RoboxCommsException;
 
     /**
      *
@@ -501,10 +515,10 @@ public interface Printer extends RoboxResponseConsumer
      * @throws RoboxCommsException
      */
     public AckResponse transmitWriteHeadEEPROM(String headTypeCode, String headUniqueID,
-        float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
-        float nozzle1YOffset,
-        float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset,
-        float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
+            float maximumTemperature, float thermistorBeta, float thermistorTCal, float nozzle1XOffset,
+            float nozzle1YOffset,
+            float nozzle1ZOffset, float nozzle1BOffset, float nozzle2XOffset, float nozzle2YOffset,
+            float nozzle2ZOffset, float nozzle2BOffset, float lastFilamentTemperature, float hourCounter) throws RoboxCommsException;
 
     /**
      *
@@ -534,12 +548,12 @@ public interface Printer extends RoboxResponseConsumer
      * @throws RoboxCommsException
      */
     public void transmitWriteReelEEPROM(int reelNumber, String filamentID,
-        float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
-        float reelFirstLayerBedTemperature,
-        float reelBedTemperature,
-        float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier,
-        float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
-        MaterialType materialType, Color displayColour) throws RoboxCommsException;
+            float reelFirstLayerNozzleTemperature, float reelNozzleTemperature,
+            float reelFirstLayerBedTemperature,
+            float reelBedTemperature,
+            float reelAmbientTemperature, float reelFilamentDiameter, float reelFilamentMultiplier,
+            float reelFeedRateMultiplier, float reelRemainingFilament, String friendlyName,
+            MaterialType materialType, Color displayColour) throws RoboxCommsException;
 
     public void updatePrinterDisplayColour(Color displayColour) throws PrinterException;
 
@@ -570,20 +584,20 @@ public interface Printer extends RoboxResponseConsumer
 
     public ReadOnlyStringProperty printJobIDProperty();
 
-    public ReadOnlyObjectProperty pauseStatusProperty();
+    public ReadOnlyObjectProperty<PauseStatus> pauseStatusProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
 
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
     public void changeFeedRateMultiplier(double feedRate) throws PrinterException;
-    
+
     public void changeFilamentInfo(String extruderLetter,
-        double filamentDiameter,
-        double extrusionMultiplier) throws PrinterException;
-    
+            double filamentDiameter,
+            double extrusionMultiplier) throws PrinterException;
+
     public void registerErrorConsumer(ErrorConsumer errorConsumer,
-        List<FirmwareError> errorsOfInterest);
+            List<FirmwareError> errorsOfInterest);
 
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer);
 
@@ -593,11 +607,12 @@ public interface Printer extends RoboxResponseConsumer
 
     public List<Integer> requestDebugData(boolean addToGCodeTranscript);
 
-    public ReadOnlyObjectProperty busyStatusProperty();
+    public ReadOnlyObjectProperty<BusyStatus> busyStatusProperty();
 
     /**
-     * Causes a reduction in feedrate until the minimum value is reached. Returns false if the limit
-     * has not been reached and true if it has (implying further action is needed by the caller)
+     * Causes a reduction in feedrate until the minimum value is reached.
+     * Returns false if the limit has not been reached and true if it has
+     * (implying further action is needed by the caller)
      *
      * @param error
      * @return
@@ -605,7 +620,7 @@ public interface Printer extends RoboxResponseConsumer
     public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 
     public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
-    
+
     /**
      * This method is intended to be used by commissioning tools and should not
      * be called in normal operation. Causes the specified list of firmware
@@ -632,8 +647,6 @@ public interface Printer extends RoboxResponseConsumer
      * @param suppress
      */
     public void suppressEEPROMErrorCorrection(boolean suppress);
-
-    public PrinterMetaStatus getPrinterMetaStatus();
 
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
 }

@@ -82,8 +82,8 @@ public class TweakPanelController implements Initializable
 
     private void bindPrinter(Printer printer)
     {
-        speedSliderHBox.setVisible(printer.getPrinterMetaStatus().printerStatusProperty().get() == PrinterStatus.PRINTING);
-        speedSliderHBox.visibleProperty().bind(printer.getPrinterMetaStatus().printerStatusProperty().isEqualTo(
+        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
+        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(
             PrinterStatus.PRINTING));
         speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
             feedRateMultiplierProperty().get());
