@@ -1736,7 +1736,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             {
                 // We have to make sure we only close on the inner perimeters (if we can!)
                 // Calculate new start/end values
-                int endOfInnerPerimeter = extrusionBuffer.getPreviousExtrusionTask(
+                int endOfInnerPerimeter = extrusionBuffer.getPreviousExtrusionTaskThisLayerOnly(
                     modifiedFinalExtrusionEventIndex, ExtrusionTask.Perimeter);
                 if (endOfInnerPerimeter < 0
                     || extrusionBuffer.getPreviousExtrusionEventIndex(
@@ -2192,6 +2192,12 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 extrusionBuffer.add(eventSearchIndex + 1, newBEvent);
                 extrusionBuffer.remove(eventSearchIndex);
                 success = true;
+                break;
+            }
+            else if (extrusionBuffer.get(eventSearchIndex) instanceof LayerChangeEvent)
+            {
+                //We didn't have a close at the start of our layer - don't go any further and don't bother trying to change the open
+                steno.info("No open in this layer - decided not to partial open");
                 break;
             }
 

@@ -2,6 +2,7 @@ package celtech.gcodetranslator;
 
 import celtech.gcodetranslator.events.ExtrusionEvent;
 import celtech.gcodetranslator.events.GCodeParseEvent;
+import celtech.gcodetranslator.events.LayerChangeEvent;
 import celtech.gcodetranslator.events.MCodeEvent;
 import celtech.gcodetranslator.events.MovementEvent;
 import java.util.ArrayList;
@@ -146,6 +147,30 @@ public class ExtrusionBuffer extends ArrayList<GCodeParseEvent>
                     lastValidEventBoundaryIndex = index;
                     break;
                 }
+            }
+        }
+
+        return lastValidEventBoundaryIndex;
+    }
+
+    public int getPreviousExtrusionTaskThisLayerOnly(int startingIndex, ExtrusionTask task)
+    {
+        int lastValidEventBoundaryIndex = -1;
+
+        for (int index = startingIndex; index >= 0; index--)
+        {
+            if (this.get(index).getClass() == ExtrusionEvent.class)
+            {
+                ExtrusionEvent extrusionEvent = (ExtrusionEvent) this.get(index);
+                if (extrusionEvent.getExtrusionTask() == task)
+                {
+                    lastValidEventBoundaryIndex = index;
+                    break;
+                }
+            }
+            else if (this.get(index) instanceof LayerChangeEvent)
+            {
+                break;
             }
         }
 
