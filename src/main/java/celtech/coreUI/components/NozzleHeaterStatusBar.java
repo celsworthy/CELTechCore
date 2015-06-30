@@ -141,10 +141,10 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
 
         if (barShouldBeDisplayed)
         {
-            startSlidingOut();
+            startSlidingInToView();
         } else
         {
-            startSlidingIn();
+            startSlidingOutOfView();
         }
     }
 
@@ -157,6 +157,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
             heater.nozzleFirstLayerTargetTemperatureProperty().removeListener(numberChangeListener);
             heater.heaterModeProperty().removeListener(heaterModeChangeListener);
             unbindVariables();
+            slideOutOfView();
             heater = null;
         }
     }

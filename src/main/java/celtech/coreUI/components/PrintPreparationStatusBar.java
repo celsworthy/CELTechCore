@@ -18,7 +18,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
 
     private Printer printer = null;
 
-    private ChangeListener<Boolean> serviceStatusListener = (ObservableValue<? extends Boolean> ov, Boolean lastState, Boolean newState) ->
+    private final ChangeListener<Boolean> serviceStatusListener = (ObservableValue<? extends Boolean> ov, Boolean lastState, Boolean newState) ->
     {
         reassessStatus();
     };
@@ -61,7 +61,8 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
 
             progressBar.progressProperty().bind(printer.getPrintEngine().postProcessorService.progressProperty());
             progressBar.setVisible(true);
-        } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
+        } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get()
+                && printer.getPrintEngine().macroBeingRun.get() == null)
         {
             barShouldBeDisplayed = true;
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
@@ -75,10 +76,10 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
 
         if (barShouldBeDisplayed)
         {
-            startSlidingOut();
+            startSlidingInToView();
         } else
         {
-            startSlidingIn();
+            startSlidingOutOfView();
         }
     }
 
@@ -90,6 +91,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             printer.getPrintEngine().postProcessorService.runningProperty().removeListener(serviceStatusListener);
             printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().removeListener(serviceStatusListener);
             unbindVariables();
+            slideOutOfView();
             printer = null;
         }
     }

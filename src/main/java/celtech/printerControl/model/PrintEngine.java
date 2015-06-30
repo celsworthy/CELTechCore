@@ -1344,6 +1344,7 @@ public class PrintEngine implements ControllableService
             } else
             {
                 associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
+                macroBeingRun.set(null);
             }
         }
     }

@@ -150,10 +150,10 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
 
         if (barShouldBeDisplayed)
         {
-            startSlidingOut();
+            startSlidingInToView();
         } else
         {
-            startSlidingIn();
+            startSlidingOutOfView();
         }
     }
 
@@ -183,5 +183,6 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
             bedTargetTemperature = null;
         }
         unbindVariables();
+        slideOutOfView();
     }
 }
