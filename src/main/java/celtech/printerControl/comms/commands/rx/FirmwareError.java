@@ -48,6 +48,7 @@ public enum FirmwareError
      ERROR_D_LOAD_SLIP 27
      ERROR_E_UNLOAD_SLIP 28
      ERROR_D_UNLOAD_SLIP 29
+     ERROR_POWEROFF_WHILST_HOT 30
      */
 
     SD_CARD("error.ERROR_SD_CARD", 0, OK_ABORT),
@@ -80,6 +81,7 @@ public enum FirmwareError
     D_LOAD_ERROR("error.ERROR_LOAD", 27, OK),
     E_UNLOAD_ERROR("error.ERROR_UNLOAD", 28, OK),
     D_UNLOAD_ERROR("error.ERROR_UNLOAD", 29, OK),
+    ERROR_POWEROFF_WHILST_HOT("error.ERROR_POWEROFF_WHILST_HOT", 30, OK),
     UNKNOWN("error.ERROR_UNKNOWN", -1, OK_ABORT),
     ALL_ERRORS("", -99);
 
