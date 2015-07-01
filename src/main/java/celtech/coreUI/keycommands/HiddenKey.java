@@ -67,6 +67,19 @@ public class HiddenKey
                     triggerListeners("dummy:", "ERROR E_FILAMENT_SLIP");
                 }
                 break;    
+
+            case M:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    if (Lookup.getCurrentlySelectedPrinterProperty().get().
+                           extrudersProperty().get(0).filamentLoadedProperty().get()) {
+                        triggerListeners("dummy:", "UNLOAD 0");    
+                    } else{
+                        triggerListeners("dummy:", "LOAD 0");
+                    }
+                    
+                }
+                break;                    
             case D:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
