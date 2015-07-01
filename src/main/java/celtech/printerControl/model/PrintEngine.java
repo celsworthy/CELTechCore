@@ -27,6 +27,7 @@ import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
 import celtech.printerControl.comms.commands.rx.SendFile;
+import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerService;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
@@ -496,16 +497,6 @@ public class PrintEngine implements ControllableService
         stopAllServices();
     }
 
-    /*
-     * Properties
-     */
-    /**
-     *
-     * @param project
-     * @param printQuality
-     * @param settings
-     * @return
-     */
     public synchronized boolean printProject(Project project)
     {
         boolean acceptedPrintRequest = false;
@@ -662,8 +653,16 @@ public class PrintEngine implements ControllableService
             }
         }
         // End of hack
-
-        //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+        
+        // Hack to change raft related settings for Draft ABS prints
+        if (project.getPrintQuality() == PrintQualityEnumeration.DRAFT &&
+            project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS) {
+            settingsToUse.setRaftBaseLinewidth_mm(1.250f);
+            settingsToUse.setRaftAirGapLayer0_mm(0.285f);
+            settingsToUse.setInterfaceLayers(1);
+        }
+        // End of hack
+        
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
         configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
                 (float) (centreOfPrintedObject.getZ()));
@@ -762,94 +761,51 @@ public class PrintEngine implements ControllableService
         secondaryProgressPercent.set(value);
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyDoubleProperty secondaryProgressProperty()
     {
         return secondaryProgressPercent;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public ReadOnlyBooleanProperty runningProperty()
     {
         return dialogRequired;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public ReadOnlyStringProperty messageProperty()
     {
         return printProgressMessage;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public ReadOnlyDoubleProperty progressProperty()
     {
         return primaryProgressPercent;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public ReadOnlyStringProperty titleProperty()
     {
         return printProgressTitle;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public boolean cancelRun()
     {
         return false;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyIntegerProperty linesInPrintingFileProperty()
     {
         return linesInPrintingFile;
     }
 
-    /**
-     *
-     * @param filename
-     * @param useSDCard
-     * @return
-     * @throws celtech.printerControl.comms.commands.MacroPrintException
-     */
     protected boolean printGCodeFile(final String filename, final boolean useSDCard) throws MacroPrintException
     {
         return printGCodeFile(filename, useSDCard, false);
     }
 
-    /**
-     *
-     * @param filename
-     * @param useSDCard
-     * @param dontInitiatePrint
-     * @return
-     * @throws celtech.printerControl.comms.commands.MacroPrintException
-     */
     protected boolean printGCodeFile(final String filename, final boolean useSDCard,
             final boolean dontInitiatePrint) throws MacroPrintException
     {
@@ -992,13 +948,6 @@ public class PrintEngine implements ControllableService
         return runMacroPrintJob(macro, true);
     }
 
-    /**
-     *
-     * @param macro
-     * @param useSDCard
-     * @return
-     * @throws celtech.printerControl.comms.commands.MacroPrintException
-     */
     protected boolean runMacroPrintJob(Macro macro, boolean useSDCard) throws MacroPrintException
     {
         macroBeingRun.set(macro);
@@ -1070,18 +1019,11 @@ public class PrintEngine implements ControllableService
         return printUUID;
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isConsideringPrintRequest()
     {
         return consideringPrintRequest;
     }
 
-    /**
-     * @return the progressETC
-     */
     public IntegerProperty progressETCProperty()
     {
         return progressETC;
