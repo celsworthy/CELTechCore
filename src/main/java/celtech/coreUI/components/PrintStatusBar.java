@@ -188,6 +188,23 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                         }
                     }
                     break;
+                case PURGING_HEAD:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
+                            largeProgressCurrentValue.setVisible(true);
+
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressBar.setVisible(true);
+                        }
+                    }
+                    break;
                 default:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;

@@ -175,6 +175,7 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
         } else if (directionToSlide == SlidingComponentDirection.DOWN_FROM_TOP
                 || directionToSlide == SlidingComponentDirection.UP_FROM_BOTTOM)
         {
+            System.out.println("Called with " + amountToShow);
             double targetPanelHeight = panelHeight * amountToShow;
             double heightToHide = panelHeight - targetPanelHeight;
             double translateByY = 0;
@@ -253,8 +254,8 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
             } else
             {
                 startFromTime = transitionLengthMillis.subtract(time);
+                showSidebar.jumpTo(startFromTime);
             }
-            showSidebar.jumpTo(startFromTime);
             showSidebar.play();
         }
     }
