@@ -389,12 +389,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         case IDLE:
                             filamentSlipActionFired = 0;
                             break;
-                        case CALIBRATING_NOZZLE_OPENING:
-                            if (!canCalibrateNozzleOpening.get())
-                            {
-                                okToChangeState = false;
-                            }
-                        break;
                     }
 
                     if (okToChangeState)
