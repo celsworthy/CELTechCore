@@ -383,24 +383,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void setPrinterStatus(PrinterStatus printerStatus)
     {
         Lookup.getTaskExecutor().
-                runOnGUIThread(() ->
-                        {
-                            boolean okToChangeState = true;
-                            steno.debug("Status was " + this.printerStatus.get().name()
-                                    + " and is going to "
-                                    + printerStatus);
-                            switch (printerStatus)
-                            {
-                                case IDLE:
-                                    filamentSlipActionFired = 0;
-                                    break;
-                                case CALIBRATING_NOZZLE_OPENING:
-                                    if (!canCalibrateNozzleOpening.get())
-                                    {
-                                        okToChangeState = false;
-                                    }
-                                    break;
-                            }
+            runOnGUIThread(() ->
+                {
+                    boolean okToChangeState = true;
+                    steno.debug("Status was " + this.printerStatus.get().name()
+                        + " and is going to "
+                        + printerStatus);
+                    switch (printerStatus)
+                    {
+                        case IDLE:
+                            filamentSlipActionFired = 0;
+                            break;
+                    }
 
                             if (okToChangeState)
                             {
