@@ -24,17 +24,22 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
 
     private Printer printer = null;
 
-    private ChangeListener<PrinterStatus> printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> ov, PrinterStatus lastState, PrinterStatus newState) ->
+    private final ChangeListener<PrinterStatus> printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> ov, PrinterStatus lastState, PrinterStatus newState) ->
     {
         reassessStatus();
     };
 
-    private ChangeListener<PauseStatus> pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> ov, PauseStatus lastState, PauseStatus newState) ->
+    private final ChangeListener<PrintQueueStatus> printQueueStatusChangeListener = (ObservableValue<? extends PrintQueueStatus> ov, PrintQueueStatus lastState, PrintQueueStatus newState) ->
     {
         reassessStatus();
     };
 
-    private ChangeListener<BusyStatus> busyStatusChangeListener = (ObservableValue<? extends BusyStatus> ov, BusyStatus lastState, BusyStatus newState) ->
+    private final ChangeListener<PauseStatus> pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> ov, PauseStatus lastState, PauseStatus newState) ->
+    {
+        reassessStatus();
+    };
+
+    private final ChangeListener<BusyStatus> busyStatusChangeListener = (ObservableValue<? extends BusyStatus> ov, BusyStatus lastState, BusyStatus newState) ->
     {
         reassessStatus();
     };
@@ -47,6 +52,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         printer.printerStatusProperty().addListener(printerStatusChangeListener);
         printer.pauseStatusProperty().addListener(pauseStatusChangeListener);
         printer.busyStatusProperty().addListener(busyStatusChangeListener);
+        printer.getPrintEngine().printQueueStatusProperty().addListener(printQueueStatusChangeListener);
 
         reassessStatus();
     }
@@ -214,6 +220,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             printer.printerStatusProperty().removeListener(printerStatusChangeListener);
             printer.pauseStatusProperty().removeListener(pauseStatusChangeListener);
             printer.busyStatusProperty().removeListener(busyStatusChangeListener);
+            printer.getPrintEngine().printQueueStatusProperty().removeListener(printQueueStatusChangeListener);
             unbindVariables();
             slideOutOfView();
             printer = null;
