@@ -6,7 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.coreUI.components.LargeProgress;
 import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;

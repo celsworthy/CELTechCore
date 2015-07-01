@@ -105,6 +105,12 @@ public interface Printer extends RoboxResponseConsumer
 
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException;
 
+    public NozzleHeightStateTransitionManager getNozzleHeightCalibrationStateManager();
+
+    public NozzleOpeningStateTransitionManager getNozzleOpeningCalibrationStateManager();
+
+    public XAndYStateTransitionManager getNozzleAlignmentCalibrationStateManager();
+
     /*
      * Remove head
      */

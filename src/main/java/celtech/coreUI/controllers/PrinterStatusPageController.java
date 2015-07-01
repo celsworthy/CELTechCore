@@ -391,7 +391,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 //                case SENDING_TO_PRINTER:
 //                    visible = false;
 //                    break;
-                case PRINTING:
+                case PRINTING_PROJECT:
                     visible = false;
                     break;
 //                case EXECUTING_MACRO:
@@ -450,7 +450,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 //                        showProgressGroup.set(false);
 //                    }
 //                    break;
-                case PRINTING:
+                case PRINTING_PROJECT:
                     showProgressGroupFlag = true;
 //                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
                     break;

@@ -226,7 +226,7 @@ public class PrinterComponent extends Pane
 //                break;
             case OPENING_DOOR:
 //            case POST_PROCESSING:
-            case PRINTING:
+            case PRINTING_PROJECT:
 //            case SLICING:
                 status = Status.PRINTING;
                 break;

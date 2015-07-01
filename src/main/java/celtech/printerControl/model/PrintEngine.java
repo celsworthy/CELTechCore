@@ -23,6 +23,7 @@ import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.SliceResult;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
+import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
@@ -50,6 +51,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -112,10 +114,10 @@ public class PrintEngine implements ControllableService
             0);
     private final DoubleProperty secondaryProgressPercent = new SimpleDoubleProperty(
             0);
-    public final BooleanProperty sendingDataToPrinter = new SimpleBooleanProperty(
-            false);
     private final ObjectProperty<Date> printJobStartTime = new SimpleObjectProperty<>();
     public final ObjectProperty<Macro> macroBeingRun = new SimpleObjectProperty<>();
+
+    private ObjectProperty<PrintQueueStatus> printQueueStatus = new SimpleObjectProperty<>(PrintQueueStatus.IDLE);
 
     /*
      * 
@@ -275,7 +277,6 @@ public class PrintEngine implements ControllableService
                     Lookup.getSystemNotificationHandler().
                             showGCodePostProcessSuccessfulNotification();
                 }
-                sendingDataToPrinter.set(true);
             } else
             {
                 if (raiseProgressNotifications)
@@ -372,7 +373,6 @@ public class PrintEngine implements ControllableService
                     steno.error("Couldn't abort on print job failed to submit");
                 }
             }
-            sendingDataToPrinter.set(false);
         };
 
         printJobIDListener = (ObservableValue<? extends String> ov, String oldValue, String newValue) ->
@@ -383,12 +383,9 @@ public class PrintEngine implements ControllableService
         scheduledPrintEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has been scheduled");
-            if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.PRINTING_GCODE)
+            if (raiseProgressNotifications)
             {
-                if (raiseProgressNotifications)
-                {
-                    Lookup.getSystemNotificationHandler().showPrintTransferInitiatedNotification();
-                }
+                Lookup.getSystemNotificationHandler().showPrintTransferInitiatedNotification();
             }
         };
 
@@ -653,16 +650,17 @@ public class PrintEngine implements ControllableService
             }
         }
         // End of hack
-        
+
         // Hack to change raft related settings for Draft ABS prints
-        if (project.getPrintQuality() == PrintQualityEnumeration.DRAFT &&
-            project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS) {
+        if (project.getPrintQuality() == PrintQualityEnumeration.DRAFT
+                && project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS)
+        {
             settingsToUse.setRaftBaseLinewidth_mm(1.250f);
             settingsToUse.setRaftAirGapLayer0_mm(0.285f);
             settingsToUse.setInterfaceLayers(1);
         }
         // End of hack
-        
+
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
         configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
                 (float) (centreOfPrintedObject.getZ()));
@@ -699,7 +697,6 @@ public class PrintEngine implements ControllableService
         {
             steno.error("Couldn't get job statistics for job " + jobUUID);
         }
-        sendingDataToPrinter.set(true);
         steno.info("Respooling job " + jobUUID + " to printer from line " + startFromLineNumber);
         transferGCodeToPrinterService.reset();
         transferGCodeToPrinterService.setCurrentPrintJobID(jobUUID);
@@ -804,11 +801,6 @@ public class PrintEngine implements ControllableService
         String printjobFilename = ApplicationConfiguration.getPrintSpoolDirectory()
                 + printUUID + File.separator + printUUID
                 + ApplicationConfiguration.gcodeTempFileExtension;
-
-        if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.PRINTING_GCODE)
-        {
-            sendingDataToPrinter.set(true);
-        }
 
         File src = new File(filename);
         File dest = new File(printjobFilename);
@@ -1086,7 +1078,8 @@ public class PrintEngine implements ControllableService
                                     sendFileData.
                                     getExpectedSequenceNumber());
 
-                            associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+                            printQueueStatus.set(PrintQueueStatus.PRINTING);
+                            setParentPrintStatusIfIdle(PrinterStatus.PRINTING_PROJECT);
 
                             incompleteTransfer = true;
                         }
@@ -1108,7 +1101,8 @@ public class PrintEngine implements ControllableService
                                 + " is running macro " + macroRunning.get().name());
 
                         macroBeingRun.set(macroRunning.get());
-                        associatedPrinter.setPrinterStatus(PrinterStatus.RUNNING_MACRO);
+                        printQueueStatus.set(PrintQueueStatus.RUNNING_MACRO);
+                        setParentPrintStatusIfIdle(PrinterStatus.RUNNING_MACRO_FILE);
                     } else
                     {
                         makeETCCalculatorForJobOfUUID(printJobID);
@@ -1122,7 +1116,7 @@ public class PrintEngine implements ControllableService
                         }
 
                         if (raiseProgressNotifications
-                                && associatedPrinter.printerStatusProperty().get() != PrinterStatus.PRINTING)
+                                && associatedPrinter.printerStatusProperty().get() != PrinterStatus.PRINTING_PROJECT)
                         {
                             Lookup.getSystemNotificationHandler().
                                     showDetectedPrintInProgressNotification();
@@ -1131,14 +1125,37 @@ public class PrintEngine implements ControllableService
                                 + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
                                 + " is printing");
 
-                        associatedPrinter.setPrinterStatus(PrinterStatus.PRINTING);
+                        printQueueStatus.set(PrintQueueStatus.PRINTING);
+                        setParentPrintStatusIfIdle(PrinterStatus.PRINTING_PROJECT);
                     }
                 }
             } else
             {
-                associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
+                printQueueStatus.set(PrintQueueStatus.IDLE);
+                switch (associatedPrinter.printerStatusProperty().get())
+                {
+                    case PRINTING_PROJECT:
+                    case RUNNING_MACRO_FILE:
+                        associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
+                        break;
+                }
                 macroBeingRun.set(null);
             }
         }
+    }
+
+    private void setParentPrintStatusIfIdle(PrinterStatus desiredStatus)
+    {
+        switch (associatedPrinter.printerStatusProperty().get())
+        {
+            case IDLE:
+                associatedPrinter.setPrinterStatus(desiredStatus);
+                break;
+        }
+    }
+
+    public ReadOnlyObjectProperty<PrintQueueStatus> printQueueStatusProperty()
+    {
+        return printQueueStatus;
     }
 }

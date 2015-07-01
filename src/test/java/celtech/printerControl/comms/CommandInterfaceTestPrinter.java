@@ -914,4 +914,22 @@ public class CommandInterfaceTestPrinter implements Printer
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public NozzleHeightStateTransitionManager getNozzleHeightCalibrationStateManager()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public NozzleOpeningStateTransitionManager getNozzleOpeningCalibrationStateManager()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public XAndYStateTransitionManager getNozzleAlignmentCalibrationStateManager()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
