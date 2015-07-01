@@ -34,22 +34,22 @@ public class TweakPanelController implements Initializable
     private Printer selectedPrinter;
 
     private final ChangeListener<Number> feedRateChangeListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            speedMultiplierSlider.setValue(newValue.doubleValue());
-        };
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                speedMultiplierSlider.setValue(newValue.doubleValue());
+            };
 
     private final ChangeListener<Number> speedMultiplierListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            try
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                selectedPrinter.changeFeedRateMultiplier(newValue.doubleValue());
-            } catch (PrinterException ex)
-            {
-                steno.error("Error setting feed rate multiplier - " + ex.getMessage());
-            }
-        };
+                try
+                {
+                    selectedPrinter.changeFeedRateMultiplier(newValue.doubleValue());
+                } catch (PrinterException ex)
+                {
+                    steno.error("Error setting feed rate multiplier - " + ex.getMessage());
+                }
+            };
 
     /**
      * Initialises the controller class.
@@ -82,15 +82,15 @@ public class TweakPanelController implements Initializable
 
     private void bindPrinter(Printer printer)
     {
-        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING);
-        speedSliderHBox.visibleProperty().bind(printer.printerStatusProperty().isEqualTo(
-            PrinterStatus.PRINTING));
+        speedSliderHBox.setVisible(printer.printerStatusProperty().get() == PrinterStatus.PRINTING_PROJECT);
+        speedSliderHBox.visibleProperty().bind(
+                printer.printerStatusProperty().isEqualTo(PrinterStatus.PRINTING_PROJECT));
         speedMultiplierSlider.setValue(printer.getPrinterAncillarySystems().
-            feedRateMultiplierProperty().get());
+                feedRateMultiplierProperty().get());
         speedMultiplierSlider.valueProperty().addListener(speedMultiplierListener);
 
         printer.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
-            feedRateChangeListener);
+                feedRateChangeListener);
     }
 
     private void unbindPrinter(Printer printer)
@@ -100,7 +100,7 @@ public class TweakPanelController implements Initializable
         speedMultiplierSlider.valueProperty().removeListener(speedMultiplierListener);
 
         printer.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(
-            feedRateChangeListener);
+                feedRateChangeListener);
 
     }
 

@@ -219,6 +219,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private boolean doNotCheckForPresenceOfHead = false;
 
     /**
+     * Calibration state managers
+     */
+    private NozzleHeightStateTransitionManager calibrationHeightManager;
+    private NozzleOpeningStateTransitionManager calibrationOpeningManager;
+    private XAndYStateTransitionManager calibrationAlignmentManager;
+
+    /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
      * way to override the detection of whether a filament is loaded or not on a
      * given extruder.
@@ -302,7 +309,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canInitiateNewState.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
         canCancel.bind(
-                (printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO)
+                (printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
                 .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT))).not()
                 .and(
                         pauseStatus.isEqualTo(PauseStatus.PAUSED)
@@ -316,7 +323,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(pauseStatus.isEqualTo(PauseStatus.PAUSED))
-                .or(printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO)
+                .or(printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
                         .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT)))
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
@@ -326,11 +333,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canPause.bind(pauseStatus.isNotEqualTo(PauseStatus.PAUSED)
                 .and(
-                        printerStatus.isEqualTo(PrinterStatus.PRINTING)
-                        .or(pauseStatus.isEqualTo(PauseStatus.RESUME_PENDING))
-                        .or(printEngine.sendingDataToPrinter)
-                        .or(printerStatus.isEqualTo(PrinterStatus.PRINTING_GCODE))
-                        .or(printerStatus.isEqualTo(PrinterStatus.PRINTING))));
+                        printerStatus.isEqualTo(PrinterStatus.PRINTING_PROJECT)
+                        .or(pauseStatus.isEqualTo(PauseStatus.RESUME_PENDING))));
 
         canCalibrateHead.bind(head.isNotNull()
                 .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
@@ -380,18 +384,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void setPrinterStatus(PrinterStatus printerStatus)
     {
         Lookup.getTaskExecutor().
-                runOnGUIThread(() ->
-                        {
-                            boolean okToChangeState = true;
-                            steno.debug("Status was " + this.printerStatus.get().name()
-                                    + " and is going to "
-                                    + printerStatus);
-                            switch (printerStatus)
-                            {
-                                case IDLE:
-                                    filamentSlipActionFired = 0;
-                                    break;
-                            }
+            runOnGUIThread(() ->
+                {
+                    boolean okToChangeState = true;
+                    steno.debug("Status was " + this.printerStatus.get().name()
+                        + " and is going to "
+                        + printerStatus);
+                    switch (printerStatus)
+                    {
+                        case IDLE:
+                            filamentSlipActionFired = 0;
+                            break;
+                    }
 
                             if (okToChangeState)
                             {
@@ -2799,8 +2803,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationXAndYTransitions((CalibrationXAndYActions) actions);
 
-        XAndYStateTransitionManager calibrationAlignmentManager
-                = new XAndYStateTransitionManager(actionsFactory, transitionsFactory);
+        calibrationAlignmentManager = new XAndYStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationAlignmentManager;
     }
 
@@ -2820,8 +2823,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);
 
-        NozzleHeightStateTransitionManager calibrationHeightManager
-                = new NozzleHeightStateTransitionManager(actionsFactory, transitionsFactory);
+        calibrationHeightManager = new NozzleHeightStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationHeightManager;
     }
 
@@ -2857,10 +2859,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException
     {
-        if (!canCalibrateNozzleOpening.get())
-        {
-            throw new PrinterException("Calibrate not permitted");
-        }
 
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
                 Cancellable errorCancellable)
@@ -2870,8 +2868,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationNozzleOpeningTransitions((CalibrationNozzleOpeningActions) actions);
 
-        NozzleOpeningStateTransitionManager calibrationOpeningManager
-                = new NozzleOpeningStateTransitionManager(actionsFactory, transitionsFactory);
+        calibrationOpeningManager = new NozzleOpeningStateTransitionManager(actionsFactory, transitionsFactory);
         return calibrationOpeningManager;
     }
 
@@ -3006,7 +3003,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             case E_FILAMENT_SLIP:
             case D_FILAMENT_SLIP:
-                if (printerStatus.get() == PrinterStatus.PRINTING)
+                if (printerStatus.get() == PrinterStatus.PRINTING_PROJECT)
                 {
                     boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
                     if (limitOnSlipActionsReached)
@@ -3038,7 +3035,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     default:
                         if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT)
                         {
-                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(error, this);
+                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                    error, this);
                         }
                         break;
                 }
@@ -3224,7 +3222,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                 errorWasConsumed = false;
 
                                                 if (suppressedFirmwareErrors.contains(foundError)
-                                                || (foundError == FirmwareError.HEAD_POWER_EEPROM && doNotCheckForPresenceOfHead))
+                                                || (foundError == FirmwareError.HEAD_POWER_EEPROM
+                                                && doNotCheckForPresenceOfHead))
                                                 {
                                                     steno.debug("Error:" + foundError.
                                                             name() + " suppressed");
@@ -3300,7 +3299,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerAncillarySystems.updateGraphData();
                     printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
 
-                    if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(FirmwareError.SD_CARD))
+                    if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(
+                            FirmwareError.SD_CARD))
                     {
                         Lookup.getSystemNotificationHandler().showNoSDCardDialog();
                     }
@@ -3827,6 +3827,21 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     "Comms exception when setting filament info for extruder "
                     + extruderLetter);
         }
+    }
+    
+    public NozzleHeightStateTransitionManager getNozzleHeightCalibrationStateManager()
+    {
+        return calibrationHeightManager;
+    }
+
+    public NozzleOpeningStateTransitionManager getNozzleOpeningCalibrationStateManager()
+    {
+        return calibrationOpeningManager;
+    }
+
+    public XAndYStateTransitionManager getNozzleAlignmentCalibrationStateManager()
+    {
+        return calibrationAlignmentManager;
     }
 
     @Override

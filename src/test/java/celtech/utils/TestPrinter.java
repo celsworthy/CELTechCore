@@ -1034,6 +1034,24 @@ public class TestPrinter implements Printer
     }
 
     @Override
+    public NozzleHeightStateTransitionManager getNozzleHeightCalibrationStateManager()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public NozzleOpeningStateTransitionManager getNozzleOpeningCalibrationStateManager()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public XAndYStateTransitionManager getNozzleAlignmentCalibrationStateManager()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

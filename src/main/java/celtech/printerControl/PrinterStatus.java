@@ -10,10 +10,9 @@ public enum PrinterStatus
 {
 
     IDLE("printerStatus.idle"),
-    PRINTING("printerStatus.printing"),
-    PRINTING_GCODE("printerStatus.printingGCode"),
+    PRINTING_PROJECT("printerStatus.printing"),
     RUNNING_TEST("printerStatus.runningTest"),
-    RUNNING_MACRO("printerStatus.executingMacro"),
+    RUNNING_MACRO_FILE("printerStatus.executingMacro"),
     REMOVING_HEAD("printerStatus.removingHead"),
     PURGING_HEAD("printerStatus.purging"),
     OPENING_DOOR("printerStatus.openingDoor"),

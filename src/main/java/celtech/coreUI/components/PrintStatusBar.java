@@ -7,6 +7,7 @@ import celtech.Lookup;
 import celtech.configuration.BusyStatus;
 import celtech.configuration.Macro;
 import celtech.configuration.PauseStatus;
+import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import javafx.beans.binding.StringBinding;
@@ -23,17 +24,22 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
 
     private Printer printer = null;
 
-    private ChangeListener<PrinterStatus> printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> ov, PrinterStatus lastState, PrinterStatus newState) ->
+    private final ChangeListener<PrinterStatus> printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> ov, PrinterStatus lastState, PrinterStatus newState) ->
     {
         reassessStatus();
     };
 
-    private ChangeListener<PauseStatus> pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> ov, PauseStatus lastState, PauseStatus newState) ->
+    private final ChangeListener<PrintQueueStatus> printQueueStatusChangeListener = (ObservableValue<? extends PrintQueueStatus> ov, PrintQueueStatus lastState, PrintQueueStatus newState) ->
     {
         reassessStatus();
     };
 
-    private ChangeListener<BusyStatus> busyStatusChangeListener = (ObservableValue<? extends BusyStatus> ov, BusyStatus lastState, BusyStatus newState) ->
+    private final ChangeListener<PauseStatus> pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> ov, PauseStatus lastState, PauseStatus newState) ->
+    {
+        reassessStatus();
+    };
+
+    private final ChangeListener<BusyStatus> busyStatusChangeListener = (ObservableValue<? extends BusyStatus> ov, BusyStatus lastState, BusyStatus newState) ->
     {
         reassessStatus();
     };
@@ -46,6 +52,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         printer.printerStatusProperty().addListener(printerStatusChangeListener);
         printer.pauseStatusProperty().addListener(pauseStatusChangeListener);
         printer.busyStatusProperty().addListener(busyStatusChangeListener);
+        printer.getPrintEngine().printQueueStatusProperty().addListener(printQueueStatusChangeListener);
 
         reassessStatus();
     }
@@ -104,7 +111,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             {
                 case IDLE:
                     break;
-                case PRINTING:
+                case PRINTING_PROJECT:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
@@ -145,12 +152,48 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                     progressBar.setVisible(true);
                     break;
-                case RUNNING_MACRO:
+                case RUNNING_MACRO_FILE:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.getPrintEngine().macroBeingRun.get().getFriendlyName());
 
                     if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
+                            largeProgressCurrentValue.setVisible(true);
+
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressBar.setVisible(true);
+                        }
+                    }
+                    break;
+                case CALIBRATING_NOZZLE_ALIGNMENT:
+                case CALIBRATING_NOZZLE_OPENING:
+                case CALIBRATING_NOZZLE_HEIGHT:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
+                            largeProgressCurrentValue.setVisible(true);
+
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressBar.setVisible(true);
+                        }
+                    }
+                    break;
+                case PURGING_HEAD:
+                    statusProcessed = true;
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
                     {
                         if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
                         {
@@ -194,6 +237,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             printer.printerStatusProperty().removeListener(printerStatusChangeListener);
             printer.pauseStatusProperty().removeListener(pauseStatusChangeListener);
             printer.busyStatusProperty().removeListener(busyStatusChangeListener);
+            printer.getPrintEngine().printQueueStatusProperty().removeListener(printQueueStatusChangeListener);
             unbindVariables();
             slideOutOfView();
             printer = null;

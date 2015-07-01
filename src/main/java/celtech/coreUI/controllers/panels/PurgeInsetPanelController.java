@@ -66,8 +66,8 @@ public class PurgeInsetPanelController implements Initializable
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        PurgeInsetPanelController.class.getName());
-    
+            PurgeInsetPanelController.class.getName());
+
     private Project project = null;
     private Printer printer = null;
     private DiagramHandler diagramHandler;
@@ -356,11 +356,13 @@ public class PurgeInsetPanelController implements Initializable
     }
 
     /**
-     * Bind to the given printer. This is only called once for a given purge and should not be
-     * called again during the purge.
+     * Bind to the given printer. This is only called once for a given purge and
+     * should not be called again during the purge.
      */
     private void bindPrinter(Printer printer)
     {
+        progressDisplay.unbindFromPrinter();
+
         if (this.printer != null)
         {
             progressDisplay.unbindFromPrinter();
@@ -392,8 +394,9 @@ public class PurgeInsetPanelController implements Initializable
     }
 
     /**
-     * If a reel is loaded then show and select its material, else show and select the material from
-     * the combo box. This should be called whenever a reel is loaded/unloaded or changed.
+     * If a reel is loaded then show and select its material, else show and
+     * select the material from the combo box. This should be called whenever a
+     * reel is loaded/unloaded or changed.
      */
     private void showCurrentMaterial0()
     {
@@ -670,8 +673,8 @@ public class PurgeInsetPanelController implements Initializable
     }
 
     /**
-     * Tell the purge state machine about the (changed) current material, and update the relevant
-     * text fields.
+     * Tell the purge state machine about the (changed) current material, and
+     * update the relevant text fields.
      */
     private void selectMaterial0(Filament filament)
     {
@@ -722,8 +725,8 @@ public class PurgeInsetPanelController implements Initializable
             ObservableList<Filament> appFilaments = FXCollections.observableArrayList();
             ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
             appFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 appFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
@@ -773,7 +776,7 @@ public class PurgeInsetPanelController implements Initializable
                 rectangle.setFill(filament.getDisplayColour());
 
                 label.setText(filament.getLongFriendlyName() + " "
-                    + filament.getMaterial().getFriendlyName());
+                        + filament.getMaterial().getFriendlyName());
                 label.getStyleClass().add("filamentSwatchPadding");
             } else
             {

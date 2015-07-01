@@ -75,7 +75,8 @@ public class Slic3rConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputPrintCentre(FileWriter writer, float centreX, float centreY) throws IOException
     {
-        outputLine(writer, "print_center", (int) centreX + "," + (int) centreY);
+        //As of 1.2.9 slic3r doesn't seem to take any notice of this variable in the config file
+        //print-center must be set on the command line
     }
 
     @Override

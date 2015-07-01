@@ -9,7 +9,6 @@ import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.NozzleHeater;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
@@ -26,7 +25,6 @@ import java.util.ResourceBundle;
 import javafx.animation.Timeline;
 import javafx.animation.Transition;
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -103,7 +101,7 @@ public class CalibrationInsetPanelController implements Initializable,
     protected Pane altButtonContainer;
 
     @FXML
-    private ProgressDisplay progressDisplay;
+    protected ProgressDisplay progressDisplay;
 
     @FXML
     protected Text stepNumber;
@@ -151,10 +149,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private HBox topMenuStrip;
 
     private Printer currentPrinter;
-    private int targetTemperature;
-    private double currentExtruderTemperature;
-    private int targetETC;
-    private double printPercent;
     private Pane diagramNode;
     DiagramController diagramController;
     private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
@@ -393,35 +387,9 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramNode.setVisible(true);
     }
 
-    private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        targetTemperature = newValue.intValue();
-//        updateCalibrationProgressTemp();
-    };
-
-    private final ChangeListener<Number> extruderTemperatureListener
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                currentExtruderTemperature = newValue.doubleValue();
-            };
-
-    private final ChangeListener<Number> targetETCListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        targetETC = newValue.intValue();
-    };
-
-    private final ChangeListener<Number> printPercentListener
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                printPercent = newValue.doubleValue();
-            };
-
     private void switchToPrinter(Printer printer)
     {
-        if (currentPrinter != null)
-        {
-            unbindPrinter(currentPrinter);
-        }
+        progressDisplay.unbindFromPrinter();
         if (printer != null)
         {
             bindPrinter(printer);
@@ -429,34 +397,10 @@ public class CalibrationInsetPanelController implements Initializable,
         currentPrinter = printer;
     }
 
-    private void unbindPrinter(Printer printer)
-    {
-        removeHeadListeners(printer);
-        progressDisplay.unbindFromPrinter();
-    }
-
     private void bindPrinter(Printer printer)
     {
         progressDisplay.bindToPrinter(printer);
-        Head newHead = printer.headProperty().get();
-        if (newHead != null)
-        {
-            NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
-            targetTemperature = nozzleHeater.nozzleTargetTemperatureProperty().get();
-            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
-        }
         configureStartButtonForMode(calibrationMode, printer);
-    }
-
-    private void removeHeadListeners(Printer printer)
-    {
-        if (printer.headProperty().get() != null)
-        {
-            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
-            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
-        }
     }
 
     private void configureStartButtonForMode(CalibrationMode calibrationMode, Printer printer)
