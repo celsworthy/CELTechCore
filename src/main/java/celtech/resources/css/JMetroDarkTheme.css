@@ -1881,13 +1881,13 @@ modal-dialogue{
     -fx-background-color: light_grey;
 }
 
-.progress-bar .bar {
+#appearingProgressBar .bar {
     -fx-background-color: white;
     -fx-background-insets: 0, 1, 2;
     -fx-padding: 0.416667em; /* 5 */
 }
 
-.progress-bar .track {
+#appearingProgressBar .track {
     -fx-background-color: robox_blue;
     -fx-border-color: white;
     -fx-border-width: 2;

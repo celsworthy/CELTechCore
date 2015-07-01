@@ -17,78 +17,79 @@
             <center>
                 <BorderPane styleClass="lightGreyBackground">
                     <center>
-                <VBox alignment="CENTER" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" BorderPane.alignment="CENTER">
-                    <children>
-                        <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
-                            <font>
-                                <Font name="Segoe UI" size="18.0" />
-                            </font>
-                            <VBox.margin>
-                                <Insets bottom="30.0" />
-                            </VBox.margin>
-                        </Text>
-                        <StackPane>
-                           <children>
-                              <Text fx:id="resettingPrinter" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="resettingPrinter" text="%misc.resettingPrinter" visible="false" />
-                              <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeInstructions" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
-                                  <font>
-                                      <Font name="Segoe UI" size="18.0" />
-                                  </font>
-                                  <VBox.margin>
-                                      <Insets bottom="30.0" />
-                                  </VBox.margin>
-                              </Text>
-                           </children>
-                        </StackPane>
-                        <GridPane fx:id="purgeDetailsGrid" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
-                            <columnConstraints>
-                                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="390.0" minWidth="10.0" prefWidth="390.0" />
-                                <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" />
-                                <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="180.0" minWidth="10.0" prefWidth="150.0" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            </rowConstraints>
+                        <VBox alignment="CENTER" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" BorderPane.alignment="CENTER">
                             <children>
-                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="3">
+                                <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
+                                    <font>
+                                        <Font name="Segoe UI" size="18.0" />
+                                    </font>
+                                    <VBox.margin>
+                                        <Insets bottom="30.0" />
+                                    </VBox.margin>
                                 </Text>
-                                <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
-                                </Text>
-                                <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.lastTemperature" textAlignment="CENTER">
-                                </Text>
-                                <Text fx:id="lastMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1">
-                                </Text>
-                                <Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                </Text>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" />
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-                              <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.currentMaterial" textAlignment="CENTER" GridPane.rowIndex="1" />
-                              <StackPane GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                                 <children>
-                                    <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" StackPane.alignment="CENTER_LEFT" />
-                                    <ComboBox id="purgeFilamentCombo" fx:id="cmbCurrentMaterial" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
-                                 </children>
-                              </StackPane>
+                                <StackPane>
+                                    <children>
+                                        <Text fx:id="resettingPrinter" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="resettingPrinter" text="%misc.resettingPrinter" visible="false" />
+                                        <Text fx:id="purgeStatus" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeInstructions" textAlignment="CENTER" wrappingWidth="500.0" BorderPane.alignment="CENTER">
+                                            <font>
+                                                <Font name="Segoe UI" size="18.0" />
+                                            </font>
+                                            <VBox.margin>
+                                                <Insets bottom="30.0" />
+                                            </VBox.margin>
+                                        </Text>
+                                    </children>
+                                </StackPane>
+                                <GridPane fx:id="purgeDetailsGrid" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="390.0" minWidth="10.0" prefWidth="390.0" />
+                                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" />
+                                        <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="180.0" minWidth="10.0" prefWidth="150.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <children>
+                                        <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="3">
+                                        </Text>
+                                        <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.currentTemperature" textAlignment="CENTER" GridPane.rowIndex="2">
+                                        </Text>
+                                        <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.lastTemperature" textAlignment="CENTER">
+                                        </Text>
+                                        <Text fx:id="lastMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1">
+                                        </Text>
+                                        <Text fx:id="currentMaterialTemperature" fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                        </Text>
+                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" />
+                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                                        <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.currentMaterial" textAlignment="CENTER" GridPane.rowIndex="1" />
+                                        <StackPane GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                                            <children>
+                                                <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" StackPane.alignment="CENTER_LEFT" />
+                                                <ComboBox id="purgeFilamentCombo" fx:id="cmbCurrentMaterial" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
+                                            </children>
+                                        </StackPane>
+                                    </children>
+                                </GridPane>
+                                <VBox fx:id="diagramContainer" alignment="BOTTOM_LEFT" VBox.vgrow="ALWAYS" />
                             </children>
-                        </GridPane>
-                        <VBox fx:id="diagramContainer" alignment="BOTTOM_LEFT" VBox.vgrow="ALWAYS" />
-                    </children>
-                     <BorderPane.margin>
-                        <Insets top="60.0" />
-                     </BorderPane.margin>
-                </VBox>
+                            <BorderPane.margin>
+                                <Insets top="60.0" />
+                            </BorderPane.margin>
+                        </VBox>
                     </center>
-               <bottom>
-            <LargeProgress fx:id="purgeProgressBar" BorderPane.alignment="CENTER">
-                     <children>
-                        <VBox prefHeight="200.0" prefWidth="100.0" />
-                     </children></LargeProgress>
-               </bottom>
+                    <bottom>
+                        <ProgressDisplay fx:id="progressDisplay" id="appearingProgressBar" BorderPane.alignment="CENTER">
+                            <children>
+                                <VBox prefHeight="200.0" prefWidth="100.0" />
+                            </children>
+                        </ProgressDisplay>
+                    </bottom>
                 </BorderPane>
             </center>
             <bottom>
@@ -118,7 +119,7 @@
                                                 <GraphicButtonWithLabel fx:id="backButton" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#cancel" />
                                             </children>
                                         </StackPane>
-                                          <GraphicButtonWithLabel fx:id="repeatButton" fxmlFileName="retryButton" labelText="%purgeMaterial.repeatPurge" onAction="#repeat" />
+                                        <GraphicButtonWithLabel fx:id="repeatButton" fxmlFileName="retryButton" labelText="%purgeMaterial.repeatPurge" onAction="#repeat" />
                                     </children>
                                     <padding>
                                         <Insets left="40.0" right="10.0" />

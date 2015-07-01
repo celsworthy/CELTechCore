@@ -81,8 +81,6 @@ public class CalibrationXAndYGUI
             case PRINT_PATTERN:
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.showSpinner();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 stepNo = 1;
                 break;
             case GET_Y_OFFSET:

@@ -741,26 +741,10 @@ public class PrintEngine implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private void setPrintProgressMessage(String value)
-    {
-        printProgressMessage.set(value);
-    }
-
-    private void setPrintProgressTitle(String value)
-    {
-        printProgressTitle.set(value);
-    }
-
-    private void setPrimaryProgressPercent(double value)
-    {
-        primaryProgressPercent.set(value);
-    }
-
-    private void setSecondaryProgressPercent(double value)
-    {
-        secondaryProgressPercent.set(value);
-    }
-
+    /**
+     *
+     * @return
+     */
     public ReadOnlyDoubleProperty secondaryProgressProperty()
     {
         return secondaryProgressPercent;
@@ -835,45 +819,7 @@ public class PrintEngine implements ControllableService
         {
             steno.error("Error copying file");
         }
-//        File printjobFile = new File(printjobFilename);
-//        BufferedReader reader = null;
 
-//        try
-//        {
-//            FileReader fileReader = new FileReader(filename);
-//            reader = new BufferedReader(new FileReader(filename));
-//
-//            steno.info("START");
-//            String line = null;
-//            
-//            while ((line = reader.readLine()) != null)
-//            {
-//                if (GCodeMacros.isMacroExecutionDirective(line))
-//                {
-//                    FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line), true);
-//                } else
-//                {
-//                    FileUtils.writeStringToFile(printjobFile, line + "\r", true);
-//                }
-//            }
-//            steno.info("END");
-//            reader.close();
-//        } catch (IOException | MacroLoadException ex)
-//        {
-//            throw new MacroPrintException(ex.getMessage());
-//        } finally
-//        {
-//            try
-//            {
-//                if (reader != null)
-//                {
-//                    reader.close();
-//                }
-//            } catch (IOException ex)
-//            {
-//                steno.error("Failed to create GCode print job");
-//            }
-//        }
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
@@ -1042,101 +988,6 @@ public class PrintEngine implements ControllableService
     public ReadOnlyIntegerProperty progressNumLayersProperty()
     {
         return progressNumLayers;
-    }
-
-    private void goToIdle()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            if (movieMakerTask != null)
-            {
-                if (movieMakerTask.isRunning())
-                {
-                    movieMakerTask.shutdown();
-                }
-                movieMakerTask = null;
-            }
-            printProgressMessage.unbind();
-            setPrintProgressMessage("");
-            primaryProgressPercent.unbind();
-            setPrimaryProgressPercent(0);
-            secondaryProgressPercent.unbind();
-            setSecondaryProgressPercent(0);
-            sendingDataToPrinter.set(false);
-            setPrintProgressTitle(Lookup.i18n("PrintQueue.Idle"));
-        });
-    }
-
-    private void goToSlicing()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            printProgressMessage.unbind();
-            printProgressMessage.bind(slicerService.messageProperty());
-            primaryProgressPercent.unbind();
-            setPrimaryProgressPercent(0);
-            primaryProgressPercent.bind(slicerService.progressProperty());
-            secondaryProgressPercent.unbind();
-            setSecondaryProgressPercent(0);
-            sendingDataToPrinter.set(false);
-            setPrintProgressTitle(Lookup.i18n("PrintQueue.Slicing"));
-        });
-    }
-
-    private void goToPostProcessing()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            printProgressMessage.unbind();
-            printProgressMessage.bind(postProcessorService.messageProperty());
-            primaryProgressPercent.unbind();
-            setPrimaryProgressPercent(0);
-            primaryProgressPercent.bind(postProcessorService.progressProperty());
-            secondaryProgressPercent.unbind();
-            sendingDataToPrinter.set(false);
-            setSecondaryProgressPercent(0);
-            setPrintProgressTitle(Lookup.i18n("PrintQueue.PostProcessing"));
-        });
-    }
-
-    private void goToSendingToPrinter()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            printProgressMessage.unbind();
-            printProgressMessage.bind(transferGCodeToPrinterService.messageProperty());
-            primaryProgressPercent.unbind();
-            setPrimaryProgressPercent(0);
-            secondaryProgressPercent.unbind();
-            setSecondaryProgressPercent(0);
-            secondaryProgressPercent.bind(transferGCodeToPrinterService.progressProperty());
-            sendingDataToPrinter.set(true);
-            setPrintProgressTitle(Lookup.i18n("PrintQueue.SendingToPrinter"));
-        });
-    }
-
-    private void goToPrinting()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            printProgressMessage.unbind();
-            primaryProgressPercent.unbind();
-            setPrimaryProgressPercent(0);
-            printProgressMessage.set("");
-            setPrintProgressTitle(Lookup.i18n("PrintQueue.Printing"));
-        });
-    }
-
-    private void goToExecutingMacro()
-    {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            printProgressMessage.unbind();
-            primaryProgressPercent.unbind();
-            setPrimaryProgressPercent(0);
-            printProgressMessage.set("");
-            setPrintProgressTitle(associatedPrinter.printerStatusProperty().get().getI18nString());
-        });
     }
 
     /**

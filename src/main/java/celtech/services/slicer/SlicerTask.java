@@ -8,14 +8,17 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
+import celtech.utils.threed.ThreeDUtils;
 import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -137,7 +140,12 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
                 macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
                 linuxSlicerCommand = "Slic3r/bin/slic3r";
-                configLoadCommand = "--load";
+                Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+                configLoadCommand += "--print-center "
+                        + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                        + ","
+                        + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
+                configLoadCommand += " --load";
                 combinedConfigSection = configLoadCommand + " " + configFile;
                 break;
             case Cura:
