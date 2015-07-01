@@ -742,26 +742,6 @@ public class PrintEngine implements ControllableService
         return acceptedPrintRequest;
     }
 
-    private void setPrintProgressMessage(String value)
-    {
-        printProgressMessage.set(value);
-    }
-
-    private void setPrintProgressTitle(String value)
-    {
-        printProgressTitle.set(value);
-    }
-
-    private void setPrimaryProgressPercent(double value)
-    {
-        primaryProgressPercent.set(value);
-    }
-
-    private void setSecondaryProgressPercent(double value)
-    {
-        secondaryProgressPercent.set(value);
-    }
-
     /**
      *
      * @return
