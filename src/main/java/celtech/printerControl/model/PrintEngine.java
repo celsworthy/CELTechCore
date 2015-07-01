@@ -879,45 +879,7 @@ public class PrintEngine implements ControllableService
         {
             steno.error("Error copying file");
         }
-//        File printjobFile = new File(printjobFilename);
-//        BufferedReader reader = null;
 
-//        try
-//        {
-//            FileReader fileReader = new FileReader(filename);
-//            reader = new BufferedReader(new FileReader(filename));
-//
-//            steno.info("START");
-//            String line = null;
-//            
-//            while ((line = reader.readLine()) != null)
-//            {
-//                if (GCodeMacros.isMacroExecutionDirective(line))
-//                {
-//                    FileUtils.writeLines(printjobFile, GCodeMacros.getMacroContents(line), true);
-//                } else
-//                {
-//                    FileUtils.writeStringToFile(printjobFile, line + "\r", true);
-//                }
-//            }
-//            steno.info("END");
-//            reader.close();
-//        } catch (IOException | MacroLoadException ex)
-//        {
-//            throw new MacroPrintException(ex.getMessage());
-//        } finally
-//        {
-//            try
-//            {
-//                if (reader != null)
-//                {
-//                    reader.close();
-//                }
-//            } catch (IOException ex)
-//            {
-//                steno.error("Failed to create GCode print job");
-//            }
-//        }
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
