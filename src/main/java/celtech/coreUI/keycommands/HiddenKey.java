@@ -24,7 +24,7 @@ public class HiddenKey
     private String hiddenCommandKeyBuffer = "";
     private String parameterCaptureBuffer = "";
     private boolean parameterCaptureInProgress = false;
-    
+
     private final EventHandler<KeyEvent> hiddenErrorCommandEventHandler = (KeyEvent event) ->
     {
 
@@ -33,27 +33,29 @@ public class HiddenKey
             case DIGIT1:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", DummyPrinterCommandInterface.defaultRoboxAttachCommand);
+                    triggerListeners("dummy:",
+                                     DummyPrinterCommandInterface.defaultRoboxAttachCommand);
                 }
                 break;
             case DIGIT2:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", DummyPrinterCommandInterface.defaultRoboxAttachCommand2);
+                    triggerListeners("dummy:",
+                                     DummyPrinterCommandInterface.defaultRoboxAttachCommand2);
                 }
-                break;    
+                break;
             case DIGIT3:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     triggerListeners("dummy:", "ATTACH EXTRUDER 1");
                 }
-                break;  
+                break;
             case DIGIT4:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     triggerListeners("dummy:", "ATTACH REEL RBX-PLA-OR022 1");
                 }
-                break;                  
+                break;
             case B:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
@@ -67,20 +69,36 @@ public class HiddenKey
                     // trigger E_FILAMENT_SLIP
                     triggerListeners("dummy:", "ERROR E_FILAMENT_SLIP");
                 }
-                break;    
+                break;
 
             case M:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     if (Lookup.getSelectedPrinterProperty().get().
-                           extrudersProperty().get(0).filamentLoadedProperty().get()) {
-                        triggerListeners("dummy:", "UNLOAD 0");    
-                    } else{
+                        extrudersProperty().get(0).filamentLoadedProperty().get())
+                    {
+                        triggerListeners("dummy:", "UNLOAD 0");
+                    } else
+                    {
                         triggerListeners("dummy:", "LOAD 0");
                     }
-                    
+
                 }
-                break;                    
+                break;
+            case N:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    if (Lookup.getSelectedPrinterProperty().get().
+                        extrudersProperty().get(0).filamentLoadedProperty().get())
+                    {
+                        triggerListeners("dummy:", "UNLOAD 1");
+                    } else
+                    {
+                        triggerListeners("dummy:", "LOAD 1");
+                    }
+
+                }
+                break;
             case D:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
@@ -92,9 +110,9 @@ public class HiddenKey
                 {
                     // trigger detach printer
                     triggerListeners("dummy:", "DETACH PRINTER");
-                }                
-                
-                break;                 
+                }
+
+                break;
 
         }
     };
