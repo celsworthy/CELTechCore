@@ -83,8 +83,6 @@ public class CalibrationNozzleHeightGUI
                 break;
             case HEATING:
                 controller.showSpinner();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 stepNo = 2;
                 break;
             case HEAD_CLEAN_CHECK:

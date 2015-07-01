@@ -7,6 +7,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;
@@ -103,10 +104,7 @@ public class CalibrationInsetPanelController implements Initializable,
     protected Pane altButtonContainer;
 
     @FXML
-    protected LargeProgress calibrationProgressTemp;
-
-    @FXML
-    protected LargeProgress calibrationProgressPrint;
+    protected ProgressDisplay progressDisplay;
 
     @FXML
     protected Text stepNumber;
@@ -154,10 +152,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private HBox topMenuStrip;
 
     private Printer currentPrinter;
-    private int targetTemperature;
-    private double currentExtruderTemperature;
-    private int targetETC;
-    private double printPercent;
     private Pane diagramNode;
     DiagramController diagramController;
     private final Map<Node, Bounds> nodeToBoundsCache = new HashMap<>();
@@ -235,7 +229,6 @@ public class CalibrationInsetPanelController implements Initializable,
     protected void hideAllInputControlsExceptStepNumber()
     {
         backToStatus.setVisible(false);
-        setCalibrationProgressVisible(CalibrationInsetPanelController.ProgressVisibility.NONE);
         retryPrintButton.setVisible(false);
         startCalibrationButton.setVisible(false);
         cancelCalibrationButton.setVisible(false);
@@ -256,8 +249,6 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         this.resources = resources;
         spinnerControl = Lookup.getSpinnerControl();
-
-        setupProgressBars();
 
         startCalibrationButton.installTag();
         setCalibrationMode(CalibrationMode.CHOICE);
@@ -400,93 +391,9 @@ public class CalibrationInsetPanelController implements Initializable,
         diagramNode.setVisible(true);
     }
 
-    private final ChangeListener<Number> targetTemperatureListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        targetTemperature = newValue.intValue();
-        updateCalibrationProgressTemp();
-    };
-
-    private final ChangeListener<Number> extruderTemperatureListener
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                currentExtruderTemperature = newValue.doubleValue();
-                updateCalibrationProgressTemp();
-            };
-
-    private void updateCalibrationProgressTemp()
-    {
-        if (targetTemperature != 0 && calibrationProgressTemp.isVisible())
-        {
-
-            int currentTemp = (int) currentExtruderTemperature;
-            if (currentTemp > targetTemperature)
-            {
-                currentTemp = targetTemperature;
-            }
-
-            String targetTempStr = targetTemperature + Lookup.i18n("misc.degreesC");
-            String currentTempStr = currentTemp + Lookup.i18n("misc.degreesC");
-            calibrationProgressTemp.setCurrentValue(currentTempStr);
-            calibrationProgressTemp.setTargetValue(targetTempStr);
-            calibrationProgressTemp.setProgress(currentExtruderTemperature / targetTemperature);
-        }
-    }
-
-    private final ChangeListener<Number> targetETCListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-    {
-        targetETC = newValue.intValue();
-        updateCalibrationProgressPrint();
-    };
-
-    private final ChangeListener<Number> printPercentListener
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                printPercent = newValue.doubleValue();
-                updateCalibrationProgressPrint();
-            };
-
-    private void updateCalibrationProgressPrint()
-    {
-        targetETC = currentPrinter.getPrintEngine().progressETCProperty().get();
-        if (calibrationProgressPrint.isVisible())
-        {
-            String targetETCStr = targetETC + "s";
-            String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
-            calibrationProgressPrint.setCurrentValue(currentPrintPercentStr);
-//            calibrationProgressPrint.setTargetValue(targetETCStr);
-            calibrationProgressPrint.setProgress(printPercent);
-        }
-    }
-
-    protected void setCalibrationProgressVisible(ProgressVisibility visibility)
-    {
-        calibrationProgressTemp.setVisible(false);
-        calibrationProgressPrint.setVisible(false);
-        calibrationBottomArea.getChildren().clear();
-        if (visibility != ProgressVisibility.NONE)
-        {
-            if (visibility == ProgressVisibility.TEMP)
-            {
-                calibrationProgressTemp.setVisible(true);
-                calibrationBottomArea.getChildren().add(calibrationProgressTemp);
-                updateCalibrationProgressTemp();
-            }
-            if (visibility == ProgressVisibility.PRINT)
-            {
-                calibrationProgressPrint.setVisible(true);
-                calibrationBottomArea.getChildren().add(calibrationProgressPrint);
-                updateCalibrationProgressTemp();
-            }
-        }
-        calibrationBottomArea.getChildren().add(calibrateBottomMenu);
-    }
-
     private void switchToPrinter(Printer printer)
     {
-        if (currentPrinter != null)
-        {
-            unbindPrinter(currentPrinter);
-        }
+        progressDisplay.unbindFromPrinter();
         if (printer != null)
         {
             bindPrinter(printer);
@@ -494,47 +401,10 @@ public class CalibrationInsetPanelController implements Initializable,
         currentPrinter = printer;
     }
 
-    private void unbindPrinter(Printer printer)
-    {
-        removeHeadListeners(printer);
-        removePrintProgressListeners(printer);
-    }
-
     private void bindPrinter(Printer printer)
     {
-        calibrationProgressTemp.setProgress(0);
-        Head newHead = printer.headProperty().get();
-        if (newHead != null)
-        {
-            NozzleHeater nozzleHeater = newHead.getNozzleHeaters().get(0);
-            targetTemperature = nozzleHeater.nozzleTargetTemperatureProperty().get();
-            nozzleHeater.nozzleTargetTemperatureProperty().addListener(targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().addListener(extruderTemperatureListener);
-        }
-        setupPrintProgressListeners(printer);
+        progressDisplay.bindToPrinter(printer);
         configureStartButtonForMode(calibrationMode, printer);
-    }
-
-    private void removePrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressETCProperty().removeListener(targetETCListener);
-        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
-    }
-
-    private void setupPrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressProperty().addListener(printPercentListener);
-        printer.getPrintEngine().progressETCProperty().addListener(targetETCListener);
-    }
-
-    private void removeHeadListeners(Printer printer)
-    {
-        if (printer.headProperty().get() != null)
-        {
-            NozzleHeater nozzleHeater = printer.headProperty().get().getNozzleHeaters().get(0);
-            nozzleHeater.nozzleTargetTemperatureProperty().removeListener(targetTemperatureListener);
-            nozzleHeater.nozzleTemperatureProperty().removeListener(extruderTemperatureListener);
-        }
     }
 
     private void configureStartButtonForMode(CalibrationMode calibrationMode, Printer printer)
@@ -642,19 +512,6 @@ public class CalibrationInsetPanelController implements Initializable,
             backToStatus.setVisible(false);
         }
         cancelCalibrationButton.setVisible(false);
-    }
-
-    private void setupProgressBars()
-    {
-//        calibrationProgressPrint.setTargetLegend(Lookup.i18n("calibrationPanel.approxBuildTime"));
-        calibrationProgressPrint.setTargetLegend("");
-        calibrationProgressPrint.
-                setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
-//        calibrationProgressPrint.setTargetValue("0");
-        calibrationProgressPrint.setTargetValue("");
-
-        calibrationProgressTemp.setTargetLegend(Lookup.i18n("calibrationPanel.targetTemperature"));
-        calibrationProgressTemp.setProgressDescription(Lookup.i18n("calibrationPanel.heatingCaps"));
     }
 
     protected void showSpinner()

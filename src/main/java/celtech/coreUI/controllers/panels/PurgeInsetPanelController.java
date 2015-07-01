@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.LargeProgress;
+import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.PrinterStatus;
@@ -63,7 +64,7 @@ public class PurgeInsetPanelController implements Initializable
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        PurgeInsetPanelController.class.getName());
+            PurgeInsetPanelController.class.getName());
 
     private Project project = null;
     private Printer printer = null;
@@ -76,13 +77,13 @@ public class PurgeInsetPanelController implements Initializable
     Map<StateTransitionManager.GUIName, Region> namesToButtons = new HashMap<>();
 
     private final ChangeListener<Number> purgeTempEntryListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            transitionManager.setPurgeTemperature(newValue.intValue());
-        };
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                transitionManager.setPurgeTemperature(newValue.intValue());
+            };
 
     @FXML
-    private VBox diagramContainer; 
+    private VBox diagramContainer;
 
     @FXML
     private GraphicButtonWithLabel startPurgeButton;
@@ -121,7 +122,7 @@ public class PurgeInsetPanelController implements Initializable
     private Text lastMaterialTemperature;
 
     @FXML
-    protected LargeProgress purgeProgressBar;
+    private ProgressDisplay progressDisplay;
 
     @FXML
     private Text textCurrentMaterial;
@@ -180,16 +181,12 @@ public class PurgeInsetPanelController implements Initializable
     {
         populateNamesToButtons();
 
-        purgeProgressBar.setTargetLegend("");
-        purgeProgressBar.setProgressDescription(Lookup.i18n("calibrationPanel.printingCaps"));
-        purgeProgressBar.setTargetValue("");
-
         startPurgeButton.installTag();
         proceedButton.installTag();
 
         diagramHandler = new DiagramHandler(diagramContainer, resources);
         diagramHandler.initialise();
-        
+
         FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
 
         setupMaterialCombo();
@@ -290,7 +287,6 @@ public class PurgeInsetPanelController implements Initializable
         repeatButton.setVisible(false);
         startPurgeButton.setVisible(false);
         backButton.setVisible(false);
-        purgeProgressBar.setVisible(false);
         okButton.setVisible(false);
         purgeDetailsGrid.setVisible(false);
         diagramContainer.setVisible(false);
@@ -320,9 +316,7 @@ public class PurgeInsetPanelController implements Initializable
             case HEATING:
                 break;
             case RUNNING_PURGE:
-                purgeProgressBar.setVisible(true);
                 diagramContainer.setVisible(true);
-                updateProgressPrint();
                 break;
             case FINISHED:
                 diagramContainer.setVisible(true);
@@ -342,51 +336,25 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
-    private final ChangeListener<Number> printPercentListener
-        = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            printPercent = newValue.doubleValue();
-            updateProgressPrint();
-        };
-
-    private void updateProgressPrint()
-    {
-        if (purgeProgressBar.isVisible())
-        {
-            String currentPrintPercentStr = ((int) (printPercent * 100)) + "%";
-            purgeProgressBar.setCurrentValue(currentPrintPercentStr);
-            purgeProgressBar.setProgress(printPercent);
-        }
-    }
-
-    private void removePrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressProperty().removeListener(printPercentListener);
-    }
-
-    private void setupPrintProgressListeners(Printer printer)
-    {
-        printer.getPrintEngine().progressProperty().addListener(printPercentListener);
-    }
-
     /**
-     * Bind to the given printer. This is only called once for a given purge and should not be
-     * called again during the purge.
+     * Bind to the given printer. This is only called once for a given purge and
+     * should not be called again during the purge.
      */
     private void bindPrinter(Printer printer)
     {
+        progressDisplay.unbindFromPrinter();
+
         if (this.printer != null)
         {
-            removePrintProgressListeners(this.printer);
             startPurgeButton.getTag().removeAllConditionalText();
             proceedButton.getTag().removeAllConditionalText();
             cmbCurrentMaterial.visibleProperty().unbind();
             textCurrentMaterial.visibleProperty().unbind();
-            proceedButton.disableProperty().unbind(); 
-       }
+            proceedButton.disableProperty().unbind();
+        }
 
         this.printer = printer;
-        setupPrintProgressListeners(printer);
+        progressDisplay.bindToPrinter(printer);
 
         installTag(printer, startPurgeButton);
         installTag(printer, proceedButton);
@@ -399,42 +367,45 @@ public class PurgeInsetPanelController implements Initializable
     }
 
     /**
-     * If a reel is loaded then show and select its material, else show and select the material from
-     * the combo box. This should be called whenever a reel is loaded/unloaded or changed.
+     * If a reel is loaded then show and select its material, else show and
+     * select the material from the combo box. This should be called whenever a
+     * reel is loaded/unloaded or changed.
      */
     private void showCurrentMaterial()
     {
         if (printer.reelsProperty().containsKey(0))
         {
             currentMaterial = Lookup.getFilamentContainer().getFilamentByID(
-                printer.reelsProperty().get(0).filamentIDProperty().get());
+                    printer.reelsProperty().get(0).filamentIDProperty().get());
         } else
         {
             currentMaterial = cmbCurrentMaterial.getValue();
         }
-        if (currentMaterial != null) {
+        if (currentMaterial != null)
+        {
             selectMaterial(currentMaterial);
-        } else {
+        } else
+        {
             transitionManager.setPurgeTemperature(-1);
             purgeTemperature.textProperty().set("-1");
-        } 
+        }
     }
 
     private void installTag(Printer printer, GraphicButtonWithLabel button)
     {
         button.getTag().addConditionalText("dialogs.cantPurgeDoorIsOpenMessage",
-                                           printer.getPrinterAncillarySystems().doorOpenProperty().and(
-                                               Lookup.getUserPreferences().safetyFeaturesOnProperty()));
+                printer.getPrinterAncillarySystems().doorOpenProperty().and(
+                        Lookup.getUserPreferences().safetyFeaturesOnProperty()));
         button.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
-                                           printer.extrudersProperty().get(0).
-                                           filamentLoadedProperty().not());
+                printer.extrudersProperty().get(0).
+                filamentLoadedProperty().not());
 
         button.disableProperty().bind(Bindings.and(
-            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.PURGING_HEAD),
-            printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE))
-            .or(printer.getPrinterAncillarySystems().doorOpenProperty().and(
-                    Lookup.getUserPreferences().safetyFeaturesOnProperty()))
-            .or(printer.extrudersProperty().get(0).filamentLoadedProperty().not()));
+                printer.printerStatusProperty().isNotEqualTo(PrinterStatus.PURGING_HEAD),
+                printer.printerStatusProperty().isNotEqualTo(PrinterStatus.IDLE))
+                .or(printer.getPrinterAncillarySystems().doorOpenProperty().and(
+                                Lookup.getUserPreferences().safetyFeaturesOnProperty()))
+                .or(printer.extrudersProperty().get(0).filamentLoadedProperty().not()));
     }
 
     public void purgeAndPrint(Project project, Filament filament, Printer printerToUse)
@@ -465,10 +436,10 @@ public class PurgeInsetPanelController implements Initializable
             currentMaterialTemperature.textProperty().unbind();
             lastMaterialTemperature.textProperty().unbind();
             currentMaterialTemperature.textProperty().bind(
-                transitionManager.getCurrentMaterialTemperature().asString());
-            
+                    transitionManager.getCurrentMaterialTemperature().asString());
+
             lastMaterialTemperature.textProperty().bind(
-                transitionManager.getLastMaterialTemperature().asString());
+                    transitionManager.getLastMaterialTemperature().asString());
 
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
             {
@@ -478,9 +449,9 @@ public class PurgeInsetPanelController implements Initializable
                     setState((PurgeState) newValue);
                 }
             });
-            
+
             setupProceedButton();
-            
+
             transitionManager.start();
             setState(PurgeState.IDLE);
         } catch (PrinterException ex)
@@ -492,23 +463,23 @@ public class PurgeInsetPanelController implements Initializable
     private void setupMaterialCombo()
     {
         cmbCurrentMaterial.setCellFactory(
-            (ListView<Filament> param) -> new FilamentCell());
+                (ListView<Filament> param) -> new FilamentCell());
 
         cmbCurrentMaterial.setButtonCell(cmbCurrentMaterial.getCellFactory().call(null));
 
         repopulateCmbCurrentMaterial();
 
         cmbCurrentMaterial.valueProperty().addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                selectMaterial(newValue);
-            });
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+                {
+                    selectMaterial(newValue);
+                });
 
     }
 
     /**
-     * Tell the purge state machine about the (changed) current material, and update the relevant
-     * text fields.
+     * Tell the purge state machine about the (changed) current material, and
+     * update the relevant text fields.
      */
     private void selectMaterial(Filament filament)
     {
@@ -537,16 +508,16 @@ public class PurgeInsetPanelController implements Initializable
             ObservableList<Filament> appFilaments = FXCollections.observableArrayList();
             ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
             appFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 appFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                        (Filament o1, Filament o2)
+                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
                 userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                        (Filament o1, Filament o2)
+                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
             filamentList.addAll(appFilaments);
             filamentList.addAll(userFilaments);
@@ -558,8 +529,8 @@ public class PurgeInsetPanelController implements Initializable
     }
 
     /**
-     * The proceed button should be disabled on the CONFIRM_TEMPERATURE page if the
-     * purge temperature is not greater than 0.
+     * The proceed button should be disabled on the CONFIRM_TEMPERATURE page if
+     * the purge temperature is not greater than 0.
      */
     private void setupProceedButton()
     {
@@ -567,16 +538,18 @@ public class PurgeInsetPanelController implements Initializable
         {
             {
                 super.bind(transitionManager.stateGUITProperty(),
-                           transitionManager.getPurgeTemperature());
+                        transitionManager.getPurgeTemperature());
             }
 
             @Override
             protected boolean computeValue()
             {
-                if (! transitionManager.stateGUITProperty().get().equals(CONFIRM_TEMPERATURE)) {
+                if (!transitionManager.stateGUITProperty().get().equals(CONFIRM_TEMPERATURE))
+                {
                     return false;
                 }
-                if (transitionManager.getPurgeTemperature().greaterThan(0).get()) {
+                if (transitionManager.getPurgeTemperature().greaterThan(0).get())
+                {
                     return false;
                 }
                 return true;
@@ -615,7 +588,7 @@ public class PurgeInsetPanelController implements Initializable
                 rectangle.setFill(filament.getDisplayColour());
 
                 label.setText(filament.getLongFriendlyName() + " "
-                    + filament.getMaterial().getFriendlyName());
+                        + filament.getMaterial().getFriendlyName());
                 label.getStyleClass().add("filamentSwatchPadding");
             } else
             {
