@@ -1912,6 +1912,7 @@ modal-dialogue{
 */
 
 #largeProgressContainer {
+    -fx-font-family: 'Source Sans Pro Light';
     -fx-background-color: robox_blue;
 }
 
