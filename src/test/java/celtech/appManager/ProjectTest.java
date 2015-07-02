@@ -119,9 +119,9 @@ public class ProjectTest extends JavaFXConfiguredTest
         Assert.assertEquals(110, group.getCentreX(), 0);
         Assert.assertEquals(52, group.getCentreY(), 0);
         Assert.assertEquals(85, group.getCentreZ(), 0);
-        
-        Assert.assertEquals(110, group.getTransformedCentreX(), 0);
-        Assert.assertEquals(52, group.getTransformedCentreZ(), 0);
+//        
+//        Assert.assertEquals(110, group.getTransformedCentreX(), 0);
+//        Assert.assertEquals(52, group.getTransformedCentreZ(), 0);
         
     }
     
