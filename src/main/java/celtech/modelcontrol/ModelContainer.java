@@ -168,6 +168,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         childModelContainers.addAll(modelContainers);
         this.getChildren().addAll(modelContainers);
         initialiseTransforms();
+        clearBedCentreOffsetTransform();
+        clearTransformMoveToCentre();
     }
     
     public Set<ModelContainer> getChildModelContainers() {
@@ -327,6 +329,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
     }
+    
+
+    private void clearBedCentreOffsetTransform()
+    {
+        transformBedCentre.setX(0);
+        transformBedCentre.setY(0);
+        transformBedCentre.setZ(0);
+    }    
+    
+    private void clearTransformMoveToCentre()
+    {
+        transformMoveToCentre.setX(0);
+        transformMoveToCentre.setY(0);
+        transformMoveToCentre.setZ(0);
+    }        
 
     /**
      * Make a copy of this ModelContainer and return it.
@@ -1066,7 +1083,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.originalModelBounds;
+            ModelBounds bounds = modelContainer.lastTransformedBounds;
             minX = Math.min(bounds.getMinX(), minX);
                 minY = Math.min(bounds.getMinX(), minY);
                 minZ = Math.min(bounds.getMinZ(), minZ);

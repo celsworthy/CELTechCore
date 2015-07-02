@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import javafx.util.Pair;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -72,8 +73,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         assert (true);
     }
     
-    @Test
-    public void testGroupInitialTransforms() {
+    private Pair<Project, ModelContainer> makeProject() {
         TestUtils utils = new TestUtils();
         ModelContainer mc1 = utils.makeModelContainer(true);
         ModelContainer mc2 = utils.makeModelContainer(true);
@@ -82,14 +82,47 @@ public class ProjectTest extends JavaFXConfiguredTest
         project.addModel(mc1);
         project.addModel(mc2);
         project.addModel(mc3);
+        
+        Set<ModelContainer> toTranslate = new HashSet<>();
+        toTranslate.add(mc2);
+        project.translateModelsBy(toTranslate, 10, 20);
+        
         Set<ModelContainer> setMC = new HashSet<>();
         setMC.add(mc1);
         setMC.add(mc2);
         ModelContainer group = project.group(setMC);
-        group.printTransforms();
+        return new Pair<>(project, group);
+    }
+    
+    @Test
+    public void testGroupInitialTransforms() {
+        
+        Pair<Project, ModelContainer> pair = makeProject();
+        Project project = pair.getKey();
+        ModelContainer group = pair.getValue();
         
         Assert.assertEquals(0, group.getTransformMoveToCentre().getX(), 0);
         Assert.assertEquals(0, group.getTransformMoveToCentre().getY(), 0);
         Assert.assertEquals(0, group.getTransformMoveToCentre().getZ(), 0);
+        
     }
+    
+    @Test
+    public void testInitialCentre() {
+        
+        Pair<Project, ModelContainer> pair = makeProject();
+        Project project = pair.getKey();
+        ModelContainer group = pair.getValue();
+        
+        group.printTransforms();
+        
+        Assert.assertEquals(110, group.getCentreX(), 0);
+        Assert.assertEquals(52, group.getCentreY(), 0);
+        Assert.assertEquals(85, group.getCentreZ(), 0);
+        
+        Assert.assertEquals(110, group.getTransformedCentreX(), 0);
+        Assert.assertEquals(52, group.getTransformedCentreZ(), 0);
+        
+    }
+    
 }
