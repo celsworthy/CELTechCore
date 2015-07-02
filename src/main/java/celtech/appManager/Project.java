@@ -383,7 +383,7 @@ public class Project implements Serializable
         lastPrintJobID = printJobID;
     }
 
-    public final void projectModified()
+    private void projectModified()
     {
         if (!suppressProjectChanged)
         {
@@ -555,6 +555,14 @@ public class Project implements Serializable
     public BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
+    }
+    
+    public ModelContainer group(Set<ModelContainer> modelContainers)
+    {
+        deleteModels(modelContainers);
+        ModelContainer modelContainer = new ModelContainer(modelContainers);
+        addModel(modelContainer);
+        return modelContainer;
     }
 
     public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)

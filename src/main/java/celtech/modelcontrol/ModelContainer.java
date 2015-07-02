@@ -160,6 +160,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         meshExtruderAssociation = FXCollections.observableArrayList(extruderAssociation);
     }
 
+    public ModelContainer(Set<ModelContainer> modelContainers)
+    {
+        this.getChildren().addAll(modelContainers);
+        initialise(null);
+        initialiseTransforms();
+    }
+
     public File getModelFile()
     {
         return modelFile;
@@ -278,7 +285,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
 
-        modelName = new SimpleStringProperty(modelFile.getName());
+        if (modelFile != null)
+        {
+            modelName = new SimpleStringProperty(modelFile.getName());
+            this.setId(modelFile.getName());
+        } else
+        {
+            modelName = new SimpleStringProperty("not set");
+            this.setId("not set");
+        }
 
         preferredXScale = new SimpleDoubleProperty(1);
         preferredYScale = new SimpleDoubleProperty(1);
@@ -289,7 +304,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         selectedMarkers = new HashSet<>();
 
-        this.setId(modelFile.getName());
+        
     }
 
     /**
@@ -631,12 +646,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * We present the rotations to the user as Lean - Twist - Turn, however in the code they are
-     * applied in the order twist, lean, turn.
+     * We present the rotations to the user as Turn - Lean - Twist.
      */
     private void updateTransformsFromLeanTwistTurnAngles()
     {
-        // Twist - around Y axis
+        // Twist - around object Y axis
         transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
@@ -650,7 +664,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateLeanPreferred.setAngle(preferredRotationLean.get());
         transformRotateLeanPreferred.setAxis(Z_AXIS);
 
-        // Turn - around Y axis
+        // Turn - around bed Y axis
         transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
@@ -658,10 +672,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateTurnPreferred.setAxis(Y_AXIS);
     }
 
-    /**
-     *
-     * @return
-     */
     public double getXScale()
     {
         return preferredXScale.get();
@@ -725,10 +735,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return preferredRotationLean.get();
     }
 
-    /**
-     *
-     * @param selected
-     */
     public void setSelected(boolean selected)
     {
         if (selected)
@@ -745,19 +751,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         isSelected.set(selected);
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isSelected()
     {
         return isSelected.get();
     }
 
-    /**
-     *
-     * @return
-     */
     public BooleanProperty isSelectedProperty()
     {
         return isSelected;
@@ -878,7 +876,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             storedScaleZ = in.readDouble();
             storedRotationLean = in.readDouble();
             storedRotationTurn = in.readDouble();
-        } else {
+        } else
+        {
             convertSnapFace = true;
         }
 
@@ -892,8 +891,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         setRotationLean(storedRotationLean);
         setRotationTwist(storedRotationTwist);
         setRotationTurn(storedRotationTurn);
-        
-        if (convertSnapFace) {
+
+        if (convertSnapFace)
+        {
             snapToGround(getMeshViews().get(0), storedSnapFaceIndexLegacy);
         }
 
@@ -907,10 +907,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    /**
-     *
-     * @return
-     */
     public List<MeshView> getMeshViews()
     {
         List<MeshView> meshViews = meshGroup.getChildrenUnmodifiable().stream()
@@ -921,19 +917,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return meshViews;
     }
 
-    /**
-     *
-     * @return
-     */
     public ModelContentsEnumeration getModelContentsType()
     {
         return modelContentsType;
     }
 
-    /**
-     *
-     * @param width
-     */
     public void resizeWidth(double width)
     {
         ModelBounds bounds = getLocalBounds();
@@ -946,10 +934,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    /**
-     *
-     * @param height
-     */
     public void resizeHeight(double height)
     {
         ModelBounds bounds = getLocalBounds();
@@ -963,10 +947,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    /**
-     *
-     * @param depth
-     */
     public void resizeDepth(double depth)
     {
 
@@ -981,10 +961,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    /**
-     *
-     * @param x
-     */
     public void translateXTo(double xPosition)
     {
         ModelBounds bounds = getTransformedBounds();
@@ -1012,11 +988,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    /**
-     *
-     */
     public void translateZTo(double zPosition)
-
     {
         ModelBounds bounds = getTransformedBounds();
 
@@ -1501,9 +1473,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    /**
-     * @param preferredScale the preferredScale to set
-     */
     public void setPreferredScale(double preferredScale)
     {
         this.preferredXScale.set(preferredScale);
@@ -1545,8 +1514,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 {
                     mesh.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
                 }
-            } 
-            if (! showMisplacedColour || (!isOffBed.get() && !isCollided))
+            }
+            if (!showMisplacedColour || (!isOffBed.get() && !isCollided))
             {
                 switch (meshExtruderAssociation.get(meshNumber))
                 {

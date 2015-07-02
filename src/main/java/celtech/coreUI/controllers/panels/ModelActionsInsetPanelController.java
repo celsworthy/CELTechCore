@@ -100,6 +100,8 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     @FXML
     void doGroup(ActionEvent event)
     {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        undoableProject.group(modelContainers);
     }
 
     @FXML
