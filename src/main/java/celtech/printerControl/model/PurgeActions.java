@@ -3,12 +3,15 @@
  */
 package celtech.printerControl.model;
 
+import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -76,7 +79,7 @@ public class PurgeActions extends StateTransitionActions
         printer.gotoNozzlePosition(0);
         printer.switchBedHeaterOff();
         switchHeatersAndHeadLightOff();
-        printer.goToOpenDoorPosition(null);
+        
         PrinterUtils.waitOnBusy(printer, (Cancellable) null);
         try
         {
@@ -158,7 +161,23 @@ public class PurgeActions extends StateTransitionActions
         printer.readHeadEEPROM();
         resetPrinter();
         printer.setPrinterStatus(PrinterStatus.IDLE);
+        openDoor();
         deregisterPrinterErrorHandler();
+    }
+
+    private void openDoor()
+    {
+        // needs to run on gui thread to make sure it is called after status set to idle
+        Lookup.getTaskExecutor().
+            runOnGUIThread(() -> {
+                try
+                {
+                    printer.goToOpenDoorPosition(null);
+                } catch (PrinterException ex)
+                {
+                    steno.warning("could not go to open door");
+                }
+            });
     }
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
@@ -173,6 +192,7 @@ public class PurgeActions extends StateTransitionActions
             System.out.println("Error running failed action");
         }
         printer.setPrinterStatus(PrinterStatus.IDLE);
+        openDoor();
     }
 
     private void deregisterPrinterErrorHandler()
@@ -281,6 +301,7 @@ public class PurgeActions extends StateTransitionActions
             steno.error("Error resetting printer");
         }
         printer.setPrinterStatus(PrinterStatus.IDLE);
+        openDoor();
     }
 
     private void abortAnyOngoingPrint()
