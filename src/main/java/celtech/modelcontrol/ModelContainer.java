@@ -19,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -117,6 +118,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
     private Set<Node> selectedMarkers;
+    private Set<ModelContainer> childModelContainers;
 
     /**
      * Print the part using the extruder of the given number.
@@ -162,9 +164,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public ModelContainer(Set<ModelContainer> modelContainers)
     {
-        this.getChildren().addAll(modelContainers);
         initialise(null);
+        childModelContainers.addAll(modelContainers);
+        this.getChildren().addAll(modelContainers);
         initialiseTransforms();
+    }
+    
+    public Set<ModelContainer> getChildModelContainers() {
+        return Collections.unmodifiableSet(childModelContainers);
     }
 
     public File getModelFile()
@@ -202,7 +209,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    void printTransforms()
+    public void printTransforms()
     {
         System.out.println("Scale preferred is " + transformScalePreferred);
         System.out.println("Move to centre is " + transformMoveToCentre);
@@ -276,6 +283,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         this.modelFile = modelFile;
         modelId = nextModelId;
         nextModelId += 1;
+        childModelContainers = new HashSet<>();
         meshExtruderAssociation = FXCollections.observableArrayList();
         shapeChangeListeners = new ArrayList<>();
         screenExtentsChangeListeners = new ArrayList<>();
@@ -1055,6 +1063,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double maxX = -Double.MAX_VALUE;
         double maxY = -Double.MAX_VALUE;
         double maxZ = -Double.MAX_VALUE;
+        
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            ModelBounds bounds = modelContainer.originalModelBounds;
+            minX = Math.min(bounds.getMinX(), minX);
+                minY = Math.min(bounds.getMinX(), minY);
+                minZ = Math.min(bounds.getMinZ(), minZ);
+
+                maxX = Math.max(bounds.getMaxX(), maxX);
+                maxY = Math.max(bounds.getMaxY(), maxY);
+                maxZ = Math.max(bounds.getMaxZ(), maxZ);
+        }
 
         for (MeshView meshView : getMeshViews())
         {

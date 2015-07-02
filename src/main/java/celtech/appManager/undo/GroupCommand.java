@@ -16,6 +16,7 @@ public class GroupCommand extends Command
 
     Project project;
     Set<ModelContainer> modelContainers;
+    ModelContainer group;
 
     public GroupCommand(Project project, Set<ModelContainer> modelContainers)
     {
@@ -32,7 +33,7 @@ public class GroupCommand extends Command
     @Override
     public void undo()
     {
-       
+       project.ungroup(group);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class GroupCommand extends Command
         {
             return;
         }
-        project.group(modelContainers);
+        group = project.group(modelContainers);
     }
 
     @Override

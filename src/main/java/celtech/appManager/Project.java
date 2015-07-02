@@ -564,7 +564,15 @@ public class Project implements Serializable
         addModel(modelContainer);
         return modelContainer;
     }
-
+    
+    public void ungroup(ModelContainer modelContainer) {
+        deleteModel(modelContainer);
+        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        {
+            addModel(childModelContainer);
+        }
+    }
+    
     public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
     {
         Set<ModelContainer> newModelContainers = new HashSet<>();
