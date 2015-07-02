@@ -12,6 +12,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -111,7 +112,7 @@ public class NodeManagementUtilities
                             List<GCodeEventNode> children = orphanNode.getChildren().stream().collect(Collectors.toList());
                             for (GCodeEventNode childNode : children)
                             {
-                                childNode.removeFromParent();
+                                childNode.removeFromParentAndFixup();
                                 newObjectNode.addChildAtEnd(childNode);
                             }
 
@@ -119,7 +120,7 @@ public class NodeManagementUtilities
                             orphanNode.addSiblingBefore(newObjectNode);
 
                             //Remove the orphan
-                            orphanNode.removeFromParent();
+                            orphanNode.removeFromParentAndFixup();
                 }
                 );
     }
@@ -135,6 +136,22 @@ public class NodeManagementUtilities
 
     protected Optional<MovementProvider> findNextMovement(GCodeEventNode node) throws NodeProcessingException
     {
+        Optional<MovementProvider> nextExtrusion = node.streamFromHere()
+                .filter(filteredNode -> filteredNode instanceof MovementProvider)
+                .findFirst()
+                .map(MovementProvider.class::cast);
+
+        return nextExtrusion;
+    }
+
+    protected Optional<MovementProvider> findPriorMovement(GCodeEventNode node) throws NodeProcessingException
+    {
+        Iterator<GCodeEventNode> iterator = node.treeSpanningBackwardIterator();
+        
+        while (iterator.hasNext())
+        {
+            
+        }
         Optional<MovementProvider> nextExtrusion = node.streamFromHere()
                 .filter(filteredNode -> filteredNode instanceof MovementProvider)
                 .findFirst()

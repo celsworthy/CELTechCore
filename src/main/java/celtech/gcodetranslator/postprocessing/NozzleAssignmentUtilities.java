@@ -200,11 +200,12 @@ public class NozzleAssignmentUtilities
                                     List<GCodeEventNode> sectionChildren = sectionNodeBeingExamined.stream().collect(Collectors.toList());
                                     for (GCodeEventNode child : sectionChildren)
                                     {
-                                        child.removeFromParent();
-                                        replacementSection.addChildAtEnd(child);
+                                        sectionChildren.removeChild(child);
+                                        replacementSection.addChild(child);
+                                        child.setParent(replacementSection);
                                     }
 
-                                    sectionNodeBeingExamined.removeFromParent();
+                                    sectionNodeBeingExamined.removeFromParentAndFixup();
                                     lastSectionNode.addSiblingAfter(replacementSection);
                                     sectionNodeBeingExamined = replacementSection;
                                 } catch (InstantiationException | IllegalAccessException ex)
@@ -225,7 +226,7 @@ public class NozzleAssignmentUtilities
                                 layerNode.addChildAtEnd(toolSelectNode);
                             }
 
-                            sectionNodeBeingExamined.removeFromParent();
+                            sectionNodeBeingExamined.removeFromParentAndFixup();
                             toolSelectNode.addChildAtEnd(sectionNodeBeingExamined);
 
                         } catch (UnableToFindSectionNodeException ex)
@@ -237,7 +238,7 @@ public class NozzleAssignmentUtilities
                     } else
                     {
                         //Probably a travel node - move it over without changing it
-                        childNode.removeFromParent();
+                        childNode.removeFromParentAndFixup();
                         toolSelectNode.addChildAtEnd(childNode);
                     }
                 }
@@ -246,7 +247,7 @@ public class NozzleAssignmentUtilities
                 {
                     throw new RuntimeException("Transfer of children from object " + objectNode.getObjectNumber() + " failed");
                 }
-                objectNode.removeFromParent();
+                objectNode.removeFromParentAndFixup();
             }
         }
 
@@ -289,7 +290,7 @@ public class NozzleAssignmentUtilities
                 layerNode.addChildAtEnd(toolSelectNode);
             }
 
-            objectNodeBeingExamined.removeFromParent();
+            objectNodeBeingExamined.removeFromParentAndFixup();
             List<GCodeEventNode> sectionNodes = objectNodeBeingExamined.getChildren().stream().collect(Collectors.toList());
 
             for (GCodeEventNode childNode : sectionNodes)
@@ -315,11 +316,11 @@ public class NozzleAssignmentUtilities
                             List<GCodeEventNode> sectionChildren = sectionNodes.stream().collect(Collectors.toList());
                             for (GCodeEventNode child : sectionChildren)
                             {
-                                child.removeFromParent();
+                                child.removeFromParentAndFixup();
                                 replacementSection.addChildAtEnd(child);
                             }
 
-                            sectionNodeUnderExamination.removeFromParent();
+                            sectionNodeUnderExamination.removeFromParentAndFixup();
                             lastSectionNode.addSiblingAfter(replacementSection);
                             sectionNodeUnderExamination = replacementSection;
                         } catch (InstantiationException | IllegalAccessException | UnableToFindSectionNodeException ex)
@@ -328,14 +329,14 @@ public class NozzleAssignmentUtilities
                         }
                     }
 
-                    sectionNodeUnderExamination.removeFromParent();
+                    sectionNodeUnderExamination.removeFromParentAndFixup();
                     toolSelectNode.addChildAtEnd(sectionNodeUnderExamination);
 
                     lastSectionNode = sectionNodeUnderExamination;
                 } else
                 {
                     //Probably a travel node - move it over without changing it
-                    childNode.removeFromParent();
+                    childNode.removeFromParentAndFixup();
                     toolSelectNode.addChildAtEnd(childNode);
                 }
             }
