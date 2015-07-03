@@ -71,8 +71,10 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 break;
             case BUSY:
                 break;
-            case LOADING_FILAMENT:
-            case UNLOADING_FILAMENT:
+            case LOADING_FILAMENT_E:
+            case UNLOADING_FILAMENT_E:
+            case LOADING_FILAMENT_D:
+            case UNLOADING_FILAMENT_D:
                 statusProcessed = true;
                 barShouldBeDisplayed = true;
                 largeProgressDescription.setText(printer.busyStatusProperty().get().getI18nString());

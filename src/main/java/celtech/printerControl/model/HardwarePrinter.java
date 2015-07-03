@@ -3072,7 +3072,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     case PURGING_HEAD:
                         break;
                     default:
-                        if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT)
+                        if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_E
+                                && busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_D)
                         {
                             Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
                                 error, this);
@@ -3375,9 +3376,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     pauseStatus.set(statusResponse.getPauseStatus());
 
                     busyStatus.set(statusResponse.getBusyStatus());
-                    //TODO hiding the notification should apply to both filaments - maybe need additional differentiation of which filament is loading from the firmware
-                    if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT
+
+                    if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT_E
                         && !filament1Loaded)
+                    {
+                        Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
+
+                    } else if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT_D
+                        && !filament2Loaded)
                     {
                         Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
 
