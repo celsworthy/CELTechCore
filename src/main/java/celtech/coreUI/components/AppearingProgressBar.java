@@ -11,7 +11,6 @@ import javafx.animation.Transition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -175,7 +174,6 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
         } else if (directionToSlide == SlidingComponentDirection.DOWN_FROM_TOP
                 || directionToSlide == SlidingComponentDirection.UP_FROM_BOTTOM)
         {
-            System.out.println("Called with " + amountToShow);
             double targetPanelHeight = panelHeight * amountToShow;
             double heightToHide = panelHeight - targetPanelHeight;
             double translateByY = 0;

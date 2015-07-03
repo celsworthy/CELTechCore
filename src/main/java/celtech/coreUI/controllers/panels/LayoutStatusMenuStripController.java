@@ -721,8 +721,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void updatePrintButtonConditionalText(Printer printer, Project project)
     {
-        steno.debug("update conditional text");
-
         if (printer == null)
         {
             return;

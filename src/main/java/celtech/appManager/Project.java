@@ -383,7 +383,7 @@ public class Project implements Serializable
         lastPrintJobID = printJobID;
     }
 
-    public final void projectModified()
+    private void projectModified()
     {
         if (!suppressProjectChanged)
         {
@@ -556,7 +556,23 @@ public class Project implements Serializable
     {
         return customSettingsNotChosen;
     }
-
+    
+    public ModelContainer group(Set<ModelContainer> modelContainers)
+    {
+        deleteModels(modelContainers);
+        ModelContainer modelContainer = new ModelContainer(modelContainers);
+        addModel(modelContainer);
+        return modelContainer;
+    }
+    
+    public void ungroup(ModelContainer modelContainer) {
+        deleteModel(modelContainer);
+        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        {
+            addModel(childModelContainer);
+        }
+    }
+    
     public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
     {
         Set<ModelContainer> newModelContainers = new HashSet<>();

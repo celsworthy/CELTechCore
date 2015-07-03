@@ -1833,6 +1833,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException
     {
+        System.out.println("printer status is " + printerStatus);
         if (!canOpenDoor.get())
         {
             throw new PrintActionUnavailableException("Door open not available");

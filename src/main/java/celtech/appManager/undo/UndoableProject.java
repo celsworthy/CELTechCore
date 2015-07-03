@@ -180,19 +180,19 @@ public class UndoableProject
 
     public void addModel(ModelContainer modelContainer)
     {
-        AddModelCommand addModelCommand = new AddModelCommand(project, modelContainer);
+        Command addModelCommand = new AddModelCommand(project, modelContainer);
         commandStack.do_(addModelCommand);
     }
 
     public void deleteModels(Set<ModelContainer> modelContainers)
     {
-        DeleteModelsCommand deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
+        Command deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
         commandStack.do_(deleteModelCommand);
     }
 
     public void copyModels(Set<ModelContainer> modelContainers)
     {
-        CopyModelsCommand copyModelsCommand = new CopyModelsCommand(project, modelContainers);
+        Command copyModelsCommand = new CopyModelsCommand(project, modelContainers);
         commandStack.do_(copyModelsCommand);
     }
 
@@ -221,7 +221,7 @@ public class UndoableProject
 
     public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
     {
-        SetUserExtruder0Command setUserExtruder0Command = new SetUserExtruder0Command(project,
+        Command setUserExtruder0Command = new SetUserExtruder0Command(project,
                 modelContainer,
                 pickedMesh,
                 useExtruder0);
@@ -230,8 +230,14 @@ public class UndoableProject
 
     public void splitIntoParts(Set<ModelContainer> modelContainers)
     {
-        SplitIntoPartsCommand splitIntoPartsCommand = new SplitIntoPartsCommand(project, modelContainers);
+        Command splitIntoPartsCommand = new SplitIntoPartsCommand(project, modelContainers);
         commandStack.do_(splitIntoPartsCommand);
     }
+    
+    public void group(Set<ModelContainer> modelContainers)
+    {
+        Command groupCommand = new GroupCommand(project, modelContainers);
+        commandStack.do_(groupCommand);
+    }    
 
 }
