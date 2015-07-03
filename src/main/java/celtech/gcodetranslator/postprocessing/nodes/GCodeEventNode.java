@@ -2,10 +2,8 @@ package celtech.gcodetranslator.postprocessing.nodes;
 
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Comment;
-import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -211,6 +209,43 @@ public abstract class GCodeEventNode
         return it;
     }
 
+    public IteratorWithOrigin<GCodeEventNode> meAndSiblingsIterator()
+    {
+        IteratorWithOrigin<GCodeEventNode> it = new IteratorWithOrigin<GCodeEventNode>()
+        {
+            private GCodeEventNode originNode;
+            private int currentIndex;
+
+            @Override
+            public void setOriginNode(GCodeEventNode originNode)
+            {
+                this.originNode = originNode;
+                currentIndex = parent.get().children.indexOf(originNode);
+            }
+
+            @Override
+            public boolean hasNext()
+            {
+                return currentIndex >= 0 && currentIndex < parent.get().children.size();
+            }
+
+            @Override
+            public GCodeEventNode next()
+            {
+                return parent.get().children.get(currentIndex++);
+            }
+
+            @Override
+            public void remove()
+            {
+                throw new UnsupportedOperationException();
+            }
+        };
+
+        it.setOriginNode(this);
+        return it;
+    }
+
     public Iterator<GCodeEventNode> treeSpanningIterator()
     {
         Iterator<GCodeEventNode> it = new Iterator<GCodeEventNode>()
@@ -261,6 +296,7 @@ public abstract class GCodeEventNode
             private GCodeEventNode originNode;
             private int currentIndex;
             private IteratorWithOrigin<GCodeEventNode> parentIterator = null;
+            private Iterator<GCodeEventNode> childIterator = null;
 
             @Override
             public void setOriginNode(GCodeEventNode originNode)
@@ -279,29 +315,59 @@ public abstract class GCodeEventNode
             public boolean hasNext()
             {
                 return currentIndex >= 0
-                        || (parentIterator != null && parentIterator.hasNext()
-                        || (currentIndex < 0 && originNode.hasParent()));
+                        || ((parentIterator != null && parentIterator.hasNext())
+                        || (childIterator != null && childIterator.hasNext())
+                        || (originNode != null && originNode.hasParent()));
             }
 
             @Override
             public GCodeEventNode next()
             {
+                if (childIterator != null
+                        && childIterator.hasNext())
+                {
+                    return childIterator.next();
+                } else
+                {
+                    childIterator = null;
+                }
+
                 if (parentIterator != null
                         && parentIterator.hasNext())
                 {
                     return parentIterator.next();
-                } else if (currentIndex >= 0)
+//                    if (sibling.isLeaf())
+//                    {
+//                        return sibling;
+//                    } else
+//                    {
+//                        childIterator = sibling.childrenAndMeBackwardsIterator();
+//                        return childIterator.next();
+//                    }
+                } else
                 {
                     parentIterator = null;
+                }
 
-                    GCodeEventNode child = children.get(currentIndex--);
-                    return child;
+                if (currentIndex >= 0)
+                {
+                    GCodeEventNode child = parent.get().children.get(currentIndex--);
+                    if (child.isLeaf())
+                    {
+                        return child;
+                    } else
+                    {
+                        childIterator = child.childrenAndMeBackwardsIterator();
+                        return childIterator.next();
+                    }
                 } else
                 {
                     //Look upwards from the origin node
-                    parentIterator = originNode.parent.get().treeSpanningBackwardsIterator();
-                    parentIterator.setOriginNode(originNode.parent.get());
-                    return originNode.parent.get();
+                    GCodeEventNode parentNode = originNode.parent.get();
+                    parentIterator = parentNode.treeSpanningBackwardsIterator();
+                    parentIterator.setOriginNode(parentNode);
+                    originNode = null;
+                    return parentNode;
                 }
             }
 
@@ -314,6 +380,11 @@ public abstract class GCodeEventNode
 
         it.setOriginNode(this);
         return it;
+    }
+    
+    public Iterator<GCodeEventNode> childIterator()
+    {
+        return children.listIterator();
     }
 
 //    public static <T> List<T> reversedView(final List<T> list)
@@ -594,6 +665,12 @@ public abstract class GCodeEventNode
 //        children.remove(childNode);
 //    }
 //
+    
+    public LinkedList<GCodeEventNode> getChildren()
+    {
+        return children;
+    }
+    
     public void addSiblingBefore(GCodeEventNode newNode)
     {
         if (parent.isPresent())
@@ -611,6 +688,15 @@ public abstract class GCodeEventNode
             GCodeEventNode parentNode = parent.get();
             int myIndex = parentNode.children.indexOf(this);
             parentNode.children.add(myIndex + 1, newNode);
+        }
+    }
+    
+    public void removeFromParent()
+    {
+        if (parent.isPresent())
+        {
+            parent.get().children.remove(this);
+            parent = Optional.empty();
         }
     }
 //
@@ -690,6 +776,30 @@ public abstract class GCodeEventNode
         }
 
         return returnValue;
+    }
+    
+    private GCodeEventNode getAbsolutelyTheLastEvent(GCodeEventNode node)
+    {
+        if (!node.isLeaf())
+        {
+            return getAbsolutelyTheLastEvent(children.getLast());
+        }
+        else
+        {
+            return node;
+        }
+    }
+    
+    public GCodeEventNode getAbsolutelyTheLastEvent()
+    {
+        if (!isLeaf())
+        {
+            return getAbsolutelyTheLastEvent(children.getLast());
+        }
+        else
+        {
+            return this;
+        }
     }
 
     /**

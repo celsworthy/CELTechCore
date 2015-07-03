@@ -474,6 +474,88 @@ public class GCodeEventNodeTest
 
         assertEquals(0, resultList3.size());
     }
+    
+    @Test
+    public void testMeAndSiblingsIterator()
+    {
+        System.out.println("SiblingsIterator");
+        GCodeEventNode nodeA = new GCodeEventNodeTestImpl("nodeA");
+        GCodeEventNode nodeB1 = new GCodeEventNodeTestImpl("nodeB1");
+        GCodeEventNode nodeB2 = new GCodeEventNodeTestImpl("nodeB2");
+        GCodeEventNode nodeB3 = new GCodeEventNodeTestImpl("nodeB3");
+        GCodeEventNode nodeC1 = new GCodeEventNodeTestImpl("nodeC1");
+        GCodeEventNode nodeC2 = new GCodeEventNodeTestImpl("nodeC2");
+        GCodeEventNode nodeC3 = new GCodeEventNodeTestImpl("nodeC3");
+        GCodeEventNode nodeC4 = new GCodeEventNodeTestImpl("nodeC4");
+        GCodeEventNode nodeC5 = new GCodeEventNodeTestImpl("nodeC5");
+        GCodeEventNode nodeC6 = new GCodeEventNodeTestImpl("nodeC6");
+        GCodeEventNode nodeC7 = new GCodeEventNodeTestImpl("nodeC7");
+        GCodeEventNode nodeC8 = new GCodeEventNodeTestImpl("nodeC8");
+        GCodeEventNode nodeC9 = new GCodeEventNodeTestImpl("nodeC9");
+        GCodeEventNode nodeD1 = new GCodeEventNodeTestImpl("nodeD1");
+        GCodeEventNode nodeD2 = new GCodeEventNodeTestImpl("nodeD2");
+        GCodeEventNode nodeD3 = new GCodeEventNodeTestImpl("nodeD3");
+
+        nodeB1.addChildAtEnd(nodeC1);
+        nodeB1.addChildAtEnd(nodeC2);
+        nodeB1.addChildAtEnd(nodeC3);
+
+        nodeB2.addChildAtEnd(nodeC4);
+        nodeB2.addChildAtEnd(nodeC5);
+        nodeB2.addChildAtEnd(nodeC6);
+
+        nodeB3.addChildAtEnd(nodeC7);
+        nodeB3.addChildAtEnd(nodeC8);
+        nodeB3.addChildAtEnd(nodeC9);
+
+        nodeC7.addChildAtEnd(nodeD1);
+        nodeC7.addChildAtEnd(nodeD2);
+        nodeC7.addChildAtEnd(nodeD3);
+
+        nodeA.addChildAtEnd(nodeB1);
+        nodeA.addChildAtEnd(nodeB2);
+        nodeA.addChildAtEnd(nodeB3);
+
+        // From C8 should be C8, C9
+        IteratorWithOrigin<GCodeEventNode> nodeC8Iterator = nodeC8.meAndSiblingsIterator();
+        ArrayList<GCodeEventNode> resultList1 = new ArrayList<>();
+
+        while (nodeC8Iterator.hasNext())
+        {
+            resultList1.add(nodeC8Iterator.next());
+        }
+
+        assertEquals(2, resultList1.size());
+        assertSame(nodeC8, resultList1.get(0));
+        assertSame(nodeC9, resultList1.get(1));
+
+        // From D2 should be D2, D3
+        IteratorWithOrigin<GCodeEventNode> nodeD2Iterator = nodeD2.meAndSiblingsIterator();
+
+        ArrayList<GCodeEventNode> resultList2 = new ArrayList<>();
+
+        while (nodeD2Iterator.hasNext())
+        {
+            resultList2.add(nodeD2Iterator.next());
+        }
+
+        assertEquals(2, resultList2.size());
+        assertSame(nodeD2, resultList2.get(0));
+        assertSame(nodeD3, resultList2.get(1));
+
+        // From D3 should be D3
+        IteratorWithOrigin<GCodeEventNode> nodeD3Iterator = nodeD3.meAndSiblingsIterator();
+
+        ArrayList<GCodeEventNode> resultList3 = new ArrayList<>();
+
+        while (nodeD3Iterator.hasNext())
+        {
+            resultList3.add(nodeD3Iterator.next());
+        }
+
+        assertEquals(1, resultList3.size());
+        assertSame(nodeD3, resultList3.get(0));
+    }
 
     @Test
     public void testTreeSpanningIterator()
@@ -629,26 +711,51 @@ public class GCodeEventNodeTest
         nodeA.addChildAtEnd(nodeB2);
         nodeA.addChildAtEnd(nodeB3);
 
+        // From C8 should be D3, D2, D1, C7, B3, C6, C5, C4, B2, C3, C2, C1, B1, A
+        Iterator<GCodeEventNode> nodeC8Iterator = nodeC8.treeSpanningBackwardsIterator();
+        ArrayList<GCodeEventNode> resultList1 = new ArrayList<>();
+
+        while (nodeC8Iterator.hasNext())
+        {
+            resultList1.add(nodeC8Iterator.next());
+        }
+
+        assertEquals(14, resultList1.size());
+        assertSame(nodeD3, resultList1.get(0));
+        assertSame(nodeD2, resultList1.get(1));
+        assertSame(nodeD1, resultList1.get(2));
+        assertSame(nodeC7, resultList1.get(3));
+        assertSame(nodeB3, resultList1.get(4));
+        assertSame(nodeC6, resultList1.get(5));
+        assertSame(nodeC5, resultList1.get(6));
+        assertSame(nodeC4, resultList1.get(7));
+        assertSame(nodeB2, resultList1.get(8));
+        assertSame(nodeC3, resultList1.get(9));
+        assertSame(nodeC2, resultList1.get(10));
+        assertSame(nodeC1, resultList1.get(11));
+        assertSame(nodeB1, resultList1.get(12));
+        assertSame(nodeA, resultList1.get(13));
+
         // From C7 should be B3, C6, C5, C4, B2, C3, C2, C1, B1, A
         Iterator<GCodeEventNode> nodeC7Iterator = nodeC7.treeSpanningBackwardsIterator();
-        ArrayList<GCodeEventNode> resultList1 = new ArrayList<>();
+        ArrayList<GCodeEventNode> resultList2 = new ArrayList<>();
 
         while (nodeC7Iterator.hasNext())
         {
-            resultList1.add(nodeC7Iterator.next());
+            resultList2.add(nodeC7Iterator.next());
         }
 
-        assertEquals(10, resultList1.size());
-        assertSame(nodeB3, resultList1.get(0));
-        assertSame(nodeC6, resultList1.get(1));
-        assertSame(nodeC5, resultList1.get(2));
-        assertSame(nodeC4, resultList1.get(3));
-        assertSame(nodeB2, resultList1.get(4));
-        assertSame(nodeC3, resultList1.get(5));
-        assertSame(nodeC2, resultList1.get(6));
-        assertSame(nodeC1, resultList1.get(7));
-        assertSame(nodeB1, resultList1.get(8));
-        assertSame(nodeA, resultList1.get(9));
+        assertEquals(10, resultList2.size());
+        assertSame(nodeB3, resultList2.get(0));
+        assertSame(nodeC6, resultList2.get(1));
+        assertSame(nodeC5, resultList2.get(2));
+        assertSame(nodeC4, resultList2.get(3));
+        assertSame(nodeB2, resultList2.get(4));
+        assertSame(nodeC3, resultList2.get(5));
+        assertSame(nodeC2, resultList2.get(6));
+        assertSame(nodeC1, resultList2.get(7));
+        assertSame(nodeB1, resultList2.get(8));
+        assertSame(nodeA, resultList2.get(9));
 
 //        // From B3 should be C7, D1, D2, D3, C8, C9
 //        Iterator<GCodeEventNode> nodeB3Iterator = nodeB3.treeSpanningIterator();

@@ -2,26 +2,16 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.configuration.slicer.NozzleParameters;
-import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
-import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Optional;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -40,9 +30,9 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         UnretractNode unretractNode2 = new UnretractNode();
         UnretractNode unretractNode3 = new UnretractNode();
 
-        testLayer.addChild(0, unretractNode3);
-        testLayer.addChild(0, unretractNode2);
-        testLayer.addChild(0, unretractNode1);
+        testLayer.addChildAtEnd(unretractNode1);
+        testLayer.addChildAtEnd(unretractNode2);
+        testLayer.addChildAtEnd(unretractNode3);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
@@ -79,19 +69,19 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode5 = new ExtrusionNode();
         ExtrusionNode extrusionNode6 = new ExtrusionNode();
 
-        outer.addChild(0, extrusionNode1);
-        outer.addChild(1, extrusionNode2);
-        outer.addChild(2, extrusionNode3);
+        outer.addChildAtEnd(extrusionNode1);
+        outer.addChildAtEnd(extrusionNode2);
+        outer.addChildAtEnd(extrusionNode3);
 
-        fill.addChild(0, extrusionNode4);
-        fill.addChild(1, extrusionNode5);
-        fill.addChild(2, extrusionNode6);
+        fill.addChildAtEnd(extrusionNode4);
+        fill.addChildAtEnd(extrusionNode5);
+        fill.addChildAtEnd(extrusionNode6);
 
-        orphan1.addChild(0, outer);
-        object1.addChild(0, fill);
+        orphan1.addChildAtEnd(outer);
+        object1.addChildAtEnd(fill);
 
-        testLayer.addChild(0, orphan1);
-        testLayer.addChild(1, object1);
+        testLayer.addChildAtEnd(orphan1);
+        testLayer.addChildAtEnd(object1);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
@@ -139,19 +129,19 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode5 = new ExtrusionNode();
         ExtrusionNode extrusionNode6 = new ExtrusionNode();
 
-        outer.addChild(0, extrusionNode1);
-        outer.addChild(1, extrusionNode2);
-        outer.addChild(2, extrusionNode3);
+        outer.addChildAtEnd(extrusionNode1);
+        outer.addChildAtEnd(extrusionNode2);
+        outer.addChildAtEnd(extrusionNode3);
 
-        fill.addChild(0, extrusionNode4);
-        fill.addChild(1, extrusionNode5);
-        fill.addChild(2, extrusionNode6);
+        fill.addChildAtEnd(extrusionNode4);
+        fill.addChildAtEnd(extrusionNode5);
+        fill.addChildAtEnd(extrusionNode6);
 
-        orphan1.addChild(0, outer);
-        object1.addChild(0, fill);
+        orphan1.addChildAtEnd(outer);
+        object1.addChildAtEnd(fill);
 
-        testLayer.addChild(0, orphan1);
-        testLayer.addChild(1, object1);
+        testLayer.addChildAtEnd(orphan1);
+        testLayer.addChildAtEnd(object1);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
