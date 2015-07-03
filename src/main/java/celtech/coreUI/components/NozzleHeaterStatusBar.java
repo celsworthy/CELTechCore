@@ -62,14 +62,11 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
 
                     largeTargetValue.textProperty().bind(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d")
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeTargetValue.setVisible(true);
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-                    largeTargetLegend.setVisible(true);
 
                     largeProgressCurrentValue.textProperty().bind(heater.nozzleTemperatureProperty().asString("%d")
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeProgressCurrentValue.setVisible(true);
 
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {
@@ -90,7 +87,8 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             return normalisedProgress;
                         }
                     });
-                    progressBar.setVisible(true);
+                    showProgress();
+                    showTargets();
                     barShouldBeDisplayed = true;
                 }
                 break;
@@ -103,14 +101,11 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
 
                     largeTargetValue.textProperty().bind(heater.nozzleTargetTemperatureProperty().asString("%d")
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeTargetValue.setVisible(true);
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-                    largeTargetLegend.setVisible(true);
 
                     largeProgressCurrentValue.textProperty().bind(heater.nozzleTemperatureProperty().asString("%d")
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeProgressCurrentValue.setVisible(true);
 
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {
@@ -131,7 +126,8 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             return normalisedProgress;
                         }
                     });
-                    progressBar.setVisible(true);
+                    showProgress();
+                    showTargets();
                     barShouldBeDisplayed = true;
                 }
                 break;
