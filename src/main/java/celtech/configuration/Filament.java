@@ -247,7 +247,7 @@ public class Filament implements Serializable, Cloneable
     {
         return remainingFilament.get();
     }
-
+    
     public void setFriendlyFilamentName(String friendlyColourName)
     {
         this.friendlyFilamentName.set(friendlyColourName);

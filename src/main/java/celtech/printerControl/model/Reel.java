@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
+import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
@@ -324,7 +325,7 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (displayColour.get().equals(referenceFilamentData.getDisplayColour()) == false)
+            if (! colourToString(displayColour.get()).equals(colourToString(referenceFilamentData.getDisplayColour())))
             {
                 displayColour.set(referenceFilamentData.getDisplayColour());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
