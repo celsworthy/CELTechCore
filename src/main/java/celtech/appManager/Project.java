@@ -184,7 +184,7 @@ public class Project implements Serializable
             }
             String[] fileNameElements = basePath.split(File.separator);
             project.setProjectName(fileNameElements[fileNameElements.length - 1]);
-            
+
         } catch (Exception ex)
         {
             steno.exception("Unable to load old project format file", ex);
@@ -268,7 +268,7 @@ public class Project implements Serializable
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
         FileInputStream fileInputStream = new FileInputStream(basePath
-                + ApplicationConfiguration.projectModelsFileExtension);
+            + ApplicationConfiguration.projectModelsFileExtension);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
         ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
@@ -337,12 +337,12 @@ public class Project implements Serializable
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
-            for(int extruderNumber : loadedModel.getMeshExtruderAssociationProperty())
+            for (int extruderNumber : loadedModel.getMeshExtruderAssociationProperty())
             {
-                            if (!usedExtruders.contains(extruderNumber))
-            {
-                usedExtruders.add(extruderNumber);
-            }
+                if (!usedExtruders.contains(extruderNumber))
+                {
+                    usedExtruders.add(extruderNumber);
+                }
             }
         }
         return usedExtruders;
@@ -556,7 +556,7 @@ public class Project implements Serializable
     {
         return customSettingsNotChosen;
     }
-    
+
     public ModelContainer group(Set<ModelContainer> modelContainers)
     {
         deleteModels(modelContainers);
@@ -564,15 +564,19 @@ public class Project implements Serializable
         addModel(modelContainer);
         return modelContainer;
     }
-    
-    public void ungroup(ModelContainer modelContainer) {
-        deleteModel(modelContainer);
-        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+
+    public void ungroup(Set<ModelContainer> modelContainers)
+    {
+        for (ModelContainer modelContainer : modelContainers)
         {
-            addModel(childModelContainer);
+            deleteModel(modelContainer);
+            for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+            {
+                addModel(childModelContainer);
+            }
         }
     }
-    
+
     public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
     {
         Set<ModelContainer> newModelContainers = new HashSet<>();
@@ -582,9 +586,8 @@ public class Project implements Serializable
             double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
             double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
             String modelName = modelContainer.getModelName();
-            
+
             //TODO modify to work with multiple mesh views
-            
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
                 (TriangleMesh) modelContainer.getMeshViews().get(0).getMesh());
             if (subMeshes.size() > 1)
@@ -908,7 +911,8 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
+    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh,
+        boolean useExtruder0)
     {
         modelContainer.setUseExtruder0(pickedMesh, useExtruder0);
         projectModified();

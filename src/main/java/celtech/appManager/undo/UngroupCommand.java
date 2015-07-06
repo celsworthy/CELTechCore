@@ -5,21 +5,20 @@ package celtech.appManager.undo;
 
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
  *
  * @author tony
  */
-public class GroupCommand extends Command
+public class UngroupCommand extends Command
 {
 
     Project project;
     Set<ModelContainer> modelContainers;
     ModelContainer group;
 
-    public GroupCommand(Project project, Set<ModelContainer> modelContainers)
+    public UngroupCommand(Project project, Set<ModelContainer> modelContainers)
     {
         this.project = project;
         this.modelContainers = modelContainers;
@@ -34,19 +33,12 @@ public class GroupCommand extends Command
     @Override
     public void undo()
     {
-        Set<ModelContainer> modelContainers = new HashSet<>();
-        modelContainers.add(group);
-        project.ungroup(modelContainers);
     }
 
     @Override
     public void redo()
     {
-        if (modelContainers.size() == 1)
-        {
-            return;
-        }
-        group = project.group(modelContainers);
+        project.ungroup(modelContainers);
     }
 
     @Override

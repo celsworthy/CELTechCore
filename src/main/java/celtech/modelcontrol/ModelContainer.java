@@ -171,8 +171,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         clearBedCentreOffsetTransform();
         clearTransformMoveToCentre();
     }
-    
-    public Set<ModelContainer> getChildModelContainers() {
+
+    public Set<ModelContainer> getChildModelContainers()
+    {
         return Collections.unmodifiableSet(childModelContainers);
     }
 
@@ -242,9 +243,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          */
         getTransforms().addAll(transformPostRotationYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
+                               transformRotateTurnPreferred,
                                transformRotateLeanPreferred,
-                               transformRotateTwistPreferred,
-                               transformRotateTurnPreferred
+                               transformRotateTwistPreferred
         );
         meshGroup.getTransforms().addAll(transformScalePreferred);
 
@@ -314,7 +315,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         selectedMarkers = new HashSet<>();
 
-        
     }
 
     /**
@@ -329,21 +329,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
     }
-    
 
     private void clearBedCentreOffsetTransform()
     {
         transformBedCentre.setX(0);
         transformBedCentre.setY(0);
         transformBedCentre.setZ(0);
-    }    
-    
+    }
+
     private void clearTransformMoveToCentre()
     {
         transformMoveToCentre.setX(0);
         transformMoveToCentre.setY(0);
         transformMoveToCentre.setZ(0);
-    }        
+    }
 
     /**
      * Make a copy of this ModelContainer and return it.
@@ -1080,17 +1079,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double maxX = -Double.MAX_VALUE;
         double maxY = -Double.MAX_VALUE;
         double maxZ = -Double.MAX_VALUE;
-        
+
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.lastTransformedBounds;
+            ModelBounds bounds = modelContainer.lastTransformedBounds; // parent of child model is this model
             minX = Math.min(bounds.getMinX(), minX);
-                minY = Math.min(bounds.getMinX(), minY);
-                minZ = Math.min(bounds.getMinZ(), minZ);
+            minY = Math.min(bounds.getMinX(), minY);
+            minZ = Math.min(bounds.getMinZ(), minZ);
 
-                maxX = Math.max(bounds.getMaxX(), maxX);
-                maxY = Math.max(bounds.getMaxY(), maxY);
-                maxZ = Math.max(bounds.getMaxZ(), maxZ);
+            maxX = Math.max(bounds.getMaxX(), maxX);
+            maxY = Math.max(bounds.getMaxY(), maxY);
+            maxZ = Math.max(bounds.getMaxZ(), maxZ);
         }
 
         for (MeshView meshView : getMeshViews())
@@ -1138,6 +1137,33 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double maxX = -Double.MAX_VALUE;
         double maxY = -Double.MAX_VALUE;
         double maxZ = -Double.MAX_VALUE;
+
+        // this wont work for group of groups, misses transforms
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            for (MeshView meshView : modelContainer.getMeshViews())
+            {
+                TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
+                ObservableFloatArray originalPoints = mesh.getPoints();
+
+                for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+                {
+                    float xPos = originalPoints.get(pointOffset);
+                    float yPos = originalPoints.get(pointOffset + 1);
+                    float zPos = originalPoints.get(pointOffset + 2);
+
+                    Point3D pointInParent = localToParent(modelContainer.localToParent(meshGroup.localToParent(xPos, yPos, zPos)));
+
+                    minX = Math.min(pointInParent.getX(), minX);
+                    minY = Math.min(pointInParent.getY(), minY);
+                    minZ = Math.min(pointInParent.getZ(), minZ);
+
+                    maxX = Math.max(pointInParent.getX(), maxX);
+                    maxY = Math.max(pointInParent.getY(), maxY);
+                    maxZ = Math.max(pointInParent.getZ(), maxZ);
+                }
+            }
+        }
 
         for (MeshView meshView : getMeshViews())
         {

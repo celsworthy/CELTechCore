@@ -239,5 +239,11 @@ public class UndoableProject
         Command groupCommand = new GroupCommand(project, modelContainers);
         commandStack.do_(groupCommand);
     }    
+    
+    public void ungroup(Set<ModelContainer> modelContainers)
+    {
+        Command ungroupCommand = new UngroupCommand(project, modelContainers);
+        commandStack.do_(ungroupCommand);
+    }    
 
 }
