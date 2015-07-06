@@ -367,9 +367,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 {
                     try
                     {
-                        steno.debug("Update reel with updated filament data");
-                        transmitWriteReelEEPROM(posReel.getKey(), filamentContainer.getFilamentByID(
-                                filamentId));
+                        Filament changedFilament = filamentContainer.getFilamentByID(
+                                filamentId);
+                        if (changedFilament != null)
+                        {
+                            steno.debug("Update reel with updated filament data");
+                            transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
+                        }
                     } catch (RoboxCommsException ex)
                     {
                         steno.error("Unable to program reel with update filament of id: "
@@ -384,18 +388,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void setPrinterStatus(PrinterStatus printerStatus)
     {
         Lookup.getTaskExecutor().
-            runOnGUIThread(() ->
-                {
-                    boolean okToChangeState = true;
-                    steno.debug("Status was " + this.printerStatus.get().name()
-                        + " and is going to "
-                        + printerStatus);
-                    switch (printerStatus)
-                    {
-                        case IDLE:
-                            filamentSlipActionFired = 0;
-                            break;
-                    }
+                runOnGUIThread(() ->
+                        {
+                            boolean okToChangeState = true;
+                            steno.debug("Status was " + this.printerStatus.get().name()
+                                    + " and is going to "
+                                    + printerStatus);
+                            switch (printerStatus)
+                            {
+                                case IDLE:
+                                    filamentSlipActionFired = 0;
+                                    break;
+                            }
 
                             if (okToChangeState)
                             {
@@ -2804,7 +2808,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationXAndYTransitions((CalibrationXAndYActions) actions);
 
-        calibrationAlignmentManager = new XAndYStateTransitionManager(actionsFactory, transitionsFactory);
+        calibrationAlignmentManager = new XAndYStateTransitionManager(actionsFactory,
+                transitionsFactory);
         return calibrationAlignmentManager;
     }
 
@@ -2824,7 +2829,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);
 
-        calibrationHeightManager = new NozzleHeightStateTransitionManager(actionsFactory, transitionsFactory);
+        calibrationHeightManager = new NozzleHeightStateTransitionManager(actionsFactory,
+                transitionsFactory);
         return calibrationHeightManager;
     }
 
@@ -2869,7 +2875,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationNozzleOpeningTransitions((CalibrationNozzleOpeningActions) actions);
 
-        calibrationOpeningManager = new NozzleOpeningStateTransitionManager(actionsFactory, transitionsFactory);
+        calibrationOpeningManager = new NozzleOpeningStateTransitionManager(actionsFactory,
+                transitionsFactory);
         return calibrationOpeningManager;
     }
 
@@ -3034,7 +3041,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     case PURGING_HEAD:
                         break;
                     default:
-                        if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT)
+                        if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_E
+                                && busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_D)
                         {
                             Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
                                     error, this);
@@ -3240,8 +3248,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                                     consumer.consumeError(foundError);
                                                                     errorWasConsumed = true;
                                                                 }
+                                                                if (!errorWasConsumed)
+                                                                {
+                                                                    steno.debug("Error:" + foundError.name()
+                                                                            + " passed to " + consumer.toString());
+                                                                    consumer.consumeError(foundError);
+                                                                    errorWasConsumed = true;
+                                                                }
                                                     });
-
                                                     if (!errorWasConsumed)
                                                     {
                                                         steno.info("Default action for error:" + foundError.
@@ -3338,9 +3352,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     pauseStatus.set(statusResponse.getPauseStatus());
 
                     busyStatus.set(statusResponse.getBusyStatus());
-                    //TODO hiding the notification should apply to both filaments - maybe need additional differentiation of which filament is loading from the firmware
-                    if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT
+
+                    if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT_E
                             && !filament1Loaded)
+                    {
+                        Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
+
+                    } else if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT_D
+                            && !filament2Loaded)
                     {
                         Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
 
@@ -3829,7 +3848,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     + extruderLetter);
         }
     }
-    
+
     public NozzleHeightStateTransitionManager getNozzleHeightCalibrationStateManager()
     {
         return calibrationHeightManager;

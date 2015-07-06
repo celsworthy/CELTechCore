@@ -15,9 +15,9 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
  */
 public class NozzleManagementUtilities
 {
+
     private final List<NozzleProxy> nozzleProxies;
     private final SlicerParametersFile slicerParametersFile;
     private final HeadFile headFile;
@@ -36,8 +37,8 @@ public class NozzleManagementUtilities
         this.nozzleProxies = nozzleProxies;
         this.slicerParametersFile = slicerParametersFile;
         this.headFile = headFile;
-    }    
-    
+    }
+
     protected NozzleProxy chooseNozzleProxyByTask(final GCodeEventNode node) throws UnableToFindSectionNodeException
     {
         NozzleProxy nozzleProxy = null;
@@ -56,7 +57,7 @@ public class NozzleManagementUtilities
             {
                 if (searchNode.hasParent())
                 {
-                    searchNode = searchNode.getParent();
+                    searchNode = searchNode.getParent().get();
                 }
             }
         } while (searchNode.hasParent());
@@ -129,23 +130,31 @@ public class NozzleManagementUtilities
     {
         Optional<NozzleProxy> nozzleInUse = Optional.empty();
 
-        List<GCodeEventNode> toolSelectNodes = layerNode
-                .stream()
-                .filter(node -> node instanceof ToolSelectNode)
-                .collect(Collectors.toList());
+        Iterator<GCodeEventNode> layerIterator = layerNode.childBackwardsIterator();
 
-        if (!toolSelectNodes.isEmpty())
+        search:
+        while (layerIterator.hasNext())
         {
-            ToolSelectNode lastToolSelect = (ToolSelectNode) toolSelectNodes.get(toolSelectNodes.size() - 1);
+            GCodeEventNode potentialToolSelectNode = layerIterator.next();
 
-            Optional<GCodeEventNode> lastNozzleValePositionNode = lastToolSelect.streamChildrenAndMeBackwards().filter(node -> node instanceof NozzleValvePositionNode).findFirst();
-
-            if (lastNozzleValePositionNode.isPresent())
+            if (potentialToolSelectNode instanceof ToolSelectNode)
             {
-                NozzleValvePositionNode nozzleNode = (NozzleValvePositionNode) lastNozzleValePositionNode.get();
-                NozzleProxy proxy = nozzleProxies.get(lastToolSelect.getToolNumber());
-                proxy.setCurrentPosition(nozzleNode.getNozzlePosition().getB());
-                nozzleInUse = Optional.of(proxy);
+                ToolSelectNode lastToolSelect = (ToolSelectNode) potentialToolSelectNode;
+
+                Iterator<GCodeEventNode> toolSelectChildIterator = lastToolSelect.childrenAndMeBackwardsIterator();
+                while (toolSelectChildIterator.hasNext())
+                {
+                    GCodeEventNode potentialNozzleValvePositionNode = toolSelectChildIterator.next();
+
+                    if (potentialNozzleValvePositionNode instanceof NozzleValvePositionNode)
+                    {
+                        NozzleValvePositionNode nozzleNode = (NozzleValvePositionNode) potentialNozzleValvePositionNode;
+                        NozzleProxy proxy = nozzleProxies.get(lastToolSelect.getToolNumber());
+                        proxy.setCurrentPosition(nozzleNode.getNozzlePosition().getB());
+                        nozzleInUse = Optional.of(proxy);
+                        break search;
+                    }
+                }
             }
         }
 

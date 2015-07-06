@@ -9,6 +9,7 @@ import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Optional;
@@ -272,6 +273,90 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
 
             double result3 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode6, false);
             assertEquals(21, result3, 0.1);
+        } catch (NodeProcessingException ex)
+        {
+            fail("Got exception during test " + ex);
+        }
+    }
+
+    @Test
+    public void testNextExtrusion()
+    {
+        FillSectionNode fill1 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.getExtrusion().setE(1.0f);
+
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.getExtrusion().setE(2.0f);
+
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.getExtrusion().setE(3.0f);
+
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.getExtrusion().setE(4.0f);
+
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.getExtrusion().setE(5.0f);
+
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.getExtrusion().setE(6.0f);
+
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+
+        FillSectionNode fill2 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.getExtrusion().setE(1.0f);
+
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.getExtrusion().setE(2.0f);
+
+        ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        extrusionNode9.getExtrusion().setE(3.0f);
+
+        ExtrusionNode extrusionNode10 = new ExtrusionNode();
+        extrusionNode10.getExtrusion().setE(4.0f);
+
+        ExtrusionNode extrusionNode11 = new ExtrusionNode();
+        extrusionNode11.getExtrusion().setE(5.0f);
+
+        ExtrusionNode extrusionNode12 = new ExtrusionNode();
+        extrusionNode12.getExtrusion().setE(6.0f);
+
+        fill2.addChildAtEnd(extrusionNode7);
+        fill2.addChildAtEnd(extrusionNode8);
+        fill2.addChildAtEnd(extrusionNode9);
+        fill2.addChildAtEnd(extrusionNode10);
+        fill2.addChildAtEnd(extrusionNode11);
+        fill2.addChildAtEnd(extrusionNode12);
+        
+        ToolSelectNode ts1 = new ToolSelectNode();
+        ts1.addChildAtEnd(fill1);
+        ts1.addChildAtEnd(fill2);
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+
+        try
+        {
+            Optional<ExtrusionNode> result1 = nodeManagementUtilities.findNextExtrusion(extrusionNode1);
+            assertTrue(result1.isPresent());
+            assertSame(extrusionNode2, result1.get());
+
+            Optional<ExtrusionNode> result2 = nodeManagementUtilities.findNextExtrusion(extrusionNode6);
+            assertTrue(result2.isPresent());
+            assertSame(extrusionNode7, result2.get());
         } catch (NodeProcessingException ex)
         {
             fail("Got exception during test " + ex);

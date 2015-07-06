@@ -1,9 +1,11 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithStartPoint;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Comment;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -246,36 +248,64 @@ public abstract class GCodeEventNode
         return it;
     }
 
-    public Iterator<GCodeEventNode> treeSpanningIterator()
+    public IteratorWithStartPoint<GCodeEventNode> treeSpanningIterator(List<GCodeEventNode> startNodeHierarchy)
     {
-        Iterator<GCodeEventNode> it = new Iterator<GCodeEventNode>()
+        IteratorWithStartPoint<GCodeEventNode> it = new IteratorWithStartPoint<GCodeEventNode>(startNodeHierarchy)
         {
-            private int currentIndex = 0;
-            private Iterator<GCodeEventNode> childIterator = null;
+            private boolean initialValueSet = false;
+            private int childIndex;
+            private Iterator<GCodeEventNode> childIterator;
 
             @Override
             public boolean hasNext()
             {
-                return currentIndex < children.size()
+                return childIndex < children.size()
                         || (childIterator != null && childIterator.hasNext());
             }
 
             @Override
             public GCodeEventNode next()
             {
+                GCodeEventNode childToReturn = null;
+
                 if (childIterator != null
                         && childIterator.hasNext())
                 {
-                    return childIterator.next();
-                } else
+                    childToReturn = childIterator.next();
+                } else if (childIterator != null)
                 {
                     childIterator = null;
-                    GCodeEventNode child = children.get(currentIndex++);
+                    childIndex++;
+                }
+                else
+                {
+                    GCodeEventNode child = children.get(childIndex);
                     if (!child.isLeaf())
                     {
-                        childIterator = child.treeSpanningIterator();
+                        childIterator = child.treeSpanningIterator(startNodeHierarchy);
                     }
-                    return child;
+                    childToReturn = child;
+                }
+
+                return childToReturn;
+            }
+
+            @Override
+            public void initialiseWithList(List<GCodeEventNode> startNodeHierarchy)
+            {
+                if (startNodeHierarchy != null
+                        && !startNodeHierarchy.isEmpty())
+                {
+                    childIndex = children.indexOf(startNodeHierarchy.get(0));
+                    startNodeHierarchy.remove(0);
+
+                    initialValueSet = true;
+                    
+                    childIterator = children.get(childIndex).treeSpanningIterator(startNodeHierarchy);
+                } else
+                {
+                    childIndex = 0;
+                    childIterator = null;
                 }
             }
 
@@ -381,10 +411,15 @@ public abstract class GCodeEventNode
         it.setOriginNode(this);
         return it;
     }
-    
+
     public Iterator<GCodeEventNode> childIterator()
     {
         return children.listIterator();
+    }
+
+    public Iterator<GCodeEventNode> childBackwardsIterator()
+    {
+        return children.descendingIterator();
     }
 
 //    public static <T> List<T> reversedView(final List<T> list)
@@ -665,12 +700,11 @@ public abstract class GCodeEventNode
 //        children.remove(childNode);
 //    }
 //
-    
     public LinkedList<GCodeEventNode> getChildren()
     {
         return children;
     }
-    
+
     public void addSiblingBefore(GCodeEventNode newNode)
     {
         if (parent.isPresent())
@@ -690,7 +724,7 @@ public abstract class GCodeEventNode
             parentNode.children.add(myIndex + 1, newNode);
         }
     }
-    
+
     public void removeFromParent()
     {
         if (parent.isPresent())
@@ -777,26 +811,24 @@ public abstract class GCodeEventNode
 
         return returnValue;
     }
-    
+
     private GCodeEventNode getAbsolutelyTheLastEvent(GCodeEventNode node)
     {
         if (!node.isLeaf())
         {
             return getAbsolutelyTheLastEvent(children.getLast());
-        }
-        else
+        } else
         {
             return node;
         }
     }
-    
+
     public GCodeEventNode getAbsolutelyTheLastEvent()
     {
         if (!isLeaf())
         {
             return getAbsolutelyTheLastEvent(children.getLast());
-        }
-        else
+        } else
         {
             return this;
         }
@@ -809,6 +841,16 @@ public abstract class GCodeEventNode
     public void addChildAtEnd(GCodeEventNode newNode)
     {
         children.addLast(newNode);
+        newNode.parent = Optional.of(this);
+    }
+
+    /**
+     *
+     * @param newNode
+     */
+    public void addChildAtStart(GCodeEventNode newNode)
+    {
+        children.addFirst(newNode);
         newNode.parent = Optional.of(this);
     }
 

@@ -3,6 +3,7 @@ package celtech.gcodetranslator.postprocessing.nodes;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -474,7 +475,7 @@ public class GCodeEventNodeTest
 
         assertEquals(0, resultList3.size());
     }
-    
+
     @Test
     public void testMeAndSiblingsIterator()
     {
@@ -599,7 +600,7 @@ public class GCodeEventNodeTest
         nodeA.addChildAtEnd(nodeB3);
 
         // From C7 should be D1, D2, D3
-        Iterator<GCodeEventNode> nodeC7Iterator = nodeC7.treeSpanningIterator();
+        Iterator<GCodeEventNode> nodeC7Iterator = nodeC7.treeSpanningIterator(null);
         ArrayList<GCodeEventNode> resultList1 = new ArrayList<>();
 
         while (nodeC7Iterator.hasNext())
@@ -613,7 +614,7 @@ public class GCodeEventNodeTest
         assertSame(nodeD3, resultList1.get(2));
 
         // From B3 should be C7, D1, D2, D3, C8, C9
-        Iterator<GCodeEventNode> nodeB3Iterator = nodeB3.treeSpanningIterator();
+        Iterator<GCodeEventNode> nodeB3Iterator = nodeB3.treeSpanningIterator(null);
 
         ArrayList<GCodeEventNode> resultList2 = new ArrayList<>();
 
@@ -631,7 +632,7 @@ public class GCodeEventNodeTest
         assertSame(nodeC9, resultList2.get(5));
 
         // From A should be B1, C1, C2, C3, B2, C4, C5, C6, B3, C7, D1, D2, D3, C8, C9
-        Iterator<GCodeEventNode> nodeAIterator = nodeA.treeSpanningIterator();
+        Iterator<GCodeEventNode> nodeAIterator = nodeA.treeSpanningIterator(null);
 
         ArrayList<GCodeEventNode> resultList3 = new ArrayList<>();
 
@@ -658,7 +659,7 @@ public class GCodeEventNodeTest
         assertSame(nodeC9, resultList3.get(14));
 
         // From C9 should be nothing
-        IteratorWithOrigin<GCodeEventNode> nodeC9Iterator = nodeC9.siblingsIterator();
+        Iterator<GCodeEventNode> nodeC9Iterator = nodeC9.treeSpanningIterator(null);
 
         ArrayList<GCodeEventNode> resultList4 = new ArrayList<>();
 
@@ -668,6 +669,27 @@ public class GCodeEventNodeTest
         }
 
         assertEquals(0, resultList4.size());
+        
+         // From A starting from B3,C7 should be D1, D2, D3, C8, C9
+        List<GCodeEventNode> startList1 = new ArrayList();
+        startList1.add(nodeB3);
+        startList1.add(nodeC7);
+        
+        Iterator<GCodeEventNode> nodeA_B3C7Iterator = nodeA.treeSpanningIterator(startList1);
+
+        ArrayList<GCodeEventNode> resultList5 = new ArrayList<>();
+
+        while (nodeA_B3C7Iterator.hasNext())
+        {
+            resultList5.add(nodeA_B3C7Iterator.next());
+        }
+
+        assertEquals(5, resultList5.size());
+        assertSame(nodeD1, resultList5.get(0));
+        assertSame(nodeD2, resultList5.get(1));
+        assertSame(nodeD3, resultList5.get(2));
+        assertSame(nodeC8, resultList5.get(3));
+        assertSame(nodeC9, resultList5.get(4));
     }
 
     @Test
@@ -1193,6 +1215,7 @@ public class GCodeEventNodeTest
 //        }
 //    }
 //
+
     /**
      * Test of addSiblingBefore method, of class GCodeEventNode.
      */
@@ -1350,11 +1373,11 @@ public class GCodeEventNodeTest
         nodeA.addChildAtEnd(nodeB1);
         nodeA.addChildAtEnd(nodeB2);
         nodeA.addChildAtEnd(nodeB3);
-        
+
         GCodeEventNode insertedNode = new GCodeEventNodeTestImpl("InsertedNode");
 
         assertEquals(3, nodeC7.children.size());
-        
+
         nodeD3.addSiblingAfter(insertedNode);
 
         assertEquals(4, nodeC7.children.size());
@@ -1420,6 +1443,7 @@ public class GCodeEventNodeTest
 //        assertSame(nodeD2, children.get(1));
 //    }
 //
+
     /**
      * Test of addChildAtEnd method, of class GCodeEventNode.
      */
@@ -1528,7 +1552,7 @@ public class GCodeEventNodeTest
         nodeA.addChildAtEnd(nodeB1);
         nodeA.addChildAtEnd(nodeB2);
         nodeA.addChildAtEnd(nodeB3);
-        
+
         Optional<GCodeEventNode> result1 = nodeC8.getSiblingBefore();
         assertTrue(result1.isPresent());
         assertSame(nodeC7, result1.get());
@@ -1581,7 +1605,7 @@ public class GCodeEventNodeTest
         nodeA.addChildAtEnd(nodeB1);
         nodeA.addChildAtEnd(nodeB2);
         nodeA.addChildAtEnd(nodeB3);
-        
+
         Optional<GCodeEventNode> result1 = nodeC7.getSiblingAfter();
         assertTrue(result1.isPresent());
         assertSame(nodeC8, result1.get());

@@ -8,17 +8,13 @@ import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
-import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import org.parboiled.trees.TreeUtils;
 
 /**
  *
@@ -96,57 +92,68 @@ public class NodeManagementUtilities
 
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
 
+        List<OrphanObjectDelineationNode> orphans = new ArrayList<>();
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode node = layerIterator.next();
             if (node instanceof OrphanObjectDelineationNode)
             {
-                OrphanObjectDelineationNode orphanNode = (OrphanObjectDelineationNode) node;
-
-                ObjectDelineationNode newObjectNode = new ObjectDelineationNode();
-
-                int potentialObjectNumber = orphanNode.getPotentialObjectNumber();
-
-                if (potentialObjectNumber
-                        < 0)
-                {
-                    if (layerNode.getLayerNumber() == 0)
-                    {
-                        // Has to be 0 if we're on the first layer
-                        potentialObjectNumber = 0;
-                    } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
-                    {
-                        potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
-                    } else
-                    {
-                        throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
-                    }
-                }
-
-                newObjectNode.setObjectNumber(potentialObjectNumber);
-
-                //Transfer the children from the orphan to the new node
-                Iterator<GCodeEventNode> childIterator = orphanNode.childIterator();
-
-                while (childIterator.hasNext())
-                {
-                    GCodeEventNode childNode = childIterator.next();
-                    childNode.removeFromParent();
-                    newObjectNode.addChildAtEnd(childNode);
-                }
-
-                //Add the new node
-                orphanNode.addSiblingBefore(newObjectNode);
-
-                //Remove the orphan
-                orphanNode.removeFromParent();
+                orphans.add((OrphanObjectDelineationNode) node);
             }
+        }
+
+        for (OrphanObjectDelineationNode orphanNode : orphans)
+        {
+            ObjectDelineationNode newObjectNode = new ObjectDelineationNode();
+
+            int potentialObjectNumber = orphanNode.getPotentialObjectNumber();
+
+            if (potentialObjectNumber
+                    < 0)
+            {
+                if (layerNode.getLayerNumber() == 0)
+                {
+                    // Has to be 0 if we're on the first layer
+                    potentialObjectNumber = 0;
+                } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
+                {
+                    potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
+                } else
+                {
+                    throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
+                }
+            }
+
+            newObjectNode.setObjectNumber(potentialObjectNumber);
+
+            //Transfer the children from the orphan to the new node
+            Iterator<GCodeEventNode> childIterator = orphanNode.childIterator();
+            List<GCodeEventNode> nodesToRemove = new ArrayList<>();
+
+            while (childIterator.hasNext())
+            {
+                GCodeEventNode childNode = childIterator.next();
+                nodesToRemove.add(childNode);
+            }
+
+            for (GCodeEventNode nodeToRemove : nodesToRemove)
+            {
+                nodeToRemove.removeFromParent();
+                newObjectNode.addChildAtEnd(nodeToRemove);
+            }
+
+            //Add the new node
+            orphanNode.addSiblingBefore(newObjectNode);
+
+            //Remove the orphan
+            orphanNode.removeFromParent();
         }
     }
 
-    protected Optional<GCodeEventNode> findNextExtrusion(GCodeEventNode node) throws NodeProcessingException
+    protected Optional<ExtrusionNode> findNextExtrusion(GCodeEventNode node) throws NodeProcessingException
     {
-        Optional<GCodeEventNode> nextExtrusion = Optional.empty();
+        Optional<ExtrusionNode> nextExtrusion = Optional.empty();
 
         Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator();
 
@@ -155,7 +162,7 @@ public class NodeManagementUtilities
             GCodeEventNode childNode = childIterator.next();
             if (childNode instanceof ExtrusionNode)
             {
-                nextExtrusion = Optional.of(childNode);
+                nextExtrusion = Optional.of((ExtrusionNode)childNode);
                 break;
             }
         }
@@ -283,10 +290,10 @@ public class NodeManagementUtilities
 
         if (forwards)
         {
-            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsBackwardsIterator();
+            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsIterator();
         } else
         {
-            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsIterator();
+            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsBackwardsIterator();
         }
 
         while (nozzlePositionCandidates.hasNext())

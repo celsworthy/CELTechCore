@@ -101,7 +101,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                             if (!context1.getValueStack().isEmpty())
                             {
                                 GCodeEventNode node = (GCodeEventNode) context1.getValueStack().pop();
-                                TreeUtils.addChild(thisLayer, node);
+                                thisLayer.addChildAtEnd(node);
                             }
                             return true;
                         }
@@ -150,7 +150,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                                     @Override
                                     public boolean run(Context context)
                                     {
-                                        TreeUtils.addChild(objectSectionAction.getNode(), (GCodeEventNode) context.getValueStack().pop());
+                                        objectSectionAction.getNode().addChildAtEnd((GCodeEventNode) context.getValueStack().pop());
                                         return true;
                                     }
                                 }
@@ -164,7 +164,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                                     @Override
                                     public boolean run(Context context)
                                     {
-                                        TreeUtils.addChild(objectSectionAction.getNode(), (GCodeEventNode) context.getValueStack().pop());
+                                        objectSectionAction.getNode().addChildAtEnd((GCodeEventNode) context.getValueStack().pop());
                                         return true;
                                     }
                                 }
@@ -205,7 +205,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                                     @Override
                                     public boolean run(Context context)
                                     {
-                                        TreeUtils.addChild(orphanObjectSectionAction.getNode(), (GCodeEventNode) context.getValueStack().pop());
+                                        orphanObjectSectionAction.getNode().addChildAtEnd((GCodeEventNode) context.getValueStack().pop());
                                         return true;
                                     }
                                 }
@@ -241,7 +241,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         OrphanSectionNode node = new OrphanSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -266,7 +266,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         FillSectionNode node = new FillSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -291,7 +291,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         SkinSectionNode node = new SkinSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -315,7 +315,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         SkinSectionNode node = new SkinSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -339,7 +339,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         SkinSectionNode node = new SkinSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -364,7 +364,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         OuterPerimeterSectionNode node = new OuterPerimeterSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;
@@ -389,7 +389,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                         InnerPerimeterSectionNode node = new InnerPerimeterSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
-                            node.addChild(0, (GCodeEventNode) context.getValueStack().pop());
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
                         }
                         context.getValueStack().push(node);
                         return true;

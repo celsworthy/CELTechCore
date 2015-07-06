@@ -48,13 +48,13 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
 
-        outer.addChild(0, extrusionNode1);
-        outer.addChild(1, extrusionNode2);
-        outer.addChild(2, extrusionNode3);
+        outer.addChildAtEnd(extrusionNode1);
+        outer.addChildAtEnd(extrusionNode2);
+        outer.addChildAtEnd(extrusionNode3);
 
-        testLayer.addChild(0, inner);
-        testLayer.addChild(1, outer);
-        testLayer.addChild(2, fill);
+        testLayer.addChildAtEnd(inner);
+        testLayer.addChildAtEnd(outer);
+        testLayer.addChildAtEnd(fill);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
@@ -138,16 +138,16 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
 
-        fill1.addChild(0, travel1);
-        fill1.addChild(1, extrusionNode1);
-        fill1.addChild(2, extrusionNode2);
-        fill1.addChild(3, extrusionNode3);
-        fill1.addChild(4, extrusionNode4);
-        fill1.addChild(5, extrusionNode5);
-        fill1.addChild(6, extrusionNode6);
-        fill1.addChild(7, extrusionNode7);
-        fill1.addChild(8, extrusionNode8);
-        fill1.addChild(9, extrusionNode9);
+        fill1.addChildAtEnd(travel1);
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
         NozzleParameters nozzleParams = new NozzleParameters();
 
@@ -257,16 +257,16 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
 
-        fill1.addChild(0, travel1);
-        fill1.addChild(1, extrusionNode1);
-        fill1.addChild(2, extrusionNode2);
-        fill1.addChild(3, extrusionNode3);
-        fill1.addChild(4, extrusionNode4);
-        fill1.addChild(5, extrusionNode5);
-        fill1.addChild(6, extrusionNode6);
-        fill1.addChild(7, extrusionNode7);
-        fill1.addChild(8, extrusionNode8);
-        fill1.addChild(9, extrusionNode9);
+        fill1.addChildAtEnd(travel1);
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
         NozzleParameters nozzleParams = new NozzleParameters();
         nozzleParams.setEjectionVolume(7.75f);
@@ -426,16 +426,16 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setY(9);
         extrusionNode9.getFeedrate().setFeedRate_mmPerMin(10);
 
-        fill1.addChild(0, travel1);
-        fill1.addChild(1, extrusionNode1);
-        fill1.addChild(2, extrusionNode2);
-        fill1.addChild(3, extrusionNode3);
-        fill1.addChild(4, extrusionNode4);
-        fill1.addChild(5, extrusionNode5);
-        fill1.addChild(6, extrusionNode6);
-        fill1.addChild(7, extrusionNode7);
-        fill1.addChild(8, extrusionNode8);
-        fill1.addChild(9, extrusionNode9);
+        fill1.addChildAtEnd(travel1);
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
         NozzleParameters nozzleParams = new NozzleParameters();
         nozzleParams.setEjectionVolume(8.75f);
@@ -588,16 +588,16 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
 
-        fill1.addChild(0, travel1);
-        fill1.addChild(1, extrusionNode1);
-        fill1.addChild(2, extrusionNode2);
-        fill1.addChild(3, extrusionNode3);
-        fill1.addChild(4, extrusionNode4);
-        fill1.addChild(5, extrusionNode5);
-        fill1.addChild(6, extrusionNode6);
-        fill1.addChild(7, extrusionNode7);
-        fill1.addChild(8, extrusionNode8);
-        fill1.addChild(9, extrusionNode9);
+        fill1.addChildAtEnd(travel1);
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
         OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
         ExtrusionNode extrusionNode10 = new ExtrusionNode();
@@ -744,15 +744,15 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
 
-        fill1.addChild(0, extrusionNode1);
-        fill1.addChild(1, extrusionNode2);
-        fill1.addChild(2, extrusionNode3);
-        fill1.addChild(3, extrusionNode4);
-        fill1.addChild(4, extrusionNode5);
-        fill1.addChild(5, extrusionNode6);
-        fill1.addChild(6, extrusionNode7);
-        fill1.addChild(7, extrusionNode8);
-        fill1.addChild(8, extrusionNode9);
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
         OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
 
@@ -760,11 +760,11 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         travel1.getMovement().setX(0);
         travel1.getMovement().setY(0);
 
-        outer1.addChild(0, travel1);
+        outer1.addChildAtEnd(travel1);
 
         ToolSelectNode tool1 = new ToolSelectNode();
-        tool1.addChild(0, outer1);
-        tool1.addChild(1, fill1);
+        tool1.addChildAtEnd(outer1);
+        tool1.addChildAtEnd(fill1);
 
         NozzleParameters nozzleParams = new NozzleParameters();
         nozzleParams.setEjectionVolume(8.75f);
@@ -1249,11 +1249,11 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode4.getExtrusion().setE(0.1f);
         extrusionNode4.getFeedrate().setFeedRate_mmPerMin(10);
 
-        outer1.addChild(0, travel1);
-        outer1.addChild(1, extrusionNode1);
-        outer1.addChild(2, extrusionNode2);
-        outer1.addChild(3, extrusionNode3);
-        outer1.addChild(4, extrusionNode4);
+        outer1.addChildAtEnd(travel1);
+        outer1.addChildAtEnd(extrusionNode1);
+        outer1.addChildAtEnd(extrusionNode2);
+        outer1.addChildAtEnd(extrusionNode3);
+        outer1.addChildAtEnd(extrusionNode4);
 
         TravelNode travel2 = new TravelNode();
         travel2.getMovement().setX(1);
@@ -1283,11 +1283,11 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode8.getExtrusion().setE(0.1f);
         extrusionNode8.getFeedrate().setFeedRate_mmPerMin(20);
 
-        inner1.addChild(0, travel2);
-        inner1.addChild(1, extrusionNode5);
-        inner1.addChild(2, extrusionNode6);
-        inner1.addChild(3, extrusionNode7);
-        inner1.addChild(4, extrusionNode8);
+        inner1.addChildAtEnd(travel2);
+        inner1.addChildAtEnd(extrusionNode5);
+        inner1.addChildAtEnd(extrusionNode6);
+        inner1.addChildAtEnd(extrusionNode7);
+        inner1.addChildAtEnd(extrusionNode8);
 
         TravelNode travel3 = new TravelNode();
         travel3.getMovement().setX(2);
@@ -1323,12 +1323,12 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode13.getExtrusion().setE(0.1f);
         extrusionNode13.getFeedrate().setFeedRate_mmPerMin(10);
 
-        fill1.addChild(0, travel3);
-        fill1.addChild(1, extrusionNode9);
-        fill1.addChild(2, extrusionNode10);
-        fill1.addChild(3, extrusionNode11);
-        fill1.addChild(4, extrusionNode12);
-        fill1.addChild(5, extrusionNode13);
+        fill1.addChildAtEnd(travel3);
+        fill1.addChildAtEnd(extrusionNode9);
+        fill1.addChildAtEnd(extrusionNode10);
+        fill1.addChildAtEnd(extrusionNode11);
+        fill1.addChildAtEnd(extrusionNode12);
+        fill1.addChildAtEnd(extrusionNode13);
 
         if (addInner)
         {
@@ -1390,46 +1390,46 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         RetractNode retract3 = new RetractNode();
         RetractNode retract4 = new RetractNode();
 
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        tool1.addChildAtEnd(inner1);
+        tool1.addChildAtEnd(outer1);
 
-        tool2.addChild(0, fill1);
-        tool2.addChild(1, fill2);
+        tool2.addChildAtEnd(fill1);
+        tool2.addChildAtEnd(fill2);
 
-        tool3.addChild(0, inner2);
-        tool3.addChild(1, outer2);
+        tool3.addChildAtEnd(inner2);
+        tool3.addChildAtEnd(outer2);
 
-        inner1.addChild(0, extrusionNode1);
-        inner1.addChild(1, extrusionNode2);
-        inner1.addChild(2, extrusionNode3);
+        inner1.addChildAtEnd(extrusionNode1);
+        inner1.addChildAtEnd(extrusionNode2);
+        inner1.addChildAtEnd(extrusionNode3);
 
-        outer1.addChild(0, extrusionNode4);
-        outer1.addChild(1, extrusionNode5);
-        outer1.addChild(2, retract1);
-        outer1.addChild(3, extrusionNode6);
+        outer1.addChildAtEnd(extrusionNode4);
+        outer1.addChildAtEnd(extrusionNode5);
+        outer1.addChildAtEnd(retract1);
+        outer1.addChildAtEnd(extrusionNode6);
 
-        fill1.addChild(0, extrusionNode7);
-        fill1.addChild(1, extrusionNode8);
-        fill1.addChild(2, extrusionNode9);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
-        inner2.addChild(0, extrusionNode10);
-        inner2.addChild(1, extrusionNode11);
-        inner2.addChild(2, extrusionNode12);
-        inner2.addChild(3, retract4);
+        inner2.addChildAtEnd(extrusionNode10);
+        inner2.addChildAtEnd(extrusionNode11);
+        inner2.addChildAtEnd(extrusionNode12);
+        inner2.addChildAtEnd(retract4);
 
-        outer2.addChild(0, extrusionNode13);
-        outer2.addChild(1, extrusionNode14);
-        outer2.addChild(2, extrusionNode15);
+        outer2.addChildAtEnd(extrusionNode13);
+        outer2.addChildAtEnd(extrusionNode14);
+        outer2.addChildAtEnd(extrusionNode15);
 
-        fill2.addChild(0, extrusionNode16);
-        fill2.addChild(1, retract2);
-        fill2.addChild(2, extrusionNode17);
-        fill2.addChild(3, extrusionNode18);
-        fill2.addChild(4, retract3);
+        fill2.addChildAtEnd(extrusionNode16);
+        fill2.addChildAtEnd(retract2);
+        fill2.addChildAtEnd(extrusionNode17);
+        fill2.addChildAtEnd(extrusionNode18);
+        fill2.addChildAtEnd(retract3);
 
-        testLayer.addChild(0, tool1);
-        testLayer.addChild(1, tool2);
-        testLayer.addChild(2, tool3);
+        testLayer.addChildAtEnd(tool1);
+        testLayer.addChildAtEnd(tool2);
+        testLayer.addChildAtEnd(tool3);
 
         // INPUT
         //

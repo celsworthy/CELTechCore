@@ -11,6 +11,7 @@ import celtech.printerControl.comms.commands.MacroLoadException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -20,6 +21,7 @@ import java.util.Locale;
  */
 public class OutputUtilities
 {
+
     protected void prependPrePrintHeader(GCodeOutputWriter writer)
     {
         SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
@@ -84,13 +86,17 @@ public class OutputUtilities
             throw new RuntimeException("Failed to add post layer 1 temperature commands in post processor - " + ex.getMessage(), ex);
         }
     }
-    
+
     protected void writeLayerToFile(LayerNode layerNode, GCodeOutputWriter writer)
     {
         if (layerNode != null)
         {
-            layerNode.stream().forEach(node ->
+            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+
+            while (layerIterator.hasNext())
             {
+                GCodeEventNode node = layerIterator.next();
+
                 if (node instanceof Renderable)
                 {
                     Renderable renderableNode = (Renderable) node;
@@ -103,10 +109,10 @@ public class OutputUtilities
                         throw new RuntimeException("Error outputting post processed data at node " + renderableNode.renderForOutput(), ex);
                     }
                 }
-            });
+            }
         }
     }
-    
+
     protected void outputNodes(GCodeEventNode node, int level)
     {
         //Output me

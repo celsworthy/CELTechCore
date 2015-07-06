@@ -8,6 +8,7 @@ import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
+import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
@@ -21,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -403,53 +405,57 @@ public class PostProcessor
     {
         Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
 
-        float eValue = layerNode.stream()
-                .filter(node -> node instanceof ExtrusionProvider)
-                .map(ExtrusionProvider.class::cast)
-                .map(ExtrusionProvider::getExtrusion)
-                .map(Extrusion::getE)
-                .reduce(0f, Float::sum);
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
 
-        float dValue = layerNode.stream()
-                .filter(node -> node instanceof ExtrusionProvider)
-                .map(ExtrusionProvider.class::cast)
-                .map(ExtrusionProvider::getExtrusion)
-                .map(Extrusion::getD)
-                .reduce(0f, Float::sum);
-
-        List<SupportsPrintTimeCalculation> movementNodes = layerNode.stream()
-                .filter(node -> node instanceof SupportsPrintTimeCalculation)
-                .map(SupportsPrintTimeCalculation.class::cast)
-                .collect(Collectors.toList());
-
+        float eValue = 0;
+        float dValue = 0;
         double timeForLayer = 0;
-        for (int movementCounter = 0;
-                movementCounter < movementNodes.size()
-                - 1; movementCounter++)
-        {
-            try
-            {
-                double time = movementNodes.get(movementCounter).timeToReach((MovementProvider) (movementNodes.get(movementCounter + 1)));
-                timeForLayer += time;
-            } catch (DurationCalculationException ex)
-            {
-                if (ex.getFromNode() instanceof Renderable
-                        && ex.getToNode() instanceof Renderable)
-                {
-                    steno.error("Unable to calculate duration correctly for nodes source:"
-                            + ((Renderable) ex.getFromNode()).renderForOutput()
-                            + " destination:"
-                            + ((Renderable) ex.getToNode()).renderForOutput());
-                } else
-                {
-                    steno.error("Unable to calculate duration correctly for nodes source:"
-                            + ex.getFromNode().getMovement().renderForOutput()
-                            + " destination:"
-                            + ex.getToNode().getMovement().renderForOutput());
-                }
 
-                throw new RuntimeException("Unable to calculate duration correctly on layer "
-                        + layerNode.getLayerNumber(), ex);
+        SupportsPrintTimeCalculation lastMovementProvider = null;
+
+        while (layerIterator.hasNext())
+        {
+            GCodeEventNode foundNode = layerIterator.next();
+
+            if (foundNode instanceof ExtrusionProvider)
+            {
+                ExtrusionProvider extrusionProvider = (ExtrusionProvider) foundNode;
+                eValue += extrusionProvider.getExtrusion().getE();
+                dValue += extrusionProvider.getExtrusion().getD();
+            }
+
+            if (foundNode instanceof SupportsPrintTimeCalculation)
+            {
+                SupportsPrintTimeCalculation timeCalculationNode = (SupportsPrintTimeCalculation) foundNode;
+
+                if (lastMovementProvider != null)
+                {
+                    try
+                    {
+                        double time = lastMovementProvider.timeToReach((MovementProvider)foundNode);
+                        timeForLayer += time;
+                    } catch (DurationCalculationException ex)
+                    {
+                        if (ex.getFromNode() instanceof Renderable
+                                && ex.getToNode() instanceof Renderable)
+                        {
+                            steno.error("Unable to calculate duration correctly for nodes source:"
+                                    + ((Renderable) ex.getFromNode()).renderForOutput()
+                                    + " destination:"
+                                    + ((Renderable) ex.getToNode()).renderForOutput());
+                        } else
+                        {
+                            steno.error("Unable to calculate duration correctly for nodes source:"
+                                    + ex.getFromNode().getMovement().renderForOutput()
+                                    + " destination:"
+                                    + ex.getToNode().getMovement().renderForOutput());
+                        }
+
+                        throw new RuntimeException("Unable to calculate duration correctly on layer "
+                                + layerNode.getLayerNumber(), ex);
+                    }
+                }
+                lastMovementProvider = timeCalculationNode;
             }
         }
 
