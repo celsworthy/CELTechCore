@@ -41,7 +41,7 @@ public class SlideoutAndProjectHolder extends HBox
     private final double maximumToShow = 1.0;
     private double panelWidth = 0;
     private double panelHeight = 0;
-    private final Rectangle clippingRectangle = new Rectangle();
+    private Rectangle clippingRectangle = new Rectangle();
 
     private final Animation hideSidebar = new Transition()
     {
@@ -245,6 +245,8 @@ public class SlideoutAndProjectHolder extends HBox
 
         panelToSlide.set(slideout);
 
+        clippingRectangle = new Rectangle();
+        
         if (slideout != null)
         {
             slideOutHolder.getChildren().add(slideout);
