@@ -8,6 +8,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 /**
@@ -34,6 +36,13 @@ public class SlideoutAndProjectHolder extends HBox
     private BooleanProperty slidIn = new SimpleBooleanProperty(false);
     private boolean sliding = false;
     private final int slideMs = 250;
+    private double lastAmountShown = 0;
+    private final double minimumToShow = 0.0;
+    private final double maximumToShow = 1.0;
+    private double panelWidth = 0;
+    private double panelHeight = 0;
+    private final Rectangle clippingRectangle = new Rectangle();
+
     private final Animation hideSidebar = new Transition()
     {
         {
@@ -107,8 +116,15 @@ public class SlideoutAndProjectHolder extends HBox
         slideButton.disableProperty().bind(panelToSlide.isNull());
 
         getChildren().addAll(slideOutHolder, slideButton, projectTabPaneHolder);
-        
+
         HBox.setHgrow(projectTabPaneHolder, Priority.ALWAYS);
+
+        panelWidth = 380;
+        heightProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number newHeight) ->
+        {
+            panelHeight = newHeight.doubleValue();
+            slideMenuPanel(lastAmountShown);
+        });
     }
 
     /**
@@ -140,9 +156,30 @@ public class SlideoutAndProjectHolder extends HBox
      */
     public void slideMenuPanel(double amountToShow)
     {
-        double adjustedWidth = (panelToSlide.get().getMaxWidth() * amountToShow);
-        panelToSlide.get().setMinWidth(adjustedWidth);
-        panelToSlide.get().setPrefWidth(adjustedWidth);
+        lastAmountShown = amountToShow;
+
+        if (amountToShow < minimumToShow)
+        {
+            amountToShow = minimumToShow;
+        } else if (amountToShow > maximumToShow)
+        {
+            amountToShow = maximumToShow;
+        }
+
+        double targetPanelWidth = panelWidth * amountToShow;
+        double widthToHide = panelWidth - targetPanelWidth;
+        double translateByX = 0;
+
+        translateByX = -panelWidth + targetPanelWidth;
+        clippingRectangle.setX(-translateByX);
+
+        clippingRectangle.setHeight(panelHeight);
+        clippingRectangle.setWidth(targetPanelWidth);
+
+        panelToSlide.get().setClip(clippingRectangle);
+        panelToSlide.get().setTranslateX(translateByX);
+        panelToSlide.get().setMinWidth(targetPanelWidth);
+        panelToSlide.get().setPrefWidth(targetPanelWidth);
     }
 
     /**
