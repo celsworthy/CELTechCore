@@ -291,9 +291,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * translations.
          */
         getTransforms().addAll(transformPostRotationYAdjust, transformMoveToPreferred,
-                               transformMoveToCentre, transformBedCentre, transformRotateLeanPreferred,
-                               transformRotateTwistPreferred,
-                               transformRotateTurnPreferred
+                               transformMoveToCentre, transformBedCentre,
+                               transformRotateTurnPreferred, transformRotateLeanPreferred,
+                               transformRotateTwistPreferred
         );
         meshGroup.getTransforms().addAll(transformScalePreferred);
 

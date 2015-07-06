@@ -415,7 +415,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     private void repopulateCmbMaterials()
     {
-        System.out.println("repop for mode " + mode);
         Object currentValue = cmbMaterials.getValue();
         String currentFilamentId = "";
         if (currentValue instanceof Filament)
