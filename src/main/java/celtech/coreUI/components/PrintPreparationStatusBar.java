@@ -50,7 +50,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             largeProgressCurrentValue.setVisible(true);
 
             progressBar.progressProperty().bind(printer.getPrintEngine().slicerService.progressProperty());
-            progressBar.setVisible(true);
+            showProgress();
         } else if (printer.getPrintEngine().postProcessorService.runningProperty().get())
         {
             barShouldBeDisplayed = true;
@@ -60,7 +60,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             largeProgressCurrentValue.setVisible(true);
 
             progressBar.progressProperty().bind(printer.getPrintEngine().postProcessorService.progressProperty());
-            progressBar.setVisible(true);
+            showProgress();
         } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get()
                 && printer.getPrintEngine().macroBeingRun.get() == null)
         {
@@ -71,7 +71,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             largeProgressCurrentValue.setVisible(true);
 
             progressBar.progressProperty().bind(printer.getPrintEngine().transferGCodeToPrinterService.progressProperty());
-            progressBar.setVisible(true);
+            showProgress();
         }
 
         if (barShouldBeDisplayed)

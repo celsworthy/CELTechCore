@@ -71,13 +71,15 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 break;
             case BUSY:
                 break;
-            case LOADING_FILAMENT:
-            case UNLOADING_FILAMENT:
+            case LOADING_FILAMENT_E:
+            case UNLOADING_FILAMENT_E:
+            case LOADING_FILAMENT_D:
+            case UNLOADING_FILAMENT_D:
                 statusProcessed = true;
                 barShouldBeDisplayed = true;
                 largeProgressDescription.setText(printer.busyStatusProperty().get().getI18nString());
                 progressBar.setVisible(false);
-                largeTargetLegend.setVisible(false);
+                hideTargets();
                 break;
             default:
                 break;
@@ -97,7 +99,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.pauseStatusProperty().get().getI18nString());
                     progressBar.setVisible(false);
-                    largeTargetLegend.setVisible(false);
+                    hideTargets();
                     break;
                 default:
                     break;
@@ -141,16 +143,14 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                             }
                         });
 
-                        largeTargetValue.setVisible(true);
                         largeTargetLegend.setText(Lookup.i18n("dialogs.progressETCLabel"));
-                        largeTargetLegend.setVisible(true);
+                        showTargets();
                     }
 
                     largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
-                    largeProgressCurrentValue.setVisible(true);
-
                     progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
-                    progressBar.setVisible(true);
+                    
+                    showProgress();
                     break;
                 case RUNNING_MACRO_FILE:
                     statusProcessed = true;
@@ -165,9 +165,11 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                             largeProgressCurrentValue.setVisible(true);
 
                             progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
-                            progressBar.setVisible(true);
+                            showProgress();
                         }
                     }
+                    
+                    hideTargets();
                     break;
                 case CALIBRATING_NOZZLE_ALIGNMENT:
                 case CALIBRATING_NOZZLE_OPENING:
@@ -184,16 +186,18 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                             largeProgressCurrentValue.setVisible(true);
 
                             progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
-                            progressBar.setVisible(true);
+                            showProgress();
                         }
                     }
+                    hideTargets();
                     break;
                 case PURGING_HEAD:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
 
-                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
+                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.RUNNING_MACRO
+                            && printer.getPrintEngine().macroBeingRun.get() == Macro.PURGE)
                     {
                         if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
                         {
@@ -201,14 +205,17 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                             largeProgressCurrentValue.setVisible(true);
 
                             progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
-                            progressBar.setVisible(true);
+                            showProgress();
                         }
                     }
+                    hideTargets();
                     break;
                 default:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+                    hideTargets();
+                    hideProgress();
                     break;
             }
         }

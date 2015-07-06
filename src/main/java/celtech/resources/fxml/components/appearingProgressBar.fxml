@@ -17,8 +17,8 @@
     <right>
         <VBox alignment="CENTER" BorderPane.alignment="CENTER">
             <children>
-                <Label id="largeProgressTargetLegend" fx:id="largeTargetLegend" text="Target Temperature:" />
-                <Label id="largeProgressTargetValue" fx:id="largeTargetValue" />
+                <Label id="largeProgressTargetLegend" fx:id="largeTargetLegend" text="Target Temperature:" textAlignment="CENTER" />
+                <Label id="largeProgressTargetValue" fx:id="largeTargetValue" textAlignment="CENTER" />
             </children>
             <BorderPane.margin>
                 <Insets bottom="10.0" right="30.0" top="10.0" />
@@ -28,7 +28,7 @@
     <center>
                 <StackPane fx:id="progressBarElement">
             <children>
-                <ProgressBar fx:id="progressBar" id="appearingProgressBar" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                <ProgressBar id="appearingProgressBar" fx:id="progressBar" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                <padding>
                   <Insets bottom="25.0" left="10.0" right="10.0" top="25.0" />
                </padding>
