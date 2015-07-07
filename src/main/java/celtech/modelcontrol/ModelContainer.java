@@ -116,6 +116,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
     private ModelBounds lastTransformedBoundsInBed;
+    private ModelBounds lastTransformedBoundsInParent;
     private SelectionHighlighter selectionHighlighter = null;
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
@@ -268,7 +269,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         meshGroup.getTransforms().addAll(transformScalePreferred);
         modelContainersGroup.getTransforms().addAll(transformScalePreferred);
 
-        originalModelBounds = calculateBounds();
+        originalModelBounds = calculateBoundsInLocal();
 
         double centreXOffset = -originalModelBounds.getCentreX();
         double centreYOffset = -originalModelBounds.getMaxY();
@@ -295,6 +296,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setZ(0);
 
         lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -1089,7 +1091,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
      * dimensions before any transforms).
      */
-    ModelBounds calculateBounds()
+    ModelBounds calculateBoundsInLocal()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -1100,9 +1102,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.lastTransformedBoundsInBed; // parent of child model is this model
+            ModelBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child model is this model
             minX = Math.min(bounds.getMinX(), minX);
-            minY = Math.min(bounds.getMinX(), minY);
+            minY = Math.min(bounds.getMinY(), minY);
             minZ = Math.min(bounds.getMinZ(), minZ);
 
             maxX = Math.max(bounds.getMaxX(), maxX);
@@ -1208,7 +1210,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
     
     /**
-     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
+     * Calculate max/min X,Y,Z after all the transforms have been applied all
+     * the way to the bed coordinate system.
      */
     public ModelBounds calculateBoundsInBedCoordinateSystem()
     {
@@ -1268,6 +1271,68 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newheight, newdepth, newcentreX, newcentreY,
                                newcentreZ);
     }
+    
+/**
+     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
+     */
+    public ModelBounds calculateBoundsInParentCoordinateSystem()
+    {
+        
+        System.out.println("calc bounds in parent for mc " + this);
+        
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        ModelContainer parentModelContainer = getParentModelContainer();
+        if (parentModelContainer == null) {
+            return calculateBoundsInBedCoordinateSystem();
+        }
+        
+        for (Node meshViewNode : descendentMeshViews())
+        {
+            System.out.println("process mesh view " + meshViewNode);
+            MeshView meshView = (MeshView) meshViewNode;
+
+            TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
+            ObservableFloatArray originalPoints = mesh.getPoints();
+
+            for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+            {
+                float xPos = originalPoints.get(pointOffset);
+                float yPos = originalPoints.get(pointOffset + 1);
+                float zPos = originalPoints.get(pointOffset + 2);
+
+                Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
+                Point3D pointInParent = parentModelContainer.sceneToLocal(pointInScene);
+                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in parent is " + pointInParent.toString());
+                
+                minX = Math.min(pointInParent.getX(), minX);
+                minY = Math.min(pointInParent.getY(), minY);
+                minZ = Math.min(pointInParent.getZ(), minZ);
+
+                maxX = Math.max(pointInParent.getX(), maxX);
+                maxY = Math.max(pointInParent.getY(), maxY);
+                maxZ = Math.max(pointInParent.getZ(), maxZ);
+            }
+        }
+
+        double newwidth = maxX - minX;
+        double newdepth = maxZ - minZ;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+        double newcentreZ = minZ + (newdepth / 2);
+
+        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                               newheight, newdepth, newcentreX, newcentreY,
+                               newcentreZ);
+    }
+    
 
     /**
      * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR OF AN APPROACH
@@ -1475,6 +1540,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
         transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
         lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     @Override
@@ -1553,6 +1619,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
         lastTransformedBoundsInBed.translateX(deltaCentreX);
+        lastTransformedBoundsInParent.translateX(deltaCentreX);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
@@ -1560,6 +1627,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
     {
         lastTransformedBoundsInBed.translateZ(deltaCentreZ);
+        lastTransformedBoundsInParent.translateZ(deltaCentreZ);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
