@@ -104,42 +104,42 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode18 = new ExtrusionNode();
         extrusionNode18.getExtrusion().setE(1f);
 
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        tool1.addChildAtEnd(inner1);
+        tool1.addChildAtEnd(outer1);
 
-        tool2.addChild(0, fill1);
-        tool2.addChild(1, fill2);
+        tool2.addChildAtEnd(fill1);
+        tool2.addChildAtEnd(fill2);
 
-        tool3.addChild(0, inner2);
-        tool3.addChild(1, outer2);
+        tool3.addChildAtEnd(inner2);
+        tool3.addChildAtEnd(outer2);
 
-        inner1.addChild(0, extrusionNode1);
-        inner1.addChild(1, extrusionNode2);
-        inner1.addChild(2, extrusionNode3);
+        inner1.addChildAtEnd(extrusionNode1);
+        inner1.addChildAtEnd(extrusionNode2);
+        inner1.addChildAtEnd(extrusionNode3);
 
-        outer1.addChild(0, extrusionNode4);
-        outer1.addChild(1, extrusionNode5);
-        outer1.addChild(2, extrusionNode6);
+        outer1.addChildAtEnd(extrusionNode4);
+        outer1.addChildAtEnd(extrusionNode5);
+        outer1.addChildAtEnd(extrusionNode6);
 
-        fill1.addChild(0, extrusionNode7);
-        fill1.addChild(1, extrusionNode8);
-        fill1.addChild(2, extrusionNode9);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
-        inner2.addChild(0, extrusionNode10);
-        inner2.addChild(1, extrusionNode11);
-        inner2.addChild(2, extrusionNode12);
+        inner2.addChildAtEnd(extrusionNode10);
+        inner2.addChildAtEnd(extrusionNode11);
+        inner2.addChildAtEnd(extrusionNode12);
 
-        outer2.addChild(0, extrusionNode13);
-        outer2.addChild(1, extrusionNode14);
-        outer2.addChild(2, extrusionNode15);
+        outer2.addChildAtEnd(extrusionNode13);
+        outer2.addChildAtEnd(extrusionNode14);
+        outer2.addChildAtEnd(extrusionNode15);
 
-        fill2.addChild(0, extrusionNode16);
-        fill2.addChild(1, extrusionNode17);
-        fill2.addChild(2, extrusionNode18);
+        fill2.addChildAtEnd(extrusionNode16);
+        fill2.addChildAtEnd(extrusionNode17);
+        fill2.addChildAtEnd(extrusionNode18);
 
-        testLayer.addChild(0, tool1);
-        testLayer.addChild(1, tool2);
-        testLayer.addChild(2, tool3);
+        testLayer.addChildAtEnd(tool1);
+        testLayer.addChildAtEnd(tool2);
+        testLayer.addChildAtEnd(tool3);
 
         // INPUT
         //
@@ -312,42 +312,42 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode18 = new ExtrusionNode();
         extrusionNode18.getExtrusion().setE(1f);
 
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        tool1.addChildAtEnd(inner1);
+        tool1.addChildAtEnd(outer1);
 
-        tool2.addChild(0, fill1);
-        tool2.addChild(1, fill2);
+        tool2.addChildAtEnd(fill1);
+        tool2.addChildAtEnd(fill2);
 
-        tool3.addChild(0, inner2);
-        tool3.addChild(1, outer2);
+        tool3.addChildAtEnd(inner2);
+        tool3.addChildAtEnd(outer2);
 
-        inner1.addChild(0, extrusionNode1);
-        inner1.addChild(1, extrusionNode2);
-        inner1.addChild(2, extrusionNode3);
+        inner1.addChildAtEnd(extrusionNode1);
+        inner1.addChildAtEnd(extrusionNode2);
+        inner1.addChildAtEnd(extrusionNode3);
 
-        outer1.addChild(0, extrusionNode4);
-        outer1.addChild(1, extrusionNode5);
-        outer1.addChild(2, extrusionNode6);
+        outer1.addChildAtEnd(extrusionNode4);
+        outer1.addChildAtEnd(extrusionNode5);
+        outer1.addChildAtEnd(extrusionNode6);
 
-        fill1.addChild(0, extrusionNode7);
-        fill1.addChild(1, extrusionNode8);
-        fill1.addChild(2, extrusionNode9);
+        fill1.addChildAtEnd(extrusionNode7);
+        fill1.addChildAtEnd(extrusionNode8);
+        fill1.addChildAtEnd(extrusionNode9);
 
-        inner2.addChild(0, extrusionNode10);
-        inner2.addChild(1, extrusionNode11);
-        inner2.addChild(2, extrusionNode12);
+        inner2.addChildAtEnd(extrusionNode10);
+        inner2.addChildAtEnd(extrusionNode11);
+        inner2.addChildAtEnd(extrusionNode12);
 
-        outer2.addChild(0, extrusionNode13);
-        outer2.addChild(1, extrusionNode14);
-        outer2.addChild(2, extrusionNode15);
+        outer2.addChildAtEnd(extrusionNode13);
+        outer2.addChildAtEnd(extrusionNode14);
+        outer2.addChildAtEnd(extrusionNode15);
 
-        fill2.addChild(0, extrusionNode16);
-        fill2.addChild(1, extrusionNode17);
-        fill2.addChild(2, extrusionNode18);
+        fill2.addChildAtEnd(extrusionNode16);
+        fill2.addChildAtEnd(extrusionNode17);
+        fill2.addChildAtEnd(extrusionNode18);
 
-        testLayer.addChild(0, tool1);
-        testLayer.addChild(1, tool2);
-        testLayer.addChild(2, tool3);
+        testLayer.addChildAtEnd(tool1);
+        testLayer.addChildAtEnd(tool2);
+        testLayer.addChildAtEnd(tool3);
 
         // INPUT
         //
@@ -537,13 +537,13 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
 
-        outer.addChild(0, extrusionNode1);
-        outer.addChild(1, extrusionNode2);
-        outer.addChild(2, extrusionNode3);
+        outer.addChildAtEnd(extrusionNode1);
+        outer.addChildAtEnd(extrusionNode2);
+        outer.addChildAtEnd(extrusionNode3);
 
-        testLayer.addChild(0, inner);
-        testLayer.addChild(1, outer);
-        testLayer.addChild(2, fill);
+        testLayer.addChildAtEnd(inner);
+        testLayer.addChildAtEnd(outer);
+        testLayer.addChildAtEnd(fill);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
@@ -579,13 +579,13 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
 
-        outer.addChild(0, extrusionNode1);
-        outer.addChild(1, extrusionNode2);
-        outer.addChild(2, extrusionNode3);
+        outer.addChildAtEnd(extrusionNode1);
+        outer.addChildAtEnd(extrusionNode2);
+        outer.addChildAtEnd(extrusionNode3);
 
-        testLayer.addChild(0, inner);
-        testLayer.addChild(1, outer);
-        testLayer.addChild(2, fill);
+        testLayer.addChildAtEnd(inner);
+        testLayer.addChildAtEnd(outer);
+        testLayer.addChildAtEnd(fill);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
@@ -622,13 +622,13 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
 
-        outer.addChild(0, extrusionNode1);
-        outer.addChild(1, extrusionNode2);
-        outer.addChild(2, extrusionNode3);
+        outer.addChildAtEnd(extrusionNode1);
+        outer.addChildAtEnd(extrusionNode2);
+        outer.addChildAtEnd(extrusionNode3);
 
-        testLayer.addChild(0, inner);
-        testLayer.addChild(1, outer);
-        testLayer.addChild(2, fill);
+        testLayer.addChildAtEnd(inner);
+        testLayer.addChildAtEnd(outer);
+        testLayer.addChildAtEnd(fill);
 
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);

@@ -5,6 +5,8 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
+import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
+import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -642,7 +644,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             filament.setBedTemperature(bedTemperature.getAsInt());
             filament.setFirstLayerNozzleTemperature(firstLayerNozzleTemperature.getAsInt());
             filament.setNozzleTemperature(nozzleTemperature.getAsInt());
-            filament.setDisplayColour(colour.getValue());
+            Color webDomainColor = stringToColor(colourToString(colour.getValue()));
+            filament.setDisplayColour(webDomainColor);
             filament.setCostGBPPerKG(costGBPPerKG.getAsFloat());
 
         } catch (ParseException ex)

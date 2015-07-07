@@ -1,7 +1,6 @@
 /*
  * Copyright 2014 CEL UK
  */
-
 package celtech.printerControl.comms.commands;
 
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
@@ -16,12 +15,11 @@ import static org.junit.Assert.*;
  */
 public class ColourStringConverterTest
 {
-    
 
     @Test
     public void testColourToString()
     {
-        Color colour =  Color.rgb(0x10, 0x20, 0x30);
+        Color colour = Color.rgb(0x10, 0x20, 0x30);
         String strColour = colourToString(colour);
         assertEquals("102030", strColour);
     }
@@ -29,8 +27,19 @@ public class ColourStringConverterTest
     @Test
     public void testStringToColor()
     {
-       String colourStr = "102030";
-       assertEquals(Color.rgb(0x10, 0x20, 0x30), stringToColor(colourStr));
+        String colourStr = "102030";
+        assertEquals(Color.rgb(0x10, 0x20, 0x30), stringToColor(colourStr));
     }
-    
+
+    @Test
+    public void testColourToStringAndBack()
+    {
+        Color colour = Color.valueOf("0x1ed32fff");
+        System.out.println("color is " + colour.toString());
+        String strColour = colourToString(colour);
+        assertEquals("1ED32F", strColour);
+        Color readColor = stringToColor(strColour);
+        assertEquals(Color.valueOf("0x1ed32fff"), readColor);
+    }
+
 }

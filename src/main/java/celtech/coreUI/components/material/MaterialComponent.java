@@ -158,6 +158,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             });
 
         setUpFilamentLoadedListener();
+        setUpFilamentChangedListener();
     }
 
     public ReadOnlyObjectProperty<Filament> getSelectedFilamentProperty()
@@ -716,6 +717,32 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             comboItems.remove(UNKNOWN);
             cmbMaterials.setValue(currentVal);
         }
+    }
+
+    ChangeListener<Color> filamentChanged = new ChangeListener<Color>()
+    {
+
+        @Override
+        public void changed(
+            ObservableValue<? extends Color> observable, Color oldValue, Color newValue)
+        {
+            updateGUIForModeAndPrinterExtruder();
+        }
+    };
+
+    private void setUpFilamentChangedListener()
+    {
+        selectedFilamentProperty.addListener(
+            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+            {
+                if (oldValue != null)
+                {
+                    oldValue.getDisplayColourProperty().removeListener(filamentChanged);
+                }
+                if (newValue != null) {
+                    newValue.getDisplayColourProperty().addListener(filamentChanged);
+                }    
+            });
     }
 
     private void setUpFilamentLoadedListener()

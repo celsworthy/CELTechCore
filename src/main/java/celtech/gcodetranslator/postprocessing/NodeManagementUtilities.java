@@ -8,14 +8,13 @@ import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import org.parboiled.trees.TreeUtils;
 
 /**
  *
@@ -35,24 +34,35 @@ public class NodeManagementUtilities
     {
         if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
         {
-            layerNode.stream()
-                    .filter(node -> node instanceof UnretractNode)
-                    .forEach(node ->
-                            {
-                                TreeUtils.removeChild(node.getParent(), node);
-                    });
+            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+            List<UnretractNode> nodesToDelete = new ArrayList<>();
+
+            while (layerIterator.hasNext())
+            {
+                GCodeEventNode node = layerIterator.next();
+                if (node instanceof UnretractNode)
+                {
+                    nodesToDelete.add((UnretractNode) node);
+                }
+            }
+
+            for (UnretractNode unretractNode : nodesToDelete)
+            {
+                unretractNode.removeFromParent();
+            }
         }
     }
 
     protected void calculatePerRetractExtrusionAndNode(LayerNode layerNode)
     {
-        List<GCodeEventNode> nodes = layerNode.stream().collect(Collectors.toList());
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
 
         ExtrusionNode lastExtrusionNode = null;
         double extrusionInRetract = 0;
 
-        for (GCodeEventNode node : nodes)
+        while (layerIterator.hasNext())
         {
+            GCodeEventNode node = layerIterator.next();
             if (node instanceof ExtrusionNode)
             {
                 ExtrusionNode extrusionNode = (ExtrusionNode) node;
@@ -80,81 +90,148 @@ public class NodeManagementUtilities
         // At the start of the file we should treat this as object 0
         // Subsequently we should look at the last layer to see which object was in force and create an object with the same reference
 
-        layerNode.stream()
-                .filter(node -> node instanceof OrphanObjectDelineationNode)
-                .map(OrphanObjectDelineationNode.class::cast)
-                .forEach(orphanNode ->
-                        {
-                            ObjectDelineationNode newObjectNode = new ObjectDelineationNode();
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
 
-                            int potentialObjectNumber = orphanNode.getPotentialObjectNumber();
+        List<OrphanObjectDelineationNode> orphans = new ArrayList<>();
 
-                            if (potentialObjectNumber
-                            < 0)
-                            {
-                                if (layerNode.getLayerNumber() == 0)
-                                {
-                                    // Has to be 0 if we're on the first layer
-                                    potentialObjectNumber = 0;
-                                } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
-                                {
-                                    potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
-                                } else
-                                {
-                                    throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
-                                }
-                            }
+        while (layerIterator.hasNext())
+        {
+            GCodeEventNode node = layerIterator.next();
+            if (node instanceof OrphanObjectDelineationNode)
+            {
+                orphans.add((OrphanObjectDelineationNode) node);
+            }
+        }
 
-                            newObjectNode.setObjectNumber(potentialObjectNumber);
+        for (OrphanObjectDelineationNode orphanNode : orphans)
+        {
+            ObjectDelineationNode newObjectNode = new ObjectDelineationNode();
 
-                            //Transfer the children from the orphan to the new node
-                            List<GCodeEventNode> children = orphanNode.getChildren().stream().collect(Collectors.toList());
-                            for (GCodeEventNode childNode : children)
-                            {
-                                childNode.removeFromParent();
-                                newObjectNode.addChildAtEnd(childNode);
-                            }
+            int potentialObjectNumber = orphanNode.getPotentialObjectNumber();
 
-                            //Add the new node
-                            orphanNode.addSiblingBefore(newObjectNode);
-
-                            //Remove the orphan
-                            orphanNode.removeFromParent();
+            if (potentialObjectNumber
+                    < 0)
+            {
+                if (layerNode.getLayerNumber() == 0)
+                {
+                    // Has to be 0 if we're on the first layer
+                    potentialObjectNumber = 0;
+                } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
+                {
+                    potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
+                } else
+                {
+                    throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
                 }
-                );
+            }
+
+            newObjectNode.setObjectNumber(potentialObjectNumber);
+
+            //Transfer the children from the orphan to the new node
+            Iterator<GCodeEventNode> childIterator = orphanNode.childIterator();
+            List<GCodeEventNode> nodesToRemove = new ArrayList<>();
+
+            while (childIterator.hasNext())
+            {
+                GCodeEventNode childNode = childIterator.next();
+                nodesToRemove.add(childNode);
+            }
+
+            for (GCodeEventNode nodeToRemove : nodesToRemove)
+            {
+                nodeToRemove.removeFromParent();
+                newObjectNode.addChildAtEnd(nodeToRemove);
+            }
+
+            //Add the new node
+            orphanNode.addSiblingBefore(newObjectNode);
+
+            //Remove the orphan
+            orphanNode.removeFromParent();
+        }
     }
 
-    protected Optional<GCodeEventNode> findNextExtrusion(GCodeEventNode node) throws NodeProcessingException
+    protected Optional<ExtrusionNode> findNextExtrusion(GCodeEventNode node) throws NodeProcessingException
     {
-        Optional<GCodeEventNode> nextExtrusion = node.streamFromHere()
-                .filter(filteredNode -> filteredNode instanceof ExtrusionNode)
-                .findFirst();
+        Optional<ExtrusionNode> nextExtrusion = Optional.empty();
+
+        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator();
+
+        while (childIterator.hasNext())
+        {
+            GCodeEventNode childNode = childIterator.next();
+            if (childNode instanceof ExtrusionNode)
+            {
+                nextExtrusion = Optional.of((ExtrusionNode)childNode);
+                break;
+            }
+        }
 
         return nextExtrusion;
     }
 
     protected Optional<MovementProvider> findNextMovement(GCodeEventNode node) throws NodeProcessingException
     {
-        Optional<MovementProvider> nextExtrusion = node.streamFromHere()
-                .filter(filteredNode -> filteredNode instanceof MovementProvider)
-                .findFirst()
-                .map(MovementProvider.class::cast);
+        Optional<MovementProvider> nextMovement = Optional.empty();
 
-        return nextExtrusion;
+        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator();
+
+        while (childIterator.hasNext())
+        {
+            GCodeEventNode childNode = childIterator.next();
+            if (childNode instanceof MovementProvider)
+            {
+                nextMovement = Optional.of((MovementProvider) childNode);
+                break;
+            }
+        }
+
+        return nextMovement;
+    }
+
+    protected Optional<MovementProvider> findPriorMovement(GCodeEventNode node) throws NodeProcessingException
+    {
+        Optional<MovementProvider> priorMovement = Optional.empty();
+
+        Iterator<GCodeEventNode> childIterator = node.treeSpanningBackwardsIterator();
+
+        while (childIterator.hasNext())
+        {
+            GCodeEventNode childNode = childIterator.next();
+            if (childNode instanceof MovementProvider)
+            {
+                priorMovement = Optional.of((MovementProvider) childNode);
+                break;
+            }
+        }
+
+        return priorMovement;
     }
 
     protected Optional<GCodeEventNode> findPriorExtrusion(GCodeEventNode node) throws NodeProcessingException
     {
-        Optional<GCodeEventNode> nextExtrusion = node.streamBackwardsFromHere()
-                .filter(filteredNode -> filteredNode instanceof ExtrusionNode)
-                .findFirst();
+        Optional<GCodeEventNode> priorExtrusion = Optional.empty();
 
-        return nextExtrusion;
+        Iterator<GCodeEventNode> childIterator = node.treeSpanningBackwardsIterator();
+
+        while (childIterator.hasNext())
+        {
+            GCodeEventNode childNode = childIterator.next();
+            if (childNode instanceof ExtrusionNode)
+            {
+                priorExtrusion = Optional.of(childNode);
+                break;
+            }
+        }
+
+        return priorExtrusion;
     }
 
     protected Optional<MovementProvider> findPriorMovementInPreviousSection(GCodeEventNode node) throws NodeProcessingException
     {
-        GCodeEventNode nodeParent = node.getParent();
+        Optional<MovementProvider> priorMovement = Optional.empty();
+
+        GCodeEventNode nodeParent = node.getParent().get();
 
         if (nodeParent == null
                 || !(nodeParent instanceof SectionNode))
@@ -170,73 +247,73 @@ public class NodeManagementUtilities
 
         }
 
-        Optional<MovementProvider> nextExtrusion = previousSection.get().streamChildrenAndMeBackwards()
-                .filter(filteredNode -> filteredNode instanceof MovementProvider)
-                .findFirst()
-                .map(MovementProvider.class::cast);
+        Iterator<GCodeEventNode> childIterator = node.childrenAndMeBackwardsIterator();
 
-        return nextExtrusion;
+        while (childIterator.hasNext())
+        {
+            GCodeEventNode childNode = childIterator.next();
+            if (childNode instanceof MovementProvider)
+            {
+                priorMovement = Optional.of((MovementProvider) childNode);
+                break;
+            }
+        }
+
+        return priorMovement;
     }
 
     protected Optional<GCodeEventNode> findLastExtrusionEventInLayer(LayerNode layerNode)
     {
-        Optional<GCodeEventNode> lastExtrusionNode = Optional.empty();
+        Optional<GCodeEventNode> lastExtrusionEvent = Optional.empty();
 
-        List<GCodeEventNode> toolSelectNodes = layerNode
-                .stream()
-                .filter(node -> node instanceof ToolSelectNode)
-                .collect(Collectors.toList());
+        GCodeEventNode lastEventNode = layerNode.getAbsolutelyTheLastEvent();
 
-        if (!toolSelectNodes.isEmpty())
+        Iterator<GCodeEventNode> backwardsIterator = lastEventNode.treeSpanningBackwardsIterator();
+        while (backwardsIterator.hasNext())
         {
-            ToolSelectNode lastToolSelect = (ToolSelectNode) toolSelectNodes.get(toolSelectNodes.size() - 1);
-
-            List<GCodeEventNode> extrusionNodes = lastToolSelect
-                    .stream()
-                    .filter(node -> node instanceof ExtrusionNode)
-                    .collect(Collectors.toList());
-
-            if (!extrusionNodes.isEmpty())
+            GCodeEventNode nodeUnderConsideration = backwardsIterator.next();
+            if (nodeUnderConsideration instanceof ExtrusionNode)
             {
-                lastExtrusionNode = Optional.of(extrusionNodes.get(extrusionNodes.size() - 1));
+                lastExtrusionEvent = Optional.of(nodeUnderConsideration);
+                break;
             }
         }
 
-        return lastExtrusionNode;
+        return lastExtrusionEvent;
     }
 
     public double findAvailableExtrusion(GCodeEventNode lastExtrusionNode, boolean forwards) throws NodeProcessingException
     {
         double availableExtrusion = 0;
-        List<GCodeEventNode> nozzlePositionProviders;
+
+        Iterator<GCodeEventNode> nozzlePositionCandidates;
 
         if (forwards)
         {
-            //Go backwards until we see a nozzle provider that has 
-            nozzlePositionProviders = lastExtrusionNode.streamSiblingsAndMeFromHere()
-                    .filter(node -> node instanceof NozzlePositionProvider)
-                    .collect(Collectors.toList());
+            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsIterator();
         } else
         {
-            //Go backwards until we see a nozzle provider that has 
-            nozzlePositionProviders = lastExtrusionNode.streamSiblingsAndMeBackwardsFromHere()
-                    .filter(node -> node instanceof NozzlePositionProvider)
-                    .collect(Collectors.toList());
+            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsBackwardsIterator();
         }
-        
-        for (GCodeEventNode node : nozzlePositionProviders)
+
+        while (nozzlePositionCandidates.hasNext())
         {
-            NozzlePositionProvider provider = (NozzlePositionProvider) node;
-            if (provider.getNozzlePosition().isBSet())
+            GCodeEventNode node = nozzlePositionCandidates.next();
+
+            if (node instanceof NozzlePositionProvider)
             {
-                break;
-            } else if (node instanceof ExtrusionNode)
-            {
-                ExtrusionNode extrusionNode = (ExtrusionNode) node;
-                availableExtrusion += extrusionNode.getExtrusion().getE();
+                NozzlePositionProvider provider = (NozzlePositionProvider) node;
+                if (provider.getNozzlePosition().isBSet())
+                {
+                    break;
+                } else if (node instanceof ExtrusionNode)
+                {
+                    ExtrusionNode extrusionNode = (ExtrusionNode) node;
+                    availableExtrusion += extrusionNode.getExtrusion().getE();
+                }
             }
         }
-        
+
         return availableExtrusion;
     }
 

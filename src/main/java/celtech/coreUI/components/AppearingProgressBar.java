@@ -310,14 +310,40 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
         });
     }
 
-    protected void unbindVariables()
+    protected void hideProgress()
     {
         largeProgressCurrentValue.textProperty().unbind();
         largeProgressCurrentValue.setVisible(false);
-        largeTargetValue.textProperty().unbind();
-        largeTargetValue.setVisible(false);
-        largeTargetLegend.setVisible(false);
         progressBar.progressProperty().unbind();
         progressBar.setVisible(false);
+    }
+
+    protected void showProgress()
+    {
+        largeProgressCurrentValue.setVisible(true);
+        progressBar.setVisible(true);
+    }
+
+    protected void hideTargets()
+    {
+        largeTargetValue.textProperty().unbind();
+        largeTargetValue.setVisible(false);
+        largeTargetValue.setMaxWidth(0);
+        largeTargetLegend.setVisible(false);
+        largeTargetLegend.setMaxWidth(0);
+    }
+
+    protected void showTargets()
+    {
+        largeTargetValue.setVisible(true);
+        largeTargetValue.setMaxWidth(1000);
+        largeTargetLegend.setVisible(true);
+        largeTargetLegend.setMaxWidth(1000);
+    }
+
+    protected void unbindVariables()
+    {
+        hideTargets();
+        hideProgress();
     }
 }

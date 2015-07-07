@@ -80,11 +80,11 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         extrusionNode4.getExtrusion().setE(0.1f);
         extrusionNode4.getFeedrate().setFeedRate_mmPerMin(10);
 
-        outer1.addChild(0, travel1);
-        outer1.addChild(1, extrusionNode1);
-        outer1.addChild(2, extrusionNode2);
-        outer1.addChild(3, extrusionNode3);
-        outer1.addChild(4, extrusionNode4);
+        outer1.addChildAtEnd(travel1);
+        outer1.addChildAtEnd(extrusionNode1);
+        outer1.addChildAtEnd(extrusionNode2);
+        outer1.addChildAtEnd(extrusionNode3);
+        outer1.addChildAtEnd(extrusionNode4);
 
         TravelNode travel2 = new TravelNode();
         travel2.getMovement().setX(1);
@@ -114,14 +114,14 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         extrusionNode8.getExtrusion().setE(0.1f);
         extrusionNode8.getFeedrate().setFeedRate_mmPerMin(20);
 
-        inner1.addChild(0, travel2);
-        inner1.addChild(1, extrusionNode5);
-        inner1.addChild(2, extrusionNode6);
-        inner1.addChild(3, extrusionNode7);
-        inner1.addChild(4, extrusionNode8);
+        inner1.addChildAtEnd(travel2);
+        inner1.addChildAtEnd(extrusionNode5);
+        inner1.addChildAtEnd(extrusionNode6);
+        inner1.addChildAtEnd(extrusionNode7);
+        inner1.addChildAtEnd(extrusionNode8);
 
-        tool1.addChild(0, inner1);
-        tool1.addChild(1, outer1);
+        tool1.addChildAtEnd(inner1);
+        tool1.addChildAtEnd(outer1);
 
         return tool1;
     }

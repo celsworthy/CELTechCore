@@ -274,6 +274,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             processPrinterStatusChange(printerToUse.printerStatusProperty().get());
         };
 
+        pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
+        {
+            processPrinterStatusChange(printerToUse.printerStatusProperty().get());
+        };
+
         printerSilhouette.setVisible(true);
         printerClosedImage.setVisible(false);
         printerOpenImage.setVisible(false);
@@ -361,6 +366,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             bindToSelectedPrinter(selectedPrinter);
                             selectedPrinter.printerStatusProperty().addListener(
                                     printerStatusChangeListener);
+                            selectedPrinter.pauseStatusProperty().addListener(
+                                    pauseStatusChangeListener);
 
                             printerOpenImage.visibleProperty().bind(selectedPrinter.
                                     getPrinterAncillarySystems().doorOpenProperty());
@@ -387,26 +394,15 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 case IDLE:
                     visible = true;
                     break;
-
-//                case SENDING_TO_PRINTER:
-//                    visible = false;
-//                    break;
-                case PRINTING_PROJECT:
-                    visible = false;
-                    break;
-//                case EXECUTING_MACRO:
-//                    visible = false;
-//                    break;
-//                case SLICING:
-//                case POST_PROCESSING:
-//                    visible = false;
-//                    break;
                 default:
                     break;
             }
 
             switch (printerToUse.pauseStatusProperty().get())
             {
+                case PAUSED:
+                    visible = true;
+                    break;
                 case PAUSE_PENDING:
                 case RESUME_PENDING:
                     visible = false;
@@ -441,33 +437,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 case IDLE:
                     showProgressGroupFlag = false;
                     break;
-//                case SENDING_TO_PRINTER:
-//                    if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
-//                    {
-//                        showProgressGroup.set(true);
-//                    } else
-//                    {
-//                        showProgressGroup.set(false);
-//                    }
-//                    break;
                 case PRINTING_PROJECT:
                     showProgressGroupFlag = true;
-//                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
                     break;
-//                case EXECUTING_MACRO:
-//                    if (lastSelectedPrinter.macroTypeProperty().isNotNull().get()
-//                        && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
-//                    {
-//                        showProgressGroup.set(true);
-//                    } else
-//                    {
-//                        showProgressGroup.set(false);
-//                    }
-//                    break;
-//                case SLICING:
-//                case POST_PROCESSING:
-//                    showProgressGroup.set(true);
-//                    break;
                 default:
                     showProgressGroup.set(false);
                     break;
@@ -562,6 +534,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     printerColourChangeListener);
 
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
+            lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
 
             pausePrintButton.visibleProperty().unbind();
             pausePrintButton.setVisible(false);

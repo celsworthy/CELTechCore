@@ -8,6 +8,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.Math.MathUtils;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,53 +67,55 @@ public class CloseUtilities
             Vector2D orthogonalSegmentMidpoint = MathUtils.findMidPoint(orthogonalSegment.getStart(),
                     orthogonalSegment.getEnd());
 
-            List<GCodeEventNode> extrusionNodesUnderConsideration = priorSection.stream()
-                    .filter(extrusionnode -> extrusionnode instanceof MovementProvider)
-                    .collect(Collectors.toList());
-
             GCodeEventNode lastNodeConsidered = null;
 
             double closestDistanceSoFar = 999;
 
-            for (GCodeEventNode nodeUnderConsideration : extrusionNodesUnderConsideration)
+            Iterator<GCodeEventNode> priorSectionTreeIterator = priorSection.treeSpanningIterator();
+
+            while (priorSectionTreeIterator.hasNext())
             {
-                MovementProvider movementProvider = (MovementProvider) nodeUnderConsideration;
-                Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
+                GCodeEventNode priorSectionChild = priorSectionTreeIterator.next();
 
-                if (lastNodeConsidered != null)
+                if (priorSectionChild instanceof MovementProvider)
                 {
-                    Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
-                    Segment segmentUnderConsideration = new Segment(lastPoint,
-                            extrusionPoint,
-                            new Line(lastPoint, extrusionPoint, 1e-12));
+                    MovementProvider movementProvider = (MovementProvider) priorSectionChild;
+                    Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
 
-                    Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
-                            orthogonalSegment, segmentUnderConsideration);
-
-                    if (tempIntersectionPoint != null)
+                    if (lastNodeConsidered != null)
                     {
-                        double distanceFromMidPoint = tempIntersectionPoint.distance(
-                                orthogonalSegmentMidpoint);
+                        Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
+                        Segment segmentUnderConsideration = new Segment(lastPoint,
+                                extrusionPoint,
+                                new Line(lastPoint, extrusionPoint, 1e-12));
 
-                        if (distanceFromMidPoint < closestDistanceSoFar)
+                        Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
+                                orthogonalSegment, segmentUnderConsideration);
+
+                        if (tempIntersectionPoint != null)
                         {
-                            //Which node was closest - the last one or this one?
-                            if (tempIntersectionPoint.distance(lastPoint) < 
-                                    tempIntersectionPoint.distance(extrusionPoint))
+                            double distanceFromMidPoint = tempIntersectionPoint.distance(
+                                    orthogonalSegmentMidpoint);
+
+                            if (distanceFromMidPoint < closestDistanceSoFar)
                             {
-                                closestNode = lastNodeConsidered;
+                                //Which node was closest - the last one or this one?
+                                if (tempIntersectionPoint.distance(lastPoint)
+                                        < tempIntersectionPoint.distance(extrusionPoint))
+                                {
+                                    closestNode = lastNodeConsidered;
+                                } else
+                                {
+                                    closestNode = priorSectionChild;
+                                }
+                                closestDistanceSoFar = distanceFromMidPoint;
+                                intersectionPoint = tempIntersectionPoint;
                             }
-                            else
-                            {
-                                closestNode = nodeUnderConsideration;
-                            }
-                            closestDistanceSoFar = distanceFromMidPoint;
-                            intersectionPoint = tempIntersectionPoint;
                         }
                     }
-                }
 
-                lastNodeConsidered = nodeUnderConsideration;
+                    lastNodeConsidered = priorSectionChild;
+                }
             }
         } else
         {

@@ -14,12 +14,11 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.collections.ObservableList;
 
 /**
  *
@@ -85,41 +84,46 @@ public class NozzleAssignmentUtilities
 //                });
     }
 
-    protected
-            void assignExtrusionToCorrectExtruder(LayerNode layerNode)
+    protected void assignExtrusionToCorrectExtruder(LayerNode layerNode)
     {
         // Don't change anything if we're in task-based selection as this always uses extruder E
         if (postProcessingMode != PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
         {
-            layerNode.stream()
-                    .filter(node -> node instanceof ToolSelectNode)
-                    .map(ToolSelectNode.class::cast)
-                    .forEach(toolSelectNode ->
+            //Tool select nodes live directly under layers
+
+            Iterator<GCodeEventNode> layerIterator = layerNode.childIterator();
+
+            while (layerIterator.hasNext())
+            {
+                GCodeEventNode potentialToolSelectNode = layerIterator.next();
+
+                if (potentialToolSelectNode instanceof ToolSelectNode)
+                {
+                    ToolSelectNode toolSelectNode = (ToolSelectNode) potentialToolSelectNode;
+
+                    Iterator<GCodeEventNode> toolSelectNodeIterator = toolSelectNode.treeSpanningIterator();
+
+                    while (toolSelectNodeIterator.hasNext())
+                    {
+                        GCodeEventNode potentialExtrusionProvider = toolSelectNodeIterator.next();
+
+                        if (potentialExtrusionProvider instanceof ExtrusionProvider)
+                        {
+                            ExtrusionProvider extrusionNode = (ExtrusionProvider) potentialExtrusionProvider;
+
+                            switch (nozzleToExtruderMap.get(toolSelectNode.getToolNumber()))
                             {
-                                switch (nozzleToExtruderMap.get(toolSelectNode.getToolNumber()))
-                                {
-                                    case 0:
-                                        toolSelectNode.stream()
-                                        .filter(node -> node instanceof ExtrusionProvider)
-                                        .map(ExtrusionProvider.class::cast)
-                                        .map(ExtrusionProvider::getExtrusion)
-                                        .forEach(extrusionNode ->
-                                                {
-                                                    extrusionNode.extrudeUsingEOnly();
-                                        });
-                                        break;
-                                    case 1:
-                                        toolSelectNode.stream()
-                                        .filter(node -> node instanceof ExtrusionProvider)
-                                        .map(ExtrusionProvider.class::cast)
-                                        .map(ExtrusionProvider::getExtrusion)
-                                        .forEach(extrusionNode ->
-                                                {
-                                                    extrusionNode.extrudeUsingDOnly();
-                                        });
-                                        break;
-                                }
-                    });
+                                case 0:
+                                    extrusionNode.getExtrusion().extrudeUsingEOnly();
+                                    break;
+                                case 1:
+                                    extrusionNode.getExtrusion().extrudeUsingDOnly();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -156,22 +160,27 @@ public class NozzleAssignmentUtilities
             //We'll need at least one of these per layer
             ToolSelectNode toolSelectNode = null;
 
+            // At this stage the object nodes are directly beneath the layer node
             // Find all of the objects in this layer
-            List<ObjectDelineationNode> objectNodes = layerNode.stream()
-                    .filter(node -> node instanceof ObjectDelineationNode)
-                    .map(ObjectDelineationNode.class::cast)
-                    .collect(Collectors.toList());
-
-            if (objectNodes.size()
-                    > 0)
-            {
-                lastObjectReferenceNumber = objectNodes.get(objectNodes.size() - 1).getObjectNumber();
-            }
-
             SectionNode lastSectionNode = null;
+
+            Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
+            List<ObjectDelineationNode> objectNodes = new ArrayList<>();
+
+            while (layerChildIterator.hasNext())
+            {
+                GCodeEventNode potentialObjectNode = layerChildIterator.next();
+
+                if (potentialObjectNode instanceof ObjectDelineationNode)
+                {
+                    objectNodes.add((ObjectDelineationNode) potentialObjectNode);
+                }
+            }
 
             for (ObjectDelineationNode objectNode : objectNodes)
             {
+                lastObjectReferenceNumber = objectNode.getObjectNumber();
+
                 List<GCodeEventNode> childNodes = objectNode.getChildren().stream().collect(Collectors.toList());
 
                 for (GCodeEventNode childNode : childNodes)
@@ -197,10 +206,11 @@ public class NozzleAssignmentUtilities
                                     SectionNode replacementSection = lastSectionNode.getClass().newInstance();
 
                                     // Move the child nodes to the replacement section
-                                    List<GCodeEventNode> sectionChildren = sectionNodeBeingExamined.stream().collect(Collectors.toList());
-                                    for (GCodeEventNode child : sectionChildren)
+                                    Iterator<GCodeEventNode> sectionNodeChildIterator = sectionNodeBeingExamined.childIterator();
+                                    while (sectionNodeChildIterator.hasNext())
                                     {
-                                        child.removeFromParent();
+                                        GCodeEventNode child = sectionNodeChildIterator.next();
+
                                         replacementSection.addChildAtEnd(child);
                                     }
 
@@ -249,33 +259,34 @@ public class NozzleAssignmentUtilities
                 objectNode.removeFromParent();
             }
         }
-
         return lastObjectReferenceNumber;
     }
 
     protected int insertNozzleControlSectionsByObject(LayerNode layerNode)
     {
         int lastObjectReferenceNumber = -1;
-
-        // Find all of the objects in this layer
-        List<ObjectDelineationNode> objectNodes = layerNode.stream()
-                .filter(node -> node instanceof ObjectDelineationNode)
-                .map(ObjectDelineationNode.class::cast)
-                .collect(Collectors.toList());
-
-        if (objectNodes.size()
-                > 0)
-        {
-            lastObjectReferenceNumber = objectNodes.get(objectNodes.size() - 1).getObjectNumber();
-        }
-
         //We'll need at least one of these per layer
         ToolSelectNode toolSelectNode = null;
 
         SectionNode lastSectionNode = null;
 
-        for (GCodeEventNode objectNode : objectNodes)
+        Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
+        List<ObjectDelineationNode> objectNodes = new ArrayList<>();
+
+        while (layerChildIterator.hasNext())
         {
+            GCodeEventNode potentialObjectNode = layerChildIterator.next();
+
+            if (potentialObjectNode instanceof ObjectDelineationNode)
+            {
+                objectNodes.add((ObjectDelineationNode) potentialObjectNode);
+            }
+        }
+
+        for (ObjectDelineationNode objectNode : objectNodes)
+        {
+            lastObjectReferenceNumber = objectNode.getObjectNumber();
+
             ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
 
             NozzleProxy requiredNozzle = nozzleProxies.get(objectToNozzleNumberMap.get(objectNodeBeingExamined.getObjectNumber()));
@@ -340,7 +351,6 @@ public class NozzleAssignmentUtilities
                 }
             }
         }
-
         return lastObjectReferenceNumber;
     }
 }

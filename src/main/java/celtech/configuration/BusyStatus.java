@@ -22,12 +22,22 @@ public enum BusyStatus
     /**
      *
      */
-    LOADING_FILAMENT(2, "printerStatus.loadingFilament"),
+    LOADING_FILAMENT_E(2, "printerStatus.loadingFilamentE"),
 
     /**
      *
      */
-    UNLOADING_FILAMENT(3, "printerStatus.ejectingFilament");
+    UNLOADING_FILAMENT_E(3, "printerStatus.ejectingFilamentE"),
+
+    /**
+     *
+     */
+    LOADING_FILAMENT_D(4, "printerStatus.loadingFilamentD"),
+
+    /**
+     *
+     */
+    UNLOADING_FILAMENT_D(5, "printerStatus.ejectingFilamentD");
 
     /**
      *

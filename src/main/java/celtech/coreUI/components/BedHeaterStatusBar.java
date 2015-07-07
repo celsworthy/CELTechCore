@@ -71,14 +71,11 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
 
                     largeTargetValue.textProperty().bind(bedFirstLayerTargetTemperature.asString("%d")
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeTargetValue.setVisible(true);
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-                    largeTargetLegend.setVisible(true);
 
                     largeProgressCurrentValue.textProperty().bind(bedTemperature.asString("%d")
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeProgressCurrentValue.setVisible(true);
 
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {
@@ -99,7 +96,8 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
                             return normalisedProgress;
                         }
                     });
-                    progressBar.setVisible(true);
+                    showProgress();
+                    showTargets();
                     barShouldBeDisplayed = true;
                 }
                 break;
@@ -140,7 +138,8 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
                             return normalisedProgress;
                         }
                     });
-                    progressBar.setVisible(true);
+                    showProgress();
+                    showTargets();
                     barShouldBeDisplayed = true;
                 }
                 break;
