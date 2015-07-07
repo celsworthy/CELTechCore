@@ -2821,7 +2821,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void shutdown(boolean shutdownCommandInterface)
     {
-        System.out.println("SHUTDOWN");
         filamentContainer.removeFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
         steno.info("Shutdown print engine...");
         printEngine.shutdown();
