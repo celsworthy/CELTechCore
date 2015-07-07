@@ -405,7 +405,7 @@ public class PostProcessor
     {
         Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
 
-        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
         float eValue = 0;
         float dValue = 0;

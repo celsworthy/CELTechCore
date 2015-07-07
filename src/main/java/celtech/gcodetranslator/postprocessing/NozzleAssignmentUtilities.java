@@ -101,7 +101,7 @@ public class NozzleAssignmentUtilities
                 {
                     ToolSelectNode toolSelectNode = (ToolSelectNode) potentialToolSelectNode;
 
-                    Iterator<GCodeEventNode> toolSelectNodeIterator = toolSelectNode.treeSpanningIterator();
+                    Iterator<GCodeEventNode> toolSelectNodeIterator = toolSelectNode.treeSpanningIterator(null);
 
                     while (toolSelectNodeIterator.hasNext())
                     {

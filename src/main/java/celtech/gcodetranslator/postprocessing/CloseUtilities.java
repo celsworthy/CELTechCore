@@ -71,7 +71,7 @@ public class CloseUtilities
 
             double closestDistanceSoFar = 999;
 
-            Iterator<GCodeEventNode> priorSectionTreeIterator = priorSection.treeSpanningIterator();
+            Iterator<GCodeEventNode> priorSectionTreeIterator = priorSection.treeSpanningIterator(null);
 
             while (priorSectionTreeIterator.hasNext())
             {

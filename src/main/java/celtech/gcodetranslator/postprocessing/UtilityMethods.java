@@ -157,7 +157,7 @@ public class UtilityMethods
                 if (lastNozzleNumber != toolSelectNode.getToolNumber())
                 {
                     // We may have to walk the tree below the tool select node to get the parts we want
-                    Iterator<GCodeEventNode> toolSelectChildIterator = toolSelectNode.treeSpanningIterator();
+                    Iterator<GCodeEventNode> toolSelectChildIterator = toolSelectNode.treeSpanningIterator(null);
 
                     while (toolSelectChildIterator.hasNext())
                     {

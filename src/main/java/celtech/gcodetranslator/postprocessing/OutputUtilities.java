@@ -91,7 +91,7 @@ public class OutputUtilities
     {
         if (layerNode != null)
         {
-            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
             while (layerIterator.hasNext())
             {
