@@ -98,7 +98,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Translate transformBedCentre;
 
     private Group meshGroup = new Group();
-
+    private Group modelContainersGroup = new Group();
     /**
      * Property wrapper around the scale.
      */
@@ -166,12 +166,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public ModelContainer(Set<ModelContainer> modelContainers)
     {
+        super();
         initialise(null);
+        this.getChildren().add(modelContainersGroup);
         childModelContainers.addAll(modelContainers);
-        this.getChildren().addAll(modelContainers);
+        modelContainersGroup.getChildren().addAll(modelContainers);
         initialiseTransforms();
-        clearBedCentreOffsetTransform();
         clearTransformMoveToCentre();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            modelContainer.clearBedTransform();
+        }
     }
 
     public Set<ModelContainer> getChildModelContainers()
@@ -250,6 +255,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                transformRotateTwistPreferred
         );
         meshGroup.getTransforms().addAll(transformScalePreferred);
+        modelContainersGroup.getTransforms().addAll(transformScalePreferred);
 
         originalModelBounds = calculateBounds();
 
@@ -281,6 +287,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         notifyShapeChange();
         notifyScreenExtentsChange();
+    }
+    
+    void clearBedTransform() {
+        transformBedCentre.setX(0);
+        transformBedCentre.setY(0);
+        transformBedCentre.setZ(0);
     }
 
     private void initialise(File modelFile)
@@ -1180,21 +1192,24 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return combinedTransform;
     }
     
-    private ModelContainer getRootModelContainer(MeshView meshView) {
+    static ModelContainer getRootModelContainer(MeshView meshView) {
         Node parentModelContainer = meshView.getParent().getParent();
 
-        while (parentModelContainer.getParent() instanceof ModelContainer)
+        while ((parentModelContainer.getParent() != null) && parentModelContainer.getParent().getParent() instanceof ModelContainer)
         {
-            parentModelContainer = parentModelContainer.getParent();
+            parentModelContainer = parentModelContainer.getParent().getParent();
         }
         return (ModelContainer) parentModelContainer;
     }
-
+    
     /**
      * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
      */
     public ModelBounds calculateBoundsInBedCoordinateSystem()
     {
+        
+        System.out.println("calc bounds in bed for mc " + this);
+        
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
@@ -1204,10 +1219,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
+            System.out.println("process mesh view " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
 //            Transform transform = getCombinedTransformForAllGroups(meshView);
             ModelContainer rootModelContainer = getRootModelContainer(meshView);
+            System.out.println("root model container is " + rootModelContainer);
+                rootModelContainer.printTransforms();
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
             ObservableFloatArray originalPoints = mesh.getPoints();
@@ -1220,8 +1238,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
 //                Point3D pointInParent = transform.transform(xPos, yPos, zPos);
                 Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
+                
                 Point3D pointInBed = rootModelContainer.localToParent(rootModelContainer.sceneToLocal(pointInScene));
-
+                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is " + pointInBed.toString());
+                
                 minX = Math.min(pointInBed.getX(), minX);
                 minY = Math.min(pointInBed.getY(), minY);
                 minZ = Math.min(pointInBed.getZ(), minZ);

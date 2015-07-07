@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import javafx.scene.shape.MeshView;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -43,6 +44,28 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         ModelContainer modelContainer = modelLoadResult.getModelContainer();
         return modelContainer;
     }
+    
+    @Test
+    public void testGetRootModelContainerNoGroup() {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        MeshView meshView = mc.getMeshViews().get(0);
+        assertEquals(mc, ModelContainer.getRootModelContainer(meshView));
+    }
+    
+    @Test
+    public void testGetRootModelContainerInGroup() {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc);
+        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+                
+        MeshView meshView = mc.getMeshViews().get(0);
+        
+        assertEquals(groupModelContainer, ModelContainer.getRootModelContainer(meshView));
+    }    
 
     @Test
     public void testCalculateBounds()
@@ -59,7 +82,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     }
 
     @Test
-    public void testCalculateBoundsInParentWithNoTransforms()
+    public void testCalculateBoundsInBedWithNoTransforms()
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
@@ -73,7 +96,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     }
 
     @Test
-    public void testCalculateBoundsInParentWithUniformScale()
+    public void testCalculateBoundsInBedWithUniformScale()
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
@@ -90,7 +113,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     }
     
     @Test
-    public void testCalculateBoundsInParentWithTranslateX()
+    public void testCalculateBoundsInBedWithTranslateX()
     {
         int TRANSLATE_X = 10;
         int TRANSLATE_Z = 5;
@@ -107,7 +130,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     }
     
     @Test
-    public void testCalculateBoundsInParentWithUniformScaleAndTranslate()
+    public void testCalculateBoundsInBedWithUniformScaleAndTranslate()
     {
         int TRANSLATE_X = 10;
         int TRANSLATE_Z = 5;
@@ -127,7 +150,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     }    
     
     @Test
-    public void testCalculateBoundsInParentInGroupWithNoTransforms()
+    public void testCalculateBoundsInBedInGroupWithNoTransforms()
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
@@ -139,6 +162,31 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
         assertEquals(BED_CENTRE_X + 1, bounds.getMaxX(), 0);
         assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
+    }
+    
+    @Test
+    public void testCalculateBoundsInBedInGroupWithScaleInGroup()
+    {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc);
+        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        groupModelContainer.setXScale(2.0);
+        groupModelContainer.setYScale(2.0);
+        groupModelContainer.setZScale(2.0);
+        ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
+        
+        assertEquals(2 * 2, bounds.getWidth(), 0);
+        assertEquals(2 * 3, bounds.getHeight(), 0);
+        
+        assertEquals(BED_CENTRE_X - (1 * 2), bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + (1 * 2), bounds.getMaxX(), 0);
+        assertEquals(-3.0 * 2, bounds.getMinY(), 0);
         assertEquals(0, bounds.getMaxY(), 0);
         assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
         assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
