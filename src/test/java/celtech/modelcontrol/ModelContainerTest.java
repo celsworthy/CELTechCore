@@ -44,28 +44,30 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         ModelContainer modelContainer = modelLoadResult.getModelContainer();
         return modelContainer;
     }
-    
+
     @Test
-    public void testGetRootModelContainerNoGroup() {
+    public void testGetRootModelContainerNoGroup()
+    {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         MeshView meshView = mc.getMeshViews().get(0);
         assertEquals(mc, ModelContainer.getRootModelContainer(meshView));
     }
-    
+
     @Test
-    public void testGetRootModelContainerInGroup() {
+    public void testGetRootModelContainerInGroup()
+    {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
-        
+
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelContainer(modelContainers);
-                
+
         MeshView meshView = mc.getMeshViews().get(0);
-        
+
         assertEquals(groupModelContainer, ModelContainer.getRootModelContainer(meshView));
-    }    
+    }
 
     @Test
     public void testCalculateBounds()
@@ -111,7 +113,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
         assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
     }
-    
+
     @Test
     public void testCalculateBoundsInBedWithTranslateX()
     {
@@ -128,7 +130,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMinZ(), 0);
         assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMaxZ(), 0);
     }
-    
+
     @Test
     public void testCalculateBoundsInBedWithUniformScaleAndTranslate()
     {
@@ -147,14 +149,14 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(0, bounds.getMaxY(), 0);
         assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMinZ(), 0);
         assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMaxZ(), 0);
-    }    
-    
+    }
+
     @Test
     public void testCalculateBoundsInBedInGroupWithNoTransforms()
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
-        
+
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelContainer(modelContainers);
@@ -166,13 +168,13 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
         assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
     }
-    
+
     @Test
     public void testCalculateBoundsInBedInGroupWithScaleInGroup()
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
-        
+
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelContainer(modelContainers);
@@ -180,14 +182,14 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         groupModelContainer.setXScale(2.0);
         groupModelContainer.setYScale(2.0);
         groupModelContainer.setZScale(2.0);
-        
+
         mc.printTransforms();
         groupModelContainer.printTransforms();
         ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
-        
+
         assertEquals(2 * 2, bounds.getWidth(), 0);
         assertEquals(2 * 3, bounds.getHeight(), 0);
-        
+
         assertEquals(BED_CENTRE_X - (1 * 2), bounds.getMinX(), 0);
         assertEquals(BED_CENTRE_X + (1 * 2), bounds.getMaxX(), 0);
         assertEquals(-3.0 * 2, bounds.getMinY(), 0);
@@ -195,5 +197,58 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
         assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
     }
+
+    @Test
+    public void testCalculateBoundsInBedInGroupWithTranslateInGroup()
+    {
+        int TRANSLATE_X = 10;
+        int TRANSLATE_Z = 5;
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc);
+        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        groupModelContainer.setId("mc group");
+        groupModelContainer.translateBy(TRANSLATE_X, TRANSLATE_Z);
+        mc.printTransforms();
+        groupModelContainer.printTransforms();
+        ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
+
+        assertEquals(BED_CENTRE_X - 1 + TRANSLATE_X, bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + 1 + TRANSLATE_X, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMaxZ(), 0);
+    }
+    
+    @Test
+    public void testCalculateBoundsInBedInGroupWithTranslateInModelAndGroup()
+    {
+        int TRANSLATE_X = 10;
+        int TRANSLATE_Z = 5;
+        int TRANSLATE_X_GROUP = 7;
+        int TRANSLATE_Z_GROUP = 8;
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc);
+        mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
+        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        groupModelContainer.setId("mc group");
+        groupModelContainer.translateBy(TRANSLATE_X_GROUP, TRANSLATE_Z_GROUP);
+        mc.printTransforms();
+        groupModelContainer.printTransforms();
+        ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
+
+        assertEquals(BED_CENTRE_X - 1 + TRANSLATE_X + TRANSLATE_X_GROUP, bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + 1 + TRANSLATE_X + TRANSLATE_X_GROUP, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMaxZ(), 0);
+    }    
 
 }
