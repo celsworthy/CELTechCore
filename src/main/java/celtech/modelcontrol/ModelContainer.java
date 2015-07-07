@@ -45,6 +45,7 @@ import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -275,7 +276,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setY(0);
         transformMoveToPreferred.setZ(0);
 
-        lastTransformedBounds = calculateBoundsInParent();
+        lastTransformedBounds = calculateBoundsInBedCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -1126,10 +1127,56 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newcentreZ);
     }
 
+    public Set<Node> descendentMeshViews()
+    {
+        Set<Node> descendentMeshViews = new HashSet<>();
+        descendentMeshViews.addAll(meshGroup.getChildren());
+
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            descendentMeshViews.addAll(modelContainer.descendentMeshViews());
+        }
+
+        return descendentMeshViews;
+    }
+
+    /**
+     * Return a single transform that combines all transforms that will be applied to a child mesh
+     * by its parent ModelContainer.
+     */
+    private Transform getCombinedTransform()
+    {
+        Transform combinedTransform = new Translate(0, 0, 0);
+                
+        for (Transform transform : getTransforms())
+        {
+            combinedTransform = combinedTransform.createConcatenation(transform);
+        }
+        combinedTransform = combinedTransform.createConcatenation(transformScalePreferred);    
+
+        return combinedTransform;
+    }
+    
+    /**
+     * Return a single transform that combines all transforms that will be applied (
+     * through all parent ModelContainers) up to and including the top level ModelContainer. This
+     * will then return a transform which will give the coordinates in the bed coordinate system.
+     */
+    private Transform getCombinedTransformForAllGroups(MeshView meshView) {
+        Transform combinedTransform = new Translate(0, 0, 0);
+        Node parentModelContainer = meshView.getParent().getParent();
+        while (parentModelContainer instanceof ModelContainer) {
+            ModelContainer modelContainer = (ModelContainer) parentModelContainer;
+            combinedTransform = modelContainer.getCombinedTransform().createConcatenation(combinedTransform);
+            parentModelContainer = parentModelContainer.getParent();
+        }
+        return combinedTransform;
+    }
+
     /**
      * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
      */
-    public ModelBounds calculateBoundsInParent()
+    public ModelBounds calculateBoundsInBedCoordinateSystem()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -1138,35 +1185,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double maxY = -Double.MAX_VALUE;
         double maxZ = -Double.MAX_VALUE;
 
-        // this wont work for group of groups, misses transforms
-        for (ModelContainer modelContainer : childModelContainers)
+        for (Node meshViewNode : descendentMeshViews())
         {
-            for (MeshView meshView : modelContainer.getMeshViews())
-            {
-                TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
-                ObservableFloatArray originalPoints = mesh.getPoints();
+            MeshView meshView = (MeshView) meshViewNode;
 
-                for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
-                {
-                    float xPos = originalPoints.get(pointOffset);
-                    float yPos = originalPoints.get(pointOffset + 1);
-                    float zPos = originalPoints.get(pointOffset + 2);
+            Transform transform = getCombinedTransformForAllGroups(meshView);
 
-                    Point3D pointInParent = localToParent(modelContainer.localToParent(meshGroup.localToParent(xPos, yPos, zPos)));
-
-                    minX = Math.min(pointInParent.getX(), minX);
-                    minY = Math.min(pointInParent.getY(), minY);
-                    minZ = Math.min(pointInParent.getZ(), minZ);
-
-                    maxX = Math.max(pointInParent.getX(), maxX);
-                    maxY = Math.max(pointInParent.getY(), maxY);
-                    maxZ = Math.max(pointInParent.getZ(), maxZ);
-                }
-            }
-        }
-
-        for (MeshView meshView : getMeshViews())
-        {
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
             ObservableFloatArray originalPoints = mesh.getPoints();
 
@@ -1176,7 +1200,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 float yPos = originalPoints.get(pointOffset + 1);
                 float zPos = originalPoints.get(pointOffset + 2);
 
-                Point3D pointInParent = localToParent(meshGroup.localToParent(xPos, yPos, zPos));
+                Point3D pointInParent = transform.transform(xPos, yPos, zPos);
 
                 minX = Math.min(pointInParent.getX(), minX);
                 minY = Math.min(pointInParent.getY(), minY);
@@ -1404,9 +1428,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
         transformPostRotationYAdjust.setY(0);
-        ModelBounds modelBoundsParent = calculateBoundsInParent();
+        ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
         transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
-        lastTransformedBounds = calculateBoundsInParent();
+        lastTransformedBounds = calculateBoundsInBedCoordinateSystem();
     }
 
     @Override
