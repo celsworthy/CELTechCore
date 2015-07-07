@@ -307,7 +307,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setY(0);
         transformBedCentre.setZ(0);
     }
-
+    
     private void initialise(File modelFile)
     {
         this.modelFile = modelFile;
@@ -347,7 +347,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Set transformBedCentre according to the position of the centre of the bed.
      */
-    private void setBedCentreOffsetTransform()
+    public void setBedCentreOffsetTransform()
     {
         bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX();
         bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY();

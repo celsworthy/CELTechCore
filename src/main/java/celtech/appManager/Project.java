@@ -573,6 +573,7 @@ public class Project implements Serializable
             for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
             {
                 addModel(childModelContainer);
+                childModelContainer.setBedCentreOffsetTransform();
             }
         }
     }
