@@ -584,7 +584,7 @@ public class CloseLogic
 
                 if (featureSet.isEnabled(PostProcessorFeature.CLOSES_ON_RETRACT))
                 {
-                    Iterator<GCodeEventNode> toolSelectChildren = toolSelectNode.treeSpanningIterator();
+                    Iterator<GCodeEventNode> toolSelectChildren = toolSelectNode.treeSpanningIterator(null);
 
                     List<RetractNode> retractNodes = new ArrayList<>();
 
@@ -602,7 +602,7 @@ public class CloseLogic
                     {
                         CloseResult closeResult = null;
 
-                        Optional<GCodeEventNode> nextExtrusionNode = Optional.empty();
+                        Optional<ExtrusionNode> nextExtrusionNode = Optional.empty();
                         try
                         {
                             Optional<GCodeEventNode> priorExtrusionNode = nodeManagementUtilities.findPriorExtrusion(retractNode);

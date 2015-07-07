@@ -34,7 +34,7 @@ public class NodeManagementUtilities
     {
         if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
         {
-            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
             List<UnretractNode> nodesToDelete = new ArrayList<>();
 
             while (layerIterator.hasNext())
@@ -55,7 +55,7 @@ public class NodeManagementUtilities
 
     protected void calculatePerRetractExtrusionAndNode(LayerNode layerNode)
     {
-        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
         ExtrusionNode lastExtrusionNode = null;
         double extrusionInRetract = 0;
@@ -90,7 +90,7 @@ public class NodeManagementUtilities
         // At the start of the file we should treat this as object 0
         // Subsequently we should look at the last layer to see which object was in force and create an object with the same reference
 
-        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator();
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
         List<OrphanObjectDelineationNode> orphans = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class NodeManagementUtilities
     {
         Optional<ExtrusionNode> nextExtrusion = Optional.empty();
 
-        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator();
+        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator(null);
 
         while (childIterator.hasNext())
         {
@@ -174,7 +174,7 @@ public class NodeManagementUtilities
     {
         Optional<MovementProvider> nextMovement = Optional.empty();
 
-        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator();
+        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator(null);
 
         while (childIterator.hasNext())
         {
