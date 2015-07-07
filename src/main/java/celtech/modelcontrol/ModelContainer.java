@@ -43,6 +43,7 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Transform;
@@ -1072,7 +1073,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
      * dimensions before any transforms).
      */
-    private ModelBounds calculateBounds()
+    ModelBounds calculateBounds()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -1147,30 +1148,46 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Transform getCombinedTransform()
     {
         Transform combinedTransform = new Translate(0, 0, 0);
-                
+
         for (Transform transform : getTransforms())
         {
             combinedTransform = combinedTransform.createConcatenation(transform);
         }
-        combinedTransform = combinedTransform.createConcatenation(transformScalePreferred);    
+        combinedTransform = combinedTransform.createConcatenation(transformScalePreferred);
+
+        return combinedTransform;
+    }
+
+    /**
+     * Return a single transform that combines all transforms that will be applied ( through all
+     * parent ModelContainers) up to and including the top level ModelContainer. This will then
+     * return a transform which will give the coordinates in the bed coordinate system.
+     */
+    private Transform getCombinedTransformForAllGroups(MeshView meshView)
+    {
+        Affine combinedTransform = new Affine();
+        List<ModelContainer> modelContainers = new ArrayList<>();
+        Node parentModelContainer = meshView.getParent().getParent();
+
+        while (parentModelContainer instanceof ModelContainer)
+        {
+            modelContainers.add((ModelContainer) parentModelContainer);
+            Transform transform = ((ModelContainer) parentModelContainer).getCombinedTransform();
+            combinedTransform.prepend(transform);
+            parentModelContainer = parentModelContainer.getParent();
+        }
 
         return combinedTransform;
     }
     
-    /**
-     * Return a single transform that combines all transforms that will be applied (
-     * through all parent ModelContainers) up to and including the top level ModelContainer. This
-     * will then return a transform which will give the coordinates in the bed coordinate system.
-     */
-    private Transform getCombinedTransformForAllGroups(MeshView meshView) {
-        Transform combinedTransform = new Translate(0, 0, 0);
+    private ModelContainer getRootModelContainer(MeshView meshView) {
         Node parentModelContainer = meshView.getParent().getParent();
-        while (parentModelContainer instanceof ModelContainer) {
-            ModelContainer modelContainer = (ModelContainer) parentModelContainer;
-            combinedTransform = modelContainer.getCombinedTransform().createConcatenation(combinedTransform);
+
+        while (parentModelContainer.getParent() instanceof ModelContainer)
+        {
             parentModelContainer = parentModelContainer.getParent();
         }
-        return combinedTransform;
+        return (ModelContainer) parentModelContainer;
     }
 
     /**
@@ -1189,7 +1206,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             MeshView meshView = (MeshView) meshViewNode;
 
-            Transform transform = getCombinedTransformForAllGroups(meshView);
+//            Transform transform = getCombinedTransformForAllGroups(meshView);
+            ModelContainer rootModelContainer = getRootModelContainer(meshView);
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
             ObservableFloatArray originalPoints = mesh.getPoints();
@@ -1200,15 +1218,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 float yPos = originalPoints.get(pointOffset + 1);
                 float zPos = originalPoints.get(pointOffset + 2);
 
-                Point3D pointInParent = transform.transform(xPos, yPos, zPos);
+//                Point3D pointInParent = transform.transform(xPos, yPos, zPos);
+                Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
+                Point3D pointInBed = rootModelContainer.localToParent(rootModelContainer.sceneToLocal(pointInScene));
 
-                minX = Math.min(pointInParent.getX(), minX);
-                minY = Math.min(pointInParent.getY(), minY);
-                minZ = Math.min(pointInParent.getZ(), minZ);
+                minX = Math.min(pointInBed.getX(), minX);
+                minY = Math.min(pointInBed.getY(), minY);
+                minZ = Math.min(pointInBed.getZ(), minZ);
 
-                maxX = Math.max(pointInParent.getX(), maxX);
-                maxY = Math.max(pointInParent.getY(), maxY);
-                maxZ = Math.max(pointInParent.getZ(), maxZ);
+                maxX = Math.max(pointInBed.getX(), maxX);
+                maxY = Math.max(pointInBed.getY(), maxY);
+                maxZ = Math.max(pointInBed.getZ(), maxZ);
             }
         }
 
@@ -1470,7 +1490,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledHeight()
     {
-        return getLocalBounds().getHeight() * preferredYScale.doubleValue();
+        return getTransformedBounds().getHeight();
     }
 
     @Override
@@ -1482,7 +1502,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledDepth()
     {
-        return getLocalBounds().getDepth() * preferredZScale.doubleValue();
+        return getTransformedBounds().getDepth();
     }
 
     @Override
@@ -1494,7 +1514,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledWidth()
     {
-        return getLocalBounds().getWidth() * preferredXScale.doubleValue();
+        return getTransformedBounds().getWidth();
     }
 
     public void addSelectionHighlighter()

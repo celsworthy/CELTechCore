@@ -4,16 +4,20 @@
 package celtech.modelcontrol;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.TestUtils;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  *
@@ -22,25 +26,11 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 public class ModelContainerTest extends JavaFXConfiguredTest
 {
 
-//    @Test
-    public void testRotationApplication()
+    private static int BED_CENTRE_X = 105;
+    private static int BED_CENTRE_Z = 75;
+
+    private ModelContainer loadSTL(String stlLocation) throws InterruptedException, ExecutionException
     {
-
-        Vector3D xAxis = new Vector3D(1, 0, 0);
-        Rotation Rx180 = new Rotation(xAxis, Math.PI / 2d);
-        Vector3D yAxis = new Vector3D(0, 1, 0);
-        Rotation Ry180 = new Rotation(yAxis, Math.PI / 2d);
-        printRotation(Ry180);
-
-        Rotation Rx180y180 = Rx180.applyTo(Ry180);
-        printRotation(Rx180y180);
-
-        Rotation Rx180Inverse = new Rotation(xAxis, -Math.PI / 2d);
-        printRotation(Rx180Inverse.applyTo(Rx180y180));
-
-    }
-    
-    private ModelContainer loadSTL(String stlLocation) throws InterruptedException, ExecutionException {
         List<File> modelFiles = new ArrayList<>();
         URL statisticsFile = this.getClass().getResource(stlLocation);
         modelFiles.add(new File(statisticsFile.getFile()));
@@ -53,11 +43,105 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         ModelContainer modelContainer = modelLoadResult.getModelContainer();
         return modelContainer;
     }
-    
-    
-    private void printRotation(Rotation R)
+
+    @Test
+    public void testCalculateBounds()
     {
-        System.out.println("Axis " + R.getAxis() + " Angle " + Math.toDegrees(R.getAngle()));
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        ModelBounds bounds = mc.calculateBounds();
+        assertEquals(-1, bounds.getMinX(), 0);
+        assertEquals(1, bounds.getMaxX(), 0);
+        assertEquals(-1.5, bounds.getMinY(), 0);
+        assertEquals(1.5, bounds.getMaxY(), 0);
+        assertEquals(0, bounds.getMinZ(), 0);
+        assertEquals(0, bounds.getMaxZ(), 0);
+    }
+
+    @Test
+    public void testCalculateBoundsInParentWithNoTransforms()
+    {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
+        assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + 1, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
+    }
+
+    @Test
+    public void testCalculateBoundsInParentWithUniformScale()
+    {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        mc.setXScale(2.0);
+        mc.setYScale(2.0);
+        mc.setZScale(2.0);
+        ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
+        assertEquals(BED_CENTRE_X - (1 * 2), bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + (1 * 2), bounds.getMaxX(), 0);
+        assertEquals(-3.0 * 2, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
+    }
+    
+    @Test
+    public void testCalculateBoundsInParentWithTranslateX()
+    {
+        int TRANSLATE_X = 10;
+        int TRANSLATE_Z = 5;
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
+        ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
+        assertEquals(BED_CENTRE_X - 1 + TRANSLATE_X, bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + 1 + TRANSLATE_X, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMaxZ(), 0);
+    }
+    
+    @Test
+    public void testCalculateBoundsInParentWithUniformScaleAndTranslate()
+    {
+        int TRANSLATE_X = 10;
+        int TRANSLATE_Z = 5;
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        mc.setXScale(2.0);
+        mc.setYScale(2.0);
+        mc.setZScale(2.0);
+        mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
+        ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
+        assertEquals(BED_CENTRE_X - (1 * 2) + TRANSLATE_X, bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + (1 * 2) + TRANSLATE_X, bounds.getMaxX(), 0);
+        assertEquals(-3.0 * 2, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMaxZ(), 0);
+    }    
+    
+    @Test
+    public void testCalculateBoundsInParentInGroupWithNoTransforms()
+    {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc = utils.makeModelContainer(true);
+        
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc);
+        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
+        assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
+        assertEquals(BED_CENTRE_X + 1, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMinZ(), 0);
+        assertEquals(BED_CENTRE_Z + 0, bounds.getMaxZ(), 0);
     }
 
 }

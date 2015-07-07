@@ -20,7 +20,7 @@ public class TestUtils
         return modelContainer;
     }
     
-    class Shape3DRectangle extends TriangleMesh
+    public static class Shape3DRectangle extends TriangleMesh
     {
 
         public Shape3DRectangle(float Width, float Height)

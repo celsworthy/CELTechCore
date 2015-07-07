@@ -257,10 +257,10 @@ public class Project implements Serializable
 
         } catch (IOException ex)
         {
-            steno.error("Failed to load project " + basePath);
+            steno.exception("Failed to load project " + basePath, ex);
         } catch (ClassNotFoundException ex)
         {
-            steno.error("Failed to load project " + basePath);
+            steno.exception("Failed to load project " + basePath, ex);
         }
         suppressProjectChanged = false;
     }

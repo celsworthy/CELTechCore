@@ -5,8 +5,6 @@ import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.utils.Math.MathUtils;
-import javafx.event.ActionEvent;
-import javafx.scene.AmbientLight;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
