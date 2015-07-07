@@ -115,7 +115,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
-    private ModelBounds lastTransformedBounds;
+    private ModelBounds lastTransformedBoundsInBed;
     private SelectionHighlighter selectionHighlighter = null;
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
@@ -178,6 +178,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             modelContainer.clearBedTransform();
         }
     }
+    
+    public ModelContainer getParentModelContainer() {
+        if (getParent() != null && getParent().getParent() instanceof ModelContainer) {
+            return (ModelContainer) getParent().getParent();
+        }
+        else {
+            return null;
+        }
+    }
 
     public Set<ModelContainer> getChildModelContainers()
     {
@@ -221,6 +230,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void printTransforms()
     {
+        System.out.println("Transforms for: " + getId());
+        System.out.println("==============================================");
         System.out.println("Scale preferred is " + transformScalePreferred);
         System.out.println("Move to centre is " + transformMoveToCentre);
         System.out.println("transformSnapToGroundYAdjust is " + transformPostRotationYAdjust);
@@ -228,7 +239,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
         System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
         System.out.println("transformBedCentre " + transformBedCentre);
-
+        System.out.println("==============================================");
     }
 
     private void initialiseTransforms()
@@ -283,7 +294,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setY(0);
         transformMoveToPreferred.setZ(0);
 
-        lastTransformedBounds = calculateBoundsInBedCoordinateSystem();
+        lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -344,13 +355,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setZ(bedCentreOffsetZ);
     }
 
-    private void clearBedCentreOffsetTransform()
-    {
-        transformBedCentre.setX(0);
-        transformBedCentre.setY(0);
-        transformBedCentre.setZ(0);
-    }
-
     private void clearTransformMoveToCentre()
     {
         transformMoveToCentre.setX(0);
@@ -409,9 +413,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    public ModelBounds getTransformedBounds()
+    public ModelBounds getTransformedBoundsInBed()
     {
-        return lastTransformedBounds;
+        return lastTransformedBoundsInBed;
     }
 
     public ModelBounds getLocalBounds()
@@ -421,8 +425,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
-        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
-        double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBounds().getHeight()
+        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBoundsInBed().getWidth() / 2.0;
+        double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBoundsInBed().getHeight()
             / 2.0;
         double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
         double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
@@ -447,13 +451,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + 1;
         double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
             - 1;
-        if (getTransformedBounds().getMinX() < minBedX)
+        if (getTransformedBoundsInBed().getMinX() < minBedX)
         {
-            deltaX = -(getTransformedBounds().getMinX() - minBedX);
+            deltaX = -(getTransformedBoundsInBed().getMinX() - minBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        } else if (getTransformedBounds().getMaxX() > maxBedX)
+        } else if (getTransformedBoundsInBed().getMaxX() > maxBedX)
         {
-            deltaX = -(getTransformedBounds().getMaxX() - maxBedX);
+            deltaX = -(getTransformedBoundsInBed().getMaxX() - maxBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
         }
         updateLastTransformedBoundsForTranslateByX(deltaX);
@@ -463,13 +467,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + 1;
         double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
             - 1;
-        if (getTransformedBounds().getMinZ() < minBedZ)
+        if (getTransformedBoundsInBed().getMinZ() < minBedZ)
         {
-            deltaZ = -(getTransformedBounds().getMinZ() - minBedZ);
+            deltaZ = -(getTransformedBoundsInBed().getMinZ() - minBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        } else if (getTransformedBounds().getMaxZ() > maxBedZ)
+        } else if (getTransformedBoundsInBed().getMaxZ() > maxBedZ)
         {
-            deltaZ = -(getTransformedBounds().getMaxZ() - maxBedZ);
+            deltaZ = -(getTransformedBoundsInBed().getMaxZ() - maxBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
         }
         updateLastTransformedBoundsForTranslateByZ(deltaZ);
@@ -652,9 +656,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void updateScaleTransform()
     {
 
-        transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
-        transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
-        transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX() + getBoundsInLocal().getWidth() / 2.0);
+        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY() + getBoundsInLocal().getHeight() / 2.0);
+        transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ() + getBoundsInLocal().getDepth() / 2.0);
         transformScalePreferred.setX(preferredXScale.get());
         transformScalePreferred.setY(preferredYScale.get());
         transformScalePreferred.setZ(preferredZScale.get());
@@ -1001,7 +1005,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void translateXTo(double xPosition)
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = getTransformedBoundsInBed();
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -1028,7 +1032,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void translateZTo(double zPosition)
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = getTransformedBoundsInBed();
 
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
@@ -1055,7 +1059,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void checkOffBed()
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = getTransformedBoundsInBed();
 
         double epsilon = 0.001;
 
@@ -1096,7 +1100,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.lastTransformedBounds; // parent of child model is this model
+            ModelBounds bounds = modelContainer.lastTransformedBoundsInBed; // parent of child model is this model
             minX = Math.min(bounds.getMinX(), minX);
             minY = Math.min(bounds.getMinX(), minY);
             minZ = Math.min(bounds.getMinZ(), minZ);
@@ -1195,7 +1199,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     static ModelContainer getRootModelContainer(MeshView meshView) {
         Node parentModelContainer = meshView.getParent().getParent();
 
-        while ((parentModelContainer.getParent() != null) && parentModelContainer.getParent().getParent() instanceof ModelContainer)
+        while ((parentModelContainer.getParent() != null) 
+            && parentModelContainer.getParent().getParent() instanceof ModelContainer)
         {
             parentModelContainer = parentModelContainer.getParent().getParent();
         }
@@ -1225,7 +1230,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //            Transform transform = getCombinedTransformForAllGroups(meshView);
             ModelContainer rootModelContainer = getRootModelContainer(meshView);
             System.out.println("root model container is " + rootModelContainer);
-                rootModelContainer.printTransforms();
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
             ObservableFloatArray originalPoints = mesh.getPoints();
@@ -1470,7 +1474,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformPostRotationYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
         transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
-        lastTransformedBounds = calculateBoundsInBedCoordinateSystem();
+        lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
     }
 
     @Override
@@ -1493,12 +1497,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public double getTransformedCentreZ()
     {
-        return getTransformedBounds().getCentreZ();
+        return getTransformedBoundsInBed().getCentreZ();
     }
 
     public double getTransformedCentreX()
     {
-        return getTransformedBounds().getCentreX();
+        return getTransformedBoundsInBed().getCentreX();
     }
 
     @Override
@@ -1510,7 +1514,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledHeight()
     {
-        return getTransformedBounds().getHeight();
+        return getTransformedBoundsInBed().getHeight();
     }
 
     @Override
@@ -1522,19 +1526,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledDepth()
     {
-        return getTransformedBounds().getDepth();
+        return getTransformedBoundsInBed().getDepth();
     }
 
     @Override
     public double getOriginalWidth()
     {
-        return getTransformedBounds().getWidth();
+        return getTransformedBoundsInBed().getWidth();
     }
 
     @Override
     public double getScaledWidth()
     {
-        return getTransformedBounds().getWidth();
+        return getTransformedBoundsInBed().getWidth();
     }
 
     public void addSelectionHighlighter()
@@ -1548,14 +1552,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
-        lastTransformedBounds.translateX(deltaCentreX);
+        lastTransformedBoundsInBed.translateX(deltaCentreX);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
 
     private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
     {
-        lastTransformedBounds.translateZ(deltaCentreZ);
+        lastTransformedBoundsInBed.translateZ(deltaCentreZ);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }

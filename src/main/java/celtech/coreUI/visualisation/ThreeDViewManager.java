@@ -326,8 +326,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
             ModelContainer pickedModel = (ModelContainer) parent;
             // get top-level ModelContainer (could be grouped)
-            while (pickedModel.getParent() instanceof ModelContainer) {
-                pickedModel = (ModelContainer) pickedModel.getParent();
+            while (pickedModel.getParentModelContainer() instanceof ModelContainer) {
+                pickedModel = (ModelContainer) pickedModel.getParentModelContainer();
             }
 
             if (pickedModel.isSelected() == false)

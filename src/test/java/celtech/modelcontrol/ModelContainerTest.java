@@ -27,8 +27,8 @@ import org.junit.Test;
 public class ModelContainerTest extends JavaFXConfiguredTest
 {
 
-    private static int BED_CENTRE_X = 105;
-    private static int BED_CENTRE_Z = 75;
+    private static final int BED_CENTRE_X = 105;
+    private static final int BED_CENTRE_Z = 75;
 
     private ModelContainer loadSTL(String stlLocation) throws InterruptedException, ExecutionException
     {
@@ -176,9 +176,13 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        groupModelContainer.setId("mc group");
         groupModelContainer.setXScale(2.0);
         groupModelContainer.setYScale(2.0);
         groupModelContainer.setZScale(2.0);
+        
+        mc.printTransforms();
+        groupModelContainer.printTransforms();
         ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
         
         assertEquals(2 * 2, bounds.getWidth(), 0);
