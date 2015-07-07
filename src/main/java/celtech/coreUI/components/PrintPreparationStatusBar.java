@@ -46,18 +46,12 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             barShouldBeDisplayed = true;
             largeProgressDescription.setText(Lookup.i18n("printerStatus.slicing"));
 
-            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().slicerService.progressProperty().multiply(100).asString("%.0f%%"));
-            largeProgressCurrentValue.setVisible(true);
-
             progressBar.progressProperty().bind(printer.getPrintEngine().slicerService.progressProperty());
             showProgress();
         } else if (printer.getPrintEngine().postProcessorService.runningProperty().get())
         {
             barShouldBeDisplayed = true;
             largeProgressDescription.setText(Lookup.i18n("printerStatus.postProcessing"));
-
-            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().postProcessorService.progressProperty().multiply(100).asString("%.0f%%"));
-            largeProgressCurrentValue.setVisible(true);
 
             progressBar.progressProperty().bind(printer.getPrintEngine().postProcessorService.progressProperty());
             showProgress();
@@ -66,9 +60,6 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         {
             barShouldBeDisplayed = true;
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
-
-            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().multiply(100).asString("%.0f%%"));
-            largeProgressCurrentValue.setVisible(true);
 
             progressBar.progressProperty().bind(printer.getPrintEngine().transferGCodeToPrinterService.progressProperty());
             showProgress();

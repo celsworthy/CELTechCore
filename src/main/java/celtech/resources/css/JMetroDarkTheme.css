@@ -36,6 +36,8 @@
     dark_grey: rgb(48,48,48);
     mid_grey: rgb(64,64,64);
     mid_grey_50: rgb(64,64,64, 0.5);
+    mid_grey_30: rgb(64,64,64, 0.3);
+    white_60: rgb(255,255,255, 0.6);
     light_grey: rgb(99,99,99);
     robox_blue: #0096e1;
     highlight_colour: rgb(0, 157, 226);
@@ -1881,54 +1883,50 @@ modal-dialogue{
     -fx-background-color: light_grey;
 }
 
-#appearingProgressBar .bar {
+#printerPreparationBar .bar {
     -fx-background-color: white;
     -fx-background-insets: 0, 1, 2;
     -fx-padding: 0.416667em; /* 5 */
 }
 
-#appearingProgressBar .track {
+#printerPreparationBar .track {
     -fx-background-color: robox_blue;
     -fx-border-color: white;
     -fx-border-width: 2;
     -fx-background-insets:  0, 1;
 }
 
+.statusBar .progress-bar .bar {
+    -fx-background-color: white;
+/*    -fx-background-insets: 0, 1, 2;
+    -fx-padding: 0.416667em;  5 */
+}
+
+.statusBar .progress-bar .track {
+    -fx-background-color: white_60;
+    -fx-border-width: 0;
+}
+
 /**
 * Large Progress
 */
 
-#largeProgressContainer {
+.statusBar {
     -fx-font-family: 'Source Sans Pro Light';
     -fx-background-color: robox_blue;
+    -fx-pref-height: 60px;
 }
 
-#largeProgressLabel {
-    -fx-font-size: 42px;
+.statusBar .mainLabel {
+    -fx-font-size: 28px;
 }
 
-#largeProgressBarBack {
-    -fx-border-color: white;
-    -fx-border-width: 3px;
-    -fx-border-insets: 0 -3 0 -3;
+.statusBar .targetLegend {
+    -fx-font-size: 12px;
 }
 
-#largeProgressBarInner {
-    -fx-fill: white;
-    -fx-stroke-width: 0px;
-}
-
-#largeProgressCurrentValue {
-    -fx-text-fill: black;
-    -fx-font-size: 36px;
-}
-
-#largeProgressTargetLegend {
-    -fx-font-size: 19px;
-}
-
-#largeProgressTargetValue {
-    -fx-font-size: 36px;
+.statusBar .targetValue {
+    -fx-font-size: 18px;
 }
 
 /**

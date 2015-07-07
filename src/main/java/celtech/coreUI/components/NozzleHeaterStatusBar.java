@@ -65,9 +65,6 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
 
-                    largeProgressCurrentValue.textProperty().bind(heater.nozzleTemperatureProperty().asString("%d")
-                            .concat(Lookup.i18n("misc.degreesC")));
-
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {
                         {
@@ -103,9 +100,6 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             .concat(Lookup.i18n("misc.degreesC")));
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-
-                    largeProgressCurrentValue.textProperty().bind(heater.nozzleTemperatureProperty().asString("%d")
-                            .concat(Lookup.i18n("misc.degreesC")));
 
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {

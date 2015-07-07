@@ -74,9 +74,6 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
 
-                    largeProgressCurrentValue.textProperty().bind(bedTemperature.asString("%d")
-                            .concat(Lookup.i18n("misc.degreesC")));
-
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {
                         {
@@ -114,10 +111,6 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
 
                     largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetLegend.setVisible(true);
-
-                    largeProgressCurrentValue.textProperty().bind(bedTemperature.asString("%d")
-                            .concat(Lookup.i18n("misc.degreesC")));
-                    largeProgressCurrentValue.setVisible(true);
 
                     progressBar.progressProperty().bind(new DoubleBinding()
                     {

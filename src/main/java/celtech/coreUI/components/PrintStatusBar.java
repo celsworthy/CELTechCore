@@ -147,7 +147,6 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                         showTargets();
                     }
 
-                    largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
                     progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                     
                     showProgress();
@@ -161,9 +160,6 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     {
                         if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
                         {
-                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
-                            largeProgressCurrentValue.setVisible(true);
-
                             progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                             showProgress();
                         }
@@ -182,9 +178,6 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     {
                         if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
                         {
-                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
-                            largeProgressCurrentValue.setVisible(true);
-
                             progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                             showProgress();
                         }
@@ -201,9 +194,6 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     {
                         if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
                         {
-                            largeProgressCurrentValue.textProperty().bind(printer.getPrintEngine().progressProperty().multiply(100).asString("%.0f%%"));
-                            largeProgressCurrentValue.setVisible(true);
-
                             progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                             showProgress();
                         }

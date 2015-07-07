@@ -17,6 +17,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -32,9 +33,6 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
 
     @FXML
     protected Label largeProgressDescription;
-
-    @FXML
-    protected Label largeProgressCurrentValue;
 
     @FXML
     protected Label largeTargetLegend;
@@ -276,51 +274,16 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
             panelWidth = newWidth.doubleValue();
             slideMenuPanel(lastAmountShown);
         });
-
-        largeProgressCurrentValue.translateXProperty().bind(new DoubleBinding()
-        {
-            {
-                super.bind(progressBar.widthProperty(), progressBar.progressProperty());
-            }
-
-            @Override
-            protected double computeValue()
-            {
-                double barWidth = progressBar.widthProperty().get();
-                double textWidth = largeProgressCurrentValue.getLayoutBounds().getWidth();
-                double minTranslation = -(barWidth / 2 - textWidth);
-                double maxTranslation = barWidth / 2 + textWidth / 2;
-
-                double translation = (progressBar.progressProperty().get() * barWidth)
-                        - barWidth / 2;
-
-                double offsetForTextWidth = textWidth / 2 + 10;
-
-                translation -= offsetForTextWidth;
-
-                if (translation > maxTranslation)
-                {
-                    translation = maxTranslation;
-                } else if (translation < minTranslation)
-                {
-                    translation = minTranslation;
-                }
-                return translation;
-            }
-        });
     }
 
     protected void hideProgress()
     {
-        largeProgressCurrentValue.textProperty().unbind();
-        largeProgressCurrentValue.setVisible(false);
         progressBar.progressProperty().unbind();
         progressBar.setVisible(false);
     }
 
     protected void showProgress()
     {
-        largeProgressCurrentValue.setVisible(true);
         progressBar.setVisible(true);
     }
 
