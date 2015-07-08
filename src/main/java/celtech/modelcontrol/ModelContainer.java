@@ -19,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -349,8 +350,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setX(0);
         transformBedCentre.setY(0);
         transformBedCentre.setZ(0);
-   
-
     }
 
     /**
@@ -630,6 +629,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
     }
 
+    /**
+     * Return a set of all descendent ModelContainers (and including this one) that have
+     * MeshView children.
+     */
+    public Set<ModelContainer> getModelsHoldingMeshViews()
+    {
+        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
+        if (meshGroup.getChildren().size() > 0) {
+            modelsHoldingMeshViews.add(this);
+        }
+        return modelsHoldingMeshViews;
+    }
+
     private class ApplyTwist implements UnivariateFunction
     {
 
@@ -705,7 +717,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * We present the rotations to the user as Turn - Lean - Twist.
+     * We present the rotations to the user as Lean - Twist - Turn.
      */
     private void updateTransformsFromLeanTwistTurnAngles()
     {
@@ -1232,9 +1244,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public ModelBounds calculateBoundsInBedCoordinateSystem()
     {
-
-        System.out.println("calc bounds in bed for mc " + this);
-
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
@@ -1244,12 +1253,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
-            System.out.println("process mesh view " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
 //            Transform transform = getCombinedTransformForAllGroups(meshView);
             ModelContainer rootModelContainer = getRootModelContainer(meshView);
-            System.out.println("root model container is " + rootModelContainer);
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
             ObservableFloatArray originalPoints = mesh.getPoints();
@@ -1265,8 +1272,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
                 Point3D pointInBed = rootModelContainer.localToParent(
                     rootModelContainer.sceneToLocal(pointInScene));
-                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is "
-                    + pointInBed.toString());
+//                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is "
+//                    + pointInBed.toString());
 
                 minX = Math.min(pointInBed.getX(), minX);
                 minY = Math.min(pointInBed.getY(), minY);
@@ -1297,8 +1304,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelBounds calculateBoundsInParentCoordinateSystem()
     {
 
-        System.out.println("calc bounds in parent for mc " + this);
-
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
@@ -1314,7 +1319,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
-            System.out.println("process mesh view " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
@@ -1328,8 +1332,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
                 Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
                 Point3D pointInParent = parentModelContainer.sceneToLocal(pointInScene);
-                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in parent is "
-                    + pointInParent.toString());
 
                 minX = Math.min(pointInParent.getX(), minX);
                 minY = Math.min(pointInParent.getY(), minY);

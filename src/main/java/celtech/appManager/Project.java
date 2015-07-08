@@ -289,10 +289,13 @@ public class Project implements Serializable
     private void saveModels(String path) throws IOException
     {
         ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
-        modelsOutput.writeInt(loadedModels.size());
-        for (int i = 0; i < loadedModels.size(); i++)
+        
+        Set<ModelContainer> modelsHoldingMeshViews = getModelsHoldingMeshViews();
+        
+        modelsOutput.writeInt(modelsHoldingMeshViews.size());
+        for (ModelContainer modelsHoldingMeshView : modelsHoldingMeshViews)
         {
-            modelsOutput.writeObject(loadedModels.get(i));
+            modelsOutput.writeObject(modelsHoldingMeshView);
         }
     }
 
@@ -617,6 +620,16 @@ public class Project implements Serializable
             }
         }
         return newModelContainers;
+    }
+
+    private Set<ModelContainer> getModelsHoldingMeshViews()
+    {
+        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
+        for (ModelContainer model : loadedModels)
+        {
+            modelsHoldingMeshViews.addAll(model.getModelsHoldingMeshViews());
+        }
+        return modelsHoldingMeshViews;
     }
 
     /**

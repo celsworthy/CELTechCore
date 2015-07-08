@@ -6,6 +6,7 @@ package celtech.appManager;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.TestUtils;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -27,6 +28,8 @@ import org.junit.rules.TemporaryFolder;
  */
 public class ProjectTest extends JavaFXConfiguredTest
 {
+    
+    private static String GROUP_NAME = "group";
 
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
@@ -87,42 +90,30 @@ public class ProjectTest extends JavaFXConfiguredTest
         toTranslate.add(mc2);
         project.translateModelsBy(toTranslate, 10, 20);
         
-        Set<ModelContainer> setMC = new HashSet<>();
-        setMC.add(mc1);
-        setMC.add(mc2);
-        ModelContainer group = project.group(setMC);
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc1);
+        modelContainers.add(mc2);
+        ModelContainer group = project.group(modelContainers);
+        group.setId(GROUP_NAME);
         return new Pair<>(project, group);
     }
     
     @Test
-    public void testGroupInitialTransforms() {
+    public void testSaveProjectWithGroup() throws IOException {
         
         Pair<Project, ModelContainer> pair = makeProject();
         Project project = pair.getKey();
         ModelContainer group = pair.getValue();
         
-        Assert.assertEquals(0, group.getTransformMoveToCentre().getX(), 0);
-        Assert.assertEquals(0, group.getTransformMoveToCentre().getY(), 0);
-        Assert.assertEquals(0, group.getTransformMoveToCentre().getZ(), 0);
-        
+        ProjectFile projectFile = new ProjectFile();
+        projectFile.populateFromProject(project);
+
+        Project.saveProject(project);
+
+        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory() 
+            + File.separator + project.getProjectName());
+
+        Assert.assertEquals(1, newProject.getLoadedModels().size());
+        Assert.assertEquals(GROUP_NAME, newProject.getLoadedModels().get(0).getId());
     }
-    
-    @Test
-    public void testInitialCentre() {
-        
-        Pair<Project, ModelContainer> pair = makeProject();
-        Project project = pair.getKey();
-        ModelContainer group = pair.getValue();
-        
-        group.printTransforms();
-        
-        Assert.assertEquals(110, group.getCentreX(), 0);
-        Assert.assertEquals(52, group.getCentreY(), 0);
-        Assert.assertEquals(85, group.getCentreZ(), 0);
-        
-        Assert.assertEquals(105, group.getTransformedCentreX(), 0);
-        Assert.assertEquals(75, group.getTransformedCentreZ(), 0);
-        
-    }
-    
 }
