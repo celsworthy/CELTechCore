@@ -331,8 +331,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         );
 
         canPause.bind(pauseStatus.isNotEqualTo(PauseStatus.PAUSED)
-                .and(
-                        printerStatus.isEqualTo(PrinterStatus.PRINTING_PROJECT)
+                .and(pauseStatus.isNotEqualTo(PauseStatus.PAUSE_PENDING))
+                .and(printerStatus.isEqualTo(PrinterStatus.PRINTING_PROJECT)
                         .or(pauseStatus.isEqualTo(PauseStatus.RESUME_PENDING))));
 
         canCalibrateHead.bind(head.isNotNull()
@@ -2825,7 +2825,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.info("Shutdown command interface...");
             commandInterface.shutdown();
-        }        
+        }
     }
 
     @Override

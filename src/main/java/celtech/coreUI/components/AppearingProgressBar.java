@@ -3,12 +3,14 @@
  */
 package celtech.coreUI.components;
 
+import celtech.Lookup;
+import celtech.coreUI.components.buttons.GraphicButton;
+import celtech.utils.Math.MathUtils;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.Transition;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,8 +18,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -25,7 +26,7 @@ import javafx.util.Duration;
  *
  * @author tony
  */
-public abstract class AppearingProgressBar extends BorderPane implements Initializable
+public abstract class AppearingProgressBar extends StackPane implements Initializable
 {
 
     @FXML
@@ -40,7 +41,16 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
     @FXML
     protected ProgressBar progressBar;
 
-    private static final Duration transitionLengthMillis = Duration.millis(250);
+    @FXML
+    protected GraphicButton pauseButton;
+
+    @FXML
+    protected GraphicButton resumeButton;
+
+    @FXML
+    protected GraphicButton cancelButton;
+
+    private static final Duration transitionLengthMillis = Duration.millis(125);
 
     private Animation hideSidebar = new Transition()
     {
@@ -70,9 +80,10 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
 
     private final double minimumToShow = 0.0;
     private final double maximumToShow = 1.0;
-    private boolean slidCompletelyInToView = false;
-    private boolean slidCompletelyOutOfView = false;
-    private SlidingComponentDirection directionToSlide = SlidingComponentDirection.UP_FROM_BOTTOM;
+    private boolean slidingIntoView = false;
+    private boolean slidingOutOfView = false;
+    private boolean slidIntoView = false;
+    private boolean slidOutOfView = false;
     private double panelWidth = 0;
     private double panelHeight = 0;
     private double panelLayoutMinX = 0;
@@ -101,35 +112,16 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
 
         showSidebar.setOnFinished((ActionEvent t) ->
         {
-            slidCompletelyInToView = true;
+            slidingIntoView = false;
+            slidIntoView = true;
         });
 
         hideSidebar.setOnFinished((ActionEvent t) ->
         {
-            slidCompletelyOutOfView = true;
+            slidingOutOfView = false;
+            slidOutOfView = true;
+            setVisible(false);
         });
-
-        slideOutOfView();
-    }
-
-    /**
-     *
-     */
-    public void slideInToView()
-    {
-        slideMenuPanel(1.0);
-        slidCompletelyInToView = true;
-        slidCompletelyOutOfView = false;
-    }
-
-    /**
-     *
-     */
-    public void slideOutOfView()
-    {
-        slideMenuPanel(0.0);
-        slidCompletelyInToView = false;
-        slidCompletelyOutOfView = true;
     }
 
     /**
@@ -148,62 +140,13 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
             amountToShow = maximumToShow;
         }
 
-        if (directionToSlide == SlidingComponentDirection.IN_FROM_LEFT
-                || directionToSlide == SlidingComponentDirection.IN_FROM_RIGHT)
-        {
-            double targetPanelWidth = panelWidth * amountToShow;
-            double widthToHide = panelWidth - targetPanelWidth;
-            double translateByX = 0;
+        double targetPanelHeight = panelHeight * amountToShow;
 
-            if (directionToSlide == SlidingComponentDirection.IN_FROM_LEFT)
-            {
-                translateByX = -panelWidth + targetPanelWidth;
-                clippingRectangle.setX(-translateByX);
-            } else
-            {
-                translateByX = panelWidth - targetPanelWidth;
-            }
+        clippingRectangle.setHeight(panelHeight - targetPanelHeight);
+//        clippingRectangle.setTranslateY(tar);
+        clippingRectangle.setWidth(panelWidth);
 
-            clippingRectangle.setHeight(panelHeight);
-            clippingRectangle.setWidth(targetPanelWidth);
-
-            setClip(clippingRectangle);
-            setTranslateX(translateByX);
-        } else if (directionToSlide == SlidingComponentDirection.DOWN_FROM_TOP
-                || directionToSlide == SlidingComponentDirection.UP_FROM_BOTTOM)
-        {
-            double targetPanelHeight = panelHeight * amountToShow;
-            double heightToHide = panelHeight - targetPanelHeight;
-            double translateByY = 0;
-
-            if (directionToSlide == SlidingComponentDirection.DOWN_FROM_TOP)
-            {
-                translateByY = -panelHeight + targetPanelHeight;
-                clippingRectangle.setY(panelLayoutMinY + heightToHide);
-
-            } else
-            {
-                translateByY = panelHeight - targetPanelHeight;
-            }
-
-            clippingRectangle.setHeight(targetPanelHeight);
-            clippingRectangle.setWidth(panelWidth);
-
-            setClip(clippingRectangle);
-            setTranslateY(translateByY);
-            setMaxHeight(targetPanelHeight);
-            setMinHeight(0);
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public boolean isSliding()
-    {
-        return showSidebar.statusProperty().get() != Animation.Status.STOPPED
-                || hideSidebar.statusProperty().get() != Animation.Status.STOPPED;
+        setPrefHeight(targetPanelHeight);
     }
 
     /**
@@ -211,11 +154,11 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
      */
     public void startSlidingOutOfView()
     {
-        if (!slidCompletelyOutOfView
-                && hideSidebar.getStatus() == Animation.Status.STOPPED)
+        if (!isSlidOutOrSlidingOut())
         {
-            slidCompletelyInToView = false;
-            slidCompletelyOutOfView = false;
+            slidingOutOfView = true;
+            slidIntoView = false;
+            slidOutOfView = false;
             showSidebar.stop();
             Duration time = showSidebar.getCurrentTime();
             Duration startFromTime;
@@ -228,7 +171,14 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
             }
             hideSidebar.jumpTo(startFromTime);
             hideSidebar.play();
+        } else if (slidOutOfView)
+        {
+            if (MathUtils.compareDouble(getPrefHeight(), 0.0, 0.01) == MathUtils.MORE_THAN)
+            {
+                slideMenuPanel(0);
+            }
         }
+
     }
 
     /**
@@ -236,11 +186,12 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
      */
     public void startSlidingInToView()
     {
-        if (!slidCompletelyInToView
-                && showSidebar.getStatus() == Animation.Status.STOPPED)
+        if (!isSlidInOrSlidingIn())
         {
-            slidCompletelyInToView = false;
-            slidCompletelyOutOfView = false;
+            setVisible(true);
+            slidingIntoView = true;
+            slidIntoView = false;
+            slidOutOfView = false;
             hideSidebar.stop();
             Duration time = hideSidebar.getCurrentTime();
             Duration startFromTime;
@@ -253,60 +204,61 @@ public abstract class AppearingProgressBar extends BorderPane implements Initial
                 showSidebar.jumpTo(startFromTime);
             }
             showSidebar.play();
+        } else if (slidIntoView)
+        {
+            if (MathUtils.compareDouble(getPrefHeight(), 1.0, 0.01) == MathUtils.LESS_THAN)
+            {
+                slideMenuPanel(1.0);
+            }
         }
-    }
-
-    /**
-     *
-     * @return
-     */
-    public boolean isSlidIn()
-    {
-        return slidCompletelyInToView;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
         panelHeight = getPrefHeight();
-        widthProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number newWidth) ->
-        {
-            panelWidth = newWidth.doubleValue();
-            slideMenuPanel(lastAmountShown);
-        });
+//        widthProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number newWidth) ->
+//        {
+//            panelWidth = newWidth.doubleValue();
+//            slideMenuPanel(lastAmountShown);
+//        });
+
+        setMinHeight(0);
+
+        slideMenuPanel(0);
+        slidIntoView = false;
+        slidOutOfView = true;
+        slidingIntoView = false;
+        slidingOutOfView = false;
+
+        pauseButton.setVisible(false);
+        resumeButton.setVisible(false);
+        cancelButton.setVisible(false);    
+        
+        clippingRectangle.setHeight(0);
+        
+        setVisible(false);
+//        setClip(clippingRectangle);
     }
 
-    protected void hideProgress()
+    public boolean isSlidInOrSlidingIn()
     {
-        progressBar.progressProperty().unbind();
-        progressBar.setVisible(false);
+        return slidIntoView || slidingIntoView;
     }
 
-    protected void showProgress()
+    public boolean isSlidOutOrSlidingOut()
     {
-        progressBar.setVisible(true);
+        return slidOutOfView || slidingOutOfView;
     }
 
-    protected void hideTargets()
+    public void targetRequired(boolean required)
     {
-        largeTargetValue.textProperty().unbind();
-        largeTargetValue.setVisible(false);
-        largeTargetValue.setMaxWidth(0);
-        largeTargetLegend.setVisible(false);
-        largeTargetLegend.setMaxWidth(0);
+        largeTargetLegend.setVisible(required);
+        largeTargetValue.setVisible(required);
     }
 
-    protected void showTargets()
+    public void progressRequired(boolean required)
     {
-        largeTargetValue.setVisible(true);
-        largeTargetValue.setMaxWidth(1000);
-        largeTargetLegend.setVisible(true);
-        largeTargetLegend.setMaxWidth(1000);
-    }
-
-    protected void unbindVariables()
-    {
-        hideTargets();
-        hideProgress();
+        progressBar.setVisible(required);
     }
 }

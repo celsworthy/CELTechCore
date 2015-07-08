@@ -6,6 +6,8 @@ package celtech.coreUI.components;
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.PrinterAncillarySystems;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -50,14 +52,22 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
         this.bedTargetTemperature.addListener(numberChangeListener);
         this.heaterMode.addListener(heaterModeChangeListener);
 
+        getStyleClass().add("secondaryStatusBar");
+
         reassessStatus();
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources)
+    {
+        super.initialize(location, resources);
+        targetRequired(true);
+        progressRequired(true);
+    }
+    
     private void reassessStatus()
     {
-        boolean barShouldBeDisplayed = false;
-
-        unbindVariables();
+        boolean showHeaterBar = false;
 
         switch (heaterMode.get())
         {
@@ -69,78 +79,55 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
                 {
                     largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingBed"));
 
-                    largeTargetValue.textProperty().bind(bedFirstLayerTargetTemperature.asString("%d")
+                    largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
+                    largeTargetValue.textProperty().set(bedFirstLayerTargetTemperature.asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
 
-                    largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-
-                    progressBar.progressProperty().bind(new DoubleBinding()
+                    if (bedFirstLayerTargetTemperature.doubleValue() > 0)
                     {
-                        {
-                            super.bind(bedTemperature, bedFirstLayerTargetTemperature);
-                        }
+                        double normalisedProgress = 0;
+                        normalisedProgress = bedTemperature.doubleValue() / bedFirstLayerTargetTemperature.doubleValue();
+                        normalisedProgress = Math.max(0, normalisedProgress);
+                        normalisedProgress = Math.min(1, normalisedProgress);
 
-                        @Override
-                        protected double computeValue()
-                        {
-                            double normalisedProgress = 0;
-                            if (bedFirstLayerTargetTemperature.doubleValue() > 0)
-                            {
-                                normalisedProgress = bedTemperature.doubleValue() / bedFirstLayerTargetTemperature.doubleValue();
-                                normalisedProgress = Math.max(0, normalisedProgress);
-                                normalisedProgress = Math.min(1, normalisedProgress);
-                            }
-                            return normalisedProgress;
-                        }
-                    });
-                    showProgress();
-                    showTargets();
-                    barShouldBeDisplayed = true;
+                        progressBar.setProgress(normalisedProgress);
+                    } else
+                    {
+                        progressBar.setProgress(0);
+                    }
+                    showHeaterBar = true;
                 }
                 break;
             case NORMAL:
-            case FILAMENT_EJECT:
                 if (Math.abs(bedTemperature.get() - bedTargetTemperature.get())
                         > showBarIfMoreThanXDegreesOut)
                 {
                     largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingBed"));
 
-                    largeTargetValue.textProperty().bind(bedTargetTemperature.asString("%d")
+                    largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
+                    largeTargetValue.textProperty().set(bedTargetTemperature.asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
-                    largeTargetValue.setVisible(true);
-
-                    largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-                    largeTargetLegend.setVisible(true);
-
-                    progressBar.progressProperty().bind(new DoubleBinding()
+                    
+                    if (bedTargetTemperature.doubleValue() > 0)
                     {
-                        {
-                            super.bind(bedTemperature, bedTargetTemperature);
-                        }
+                        double normalisedProgress = 0;
+                        normalisedProgress = bedTemperature.doubleValue() / bedTargetTemperature.doubleValue();
+                        normalisedProgress = Math.max(0, normalisedProgress);
+                        normalisedProgress = Math.min(1, normalisedProgress);
 
-                        @Override
-                        protected double computeValue()
-                        {
-                            double normalisedProgress = 0;
-                            if (bedTargetTemperature.doubleValue() > 0)
-                            {
-                                normalisedProgress = bedTemperature.doubleValue() / bedTargetTemperature.doubleValue();
-                                normalisedProgress = Math.max(0, normalisedProgress);
-                                normalisedProgress = Math.min(1, normalisedProgress);
-                            }
-                            return normalisedProgress;
-                        }
-                    });
-                    showProgress();
-                    showTargets();
-                    barShouldBeDisplayed = true;
+                        progressBar.setProgress(normalisedProgress);
+                    } else
+                    {
+                        progressBar.setProgress(0);
+                    }
+                    showHeaterBar = true;
                 }
                 break;
             default:
                 break;
         }
 
-        if (barShouldBeDisplayed)
+        if (showHeaterBar)
         {
             startSlidingInToView();
         } else
@@ -174,7 +161,5 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
             bedTargetTemperature.removeListener(numberChangeListener);
             bedTargetTemperature = null;
         }
-        unbindVariables();
-        slideOutOfView();
     }
 }

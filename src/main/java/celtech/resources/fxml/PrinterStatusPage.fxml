@@ -14,7 +14,7 @@
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../css/AutoMaker.css?>
 
-<AnchorPane id="AnchorPane" fx:id="container" minHeight="0.0" minWidth="0.0" styleClass="project-view-background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
+<AnchorPane id="AnchorPane" fx:id="container" minHeight="0.0" minWidth="0.0" styleClass="project-view-background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
     <children>
         <StackPane fx:id="statusPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -298,47 +298,18 @@
                 </JogButton>
             </children>
         </StackPane>
-        <ProgressDisplay fx:id="progressDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
-        <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+<!--        <HBox AnchorPane.bottomAnchor="200.0">
             <children>
-                <StackPane id="StackPane" fx:id="pauseResumeStack" HBox.hgrow="NEVER">
-                    <children>
-                        <Button fx:id="pausePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#pausePrint" styleClass="borderlessGraphicButton" text="PausePrint">
-                            <graphic>
-                                <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/Print_pause.png" />
-                                    </image>
-                                </ImageView>
-                            </graphic>
-                        </Button>
-                        <Button id="pausePrintButton" fx:id="resumePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#resumePrint" styleClass="borderlessGraphicButton" text="ResumePrint">
-                            <graphic>
-                                <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/Print_play.png" />
-                                    </image>
-                                </ImageView>
-                            </graphic>
-                        </Button>
-                    </children>
-                </StackPane>
-                <Button fx:id="cancelPrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#cancelPrint" styleClass="borderlessGraphicButton" text="CancelPrint">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/stop_print.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
+                <Button mnemonicParsing="false" onAction="#appear" text="Button" />
+                <Button mnemonicParsing="false" onAction="#disappear" text="Button" />
             </children>
-            <padding>
-                <Insets right="5.0" />
-            </padding>
-            <StackPane.margin>
-                <Insets />
-            </StackPane.margin>
-        </HBox>
+        </HBox>-->
+<!--        <VBox AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+            <children>
+               <TesStatusBar fx:id="jim2" /> 
+               <TesStatusBar fx:id="jim1" /> 
+            </children>
+        </VBox>-->
+        <ProgressDisplay fx:id="progressDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
 </AnchorPane>

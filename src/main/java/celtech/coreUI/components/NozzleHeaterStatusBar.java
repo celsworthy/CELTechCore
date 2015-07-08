@@ -6,6 +6,8 @@ package celtech.coreUI.components;
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.NozzleHeater;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -41,14 +43,22 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
         heater.nozzleFirstLayerTargetTemperatureProperty().addListener(numberChangeListener);
         heater.heaterModeProperty().addListener(heaterModeChangeListener);
 
+        getStyleClass().add("secondaryStatusBar");
+
         reassessStatus();
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources)
+    {
+        super.initialize(location, resources);
+        targetRequired(true);
+        progressRequired(true);
+    }
+    
     private void reassessStatus()
     {
-        boolean barShouldBeDisplayed = false;
-
-        unbindVariables();
+        boolean showHeaterBar = false;
 
         switch (heater.heaterModeProperty().get())
         {
@@ -60,35 +70,26 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 {
                     largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
 
-                    largeTargetValue.textProperty().bind(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d")
+                    largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
+                    largeTargetValue.textProperty().set(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
 
-                    largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-
-                    progressBar.progressProperty().bind(new DoubleBinding()
+                    if (heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue() > 0)
                     {
-                        {
-                            super.bind(heater.nozzleTemperatureProperty(), heater.nozzleFirstLayerTargetTemperatureProperty());
-                        }
+                        double normalisedProgress = 0;
+                        normalisedProgress = heater.nozzleTemperatureProperty().doubleValue() / heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue();
+                        normalisedProgress = Math.max(0, normalisedProgress);
+                        normalisedProgress = Math.min(1, normalisedProgress);
 
-                        @Override
-                        protected double computeValue()
-                        {
-                            double normalisedProgress = 0;
-                            if (heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue() > 0)
-                            {
-                                normalisedProgress = heater.nozzleTemperatureProperty().doubleValue() / heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue();
-                                normalisedProgress = Math.max(0, normalisedProgress);
-                                normalisedProgress = Math.min(1, normalisedProgress);
-                            }
-                            return normalisedProgress;
-                        }
-                    });
-                    showProgress();
-                    showTargets();
-                    barShouldBeDisplayed = true;
+                        progressBar.setProgress(normalisedProgress);
+                    } else
+                    {
+                        progressBar.setProgress(0);
+                    }
+                    showHeaterBar = true;
                 }
                 break;
+
             case NORMAL:
             case FILAMENT_EJECT:
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleTargetTemperatureProperty().get())
@@ -96,40 +97,30 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 {
                     largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
 
-                    largeTargetValue.textProperty().bind(heater.nozzleTargetTemperatureProperty().asString("%d")
+                    largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
+                    largeTargetValue.textProperty().set(heater.nozzleTargetTemperatureProperty().asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
 
-                    largeTargetLegend.setText(Lookup.i18n("progressBar.targetTemperature"));
-
-                    progressBar.progressProperty().bind(new DoubleBinding()
+                    if (heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue() > 0)
                     {
-                        {
-                            super.bind(heater.nozzleTemperatureProperty(), heater.nozzleTargetTemperatureProperty());
-                        }
+                        double normalisedProgress = 0;
+                        normalisedProgress = heater.nozzleTemperatureProperty().doubleValue() / heater.nozzleTargetTemperatureProperty().doubleValue();
+                        normalisedProgress = Math.max(0, normalisedProgress);
+                        normalisedProgress = Math.min(1, normalisedProgress);
 
-                        @Override
-                        protected double computeValue()
-                        {
-                            double normalisedProgress = 0;
-                            if (heater.nozzleTargetTemperatureProperty().doubleValue() > 0)
-                            {
-                                normalisedProgress = heater.nozzleTemperatureProperty().doubleValue() / heater.nozzleTargetTemperatureProperty().doubleValue();
-                                normalisedProgress = Math.max(0, normalisedProgress);
-                                normalisedProgress = Math.min(1, normalisedProgress);
-                            }
-                            return normalisedProgress;
-                        }
-                    });
-                    showProgress();
-                    showTargets();
-                    barShouldBeDisplayed = true;
+                        progressBar.setProgress(normalisedProgress);
+                    } else
+                    {
+                        progressBar.setProgress(0);
+                    }
+                    showHeaterBar = true;
                 }
                 break;
             default:
                 break;
         }
 
-        if (barShouldBeDisplayed)
+        if (showHeaterBar)
         {
             startSlidingInToView();
         } else
@@ -146,8 +137,6 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
             heater.nozzleTargetTemperatureProperty().removeListener(numberChangeListener);
             heater.nozzleFirstLayerTargetTemperatureProperty().removeListener(numberChangeListener);
             heater.heaterModeProperty().removeListener(heaterModeChangeListener);
-            unbindVariables();
-            slideOutOfView();
             heater = null;
         }
     }

@@ -34,7 +34,7 @@
 *{
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
-    mid_grey: rgb(64,64,64);
+    mid_grey_solid: rgb(64,64,64, 1.0);
     mid_grey_50: rgb(64,64,64, 0.5);
     mid_grey_30: rgb(64,64,64, 0.3);
     white_60: rgb(255,255,255, 0.6);
@@ -81,7 +81,7 @@
 }
 
 .standardPanel{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .project-view-background{
@@ -1183,7 +1183,7 @@
 }
 
 .tab .tab-label{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-text-fill: white;
 }
 
@@ -1193,7 +1193,7 @@
 }
 
 .tab{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-background-radius: 0px;
     -fx-background-insets: 0px;
     -fx-border-color: black;
@@ -1281,7 +1281,7 @@ table-view .column-header-background {
 
 /*
 .tab .tab-label, .tab .nonEditableProjectTab {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-text-fill: white;
     -fx-border-color: transparent;
 }
@@ -1321,7 +1321,7 @@ table-view .column-header-background {
 }
 
 .statusPanel{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .statusPanelChild{
@@ -1329,7 +1329,7 @@ table-view .column-header-background {
 }
 
 .sidePanel{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .sidePanel BorderPane{
@@ -1449,7 +1449,7 @@ table-view .column-header-background {
  */
 
 modal-dialogue{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .RestrictedTextField{
@@ -1883,50 +1883,95 @@ modal-dialogue{
     -fx-background-color: light_grey;
 }
 
-#printerPreparationBar .bar {
+.statusBar #progBar {
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+}
+
+.statusBar #progBar .bar {
     -fx-background-color: white;
-    -fx-background-insets: 0, 1, 2;
-    -fx-padding: 0.416667em; /* 5 */
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    /*-fx-padding: 0.416667em;  5*/ 
 }
 
-#printerPreparationBar .track {
-    -fx-background-color: robox_blue;
-    -fx-border-color: white;
-    -fx-border-width: 2;
-    -fx-background-insets:  0, 1;
-}
-
-.statusBar .progress-bar .bar {
-    -fx-background-color: white;
-/*    -fx-background-insets: 0, 1, 2;
-    -fx-padding: 0.416667em;  5 */
-}
-
-.statusBar .progress-bar .track {
+.statusBar #progBar .track {
     -fx-background-color: white_60;
     -fx-border-width: 0;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
-
-/**
-* Large Progress
-*/
 
 .statusBar {
     -fx-font-family: 'Source Sans Pro Light';
     -fx-background-color: robox_blue;
-    -fx-pref-height: 60px;
+    -fx-pref-height: 0px;
+    -fx-max-height: 60px;
 }
 
-.statusBar .mainLabel {
+.statusBar #mainLabel {
     -fx-font-size: 28px;
 }
 
-.statusBar .targetLegend {
-    -fx-font-size: 12px;
+.statusBar #targetLegend {
+    -fx-font-size: 14px;
 }
 
-.statusBar .targetValue {
+.statusBar #targetValue {
     -fx-font-size: 18px;
+}
+.secondaryStatusBar #progBar {
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-background-insets: 0;
+}
+
+.secondaryStatusBar #progBar .bar {
+    -fx-background-color: mid_grey_solid;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    /*-fx-padding: 0.416667em;  5*/ 
+}
+
+.secondaryStatusBar #progBar .track {
+    -fx-background-color: mid_grey_30;
+    -fx-border-width: 0;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.secondaryStatusBar {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-background-color: white_60;
+    -fx-pref-height: 0px;
+    -fx-max-height: 60px;
+}
+
+.secondaryStatusBar #mainLabel {
+    -fx-font-size: 28px;
+    -fx-text-fill: black;
+}
+
+.secondaryStatusBar #targetLegend {
+    -fx-font-size: 14px;
+    -fx-text-fill: black;
+}
+
+.secondaryStatusBar #targetValue {
+    -fx-font-size: 18px;
+    -fx-text-fill: black;
 }
 
 /**
@@ -1952,7 +1997,7 @@ modal-dialogue{
 }
 
 .midGreyBackground {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .darkGreyBackground {
@@ -1968,13 +2013,13 @@ modal-dialogue{
 * Calibration diagram text
 */
 .mediumCalibrationText {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-font-size:20px;
     -fx-text-fill: white;
 }
 
 .smallCalibrationText {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-font-size:14px;
     -fx-text-fill: white;
 }
@@ -2177,7 +2222,7 @@ modal-dialogue{
  * The error dialog configuration
  */
 .error-dialog{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-spacing: 5;
     -fx-padding: 5;
@@ -2426,11 +2471,11 @@ modal-dialogue{
 }
 
 #helpText .scroll-pane {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 #helpText .content {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 #cmbFilamentReelIndexLabel {
@@ -2484,7 +2529,7 @@ color-picker-label .text-field {
 }
 
 #printProfileInnerPanel .tab .tab-label{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-text-fill: white;
 }   
 
@@ -2494,7 +2539,7 @@ color-picker-label .text-field {
 }
 
 #printProfileInnerPanel .tab{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-background-radius: 0px;
     -fx-background-insets: 0px;
     -fx-border-color: black;
@@ -2570,14 +2615,14 @@ color-picker-label .text-field {
     -fx-min-height: 260;    
     -fx-hgap: 20;
     -fx-vgap: 20;
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 /**
 * Settings Inset Panel
 */
 #settingsInsetRoot {
-    -fx-background-color: mid_grey_50;
+    -fx-background-color: mid_grey_solid;
     -fx-font-family: 'Source Sans Pro Regular';
 }
 

@@ -72,7 +72,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static final Stenographer steno = StenographerFactory.getStenographer(
         DisplayManager.class.getName());
 
-    private static final int START_SCALING_WINDOW_HEIGHT = 1024;
+    private static final int START_SCALING_WINDOW_HEIGHT = 1001;
     private static final double MINIMUM_SCALE_FACTOR = 0.7;
 
     private static final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
