@@ -74,7 +74,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 {
 
     private static final long serialVersionUID = 1L;
-    private static int nextModelId = 0;
+    private static int nextModelId = 1;
     private int modelId;
     private Stenographer steno = null;
     private PrintBed printBed = null;

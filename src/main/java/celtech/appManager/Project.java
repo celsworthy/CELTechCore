@@ -249,7 +249,10 @@ public class Project implements Serializable
                     extruder1Filament.set(filament1);
                 }
             }
-
+            
+            recreateGroups(projectFile.getGroupStructure());
+            recreateGroupStates(projectFile.getGroupState());
+            
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
@@ -293,9 +296,9 @@ public class Project implements Serializable
     private void saveModels(String path) throws IOException
     {
         ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
-        
+
         Set<ModelContainer> modelsHoldingMeshViews = getModelsHoldingMeshViews();
-        
+
         modelsOutput.writeInt(modelsHoldingMeshViews.size());
         for (ModelContainer modelsHoldingMeshView : modelsHoldingMeshViews)
         {
@@ -636,7 +639,7 @@ public class Project implements Serializable
         }
         return modelsHoldingMeshViews;
     }
-    
+
     private Set<ModelContainer> getModelsHoldingModels()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
@@ -645,7 +648,7 @@ public class Project implements Serializable
             modelsHoldingMeshViews.addAll(model.getModelsHoldingModels());
         }
         return modelsHoldingMeshViews;
-    }    
+    }
 
     /**
      * Return a Map of child_model_id -> parent_model_id for all model:group and group:group
@@ -654,21 +657,40 @@ public class Project implements Serializable
     public Map<Integer, Integer> getGroupStructure()
     {
         Map<Integer, Integer> groupStructure = new HashMap<>();
-        for (ModelContainer modelContainer: getModelsHoldingModels())
+        for (ModelContainer modelContainer : getModelsHoldingModels())
         {
             modelContainer.addGroupStructure(groupStructure);
         }
         return groupStructure;
     }
 
+    /**
+     * Return a Map of model_id -> state for all models holding models (ie groups).
+     */
     public Map<Integer, ModelContainer.State> getGroupState()
     {
         Map<Integer, ModelContainer.State> groupState = new HashMap<>();
-        for (ModelContainer modelContainer: getModelsHoldingModels())
+        for (ModelContainer modelContainer : getModelsHoldingModels())
         {
             groupState.put(modelContainer.getModelId(), modelContainer.getState());
         }
         return groupState;
+    }
+
+    /**
+     * Using the group function, reapply the groupings as given by the given groupStructure. The 
+     * first groups to be created must be those containing only non-groups, and then each
+     * level of the group hierarchy.
+     */
+    private void recreateGroups(Map<Integer, Integer> groupStructure)
+    {
+    }
+
+    /**
+     * Update the transforms of the given groups as indicated by groupState.
+     */
+    private void recreateGroupStates(Map<Integer, ModelContainer.State> groupState)
+    {
     }
 
     /**
