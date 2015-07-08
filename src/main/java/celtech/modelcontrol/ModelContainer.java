@@ -80,8 +80,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SimpleStringProperty modelName = null;
     private int numberOfMeshes = 0;
     private ModelContentsEnumeration modelContentsType = ModelContentsEnumeration.MESH;
-    //GCode only
-    private final ObservableList<String> fileLines = FXCollections.observableArrayList();
 
     ModelBounds originalModelBounds;
 
@@ -133,7 +131,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer(File modelFile, MeshView meshToAdd)
     {
         super();
-        this.getChildren().add(meshGroup);
+        getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
         if (meshToAdd != null)
         {
@@ -155,7 +153,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer(File modelFile, List<MeshView> meshes, List<Integer> extruderAssociation)
     {
         super();
-        this.getChildren().add(meshGroup);
+        getChildren().add(meshGroup);
         modelContentsType = ModelContentsEnumeration.MESH;
         meshGroup.getChildren().addAll(meshes);
         numberOfMeshes = meshes.size();
@@ -169,7 +167,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         super();
         initialise(null);
-        this.getChildren().add(modelContainersGroup);
+        getChildren().add(modelContainersGroup);
         childModelContainers.addAll(modelContainers);
         modelContainersGroup.getChildren().addAll(modelContainers);
         initialiseTransforms();
@@ -180,6 +178,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
         lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        originalModelBounds = calculateBoundsInLocal();
     }
 
     public ModelContainer getParentModelContainer()
@@ -345,11 +344,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     void clearBedTransform()
     {
-        updateLastTransformedBoundsForTranslateByX(-bedCentreOffsetX);
-        updateLastTransformedBoundsForTranslateByZ(-bedCentreOffsetZ);
+        updateLastTransformedBoundsInParentForTranslateByX(-bedCentreOffsetX);
+        updateLastTransformedBoundsInParentForTranslateByZ(-bedCentreOffsetZ);
         transformBedCentre.setX(0);
         transformBedCentre.setY(0);
         transformBedCentre.setZ(0);
+   
 
     }
 
@@ -364,8 +364,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
-        updateLastTransformedBoundsForTranslateByX(bedCentreOffsetX);
-        updateLastTransformedBoundsForTranslateByZ(bedCentreOffsetZ);
+        updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
+        updateLastTransformedBoundsInParentForTranslateByZ(bedCentreOffsetZ);
     }
 
     private void clearTransformMoveToCentre()
@@ -418,8 +418,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
 
-        updateLastTransformedBoundsForTranslateByX(xMove);
-        updateLastTransformedBoundsForTranslateByZ(zMove);
+        updateLastTransformedBoundsInParentForTranslateByX(xMove);
+        updateLastTransformedBoundsInParentForTranslateByZ(zMove);
 
         keepOnBedXZ();
         checkOffBed();
@@ -446,8 +446,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
         transformMoveToPreferred.setX(newXPosition);
         transformMoveToPreferred.setZ(newZPosition);
-        updateLastTransformedBoundsForTranslateByX(deltaXPosition);
-        updateLastTransformedBoundsForTranslateByZ(deltaZPosition);
+        updateLastTransformedBoundsInParentForTranslateByX(deltaXPosition);
+        updateLastTransformedBoundsInParentForTranslateByZ(deltaZPosition);
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -474,7 +474,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             deltaX = -(getTransformedBoundsInBed().getMaxX() - maxBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
         }
-        updateLastTransformedBoundsForTranslateByX(deltaX);
+        updateLastTransformedBoundsInParentForTranslateByX(deltaX);
 
         double deltaZ = 0;
         double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0
@@ -490,7 +490,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             deltaZ = -(getTransformedBoundsInBed().getMaxZ() - maxBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
         }
-        updateLastTransformedBoundsForTranslateByZ(deltaZ);
+        updateLastTransformedBoundsInParentForTranslateByZ(deltaZ);
 
         checkOffBed();
         notifyShapeChange();
@@ -880,7 +880,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         String modelName = in.readUTF();
         meshGroup = new Group();
-        getChildren().add(meshGroup);
+        modelContainersGroup = new Group();
+        getChildren().addAll(meshGroup, modelContainersGroup);
 
         modelContentsType = (ModelContentsEnumeration) in.readObject();
 
@@ -1041,7 +1042,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
-        updateLastTransformedBoundsForTranslateByX(requiredTranslation);
+        updateLastTransformedBoundsInParentForTranslateByX(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -1068,7 +1069,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double requiredTranslation = finalZPosition - currentZPosition;
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
 
-        updateLastTransformedBoundsForTranslateByZ(requiredTranslation);
+        updateLastTransformedBoundsInParentForTranslateByZ(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -1635,22 +1636,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
+    private void updateLastTransformedBoundsInParentForTranslateByX(double deltaCentreX)
     {
-        if (lastTransformedBoundsInBed != null)
+        if (lastTransformedBoundsInParent != null)
         {
-            lastTransformedBoundsInBed.translateX(deltaCentreX);
             lastTransformedBoundsInParent.translateX(deltaCentreX);
         }
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
 
-    private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
+    private void updateLastTransformedBoundsInParentForTranslateByZ(double deltaCentreZ)
     {
-        if (lastTransformedBoundsInBed != null)
+        if (lastTransformedBoundsInParent != null)
         {
-            lastTransformedBoundsInBed.translateZ(deltaCentreZ);
             lastTransformedBoundsInParent.translateZ(deltaCentreZ);
         }
         notifyShapeChange();

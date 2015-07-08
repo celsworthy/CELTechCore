@@ -367,4 +367,5 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals( 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMaxZ(), 0);
     }
 
+
 }
