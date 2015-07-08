@@ -178,13 +178,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             modelContainer.clearBedTransform();
         }
+        lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
-    
-    public ModelContainer getParentModelContainer() {
-        if (getParent() != null && getParent().getParent() instanceof ModelContainer) {
+
+    public ModelContainer getParentModelContainer()
+    {
+        if (getParent() != null && getParent().getParent() instanceof ModelContainer)
+        {
             return (ModelContainer) getParent().getParent();
-        }
-        else {
+        } else
+        {
             return null;
         }
     }
@@ -235,6 +239,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("==============================================");
         System.out.println("Scale preferred is " + transformScalePreferred);
         System.out.println("Move to centre is " + transformMoveToCentre);
+        System.out.println("Move to preferred is " + transformMoveToPreferred);
         System.out.println("transformSnapToGroundYAdjust is " + transformPostRotationYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
         System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
@@ -301,13 +306,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
-    
-    void clearBedTransform() {
-        transformBedCentre.setX(0);
-        transformBedCentre.setY(0);
-        transformBedCentre.setZ(0);
-    }
-    
+
     private void initialise(File modelFile)
     {
         this.modelFile = modelFile;
@@ -344,6 +343,16 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
+    void clearBedTransform()
+    {
+        updateLastTransformedBoundsForTranslateByX(-bedCentreOffsetX);
+        updateLastTransformedBoundsForTranslateByZ(-bedCentreOffsetZ);
+        transformBedCentre.setX(0);
+        transformBedCentre.setY(0);
+        transformBedCentre.setZ(0);
+
+    }
+
     /**
      * Set transformBedCentre according to the position of the centre of the bed.
      */
@@ -355,6 +364,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
+        updateLastTransformedBoundsForTranslateByX(bedCentreOffsetX);
+        updateLastTransformedBoundsForTranslateByZ(bedCentreOffsetZ);
     }
 
     private void clearTransformMoveToCentre()
@@ -427,7 +438,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
-        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBoundsInBed().getWidth() / 2.0;
+        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBoundsInBed().getWidth()
+            / 2.0;
         double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBoundsInBed().getHeight()
             / 2.0;
         double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
@@ -658,9 +670,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void updateScaleTransform()
     {
 
-        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX() + getBoundsInLocal().getWidth() / 2.0);
-        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY() + getBoundsInLocal().getHeight() / 2.0);
-        transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ() + getBoundsInLocal().getDepth() / 2.0);
+        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX()
+            + getBoundsInLocal().getWidth() / 2.0);
+        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY()
+            + getBoundsInLocal().getHeight() / 2.0);
+        transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ()
+            + getBoundsInLocal().getDepth() / 2.0);
         transformScalePreferred.setX(preferredXScale.get());
         transformScalePreferred.setY(preferredYScale.get());
         transformScalePreferred.setZ(preferredZScale.get());
@@ -1197,27 +1212,28 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         return combinedTransform;
     }
-    
-    static ModelContainer getRootModelContainer(MeshView meshView) {
+
+    static ModelContainer getRootModelContainer(MeshView meshView)
+    {
         Node parentModelContainer = meshView.getParent().getParent();
 
-        while ((parentModelContainer.getParent() != null) 
+        while ((parentModelContainer.getParent() != null)
             && parentModelContainer.getParent().getParent() instanceof ModelContainer)
         {
             parentModelContainer = parentModelContainer.getParent().getParent();
         }
         return (ModelContainer) parentModelContainer;
     }
-    
+
     /**
-     * Calculate max/min X,Y,Z after all the transforms have been applied all
-     * the way to the bed coordinate system.
+     * Calculate max/min X,Y,Z after all the transforms have been applied all the way to the bed
+     * coordinate system.
      */
     public ModelBounds calculateBoundsInBedCoordinateSystem()
     {
-        
+
         System.out.println("calc bounds in bed for mc " + this);
-        
+
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
@@ -1245,10 +1261,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
 //                Point3D pointInParent = transform.transform(xPos, yPos, zPos);
                 Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
-                
-                Point3D pointInBed = rootModelContainer.localToParent(rootModelContainer.sceneToLocal(pointInScene));
-                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is " + pointInBed.toString());
-                
+
+                Point3D pointInBed = rootModelContainer.localToParent(
+                    rootModelContainer.sceneToLocal(pointInScene));
+                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is "
+                    + pointInBed.toString());
+
                 minX = Math.min(pointInBed.getX(), minX);
                 minY = Math.min(pointInBed.getY(), minY);
                 minZ = Math.min(pointInBed.getZ(), minZ);
@@ -1271,15 +1289,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newheight, newdepth, newcentreX, newcentreY,
                                newcentreZ);
     }
-    
-/**
+
+    /**
      * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
      */
     public ModelBounds calculateBoundsInParentCoordinateSystem()
     {
-        
+
         System.out.println("calc bounds in parent for mc " + this);
-        
+
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
@@ -1288,10 +1306,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double maxZ = -Double.MAX_VALUE;
 
         ModelContainer parentModelContainer = getParentModelContainer();
-        if (parentModelContainer == null) {
+        if (parentModelContainer == null)
+        {
             return calculateBoundsInBedCoordinateSystem();
         }
-        
+
         for (Node meshViewNode : descendentMeshViews())
         {
             System.out.println("process mesh view " + meshViewNode);
@@ -1308,8 +1327,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
                 Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
                 Point3D pointInParent = parentModelContainer.sceneToLocal(pointInScene);
-                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in parent is " + pointInParent.toString());
-                
+                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in parent is "
+                    + pointInParent.toString());
+
                 minX = Math.min(pointInParent.getX(), minX);
                 minY = Math.min(pointInParent.getY(), minY);
                 minZ = Math.min(pointInParent.getZ(), minZ);
@@ -1332,7 +1352,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newheight, newdepth, newcentreX, newcentreY,
                                newcentreZ);
     }
-    
 
     /**
      * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR OF AN APPROACH
@@ -1618,16 +1637,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
     {
-        lastTransformedBoundsInBed.translateX(deltaCentreX);
-        lastTransformedBoundsInParent.translateX(deltaCentreX);
+        if (lastTransformedBoundsInBed != null)
+        {
+            lastTransformedBoundsInBed.translateX(deltaCentreX);
+            lastTransformedBoundsInParent.translateX(deltaCentreX);
+        }
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
 
     private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
     {
-        lastTransformedBoundsInBed.translateZ(deltaCentreZ);
-        lastTransformedBoundsInParent.translateZ(deltaCentreZ);
+        if (lastTransformedBoundsInBed != null)
+        {
+            lastTransformedBoundsInBed.translateZ(deltaCentreZ);
+            lastTransformedBoundsInParent.translateZ(deltaCentreZ);
+        }
         notifyShapeChange();
         notifyScreenExtentsChange();
     }

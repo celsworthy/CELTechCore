@@ -347,22 +347,24 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(1.5, bounds.getMaxY(), 0);
         assertEquals(0, bounds.getMinZ(), 0);
         assertEquals(0, bounds.getMaxZ(), 0);
-        
-//        bounds = groupModelContainer.calculateBoundsInLocal();
-//        assertEquals(-1 + TRANSLATE_X, bounds.getMinX(), 0);
-//        assertEquals(BED_CENTRE_X + 1 + TRANSLATE_X, bounds.getMaxX(), 0);
-//        assertEquals(-3.0, bounds.getMinY(), 0);
-//        assertEquals(0, bounds.getMaxY(), 0);
-//        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMinZ(), 0);
-//        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z, bounds.getMaxZ(), 0);  
-//        
-//        bounds = groupGroupModelContainer.calculateBoundsInLocal();
-//        assertEquals(BED_CENTRE_X - 1 + TRANSLATE_X + TRANSLATE_X_GROUP, bounds.getMinX(), 0);
-//        assertEquals(BED_CENTRE_X + 1 + TRANSLATE_X + TRANSLATE_X_GROUP, bounds.getMaxX(), 0);
-//        assertEquals(-3.0, bounds.getMinY(), 0);
-//        assertEquals(0, bounds.getMaxY(), 0);
-//        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMinZ(), 0);
-//        assertEquals(BED_CENTRE_Z + 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMaxZ(), 0);
+
+        groupModelContainer.printTransforms();
+        mc.printTransforms();
+        bounds = groupModelContainer.calculateBoundsInLocal();
+        assertEquals(-1 + TRANSLATE_X, bounds.getMinX(), 0);
+        assertEquals(1 + TRANSLATE_X, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(0 + TRANSLATE_Z, bounds.getMinZ(), 0);
+        assertEquals(0 + TRANSLATE_Z, bounds.getMaxZ(), 0);
+
+        bounds = groupGroupModelContainer.calculateBoundsInLocal();
+        assertEquals(-1 + TRANSLATE_X + TRANSLATE_X_GROUP, bounds.getMinX(), 0);
+        assertEquals(1 + TRANSLATE_X + TRANSLATE_X_GROUP, bounds.getMaxX(), 0);
+        assertEquals(-3.0, bounds.getMinY(), 0);
+        assertEquals(0, bounds.getMaxY(), 0);
+        assertEquals(0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMinZ(), 0);
+        assertEquals( 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMaxZ(), 0);
     }
 
 }
