@@ -331,13 +331,14 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (filamentID.get().equals(referenceFilamentData.getFilamentID()) == false)
+            if (! filamentID.get().equals(referenceFilamentData.getFilamentID()))
             {
                 filamentID.set(referenceFilamentData.getFilamentID());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (friendlyFilamentName.get().equals(referenceFilamentData.getFriendlyFilamentName()) == false)
+            if (! friendlyFilamentName.get().substring(0, 30).equals(
+                referenceFilamentData.getFriendlyFilamentName().substring(0, 30)))
             {
                 friendlyFilamentName.set(referenceFilamentData.getFriendlyFilamentName());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
