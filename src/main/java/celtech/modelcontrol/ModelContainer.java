@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
@@ -61,6 +62,8 @@ import org.apache.commons.math3.optim.univariate.BrentOptimizer;
 import org.apache.commons.math3.optim.univariate.SearchInterval;
 import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
 import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  *
@@ -328,8 +331,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.setId(modelFile.getName());
         } else
         {
-            modelName = new SimpleStringProperty("not set");
-            this.setId("not set");
+            modelName = new SimpleStringProperty("group " + modelId);
+            this.setId("group " + modelId);
         }
 
         preferredXScale = new SimpleDoubleProperty(1);
@@ -578,6 +581,47 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return modelName.get();
     }
+    
+    /**
+     * Return a set of all descendent ModelContainers (and include this one) that have
+     * MeshView children.
+     */
+    public Set<ModelContainer> getModelsHoldingMeshViews()
+    {
+        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
+        if (meshGroup.getChildren().size() > 0) {
+            modelsHoldingMeshViews.add(this);
+        }
+        for (Node modelNode: modelContainersGroup.getChildren())
+        {
+            ModelContainer modelContainer = (ModelContainer) modelNode;
+            modelsHoldingMeshViews.addAll(modelContainer.getModelsHoldingMeshViews());
+        }
+        return modelsHoldingMeshViews;
+    }
+
+    public Collection<? extends ModelContainer> getModelsHoldingModels()
+    {
+        Set<ModelContainer> modelsHoldingModels = new HashSet<>();
+        if (modelContainersGroup.getChildren().size() > 0) {
+            modelsHoldingModels.add(this);
+        }
+        for (Node modelNode: modelContainersGroup.getChildren())
+        {
+            ModelContainer modelContainer = (ModelContainer) modelNode;
+            modelsHoldingModels.addAll(modelContainer.getModelsHoldingModels());
+        }
+        return modelsHoldingModels;
+    }
+
+    public void addGroupStructure(Map<Integer, Integer> groupStructure)
+    {
+        for (Node modelNode: modelContainersGroup.getChildren())
+        {
+            ModelContainer modelContainer = (ModelContainer) modelNode;
+            groupStructure.put(modelContainer.modelId, modelId);
+        }
+    }    
 
     /**
      * Rotate the model in Lean and Twist so that the chosen face is pointing down (ie aligned with
@@ -627,19 +671,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Point3D toPoint3D(Vector3D vector)
     {
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
-    }
-
-    /**
-     * Return a set of all descendent ModelContainers (and including this one) that have
-     * MeshView children.
-     */
-    public Set<ModelContainer> getModelsHoldingMeshViews()
-    {
-        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
-        if (meshGroup.getChildren().size() > 0) {
-            modelsHoldingMeshViews.add(this);
-        }
-        return modelsHoldingMeshViews;
     }
 
     private class ApplyTwist implements UnivariateFunction
@@ -1882,7 +1913,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * State captures the state of all the transforms being applied to this ModelContainer. It is
      * used as an efficient way of applying Undo and Redo to changes to a Set of ModelContainers.
      */
-    public class State
+    public static class State
     {
 
         public int modelId;
@@ -1895,10 +1926,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         public double preferredRotationTurn;
         public double preferredRotationLean;
 
-        public State(int modelId, double x, double z,
-            double preferredXScale, double preferredYScale, double preferredZScale,
-            double preferredRotationTwist, double preferredRotationTurn,
-            double preferredRotationLean)
+        @JsonCreator
+        public State(
+            @JsonProperty("modelId") int modelId,
+            @JsonProperty("x") double x,
+            @JsonProperty("z") double z,
+            @JsonProperty("preferredXScale") double preferredXScale,
+            @JsonProperty("preferredYScale") double preferredYScale,
+            @JsonProperty("preferredZScale") double preferredZScale,
+            @JsonProperty("preferredRotationTwist") double preferredRotationTwist,
+            @JsonProperty("preferredRotationTurn") double preferredRotationTurn,
+            @JsonProperty("preferredRotationLean") double preferredRotationLean)
         {
             this.modelId = modelId;
             this.x = x;
@@ -1910,7 +1948,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.preferredRotationTurn = preferredRotationTurn;
             this.preferredRotationLean = preferredRotationLean;
         }
-
+        
         /**
          * The assignment operator.
          */
@@ -1925,7 +1963,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.preferredRotationTurn = fromState.preferredRotationTurn;
             this.preferredRotationLean = fromState.preferredRotationLean;
         }
-
     }
 
     public State getState()
@@ -1954,4 +1991,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return modelId;
     }
+    
+    
 }

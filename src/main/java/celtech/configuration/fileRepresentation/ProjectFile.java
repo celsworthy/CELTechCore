@@ -3,8 +3,11 @@ package celtech.configuration.fileRepresentation;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
+import celtech.modelcontrol.ModelContainer.State;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class ProjectFile
@@ -21,6 +24,9 @@ public class ProjectFile
     private String lastPrintJobID = "";
     private String settingsName = ApplicationConfiguration.draftSettingsProfileName;
     private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
+    
+    private Map<Integer, Integer> groupStructure = new HashMap<>();
+    private Map<Integer, State> groupState = new HashMap<>();
 
     public String getSettingsName()
     {
@@ -141,7 +147,27 @@ public class ProjectFile
     {
         this.version = version;
     }
-    
+
+    public Map<Integer, Integer> getGroupStructure()
+    {
+        return groupStructure;
+    }
+
+    public void setGroupStructure(Map<Integer, Integer> groupStructure)
+    {
+        this.groupStructure = groupStructure;
+    }
+
+    public Map<Integer, State> getGroupState()
+    {
+        return groupState;
+    }
+
+    public void setGroupState(Map<Integer, State> groupState)
+    {
+        this.groupState = groupState;
+    }
+           
     public void populateFromProject(Project project) {
         projectName = project.getProjectName();
         lastModifiedDate = project.getLastModifiedDate().get();
@@ -154,5 +180,7 @@ public class ProjectFile
         fillDensityOverride = project.getPrinterSettings().getFillDensityOverride();
         printSupportOverride = project.getPrinterSettings().getPrintSupportOverride();
         printRaft = project.getPrinterSettings().getRaftOverride();
+        groupStructure = project.getGroupStructure();
+        groupState = project.getGroupState();
     }
 }

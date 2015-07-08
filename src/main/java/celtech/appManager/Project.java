@@ -26,8 +26,10 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -44,6 +46,8 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -309,6 +313,7 @@ public class Project implements Serializable
                 projectFile.populateFromProject(this);
                 File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
                 mapper.writeValue(file, projectFile);
+                System.out.println(FileUtils.readFileToString(file, Charsets.UTF_8));
                 saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
             } catch (FileNotFoundException ex)
             {
@@ -630,6 +635,40 @@ public class Project implements Serializable
             modelsHoldingMeshViews.addAll(model.getModelsHoldingMeshViews());
         }
         return modelsHoldingMeshViews;
+    }
+    
+    private Set<ModelContainer> getModelsHoldingModels()
+    {
+        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
+        for (ModelContainer model : loadedModels)
+        {
+            modelsHoldingMeshViews.addAll(model.getModelsHoldingModels());
+        }
+        return modelsHoldingMeshViews;
+    }    
+
+    /**
+     * Return a Map of child_model_id -> parent_model_id for all model:group and group:group
+     * relationships.
+     */
+    public Map<Integer, Integer> getGroupStructure()
+    {
+        Map<Integer, Integer> groupStructure = new HashMap<>();
+        for (ModelContainer modelContainer: getModelsHoldingModels())
+        {
+            modelContainer.addGroupStructure(groupStructure);
+        }
+        return groupStructure;
+    }
+
+    public Map<Integer, ModelContainer.State> getGroupState()
+    {
+        Map<Integer, ModelContainer.State> groupState = new HashMap<>();
+        for (ModelContainer modelContainer: getModelsHoldingModels())
+        {
+            groupState.put(modelContainer.getModelId(), modelContainer.getState());
+        }
+        return groupState;
     }
 
     /**
