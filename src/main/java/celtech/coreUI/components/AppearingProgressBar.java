@@ -55,7 +55,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     @FXML
     protected GraphicButton cancelButton;
 
-    private static final Duration transitionLengthMillis = Duration.millis(1000);
+    private static final Duration transitionLengthMillis = Duration.millis(200);
 
     private Animation hideSidebar = new Transition()
     {
@@ -89,12 +89,8 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     private boolean slidingOutOfView = false;
     private boolean slidIntoView = false;
     private boolean slidOutOfView = false;
-    private double panelWidth = 0;
     private double panelHeight = 0;
-    private double panelLayoutMinX = 0;
-    private double panelLayoutMinY = 0;
     private final Rectangle clippingRectangle = new Rectangle();
-    private double lastAmountShown = 0;
 
     public AppearingProgressBar()
     {
@@ -136,8 +132,6 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
      */
     private void slideMenuPanel(double amountToShow)
     {
-        lastAmountShown = amountToShow;
-
         if (amountToShow < minimumToShow)
         {
             amountToShow = minimumToShow;
@@ -151,12 +145,6 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
         clippingRectangle.setY(panelHeight - targetPanelHeight);
         clippingRectangle.setHeight(targetPanelHeight);
         statusBar.setPrefHeight(targetPanelHeight);
-//        statusBar.setTranslateY(panelHeight - targetPanelHeight);
-//        clippingRectangle.setHeight(panelHeight - targetPanelHeight);
-//        clippingRectangle.setTranslateY(tar);
-//        clippingRectangle.setWidth(panelWidth);
-
-//        setPrefHeight(targetPanelHeight);
     }
 
     /**
@@ -246,7 +234,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
         clippingRectangle.setWidth(4000);
 
         setVisible(false);
-//        statusBar.setClip(clippingRectangle);
+        statusBar.setClip(clippingRectangle);
         statusBar.setPrefHeight(0);
     }
 
