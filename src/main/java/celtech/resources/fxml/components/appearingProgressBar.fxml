@@ -47,12 +47,19 @@
                         <GraphicButton fx:id="pauseButton" fxmlFileName="pauseButton" />
                         <GraphicButton fx:id="resumeButton" fxmlFileName="printButton" />
                     </children>
+                    <HBox.margin>
+                        <Insets top="4.0" />
+                    </HBox.margin>
                 </StackPane>
-                <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton" />
+                <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton">
+                    <HBox.margin>
+                        <Insets top="4.0" />
+                    </HBox.margin>
+                </GraphicButton>
             </children>
-            <padding>
-                <Insets right="20.0" />
-            </padding>
+         <StackPane.margin>
+            <Insets right="20.0" />
+         </StackPane.margin>
         </HBox>
     </children>
 </fx:root>
