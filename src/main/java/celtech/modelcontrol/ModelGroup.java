@@ -41,6 +41,12 @@ public class ModelGroup extends ModelContainer
         originalModelBounds = calculateBoundsInLocal();
     }
 
+    public ModelGroup(Set<ModelContainer> modelContainers, int groupModelId)
+    {
+        this(modelContainers);
+        modelId = groupModelId;
+    }
+
     private void clearTransformMoveToCentre()
     {
         transformMoveToCentre.setX(0);

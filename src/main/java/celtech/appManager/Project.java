@@ -251,9 +251,6 @@ public class Project implements Serializable
                 }
             }
 
-            recreateGroups(projectFile.getGroupStructure());
-            recreateGroupStates(projectFile.getGroupState());
-
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
@@ -262,6 +259,9 @@ public class Project implements Serializable
             printerSettings.setRaftOverride(projectFile.getPrintRaft());
 
             loadModels(basePath);
+
+            recreateGroups(projectFile.getGroupStructure());
+            recreateGroupStates(projectFile.getGroupState());
 
         } catch (IOException ex)
         {
@@ -569,12 +569,20 @@ public class Project implements Serializable
         return customSettingsNotChosen;
     }
 
-    public ModelContainer group(Set<ModelContainer> modelContainers)
+    public ModelGroup group(Set<ModelContainer> modelContainers)
     {
         deleteModels(modelContainers);
-        ModelContainer modelContainer = new ModelGroup(modelContainers);
-        addModel(modelContainer);
-        return modelContainer;
+        ModelGroup modelGroup = new ModelGroup(modelContainers);
+        addModel(modelGroup);
+        return modelGroup;
+    }
+    
+    public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
+    {
+        deleteModels(modelContainers);
+        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
+        addModel(modelGroup);
+        return modelGroup;
     }
 
     public void ungroup(Set<ModelContainer> modelContainers)
@@ -713,7 +721,8 @@ public class Project implements Serializable
             {
                 Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
                 System.out.println("make group for ids " + entry.getValue());
-                group(modelContainers);
+                int groupModelId = entry.getKey();
+                ModelGroup group = group(modelContainers, groupModelId);
                 numGroups++;
             }
         }
@@ -735,10 +744,11 @@ public class Project implements Serializable
                     modelFound = true;
                     break;
                 }
-                if (!modelFound)
-                {
-                    return false;
-                }
+
+            }
+            if (!modelFound)
+            {
+                return false;
             }
         }
         return true;
@@ -754,7 +764,7 @@ public class Project implements Serializable
         {
             for (ModelContainer modelContainer : loadedModels)
             {
-                if (modelContainer.getModelId() == modelId)
+                if (modelContainer.getModelId() == (int) modelId)
                 {
                     modelContainers.add(modelContainer);
                     break;

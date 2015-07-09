@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.util.Pair;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -30,6 +31,7 @@ public class ProjectTest extends JavaFXConfiguredTest
 {
     
     private static String GROUP_NAME = "group";
+    private static String MC3_ID = "mc3";
 
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
@@ -81,6 +83,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         ModelContainer mc1 = utils.makeModelContainer(true);
         ModelContainer mc2 = utils.makeModelContainer(true);
         ModelContainer mc3 = utils.makeModelContainer(true);
+        mc3.setId("mc3");
         Project project = new Project();
         project.addModel(mc1);
         project.addModel(mc2);
@@ -96,6 +99,34 @@ public class ProjectTest extends JavaFXConfiguredTest
         ModelContainer group = project.group(modelContainers);
         group.setId(GROUP_NAME);
         return new Pair<>(project, group);
+    }
+    
+        private Pair<Project, ModelContainer> makeProjectWithGroupOfGroups() {
+        TestUtils utils = new TestUtils();
+        ModelContainer mc1 = utils.makeModelContainer(true);
+        ModelContainer mc2 = utils.makeModelContainer(true);
+        ModelContainer mc3 = utils.makeModelContainer(true);
+        ModelContainer mc4 = utils.makeModelContainer(true);
+        Project project = new Project();
+        project.addModel(mc1);
+        project.addModel(mc2);
+        project.addModel(mc3);
+        project.addModel(mc4);
+        
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(mc1);
+        modelContainers.add(mc2);
+        ModelContainer group = project.group(modelContainers);
+        group.setId(GROUP_NAME);
+        
+        modelContainers = new HashSet<>();
+        modelContainers.add(mc3);
+        modelContainers.add(mc4);
+        modelContainers.add(group);
+        
+        ModelContainer superGroup = project.group(modelContainers);
+        
+        return new Pair<>(project, superGroup);
     }
     
     @Test
@@ -114,6 +145,29 @@ public class ProjectTest extends JavaFXConfiguredTest
             + File.separator + project.getProjectName());
 
         Assert.assertEquals(2, newProject.getLoadedModels().size());
-        Assert.assertEquals(GROUP_NAME, newProject.getLoadedModels().get(0).getId());
+        Set<Integer> expectedIds = new HashSet<>();
+        expectedIds.add(4);
+        expectedIds.add(3);
+        
+        Assert.assertEquals(expectedIds, 
+             newProject.getLoadedModels().stream().map(x -> x.getModelId()).collect(Collectors.toSet()));
     }
+    
+    @Test
+    public void testSaveProjectWithGroupOfGroupsThenLoadAndUngroup() throws IOException {
+        
+        Pair<Project, ModelContainer> pair = makeProjectWithGroupOfGroups();
+        Project project = pair.getKey();
+        ModelContainer group = pair.getValue();
+        
+        ProjectFile projectFile = new ProjectFile();
+        projectFile.populateFromProject(project);
+
+        Project.saveProject(project);
+
+        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory() 
+            + File.separator + project.getProjectName());
+
+        Assert.assertEquals(1, newProject.getLoadedModels().size());
+    }    
 }
