@@ -46,7 +46,7 @@ import javafx.scene.text.Text;
  */
 public class MaterialComponent extends Pane implements PrinterListChangesListener
 {
-    
+
     private Printer printer;
     private int extruderNumber;
     private Mode mode;
@@ -195,7 +195,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 Reel reel = printer.reelsProperty().get(extruderNumber);
                 remainingFilament = reel.remainingFilamentProperty().get();
                 diameter = reel.diameterProperty().get();
-                setReelType(ReelType.ROBOX);
+                if (selectedFilamentProperty.get().isMutable())
+                {
+                    setReelType(ReelType.GEARS);
+                } else
+                {
+                    setReelType(ReelType.ROBOX);
+                }
             } else
             {
                 setReelType(ReelType.GEARS);
@@ -304,7 +310,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 Reel reel = printer.reelsProperty().get(extruderNumber);
                 remainingFilament = reel.remainingFilamentProperty().get();
                 diameter = reel.diameterProperty().get();
-                setReelType(ReelType.ROBOX);
+                if (selectedFilamentProperty.get().isMutable())
+                {
+                    setReelType(ReelType.GEARS);
+                } else
+                {
+                    setReelType(ReelType.ROBOX);
+                }
             } else
             {
                 setReelType(ReelType.GEARS);
@@ -351,7 +363,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 //        }
 //
 //    }
-
     /**
      * Set up the materials combo box. This displays a list of filaments and can also display an
      * "Unknown" (string) option when required.
@@ -360,7 +371,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
 
 //        cmbMaterials.setSkin(new RefreshableComboBoxListViewSkin<Object>(cmbMaterials));
-
         cmbMaterials.setCellFactory((ListView<Object> param) -> new FilamentCell());
 
         repopulateCmbMaterials();
@@ -756,12 +766,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
-    ChangeListener<Color> filamentChanged = 
-        (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
-    {
-        updateGUIForModeAndPrinterExtruder();
-        repopulateCmbMaterials();
-    };
+    ChangeListener<Color> filamentChanged
+        = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+        {
+            updateGUIForModeAndPrinterExtruder();
+            repopulateCmbMaterials();
+        };
 
     private void setUpFilamentChangedListener()
     {
