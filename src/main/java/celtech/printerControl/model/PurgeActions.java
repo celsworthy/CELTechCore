@@ -55,6 +55,8 @@ public class PurgeActions extends StateTransitionActions
      * requested.
      */
     private Filament purgeFilament;
+    
+    private boolean failedActionPerformed = false;
 
     PurgeActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
@@ -182,6 +184,13 @@ public class PurgeActions extends StateTransitionActions
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
+        // this can be called twice if an error occurs
+        if (failedActionPerformed) {
+            return;
+        }
+        
+        failedActionPerformed = true;
+        
         try
         {
             abortAnyOngoingPrint();
@@ -294,14 +303,12 @@ public class PurgeActions extends StateTransitionActions
     {
         try
         {
-            resetPrinter();
-            deregisterPrinterErrorHandler();
-        } catch (PrinterException ex)
+            doFailedAction();
+        } catch (Exception ex)
         {
-            steno.error("Error resetting printer");
+            ex.printStackTrace();
+            steno.error("error resetting printer " + ex);
         }
-        printer.setPrinterStatus(PrinterStatus.IDLE);
-        openDoor();
     }
 
     private void abortAnyOngoingPrint()
