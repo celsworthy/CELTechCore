@@ -41,25 +41,25 @@
                     <HBox.margin>
                         <Insets top="8.0" />
                     </HBox.margin>  
-                </VBox>                    
-                <StackPane pickOnBounds="false">
+                </VBox>
+                <HBox spacing="20.0">
                     <children>
-                        <GraphicButton fx:id="pauseButton" fxmlFileName="pauseButton" />
-                        <GraphicButton fx:id="resumeButton" fxmlFileName="printButton" />
+                        <StackPane pickOnBounds="false">
+                            <children>
+                                <GraphicButton fx:id="pauseButton" fxmlFileName="pauseButton" />
+                                <GraphicButton fx:id="resumeButton" fxmlFileName="printButton" />
+                            </children>
+                        </StackPane>
+                        <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton"/>
                     </children>
                     <HBox.margin>
                         <Insets top="4.0" />
                     </HBox.margin>
-                </StackPane>
-                <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton">
-                    <HBox.margin>
-                        <Insets top="4.0" />
-                    </HBox.margin>
-                </GraphicButton>
+                </HBox>
             </children>
-         <StackPane.margin>
-            <Insets right="20.0" />
-         </StackPane.margin>
+            <StackPane.margin>
+                <Insets right="20.0" />
+            </StackPane.margin>
         </HBox>
     </children>
 </fx:root>
