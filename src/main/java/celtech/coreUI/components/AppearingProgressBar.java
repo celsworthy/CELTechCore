@@ -3,7 +3,6 @@
  */
 package celtech.coreUI.components;
 
-import celtech.Lookup;
 import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.utils.Math.MathUtils;
 import java.io.IOException;
@@ -11,13 +10,16 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.Transition;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -28,6 +30,9 @@ import javafx.util.Duration;
  */
 public abstract class AppearingProgressBar extends StackPane implements Initializable
 {
+
+    @FXML
+    private StackPane statusBar;
 
     @FXML
     protected Label largeTargetValue;
@@ -50,7 +55,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     @FXML
     protected GraphicButton cancelButton;
 
-    private static final Duration transitionLengthMillis = Duration.millis(125);
+    private static final Duration transitionLengthMillis = Duration.millis(1000);
 
     private Animation hideSidebar = new Transition()
     {
@@ -107,6 +112,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             fxmlLoader.load();
         } catch (IOException exception)
         {
+            exception.printStackTrace();
             throw new RuntimeException(exception);
         }
 
@@ -142,11 +148,15 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
 
         double targetPanelHeight = panelHeight * amountToShow;
 
-        clippingRectangle.setHeight(panelHeight - targetPanelHeight);
+        clippingRectangle.setY(panelHeight - targetPanelHeight);
+        clippingRectangle.setHeight(targetPanelHeight);
+        statusBar.setPrefHeight(targetPanelHeight);
+//        statusBar.setTranslateY(panelHeight - targetPanelHeight);
+//        clippingRectangle.setHeight(panelHeight - targetPanelHeight);
 //        clippingRectangle.setTranslateY(tar);
-        clippingRectangle.setWidth(panelWidth);
+//        clippingRectangle.setWidth(panelWidth);
 
-        setPrefHeight(targetPanelHeight);
+//        setPrefHeight(targetPanelHeight);
     }
 
     /**
@@ -173,7 +183,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             hideSidebar.play();
         } else if (slidOutOfView)
         {
-            if (MathUtils.compareDouble(getPrefHeight(), 0.0, 0.01) == MathUtils.MORE_THAN)
+            if (MathUtils.compareDouble(statusBar.getPrefHeight(), 0.0, 0.01) == MathUtils.MORE_THAN)
             {
                 slideMenuPanel(0);
             }
@@ -206,7 +216,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             showSidebar.play();
         } else if (slidIntoView)
         {
-            if (MathUtils.compareDouble(getPrefHeight(), 1.0, 0.01) == MathUtils.LESS_THAN)
+            if (MathUtils.compareDouble(statusBar.getPrefHeight(), 1.0, 0.01) == MathUtils.LESS_THAN)
             {
                 slideMenuPanel(1.0);
             }
@@ -216,14 +226,9 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        panelHeight = getPrefHeight();
-//        widthProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number newWidth) ->
-//        {
-//            panelWidth = newWidth.doubleValue();
-//            slideMenuPanel(lastAmountShown);
-//        });
+        panelHeight = statusBar.getPrefHeight();
 
-        setMinHeight(0);
+        statusBar.setMinHeight(0);
 
         slideMenuPanel(0);
         slidIntoView = false;
@@ -233,12 +238,16 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
 
         pauseButton.setVisible(false);
         resumeButton.setVisible(false);
-        cancelButton.setVisible(false);    
-        
-        clippingRectangle.setHeight(0);
-        
+        cancelButton.setVisible(false);
+
+        clippingRectangle.setX(0);
+        clippingRectangle.setY(0);
+        clippingRectangle.setHeight(panelHeight);
+        clippingRectangle.setWidth(4000);
+
         setVisible(false);
-//        setClip(clippingRectangle);
+//        statusBar.setClip(clippingRectangle);
+        statusBar.setPrefHeight(0);
     }
 
     public boolean isSlidInOrSlidingIn()

@@ -1912,7 +1912,6 @@ modal-dialogue{
 .statusBar {
     -fx-font-family: 'Source Sans Pro Light';
     -fx-background-color: robox_blue;
-    -fx-pref-height: 0px;
     -fx-max-height: 60px;
 }
 
@@ -1955,7 +1954,6 @@ modal-dialogue{
 .secondaryStatusBar {
     -fx-font-family: 'Source Sans Pro Light';
     -fx-background-color: white_60;
-    -fx-pref-height: 0px;
     -fx-max-height: 60px;
 }
 
