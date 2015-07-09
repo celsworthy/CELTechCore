@@ -8,6 +8,7 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
@@ -571,7 +572,7 @@ public class Project implements Serializable
     public ModelContainer group(Set<ModelContainer> modelContainers)
     {
         deleteModels(modelContainers);
-        ModelContainer modelContainer = new ModelContainer(modelContainers);
+        ModelContainer modelContainer = new ModelGroup(modelContainers);
         addModel(modelContainer);
         return modelContainer;
     }
@@ -580,11 +581,15 @@ public class Project implements Serializable
     {
         for (ModelContainer modelContainer : modelContainers)
         {
-            deleteModel(modelContainer);
-            for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+            if (modelContainer instanceof ModelGroup)
             {
-                addModel(childModelContainer);
-                childModelContainer.setBedCentreOffsetTransform();
+                ModelGroup modelGroup = (ModelGroup) modelContainer;
+                deleteModel(modelGroup);
+                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
+                {
+                    addModel(childModelContainer);
+                    childModelContainer.setBedCentreOffsetTransform();
+                }
             }
         }
     }
@@ -693,16 +698,19 @@ public class Project implements Serializable
             numNewGroups = makeNewGroups(groupStructure);
         } while (numNewGroups > 0);
     }
-    
+
     /**
-     * Create groups where all the children are already instantiated. 
+     * Create groups where all the children are already instantiated.
+     *
      * @return the number of groups created
      */
-    private int makeNewGroups(Map<Integer, Set<Integer>>  groupStructure) {
+    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure)
+    {
         int numGroups = 0;
         for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
         {
-            if (allModelsInstantiated(entry.getValue())) {
+            if (allModelsInstantiated(entry.getValue()))
+            {
                 Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
                 System.out.println("make group for ids " + entry.getValue());
                 group(modelContainers);
@@ -711,7 +719,7 @@ public class Project implements Serializable
         }
         return numGroups;
     }
-    
+
     /**
      * Return true if loadedModels contains models for all the given modelIds, else return false.
      */
@@ -722,11 +730,13 @@ public class Project implements Serializable
             boolean modelFound = false;
             for (ModelContainer modelContainer : loadedModels)
             {
-                if (modelContainer.getModelId() == modelId) {
+                if (modelContainer.getModelId() == modelId)
+                {
                     modelFound = true;
                     break;
                 }
-                if (! modelFound) {
+                if (!modelFound)
+                {
                     return false;
                 }
             }
@@ -744,14 +754,15 @@ public class Project implements Serializable
         {
             for (ModelContainer modelContainer : loadedModels)
             {
-                if (modelContainer.getModelId() == modelId) {
+                if (modelContainer.getModelId() == modelId)
+                {
                     modelContainers.add(modelContainer);
                     break;
                 }
             }
         }
         return modelContainers;
-    }    
+    }
 
     /**
      * Update the transforms of the given groups as indicated by groupState.

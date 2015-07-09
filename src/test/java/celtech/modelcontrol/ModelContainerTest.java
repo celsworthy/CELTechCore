@@ -62,7 +62,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
 
         MeshView meshView = mc.getMeshViews().get(0);
 
@@ -159,7 +159,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         ModelBounds bounds = groupModelContainer.calculateBoundsInBedCoordinateSystem();
         assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
         assertEquals(BED_CENTRE_X + 1, bounds.getMaxX(), 0);
@@ -177,7 +177,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         groupModelContainer.setId("mc group");
         groupModelContainer.setXScale(2.0);
         groupModelContainer.setYScale(2.0);
@@ -208,7 +208,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         groupModelContainer.setId("mc group");
         groupModelContainer.translateBy(TRANSLATE_X, TRANSLATE_Z);
         mc.printTransforms();
@@ -236,7 +236,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         groupModelContainer.setId("mc group");
         groupModelContainer.translateBy(TRANSLATE_X_GROUP, TRANSLATE_Z_GROUP);
         mc.printTransforms();
@@ -259,10 +259,10 @@ public class ModelContainerTest extends JavaFXConfiguredTest
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         Set<ModelContainer> modelContainers2 = new HashSet<>();
         modelContainers2.add(groupModelContainer);
-        ModelContainer groupGroupModelContainer = new ModelContainer(modelContainers2);
+        ModelContainer groupGroupModelContainer = new ModelGroup(modelContainers2);
 
         ModelBounds bounds = groupGroupModelContainer.calculateBoundsInBedCoordinateSystem();
         assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
@@ -288,13 +288,13 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         groupModelContainer.setId("mc group");
         groupModelContainer.translateBy(TRANSLATE_X_GROUP, TRANSLATE_Z_GROUP);
 
         Set<ModelContainer> modelContainers2 = new HashSet<>();
         modelContainers2.add(groupModelContainer);
-        ModelContainer groupGroupModelContainer = new ModelContainer(modelContainers2);
+        ModelContainer groupGroupModelContainer = new ModelGroup(modelContainers2);
         groupGroupModelContainer.translateBy(TRANSLATE_X_GROUP_GROUP, TRANSLATE_Z_GROUP_GROUP);
 
         mc.printTransforms();
@@ -330,13 +330,13 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
-        ModelContainer groupModelContainer = new ModelContainer(modelContainers);
+        ModelContainer groupModelContainer = new ModelGroup(modelContainers);
         groupModelContainer.setId("mc group");
         groupModelContainer.translateBy(TRANSLATE_X_GROUP, TRANSLATE_Z_GROUP);
 
         Set<ModelContainer> modelContainers2 = new HashSet<>();
         modelContainers2.add(groupModelContainer);
-        ModelContainer groupGroupModelContainer = new ModelContainer(modelContainers2);
+        ModelContainer groupGroupModelContainer = new ModelGroup(modelContainers2);
         groupGroupModelContainer.setId("mc group group");
         groupGroupModelContainer.translateBy(TRANSLATE_X_GROUP_GROUP, TRANSLATE_Z_GROUP_GROUP);
 
