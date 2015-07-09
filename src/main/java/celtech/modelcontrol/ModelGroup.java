@@ -14,7 +14,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 
 /**
- *
+ * ModelGroup is a ModelContainer that is a group of child ModelContainers or other ModelGroups.
  * @author tony
  */
 public class ModelGroup extends ModelContainer
