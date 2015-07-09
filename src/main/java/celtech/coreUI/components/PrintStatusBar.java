@@ -228,50 +228,50 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 case CALIBRATING_NOZZLE_OPENING:
                 case CALIBRATING_NOZZLE_HEIGHT:
                     statusProcessed = true;
-                    barShouldBeDisplayed = true;
-                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
-
-                    targetRequired(false);
-
-                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
-                    {
-                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
-                        {
-                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
-                            progressRequired(true);
-                        } else
-                        {
-                            progressRequired(false);
-                        }
-                    } else
-                    {
-                        progressRequired(false);
-                    }
-                    buttonsAllowed.set(false);
+//                    barShouldBeDisplayed = true;
+//                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+//
+//                    targetRequired(false);
+//
+//                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
+//                    {
+//                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+//                        {
+//                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
+//                            progressRequired(true);
+//                        } else
+//                        {
+//                            progressRequired(false);
+//                        }
+//                    } else
+//                    {
+//                        progressRequired(false);
+//                    }
+//                    buttonsAllowed.set(false);
                     break;
                 case PURGING_HEAD:
                     statusProcessed = true;
-                    barShouldBeDisplayed = true;
-                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
-
-                    targetRequired(false);
-
-                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.RUNNING_MACRO
-                            && printer.getPrintEngine().macroBeingRun.get() == Macro.PURGE)
-                    {
-                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
-                        {
-                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
-                            progressRequired(true);
-                        } else
-                        {
-                            progressRequired(false);
-                        }
-                    } else
-                    {
-                        progressRequired(false);
-                    }
-                    buttonsAllowed.set(false);
+//                    barShouldBeDisplayed = true;
+//                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+//
+//                    targetRequired(false);
+//
+//                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.RUNNING_MACRO
+//                            && printer.getPrintEngine().macroBeingRun.get() == Macro.PURGE)
+//                    {
+//                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+//                        {
+//                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
+//                            progressRequired(true);
+//                        } else
+//                        {
+//                            progressRequired(false);
+//                        }
+//                    } else
+//                    {
+//                        progressRequired(false);
+//                    }
+//                    buttonsAllowed.set(false);
                     break;
                 default:
                     statusProcessed = true;
