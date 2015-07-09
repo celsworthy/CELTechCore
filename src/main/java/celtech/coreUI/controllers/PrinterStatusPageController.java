@@ -2,12 +2,14 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.AppearingProgressBar;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.TesStatusBar;
 import celtech.coreUI.visualisation.threed.StaticModelOverlay;
+import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -47,6 +49,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             PrinterStatusPageController.class.getName());
     private Printer printerToUse = null;
     private ChangeListener<Color> printerColourChangeListener = null;
+    private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
+    private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
     private StaticModelOverlay staticModelOverlay = null;
 
     private String transferringDataString = null;
@@ -230,6 +234,16 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             newValue));
         };
 
+        printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
+        {
+            setAdvancedControlsVisibility();
+        };
+
+        pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
+        {
+            setAdvancedControlsVisibility();
+        };
+
         printerSilhouette.setVisible(true);
         printerClosedImage.setVisible(false);
         printerOpenImage.setVisible(false);
@@ -247,6 +261,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
             z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10
         };
+        
         setAdvancedControlsVisibility();
 
         Lookup.getCurrentlySelectedPrinterProperty().addListener(
@@ -299,13 +314,18 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                                 filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).
                                         displayColourProperty().get());
                             }
-
+selectedPrinter.printerStatusProperty().addListener(
+                                    printerStatusChangeListener);
+selectedPrinter.pauseStatusProperty().addListener(
+                                    pauseStatusChangeListener);
                             printerOpenImage.visibleProperty().bind(selectedPrinter.
                                     getPrinterAncillarySystems().doorOpenProperty());
                             printerClosedImage.visibleProperty().bind(selectedPrinter.
                                     getPrinterAncillarySystems().doorOpenProperty().not());
 
                         }
+                        
+                        setAdvancedControlsVisibility();
 
                         lastSelectedPrinter = selectedPrinter;
                     }
@@ -414,6 +434,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
                     printerColourChangeListener);
+            lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
+            lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
         }
 
         filamentRectangle.visibleProperty().unbind();
