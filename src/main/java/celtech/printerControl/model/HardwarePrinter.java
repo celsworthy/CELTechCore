@@ -351,36 +351,39 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING)))
                 .and(extruders.get(0).filamentLoaded));
     }
+    
+    FilamentContainer.FilamentDatabaseChangesListener filamentDatabaseChangesListener = 
+        (String filamentId) ->
+    {
+        for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
+        {
+            if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
+            {
+                try
+                {
+                    Filament changedFilament = filamentContainer.getFilamentByID(
+                        filamentId);
+                    if (changedFilament != null)
+                    {
+                        steno.debug("Update reel with updated filament data");
+                        transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
+                    }
+                } catch (RoboxCommsException ex)
+                {
+                    steno.error("Unable to program reel with update filament of id: "
+                        + filamentId);
+                }
+            }
+        }
+    };
 
     /**
-     * If the filament details change for a filament currently on a reel, then
-     * the reel should be immediately updated with the new details.
+     * If the filament details change for a filament currently on a reel, then the reel should be
+     * immediately updated with the new details.
      */
     private void setupFilamentDatabaseChangeListeners()
     {
-        filamentContainer.addFilamentDatabaseChangesListener((String filamentId) ->
-        {
-            for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
-            {
-                if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
-                {
-                    try
-                    {
-                        Filament changedFilament = filamentContainer.getFilamentByID(
-                                filamentId);
-                        if (changedFilament != null)
-                        {
-                            steno.debug("Update reel with updated filament data");
-                            transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Unable to program reel with update filament of id: "
-                                + filamentId);
-                    }
-                }
-            }
-        });
+        filamentContainer.addFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
     }
 
     @Override
@@ -2818,6 +2821,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void shutdown(boolean shutdownCommandInterface)
     {
+        filamentContainer.removeFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
         steno.info("Shutdown print engine...");
         printEngine.shutdown();
 
