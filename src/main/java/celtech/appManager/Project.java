@@ -321,12 +321,12 @@ public class Project implements Serializable
                 saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
             } catch (FileNotFoundException ex)
             {
-                steno.error("Failed to save project state");
+                steno.exception("Failed to save project state", ex);
             } catch (IOException ex)
             {
-                steno.error(
+                steno.exception(
                     "Couldn't write project state to file for project "
-                    + projectNameProperty.get());
+                    + projectNameProperty.get(), ex);
             }
         }
     }
@@ -722,6 +722,7 @@ public class Project implements Serializable
                 Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
                 System.out.println("make group for ids " + entry.getValue());
                 int groupModelId = entry.getKey();
+                System.out.println("new group id is " + groupModelId);
                 ModelGroup group = group(modelContainers, groupModelId);
                 numGroups++;
             }

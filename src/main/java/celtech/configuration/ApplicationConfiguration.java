@@ -485,16 +485,14 @@ public class ApplicationConfiguration
 
     public static String getProjectDirectory()
     {
-        if (projectFileStorageDirectory == null)
+
+        projectFileStorageDirectory = getUserStorageDirectory() + projectFileDirectoryPath + '/';
+
+        File dirHandle = new File(projectFileStorageDirectory);
+
+        if (!dirHandle.exists())
         {
-            projectFileStorageDirectory = getUserStorageDirectory() + projectFileDirectoryPath + '/';
-
-            File dirHandle = new File(projectFileStorageDirectory);
-
-            if (!dirHandle.exists())
-            {
-                dirHandle.mkdirs();
-            }
+            dirHandle.mkdirs();
         }
 
         return projectFileStorageDirectory;

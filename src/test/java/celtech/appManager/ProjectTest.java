@@ -11,6 +11,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -29,9 +30,9 @@ import org.junit.rules.TemporaryFolder;
  */
 public class ProjectTest extends JavaFXConfiguredTest
 {
-    
-    private static String GROUP_NAME = "group";
-    private static String MC3_ID = "mc3";
+
+    private static final String GROUP_NAME = "group";
+    private static final String MC3_ID = "mc3";
 
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
@@ -46,7 +47,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         float FILL_DENSITY = 0.45f;
         SlicerParametersFile.SupportType PRINT_SUPPORT = SlicerParametersFile.SupportType.MATERIAL_2;
         String PRINT_JOB_ID = "PJ1";
-        
+
         Filament FILAMENT_0 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
         Filament FILAMENT_1 = Lookup.getFilamentContainer().getFilamentByID("RBX-PLA-PP157");
 
@@ -70,15 +71,17 @@ public class ProjectTest extends JavaFXConfiguredTest
 
         Assert.assertEquals(PROJECT_NAME, newProject.getProjectName());
         Assert.assertEquals(BRIM, newProject.getPrinterSettings().getBrimOverride());
-        Assert.assertEquals(FILL_DENSITY, newProject.getPrinterSettings().getFillDensityOverride(), 1e-10);
+        Assert.assertEquals(FILL_DENSITY, newProject.getPrinterSettings().getFillDensityOverride(),
+                            1e-10);
         Assert.assertEquals(PRINT_SUPPORT, newProject.getPrinterSettings().getPrintSupportOverride());
         Assert.assertEquals(FILAMENT_0, newProject.getExtruder0FilamentProperty().get());
         Assert.assertEquals(FILAMENT_1, newProject.getExtruder1FilamentProperty().get());
 
         assert (true);
     }
-    
-    private Pair<Project, ModelContainer> makeProject() {
+
+    private Pair<Project, ModelGroup> makeProject()
+    {
         TestUtils utils = new TestUtils();
         ModelContainer mc1 = utils.makeModelContainer(true);
         ModelContainer mc2 = utils.makeModelContainer(true);
@@ -88,20 +91,21 @@ public class ProjectTest extends JavaFXConfiguredTest
         project.addModel(mc1);
         project.addModel(mc2);
         project.addModel(mc3);
-        
+
         Set<ModelContainer> toTranslate = new HashSet<>();
         toTranslate.add(mc2);
         project.translateModelsBy(toTranslate, 10, 20);
-        
+
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc1);
         modelContainers.add(mc2);
-        ModelContainer group = project.group(modelContainers);
+        ModelGroup group = project.group(modelContainers);
         group.setId(GROUP_NAME);
         return new Pair<>(project, group);
     }
-    
-        private Pair<Project, ModelContainer> makeProjectWithGroupOfGroups() {
+
+    private Pair<Project, ModelGroup> makeProjectWithGroupOfGroups()
+    {
         TestUtils utils = new TestUtils();
         ModelContainer mc1 = utils.makeModelContainer(true);
         ModelContainer mc2 = utils.makeModelContainer(true);
@@ -112,62 +116,82 @@ public class ProjectTest extends JavaFXConfiguredTest
         project.addModel(mc2);
         project.addModel(mc3);
         project.addModel(mc4);
-        
+
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc1);
         modelContainers.add(mc2);
         ModelContainer group = project.group(modelContainers);
         group.setId(GROUP_NAME);
-        
+
         modelContainers = new HashSet<>();
         modelContainers.add(mc3);
         modelContainers.add(mc4);
         modelContainers.add(group);
-        
-        ModelContainer superGroup = project.group(modelContainers);
-        
+
+        ModelGroup superGroup = project.group(modelContainers);
+
         return new Pair<>(project, superGroup);
     }
-    
+
     @Test
-    public void testSaveProjectWithGroup() throws IOException {
-        
-        Pair<Project, ModelContainer> pair = makeProject();
+    public void testSaveProjectWithGroup() throws IOException
+    {
+
+        Pair<Project, ModelGroup> pair = makeProject();
         Project project = pair.getKey();
-        ModelContainer group = pair.getValue();
-        
+        Set<Integer> expectedIds = project.getLoadedModels().stream().map(
+            x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
+
         ProjectFile projectFile = new ProjectFile();
         projectFile.populateFromProject(project);
 
         Project.saveProject(project);
 
-        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory() 
+        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
             + File.separator + project.getProjectName());
 
         Assert.assertEquals(2, newProject.getLoadedModels().size());
-        Set<Integer> expectedIds = new HashSet<>();
-        expectedIds.add(4);
-        expectedIds.add(3);
-        
-        Assert.assertEquals(expectedIds, 
-             newProject.getLoadedModels().stream().map(x -> x.getModelId()).collect(Collectors.toSet()));
+
+        Assert.assertEquals(expectedIds,
+                            newProject.getLoadedModels().stream().map(x -> x.getModelId()).collect(
+                                Collectors.toSet()));
     }
-    
+
     @Test
-    public void testSaveProjectWithGroupOfGroupsThenLoadAndUngroup() throws IOException {
-        
-        Pair<Project, ModelContainer> pair = makeProjectWithGroupOfGroups();
+    public void testSaveProjectWithGroupOfGroupsThenLoadAndUngroup() throws IOException
+    {
+
+        Pair<Project, ModelGroup> pair = makeProjectWithGroupOfGroups();
         Project project = pair.getKey();
-        ModelContainer group = pair.getValue();
-        
+        ModelGroup superGroup = pair.getValue();
+        Set<Integer> expectedIds = superGroup.getChildModelContainers().stream().map(
+            x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
+
         ProjectFile projectFile = new ProjectFile();
         projectFile.populateFromProject(project);
 
         Project.saveProject(project);
 
-        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory() 
+        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
             + File.separator + project.getProjectName());
 
         Assert.assertEquals(1, newProject.getLoadedModels().size());
-    }    
+
+        Set<ModelContainer> modelContainers = new HashSet<>(newProject.getLoadedModels());
+        newProject.ungroup(modelContainers);
+
+        Assert.assertEquals(3, newProject.getLoadedModels().size());
+
+        Assert.assertEquals(expectedIds,
+                            newProject.getLoadedModels().stream().map(x -> x.getModelId()).collect(
+                                Collectors.toSet()));
+
+        Set<ModelGroup> modelGroups = newProject.getLoadedModels().stream().
+            filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
+
+        Assert.assertEquals(1, modelGroups.size());
+        ModelGroup modelGroup = modelGroups.iterator().next();
+        Assert.assertEquals(2, modelGroup.getChildModelContainers().size());
+
+    }
 }
