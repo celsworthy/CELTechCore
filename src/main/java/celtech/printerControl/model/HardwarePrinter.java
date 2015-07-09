@@ -1767,9 +1767,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     /**
      *
      * @param project
-     * @param filament
-     * @param printQuality
-     * @param settings
      */
     @Override
     public void printProject(Project project) throws PrinterException
@@ -1799,6 +1796,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 steno.error("Failure to set temperatures prior to print");
             }
         }
+
+        //TODO needs to be changed for DMH
+        extruders.get(0).lastFeedrateMultiplierInUse.set(filamentInUse.getFeedRateMultiplier());
 
         try
         {
@@ -2997,7 +2997,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             doAttemptEject();
                         } else
                         {
-                            changeFeedRateMultiplier(1);
+                            if (error == FirmwareError.E_FILAMENT_SLIP)
+                            {
+                                changeFeedRateMultiplier(extruders.get(0).lastFeedrateMultiplierInUse.get());
+                            } else if (error == FirmwareError.D_FILAMENT_SLIP)
+                            {
+                                changeFeedRateMultiplier(extruders.get(1).lastFeedrateMultiplierInUse.get());
+                            }
                             forcedResume();
                         }
                         Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
@@ -3513,13 +3519,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     if (!reels.containsKey(reelResponse.getReelNumber()))
                     {
                         reel = new Reel();
-                        reel.updateFromEEPROMData(reelResponse);
                         reels.put(reelResponse.getReelNumber(), reel);
                     } else
                     {
                         reel = reels.get(reelResponse.getReelNumber());
-                        reel.updateFromEEPROMData(reelResponse);
                     }
+                    reel.updateFromEEPROMData(reelResponse);
+
+                    extruders.get(reelResponse.getReelNumber()).lastFeedrateMultiplierInUse.set(reelResponse.getFeedRateMultiplier());
 
                     if (filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
