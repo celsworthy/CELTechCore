@@ -194,4 +194,31 @@ public class ProjectTest extends JavaFXConfiguredTest
         Assert.assertEquals(2, modelGroup.getChildModelContainers().size());
 
     }
+    
+    @Test
+    public void testSaveProjectWithGroupWithRotation() throws IOException
+    {
+        
+        double ROTATION = 20.1f;
+
+        Pair<Project, ModelGroup> pair = makeProject();
+        Project project = pair.getKey();
+        ModelGroup group = pair.getValue();
+        group.setRotationLean(ROTATION);
+        
+        ProjectFile projectFile = new ProjectFile();
+        projectFile.populateFromProject(project);
+
+        Project.saveProject(project);
+
+        Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
+            + File.separator + project.getProjectName());
+        
+        Set<ModelGroup> modelGroups = newProject.getLoadedModels().stream().
+            filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
+        
+        Assert.assertEquals(1, modelGroups.size());
+        ModelGroup modelGroup = modelGroups.iterator().next();
+        Assert.assertEquals(ROTATION, modelGroup.getRotationLean(), 0.001);
+    }    
 }

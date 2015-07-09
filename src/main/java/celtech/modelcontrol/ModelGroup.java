@@ -45,6 +45,10 @@ public class ModelGroup extends ModelContainer
     {
         this(modelContainers);
         modelId = groupModelId;
+        if (modelId <= nextModelId) {
+            // avoid any duplicate ids
+            nextModelId = modelId + 1;
+        }
     }
 
     private void clearTransformMoveToCentre()

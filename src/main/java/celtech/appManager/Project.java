@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -60,6 +61,15 @@ public class Project implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
+    
+    public static class ProjectLoadException extends Exception {
+
+        public ProjectLoadException(String message)
+        {
+            super(message);
+        }
+        
+    }
 
     private Filament DEFAULT_FILAMENT;
 
@@ -218,7 +228,7 @@ public class Project implements Serializable
         return ' ';
     }
 
-    private void load(String basePath)
+    private void load(String basePath) throws ProjectLoadException
     {
         suppressProjectChanged = true;
 
@@ -260,8 +270,7 @@ public class Project implements Serializable
 
             loadModels(basePath);
 
-            recreateGroups(projectFile.getGroupStructure());
-            recreateGroupStates(projectFile.getGroupState());
+            recreateGroups(projectFile.getGroupStructure(), projectFile.getGroupState());
 
         } catch (IOException ex)
         {
@@ -576,7 +585,7 @@ public class Project implements Serializable
         addModel(modelGroup);
         return modelGroup;
     }
-    
+
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
         deleteModels(modelContainers);
@@ -698,12 +707,12 @@ public class Project implements Serializable
      * groups are created.
      * </p>
      */
-    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure)
+    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
         do
         {
-            numNewGroups = makeNewGroups(groupStructure);
+            numNewGroups = makeNewGroups(groupStructure, groupStates);
         } while (numNewGroups > 0);
     }
 
@@ -712,7 +721,7 @@ public class Project implements Serializable
      *
      * @return the number of groups created
      */
-    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure)
+    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numGroups = 0;
         for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
@@ -724,6 +733,7 @@ public class Project implements Serializable
                 int groupModelId = entry.getKey();
                 System.out.println("new group id is " + groupModelId);
                 ModelGroup group = group(modelContainers, groupModelId);
+                recreateGroupState(group, groupStates);
                 numGroups++;
             }
         }
@@ -758,28 +768,41 @@ public class Project implements Serializable
     /**
      * Return the set of models for the given set of modelIds.
      */
-    private Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds)
+    private Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds) throws ProjectLoadException
     {
         Set<ModelContainer> modelContainers = new HashSet<>();
         for (int modelId : modelIds)
         {
-            for (ModelContainer modelContainer : loadedModels)
+            Optional<ModelContainer> modelContainer = getModelContainerOfModelId(modelId);
+            if (modelContainer.isPresent())
             {
-                if (modelContainer.getModelId() == (int) modelId)
-                {
-                    modelContainers.add(modelContainer);
-                    break;
-                }
+                modelContainers.add(modelContainer.get());
+            } else {
+                throw new ProjectLoadException("unexpected model id when rereating groups");
             }
         }
         return modelContainers;
     }
 
-    /**
-     * Update the transforms of the given groups as indicated by groupState.
-     */
-    private void recreateGroupStates(Map<Integer, ModelContainer.State> groupState)
+    private Optional<ModelContainer> getModelContainerOfModelId(int modelId)
     {
+        for (ModelContainer modelContainer : loadedModels)
+        {
+            if (modelContainer.getModelId() == modelId)
+            {
+                return Optional.of(modelContainer);
+            }
+        }
+        return Optional.empty();
+
+    }
+
+    /**
+     * Update the transforms of the given group as indicated by groupState.
+     */
+    private void recreateGroupState(ModelGroup group, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+    {
+        group.setState(groupStates.get(group.getModelId()));
     }
 
     /**

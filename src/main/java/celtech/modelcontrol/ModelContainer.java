@@ -73,7 +73,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 {
 
     private static final long serialVersionUID = 1L;
-    private static int nextModelId = 1;
+    protected static int nextModelId = 1;
     /**
      * The modelId is only unique at the project level because it is reloaded from saved models.
      */
