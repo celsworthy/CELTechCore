@@ -249,10 +249,10 @@ public class Project implements Serializable
                     extruder1Filament.set(filament1);
                 }
             }
-            
+
             recreateGroups(projectFile.getGroupStructure());
             recreateGroupStates(projectFile.getGroupState());
-            
+
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
@@ -654,9 +654,9 @@ public class Project implements Serializable
      * Return a Map of child_model_id -> parent_model_id for all model:group and group:group
      * relationships.
      */
-    public Map<Integer, Integer> getGroupStructure()
+    public Map<Integer, Set<Integer>> getGroupStructure()
     {
-        Map<Integer, Integer> groupStructure = new HashMap<>();
+        Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
         for (ModelContainer modelContainer : getModelsHoldingModels())
         {
             modelContainer.addGroupStructure(groupStructure);
@@ -678,13 +678,80 @@ public class Project implements Serializable
     }
 
     /**
-     * Using the group function, reapply the groupings as given by the given groupStructure. The 
-     * first groups to be created must be those containing only non-groups, and then each
-     * level of the group hierarchy.
+     * Using the group function, reapply the groupings as given by the given groupStructure. The
+     * first groups to be created must be those containing only non-groups, and then each level of
+     * the group hierarchy.<p>
+     * First create new groups where all children are already instantiated. Then repeat until no new
+     * groups are created.
+     * </p>
      */
-    private void recreateGroups(Map<Integer, Integer> groupStructure)
+    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure)
     {
+        int numNewGroups;
+        do
+        {
+            numNewGroups = makeNewGroups(groupStructure);
+        } while (numNewGroups > 0);
     }
+    
+    /**
+     * Create groups where all the children are already instantiated. 
+     * @return the number of groups created
+     */
+    private int makeNewGroups(Map<Integer, Set<Integer>>  groupStructure) {
+        int numGroups = 0;
+        for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
+        {
+            if (allModelsInstantiated(entry.getValue())) {
+                Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
+                System.out.println("make group for ids " + entry.getValue());
+                group(modelContainers);
+                numGroups++;
+            }
+        }
+        return numGroups;
+    }
+    
+    /**
+     * Return true if loadedModels contains models for all the given modelIds, else return false.
+     */
+    private boolean allModelsInstantiated(Set<Integer> modelIds)
+    {
+        for (int modelId : modelIds)
+        {
+            boolean modelFound = false;
+            for (ModelContainer modelContainer : loadedModels)
+            {
+                if (modelContainer.getModelId() == modelId) {
+                    modelFound = true;
+                    break;
+                }
+                if (! modelFound) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Return the set of models for the given set of modelIds.
+     */
+    private Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds)
+    {
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        for (int modelId : modelIds)
+        {
+            for (ModelContainer modelContainer : loadedModels)
+            {
+                if (modelContainer.getModelId() == modelId) {
+                    modelContainers.add(modelContainer);
+                    break;
+                }
+            }
+        }
+        return modelContainers;
+    }    
 
     /**
      * Update the transforms of the given groups as indicated by groupState.

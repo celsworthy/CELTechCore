@@ -7,7 +7,9 @@ import celtech.modelcontrol.ModelContainer.State;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class ProjectFile
@@ -25,7 +27,7 @@ public class ProjectFile
     private String settingsName = ApplicationConfiguration.draftSettingsProfileName;
     private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
     
-    private Map<Integer, Integer> groupStructure = new HashMap<>();
+    private Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
     private Map<Integer, State> groupState = new HashMap<>();
 
     public String getSettingsName()
@@ -148,12 +150,12 @@ public class ProjectFile
         this.version = version;
     }
 
-    public Map<Integer, Integer> getGroupStructure()
+    public Map<Integer, Set<Integer>> getGroupStructure()
     {
         return groupStructure;
     }
 
-    public void setGroupStructure(Map<Integer, Integer> groupStructure)
+    public void setGroupStructure(Map<Integer, Set<Integer>> groupStructure)
     {
         this.groupStructure = groupStructure;
     }

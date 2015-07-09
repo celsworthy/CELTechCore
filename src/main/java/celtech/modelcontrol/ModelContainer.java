@@ -75,6 +75,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private static final long serialVersionUID = 1L;
     private static int nextModelId = 1;
+    /**
+     * The modelId is only unique at the project level because it is reloaded from saved models.
+     */
     private int modelId;
     private Stenographer steno = null;
     private PrintBed printBed = null;
@@ -581,18 +584,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return modelName.get();
     }
-    
+
     /**
-     * Return a set of all descendent ModelContainers (and include this one) that have
-     * MeshView children.
+     * Return a set of all descendent ModelContainers (and include this one) that have MeshView
+     * children.
      */
     public Set<ModelContainer> getModelsHoldingMeshViews()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
-        if (meshGroup.getChildren().size() > 0) {
+        if (meshGroup.getChildren().size() > 0)
+        {
             modelsHoldingMeshViews.add(this);
         }
-        for (Node modelNode: modelContainersGroup.getChildren())
+        for (Node modelNode : modelContainersGroup.getChildren())
         {
             ModelContainer modelContainer = (ModelContainer) modelNode;
             modelsHoldingMeshViews.addAll(modelContainer.getModelsHoldingMeshViews());
@@ -603,10 +607,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public Collection<? extends ModelContainer> getModelsHoldingModels()
     {
         Set<ModelContainer> modelsHoldingModels = new HashSet<>();
-        if (modelContainersGroup.getChildren().size() > 0) {
+        if (modelContainersGroup.getChildren().size() > 0)
+        {
             modelsHoldingModels.add(this);
         }
-        for (Node modelNode: modelContainersGroup.getChildren())
+        for (Node modelNode : modelContainersGroup.getChildren())
         {
             ModelContainer modelContainer = (ModelContainer) modelNode;
             modelsHoldingModels.addAll(modelContainer.getModelsHoldingModels());
@@ -614,14 +619,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelsHoldingModels;
     }
 
-    public void addGroupStructure(Map<Integer, Integer> groupStructure)
+    public void addGroupStructure(Map<Integer, Set<Integer>> groupStructure)
     {
-        for (Node modelNode: modelContainersGroup.getChildren())
+        for (Node modelNode : modelContainersGroup.getChildren())
         {
             ModelContainer modelContainer = (ModelContainer) modelNode;
-            groupStructure.put(modelContainer.modelId, modelId);
+            if (groupStructure.get(modelId) == null)
+            {
+                groupStructure.put(modelId, new HashSet<>());
+            }
+            groupStructure.get(modelId).add(modelContainer.modelId);
         }
-    }    
+    }
 
     /**
      * Rotate the model in Lean and Twist so that the chosen face is pointing down (ie aligned with
@@ -904,8 +913,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(transformMoveToPreferred.getZ());
         out.writeDouble(getXScale());
         out.writeDouble(getRotationTwist());
-        // not used (was snapFaceIndex)
-        out.writeInt(0);
+        // was not used (was snapFaceIndex) - now modelId
+        out.writeInt(modelId);
         for (int extCount = 0; extCount < meshExtruderAssociation.size(); extCount++)
         {
             out.writeInt(meshExtruderAssociation.get(extCount));
@@ -962,6 +971,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
         int storedSnapFaceIndexLegacy = in.readInt();
+        int storedModelId = storedSnapFaceIndexLegacy;
 
         double storedScaleY = storedScaleX;
         double storedScaleZ = storedScaleX;
@@ -979,6 +989,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             storedScaleZ = in.readDouble();
             storedRotationLean = in.readDouble();
             storedRotationTurn = in.readDouble();
+            if (storedModelId > 0)
+            {
+                modelId = storedModelId;
+            }
         } else
         {
             convertSnapFace = true;
@@ -1752,11 +1766,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * If this model is associated with the given extruder number then recolour it to the given
-     * colour, also taking into account if it is misplaced (off the bed).
+     * colour, also taking into account if it is misplaced (off the bed). Also call the same method
+     * on any child ModelContainers.
      */
     public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
         boolean showMisplacedColour)
     {
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            modelContainer.updateColour(displayColourExtruder0, displayColourExtruder1,
+                                        showMisplacedColour);
+        }
+
         for (int meshNumber = 0; meshNumber < getMeshViews().size(); meshNumber++)
         {
             MeshView mesh = getMeshViews().get(meshNumber);
@@ -1948,7 +1969,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.preferredRotationTurn = preferredRotationTurn;
             this.preferredRotationLean = preferredRotationLean;
         }
-        
+
         /**
          * The assignment operator.
          */
@@ -1991,6 +2012,5 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return modelId;
     }
-    
-    
+
 }
