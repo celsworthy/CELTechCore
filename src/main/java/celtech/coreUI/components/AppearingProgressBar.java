@@ -154,6 +154,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     {
         if (!isSlidOutOrSlidingOut())
         {
+            slidingIntoView = false;
             slidingOutOfView = true;
             slidIntoView = false;
             slidOutOfView = false;
@@ -188,6 +189,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
         {
             setVisible(true);
             slidingIntoView = true;
+            slidingOutOfView = false;
             slidIntoView = false;
             slidOutOfView = false;
             hideSidebar.stop();

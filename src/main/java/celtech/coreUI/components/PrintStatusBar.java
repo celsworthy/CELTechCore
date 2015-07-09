@@ -279,7 +279,11 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         {
             startSlidingInToView();
         } else
+        {if (isSlidOutOrSlidingOut())
         {
+            System.out.println("Didn't slide out of view as already on the way");
+            
+        }
             startSlidingOutOfView();
         }
     }

@@ -33,7 +33,7 @@
         </VBox>
         <HBox alignment="TOP_RIGHT" fillHeight="false" maxHeight="60.0" prefHeight="60.0" StackPane.alignment="TOP_RIGHT">
             <children>
-                <VBox alignment="TOP_CENTER" mouseTransparent="true" prefWidth="220.0" styleClass="statusBarTargetContainer">
+                <VBox alignment="TOP_CENTER" mouseTransparent="true" prefWidth="150.0" styleClass="statusBarTargetContainer">
                     <children>
                         <Label id="targetLegend" fx:id="largeTargetLegend" alignment="CENTER" contentDisplay="TEXT_ONLY" text="Target Temperature:" textAlignment="CENTER" />
                         <Label id="targetValue" fx:id="largeTargetValue" alignment="CENTER" contentDisplay="TEXT_ONLY" textAlignment="CENTER" />
