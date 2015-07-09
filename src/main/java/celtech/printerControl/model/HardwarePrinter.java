@@ -3067,22 +3067,40 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             case E_FILAMENT_SLIP:
             case D_FILAMENT_SLIP:
-                if (printerStatus.get() == PrinterStatus.PRINTING_PROJECT)
+                boolean showStandardError = false;
+
+                switch (printerStatus.get())
                 {
-                    boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
-                    if (limitOnSlipActionsReached)
-                    {
-                        try
+                    case PRINTING_PROJECT:
+                        if (pauseStatus.get() == PauseStatus.NOT_PAUSED)
                         {
-                            pause();
-                        } catch (PrinterException ex)
+                            boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
+                            if (limitOnSlipActionsReached)
+                            {
+                                try
+                                {
+                                    pause();
+                                } catch (PrinterException ex)
+                                {
+                                    steno.error("Unable to pause during filament slip handling");
+                                }
+                                showStandardError = true;
+                            }
+                        } else
                         {
-                            steno.error("Unable to pause during filament slip handling");
+                            showStandardError = true;
                         }
-                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                error,
-                                this);
-                    }
+                        break;
+                    case IDLE:
+                        showStandardError = true;
+                        break;
+                }
+
+                if (showStandardError)
+                {
+                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                            error,
+                            this);
                 }
                 break;
 
@@ -3116,7 +3134,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public List<Integer> requestDebugData(boolean addToGCodeTranscript)
+    public List<Integer> requestDebugData(boolean addToGCodeTranscript
+    )
     {
         List<Integer> debugData = null;
 
@@ -3160,7 +3179,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber)
+    public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber
+    )
     {
         dataFileSequenceNumberStartPoint = startingSequenceNumber;
     }
@@ -3198,7 +3218,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void suppressFirmwareErrors(FirmwareError... firmwareErrors)
+    public void suppressFirmwareErrors(FirmwareError... firmwareErrors
+    )
     {
         for (FirmwareError firmwareError : firmwareErrors)
         {
@@ -3213,7 +3234,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void suppressEEPROMErrorCorrection(boolean suppress)
+    public void suppressEEPROMErrorCorrection(boolean suppress
+    )
     {
         repairCorruptEEPROMData = !suppress;
     }
