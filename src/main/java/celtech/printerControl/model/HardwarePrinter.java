@@ -225,6 +225,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private NozzleOpeningStateTransitionManager calibrationOpeningManager;
     private XAndYStateTransitionManager calibrationAlignmentManager;
 
+    private BooleanProperty headPowerOffFlag = new SimpleBooleanProperty(false);
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
      * way to override the detection of whether a filament is loaded or not on a
@@ -351,35 +353,35 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING)))
                 .and(extruders.get(0).filamentLoaded));
     }
-    
-    FilamentContainer.FilamentDatabaseChangesListener filamentDatabaseChangesListener = 
-        (String filamentId) ->
-    {
-        for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
-        {
-            if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
+
+    FilamentContainer.FilamentDatabaseChangesListener filamentDatabaseChangesListener
+            = (String filamentId) ->
             {
-                try
+                for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
                 {
-                    Filament changedFilament = filamentContainer.getFilamentByID(
-                        filamentId);
-                    if (changedFilament != null)
+                    if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
                     {
-                        steno.debug("Update reel with updated filament data");
-                        transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
+                        try
+                        {
+                            Filament changedFilament = filamentContainer.getFilamentByID(
+                                    filamentId);
+                            if (changedFilament != null)
+                            {
+                                steno.debug("Update reel with updated filament data");
+                                transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
+                            }
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Unable to program reel with update filament of id: "
+                                    + filamentId);
+                        }
                     }
-                } catch (RoboxCommsException ex)
-                {
-                    steno.error("Unable to program reel with update filament of id: "
-                        + filamentId);
                 }
-            }
-        }
-    };
+            };
 
     /**
-     * If the filament details change for a filament currently on a reel, then the reel should be
-     * immediately updated with the new details.
+     * If the filament details change for a filament currently on a reel, then
+     * the reel should be immediately updated with the new details.
      */
     private void setupFilamentDatabaseChangeListeners()
     {
@@ -469,6 +471,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyObjectProperty busyStatusProperty()
     {
         return busyStatus;
+    }
+
+    @Override
+    public ReadOnlyBooleanProperty headPowerOffFlagProperty()
+    {
+        return headPowerOffFlag;
     }
 
     @Override
@@ -3321,6 +3329,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Ancillary systems
                      */
+                    headPowerOffFlag.set(!statusResponse.isHeadPowerOn());
                     printerAncillarySystems.ambientTemperature.set(
                             statusResponse.getAmbientTemperature());
                     printerAncillarySystems.ambientTargetTemperature.set(

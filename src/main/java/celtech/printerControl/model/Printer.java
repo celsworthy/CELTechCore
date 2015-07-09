@@ -591,6 +591,8 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyStringProperty printJobIDProperty();
 
     public ReadOnlyObjectProperty<PauseStatus> pauseStatusProperty();
+    
+    public ReadOnlyBooleanProperty headPowerOffFlagProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
 

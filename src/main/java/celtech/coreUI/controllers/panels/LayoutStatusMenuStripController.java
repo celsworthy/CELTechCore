@@ -668,6 +668,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         printButton.getTag().addConditionalText("dialogs.chooseACustomProfile",
                 project.customSettingsNotChosenProperty());
+        
+        printButton.getTag().addConditionalText("dialogs.printHeadPowerOff",
+                printer.headPowerOffFlagProperty());
 
         CanPrintConditionalTextBindings conditionalTextBindings
                 = new CanPrintConditionalTextBindings(project, printer);
@@ -944,7 +947,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(extruderNumber).
-                                filamentLoadedProperty())
+                                filamentLoadedProperty()
+                        .and(printer.headPowerOffFlagProperty().not()))
                 );
             } else // both extruders are required
             {
@@ -956,7 +960,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                        .and(printer.extrudersProperty().get(1).filamentLoadedProperty())
+                        .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
+                        .and(printer.headPowerOffFlagProperty().not()))
                 );
 
             }
