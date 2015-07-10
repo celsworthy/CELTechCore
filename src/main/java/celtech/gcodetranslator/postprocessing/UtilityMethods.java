@@ -13,6 +13,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.printerControl.model.Head.HeadType;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -144,6 +145,8 @@ public class UtilityMethods
 
         int lastNozzleNumber = -1;
 
+        List<ExtrusionNode> nodesToOpenBefore = new ArrayList<>();
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode potentialToolSelectNode = layerIterator.next();
@@ -176,15 +179,15 @@ public class UtilityMethods
                                 if (lastBPosition < 1)
                                 {
                                     //The nozzle needs to be opened
-                                    try
-                                    {
-                                        GCodeEventNode nextExtrusionNode = nodeManagementUtilities.findNextExtrusion((GCodeEventNode) nozzlePositionProvider).orElseThrow(NodeProcessingException::new);
-                                        insertNozzleOpenFullyBeforeEvent((ExtrusionNode) nextExtrusionNode);
+//                                    try
+//                                    {
+//                                        GCodeEventNode nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(layerNode, (GCodeEventNode) nozzlePositionProvider).orElseThrow(NodeProcessingException::new);
+                                        nodesToOpenBefore.add((ExtrusionNode) nozzlePositionProvider);
                                         lastBPosition = 1.0;
-                                    } catch (NodeProcessingException ex)
-                                    {
-                                        throw new RuntimeException("Failed to insert open nodes on layer " + layerNode.getLayerNumber(), ex);
-                                    }
+//                                    } catch (NodeProcessingException ex)
+//                                    {
+//                                        throw new RuntimeException("Failed to insert open nodes on layer " + layerNode.getLayerNumber(), ex);
+//                                    }
                                 }
                             }
                         }
@@ -193,6 +196,11 @@ public class UtilityMethods
                     lastNozzleNumber = toolSelectNode.getToolNumber();
                 }
             }
+        }
+
+        for (ExtrusionNode extrusionNode : nodesToOpenBefore)
+        {
+            insertNozzleOpenFullyBeforeEvent(extrusionNode);
         }
     }
 

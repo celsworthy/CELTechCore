@@ -1613,4 +1613,54 @@ public class GCodeEventNodeTest
         Optional<GCodeEventNode> result2 = nodeB3.getSiblingAfter();
         assertFalse(result2.isPresent());
     }
+    
+    /**
+     * Test of getAbsolutelyTheLastEvent method, of class GCodeEventNode.
+     */
+    @Test
+    public void testGetAbsolutelyTheLastEvent()
+    {
+        System.out.println("getAbsolutelyTheLastEvent");
+
+        GCodeEventNode nodeA = new GCodeEventNodeTestImpl("nodeA");
+        GCodeEventNode nodeB1 = new GCodeEventNodeTestImpl("nodeB1");
+        GCodeEventNode nodeB2 = new GCodeEventNodeTestImpl("nodeB2");
+        GCodeEventNode nodeB3 = new GCodeEventNodeTestImpl("nodeB3");
+        GCodeEventNode nodeC1 = new GCodeEventNodeTestImpl("nodeC1");
+        GCodeEventNode nodeC2 = new GCodeEventNodeTestImpl("nodeC2");
+        GCodeEventNode nodeC3 = new GCodeEventNodeTestImpl("nodeC3");
+        GCodeEventNode nodeC4 = new GCodeEventNodeTestImpl("nodeC4");
+        GCodeEventNode nodeC5 = new GCodeEventNodeTestImpl("nodeC5");
+        GCodeEventNode nodeC6 = new GCodeEventNodeTestImpl("nodeC6");
+        GCodeEventNode nodeC7 = new GCodeEventNodeTestImpl("nodeC7");
+        GCodeEventNode nodeC8 = new GCodeEventNodeTestImpl("nodeC8");
+        GCodeEventNode nodeC9 = new GCodeEventNodeTestImpl("nodeC9");
+        GCodeEventNode nodeD1 = new GCodeEventNodeTestImpl("nodeD1");
+        GCodeEventNode nodeD2 = new GCodeEventNodeTestImpl("nodeD2");
+        GCodeEventNode nodeD3 = new GCodeEventNodeTestImpl("nodeD3");
+
+        nodeB1.addChildAtEnd(nodeC1);
+        nodeB1.addChildAtEnd(nodeC2);
+        nodeB1.addChildAtEnd(nodeC3);
+
+        nodeB2.addChildAtEnd(nodeC4);
+        nodeB2.addChildAtEnd(nodeC5);
+        nodeB2.addChildAtEnd(nodeC6);
+
+        nodeB3.addChildAtEnd(nodeC7);
+        nodeB3.addChildAtEnd(nodeC8);
+        nodeB3.addChildAtEnd(nodeC9);
+
+        nodeC7.addChildAtEnd(nodeD1);
+        nodeC7.addChildAtEnd(nodeD2);
+        nodeC7.addChildAtEnd(nodeD3);
+
+        nodeA.addChildAtEnd(nodeB1);
+        nodeA.addChildAtEnd(nodeB2);
+        nodeA.addChildAtEnd(nodeB3);
+
+        GCodeEventNode result1 = nodeA.getAbsolutelyTheLastEvent();
+        assertNotNull(result1);
+        assertSame(nodeC9, result1);
+    }
 }

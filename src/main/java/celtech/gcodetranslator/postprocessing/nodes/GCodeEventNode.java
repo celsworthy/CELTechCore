@@ -252,14 +252,15 @@ public abstract class GCodeEventNode
     {
         IteratorWithStartPoint<GCodeEventNode> it = new IteratorWithStartPoint<GCodeEventNode>(startNodeHierarchy)
         {
-            private boolean initialValueSet = false;
+            private boolean needToConsumeInitialValue;
             private int childIndex;
             private Iterator<GCodeEventNode> childIterator;
 
             @Override
             public boolean hasNext()
             {
-                return childIndex < children.size()
+                return (childIndex < children.size() && !needToConsumeInitialValue)
+                        || (childIndex < children.size() - 1 && needToConsumeInitialValue)
                         || (childIterator != null && childIterator.hasNext());
             }
 
@@ -272,14 +273,17 @@ public abstract class GCodeEventNode
                         && childIterator.hasNext())
                 {
                     childToReturn = childIterator.next();
-                } else if (childIterator != null)
+                } else
                 {
                     childIterator = null;
-                    childIndex++;
-                }
-                else
-                {
-                    GCodeEventNode child = children.get(childIndex);
+
+                    if (needToConsumeInitialValue)
+                    {
+                        needToConsumeInitialValue = false;
+                        childIndex++;
+                    }
+
+                    GCodeEventNode child = children.get(childIndex++);
                     if (!child.isLeaf())
                     {
                         childIterator = child.treeSpanningIterator(startNodeHierarchy);
@@ -299,13 +303,14 @@ public abstract class GCodeEventNode
                     childIndex = children.indexOf(startNodeHierarchy.get(0));
                     startNodeHierarchy.remove(0);
 
-                    initialValueSet = true;
-                    
+                    needToConsumeInitialValue = true;
+
                     childIterator = children.get(childIndex).treeSpanningIterator(startNodeHierarchy);
                 } else
                 {
                     childIndex = 0;
                     childIterator = null;
+                    needToConsumeInitialValue = false;
                 }
             }
 
@@ -712,6 +717,7 @@ public abstract class GCodeEventNode
             GCodeEventNode parentNode = parent.get();
             int myIndex = parentNode.children.indexOf(this);
             parentNode.children.add(myIndex, newNode);
+            newNode.parent = Optional.of(parentNode);
         }
     }
 
@@ -722,6 +728,7 @@ public abstract class GCodeEventNode
             GCodeEventNode parentNode = parent.get();
             int myIndex = parentNode.children.indexOf(this);
             parentNode.children.add(myIndex + 1, newNode);
+            newNode.parent = Optional.of(parentNode);
         }
     }
 
@@ -812,22 +819,11 @@ public abstract class GCodeEventNode
         return returnValue;
     }
 
-    private GCodeEventNode getAbsolutelyTheLastEvent(GCodeEventNode node)
-    {
-        if (!node.isLeaf())
-        {
-            return getAbsolutelyTheLastEvent(children.getLast());
-        } else
-        {
-            return node;
-        }
-    }
-
     public GCodeEventNode getAbsolutelyTheLastEvent()
     {
         if (!isLeaf())
         {
-            return getAbsolutelyTheLastEvent(children.getLast());
+            return children.getLast().getAbsolutelyTheLastEvent();
         } else
         {
             return this;

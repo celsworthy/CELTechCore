@@ -437,6 +437,9 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         fill1.addChildAtEnd(extrusionNode8);
         fill1.addChildAtEnd(extrusionNode9);
 
+        ToolSelectNode tool1 = new ToolSelectNode();
+        tool1.addChildAtEnd(fill1);
+
         NozzleParameters nozzleParams = new NozzleParameters();
         nozzleParams.setEjectionVolume(8.75f);
 
@@ -452,9 +455,14 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
+
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
+
+        output.outputNodes(tool1, 0);
 
         assertNotNull(closeResult);
 
@@ -781,10 +789,14 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
+
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         closeLogic.closeToEndOfSection(extrusionNode9, testProxy);
 
+        output.outputNodes(tool1, 0);
         assertEquals(10, fill1.getChildren().size());
 
         assertTrue(fill1.getChildren().get(0) instanceof ExtrusionNode);
@@ -923,12 +935,17 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
+
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         CloseResult closeResult = closeLogic.addClosesUsingSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
                 tool1.getChildren().get(0).getChildren().get(4),
                 testProxy, false,
                 0, false);
+
+        output.outputNodes(tool1, 0);
 
         assertNotNull(closeResult);
 
@@ -1230,24 +1247,28 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode1.getMovement().setY(0);
         extrusionNode1.getExtrusion().setE(0.1f);
         extrusionNode1.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode1.setCommentText("ex1");
 
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         extrusionNode2.getMovement().setX(10);
         extrusionNode2.getMovement().setY(10);
         extrusionNode2.getExtrusion().setE(0.1f);
         extrusionNode2.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode2.setCommentText("ex2");
 
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
         extrusionNode3.getMovement().setX(0);
         extrusionNode3.getMovement().setY(10);
         extrusionNode3.getExtrusion().setE(0.1f);
         extrusionNode3.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode3.setCommentText("ex3");
 
         ExtrusionNode extrusionNode4 = new ExtrusionNode();
         extrusionNode4.getMovement().setX(0);
         extrusionNode4.getMovement().setY(0);
         extrusionNode4.getExtrusion().setE(0.1f);
         extrusionNode4.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode4.setCommentText("ex4");
 
         outer1.addChildAtEnd(travel1);
         outer1.addChildAtEnd(extrusionNode1);
@@ -1264,24 +1285,28 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode5.getMovement().setY(1);
         extrusionNode5.getExtrusion().setE(0.1f);
         extrusionNode5.getFeedrate().setFeedRate_mmPerMin(20);
+        extrusionNode5.setCommentText("ex5");
 
         ExtrusionNode extrusionNode6 = new ExtrusionNode();
         extrusionNode6.getMovement().setX(9);
         extrusionNode6.getMovement().setY(9);
         extrusionNode6.getExtrusion().setE(0.1f);
         extrusionNode6.getFeedrate().setFeedRate_mmPerMin(20);
+        extrusionNode6.setCommentText("ex6");
 
         ExtrusionNode extrusionNode7 = new ExtrusionNode();
         extrusionNode7.getMovement().setX(1);
         extrusionNode7.getMovement().setY(9);
         extrusionNode7.getExtrusion().setE(0.1f);
         extrusionNode7.getFeedrate().setFeedRate_mmPerMin(20);
+        extrusionNode7.setCommentText("ex7");
 
         ExtrusionNode extrusionNode8 = new ExtrusionNode();
         extrusionNode8.getMovement().setX(1);
         extrusionNode8.getMovement().setY(1);
         extrusionNode8.getExtrusion().setE(0.1f);
         extrusionNode8.getFeedrate().setFeedRate_mmPerMin(20);
+        extrusionNode8.setCommentText("ex8");
 
         inner1.addChildAtEnd(travel2);
         inner1.addChildAtEnd(extrusionNode5);
@@ -1298,30 +1323,35 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setY(8);
         extrusionNode9.getExtrusion().setE(0.1f);
         extrusionNode9.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode9.setCommentText("ex9");
 
         ExtrusionNode extrusionNode10 = new ExtrusionNode();
         extrusionNode10.getMovement().setX(5);
         extrusionNode10.getMovement().setY(8);
         extrusionNode10.getExtrusion().setE(0.1f);
         extrusionNode10.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode10.setCommentText("ex10");
 
         ExtrusionNode extrusionNode11 = new ExtrusionNode();
         extrusionNode11.getMovement().setX(5);
         extrusionNode11.getMovement().setY(2);
         extrusionNode11.getExtrusion().setE(0.1f);
         extrusionNode11.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode11.setCommentText("ex11");
 
         ExtrusionNode extrusionNode12 = new ExtrusionNode();
         extrusionNode12.getMovement().setX(8);
         extrusionNode12.getMovement().setY(2);
         extrusionNode12.getExtrusion().setE(0.1f);
         extrusionNode12.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode12.setCommentText("ex12");
 
         ExtrusionNode extrusionNode13 = new ExtrusionNode();
         extrusionNode13.getMovement().setX(8);
         extrusionNode13.getMovement().setY(8);
         extrusionNode13.getExtrusion().setE(0.1f);
         extrusionNode13.getFeedrate().setFeedRate_mmPerMin(10);
+        extrusionNode13.setCommentText("ex13");
 
         fill1.addChildAtEnd(travel3);
         fill1.addChildAtEnd(extrusionNode9);
@@ -1498,7 +1528,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         }
 
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0);
-        
+
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
         closeLogic.insertCloseNodes(testLayer, lastLayerParseResult, nozzleProxies);

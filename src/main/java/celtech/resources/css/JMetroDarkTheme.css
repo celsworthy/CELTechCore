@@ -1932,10 +1932,12 @@ modal-dialogue{
 }
 
 .statusBar #targetLegend {
+    -fx-font-family: 'Source Sans Pro Light';
     -fx-font-size: 14px;
 }
 
 .statusBar #targetValue {
+    -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
 }
 .secondaryStatusBar #progBar {

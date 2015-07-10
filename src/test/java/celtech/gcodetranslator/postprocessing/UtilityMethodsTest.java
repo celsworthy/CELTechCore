@@ -52,52 +52,55 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         ExtrusionNode extrusionNode1 = new ExtrusionNode();
         extrusionNode1.getExtrusion().setE(1f);
-        
+        extrusionNode1.setCommentText("Ex1");
+
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         extrusionNode2.getExtrusion().setE(1f);
-        
+        extrusionNode2.setCommentText("Ex2");
+
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
         extrusionNode3.getExtrusion().setE(1f);
-        
+        extrusionNode3.setCommentText("Ex3");
+
         ExtrusionNode extrusionNode4 = new ExtrusionNode();
         extrusionNode4.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode5 = new ExtrusionNode();
         extrusionNode5.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode6 = new ExtrusionNode();
         extrusionNode6.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode7 = new ExtrusionNode();
         extrusionNode7.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode8 = new ExtrusionNode();
         extrusionNode8.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode9 = new ExtrusionNode();
         extrusionNode9.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode10 = new ExtrusionNode();
         extrusionNode10.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode11 = new ExtrusionNode();
         extrusionNode11.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode12 = new ExtrusionNode();
         extrusionNode12.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode13 = new ExtrusionNode();
         extrusionNode13.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode14 = new ExtrusionNode();
         extrusionNode14.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode15 = new ExtrusionNode();
         extrusionNode15.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode16 = new ExtrusionNode();
         extrusionNode16.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode17 = new ExtrusionNode();
         extrusionNode17.getExtrusion().setE(1f);
 
@@ -172,7 +175,6 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         //  |    |  |  |   |  |  |   |    |  |  |   |   |   |    |    |    |    |   |   |   |
         //  open e1 e2 e3  e4 e5 e6  open e7 e8 e9  e10 e11 e12  open e13 e14  e15  e16 e17 e18
         //
-
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
@@ -212,7 +214,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10);
 
         utilityMethods.insertOpenNodes(testLayer, lastLayerParseResult);
-        
+
         OutputUtilities output = new OutputUtilities();
         output.outputNodes(testLayer, 0);
 
@@ -260,52 +262,55 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         ExtrusionNode extrusionNode1 = new ExtrusionNode();
         extrusionNode1.getExtrusion().setE(1f);
-        
+        extrusionNode1.setCommentText("Ex1");
+
         ExtrusionNode extrusionNode2 = new ExtrusionNode();
         extrusionNode2.getExtrusion().setE(1f);
-        
+        extrusionNode2.setCommentText("Ex2");
+
         ExtrusionNode extrusionNode3 = new ExtrusionNode();
         extrusionNode3.getExtrusion().setE(1f);
-        
+        extrusionNode3.setCommentText("Ex3");
+
         ExtrusionNode extrusionNode4 = new ExtrusionNode();
         extrusionNode4.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode5 = new ExtrusionNode();
         extrusionNode5.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode6 = new ExtrusionNode();
         extrusionNode6.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode7 = new ExtrusionNode();
         extrusionNode7.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode8 = new ExtrusionNode();
         extrusionNode8.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode9 = new ExtrusionNode();
         extrusionNode9.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode10 = new ExtrusionNode();
         extrusionNode10.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode11 = new ExtrusionNode();
         extrusionNode11.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode12 = new ExtrusionNode();
         extrusionNode12.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode13 = new ExtrusionNode();
         extrusionNode13.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode14 = new ExtrusionNode();
         extrusionNode14.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode15 = new ExtrusionNode();
         extrusionNode15.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode16 = new ExtrusionNode();
         extrusionNode16.getExtrusion().setE(1f);
-        
+
         ExtrusionNode extrusionNode17 = new ExtrusionNode();
         extrusionNode17.getExtrusion().setE(1f);
 
