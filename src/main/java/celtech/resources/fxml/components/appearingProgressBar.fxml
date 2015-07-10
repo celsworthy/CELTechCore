@@ -5,56 +5,61 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
+<?import celtech.coreUI.components.buttons.*?>
 
-<fx:root id="largeProgressContainer" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="101" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
-    <left>
-        <Label id="largeProgressLabel" fx:id="largeProgressDescription" text="" BorderPane.alignment="CENTER">
-            <BorderPane.margin>
-                <Insets left="30.0" />
-            </BorderPane.margin>
-        </Label>
-    </left>
-    <right>
-        <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+<fx:root fx:id="statusBar" maxHeight="60.0" maxWidth="1.7976931348623157E308" prefHeight="60.0" prefWidth="400.0" styleClass="statusBar" type="StackPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <VBox fillWidth="false" maxHeight="60.0" mouseTransparent="true" prefHeight="60.0" StackPane.alignment="TOP_LEFT">
             <children>
-                <Label id="largeProgressTargetLegend" fx:id="largeTargetLegend" text="Target Temperature:" textAlignment="CENTER" />
-                <Label id="largeProgressTargetValue" fx:id="largeTargetValue" textAlignment="CENTER" />
-            </children>
-            <BorderPane.margin>
-                <Insets bottom="10.0" right="30.0" top="10.0" />
-            </BorderPane.margin>
-        </VBox>
-    </right>
-    <center>
-                <StackPane fx:id="progressBarElement">
-            <children>
-                <ProgressBar id="appearingProgressBar" fx:id="progressBar" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
-               <padding>
-                  <Insets bottom="25.0" left="10.0" right="10.0" top="25.0" />
-               </padding>
-               <StackPane.margin>
-                  <Insets />
-               </StackPane.margin></ProgressBar>
-        <!--                <HBox id="largeProgressBarBack" fx:id="largeProgressBarBack" alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="38.0" prefWidth="300.0" BorderPane.alignment="CENTER">
-            <BorderPane.margin>
-                <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
-            </BorderPane.margin>
-            <children>
-                <Rectangle id="largeProgressBarInner" fx:id="largeProgressBarInner" arcHeight="5.0" arcWidth="5.0" height="32.0" stroke="BLACK" strokeType="INSIDE" width="150.0">
-                    <HBox.margin>
-                        <Insets />
-                    </HBox.margin>
-                </Rectangle>
+                <Label id="mainLabel" fx:id="largeProgressDescription" alignment="TOP_LEFT" contentDisplay="TEXT_ONLY" maxHeight="-Infinity" prefHeight="28.0" text="blah blah">
+                    <VBox.margin>
+                        <Insets top="12.0" />
+                    </VBox.margin>
+                </Label>
             </children>
             <StackPane.margin>
-                <Insets />
+                <Insets left="20.0" />
             </StackPane.margin>
-        </HBox>-->
-                <Label id="largeProgressCurrentValue" fx:id="largeProgressCurrentValue" alignment="CENTER" contentDisplay="CENTER" text="" />
+        </VBox>
+        <VBox alignment="TOP_CENTER" fillWidth="false" maxHeight="60.0" mouseTransparent="true" prefHeight="60.0" StackPane.alignment="TOP_CENTER">
+            <children>
+                <ProgressBar id="progBar" fx:id="progressBar" maxHeight="30.0" maxWidth="300.0" minHeight="30.0" minWidth="300.0" prefWidth="300.0" progress="0.39">
+                    <VBox.margin>
+                        <Insets top="15.0" />
+                    </VBox.margin>
+                </ProgressBar>
             </children>
-            <BorderPane.margin>
-                <Insets left="30.0" right="30.0" />
-            </BorderPane.margin>
-        </StackPane>
-    </center>
+        </VBox>
+        <HBox alignment="TOP_RIGHT" fillHeight="false" maxHeight="60.0" prefHeight="60.0" StackPane.alignment="TOP_RIGHT">
+            <children>
+                <VBox alignment="TOP_CENTER" mouseTransparent="true" prefWidth="150.0" styleClass="statusBarTargetContainer">
+                    <children>
+                        <Label id="targetLegend" fx:id="largeTargetLegend" alignment="CENTER" contentDisplay="TEXT_ONLY" text="Target Temperature:" textAlignment="CENTER" />
+                        <Label id="targetValue" fx:id="largeTargetValue" alignment="CENTER" contentDisplay="TEXT_ONLY" textAlignment="CENTER" />
+                    </children>
+                    <HBox.margin>
+                        <Insets top="8.0" />
+                    </HBox.margin>  
+                </VBox>
+                <HBox spacing="20.0">
+                    <children>
+                        <StackPane pickOnBounds="false">
+                            <children>
+                                <GraphicButton fx:id="pauseButton" fxmlFileName="pauseButton" />
+                                <GraphicButton fx:id="resumeButton" fxmlFileName="printButton" />
+                            </children>
+                        </StackPane>
+                        <GraphicButton fx:id="cancelButton" fxmlFileName="cancelButton"/>
+                    </children>
+                    <HBox.margin>
+                        <Insets top="4.0" />
+                    </HBox.margin>
+                </HBox>
+            </children>
+            <StackPane.margin>
+                <Insets right="20.0" />
+            </StackPane.margin>
+        </HBox>
+    </children>
 </fx:root>

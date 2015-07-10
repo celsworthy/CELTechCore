@@ -195,7 +195,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 Reel reel = printer.reelsProperty().get(extruderNumber);
                 remainingFilament = reel.remainingFilamentProperty().get();
                 diameter = reel.diameterProperty().get();
-                setReelType(ReelType.ROBOX);
+                if (selectedFilamentProperty.get().isMutable())
+                {
+                    setReelType(ReelType.GEARS);
+                } else
+                {
+                    setReelType(ReelType.ROBOX);
+                }
             } else
             {
                 setReelType(ReelType.GEARS);
@@ -304,7 +310,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 Reel reel = printer.reelsProperty().get(extruderNumber);
                 remainingFilament = reel.remainingFilamentProperty().get();
                 diameter = reel.diameterProperty().get();
-                setReelType(ReelType.ROBOX);
+                if (selectedFilamentProperty.get().isMutable())
+                {
+                    setReelType(ReelType.GEARS);
+                } else
+                {
+                    setReelType(ReelType.ROBOX);
+                }
             } else
             {
                 setReelType(ReelType.GEARS);
@@ -319,12 +331,46 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     private ObservableList<Object> comboItems;
 
+//    class RefreshableListViewSkin extends ListViewSkin
+//    {
+//
+//        public RefreshableListViewSkin(ListView listView)
+//        {
+//            super(listView);
+//        }
+//
+//        public void refresh()
+//        {
+//            super.flow.rebuildCells();
+//        }
+//
+//    }
+//
+//    class RefreshableComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T>
+//    {
+//
+//        public RefreshableComboBoxListViewSkin(ComboBox comboBox)
+//        {
+//            super(comboBox);
+//
+//            getListView().setSkin(new RefreshableListViewSkin(getListView()));
+//
+//        }
+//
+//        public void refresh()
+//        {
+//            ((RefreshableListViewSkin) getListView().getSkin()).refresh();
+//        }
+//
+//    }
     /**
      * Set up the materials combo box. This displays a list of filaments and can also display an
      * "Unknown" (string) option when required.
      */
     private void setupComboBox()
     {
+
+//        cmbMaterials.setSkin(new RefreshableComboBoxListViewSkin<Object>(cmbMaterials));
         cmbMaterials.setCellFactory((ListView<Object> param) -> new FilamentCell());
 
         repopulateCmbMaterials();
@@ -379,7 +425,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     private void repopulateCmbMaterials()
     {
-
         Object currentValue = cmbMaterials.getValue();
         String currentFilamentId = "";
         if (currentValue instanceof Filament)
@@ -419,7 +464,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             filamentsList.addAll(allFilaments);
         }
         comboItems = FXCollections.observableArrayList(filamentsList);
+        cmbMaterials.setItems(null);
         cmbMaterials.setItems(comboItems);
+//        ((RefreshableComboBoxListViewSkin) cmbMaterials.getSkin()).refresh();
 
         if (mode == Mode.LAYOUT)
         {
@@ -719,16 +766,12 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
-    ChangeListener<Color> filamentChanged = new ChangeListener<Color>()
-    {
-
-        @Override
-        public void changed(
-            ObservableValue<? extends Color> observable, Color oldValue, Color newValue)
+    ChangeListener<Color> filamentChanged
+        = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
         {
             updateGUIForModeAndPrinterExtruder();
-        }
-    };
+            repopulateCmbMaterials();
+        };
 
     private void setUpFilamentChangedListener()
     {
@@ -739,9 +782,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 {
                     oldValue.getDisplayColourProperty().removeListener(filamentChanged);
                 }
-                if (newValue != null) {
+                if (newValue != null)
+                {
                     newValue.getDisplayColourProperty().addListener(filamentChanged);
-                }    
+                }
             });
     }
 

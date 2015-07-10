@@ -40,6 +40,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     private final FloatProperty bPositionGUIT = new SimpleFloatProperty();
 
     private final CalibrationPrinterErrorHandler printerErrorHandler;
+    
+    private boolean failedActionPerformed = false;
 
     public CalibrationNozzleOpeningActions(Printer printer, Cancellable userCancellable,
         Cancellable errorCancellable)
@@ -466,6 +468,12 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
     public void doFailedAction()
     {
+        // this can be called twice if an error occurs
+        if (failedActionPerformed) {
+            return;
+        }
+        
+        failedActionPerformed = true;
         try
         {
             printerErrorHandler.deregisterForPrinterErrors();
@@ -499,13 +507,12 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         try
         {
-            restoreHeadData();
-            resetPrinter();
-        } catch (CalibrationException | PrinterException ex)
+            doFailedAction();
+        } catch (Exception ex)
         {
-            steno.error("Error cancelling: " + ex);
+            ex.printStackTrace();
+            steno.error("error resetting printer " + ex);
         }
-        printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
     private void resetPrinter() throws PrinterException, CalibrationException

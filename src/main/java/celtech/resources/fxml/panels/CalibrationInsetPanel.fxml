@@ -15,76 +15,81 @@
     <children>
         <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
             <center>
-                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" BorderPane.alignment="CENTER">
+                <AnchorPane>
                     <children>
-                        <BorderPane>
-                            <top>
-                                <VerticalMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="360.0" />
-                            </top>
-                            <bottom>
-                                <GridPane BorderPane.alignment="CENTER">
-                                    <children>
-                                        <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BOTTOM">
-                                            <styleClass>
-                                                <String fx:value="verticalMenuOption" />
-                                            </styleClass>
-                                        </Text>
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                                    </rowConstraints>
-                                    <BorderPane.margin>
-                                        <Insets bottom="30.0" left="30.0" />
-                                    </BorderPane.margin>
-                                </GridPane>
-                            </bottom>
-                        </BorderPane>
-                        <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
-                            <HBox.margin>
-                                <Insets bottom="30.0" top="95.0" />
-                            </HBox.margin>
-                        </Separator>
-                        <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
-                            <padding>
-                                <Insets bottom="5.0" top="5.0" />
-                            </padding>
+
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
                             <children>
-                                <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
-                                    <VBox.margin>
-                                        <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
-                                    </VBox.margin>
-                                </Label>
-                                <VBox fx:id="diagramContainer" minHeight="100"  alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
-                                <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                                <BorderPane>
+                                    <top>
+                                        <VerticalMenu fx:id="calibrationMenu" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="360.0" />
+                                    </top>
+                                    <bottom>
+                                        <GridPane BorderPane.alignment="CENTER">
+                                            <children>
+                                                <Text id="stepNumber" fx:id="stepNumber" strokeType="OUTSIDE" strokeWidth="0.0" text="Step 1 of 10" GridPane.columnIndex="1" GridPane.valignment="BOTTOM">
+                                                    <styleClass>
+                                                        <String fx:value="verticalMenuOption" />
+                                                    </styleClass>
+                                                </Text>
+                                            </children>
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="25.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                            <BorderPane.margin>
+                                                <Insets bottom="30.0" left="30.0" />
+                                            </BorderPane.margin>
+                                        </GridPane>
+                                    </bottom>
+                                </BorderPane>
+                                <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
+                                    <HBox.margin>
+                                        <Insets bottom="30.0" top="95.0" />
+                                    </HBox.margin>
+                                </Separator>
+                                <VBox fx:id="informationCentre" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="5.0" top="5.0" />
+                                    </padding>
                                     <children>
-                                        <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
-                                            <HBox.margin>
-                                                <Insets left="70.0" right="70.0" />
-                                            </HBox.margin>
-                                        </Button>
-                                        <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
-                                            <HBox.margin>
-                                                <Insets left="70.0" right="70.0" />
-                                            </HBox.margin>
-                                        </Button>
+                                        <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
+                                            <VBox.margin>
+                                                <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <VBox fx:id="diagramContainer" minHeight="100"  alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
+                                        <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                                            <children>
+                                                <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
+                                                    <HBox.margin>
+                                                        <Insets left="70.0" right="70.0" />
+                                                    </HBox.margin>
+                                                </Button>
+                                                <Button id="buttonB" fx:id="buttonB" mnemonicParsing="false" onAction="#buttonBAction" styleClass="calibrationButtonsAB" text="B">
+                                                    <HBox.margin>
+                                                        <Insets left="70.0" right="70.0" />
+                                                    </HBox.margin>
+                                                </Button>
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets bottom="15.0" top="15.0" />
+                                            </VBox.margin>
+                                        </HBox>
                                     </children>
-                                    <VBox.margin>
-                                        <Insets bottom="15.0" top="15.0" />
-                                    </VBox.margin>
-                                </HBox>
+                                </VBox>
                             </children>
-                        </VBox>
+                        </HBox>
+                        <ProgressDisplay fx:id="progressDisplay" id="appearingProgressBar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
                     </children>
-                </HBox>
+                </AnchorPane>
             </center>
             <bottom>
                 <VBox id="calibrationBottomArea" fx:id="calibrationBottomArea" minHeight="0.0">
                     <children>
-                        <ProgressDisplay fx:id="progressDisplay" id="appearingProgressBar" />
                         <StackPane id="calibrateBottomMenu" fx:id="calibrateBottomMenu" maxHeight="-Infinity" minHeight="-Infinity" pickOnBounds="false" prefHeight="90.0" BorderPane.alignment="CENTER">
                             <children>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false">

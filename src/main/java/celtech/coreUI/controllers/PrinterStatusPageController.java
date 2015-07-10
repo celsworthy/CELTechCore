@@ -4,8 +4,10 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.components.AppearingProgressBar;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.components.ProgressDisplay;
+import celtech.coreUI.components.TesStatusBar;
 import celtech.coreUI.visualisation.threed.StaticModelOverlay;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
@@ -18,8 +20,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -27,7 +27,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
@@ -110,9 +109,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private JogButton x_plus1;
 
     @FXML
-    private Button pausePrintButton;
-
-    @FXML
     private JogButton extruder_plus100;
 
     @FXML
@@ -131,12 +127,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private JogButton y_minus100;
 
     @FXML
-    private Text progressTitle;
-
-    @FXML
-    private Button resumePrintButton;
-
-    @FXML
     private JogButton extruder_minus100;
 
     @FXML
@@ -144,9 +134,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     @FXML
     private JogButton y_plus1;
-
-    @FXML
-    private Button cancelPrintButton;
 
     @FXML
     private JogButton extruder_plus20;
@@ -170,52 +157,29 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private Group temperatureWarning;
 
     @FXML
-    private AnchorPane container;
+    private ProgressDisplay progressDisplay;
 
     @FXML
-    private ProgressDisplay progressDisplay;
+    private TesStatusBar jim1;
+
+    @FXML
+    private TesStatusBar jim2;
+
+    @FXML
+    void appear(ActionEvent event)
+    {
+        jim1.startSlidingInToView();
+    }
+
+    @FXML
+    void disappear(ActionEvent event)
+    {
+        jim1.startSlidingOutOfView();
+    }
 
     private Node[] advancedControls = null;
 
     private Printer lastSelectedPrinter = null;
-
-    private final BooleanProperty showProgressGroup = new SimpleBooleanProperty(false);
-
-    @FXML
-    void pausePrint(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.pause();
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't pause printer");
-        }
-    }
-
-    @FXML
-    void resumePrint(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.resume();
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't resume print");
-        }
-    }
-
-    @FXML
-    void cancelPrint(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.cancel(null);
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't resume print");
-        }
-    }
 
     @FXML
     void jogButton(ActionEvent event)
@@ -271,12 +235,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
         {
-            processPrinterStatusChange(printerToUse.printerStatusProperty().get());
+            setAdvancedControlsVisibility();
         };
 
         pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
         {
-            processPrinterStatusChange(printerToUse.printerStatusProperty().get());
+            setAdvancedControlsVisibility();
         };
 
         printerSilhouette.setVisible(true);
@@ -296,17 +260,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
             z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10
         };
+
         setAdvancedControlsVisibility();
-
-        pausePrintButton.setVisible(false);
-        resumePrintButton.setVisible(false);
-        cancelPrintButton.setVisible(false);
-
-        if (Lookup.getSelectedPrinterProperty().get() != null)
-        {
-            Printer printer = Lookup.getSelectedPrinterProperty().get();
-            processPrinterStatusChange(printer.printerStatusProperty().get());
-        }
 
         Lookup.getSelectedPrinterProperty().addListener(
                 new ChangeListener<Printer>()
@@ -329,15 +284,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                         {
                             unbindFromSelectedPrinter();
 
-                            showProgressGroup.set(false);
                             printerColourRectangle.setVisible(false);
 
                             temperatureWarning.setVisible(false);
 
                             reel.setVisible(false);
                             filamentRectangle.setVisible(false);
-
-                            processPrinterStatusChange(null);
                         } else
                         {
                             unbindFromSelectedPrinter();
@@ -361,20 +313,18 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                                 filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).
                                         displayColourProperty().get());
                             }
-
-                            processPrinterStatusChange(selectedPrinter.printerStatusProperty().get());
-                            bindToSelectedPrinter(selectedPrinter);
                             selectedPrinter.printerStatusProperty().addListener(
                                     printerStatusChangeListener);
                             selectedPrinter.pauseStatusProperty().addListener(
                                     pauseStatusChangeListener);
-
                             printerOpenImage.visibleProperty().bind(selectedPrinter.
                                     getPrinterAncillarySystems().doorOpenProperty());
                             printerClosedImage.visibleProperty().bind(selectedPrinter.
                                     getPrinterAncillarySystems().doorOpenProperty().not());
 
                         }
+
+                        setAdvancedControlsVisibility();
 
                         lastSelectedPrinter = selectedPrinter;
                     }
@@ -415,48 +365,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         for (Node node : advancedControls)
         {
             node.setVisible(visible);
-        }
-    }
-
-    private void bindToSelectedPrinter(Printer printer)
-    {
-        pausePrintButton.visibleProperty().bind(printer.canPauseProperty());
-        resumePrintButton.visibleProperty().bind(printer.canResumeProperty());
-        cancelPrintButton.visibleProperty().bind(printer.canCancelProperty());
-    }
-
-    private void processPrinterStatusChange(PrinterStatus printerStatus)
-    {
-        setAdvancedControlsVisibility();
-        if (printerStatus != null)
-        {
-            boolean showProgressGroupFlag = false;
-
-            switch (printerStatus)
-            {
-                case IDLE:
-                    showProgressGroupFlag = false;
-                    break;
-                case PRINTING_PROJECT:
-                    showProgressGroupFlag = true;
-                    break;
-                default:
-                    showProgressGroup.set(false);
-                    break;
-            }
-
-            switch (printerToUse.pauseStatusProperty().get())
-            {
-                case PAUSE_PENDING:
-                case RESUME_PENDING:
-                case PAUSED:
-                    showProgressGroupFlag = false;
-                    break;
-                default:
-                    break;
-            }
-
-            showProgressGroup.set(showProgressGroupFlag);
         }
     }
 
@@ -520,28 +428,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         progressDisplay.unbindFromPrinter();
 
-//        progressBar.progressProperty().unbind();
-//        progressPercent.textProperty().unbind();
-//        progressTitle.textProperty().unbind();
-//        progressMessage.textProperty().unbind();
-//        secondProgressBar.visibleProperty().unbind();
-//        secondProgressBar.progressProperty().unbind();
-//        secondProgressPercent.textProperty().unbind();
         reel.visibleProperty().unbind();
         if (lastSelectedPrinter != null)
         {
             lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
                     printerColourChangeListener);
-
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
             lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
-
-            pausePrintButton.visibleProperty().unbind();
-            pausePrintButton.setVisible(false);
-            resumePrintButton.visibleProperty().unbind();
-            resumePrintButton.setVisible(false);
-            cancelPrintButton.visibleProperty().unbind();
-            cancelPrintButton.setVisible(false);
         }
 
         filamentRectangle.visibleProperty().unbind();

@@ -734,7 +734,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                     safetyFeaturesOnProperty()));
 
         printButton.getTag().addConditionalText("dialogs.chooseACustomProfile",
-                                                project.customSettingsNotChosenProperty());
+                project.customSettingsNotChosenProperty());
+        
+        printButton.getTag().addConditionalText("dialogs.printHeadPowerOff",
+                printer.headPowerOffFlagProperty());
 
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
@@ -1006,25 +1009,27 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
 
                 canPrintProject.bind(
-                    printer.canPrintProperty()
-                    .and(project.canPrintProperty())
-                    .and(requiredFilamentProperty.isNotNull())
-                    .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                        .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                    .and(printer.extrudersProperty().get(extruderNumber).
-                        filamentLoadedProperty())
+                        printer.canPrintProperty()
+                        .and(project.canPrintProperty())
+                        .and(requiredFilamentProperty.isNotNull())
+                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                        .and(printer.extrudersProperty().get(extruderNumber).
+                                filamentLoadedProperty()
+                        .and(printer.headPowerOffFlagProperty().not()))
                 );
             } else // both extruders are required
             {
                 canPrintProject.bind(
-                    printer.canPrintProperty()
-                    .and(project.canPrintProperty())
-                    .and(printerSettings.getFilament0Property().isNotNull())
-                    .and(printerSettings.getFilament1Property().isNotNull())
-                    .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                        .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                    .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                    .and(printer.extrudersProperty().get(1).filamentLoadedProperty())
+                        printer.canPrintProperty()
+                        .and(project.canPrintProperty())
+                        .and(printerSettings.getFilament0Property().isNotNull())
+                        .and(printerSettings.getFilament1Property().isNotNull())
+                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                        .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
+                        .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
+                        .and(printer.headPowerOffFlagProperty().not()))
                 );
 
             }

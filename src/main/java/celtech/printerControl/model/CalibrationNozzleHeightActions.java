@@ -38,6 +38,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
     private final CalibrationPrinterErrorHandler printerErrorHandler;
+    
+    private boolean failedActionPerformed = false;
 
     public CalibrationNozzleHeightActions(Printer printer, Cancellable userCancellable,
         Cancellable errorCancellable)
@@ -307,6 +309,14 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 
     public void doFailedAction()
     {
+        
+        // this can be called twice if an error occurs
+        if (failedActionPerformed) {
+            return;
+        }
+        
+        failedActionPerformed = true;
+        
         try
         {
             restoreHeadData();
@@ -414,13 +424,12 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     {
         try
         {
-            restoreHeadData();
-            resetPrinter();
-        } catch (CalibrationException | PrinterException ex)
+            doFailedAction();
+        } catch (Exception ex)
         {
-            steno.error("Error cancelling: " + ex);
+            ex.printStackTrace();
+            steno.error("error resetting printer " + ex);
         }
-        printer.setPrinterStatus(PrinterStatus.IDLE);
     }
 
     private void resetPrinter() throws PrinterException, CalibrationException
