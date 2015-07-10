@@ -41,12 +41,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -68,7 +70,6 @@ public class PurgeInsetPanelController implements Initializable
     private Project project = null;
     private Printer printer = null;
     private double printPercent;
-    private DiagramHandler diagramHandler;
     private Filament currentMaterial;
 
     PurgeStateTransitionManager transitionManager;
@@ -80,6 +81,12 @@ public class PurgeInsetPanelController implements Initializable
             {
                 transitionManager.setPurgeTemperature(newValue.intValue());
             };
+
+    @FXML
+    private VBox container;
+
+    @FXML
+    private Group diagram;
 
     @FXML
     private VBox diagramContainer;
@@ -175,6 +182,10 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
+    private double initialDiagramWidth = 0;
+    private double initialDiagramHeight = 0;
+    private double diagramAspectRatio = 1;
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -182,9 +193,6 @@ public class PurgeInsetPanelController implements Initializable
 
         startPurgeButton.installTag();
         proceedButton.installTag();
-
-        diagramHandler = new DiagramHandler(diagramContainer, resources);
-        diagramHandler.initialise();
 
         FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
 
@@ -250,6 +258,77 @@ public class PurgeInsetPanelController implements Initializable
             {
             }
         });
+
+        initialDiagramWidth = diagramContainer.getWidth();
+        initialDiagramHeight = diagramContainer.getHeight();
+        diagramAspectRatio = initialDiagramWidth / initialDiagramHeight;
+
+        diagramContainer.widthProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                resizePurgeDisplay(diagramContainer.getWidth(), diagramContainer.getHeight());
+            }
+        });
+
+        diagramContainer.heightProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                resizePurgeDisplay(diagramContainer.getWidth(), diagramContainer.getHeight());
+            }
+        });
+
+        diagramContainer.visibleProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                resizePurgeDisplay(diagramContainer.getWidth(), diagramContainer.getHeight());
+            }
+        });
+
+        resizePurgeDisplay(diagramContainer.getWidth(), diagramContainer.getHeight());
+    }
+
+    private void resizePurgeDisplay(double displayWidth, double displayHeight)
+    {
+        final double beginWidth = 804;
+        final double beginHeight = 345;
+        final double aspect = beginWidth / beginHeight;
+
+        displayWidth = displayWidth * 0.9;
+        displayHeight = displayHeight * 0.9;
+
+        double displayAspect = displayWidth / displayHeight;
+
+        double newWidth = 0;
+        double newHeight = 0;
+
+        steno.info("Being called with " + displayWidth + " : " + displayHeight);
+
+        if (displayAspect >= aspect)
+        {
+            // Drive from height
+            newWidth = displayHeight * aspect;
+            newHeight = displayHeight;
+        } else
+        {
+            //Drive from width
+            newHeight = displayWidth / aspect;
+            newWidth = displayWidth;
+        }
+
+        double xScale = newWidth / beginWidth;
+        double yScale = newHeight / beginHeight;
+
+        diagram.setScaleX(xScale);
+        diagram.setScaleY(yScale);
+//        diagramContainer.setPrefHeight(newHeight);
+//        diagramContainer.setPrefWidth(newWidth);
+//        diagramContainer.setTranslateX(newWidth / 2);
     }
 
     private void populateNamesToButtons()

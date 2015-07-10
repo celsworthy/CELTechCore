@@ -930,6 +930,10 @@ public class PrintEngine implements ControllableService
             steno.
                     info("Print service is in state:" + transferGCodeToPrinterService.stateProperty().
                             get().name());
+            if (transferGCodeToPrinterService.isRunning())
+            {
+                transferGCodeToPrinterService.cancel();
+            }
             transferGCodeToPrinterService.reset();
             transferGCodeToPrinterService.setPrintUsingSDCard(useSDCard);
             transferGCodeToPrinterService.setStartFromSequenceNumber(0);
