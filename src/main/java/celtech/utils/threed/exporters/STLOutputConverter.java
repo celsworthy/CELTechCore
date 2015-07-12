@@ -7,6 +7,7 @@ package celtech.utils.threed.exporters;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,19 +72,19 @@ public class STLOutputConverter implements MeshFileOutputConverter
             int modelFileCount = 0;
             for (ModelContainer modelContainer : project.getLoadedModels())
             {
-                for (MeshView meshView : modelContainer.getMeshViews())
-                {
-                    String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-                            + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
+                    for (MeshView meshView : modelContainer.getMeshViews())
+                    {
+                        String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+                                + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
 
-                    List<MeshView> meshViewsToOutput = new ArrayList<>();
-                    meshViewsToOutput.add(meshView);
-                    outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
-                    createdFiles.add(tempModelFilenameWithPath);
-                    modelFileCount++;
+                        List<MeshView> meshViewsToOutput = new ArrayList<>();
+                        meshViewsToOutput.add(meshView);
+                        outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
+                        createdFiles.add(tempModelFilenameWithPath);
+                        modelFileCount++;
+                    }
                 }
             }
-        }
 
         return createdFiles;
     }

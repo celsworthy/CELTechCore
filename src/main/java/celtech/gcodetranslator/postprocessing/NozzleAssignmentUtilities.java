@@ -262,7 +262,7 @@ public class NozzleAssignmentUtilities
         return lastObjectReferenceNumber;
     }
 
-    protected int insertNozzleControlSectionsByObject(LayerNode layerNode)
+    protected int insertNozzleControlSectionsByObject(LayerNode layerNode, LayerPostProcessResult lastLayerResult)
     {
         int lastObjectReferenceNumber = -1;
         //We'll need at least one of these per layer
@@ -313,7 +313,20 @@ public class NozzleAssignmentUtilities
                     {
                         if (lastSectionNode == null)
                         {
-                            throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber() + " as last section didn't exist");
+                            //Try to get the section from the last layer
+                            if (lastLayerResult != null)
+                            {
+                                Optional<GCodeEventNode> potentialLastSection = lastLayerResult.getLayerData().getAbsolutelyTheLastEvent().getParent();
+                                if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                                {
+                                    lastSectionNode = (SectionNode) potentialLastSection.get();
+                                }
+                            }
+
+                            if (lastSectionNode == null)
+                            {
+                                throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber() + " as last section didn't exist");
+                            }
                         }
 
                         try

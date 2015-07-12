@@ -365,7 +365,7 @@ public class PostProcessor
                 lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode);
                 break;
             case USE_OBJECT_MATERIAL:
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode);
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
                 break;
             default:
                 break;
