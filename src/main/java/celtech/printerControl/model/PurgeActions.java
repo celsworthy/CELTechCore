@@ -10,8 +10,6 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -55,8 +53,9 @@ public class PurgeActions extends StateTransitionActions
      * requested.
      */
     private Filament purgeFilament;
-    
+
     private boolean failedActionPerformed = false;
+    private boolean doorNeedsOpening = false;
 
     PurgeActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
@@ -64,8 +63,6 @@ public class PurgeActions extends StateTransitionActions
         this.printer = printer;
         PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
     }
-
-    
 
     @Override
     public void initialise()
@@ -81,7 +78,7 @@ public class PurgeActions extends StateTransitionActions
         printer.gotoNozzlePosition(0);
         printer.switchBedHeaterOff();
         switchHeatersAndHeadLightOff();
-        
+
         PrinterUtils.waitOnBusy(printer, (Cancellable) null);
         try
         {
@@ -139,6 +136,7 @@ public class PurgeActions extends StateTransitionActions
 
     void doRunPurgeAction() throws PrinterException
     {
+        doorNeedsOpening = true;
         printer.purgeMaterial(true, userOrErrorCancellable);
     }
 
@@ -161,9 +159,7 @@ public class PurgeActions extends StateTransitionActions
             reelNozzleTemperature,
             savedHeadData.getHeadHours());
         printer.readHeadEEPROM();
-        resetPrinter();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        openDoor();
         deregisterPrinterErrorHandler();
     }
 
@@ -171,26 +167,28 @@ public class PurgeActions extends StateTransitionActions
     {
         // needs to run on gui thread to make sure it is called after status set to idle
         Lookup.getTaskExecutor().
-            runOnGUIThread(() -> {
-                try
+            runOnGUIThread(() ->
                 {
-                    printer.goToOpenDoorPosition(null);
-                } catch (PrinterException ex)
-                {
-                    steno.warning("could not go to open door");
-                }
+                    try
+                    {
+                        printer.goToOpenDoorPosition(null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.warning("could not go to open door");
+                    }
             });
     }
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
         // this can be called twice if an error occurs
-        if (failedActionPerformed) {
+        if (failedActionPerformed)
+        {
             return;
         }
-        
+
         failedActionPerformed = true;
-        
+
         try
         {
             abortAnyOngoingPrint();
@@ -201,7 +199,10 @@ public class PurgeActions extends StateTransitionActions
             System.out.println("Error running failed action");
         }
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        openDoor();
+        if (doorNeedsOpening)
+        {
+            openDoor();
+        }
     }
 
     private void deregisterPrinterErrorHandler()
