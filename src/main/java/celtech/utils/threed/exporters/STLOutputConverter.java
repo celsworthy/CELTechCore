@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.MeshView;
@@ -53,12 +55,9 @@ public class STLOutputConverter implements MeshFileOutputConverter
 
         if (outputAsSingleFile)
         {
-            List<MeshView> meshViewsToOutput = new ArrayList<>();
+            Set<MeshView> meshViewsToOutput = new HashSet<>();
 
-            project.getLoadedModels().stream()
-                    .map(ModelContainer::getMeshViews)
-                    .forEach(meshViewList -> meshViewList
-                            .forEach(meshView -> meshViewsToOutput.add(meshView)));
+            project.getLoadedModels().stream().forEach(mc -> meshViewsToOutput.addAll(mc.descendentMeshViews()));
 
             String tempModelFilenameWithPath = printJobDirectory + printJobUUID
                     + ApplicationConfiguration.stlTempFileExtension;
@@ -71,12 +70,12 @@ public class STLOutputConverter implements MeshFileOutputConverter
             int modelFileCount = 0;
             for (ModelContainer modelContainer : project.getLoadedModels())
             {
-                for (MeshView meshView : modelContainer.getMeshViews())
+                for (MeshView meshView : modelContainer.descendentMeshViews())
                 {
                     String tempModelFilenameWithPath = printJobDirectory + printJobUUID
                             + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
 
-                    List<MeshView> meshViewsToOutput = new ArrayList<>();
+                    Set<MeshView> meshViewsToOutput = new HashSet<>();
                     meshViewsToOutput.add(meshView);
                     outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
                     createdFiles.add(tempModelFilenameWithPath);
@@ -89,7 +88,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
     }
 
     private void outputMeshViewsInSingleFile(final String tempModelFilenameWithPath,
-            List<MeshView> meshViewsToOutput)
+            Set<MeshView> meshViewsToOutput)
     {
         File fFile = new File(tempModelFilenameWithPath);
 

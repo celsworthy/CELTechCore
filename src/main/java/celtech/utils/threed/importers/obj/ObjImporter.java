@@ -134,14 +134,16 @@ public class ObjImporter
                 extruderAssociations.add(materialNumber);
             }
 
-            ModelContainer modelContainer = new ModelContainer(modelFile, meshes,
-                                                               extruderAssociations);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshes.get(0),
+                                                               extruderAssociations.get(0));
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(
                 modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
                                                   modelFile.getName(), targetProject,
                                                   modelContainer);
+            
+           
         } catch (Exception ex)
         {
             ex.printStackTrace();

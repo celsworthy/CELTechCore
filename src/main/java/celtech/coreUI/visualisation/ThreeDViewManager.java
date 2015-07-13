@@ -271,23 +271,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             if (handleThisEvent)
             {
                 ModelContainer modelContainer = null;
-                MeshView pickedMesh = null;
                 if (intersectedNode instanceof MeshView)
                 {
-                    modelContainer = (ModelContainer) intersectedNode.getParent().getParent();
-                    pickedMesh = (MeshView) intersectedNode;
+                    modelContainer = (ModelContainer) intersectedNode.getParent();
                 }
 
                 switch (layoutSubmode.get())
                 {
                     case SNAP_TO_GROUND:
-                        doSnapToGround(modelContainer, pickedMesh, pickResult);
+                        doSnapToGround(modelContainer, pickResult);
                         break;
                     case ASSOCIATE_WITH_EXTRUDER0:
-                        doAssociateWithExtruder0(modelContainer, pickedMesh, true);
+                        doAssociateWithExtruder0(modelContainer, true);
                         break;
                     case ASSOCIATE_WITH_EXTRUDER1:
-                        doAssociateWithExtruder0(modelContainer, pickedMesh, false);
+                        doAssociateWithExtruder0(modelContainer, false);
                         break;
                     case SELECT:
                         doSelectTranslateModel(intersectedNode, pickedPoint, event);
@@ -348,21 +346,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    private void doAssociateWithExtruder0(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
+    private void doAssociateWithExtruder0(ModelContainer modelContainer, boolean useExtruder0)
     {
         if (modelContainer != null)
         {
-            undoableProject.setUseExtruder0Filament(modelContainer, pickedMesh, useExtruder0);
+            undoableProject.setUseExtruder0Filament(modelContainer, useExtruder0);
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
 
-    private void doSnapToGround(ModelContainer modelContainer, MeshView pickedMesh, PickResult pickResult)
+    private void doSnapToGround(ModelContainer modelContainer, PickResult pickResult)
     {
         if (modelContainer != null)
         {
             int faceNumber = pickResult.getIntersectedFace();
-            undoableProject.snapToGround(modelContainer, pickedMesh, faceNumber);
+            undoableProject.snapToGround(modelContainer, faceNumber);
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
@@ -637,27 +635,20 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        List<MeshView> outerMeshViews = bedOuterLoadResult.getModelContainer().getMeshViews();
-        outerMeshViews
-                .forEach(meshView ->
-                        {
-                            meshView.setMaterial(bedOuterMaterial);
-                });
-
-        bed.getChildren().addAll(outerMeshViews);
+        MeshView outerMeshView = bedOuterLoadResult.getModelContainer().getMeshView();
+        outerMeshView.setMaterial(bedOuterMaterial);
+               
+        bed.getChildren().addAll(outerMeshView);
 
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
         bed.getChildren().add(createBoundingBox());
 
-        List<MeshView> innerMeshViews = bedInnerLoadResult.getModelContainer().getMeshViews();
-        innerMeshViews.forEach(meshView ->
-        {
-            meshView.setMaterial(bedInnerMaterial);
-        });
+        MeshView innerMeshView = bedInnerLoadResult.getModelContainer().getMeshView();
+        innerMeshView.setMaterial(bedInnerMaterial);
 
-        bed.getChildren().addAll(innerMeshViews);
+        bed.getChildren().addAll(innerMeshView);
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
                 ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());

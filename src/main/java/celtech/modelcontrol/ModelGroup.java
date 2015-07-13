@@ -12,6 +12,7 @@ import java.util.Set;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.MeshView;
 
 /**
  * ModelGroup is a ModelContainer that is a group of child ModelContainers or other ModelGroups.
@@ -160,9 +161,9 @@ public class ModelGroup extends ModelContainer
     }
 
     @Override
-    public Set<Node> descendentMeshViews()
+    public Set<MeshView> descendentMeshViews()
     {
-        Set<Node> descendentMeshViews = new HashSet<>();
+        Set<MeshView> descendentMeshViews = new HashSet<>();
 
         for (ModelContainer modelContainer : childModelContainers)
         {

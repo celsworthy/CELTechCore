@@ -40,6 +40,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -61,14 +62,15 @@ public class Project implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
-    
-    public static class ProjectLoadException extends Exception {
+
+    public static class ProjectLoadException extends Exception
+    {
 
         public ProjectLoadException(String message)
         {
             super(message);
         }
-        
+
     }
 
     private Filament DEFAULT_FILAMENT;
@@ -358,13 +360,7 @@ public class Project implements Serializable
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : loadedModels)
         {
-            for (int extruderNumber : loadedModel.getMeshExtruderAssociationProperty())
-            {
-                if (!usedExtruders.contains(extruderNumber))
-                {
-                    usedExtruders.add(extruderNumber);
-                }
-            }
+            usedExtruders.add(loadedModel.getAssociateWithExtruderNumberProperty().get());
         }
         return usedExtruders;
     }
@@ -549,22 +545,22 @@ public class Project implements Serializable
         return lastModifiedDate;
     }
 
-    private ListChangeListener<Number> modelExtruderNumberListener;
+    private ChangeListener<Number> modelExtruderNumberListener;
 
     private void addModelListeners(ModelContainer modelContainer)
     {
-        modelExtruderNumberListener = (ListChangeListener.Change<? extends Number> change) ->
+        modelExtruderNumberListener = 
+            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
             modelColourChanged.set(!modelColourChanged.get());
         };
-        modelContainer.getMeshExtruderAssociationProperty().addListener(
-            modelExtruderNumberListener);
+        modelContainer.getAssociateWithExtruderNumberProperty().addListener(modelExtruderNumberListener);
     }
 
     private void removeModelListeners(ModelContainer modelContainer)
     {
-        modelContainer.getMeshExtruderAssociationProperty().removeListener(
+        modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
             modelExtruderNumberListener);
     }
 
@@ -623,7 +619,7 @@ public class Project implements Serializable
 
             //TODO modify to work with multiple mesh views
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
-                (TriangleMesh) modelContainer.getMeshViews().get(0).getMesh());
+                (TriangleMesh) modelContainer.getMeshView().getMesh());
             if (subMeshes.size() > 1)
             {
                 deleteModel(modelContainer);
@@ -707,7 +703,8 @@ public class Project implements Serializable
      * groups are created.
      * </p>
      */
-    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
+        Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
         do
@@ -721,7 +718,8 @@ public class Project implements Serializable
      *
      * @return the number of groups created
      */
-    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure,
+        Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numGroups = 0;
         for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
@@ -777,7 +775,8 @@ public class Project implements Serializable
             if (modelContainer.isPresent())
             {
                 modelContainers.add(modelContainer.get());
-            } else {
+            } else
+            {
                 throw new ProjectLoadException("unexpected model id when rereating groups");
             }
         }
@@ -1001,9 +1000,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
     {
-        modelContainer.snapToGround(pickedMesh, faceNumber);
+        modelContainer.snapToGround(faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);
@@ -1098,10 +1097,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh,
-        boolean useExtruder0)
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
-        modelContainer.setUseExtruder0(pickedMesh, useExtruder0);
+        modelContainer.setUseExtruder0(useExtruder0);
         projectModified();
     }
 

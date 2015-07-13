@@ -170,11 +170,11 @@ public class UndoableProject
         });
     }
 
-    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
     {
         doTransformCommand(() ->
         {
-            project.snapToGround(modelContainer, pickedMesh, faceNumber);
+            project.snapToGround(modelContainer, faceNumber);
         });
     }
 
@@ -219,11 +219,10 @@ public class UndoableProject
 
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh, boolean useExtruder0)
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
         Command setUserExtruder0Command = new SetUserExtruder0Command(project,
                 modelContainer,
-                pickedMesh,
                 useExtruder0);
         commandStack.do_(setUserExtruder0Command);
     }

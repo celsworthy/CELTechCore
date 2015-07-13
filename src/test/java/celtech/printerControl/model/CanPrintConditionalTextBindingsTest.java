@@ -37,7 +37,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
         MeshView meshView = new MeshView(new Shape3DRectangle(2, 3));
         ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
-        modelContainer.setUseExtruder0(null, useExtruder0);
+        modelContainer.setUseExtruder0(useExtruder0);
         return modelContainer;
     }
 
@@ -139,7 +139,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        project.getLoadedModels().get(0).setUseExtruder0(null, false);
+        project.getLoadedModels().get(0).setUseExtruder0(false);
         BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
@@ -160,7 +160,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        project.getLoadedModels().get(0).setUseExtruder0(null, false);
+        project.getLoadedModels().get(0).setUseExtruder0(false);
         BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
