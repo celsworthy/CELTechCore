@@ -83,7 +83,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                     modelFileCount++;
                 }
             }
-
+        }    
         return createdFiles;
     }
 
