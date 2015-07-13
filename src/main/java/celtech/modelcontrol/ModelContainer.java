@@ -84,7 +84,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private BooleanProperty isSelected = null;
     private BooleanProperty isOffBed = null;
     private SimpleStringProperty modelName = null;
-    private int numberOfMeshes = 0;
 
     ModelBounds originalModelBounds;
 
@@ -785,9 +784,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeUTF(modelName.get());
 
         // unused
-        out.writeObject(0);
-
-        out.writeInt(numberOfMeshes);
+        out.writeInt(0);
 
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
 
@@ -816,9 +813,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void readObject(ObjectInputStream in)
         throws IOException, ClassNotFoundException
     {
+        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+        
         String modelName = in.readUTF();
 
-        numberOfMeshes = in.readInt();
+        int numberOfMeshesNowUnused = in.readInt();
 
         int[] smoothingGroups = (int[]) in.readObject();
         int[] faces = (int[]) in.readObject();
@@ -835,12 +834,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         triMesh.getFaces().addAll(faces);
         triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
-        MeshView newMesh = new MeshView(triMesh);
-        newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-        newMesh.setCullFace(CullFace.BACK);
-        newMesh.setId(modelName + "_mesh");
+        meshView = new MeshView(triMesh);
+        meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+        meshView.setCullFace(CullFace.BACK);
+        meshView.setId(modelName + "_mesh");
 
-        getChildren().add(newMesh);
+        getChildren().add(meshView);
 
         initialise(new File(modelName));
 
