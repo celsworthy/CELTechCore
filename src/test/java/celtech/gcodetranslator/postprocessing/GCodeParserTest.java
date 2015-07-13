@@ -20,7 +20,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
-import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /**
@@ -790,5 +790,186 @@ public class GCodeParserTest
         result = runner.run(notASection);
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
+    }
+
+    @Test
+    public void curaMixedLayerStartTest()
+    {
+        String inputData = ";LAYER:1\n"
+                + "M106 S94\n"
+                + "G0 F12000 X103.562 Y79.849 Z0.600\n"
+                + ";TYPE:WALL-INNER\n"
+                + "G1 F900 X103.749 Y79.311 E0.13679\n"
+                + "G1 X103.810 Y78.751 E0.13529\n"
+                + "G1 X103.749 Y78.186 E0.13648\n"
+                + "G1 X103.561 Y77.649 E0.13664\n"
+                + "G1 X103.258 Y77.165 E0.13714\n"
+                + "G1 X102.852 Y76.752 E0.13909\n"
+                + "G1 X102.302 Y76.409 E0.15567\n"
+                + "G1 X101.638 Y76.222 E0.16567\n"
+                + "G1 X101.219 Y76.188 E0.10096\n";
+
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.Layer());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        LayerNode layerNode = gcodeParser.getLayerNode();
+
+        assertNotNull(layerNode);
+
+        assertEquals(
+                3, layerNode.getChildren().size());
+
+        assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
+        assertEquals(TravelNode.class, layerNode.getChildren().get(1).getClass());
+        assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(2).getClass());
+
+        OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(2);
+
+        assertEquals(
+                1, objectNode.getChildren().size());
+        assertEquals(InnerPerimeterSectionNode.class, objectNode.getChildren().get(0).getClass());
+
+        InnerPerimeterSectionNode inner = (InnerPerimeterSectionNode) objectNode.getChildren().get(0);
+        assertEquals(ExtrusionNode.class, inner.getChildren().get(0).getClass());
+
+    }
+
+    @Test
+    public void curaTravelFirstLayerStartTest()
+    {
+        String inputData = ";LAYER:7\n"
+                + "G0 F12000 X109.157 Y81.288 Z2.400\n"
+                + ";TYPE:WALL-INNER\n"
+                + "G1 F600 X109.157 Y81.299 E0.00264\n"
+                + "G1 X99.549 Y81.288 E2.30747\n"
+                + "G1 X99.351 Y81.246 E0.04861\n"
+                + "G1 X99.173 Y81.166 E0.04687\n"
+                + "G1 X99.015 Y81.051 E0.04693\n"
+                + "G1 X98.885 Y80.905 E0.04695\n"
+                + "G1 X98.787 Y80.736 E0.04692\n"
+                + "G1 X98.727 Y80.552 E0.04648\n"
+                + "G1 X98.700 Y80.293 E0.06254\n"
+                + "G1 X98.700 Y69.712 E2.54115\n"
+                + "G1 X98.727 Y69.446 E0.06421\n"
+                + "G1 X98.788 Y69.258 E0.04747\n"
+                + "G1 X98.882 Y69.095 E0.04519\n"
+                + "G1 X99.014 Y68.949 E0.04727\n"
+                + "G1 X99.174 Y68.832 E0.04760\n"
+                + "G1 X99.353 Y68.752 E0.04709\n"
+                + "G1 X99.548 Y68.711 E0.04786\n"
+                + "G1 X110.451 Y68.711 E2.61848\n"
+                + "G1 X110.646 Y68.752 E0.04786\n"
+                + "G1 X110.824 Y68.832 E0.04687\n"
+                + "G1 X110.984 Y68.948 E0.04746\n"
+                + "G1 X111.115 Y69.094 E0.04711\n"
+                + "G1 X111.208 Y69.255 E0.04465\n"
+                + "G1 X111.274 Y69.454 E0.05035\n"
+                + "G1 X111.300 Y69.701 E0.05965\n"
+                + "G1 X111.300 Y80.297 E2.54475\n"
+                + "G1 X111.272 Y80.553 E0.06185\n"
+                + "G1 X111.212 Y80.735 E0.04602\n"
+                + "G1 X111.113 Y80.907 E0.04766\n"
+                + "G1 X110.982 Y81.052 E0.04693\n"
+                + "G1 X110.823 Y81.168 E0.04727\n"
+                + "G1 X110.648 Y81.246 E0.04601\n"
+                + "G1 X110.451 Y81.288 E0.04838\n"
+                + "G1 X109.157 Y81.288 E0.31077\n"
+                + "G0 F12000 X109.957 Y82.088\n"
+                + ";TYPE:WALL-OUTER\n"
+                + "G1 F600 X109.957 Y82.100 E0.00288\n"
+                + "G1 X99.461 Y82.088 E2.52074\n"
+                + "G1 X99.103 Y82.012 E0.08789\n"
+                + "G1 X98.766 Y81.860 E0.08879\n"
+                + "G1 X98.477 Y81.649 E0.08594\n"
+                + "G1 X98.232 Y81.376 E0.08810\n"
+                + "G1 X98.053 Y81.065 E0.08618\n"
+                + "G1 X97.940 Y80.719 E0.08742\n"
+                + "G1 X97.900 Y80.336 E0.09248\n"
+                + "G1 X97.900 Y69.670 E2.56156\n"
+                + "G1 X97.940 Y69.279 E0.09439\n"
+                + "G1 X98.053 Y68.933 E0.08742\n"
+                + "G1 X98.232 Y68.621 E0.08639\n"
+                + "G1 X98.474 Y68.353 E0.08672\n"
+                + "G1 X98.776 Y68.133 E0.08973\n"
+                + "G1 X99.103 Y67.987 E0.08600\n"
+                + "G1 X99.461 Y67.911 E0.08789\n"
+                + "G1 X110.538 Y67.911 E2.66027\n"
+                + "G1 X110.896 Y67.987 E0.08789\n"
+                + "G1 X111.223 Y68.133 E0.08600\n"
+                + "G1 X111.523 Y68.351 E0.08906\n"
+                + "G1 X111.765 Y68.620 E0.08690\n"
+                + "G1 X111.942 Y68.928 E0.08531\n"
+                + "G1 X112.060 Y69.281 E0.08939\n"
+                + "G1 X112.100 Y69.664 E0.09248\n"
+                + "G1 X112.100 Y80.336 E2.56300\n"
+                + "G1 X112.058 Y80.722 E0.09325\n"
+                + "G1 X111.944 Y81.067 E0.08726\n"
+                + "G1 X111.764 Y81.380 E0.08671\n"
+                + "G1 X111.521 Y81.650 E0.08724\n"
+                + "G1 X111.225 Y81.864 E0.08772\n"
+                + "G1 X110.894 Y82.012 E0.08708\n"
+                + "G1 X110.538 Y82.088 E0.08742\n"
+                + "G1 X109.957 Y82.088 E0.13953\n"
+                + "G0 F12000 X109.668 Y80.967\n"
+                + ";TYPE:FILL\n"
+                + "G1 F600 X110.313 Y80.322 E0.19141\n"
+                + "G1 X110.504 Y79.564 E0.19853\n"
+                + "G1 X110.463 Y78.475 E0.32192\n"
+                + "G1 X110.978 Y77.394 E0.28757\n"
+                + "G0 F12000 X110.979 Y75.696\n"
+                + "G1 F600 X105.700 Y80.975 E1.79296\n"
+                + "G0 F12000 X105.135 Y80.975\n"
+                + "G1 F600 X106.336 Y80.339 E0.28844\n"
+                + "G1 X106.830 Y80.976 E0.14302\n"
+                + "G1 X108.422 Y79.950 E0.45486\n"
+                + "G0 F12000 X105.057 Y79.921\n"
+                + "G1 F600 X103.558 Y80.854 E0.35672\n"
+                + "G1 X102.677 Y80.604 E0.08000\n"
+                + "G1 X101.686 Y80.463 E0.24941\n"
+                + "G1 X100.491 Y80.527 E0.34381\n"
+                + "G1 X99.261 Y80.625 E0.29411\n"
+                + "G1 X99.522 Y79.234 E0.34074\n"
+                + "G1 X100.016 Y78.174 E0.28086\n"
+                + "G0 F12000 X99.018 Y76.343\n"
+                + "G1 F600 X106.331 Y69.031 E2.48361\n"
+                + "G0 F12000 X108.629 Y69.031\n"
+                + "G1 F600 X110.979 Y71.381 E0.79815\n"
+                + "G0 F12000 X100.075 Y71.327\n"
+                + "G1 F600 X99.018 Y71.817 E0.35849\n"
+                + "G1 X99.707 Y69.997 E0.30262\n"
+                + "G1 X99.018 Y70.120 E0.16809\n"
+                + "G0 F12000 X99.018 Y70.734\n"
+                + "G1 F600 X109.252 Y80.967 E3.47570\n"
+                + "G0 F12000 X108.525 Y80.979\n"
+                + "G1 F600 X109.475 Y80.028 E0.32283\n"
+                + "G0 F12000 X99.675 Y77.383\n"
+                + "G1 F600 X99.019 Y77.473 E0.22263\n"
+                + "G1 X99.154 Y76.773 E0.17121\n";
+
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        LayerNode layerNode = gcodeParser.getLayerNode();
+
+        assertNotNull(layerNode);
+
+        assertEquals(2, layerNode.getChildren().size());
+
+        assertEquals(TravelNode.class, layerNode.getChildren().get(0).getClass());
+        assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(1).getClass());
+
+        OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(1);
+
+        assertEquals(
+                3, objectNode.getChildren().size());
+        assertEquals(InnerPerimeterSectionNode.class, objectNode.getChildren().get(0).getClass());
+        assertEquals(OuterPerimeterSectionNode.class, objectNode.getChildren().get(1).getClass());
+        assertEquals(FillSectionNode.class, objectNode.getChildren().get(2).getClass());
     }
 }

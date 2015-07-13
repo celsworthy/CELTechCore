@@ -19,6 +19,7 @@ import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -302,6 +303,8 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null);
+
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
                 testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
@@ -320,7 +323,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByObject(testLayer);
+        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByObject(testLayer, lastLayerParseResult);
 
         assertEquals(1, lastObjectNumber);
         assertEquals(2, testLayer.getChildren().size());
@@ -493,6 +496,8 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer1 = utils.makeModelContainer(true);
         testProject.addModel(modelContainer1);
 
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null);
+
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
@@ -522,7 +527,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByTask(testLayer);
+        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByTask(testLayer, lastLayerParseResult);
 
         assertEquals(22, lastObjectNumber);
         assertEquals(3, testLayer.getChildren().size());

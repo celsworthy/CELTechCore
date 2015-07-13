@@ -225,6 +225,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private NozzleOpeningStateTransitionManager calibrationOpeningManager;
     private XAndYStateTransitionManager calibrationAlignmentManager;
 
+    private BooleanProperty headPowerOffFlag = new SimpleBooleanProperty(false);
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
      * way to override the detection of whether a filament is loaded or not on a
@@ -332,8 +334,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         );
 
         canPause.bind(pauseStatus.isNotEqualTo(PauseStatus.PAUSED)
-                .and(
-                        printerStatus.isEqualTo(PrinterStatus.PRINTING_PROJECT)
+                .and(pauseStatus.isNotEqualTo(PauseStatus.PAUSE_PENDING))
+                .and(printerStatus.isEqualTo(PrinterStatus.PRINTING_PROJECT)
                         .or(pauseStatus.isEqualTo(PauseStatus.RESUME_PENDING))));
 
         canCalibrateHead.bind(head.isNotNull()
@@ -353,35 +355,38 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .and(extruders.get(0).filamentLoaded));
     }
 
+    FilamentContainer.FilamentDatabaseChangesListener filamentDatabaseChangesListener
+            = (String filamentId) ->
+            {
+                for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
+                {
+                    if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
+                    {
+                        try
+                        {
+                            Filament changedFilament = filamentContainer.getFilamentByID(
+                                    filamentId);
+                            if (changedFilament != null)
+                            {
+                                steno.debug("Update reel with updated filament data");
+                                transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
+                            }
+                        } catch (RoboxCommsException ex)
+                        {
+                            steno.error("Unable to program reel with update filament of id: "
+                                    + filamentId);
+                        }
+                    }
+                }
+            };
+
     /**
      * If the filament details change for a filament currently on a reel, then
      * the reel should be immediately updated with the new details.
      */
     private void setupFilamentDatabaseChangeListeners()
     {
-        filamentContainer.addFilamentDatabaseChangesListener((String filamentId) ->
-        {
-            for (Map.Entry<Integer, Reel> posReel : reels.entrySet())
-            {
-                if (posReel.getValue().filamentIDProperty().get().equals(filamentId))
-                {
-                    try
-                    {
-                        Filament changedFilament = filamentContainer.getFilamentByID(
-                                filamentId);
-                        if (changedFilament != null)
-                        {
-                            steno.debug("Update reel with updated filament data");
-                            transmitWriteReelEEPROM(posReel.getKey(), changedFilament);
-                        }
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Unable to program reel with update filament of id: "
-                                + filamentId);
-                    }
-                }
-            }
-        });
+        filamentContainer.addFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
     }
 
     @Override
@@ -467,6 +472,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReadOnlyObjectProperty busyStatusProperty()
     {
         return busyStatus;
+    }
+
+    @Override
+    public ReadOnlyBooleanProperty headPowerOffFlagProperty()
+    {
+        return headPowerOffFlag;
     }
 
     @Override
@@ -1766,6 +1777,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
     }
 
+    /**
+     *
+     * @param project
+     */
     @Override
     public void printProject(Project project) throws PrinterException
     {
@@ -1794,6 +1809,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 steno.error("Failure to set temperatures prior to print");
             }
         }
+
+        //TODO needs to be changed for DMH
+        extruders.get(0).lastFeedrateMultiplierInUse.set(filamentInUse.getFeedRateMultiplier());
 
         try
         {
@@ -2784,12 +2802,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void shutdown()
+    public void shutdown(boolean shutdownCommandInterface)
     {
+        filamentContainer.removeFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
         steno.info("Shutdown print engine...");
         printEngine.shutdown();
-        steno.info("Shutdown command interface...");
-        commandInterface.shutdown();
+
+        if (shutdownCommandInterface)
+        {
+            steno.info("Shutdown command interface...");
+            commandInterface.shutdown();
+        }
     }
 
     @Override
@@ -2908,6 +2931,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     /**
+     *
+     * @param error
      * @return True if the filament slip routine has been called the max number
      * of times for this print
      */
@@ -2947,7 +2972,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             doAttemptEject();
                         } else
                         {
-                            changeFeedRateMultiplier(1);
+                            if (error == FirmwareError.E_FILAMENT_SLIP)
+                            {
+                                changeFeedRateMultiplier(extruders.get(0).lastFeedrateMultiplierInUse.get());
+                            } else if (error == FirmwareError.D_FILAMENT_SLIP)
+                            {
+                                changeFeedRateMultiplier(extruders.get(1).lastFeedrateMultiplierInUse.get());
+                            }
                             forcedResume();
                         }
                         Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
@@ -3011,22 +3042,40 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             case E_FILAMENT_SLIP:
             case D_FILAMENT_SLIP:
-                if (printerStatus.get() == PrinterStatus.PRINTING_PROJECT)
+                boolean showStandardError = false;
+
+                switch (printerStatus.get())
                 {
-                    boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
-                    if (limitOnSlipActionsReached)
-                    {
-                        try
+                    case PRINTING_PROJECT:
+                        if (pauseStatus.get() == PauseStatus.NOT_PAUSED)
                         {
-                            pause();
-                        } catch (PrinterException ex)
+                            boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
+                            if (limitOnSlipActionsReached)
+                            {
+                                try
+                                {
+                                    pause();
+                                } catch (PrinterException ex)
+                                {
+                                    steno.error("Unable to pause during filament slip handling");
+                                }
+                                showStandardError = true;
+                            }
+                        } else
                         {
-                            steno.error("Unable to pause during filament slip handling");
+                            showStandardError = true;
                         }
-                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                error,
-                                this);
-                    }
+                        break;
+                    case IDLE:
+                        showStandardError = true;
+                        break;
+                }
+
+                if (showStandardError)
+                {
+                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                            error,
+                            this);
                 }
                 break;
 
@@ -3060,7 +3109,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public List<Integer> requestDebugData(boolean addToGCodeTranscript)
+    public List<Integer> requestDebugData(boolean addToGCodeTranscript
+    )
     {
         List<Integer> debugData = null;
 
@@ -3104,7 +3154,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber)
+    public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber
+    )
     {
         dataFileSequenceNumberStartPoint = startingSequenceNumber;
     }
@@ -3142,7 +3193,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void suppressFirmwareErrors(FirmwareError... firmwareErrors)
+    public void suppressFirmwareErrors(FirmwareError... firmwareErrors
+    )
     {
         for (FirmwareError firmwareError : firmwareErrors)
         {
@@ -3157,7 +3209,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void suppressEEPROMErrorCorrection(boolean suppress)
+    public void suppressEEPROMErrorCorrection(boolean suppress
+    )
     {
         repairCorruptEEPROMData = !suppress;
     }
@@ -3248,13 +3301,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                                     consumer.consumeError(foundError);
                                                                     errorWasConsumed = true;
                                                                 }
-                                                                if (!errorWasConsumed)
-                                                                {
-                                                                    steno.debug("Error:" + foundError.name()
-                                                                            + " passed to " + consumer.toString());
-                                                                    consumer.consumeError(foundError);
-                                                                    errorWasConsumed = true;
-                                                                }
                                                     });
                                                     if (!errorWasConsumed)
                                                     {
@@ -3286,6 +3332,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Ancillary systems
                      */
+                    headPowerOffFlag.set(!statusResponse.isHeadPowerOn());
                     printerAncillarySystems.ambientTemperature.set(
                             statusResponse.getAmbientTemperature());
                     printerAncillarySystems.ambientTargetTemperature.set(
@@ -3475,13 +3522,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     if (!reels.containsKey(reelResponse.getReelNumber()))
                     {
                         reel = new Reel();
-                        reel.updateFromEEPROMData(reelResponse);
                         reels.put(reelResponse.getReelNumber(), reel);
                     } else
                     {
                         reel = reels.get(reelResponse.getReelNumber());
-                        reel.updateFromEEPROMData(reelResponse);
                     }
+                    reel.updateFromEEPROMData(reelResponse);
+
+                    extruders.get(reelResponse.getReelNumber()).lastFeedrateMultiplierInUse.set(reelResponse.getFeedRateMultiplier());
 
                     if (filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {

@@ -28,6 +28,8 @@ public class CalibrationXAndYActions extends StateTransitionActions
     private int xOffset = 0;
     private int yOffset = 0;
     private final CalibrationPrinterErrorHandler printerErrorHandler;
+    
+    private boolean failedActionPerformed = false;
 
     public CalibrationXAndYActions(Printer printer, Cancellable userCancellable,
         Cancellable errorCancellable)
@@ -222,6 +224,12 @@ public class CalibrationXAndYActions extends StateTransitionActions
 
     public void doFailedAction()
     {
+        // this can be called twice if an error occurs
+        if (failedActionPerformed) {
+            return;
+        }
+        
+        failedActionPerformed = true;
         try
         {
             restoreHeadData();
@@ -255,20 +263,12 @@ public class CalibrationXAndYActions extends StateTransitionActions
     {
         try
         {
-            restoreHeadData();
-            resetPrinter();
-        } catch (CalibrationException | PrinterException ex)
+            doFailedAction();
+        } catch (Exception ex)
         {
-            steno.error("Error cancelling: " + ex);
+            ex.printStackTrace();
+            steno.error("error resetting printer " + ex);
         }
-        printer.setPrinterStatus(PrinterStatus.IDLE);
-    }
-
-    private void resetPrinter() throws PrinterException, CalibrationException
-    {
-        printerErrorHandler.deregisterForPrinterErrors();
-        switchHeatersOffAndRaiseHead();
-        PrinterUtils.waitOnBusy(printer, (Cancellable) null);
     }
 
     private void abortAnyOngoingPrint()
@@ -277,7 +277,10 @@ public class CalibrationXAndYActions extends StateTransitionActions
         {
             if (printer.canCancelProperty().get())
             {
+                steno.debug("call cancel");
                 printer.cancel(null);
+            } else {
+                steno.debug("can't cancel");
             }
         } catch (PrinterException ex)
         {

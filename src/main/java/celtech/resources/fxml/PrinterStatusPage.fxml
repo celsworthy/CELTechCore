@@ -14,33 +14,33 @@
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../css/AutoMaker.css?>
 
-<AnchorPane id="AnchorPane" fx:id="container" minHeight="0.0" minWidth="0.0" styleClass="project-view-background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
+<AnchorPane id="AnchorPane" fx:id="container" minHeight="0.0" minWidth="0.0" styleClass="project-view-background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
     <children>
         <StackPane fx:id="statusPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <ImageView fx:id="printerSilhouette" fitHeight="0.0" fitWidth="600.0" pickOnBounds="true" preserveRatio="true" visible="true">
+                <ImageView fx:id="printerSilhouette" fitHeight="0.0" fitWidth="600.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
                     <image>
                         <Image url="@../images/printer_silhouette.png" />
                     </image>
                 </ImageView>
-                <Rectangle fx:id="filamentRectangle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="271.0" scaleX="1.0" stroke="BLACK" strokeType="INSIDE" translateX="-220.0" translateY="40.0" width="159.0" />
-                <ImageView fx:id="printerClosedImage" fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true" visible="true">
+                <Rectangle fx:id="filamentRectangle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="271.0" mouseTransparent="true" scaleX="1.0" stroke="BLACK" strokeType="INSIDE" translateX="-220.0" translateY="40.0" width="159.0" />
+                <ImageView fx:id="printerClosedImage" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
                     <image>
                         <Image url="@../images/Printer_closed.png" />
                     </image>
                 </ImageView>
-                <ImageView fx:id="printerOpenImage" fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true" visible="true">
+                <ImageView fx:id="printerOpenImage" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
                     <image>
                         <Image url="@../images/Printer_open.png" />
                     </image>
                 </ImageView>
-                <ImageView fx:id="reel" fitHeight="0.0" fitWidth="0.0" opacity="0.43" preserveRatio="true" visible="true">
+                <ImageView fx:id="reel" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" opacity="0.43" preserveRatio="true" visible="true">
                     <image>
                         <Image url="@../images/Filament_reel.png" />
                     </image>
                 </ImageView>
-                <Rectangle fx:id="printerColourRectangle" arcHeight="10.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" translateX="24.0" translateY="-94.0" width="105.0" />
-                <Group fx:id="temperatureWarning" scaleX="0.25" scaleY="0.25" translateX="25.0" translateY="125.0">
+                <Rectangle fx:id="printerColourRectangle" arcHeight="10.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" mouseTransparent="true" stroke="BLACK" strokeType="INSIDE" translateX="24.0" translateY="-94.0" width="105.0" />
+                <Group fx:id="temperatureWarning" mouseTransparent="true" scaleX="0.25" scaleY="0.25" translateX="25.0" translateY="125.0">
                     <children>
                         <Group>
                             <children>
@@ -51,7 +51,7 @@
                                 <SVGPath content="M289.947,187.431l-8.664-7.29c6.195-7.38,3.711-13.021-1.617-23.166 c-5.762-10.99-13.665-26.045,1.58-44.54l8.742,7.217c-10.461,12.675-5.975,21.229-0.283,32.061 C294.869,161.59,301.328,173.88,289.947,187.431" fill="#FFCB00" />
                             </children>
                         </Group>
-                        <Group>
+                        <Group mouseTransparent="true">
                             <children>
                                 <SVGPath content="M135.638,248.942l-15.197,55.451h-10.402l-10.557-38.785c-0.439-1.649-0.709-3.454-0.812-5.413h-0.155 c-0.129,1.83-0.438,3.609-0.928,5.336l-10.595,38.862H76.357L60.85,248.942h10.093l10.054,40.603 c0.412,1.701,0.67,3.479,0.773,5.336h0.193c0.103-1.314,0.464-3.094,1.083-5.336l11.369-40.603h9.474l10.518,40.911 c0.361,1.393,0.632,3.043,0.813,4.95h0.154c0.078-1.289,0.374-2.99,0.89-5.104l9.861-40.757H135.638z" fill="#FFCB00" />
                                 <SVGPath content="M186.063,304.393H175.97l-4.988-14.114h-21.81l-4.795,14.114h-10.054l20.766-55.451h10.364 L186.063,304.393z M168.546,282.777l-7.695-22.118c-0.232-0.722-0.478-1.882-0.735-3.48h-0.155c-0.232,1.47-0.49,2.63-0.773,3.48 l-7.618,22.118H168.546z" fill="#FFCB00" />
@@ -63,7 +63,7 @@
                                 <SVGPath content="M447.974,305.167c-1.547,0-2.861-0.497-3.944-1.489c-1.083-0.991-1.624-2.197-1.624-3.615 c0-1.47,0.541-2.72,1.624-3.751c1.083-1.03,2.397-1.547,3.944-1.547c1.495,0,2.79,0.517,3.887,1.547 c1.095,1.031,1.643,2.281,1.643,3.751c0,1.418-0.548,2.624-1.643,3.615C450.764,304.669,449.469,305.167,447.974,305.167z M452.266,248.942l-0.734,39.133h-7.348l-1.005-39.133H452.266z" fill="#FFCB00" />
                             </children>
                         </Group>
-                        <Group>
+                        <Group mouseTransparent="true">
                             <children>
                                 <SVGPath content="M105.486,368.665v-23.147H78.509v23.147h-4.588v-49.468h4.588v22.181h26.977v-22.181h4.588v49.468H105.486 z" fill="#FFCB00" />
                                 <SVGPath content="M136.637,369.493c-2.622,0-4.974-0.438-7.055-1.312c-2.082-0.873-3.858-2.109-5.33-3.708 c-1.472-1.598-2.599-3.513-3.38-5.743c-0.782-2.23-1.173-4.703-1.173-7.417c0-2.943,0.414-5.577,1.242-7.899 c0.828-2.323,2.006-4.295,3.536-5.917c1.529-1.621,3.375-2.856,5.537-3.708c2.162-0.851,4.576-1.276,7.244-1.276 c2.553,0,4.853,0.42,6.9,1.259c2.046,0.84,3.783,2.053,5.209,3.64c1.426,1.587,2.518,3.519,3.277,5.796 c0.759,2.276,1.138,4.863,1.138,7.762c0,2.76-0.397,5.272-1.19,7.537c-0.793,2.266-1.927,4.215-3.398,5.847 c-1.472,1.634-3.266,2.898-5.381,3.795C141.696,369.044,139.305,369.493,136.637,369.493z M136.982,336.341 c-1.932,0-3.68,0.334-5.244,1c-1.564,0.668-2.903,1.639-4.019,2.915c-1.116,1.276-1.973,2.841-2.57,4.691 c-0.598,1.852-0.897,3.95-0.897,6.296c0,2.208,0.299,4.197,0.897,5.968c0.598,1.771,1.443,3.289,2.536,4.554 c1.092,1.266,2.42,2.237,3.984,2.915c1.564,0.679,3.312,1.018,5.244,1.018c1.978,0,3.726-0.327,5.244-0.983 c1.518-0.655,2.806-1.609,3.864-2.863c1.058-1.253,1.857-2.788,2.397-4.604c0.54-1.816,0.811-3.887,0.811-6.21 c0-4.761-1.058-8.399-3.174-10.918C143.938,337.6,140.915,336.341,136.982,336.341z" fill="#FFCB00" />
@@ -298,47 +298,18 @@
                 </JogButton>
             </children>
         </StackPane>
-        <ProgressDisplay fx:id="progressDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
-        <HBox fx:id="printControlButtons" alignment="TOP_RIGHT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="70.0" prefWidth="-1.0" spacing="5.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+<!--        <HBox AnchorPane.bottomAnchor="200.0">
             <children>
-                <StackPane id="StackPane" fx:id="pauseResumeStack" HBox.hgrow="NEVER">
-                    <children>
-                        <Button fx:id="pausePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#pausePrint" styleClass="borderlessGraphicButton" text="PausePrint">
-                            <graphic>
-                                <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/Print_pause.png" />
-                                    </image>
-                                </ImageView>
-                            </graphic>
-                        </Button>
-                        <Button id="pausePrintButton" fx:id="resumePrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#resumePrint" styleClass="borderlessGraphicButton" text="ResumePrint">
-                            <graphic>
-                                <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/Print_play.png" />
-                                    </image>
-                                </ImageView>
-                            </graphic>
-                        </Button>
-                    </children>
-                </StackPane>
-                <Button fx:id="cancelPrintButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#cancelPrint" styleClass="borderlessGraphicButton" text="CancelPrint">
-                    <graphic>
-                        <ImageView fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../images/stop_print.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </Button>
+                <Button mnemonicParsing="false" onAction="#appear" text="Button" />
+                <Button mnemonicParsing="false" onAction="#disappear" text="Button" />
             </children>
-            <padding>
-                <Insets right="5.0" />
-            </padding>
-            <StackPane.margin>
-                <Insets />
-            </StackPane.margin>
-        </HBox>
+        </HBox>-->
+<!--        <VBox AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+            <children>
+               <TesStatusBar fx:id="jim2" /> 
+               <TesStatusBar fx:id="jim1" /> 
+            </children>
+        </VBox>-->
+        <ProgressDisplay fx:id="progressDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
 </AnchorPane>

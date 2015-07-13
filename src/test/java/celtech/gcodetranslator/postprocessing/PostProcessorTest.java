@@ -123,4 +123,46 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
     }
+    
+    /**
+     * Test of processInput method, of class PostProcessor.
+     */
+    @Test
+    public void testCura_2_colour_dice()
+    {
+        System.out.println("Cura 2 colour dice");
+        URL inputURL = this.getClass().getResource("/postprocessor/cura_2_colour_dice.gcode");
+        String inputFilename = inputURL.getFile();
+        String outputFilename = inputFilename + ".out";
+        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-DM");
+
+        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+
+        Project testProject = new Project();
+        testProject.getPrinterSettings().setSettingsName("Draft");
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        TestUtils utils = new TestUtils();
+        ModelContainer modelContainer1 = utils.makeModelContainer(true);
+        testProject.addModel(modelContainer1);
+
+        ModelContainer modelContainer2 = utils.makeModelContainer(false);
+        testProject.addModel(modelContainer2);
+
+        PostProcessor postProcessor = new PostProcessor(inputFilename,
+                outputFilename,
+                singleMaterialHead,
+                testProject,
+                ppFeatures,
+                HeadType.SINGLE_MATERIAL_HEAD);
+
+        RoboxiserResult result = postProcessor.processInput();
+        assertTrue(result.isSuccess());
+    }
 }

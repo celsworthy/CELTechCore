@@ -7,6 +7,7 @@ package celtech.utils.threed.exporters;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -82,7 +83,6 @@ public class STLOutputConverter implements MeshFileOutputConverter
                     modelFileCount++;
                 }
             }
-        }
 
         return createdFiles;
     }

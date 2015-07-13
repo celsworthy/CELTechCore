@@ -11,8 +11,10 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,18 +153,40 @@ public class NodeManagementUtilities
         }
     }
 
-    protected Optional<ExtrusionNode> findNextExtrusion(GCodeEventNode node) throws NodeProcessingException
+    protected Optional<ExtrusionNode> findNextExtrusion(GCodeEventNode topLevelNode, GCodeEventNode node) throws NodeProcessingException
     {
         Optional<ExtrusionNode> nextExtrusion = Optional.empty();
 
-        Iterator<GCodeEventNode> childIterator = node.treeSpanningIterator(null);
+        LinkedList<GCodeEventNode> nodeHierarchy = new LinkedList<>();
+
+        boolean foundTopLevel = false;
+
+        GCodeEventNode currentNode = node;
+
+        nodeHierarchy.add(node);
+
+        while (currentNode.getParent().isPresent() && !foundTopLevel)
+        {
+            GCodeEventNode parent = currentNode.getParent().get();
+            if (parent == topLevelNode)
+            {
+                foundTopLevel = true;
+            } else
+            {
+                nodeHierarchy.addFirst(parent);
+            }
+
+            currentNode = parent;
+        }
+
+        Iterator<GCodeEventNode> childIterator = topLevelNode.treeSpanningIterator(nodeHierarchy);
 
         while (childIterator.hasNext())
         {
             GCodeEventNode childNode = childIterator.next();
             if (childNode instanceof ExtrusionNode)
             {
-                nextExtrusion = Optional.of((ExtrusionNode)childNode);
+                nextExtrusion = Optional.of((ExtrusionNode) childNode);
                 break;
             }
         }
@@ -247,7 +271,7 @@ public class NodeManagementUtilities
 
         }
 
-        Iterator<GCodeEventNode> childIterator = node.childrenAndMeBackwardsIterator();
+        Iterator<GCodeEventNode> childIterator = previousSection.get().childrenAndMeBackwardsIterator();
 
         while (childIterator.hasNext())
         {
@@ -260,26 +284,6 @@ public class NodeManagementUtilities
         }
 
         return priorMovement;
-    }
-
-    protected Optional<GCodeEventNode> findLastExtrusionEventInLayer(LayerNode layerNode)
-    {
-        Optional<GCodeEventNode> lastExtrusionEvent = Optional.empty();
-
-        GCodeEventNode lastEventNode = layerNode.getAbsolutelyTheLastEvent();
-
-        Iterator<GCodeEventNode> backwardsIterator = lastEventNode.treeSpanningBackwardsIterator();
-        while (backwardsIterator.hasNext())
-        {
-            GCodeEventNode nodeUnderConsideration = backwardsIterator.next();
-            if (nodeUnderConsideration instanceof ExtrusionNode)
-            {
-                lastExtrusionEvent = Optional.of(nodeUnderConsideration);
-                break;
-            }
-        }
-
-        return lastExtrusionEvent;
     }
 
     public double findAvailableExtrusion(GCodeEventNode lastExtrusionNode, boolean forwards) throws NodeProcessingException

@@ -592,6 +592,11 @@ public class StatusResponse extends RoboxRxPacket
         return headPowerOn;
     }
 
+    public void setHeadPowerOn(boolean value)
+    {
+        headPowerOn = value;
+    }
+
     public void setRunningPrintJobID(String runningPrintJobID)
     {
         this.runningPrintJobID = runningPrintJobID;

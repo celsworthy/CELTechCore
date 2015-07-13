@@ -270,125 +270,104 @@ public class CloseLogic
         //Store the amount of extrusion that has been missed out - needed for unretracts
         elidedExtrusion = volumeToCloseOver;
 
-        //Get a new iterator
-        sectionChildAndMeBackwardsIterator = thisSection.childrenAndMeBackwardsIterator();
+        List<MovementProvider> movementNodes = new ArrayList<>();
 
-        double runningTotalOfExtrusion = 0;
+        IteratorWithOrigin<GCodeEventNode> sectionBackwards = thisSection.childrenAndMeBackwardsIterator();
 
-        List<ExtrusionNode> extrusionNodes = new ArrayList<>();
-
-        while (sectionChildAndMeBackwardsIterator.hasNext())
+        while (sectionBackwards.hasNext())
         {
-            GCodeEventNode potentialExtrusionNode = sectionChildAndMeBackwardsIterator.next();
-            if (potentialExtrusionNode instanceof ExtrusionNode)
+            GCodeEventNode potentialMovementProvider = sectionBackwards.next();
+
+            if (potentialMovementProvider instanceof MovementProvider)
             {
-                extrusionNodes.add((ExtrusionNode) potentialExtrusionNode);
+                movementNodes.add((MovementProvider) potentialMovementProvider);
             }
         }
 
-        for (ExtrusionNode extrusionNodeBeingExamined : extrusionNodes)
+        double runningTotalOfExtrusion = 0;
+
+        for (int movementNodeCounter = 0;
+                movementNodeCounter < movementNodes.size();
+                movementNodeCounter++)
         {
-            int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE(), volumeToCloseOver, 0.00001);
-
-            if (comparisonResult == MathUtils.LESS_THAN)
+            if (movementNodes.get(movementNodeCounter) instanceof ExtrusionNode)
             {
-                //One step along the way
-                double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
-                runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
-                //No extrusion during a close
-                extrusionNodeBeingExamined.getExtrusion().eNotInUse();
-            } else if (comparisonResult == MathUtils.EQUAL)
-            {
-                //All done
-                double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
-                runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
-                //No extrusion during a close
-                extrusionNodeBeingExamined.getExtrusion().eNotInUse();
-                break;
-            } else
-            {
-                //If we got here then we need to split this extrusion
-                //We're splitting the last part of the line (we're just looking at it in reverse order as we consider the line from the end
-                MovementProvider priorMovement = null;
+                ExtrusionNode extrusionNodeBeingExamined = (ExtrusionNode) movementNodes.get(movementNodeCounter);
 
-                Optional<MovementProvider> nextMovementInThisSection = Optional.empty();
+                int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE(), volumeToCloseOver, 0.00001);
 
-                try
+                if (comparisonResult == MathUtils.LESS_THAN)
                 {
-                    nextMovementInThisSection = nodeManagementUtilities.findNextMovement(node);
-                } catch (NodeProcessingException priorSiblingException)
+                    //One step along the way
+                    double bValue = runningTotalOfExtrusion / volumeToCloseOver;
+                    extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
+                    runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
+                    //No extrusion during a close
+                    extrusionNodeBeingExamined.getExtrusion().eNotInUse();
+                } else if (comparisonResult == MathUtils.EQUAL)
                 {
-                    throw new RuntimeException("Unable to find prior node in section or siblings when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput(), priorSiblingException);
-                }
-
-                if (!nextMovementInThisSection.isPresent())
-                {
-                        //We dont have anywhere to go!
-
-                    //Look in the section before this one for a usable movement
-                    try
-                    {
-                        Optional<MovementProvider> priorSectionMovement = nodeManagementUtilities.findPriorMovementInPreviousSection(extrusionNodeBeingExamined);
-                        priorMovement = priorSectionMovement.get();
-                    } catch (NodeProcessingException ex)
-                    {
-                        // Didn't find it in a prior section - look at prior siblings in case we have a loose travel we can use...
-                        IteratorWithOrigin<GCodeEventNode> meAndSiblingsBackwardsIterator = thisSection.meAndSiblingsBackwardsIterator();
-
-                        while (meAndSiblingsBackwardsIterator.hasNext())
-                        {
-                            GCodeEventNode foundSibling = meAndSiblingsBackwardsIterator.next();
-                            if (foundSibling instanceof MovementProvider)
-                            {
-                                priorMovement = (MovementProvider) foundSibling;
-                                break;
-                            }
-                        }
-
-                        if (priorMovement == null)
-                        {
-                            //Didn't find any prior siblings that are MovementProviders
-                            throw new RuntimeException("Unable to find prior node when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
-                        }
-                    }
+                    //All done
+                    double bValue = runningTotalOfExtrusion / volumeToCloseOver;
+                    extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
+                    runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
+                    //No extrusion during a close
+                    extrusionNodeBeingExamined.getExtrusion().eNotInUse();
+                    break;
                 } else
                 {
-                    priorMovement = nextMovementInThisSection.get();
+                    //If we got here then we need to split this extrusion
+                    //We're splitting the last part of the line (we're just looking at it in reverse order as we consider the line from the end
+                    MovementProvider priorMovement = null;
+
+                    if (movementNodeCounter == movementNodes.size() - 1)
+                    {
+                        //We dont have anywhere to go!
+                        try
+                        {
+                            Optional<MovementProvider> priorSectionMovement = nodeManagementUtilities.findPriorMovementInPreviousSection(extrusionNodeBeingExamined);
+                            priorMovement = priorSectionMovement.get();
+                        } catch (NodeProcessingException ex)
+                        {
+                            throw new RuntimeException("Unable to find prior node when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput());
+                        }
+
+                    } else
+                    {
+                        priorMovement = movementNodes.get(movementNodeCounter + 1);
+                    }
+
+                    Vector2D firstPoint = new Vector2D(priorMovement.getMovement().getX(), priorMovement.getMovement().getY());
+                    Vector2D secondPoint = new Vector2D(extrusionNodeBeingExamined.getMovement().getX(), extrusionNodeBeingExamined.getMovement().getY());
+
+                    // We can work out how to split this extrusion
+                    double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE() - volumeToCloseOver;
+                    double extrusionInSecondSection = extrusionNodeBeingExamined.getExtrusion().getE() - extrusionInFirstSection;
+
+                    double proportionOfDistanceInSecondSection = extrusionInFirstSection / extrusionNodeBeingExamined.getExtrusion().getE();
+
+                    Vector2D actualVector = secondPoint.subtract(firstPoint);
+                    Vector2D firstSegment = firstPoint.add(proportionOfDistanceInSecondSection,
+                            actualVector);
+
+                    ExtrusionNode newExtrusionNode = new ExtrusionNode();
+                    newExtrusionNode.setCommentText("Remainder pre close over fill");
+                    newExtrusionNode.getExtrusion().setE((float) extrusionInFirstSection);
+                    newExtrusionNode.getMovement().setX(firstSegment.getX());
+                    newExtrusionNode.getMovement().setY(firstSegment.getY());
+                    newExtrusionNode.getFeedrate().setFeedRate_mmPerMin(extrusionNodeBeingExamined.getFeedrate().getFeedRate_mmPerMin());
+
+                    extrusionNodeBeingExamined.addSiblingBefore(newExtrusionNode);
+
+                    extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
+                    extrusionNodeBeingExamined.appendCommentText("Start of close over fill");
+                    double bValue = runningTotalOfExtrusion / volumeToCloseOver;
+                    extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
+
+                    runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
+                    //No extrusion during a close
+                    extrusionNodeBeingExamined.getExtrusion().eNotInUse();
+                    break;
                 }
-
-                Vector2D firstPoint = new Vector2D(priorMovement.getMovement().getX(), priorMovement.getMovement().getY());
-                Vector2D secondPoint = new Vector2D(extrusionNodeBeingExamined.getMovement().getX(), extrusionNodeBeingExamined.getMovement().getY());
-
-                // We can work out how to split this extrusion
-                double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE() - volumeToCloseOver;
-                double extrusionInSecondSection = extrusionNodeBeingExamined.getExtrusion().getE() - extrusionInFirstSection;
-
-                double proportionOfDistanceInSecondSection = extrusionInFirstSection / extrusionNodeBeingExamined.getExtrusion().getE();
-
-                Vector2D actualVector = secondPoint.subtract(firstPoint);
-                Vector2D firstSegment = firstPoint.add(proportionOfDistanceInSecondSection,
-                        actualVector);
-
-                ExtrusionNode newExtrusionNode = new ExtrusionNode();
-                newExtrusionNode.setCommentText("Remainder pre close over fill");
-                newExtrusionNode.getExtrusion().setE((float) extrusionInFirstSection);
-                newExtrusionNode.getMovement().setX(firstSegment.getX());
-                newExtrusionNode.getMovement().setY(firstSegment.getY());
-                newExtrusionNode.getFeedrate().setFeedRate_mmPerMin(extrusionNodeBeingExamined.getFeedrate().getFeedRate_mmPerMin());
-
-                extrusionNodeBeingExamined.addSiblingBefore(newExtrusionNode);
-
-                extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
-                extrusionNodeBeingExamined.appendCommentText("Start of close over fill");
-                double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
-
-                runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
-                //No extrusion during a close
-                extrusionNodeBeingExamined.getExtrusion().eNotInUse();
-                break;
             }
         }
 
@@ -448,13 +427,21 @@ public class CloseLogic
             nodesToCopyFrom = nodeToCopyCloseFrom.siblingsBackwardsIterator();
         }
 
+        List<MovementProvider> movementNodes = new ArrayList<>();
         while (nodesToCopyFrom.hasNext())
         {
-            GCodeEventNode potentialExtrusionNode = nodesToCopyFrom.next();
-
-            if (potentialExtrusionNode instanceof ExtrusionNode)
+            GCodeEventNode potentialMovementNode = nodesToCopyFrom.next();
+            if (potentialMovementNode instanceof MovementProvider)
             {
-                ExtrusionNode extrusionNodeBeingExamined = (ExtrusionNode) potentialExtrusionNode;
+                movementNodes.add((MovementProvider) potentialMovementNode);
+            }
+        }
+
+        for (int movementNodeCounter = 0; movementNodeCounter < movementNodes.size(); movementNodeCounter++)
+        {
+            if (movementNodes.get(movementNodeCounter) instanceof ExtrusionNode)
+            {
+                ExtrusionNode extrusionNodeBeingExamined = (ExtrusionNode) movementNodes.get(movementNodeCounter);
 
                 int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE(), requiredVolumeToCloseOver, 0.00001);
 
@@ -484,18 +471,9 @@ public class CloseLogic
                 {
                     MovementProvider priorMovement = null;
 
-                    Optional<MovementProvider> priorMovementInThisSection = Optional.empty();
-
-                    try
+                    if (movementNodeCounter == 0)
                     {
-                        priorMovementInThisSection = nodeManagementUtilities.findPriorMovement(nodeToCopyCloseFrom);
-                    } catch (NodeProcessingException priorSiblingException)
-                    {
-                        throw new RuntimeException("Unable to find prior node in section or siblings when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput(), priorSiblingException);
-                    }
-
-                    if (!priorMovementInThisSection.isPresent())
-                    {
+                        priorMovement = (MovementProvider) nodeToCopyCloseFrom;
                         //We dont have anywhere to go!
 //                        try
 //                        {
@@ -503,12 +481,12 @@ public class CloseLogic
 //                            priorMovement = priorSectionMovement.get();
 //                        } catch (NodeProcessingException ex)
 //                        {
-                        throw new RuntimeException("No prior node to extrapolate from when closing around node " + extrusionNodeBeingExamined.renderForOutput());
+//                        throw new RuntimeException("No prior node to extrapolate from when closing around node " + extrusionNodeBeingExamined.renderForOutput());
 //                        }
 
                     } else
                     {
-                        priorMovement = priorMovementInThisSection.get();
+                        priorMovement = movementNodes.get(movementNodeCounter - 1);
                     }
 
                     // We can work out how to split this extrusion
@@ -539,6 +517,100 @@ public class CloseLogic
 
             }
         }
+//                =========
+//        
+//        
+//        while (nodesToCopyFrom.hasNext())
+//        {
+//            GCodeEventNode potentialExtrusionNode = nodesToCopyFrom.next();
+//
+//            if (potentialExtrusionNode instanceof ExtrusionNode)
+//            {
+//                ExtrusionNode extrusionNodeBeingExamined = (ExtrusionNode) potentialExtrusionNode;
+//
+//                int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE(), requiredVolumeToCloseOver, 0.00001);
+//
+//                ExtrusionNode copy = extrusionNodeBeingExamined.clone();
+//                parentSectionToAddClosesTo.addChildAtEnd(copy);
+//
+//                if (comparisonResult == MathUtils.LESS_THAN)
+//                {
+//                    //One step along the way
+//                    currentNozzlePosition = currentNozzlePosition - copy.getExtrusion().getE() * closePermm3Volume;
+//                    double bValue = currentNozzlePosition;
+//                    copy.getNozzlePosition().setB(bValue);
+//                    runningTotalOfExtrusion += copy.getExtrusion().getE();
+//                    //No extrusion during a close
+//                    copy.getExtrusion().eNotInUse();
+//                } else if (comparisonResult == MathUtils.EQUAL)
+//                {
+//                    //All done
+//                    currentNozzlePosition = 0;
+//                    double bValue = 0;
+//                    copy.getNozzlePosition().setB(bValue);
+//                    runningTotalOfExtrusion += copy.getExtrusion().getE();
+//                    //No extrusion during a close
+//                    copy.getExtrusion().eNotInUse();
+//                    break;
+//                } else
+//                {
+//                    MovementProvider priorMovement = null;
+//
+//                    Optional<MovementProvider> priorMovementInThisSection = Optional.empty();
+//
+//                    try
+//                    {
+//                        priorMovementInThisSection = nodeManagementUtilities.findPriorMovement(nodeToCopyCloseFrom);
+//                    } catch (NodeProcessingException priorSiblingException)
+//                    {
+//                        throw new RuntimeException("Unable to find prior node in section or siblings when splitting extrusion at node " + extrusionNodeBeingExamined.renderForOutput(), priorSiblingException);
+//                    }
+//
+//                    if (!priorMovementInThisSection.isPresent())
+//                    {
+//                        //We dont have anywhere to go!
+////                        try
+////                        {
+////                            Optional<MovementProvider> priorSectionMovement = findPriorMovementInPreviousSection(extrusionNodeBeingExamined);
+////                            priorMovement = priorSectionMovement.get();
+////                        } catch (NodeProcessingException ex)
+////                        {
+//                        throw new RuntimeException("No prior node to extrapolate from when closing around node " + extrusionNodeBeingExamined.renderForOutput());
+////                        }
+//
+//                    } else
+//                    {
+//                        priorMovement = priorMovementInThisSection.get();
+//                    }
+//
+//                    // We can work out how to split this extrusion
+//                    Vector2D firstPoint = new Vector2D(priorMovement.getMovement().getX(), priorMovement.getMovement().getY());
+//                    Vector2D secondPoint = new Vector2D(extrusionNodeBeingExamined.getMovement().getX(), extrusionNodeBeingExamined.getMovement().getY());
+//
+//                    double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE() - requiredVolumeToCloseOver;
+//
+//                    double proportionOfDistanceInFirstSection = extrusionInFirstSection / extrusionNodeBeingExamined.getExtrusion().getE();
+//
+//                    Vector2D actualVector = secondPoint.subtract(firstPoint);
+//                    Vector2D firstSegment = firstPoint.add(proportionOfDistanceInFirstSection,
+//                            actualVector);
+//
+//                    copy.getMovement().setX(firstSegment.getX());
+//                    copy.getMovement().setY(firstSegment.getY());
+//                    copy.getExtrusion().setE(0);
+//                    copy.getExtrusion().setD(0);
+//                    copy.appendCommentText("End of close segment");
+//                    copy.getNozzlePosition().setB(0);
+//
+//                    runningTotalOfExtrusion += copy.getExtrusion().getE();
+//
+//                    //No extrusion during a close
+//                    copy.getExtrusion().eNotInUse();
+//                    break;
+//                }
+//
+//            }
+//        }
 
         return new CloseResult(true, volumeToCloseOver);
     }
@@ -620,14 +692,14 @@ public class CloseLogic
                                     steno.warning("Discarding retract from layer " + layerNode.getLayerNumber());
                                 } else
                                 {
-                                    Optional<GCodeEventNode> priorExtrusionNodeLastLayer = nodeManagementUtilities.findLastExtrusionEventInLayer(lastLayer);
-                                    if (!priorExtrusionNodeLastLayer.isPresent())
+                                    GCodeEventNode priorExtrusionNodeLastLayer = lastLayer.getAbsolutelyTheLastEvent();
+                                    if (priorExtrusionNodeLastLayer == null)
                                     {
                                         throw new NodeProcessingException("No suitable prior extrusion in previous layer", (GCodeEventNode) retractNode);
                                     }
-                                    double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(priorExtrusionNodeLastLayer.get(), false);
+                                    double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(priorExtrusionNodeLastLayer, false);
 
-                                    closeResult = insertNozzleCloses(availableExtrusion, priorExtrusionNodeLastLayer.get(), nozzleInUse);
+                                    closeResult = insertNozzleCloses(availableExtrusion, priorExtrusionNodeLastLayer, nozzleInUse);
                                 }
                             }
 
@@ -636,7 +708,7 @@ public class CloseLogic
                             {
                                 if (!nextExtrusionNode.isPresent())
                                 {
-                                    nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
+                                    nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(layerNode, retractNode);
                                 }
 
                                 if (nextExtrusionNode.isPresent()
@@ -656,7 +728,7 @@ public class CloseLogic
 
                                 if (!nextExtrusionNode.isPresent())
                                 {
-                                    nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(retractNode);
+                                    nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(layerNode, retractNode);
                                 }
 
                                 if (nextExtrusionNode.isPresent())
