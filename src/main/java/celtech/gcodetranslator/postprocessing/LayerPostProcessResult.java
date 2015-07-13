@@ -2,6 +2,8 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import java.util.Optional;
 
 /**
@@ -18,6 +20,8 @@ public class LayerPostProcessResult
     private final LayerNode layerData;
     private Optional<Integer> lastObjectNumber = Optional.empty();
     private int lastFeedrateInForce = -1;
+    private ToolSelectNode lastToolSelectInForce = null;
+    private SectionNode lastSectionNodeInForce = null;
 
     public LayerPostProcessResult(Optional<NozzleProxy> nozzleStateAtEndOfLayer,
             LayerNode layerData,
@@ -37,7 +41,9 @@ public class LayerPostProcessResult
             float eVolume,
             float dVolume,
             double timeForLayer_secs,
-            int lastObjectNumber)
+            int lastObjectNumber,
+            SectionNode sectionNode,
+            ToolSelectNode toolSelectNode)
     {
         this.nozzleStateAtEndOfLayer = nozzleStateAtEndOfLayer;
         this.layerData = layerData;
@@ -45,6 +51,8 @@ public class LayerPostProcessResult
         this.dVolume = dVolume;
         this.timeForLayer_secs = timeForLayer_secs;
         this.lastObjectNumber = Optional.of(lastObjectNumber);
+        this.lastSectionNodeInForce = sectionNode;
+        this.lastToolSelectInForce = toolSelectNode;
     }
 
     public Optional<NozzleProxy> getNozzleStateAtEndOfLayer()
@@ -98,5 +106,15 @@ public class LayerPostProcessResult
     public int getLastFeedrateInForce()
     {
         return lastFeedrateInForce;
+    }
+
+    public ToolSelectNode getLastToolSelectInForce()
+    {
+        return lastToolSelectInForce;
+    }
+
+    public SectionNode getLastSectionNodeInForce()
+    {
+        return lastSectionNodeInForce;
     }
 }

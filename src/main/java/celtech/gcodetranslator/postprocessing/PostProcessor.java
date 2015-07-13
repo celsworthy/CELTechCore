@@ -10,6 +10,8 @@ import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
@@ -31,6 +33,7 @@ import libertysystems.stenographer.StenographerFactory;
 import org.parboiled.Parboiled;
 import static org.parboiled.errors.ErrorUtils.printParseErrors;
 import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /**
@@ -163,41 +166,46 @@ public class PostProcessor
             outputUtilities.prependPrePrintHeader(writer);
 
             StringBuilder layerBuffer = new StringBuilder();
-            LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0);
+            LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null);
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
             {
                 lineRead = lineRead.trim();
                 if (lineRead.matches(";LAYER:[0-9]+"))
                 {
-                    //Parse anything that has gone before
-                    LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
-                    finalEVolume += parseResult.getEVolume();
-                    finalDVolume += parseResult.getDVolume();
-                    timeForPrint_secs += parseResult.getTimeForLayer();
-
-                    //Now output the LAST layer - it was held until now in case it needed to be modified before output
-                    timeUtils.timerStart(this, writeOutputTimerName);
-                    outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
-                    timeUtils.timerStop(this, writeOutputTimerName);
-                    postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
-                    predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
-
-                    if (parseResult.getNozzleStateAtEndOfLayer().isPresent())
+                    if (layerCounter >= 0)
                     {
-                        lastLayerParseResult = parseResult;
-                        if (lastLayerParseResult.getLayerData().getLayerNumber() == 1)
+                        //Parse anything that has gone before
+                        LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
+                        finalEVolume += parseResult.getEVolume();
+                        finalDVolume += parseResult.getDVolume();
+                        timeForPrint_secs += parseResult.getTimeForLayer();
+
+                        //Now output the LAST layer - it was held until now in case it needed to be modified before output
+                        timeUtils.timerStart(this, writeOutputTimerName);
+                        outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
+                        timeUtils.timerStop(this, writeOutputTimerName);
+                        postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
+                        predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
+
+                        if (parseResult.getNozzleStateAtEndOfLayer().isPresent())
                         {
-                            outputUtilities.outputTemperatureCommands(writer);
+                            lastLayerParseResult = parseResult;
+                            if (lastLayerParseResult.getLayerData().getLayerNumber() == 1)
+                            {
+                                outputUtilities.outputTemperatureCommands(writer);
+                            }
+                        } else
+                        {
+                            lastLayerParseResult = new LayerPostProcessResult(lastLayerParseResult.getNozzleStateAtEndOfLayer(),
+                                    parseResult.getLayerData(),
+                                    parseResult.getEVolume(),
+                                    parseResult.getDVolume(),
+                                    parseResult.getTimeForLayer(),
+                                    parseResult.getLastObjectNumber().orElse(-1),
+                                    null,
+                                    null);
                         }
-                    } else
-                    {
-                        lastLayerParseResult = new LayerPostProcessResult(lastLayerParseResult.getNozzleStateAtEndOfLayer(),
-                                parseResult.getLayerData(),
-                                parseResult.getEVolume(),
-                                parseResult.getDVolume(),
-                                parseResult.getTimeForLayer(),
-                                parseResult.getLastObjectNumber().orElse(-1));
                     }
 
                     layerCounter++;
@@ -327,9 +335,9 @@ public class PostProcessor
             ParsingResult result = runner.run(layerBuffer.toString());
             timeUtils.timerStop(this, parseLayerTimerName);
 
-            if (result.hasErrors())
+            if (result.hasErrors() || !result.matched)
             {
-                System.out.println("\nParse Errors:\n" + printParseErrors(result));
+                throw new RuntimeException("Parsing failure");
             } else
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
@@ -362,7 +370,7 @@ public class PostProcessor
         switch (postProcessingMode)
         {
             case TASK_BASED_NOZZLE_SELECTION:
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode);
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode, lastLayerParseResult);
                 break;
             case USE_OBJECT_MATERIAL:
                 lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
@@ -394,14 +402,14 @@ public class PostProcessor
         timeUtils.timerStop(this, assignExtrusionTimerName);
 
         timeUtils.timerStart(this, layerResultTimerName);
-        LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode);
+        LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
         timeUtils.timerStop(this, layerResultTimerName);
 
         return postProcessResult;
     }
 
-    private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode)
+    private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult)
     {
         Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
 
@@ -432,7 +440,7 @@ public class PostProcessor
                 {
                     try
                     {
-                        double time = lastMovementProvider.timeToReach((MovementProvider)foundNode);
+                        double time = lastMovementProvider.timeToReach((MovementProvider) foundNode);
                         timeForLayer += time;
                     } catch (DurationCalculationException ex)
                     {
@@ -459,7 +467,40 @@ public class PostProcessor
             }
         }
 
-        return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer, -1);
+        SectionNode lastSectionNode = null;
+        ToolSelectNode lastToolSelectNode = null;
+
+        if (layerNode != null)
+        {
+            GCodeEventNode lastEventOnLastLayer = layerNode.getAbsolutelyTheLastEvent();
+            if (lastEventOnLastLayer != null)
+            {
+                Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
+                if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                {
+                    lastSectionNode = (SectionNode) potentialLastSection.get();
+
+                    Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
+                    if (potentialToolSelectNode.isPresent() && potentialToolSelectNode.get() instanceof ToolSelectNode)
+                    {
+                        lastToolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
+                    }
+                }
+            }
+        }
+
+        if (lastSectionNode == null)
+        {
+            lastSectionNode = lastLayerPostProcessResult.getLastSectionNodeInForce();
+        }
+
+        if (lastToolSelectNode == null)
+        {
+            lastToolSelectNode = lastLayerPostProcessResult.getLastToolSelectInForce();
+        }
+
+        return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer, -1,
+                lastSectionNode, lastToolSelectNode);
     }
 
     private void outputPostProcessingTimerReport()

@@ -303,7 +303,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null);
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
@@ -496,6 +496,8 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer1 = utils.makeModelContainer(true);
         testProject.addModel(modelContainer1);
 
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null);
+
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
@@ -525,7 +527,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByTask(testLayer);
+        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByTask(testLayer, lastLayerParseResult);
 
         assertEquals(22, lastObjectNumber);
         assertEquals(3, testLayer.getChildren().size());

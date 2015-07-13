@@ -132,7 +132,7 @@ public class NozzleAssignmentUtilities
      * @param layerNode
      * @return The reference number of the last object in the layer
      */
-    protected int insertNozzleControlSectionsByTask(LayerNode layerNode)
+    protected int insertNozzleControlSectionsByTask(LayerNode layerNode, LayerPostProcessResult lastLayerResult)
     {
         int lastObjectReferenceNumber = -1;
 
@@ -160,10 +160,29 @@ public class NozzleAssignmentUtilities
             //We'll need at least one of these per layer
             ToolSelectNode toolSelectNode = null;
 
-            // At this stage the object nodes are directly beneath the layer node
-            // Find all of the objects in this layer
             SectionNode lastSectionNode = null;
 
+            if (lastLayerResult != null && lastLayerResult.getLayerData() != null)
+            {
+                GCodeEventNode lastEventOnLastLayer = lastLayerResult.getLayerData().getAbsolutelyTheLastEvent();
+                if (lastEventOnLastLayer != null)
+                {
+                    Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
+                    if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                    {
+                        lastSectionNode = (SectionNode) potentialLastSection.get();
+
+                        Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
+                        if (potentialToolSelectNode.isPresent() && potentialToolSelectNode.get() instanceof ToolSelectNode)
+                        {
+                            toolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
+                        }
+                    }
+                }
+            }
+
+            // At this stage the object nodes are directly beneath the layer node
+            // Find all of the objects in this layer
             Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
             List<ObjectDelineationNode> objectNodes = new ArrayList<>();
 
@@ -314,12 +333,16 @@ public class NozzleAssignmentUtilities
                         if (lastSectionNode == null)
                         {
                             //Try to get the section from the last layer
-                            if (lastLayerResult != null)
+                            if (lastLayerResult != null && lastLayerResult.getLayerData() != null)
                             {
-                                Optional<GCodeEventNode> potentialLastSection = lastLayerResult.getLayerData().getAbsolutelyTheLastEvent().getParent();
-                                if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                                GCodeEventNode lastEventOnLastLayer = lastLayerResult.getLayerData().getAbsolutelyTheLastEvent();
+                                if (lastEventOnLastLayer != null)
                                 {
-                                    lastSectionNode = (SectionNode) potentialLastSection.get();
+                                    Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
+                                    if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                                    {
+                                        lastSectionNode = (SectionNode) potentialLastSection.get();
+                                    }
                                 }
                             }
 

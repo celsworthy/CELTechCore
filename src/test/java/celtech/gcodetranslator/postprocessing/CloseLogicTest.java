@@ -1527,7 +1527,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null);
 
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
