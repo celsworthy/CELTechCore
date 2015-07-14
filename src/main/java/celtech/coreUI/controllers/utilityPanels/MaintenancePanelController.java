@@ -49,7 +49,6 @@ public class MaintenancePanelController implements Initializable
     private Printer connectedPrinter = null;
 
     private ProgressDialog firmwareUpdateProgress = null;
-    private final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     private final FileChooser firmwareFileChooser = new FileChooser();
 
     private ProgressDialog gcodeUpdateProgress = null;
@@ -214,12 +213,9 @@ public class MaintenancePanelController implements Initializable
         final File file = firmwareFileChooser.showOpenDialog(DisplayManager.getMainStage());
         if (file != null)
         {
-            firmwareLoadService.reset();
-            firmwareLoadService.setPrinterToUse(connectedPrinter);
-            firmwareLoadService.setFirmwareFileToLoad(file.getAbsolutePath());
-            firmwareLoadService.start();
             ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.FIRMWARE, file.
                                                       getParentFile().getAbsolutePath());
+            connectedPrinter.loadFirmware(file.getAbsolutePath());
         }
     }
 
@@ -285,7 +281,6 @@ public class MaintenancePanelController implements Initializable
                 public void run()
                 {
                     gcodeUpdateProgress = new ProgressDialog(gcodePrintService);
-                    firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
                 }
             });
 
@@ -352,18 +347,6 @@ public class MaintenancePanelController implements Initializable
                 .addAll(
                     new FileChooser.ExtensionFilter(Lookup.i18n(
                             "maintenancePanel.firmwareFileDescription"), "*.bin"));
-
-            firmwareLoadService.setOnSucceeded((WorkerStateEvent t) ->
-            {
-                FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
-                Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            });
-
-            firmwareLoadService.setOnFailed((WorkerStateEvent t) ->
-            {
-                FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
-                Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            });
 
             Lookup.getCurrentlySelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->

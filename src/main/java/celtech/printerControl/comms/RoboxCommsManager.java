@@ -227,7 +227,10 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         pendingPrinters.remove(portName);
 
         final Printer printerToRemove = activePrinters.get(portName);
-        printerToRemove.shutdown(false);
+        if (printerToRemove != null)
+        {
+            printerToRemove.shutdown(false);
+        }
         activePrinters.remove(portName);
 
         Platform.runLater(() ->
