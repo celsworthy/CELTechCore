@@ -17,6 +17,8 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  *
@@ -111,6 +113,50 @@ public class Filament implements Serializable, Cloneable
         this.requiredFirstLayerNozzleTemperature.set(reel.firstLayerNozzleTemperatureProperty().get());
         this.requiredNozzleTemperature.set(reel.nozzleTemperatureProperty().get());
         detectAndSetMutable();
+    }
+    
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31).
+            append(filamentID.get()).
+            append(friendlyFilamentName.get()).
+            append(material.get()).
+            append(diameter.get()).
+            append(filamentMultiplier.get()).
+            append(feedRateMultiplier.get()).
+            append(requiredAmbientTemperature.get()).
+            append(requiredFirstLayerBedTemperature.get()).
+            append(requiredBedTemperature.get()).
+            append(requiredFirstLayerNozzleTemperature.get()).
+            append(requiredNozzleTemperature.get()).
+            append(displayColour.get()).
+            append(costGBPPerKG.get()).
+            toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+       if (!(obj instanceof Filament))
+            return false;
+        if (obj == this)
+            return true;
+
+        Filament rhs = (Filament) obj;
+        return new EqualsBuilder().
+            append(filamentID.get(), rhs.filamentID.get()).
+            append(friendlyFilamentName.get(), rhs.friendlyFilamentName.get()).
+            append(material.get(), rhs.material.get()).
+            append(diameter.get(), rhs.diameter.get()).
+            append(filamentMultiplier.get(), rhs.filamentMultiplier.get()).
+            append(feedRateMultiplier.get(), rhs.feedRateMultiplier.get()).
+            append(requiredAmbientTemperature.get(), rhs.requiredAmbientTemperature.get()).
+            append(requiredFirstLayerBedTemperature.get(), rhs.requiredFirstLayerBedTemperature.get()).
+            append(requiredBedTemperature.get(), rhs.requiredBedTemperature.get()).
+            append(requiredFirstLayerNozzleTemperature.get(), rhs.requiredFirstLayerNozzleTemperature.get()).
+            append(requiredNozzleTemperature.get(), rhs.requiredNozzleTemperature.get()).
+            append(displayColour.get(), rhs.displayColour.get()).
+            append(costGBPPerKG.get(), rhs.costGBPPerKG.get()).
+            isEquals();
     }
 
     public String getFileName()
