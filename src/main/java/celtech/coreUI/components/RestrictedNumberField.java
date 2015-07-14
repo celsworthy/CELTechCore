@@ -230,16 +230,19 @@ public class RestrictedNumberField extends TextField
 
     public int getAsInt() throws ParseException
     {
+        updateNumberValues();
         return intValue.get();
     }
 
     public float getAsFloat() throws ParseException
     {
+        updateNumberValues();
         return floatValue.get();
     }
 
     public double getAsDouble() throws ParseException
     {
+        updateNumberValues();
         return doubleValue.get();
     }
 
