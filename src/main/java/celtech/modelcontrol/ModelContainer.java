@@ -563,6 +563,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Return a set of all descendent ModelContainers (and include this one) that have MeshView
      * children.
+     * @return 
      */
     public Set<ModelContainer> getModelsHoldingMeshViews()
     {
@@ -577,6 +578,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Return a set of all descendent ModelContainers (and include this one) that have ModelContainer
      * children.
+     * @return 
      */
     public Collection<? extends ModelContainer> getModelsHoldingModels()
     {
