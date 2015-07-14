@@ -125,7 +125,7 @@ public class GetTimeWeightCost
                 Lookup.getSelectedPrinterProperty().get(),
                 project,
                 null);
-        
+
         if (result != null
                 && result.getRoboxiserResult().isSuccess())
         {
@@ -141,8 +141,7 @@ public class GetTimeWeightCost
             {
                 updateFieldsForStatistics(printJobStatistics);
             });
-        }
-        else
+        } else
         {
             throw new RuntimeException("Failed to calculate cost/weight");
         }
@@ -155,28 +154,42 @@ public class GetTimeWeightCost
     {
         String formattedDuration = formatDuration(printJobStatistics.getPredictedDuration());
 
-        double volumeUsed = printJobStatistics.getEVolumeUsed();
-        //TODO make work with dual extruders
-        Filament filament = project.getPrinterSettings().getFilament0();
+        double eVolumeUsed = printJobStatistics.getEVolumeUsed();
+        double dVolumeUsed = printJobStatistics.getDVolumeUsed();
+
+        Filament filament0 = project.getPrinterSettings().getFilament0();
+        Filament filament1 = project.getPrinterSettings().getFilament1();
 
         lblTime.setText(formattedDuration);
 
-        if (filament != null)
-        {
-            double weight = filament.getWeightForVolume(volumeUsed * 1e-9);
-            String formattedWeight = formatWeight(weight);
+        double weight = 0;
+        double costGBP = 0;
 
-            double costGBP = filament.getCostForVolume(volumeUsed * 1e-9);
-            String formattedCost = formatCost(costGBP);
-
-            lblWeight.setText(formattedWeight);
-            lblCost.setText(formattedCost);
-        } else
+        if (filament0 == null
+                && filament1 == null)
         {
             // If there is no filament loaded...
             String noFilament = Lookup.i18n("timeCost.noFilament");
             lblWeight.setText(noFilament);
             lblCost.setText(noFilament);
+        } else
+        {
+            if (filament0 != null)
+            {
+                weight += filament0.getWeightForVolume(eVolumeUsed * 1e-9);
+                costGBP += filament0.getCostForVolume(eVolumeUsed * 1e-9);
+            }
+
+            if (filament1 != null)
+            {
+                weight += filament1.getWeightForVolume(dVolumeUsed * 1e-9);
+                costGBP += filament1.getCostForVolume(dVolumeUsed * 1e-9);
+            }
+            
+            String formattedWeight = formatWeight(weight);
+            String formattedCost = formatCost(costGBP);
+            lblWeight.setText(formattedWeight);
+            lblCost.setText(formattedCost);
         }
     }
 
