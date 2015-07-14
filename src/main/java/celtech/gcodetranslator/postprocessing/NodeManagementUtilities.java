@@ -232,9 +232,9 @@ public class NodeManagementUtilities
         return priorMovement;
     }
 
-    protected Optional<GCodeEventNode> findPriorExtrusion(GCodeEventNode node) throws NodeProcessingException
+    protected Optional<ExtrusionNode> findPriorExtrusion(GCodeEventNode node) throws NodeProcessingException
     {
-        Optional<GCodeEventNode> priorExtrusion = Optional.empty();
+        Optional<ExtrusionNode> priorExtrusion = Optional.empty();
 
         Iterator<GCodeEventNode> childIterator = node.treeSpanningBackwardsIterator();
 
@@ -243,7 +243,7 @@ public class NodeManagementUtilities
             GCodeEventNode childNode = childIterator.next();
             if (childNode instanceof ExtrusionNode)
             {
-                priorExtrusion = Optional.of(childNode);
+                priorExtrusion = Optional.of((ExtrusionNode)childNode);
                 break;
             }
         }
