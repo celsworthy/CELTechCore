@@ -10,6 +10,7 @@ import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import org.junit.After;
@@ -671,6 +672,33 @@ public class GCodeParserTest
     }
 
     @Test
+    public void supportSectionTest()
+    {
+        String inputData = ";TYPE:SUPPORT\n"
+                + "G1 F1800 E-0.50000\n"
+                + "G0 F12000 X88.302 Y42.421 Z1.020\n"
+                + "G1 F1800 E0.00000\n"
+                + "G1 X12.3 Y14.5 E1.00000\n";
+        GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class
+        );
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.SupportSection());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+
+        assertFalse(result.valueStack.isEmpty());
+        assertTrue(result.valueStack.peek() instanceof SupportSectionNode);
+
+        SupportSectionNode sectionNode = (SupportSectionNode) result.valueStack.pop();
+        assertEquals(4, sectionNode.getChildren().size());
+        assertEquals(RetractNode.class, sectionNode.getChildren().get(0).getClass());
+        assertEquals(TravelNode.class, sectionNode.getChildren().get(1).getClass());
+        assertEquals(UnretractNode.class, sectionNode.getChildren().get(2).getClass());
+        assertEquals(ExtrusionNode.class, sectionNode.getChildren().get(3).getClass());
+    }
+
+    @Test
     public void isASectionTest()
     {
         String section1 = ";TYPE:WALL-OUTER\n";
@@ -697,13 +725,14 @@ public class GCodeParserTest
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
 
-//        result = runner.run(section4);
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
-//        
-//        result = runner.run(section5);
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
+        result = runner.run(section4);
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        
+        result = runner.run(section5);
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+
         result = runner.run(notASection);
         assertFalse(result.hasErrors());
         assertFalse(result.matched);
