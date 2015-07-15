@@ -50,7 +50,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
-        MeshView meshView = mc.getMeshViews().get(0);
+        MeshView meshView = mc.getMeshView();
         assertEquals(mc, ModelContainer.getRootModelContainer(meshView));
     }
 
@@ -64,7 +64,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelGroup(modelContainers);
 
-        MeshView meshView = mc.getMeshViews().get(0);
+        MeshView meshView = mc.getMeshView();
 
         assertEquals(groupModelContainer, ModelContainer.getRootModelContainer(meshView));
     }

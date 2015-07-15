@@ -153,12 +153,12 @@ public class StaticModelOverlay
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshViews());
+        bed.getChildren().addAll(bedOuterLoadResult.getModelContainer().getMeshView());
 
         ObjImporter bedInnerImporter = new ObjImporter();
         ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
 
-        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshViews());
+        bed.getChildren().addAll(bedInnerLoadResult.getModelContainer().getMeshView());
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
             ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());

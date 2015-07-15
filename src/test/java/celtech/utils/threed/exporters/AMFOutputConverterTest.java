@@ -29,7 +29,7 @@ public class AMFOutputConverterTest extends JavaFXConfiguredTest
     {
         MeshView meshView = new MeshView(new ShapePyramid(2, 3));
         ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
-        modelContainer.setUseExtruder0(null, useExtruder0);
+        modelContainer.setUseExtruder0(useExtruder0);
 //        modelContainer.translateBy(-105, -75);
         return modelContainer;
     }

@@ -40,6 +40,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -77,7 +78,7 @@ public class Project implements Serializable
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-            Project.class.getName());
+        Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
 
     Set<ProjectChangesListener> projectChangesListeners;
@@ -107,19 +108,19 @@ public class Project implements Serializable
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
-                + formatter.format(now));
+            + formatter.format(now));
         lastModifiedDate.set(now);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
         printerSettings.getDataChanged().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    projectModified();
-                    fireWhenPrinterSettingsChanged(printerSettings);
-                });
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                projectModified();
+                fireWhenPrinterSettingsChanged(printerSettings);
+            });
 
         customSettingsNotChosen.bind(
-                printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
-                .and(printerSettings.getSettingsNameProperty().isEmpty()));
+            printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
+            .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
     }
@@ -156,8 +157,8 @@ public class Project implements Serializable
     public final String getAbsolutePath()
     {
         return ApplicationConfiguration.getProjectDirectory() + File.separator
-                + projectNameProperty.get()
-                + ApplicationConfiguration.projectFileExtension;
+            + projectNameProperty.get()
+            + ApplicationConfiguration.projectFileExtension;
     }
 
     static Project loadProject(String basePath)
@@ -189,9 +190,9 @@ public class Project implements Serializable
         try
         {
             FileInputStream projectFileStream = new FileInputStream(basePath
-                    + ApplicationConfiguration.projectFileExtension);
+                + ApplicationConfiguration.projectFileExtension);
             ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(
-                    projectFileStream));
+                projectFileStream));
             Project loadedProject = (Project) reader.readObject();
             reader.close();
             for (ModelContainer modelContainer : loadedProject.loadedModels)
@@ -208,13 +209,13 @@ public class Project implements Serializable
     }
 
     /**
-     * Get the first non-whitespace character in a file. If there is no
-     * non-whitespace character then return a space.
+     * Get the first non-whitespace character in a file. If there is no non-whitespace character
+     * then return a space.
      */
     private static char getFirstNonWhitespaceCharacter(String basePath) throws FileNotFoundException, IOException
     {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath
-                + ApplicationConfiguration.projectFileExtension));
+            + ApplicationConfiguration.projectFileExtension));
         String line;
         while ((line = bufferedReader.readLine()) != null)
         {
@@ -286,7 +287,7 @@ public class Project implements Serializable
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
         FileInputStream fileInputStream = new FileInputStream(basePath
-                + ApplicationConfiguration.projectModelsFileExtension);
+            + ApplicationConfiguration.projectModelsFileExtension);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
         ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
@@ -300,7 +301,7 @@ public class Project implements Serializable
     public static void saveProject(Project project)
     {
         String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-                + project.getProjectName();
+            + project.getProjectName();
         project.save(basePath);
     }
 
@@ -335,8 +336,8 @@ public class Project implements Serializable
             } catch (IOException ex)
             {
                 steno.exception(
-                        "Couldn't write project state to file for project "
-                        + projectNameProperty.get(), ex);
+                    "Couldn't write project state to file for project "
+                    + projectNameProperty.get(), ex);
             }
         }
     }
@@ -353,25 +354,18 @@ public class Project implements Serializable
     {
         if (modelContainer instanceof ModelGroup)
         {
-            for (ModelContainer subModel : ((ModelGroup)modelContainer).getChildModelContainers())
+            for (ModelContainer subModel : ((ModelGroup) modelContainer).getChildModelContainers())
             {
                 getUsedExtruders(subModel, usedExtruders);
             }
         } else
         {
-            for (int extruderNumber : modelContainer.getMeshExtruderAssociationProperty())
-            {
-                if (!usedExtruders.contains(extruderNumber))
-                {
-                    usedExtruders.add(extruderNumber);
-                }
-            }
+            usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
         }
     }
 
     /**
-     * Return which extruders are used by the project, as a set of the extruder
-     * numbers
+     * Return which extruders are used by the project, as a set of the extruder numbers
      *
      * @return
      */
@@ -386,11 +380,11 @@ public class Project implements Serializable
     }
 
     /**
-     * This is the Project file reader for version 1.01.04 and is used for
-     * reading old project files.
+     * This is the Project file reader for version 1.01.04 and is used for reading old project
+     * files.
      */
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         initialise();
 
@@ -474,8 +468,8 @@ public class Project implements Serializable
     }
 
     /**
-     * For new projects this should be called to initialise the extruder
-     * filaments according to the currently selected printer.
+     * For new projects this should be called to initialise the extruder filaments according to the
+     * currently selected printer.
      */
     private void initialiseExtruderFilaments()
     {
@@ -565,23 +559,24 @@ public class Project implements Serializable
         return lastModifiedDate;
     }
 
-    private ListChangeListener<Number> modelExtruderNumberListener;
+    private ChangeListener<Number> modelExtruderNumberListener;
 
     private void addModelListeners(ModelContainer modelContainer)
     {
-        modelExtruderNumberListener = (ListChangeListener.Change<? extends Number> change) ->
-        {
-            fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
-            modelColourChanged.set(!modelColourChanged.get());
-        };
-        modelContainer.getMeshExtruderAssociationProperty().addListener(
-                modelExtruderNumberListener);
+        modelExtruderNumberListener
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
+                modelColourChanged.set(!modelColourChanged.get());
+            };
+        modelContainer.getAssociateWithExtruderNumberProperty().addListener(
+            modelExtruderNumberListener);
     }
 
     private void removeModelListeners(ModelContainer modelContainer)
     {
-        modelContainer.getMeshExtruderAssociationProperty().removeListener(
-                modelExtruderNumberListener);
+        modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
+            modelExtruderNumberListener);
     }
 
     public BooleanProperty canPrintProperty()
@@ -639,7 +634,7 @@ public class Project implements Serializable
 
             //TODO modify to work with multiple mesh views
             List<TriangleMesh> subMeshes = MeshSeparator.separate(
-                    (TriangleMesh) modelContainer.getMeshViews().get(0).getMesh());
+                (TriangleMesh) modelContainer.getMeshView().getMesh());
             if (subMeshes.size() > 1)
             {
                 deleteModel(modelContainer);
@@ -648,7 +643,7 @@ public class Project implements Serializable
                 {
                     MeshView meshView = new MeshView(subMesh);
                     ModelContainer newModelContainer = new ModelContainer(
-                            modelContainer.getModelFile(), meshView);
+                        modelContainer.getModelFile(), meshView);
                     newModelContainer.setState(state);
                     addModel(newModelContainer);
                     double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
@@ -689,8 +684,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Return a Map of child_model_id -> parent_model_id for all model:group and
-     * group:group relationships.
+     * Return a Map of child_model_id -> parent_model_id for all model:group and group:group
+     * relationships.
      */
     public Map<Integer, Set<Integer>> getGroupStructure()
     {
@@ -703,8 +698,7 @@ public class Project implements Serializable
     }
 
     /**
-     * Return a Map of model_id -> state for all models holding models (ie
-     * groups).
+     * Return a Map of model_id -> state for all models holding models (ie groups).
      */
     public Map<Integer, ModelContainer.State> getGroupState()
     {
@@ -717,14 +711,15 @@ public class Project implements Serializable
     }
 
     /**
-     * Using the group function, reapply the groupings as given by the given
-     * groupStructure. The first groups to be created must be those containing
-     * only non-groups, and then each level of the group hierarchy.<p>
-     * First create new groups where all children are already instantiated. Then
-     * repeat until no new groups are created.
+     * Using the group function, reapply the groupings as given by the given groupStructure. The
+     * first groups to be created must be those containing only non-groups, and then each level of
+     * the group hierarchy.<p>
+     * First create new groups where all children are already instantiated. Then repeat until no new
+     * groups are created.
      * </p>
      */
-    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
+        Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
         do
@@ -738,7 +733,8 @@ public class Project implements Serializable
      *
      * @return the number of groups created
      */
-    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure,
+        Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numGroups = 0;
         for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
@@ -758,8 +754,7 @@ public class Project implements Serializable
     }
 
     /**
-     * Return true if loadedModels contains models for all the given modelIds,
-     * else return false.
+     * Return true if loadedModels contains models for all the given modelIds, else return false.
      */
     private boolean allModelsInstantiated(Set<Integer> modelIds)
     {
@@ -825,8 +820,8 @@ public class Project implements Serializable
     }
 
     /**
-     * ProjectChangesListener allows other objects to observe when models are
-     * added or removed etc to the project.
+     * ProjectChangesListener allows other objects to observe when models are added or removed etc
+     * to the project.
      */
     public interface ProjectChangesListener
     {
@@ -847,21 +842,19 @@ public class Project implements Serializable
         void whenAutoLaidOut();
 
         /**
-         * This should be fired when one or more models have been moved, rotated
-         * or scaled etc. If possible try to fire just once for any given group
-         * change.
+         * This should be fired when one or more models have been moved, rotated or scaled etc. If
+         * possible try to fire just once for any given group change.
          */
         void whenModelsTransformed(Set<ModelContainer> modelContainers);
 
         /**
-         * This should be fired when certain details of the model change.
-         * Currently this is only: - associatedExtruder
+         * This should be fired when certain details of the model change. Currently this is only: -
+         * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
 
         /**
-         * This should be fired whenever the PrinterSettings of the project
-         * changes.
+         * This should be fired whenever the PrinterSettings of the project changes.
          *
          * @param printerSettings
          */
@@ -872,7 +865,7 @@ public class Project implements Serializable
     {
         Collections.sort(loadedModels);
         PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
-                (int) PrintBed.maxPrintableZSize);
+                                              (int) PrintBed.maxPrintableZSize);
 
         thing.reference(loadedModels, 10);
         thing.pack();
@@ -891,9 +884,9 @@ public class Project implements Serializable
     }
 
     /**
-     * Scale X, Y and Z by the given factor, apply the given ratio to the given
-     * scale. I.e. the ratio is not an absolute figure to be applied to the
-     * models but a ratio to be applied to the current scale.
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
+     * ratio is not an absolute figure to be applied to the models but a ratio to be applied to the
+     * current scale.
      */
     public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
     {
@@ -908,7 +901,7 @@ public class Project implements Serializable
     }
 
     public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
-            boolean preserveAspectRatio)
+        boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -931,7 +924,7 @@ public class Project implements Serializable
     }
 
     public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
-            boolean preserveAspectRatio)
+        boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -954,7 +947,7 @@ public class Project implements Serializable
     }
 
     public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
-            boolean preserveAspectRatio)
+        boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -1022,9 +1015,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, int faceNumber)
     {
-        modelContainer.snapToGround(pickedMesh, faceNumber);
+        modelContainer.snapToGround(faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);
@@ -1119,10 +1112,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, MeshView pickedMesh,
-            boolean useExtruder0)
+    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
-        modelContainer.setUseExtruder0(pickedMesh, useExtruder0);
+        modelContainer.setUseExtruder0(useExtruder0);
         projectModified();
     }
 
