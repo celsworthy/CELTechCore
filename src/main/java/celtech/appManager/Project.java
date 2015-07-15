@@ -510,6 +510,11 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelAdded(modelContainer);
         addModelListeners(modelContainer);
+        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        {
+            addModelListeners(childModelContainer);
+        }
+
     }
 
     private void fireWhenModelAdded(ModelContainer modelContainer)
@@ -534,6 +539,10 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelRemoved(modelContainer);
         removeModelListeners(modelContainer);
+        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        {
+            removeModelListeners(childModelContainer);
+        }
     }
 
     private void fireWhenModelRemoved(ModelContainer modelContainer)
@@ -1015,9 +1024,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
-        modelContainer.snapToGround(faceNumber);
+        modelContainer.snapToGround(pickedMesh, faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);

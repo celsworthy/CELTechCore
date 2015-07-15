@@ -59,6 +59,7 @@ public class ModelGroup extends ModelContainer
         transformMoveToCentre.setZ(0);
     }
 
+    @Override
     public Set<ModelContainer> getChildModelContainers()
     {
         return Collections.unmodifiableSet(childModelContainers);
