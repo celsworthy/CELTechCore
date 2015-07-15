@@ -18,12 +18,13 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -122,6 +123,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     private Filament reel1Filament;
 
     private Filament currentFilament;
+    private Filament currentFilamentAsEdited;
+
+    private StringProperty loadedFilamentID0 = new SimpleStringProperty();
+    private StringProperty loadedFilamentID1 = new SimpleStringProperty();
 
     @FXML
     private ComboBox<Filament> cmbFilament;
@@ -180,9 +185,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         currentPrinter.bind(Lookup.getSelectedPrinterProperty());
 
-        canSave.bind(isValid.and(isDirty).and(
-            state.isEqualTo(State.NEW).
-            or(state.isEqualTo(State.CUSTOM))));
+        updateSaveBindings();
 
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
 
@@ -231,6 +234,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 if (printer == currentPrinter.get())
                 {
                     showReelsAtTopOfCombo();
+                    updateWriteToReelBindings();
                 }
             }
 
@@ -240,6 +244,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 if (printer == currentPrinter.get())
                 {
                     showReelsAtTopOfCombo();
+                    updateWriteToReelBindings();
                 }
             }
 
@@ -249,6 +254,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 if (printer == currentPrinter.get())
                 {
                     showReelsAtTopOfCombo();
+                    updateWriteToReelBindings();
                 }
             }
 
@@ -256,20 +262,82 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         Lookup.getPrinterListChangesNotifier().addListener(listener);
     }
 
-    private void updateWriteToReelBindings()
+    private void updateSaveBindings()
     {
-        canWriteToReel1.unbind();
-        canWriteToReel2.unbind();
-        if (currentPrinter.get() != null)
+        if (currentFilament != null && currentFilament.equals(currentFilamentAsEdited))
         {
-            canWriteToReel1.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(0));
-            canWriteToReel2.bind(
-                Bindings.size(currentPrinter.get().reelsProperty()).greaterThan(1));
+            canSave.unbind();
+            canSave.setValue(false);
         } else
         {
-            canWriteToReel1.set(false);
-            canWriteToReel2.set(false);
+            canSave.bind(isValid.and(isDirty).and(
+                state.isEqualTo(State.NEW).
+                or(state.isEqualTo(State.CUSTOM))));
+        }
+    }
+
+    /**
+     * This should be called whenever any field is edited or the reel is changed.
+     */
+    private void updateWriteToReelBindings()
+    {
+        updatedLoadedFilamentIDs();
+
+        canWriteToReel1.set(false);
+        canWriteToReel2.set(false);
+
+        if (currentPrinter.get() != null)
+        {
+            boolean filament0OfDifferentID = false;
+            boolean filament1OfDifferentID = false;
+            
+            if (loadedFilamentID0.get() != null)
+            {
+                filament0OfDifferentID = !loadedFilamentID0.get().equals(currentFilamentID);
+            }
+
+            if (loadedFilamentID1.get() != null)
+            {
+                filament1OfDifferentID = !loadedFilamentID1.get().equals(currentFilamentID);
+            }
+
+            if (currentPrinter.get().reelsProperty().containsKey(0)
+                && (filament0OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)))
+            {
+                canWriteToReel1.set(true);
+            }
+            if (currentPrinter.get().reelsProperty().containsKey(1)
+                && (filament1OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)))
+            {
+                canWriteToReel2.set(true);
+            }
+        }
+    }
+
+    private void updatedLoadedFilamentIDs()
+    {
+        if (currentPrinter.get() == null)
+        {
+            loadedFilamentID0.set(null);
+            loadedFilamentID1.set(null);
+        } else
+        {
+            if (currentPrinter.get().reelsProperty().containsKey(0))
+            {
+                loadedFilamentID0.set(
+                    currentPrinter.get().reelsProperty().get(0).filamentIDProperty().get());
+            } else
+            {
+                loadedFilamentID0.set(null);
+            }
+            if (currentPrinter.get().reelsProperty().containsKey(1))
+            {
+                loadedFilamentID1.set(
+                    currentPrinter.get().reelsProperty().get(1).filamentIDProperty().get());
+            } else
+            {
+                loadedFilamentID1.set(null);
+            }
         }
     }
 
@@ -295,6 +363,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 {
                     selectFilament(newValue);
                 }
+                updateWriteToReelBindings();
             });
 
         filamentContainer.getUserFilamentList().addListener(
@@ -581,6 +650,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         = (ObservableValue<? extends String> ov, String t, String t1) ->
         {
             isDirty.set(true);
+            currentFilamentAsEdited = currentFilament.clone();
+            updateFilamentFromWidgets(currentFilamentAsEdited);
+            updateWriteToReelBindings();
+            updateSaveBindings();
         };
     private final ChangeListener<String> remainingOnReelListener
         = (ObservableValue<? extends String> ov, String t, String t1) ->
@@ -592,6 +665,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         = (ObservableValue<? extends MaterialType> ov, MaterialType t, MaterialType t1) ->
         {
             isDirty.set(true);
+            currentFilamentAsEdited = currentFilament.clone();
+            updateFilamentFromWidgets(currentFilamentAsEdited);
+            updateWriteToReelBindings();
+            updateSaveBindings();
         };
 
     private void selectFilament(Filament filament)

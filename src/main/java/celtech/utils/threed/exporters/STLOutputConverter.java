@@ -35,6 +35,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
 {
 
     private Stenographer steno = null;
+    private int modelFileCount = 0;
 
     public STLOutputConverter()
     {
@@ -53,6 +54,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
             boolean outputAsSingleFile)
     {
         List<String> createdFiles = new ArrayList<>();
+        modelFileCount = 0;
 
         if (outputAsSingleFile)
         {
@@ -65,26 +67,62 @@ public class STLOutputConverter implements MeshFileOutputConverter
 
             createdFiles.add(tempModelFilenameWithPath);
 
-            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
+//            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput, project.);
         } else
         {
-            int modelFileCount = 0;
+
             for (ModelContainer modelContainer : project.getLoadedModels())
             {
-                for (MeshView meshView : modelContainer.descendentMeshViews())
+                if (modelContainer instanceof ModelGroup)
                 {
-                    String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-                            + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
-
-                    Set<MeshView> meshViewsToOutput = new HashSet<>();
-                    meshViewsToOutput.add(meshView);
-                    outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
-                    createdFiles.add(tempModelFilenameWithPath);
-                    modelFileCount++;
+                    ModelGroup group = (ModelGroup) modelContainer;
+                    for (ModelContainer container : group.getChildModelContainers())
+                    {
+                        outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory, group);
+                    }
+                } else
+                {
+                    outputAllMeshesFromContainer(modelContainer, createdFiles, printJobUUID, printJobDirectory);
                 }
             }
-        }    
+        }
+
         return createdFiles;
+    }
+
+    private void outputAllMeshesFromContainer(ModelContainer container,
+            List<String> createdFiles,
+            String printJobUUID, String printJobDirectory)
+    {
+        outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory, container);
+    }
+    
+    private void outputAllMeshesFromContainer(ModelContainer container,
+            List<String> createdFiles,
+            String printJobUUID, String printJobDirectory,
+            ModelContainer containerWithWorldTransform)
+    {
+        if (container instanceof ModelGroup)
+        {
+            for (ModelContainer subModel : ((ModelGroup)container).getChildModelContainers())
+            {
+                outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory, container);
+            }
+        } else
+        {
+            for (MeshView meshView
+                    : container.getMeshViews())
+            {
+                String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+                        + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
+
+                List<MeshView> meshViewsToOutput = new ArrayList<>();
+                meshViewsToOutput.add(meshView);
+                outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput, containerWithWorldTransform);
+                createdFiles.add(tempModelFilenameWithPath);
+                modelFileCount++;
+            }
+        }
     }
 
     private void outputMeshViewsInSingleFile(final String tempModelFilenameWithPath,
@@ -159,8 +197,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                         {
                             int vertexIndex = faceArray.get((facetNumber * 6) + (vertexNumber * 2));
 
-                            //TODO make this more robust - it assumes a relationship between the MeshView and the ModelContainer
-                            Point3D vertex = ((ModelContainer) meshView.getParent().getParent())
+                            Point3D vertex = containerWithWorldTransforms
                                     .transformMeshToRealWorldCoordinates(
                                             pointArray.get(vertexIndex * 3),
                                             pointArray.get((vertexIndex * 3) + 1),

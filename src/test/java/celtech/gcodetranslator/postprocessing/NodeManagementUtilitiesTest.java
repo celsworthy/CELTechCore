@@ -9,6 +9,7 @@ import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
@@ -365,6 +366,90 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
     }
 
     @Test
+    public void testFindPriorExtrusion()
+    {
+        FillSectionNode fill1 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.getExtrusion().setE(1.0f);
+
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.getExtrusion().setE(2.0f);
+
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.getExtrusion().setE(3.0f);
+
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.getExtrusion().setE(4.0f);
+
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.getExtrusion().setE(5.0f);
+
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.getExtrusion().setE(6.0f);
+
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+
+        FillSectionNode fill2 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.getExtrusion().setE(1.0f);
+
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.getExtrusion().setE(2.0f);
+
+        ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        extrusionNode9.getExtrusion().setE(3.0f);
+
+        ExtrusionNode extrusionNode10 = new ExtrusionNode();
+        extrusionNode10.getExtrusion().setE(4.0f);
+
+        ExtrusionNode extrusionNode11 = new ExtrusionNode();
+        extrusionNode11.getExtrusion().setE(5.0f);
+
+        ExtrusionNode extrusionNode12 = new ExtrusionNode();
+        extrusionNode12.getExtrusion().setE(6.0f);
+
+        fill2.addChildAtEnd(extrusionNode7);
+        fill2.addChildAtEnd(extrusionNode8);
+        fill2.addChildAtEnd(extrusionNode9);
+        fill2.addChildAtEnd(extrusionNode10);
+        fill2.addChildAtEnd(extrusionNode11);
+        fill2.addChildAtEnd(extrusionNode12);
+
+        ToolSelectNode ts1 = new ToolSelectNode();
+        ts1.addChildAtEnd(fill1);
+        ts1.addChildAtEnd(fill2);
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+
+        try
+        {
+            Optional<ExtrusionNode> result1 = nodeManagementUtilities.findPriorExtrusion(extrusionNode12);
+            assertTrue(result1.isPresent());
+            assertSame(extrusionNode11, result1.get());
+
+//            Optional<ExtrusionNode> result2 = nodeManagementUtilities.findNextExtrusion(ts1, extrusionNode6);
+//            assertTrue(result2.isPresent());
+//            assertSame(extrusionNode7, result2.get());
+        } catch (NodeProcessingException ex)
+        {
+            fail("Got exception during test " + ex);
+        }
+    }
+
+    @Test
     public void testFindPriorMovementInPreviousSection()
     {
         FillSectionNode fill1 = new FillSectionNode();
@@ -526,5 +611,94 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         {
             fail("Got exception during test " + ex);
         }
+    }
+
+    @Test
+    public void testCalculatePerRetractExtrusionAndNode()
+    {
+        FillSectionNode fill1 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.getExtrusion().setE(1.0f);
+
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.getExtrusion().setE(2.0f);
+
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.getExtrusion().setE(3.0f);
+
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.getExtrusion().setE(4.0f);
+
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.getExtrusion().setE(5.0f);
+
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.getExtrusion().setE(6.0f);
+
+        RetractNode retractNode1 = new RetractNode();
+
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(retractNode1);
+
+        FillSectionNode fill2 = new FillSectionNode();
+
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.getExtrusion().setE(2.0f);
+
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.getExtrusion().setE(3.0f);
+
+        ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        extrusionNode9.getExtrusion().setE(4.0f);
+
+        ExtrusionNode extrusionNode10 = new ExtrusionNode();
+        extrusionNode10.getExtrusion().setE(5.0f);
+
+        ExtrusionNode extrusionNode11 = new ExtrusionNode();
+        extrusionNode11.getExtrusion().setE(6.0f);
+
+        ExtrusionNode extrusionNode12 = new ExtrusionNode();
+        extrusionNode12.getExtrusion().setE(7.0f);
+
+        RetractNode retractNode2 = new RetractNode();
+
+        fill2.addChildAtEnd(extrusionNode7);
+        fill2.addChildAtEnd(extrusionNode8);
+        fill2.addChildAtEnd(extrusionNode9);
+        fill2.addChildAtEnd(extrusionNode10);
+        fill2.addChildAtEnd(extrusionNode11);
+        fill2.addChildAtEnd(extrusionNode12);
+        fill2.addChildAtEnd(retractNode2);
+
+        ToolSelectNode ts1 = new ToolSelectNode();
+        ts1.addChildAtEnd(fill1);
+        ts1.addChildAtEnd(fill2);
+
+        LayerNode layer = new LayerNode(0);
+        layer.addChildAtEnd(ts1);
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+
+        nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layer);
+
+        assertNotNull(retractNode1.getPriorExtrusionNode());
+        assertSame(extrusionNode6, retractNode1.getPriorExtrusionNode());
+        assertEquals(21, retractNode1.getExtrusionSinceLastRetract(), 0.1);
+
+        assertNotNull(retractNode2.getPriorExtrusionNode());
+        assertSame(extrusionNode12, retractNode2.getPriorExtrusionNode());
+        assertEquals(27, retractNode2.getExtrusionSinceLastRetract(), 0.1);
     }
 }

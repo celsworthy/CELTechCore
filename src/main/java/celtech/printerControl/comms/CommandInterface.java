@@ -51,6 +51,8 @@ public abstract class CommandInterface extends Thread
     protected int sleepBetweenStatusChecks = 1000;
     private boolean loadingFirmware = false;
 
+    protected boolean suppressComms = false;
+
     private String printerName = null;
 
     /**
@@ -163,7 +165,8 @@ public abstract class CommandInterface extends Thread
                         if (loadRequiredFirmware)
                         {
                             loadingFirmware = true;
-                            loadFirmware(requiredFirmwareVersionString);
+                            loadFirmware(ApplicationConfiguration.getCommonApplicationDirectory()
+                                    + "robox_r" + requiredFirmwareVersionString + ".bin");
                         } else
                         {
                             moveOnFromFirmwareCheck(firmwareResponse);
@@ -240,20 +243,26 @@ public abstract class CommandInterface extends Thread
                     {
                         this.sleep(sleepBetweenStatusChecks);
 
+                        if (!suppressComms)
+                        {
+                            try
+                            {
 //                        steno.debug("STATUS REQUEST: " + portName);
-                        writeToPrinter(RoboxTxPacketFactory.createPacket(
-                                TxPacketTypeEnum.STATUS_REQUEST));
+                                writeToPrinter(RoboxTxPacketFactory.createPacket(
+                                        TxPacketTypeEnum.STATUS_REQUEST));
 
-                        writeToPrinter(
-                                RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Failure during printer status request. " + ex.toString());
+                                writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
+                            } catch (RoboxCommsException ex)
+                            {
+                                steno.error("Failure during printer status request. " + ex.toString());
+                            }
+                        }
                     } catch (InterruptedException ex)
                     {
-                        steno.debug("Comms interrupted");
+                        steno.info("Comms interrupted");
                     }
                     break;
+
                 case DISCONNECTED:
                     steno.debug("state is disconnected");
                     break;
@@ -275,19 +284,20 @@ public abstract class CommandInterface extends Thread
         loadingFirmware = false;
     }
 
-    private void loadFirmware(String versionToLoad)
+    public void loadFirmware(String firmwareFilePath)
     {
+        suppressComms = true;
+        this.interrupt();
         firmwareLoadService.reset();
         firmwareLoadService.setPrinterToUse(printerToUse);
-        firmwareLoadService.setFirmwareFileToLoad(
-                ApplicationConfiguration.getCommonApplicationDirectory()
-                + "robox_r" + versionToLoad + ".bin");
+        firmwareLoadService.setFirmwareFileToLoad(firmwareFilePath);
         firmwareLoadService.start();
     }
 
     public void shutdown()
     {
         steno.info("Shutdown command interface...");
+        suppressComms = true;
         if (firmwareLoadService.isRunning())
         {
             steno.info("Shutdown command interface firmware service...");
@@ -357,7 +367,6 @@ public abstract class CommandInterface extends Thread
                 steno.error("Connected to an unknown printer that is printing");
             }
 
-           
         }
     }
 }

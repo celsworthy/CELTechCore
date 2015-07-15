@@ -61,6 +61,7 @@ public class PurgeActions extends StateTransitionActions
     private final List<Filament> purgeFilament;
     
     private boolean failedActionPerformed = false;
+    private boolean doorNeedsOpening = false;
 
     PurgeActions(Printer printer, Cancellable userCancellable, Cancellable errorCancellable)
     {
@@ -107,7 +108,7 @@ public class PurgeActions extends StateTransitionActions
         printer.gotoNozzlePosition(0);
         printer.switchBedHeaterOff();
         switchHeatersAndHeadLightOff();
-        
+
         PrinterUtils.waitOnBusy(printer, (Cancellable) null);
         try
         {
@@ -176,6 +177,7 @@ public class PurgeActions extends StateTransitionActions
 
     void doRunPurgeAction() throws PrinterException
     {
+        doorNeedsOpening = true;
         if (! purgeNozzleHeater0.get() && ! purgeNozzleHeater1.get()) {
             throw new RuntimeException("At least one nozzle must be purged");
         }
@@ -215,9 +217,7 @@ public class PurgeActions extends StateTransitionActions
             reel1FilamentTemperature,
             savedHeadData.getHeadHours());
         printer.readHeadEEPROM();
-        resetPrinter();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        openDoor();
         deregisterPrinterErrorHandler();
     }
 
@@ -225,26 +225,28 @@ public class PurgeActions extends StateTransitionActions
     {
         // needs to run on gui thread to make sure it is called after status set to idle
         Lookup.getTaskExecutor().
-            runOnGUIThread(() -> {
-                try
+            runOnGUIThread(() ->
                 {
-                    printer.goToOpenDoorPosition(null);
-                } catch (PrinterException ex)
-                {
-                    steno.warning("could not go to open door");
-                }
+                    try
+                    {
+                        printer.goToOpenDoorPosition(null);
+                    } catch (PrinterException ex)
+                    {
+                        steno.warning("could not go to open door");
+                    }
             });
     }
 
     public void doFailedAction() throws RoboxCommsException, PrinterException
     {
         // this can be called twice if an error occurs
-        if (failedActionPerformed) {
+        if (failedActionPerformed)
+        {
             return;
         }
-        
+
         failedActionPerformed = true;
-        
+
         try
         {
             abortAnyOngoingPrint();
@@ -255,7 +257,10 @@ public class PurgeActions extends StateTransitionActions
         }
         deregisterPrinterErrorHandler();
         printer.setPrinterStatus(PrinterStatus.IDLE);
-        openDoor();
+        if (doorNeedsOpening)
+        {
+            openDoor();
+        }
     }
 
     private void deregisterPrinterErrorHandler()

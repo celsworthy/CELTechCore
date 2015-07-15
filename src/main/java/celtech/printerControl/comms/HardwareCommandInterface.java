@@ -24,7 +24,7 @@ public class HardwareCommandInterface extends CommandInterface
     private final SerialPortManager serialPortManager;
 
     public HardwareCommandInterface(PrinterStatusConsumer controlInterface, String portName,
-        boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
+            boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName("HCI:" + portName + " " + this.toString());
@@ -40,12 +40,15 @@ public class HardwareCommandInterface extends CommandInterface
     @Override
     protected void disconnectSerialPort()
     {
-        try
+        if (serialPortManager.serialPort.isOpened())
         {
-            serialPortManager.disconnect();
-        } catch (SerialPortException ex)
-        {
-            steno.error("Failed to shut down serial port " + ex.getMessage());
+            try
+            {
+                serialPortManager.disconnect();
+            } catch (SerialPortException ex)
+            {
+                steno.error("Failed to shut down serial port " + ex.getMessage());
+            }
         }
 
         controlInterface.disconnected(portName);
@@ -66,15 +69,14 @@ public class HardwareCommandInterface extends CommandInterface
 
     @Override
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite,
-        boolean dontPublishResult) throws RoboxCommsException
+            boolean dontPublishResult) throws RoboxCommsException
     {
-        steno.trace("Command Interface was asked to send " + messageToWrite.getPacketType());
         RoboxRxPacket receivedPacket = null;
 
         if (commsState == RoboxCommsState.CONNECTED
-            || commsState == RoboxCommsState.CHECKING_FIRMWARE
-            || commsState == RoboxCommsState.CHECKING_ID
-            || commsState == RoboxCommsState.DETERMINING_PRINTER_STATUS)
+                || commsState == RoboxCommsState.CHECKING_FIRMWARE
+                || commsState == RoboxCommsState.CHECKING_ID
+                || commsState == RoboxCommsState.DETERMINING_PRINTER_STATUS)
         {
             try
             {
@@ -90,17 +92,17 @@ public class HardwareCommandInterface extends CommandInterface
                     if (packetType != messageToWrite.getPacketType().getExpectedResponse())
                     {
                         throw new InvalidResponseFromPrinterException(
-                            "Expected response of type "
-                            + messageToWrite.getPacketType().getExpectedResponse().name()
-                            + " and got "
-                            + packetType);
+                                "Expected response of type "
+                                + messageToWrite.getPacketType().getExpectedResponse().name()
+                                + " and got "
+                                + packetType);
                     }
                     steno.trace("Got a response packet back of type: " + packetType.toString());
                     byte[] inputBuffer = null;
                     if (packetType.containsLengthField())
                     {
                         byte[] lengthData = serialPortManager.readSerialPort(packetType.
-                            getLengthFieldSize());
+                                getLengthFieldSize());
 
                         int payloadSize = Integer.valueOf(new String(lengthData), 16);
                         if (packetType == RxPacketTypeEnum.LIST_FILES_RESPONSE)
@@ -136,7 +138,7 @@ public class HardwareCommandInterface extends CommandInterface
                     {
                         receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
                         steno.
-                            trace("Got packet of type " + receivedPacket.getPacketType().name());
+                                trace("Got packet of type " + receivedPacket.getPacketType().name());
 
                         if (!dontPublishResult)
                         {
@@ -145,19 +147,19 @@ public class HardwareCommandInterface extends CommandInterface
                     } catch (InvalidCommandByteException ex)
                     {
                         steno.error("Command byte of " + String.format("0x%02X", inputBuffer[0])
-                            + " is invalid.");
+                                + " is invalid.");
                     } catch (UnknownPacketTypeException ex)
                     {
                         steno.error("Packet type unknown for command byte "
-                            + String.format("0x%02X", inputBuffer[0]) + " is invalid.");
+                                + String.format("0x%02X", inputBuffer[0]) + " is invalid.");
                     } catch (UnableToGenerateRoboxPacketException ex)
                     {
                         steno.error("A packet that appeared to be of type " + packetType.name()
-                            + " could not be unpacked.");
+                                + " could not be unpacked.");
                     }
                 } else
                 {
-                    // Attempt to drain the crud from the input
+                        // Attempt to drain the crud from the input
                     // There shouldn't be anything here but just in case...
                     byte[] storage = serialPortManager.readAllDataOnBuffer();
 
@@ -169,7 +171,7 @@ public class HardwareCommandInterface extends CommandInterface
                     } catch (Exception e)
                     {
                         steno.warning(
-                            "Invalid packet received from firmware - couldn't print contents");
+                                "Invalid packet received from firmware - couldn't print contents");
                     }
 
 //                    InvalidResponseFromPrinterException exception = new InvalidResponseFromPrinterException("Invalid response - got: " + received);

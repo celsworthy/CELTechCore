@@ -501,4 +501,6 @@ public interface Printer extends RoboxResponseConsumer
     public void suppressEEPROMErrorCorrection(boolean suppress);
 
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
+    
+    public void loadFirmware(String firmwareFilePath);
 }

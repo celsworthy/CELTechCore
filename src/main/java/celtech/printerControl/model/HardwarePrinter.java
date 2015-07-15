@@ -3911,6 +3911,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return calibrationAlignmentManager;
     }
+    
+    @Override
+    public void loadFirmware(String firmwareFilePath)
+    {
+        commandInterface.loadFirmware(firmwareFilePath);
+    }
 
     @Override
     public String toString()

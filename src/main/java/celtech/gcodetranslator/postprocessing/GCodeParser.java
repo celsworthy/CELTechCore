@@ -311,7 +311,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                     @Override
                     public boolean run(Context context)
                     {
-                        SkinSectionNode node = new SkinSectionNode();
+                        SupportSectionNode node = new SupportSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
                             node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
@@ -335,7 +335,7 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                     @Override
                     public boolean run(Context context)
                     {
-                        SkinSectionNode node = new SkinSectionNode();
+                        SupportInterfaceSectionNode node = new SupportInterfaceSectionNode();
                         while (context.getValueStack().iterator().hasNext())
                         {
                             node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
@@ -440,6 +440,9 @@ public class GCodeParser extends BaseParser<GCodeEventNode>
                 TestNot(FillSectionNode.designator),
                 TestNot(InnerPerimeterSectionNode.designator),
                 TestNot(OuterPerimeterSectionNode.designator),
+                TestNot(SkinSectionNode.designator),
+                TestNot(SupportSectionNode.designator),
+                TestNot(SupportInterfaceSectionNode.designator),
                 ';', ZeroOrMore(NotNewline()),
                 comment.set(match()),
                 Newline(),

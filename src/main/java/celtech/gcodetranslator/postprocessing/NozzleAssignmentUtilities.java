@@ -12,6 +12,7 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,13 +76,6 @@ public class NozzleAssignmentUtilities
             int extruderNumber = model.getAssociateWithExtruderNumberProperty().get();
             objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
         }
-//        project.getLoadedModels().stream()
-//                .map(ModelContainer::getMeshExtruderAssociationProperty)
-//                .map(ObservableList<Integer>::get)
-//                .forEach(extruderNumber ->
-//                        {
-//                            objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
-//                });
     }
 
     protected void assignExtrusionToCorrectExtruder(LayerNode layerNode)
