@@ -44,10 +44,8 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
-import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -1082,11 +1080,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return descendentMeshViews;
     }
 
-    static ModelContainer getRootModelContainer(MeshView meshView)
+    public static ModelContainer getRootModelContainer(MeshView meshView)
     {
         ModelContainer parentModelContainer = (ModelContainer) meshView.getParent();
 
-        while (parentModelContainer.getParentModelContainer()instanceof ModelContainer)
+        while (parentModelContainer.getParentModelContainer() instanceof ModelContainer)
         {
             parentModelContainer = parentModelContainer.getParentModelContainer();
         }
@@ -1566,7 +1564,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
-        return localToParent(meshView.localToParent(vertexX, vertexY, vertexZ));
+        ModelContainer rootModelContainer = getRootModelContainer(meshView);
+        Node bed = rootModelContainer.getParent();
+        return bed.sceneToLocal(meshView.localToScene(vertexX, vertexY, vertexZ));
     }
 
     /**

@@ -38,16 +38,17 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -86,15 +87,6 @@ public class ObjImporter
     private static float scale = 1;
     private static boolean flatXZ = false;
 
-    /**
-     *
-     * @return
-     */
-    public Set<String> getMeshes()
-    {
-        return meshes.keySet();
-    }
-
     private final Map<String, TriangleMesh> meshes = new HashMap<>();
     private final Map<String, Integer> materialsForObjects = new HashMap<>();
     private final Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
@@ -116,34 +108,49 @@ public class ObjImporter
         ModelLoadResult modelLoadResult = null;
 
         File modelFile = new File(objFileUrl);
-        
+
         try (InputStream fileInputStream = new URL(objFileUrl).openStream())
         {
             String filePath = modelFile.getParent();
             read(fileInputStream, filePath);
 
-            ArrayList<MeshView> meshes = new ArrayList<>();
+            ArrayList<MeshView> meshes_ = new ArrayList<>();
             ArrayList<Integer> extruderAssociations = new ArrayList<>();
 
-            //We will take the 
-            for (String key : getMeshes())
+            for (String key : meshes.keySet())
             {
-                meshes.add(buildMeshView(key));
+                meshes_.add(buildMeshView(key));
 
                 int materialNumber = materialsForObjects.get(key);
                 extruderAssociations.add(materialNumber);
             }
 
-            ModelContainer modelContainer = new ModelContainer(modelFile, meshes.get(0),
-                                                               extruderAssociations.get(0));
+            ModelContainer modelContainer = null;
+            if (meshes_.size() == 1)
+            {
+                modelContainer = new ModelContainer(modelFile, meshes_.get(0),
+                                                    extruderAssociations.get(0));
+            } else
+            {
+                Set<ModelContainer> modelContainers = new HashSet<>();
+
+                for (int i = 0; i < meshes_.size(); i++)
+                {
+                    MeshView meshView = meshes_.get(i);
+                    int extruder = extruderAssociations.get(i);
+                    ModelContainer childModelContainer = new ModelContainer(modelFile, meshView,
+                                                                            extruder);
+                    modelContainers.add(childModelContainer);
+                }
+                modelContainer = new ModelGroup(modelContainers);
+            }
             boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(
                 modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
                                                   modelFile.getName(), targetProject,
                                                   modelContainer);
-            
-           
+
         } catch (Exception ex)
         {
             ex.printStackTrace();

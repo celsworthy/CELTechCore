@@ -30,7 +30,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
     private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.
             getName());
     private String printJobUUID = null;
-    private String printJobDirectory;
+    private final String printJobDirectory;
     private Project project = null;
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;

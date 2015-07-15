@@ -12,7 +12,6 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javafx.scene.shape.MeshView;
 
 /**
  *
@@ -73,8 +73,11 @@ public class NozzleAssignmentUtilities
         objectToNozzleNumberMap = new ArrayList<>();
         for (ModelContainer model : project.getLoadedModels())
         {
-            int extruderNumber = model.getAssociateWithExtruderNumberProperty().get();
-            objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
+            for (MeshView meshView : model.descendentMeshViews())
+            {
+                int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
+                objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
+            }
         }
     }
 
@@ -127,7 +130,8 @@ public class NozzleAssignmentUtilities
      * @param layerNode
      * @return The reference number of the last object in the layer
      */
-    protected int insertNozzleControlSectionsByTask(LayerNode layerNode, LayerPostProcessResult lastLayerResult)
+    protected int insertNozzleControlSectionsByTask(LayerNode layerNode,
+        LayerPostProcessResult lastLayerResult)
     {
         int lastObjectReferenceNumber = -1;
 
@@ -163,12 +167,14 @@ public class NozzleAssignmentUtilities
                 if (lastEventOnLastLayer != null)
                 {
                     Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
-                    if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                    if (potentialLastSection.isPresent()
+                        && potentialLastSection.get() instanceof SectionNode)
                     {
                         lastSectionNode = (SectionNode) potentialLastSection.get();
 
                         Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
-                        if (potentialToolSelectNode.isPresent() && potentialToolSelectNode.get() instanceof ToolSelectNode)
+                        if (potentialToolSelectNode.isPresent()
+                            && potentialToolSelectNode.get() instanceof ToolSelectNode)
                         {
                             toolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
                         }
@@ -289,7 +295,8 @@ public class NozzleAssignmentUtilities
         return lastObjectReferenceNumber;
     }
 
-    protected int insertNozzleControlSectionsByObject(LayerNode layerNode, LayerPostProcessResult lastLayerResult)
+    protected int insertNozzleControlSectionsByObject(LayerNode layerNode,
+        LayerPostProcessResult lastLayerResult)
     {
         int lastObjectReferenceNumber = -1;
         //We'll need at least one of these per layer
@@ -349,7 +356,8 @@ public class NozzleAssignmentUtilities
                                 if (lastEventOnLastLayer != null)
                                 {
                                     Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
-                                    if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
+                                    if (potentialLastSection.isPresent()
+                                        && potentialLastSection.get() instanceof SectionNode)
                                     {
                                         lastSectionNode = (SectionNode) potentialLastSection.get();
                                     }
@@ -358,7 +366,9 @@ public class NozzleAssignmentUtilities
 
                             if (lastSectionNode == null)
                             {
-                                throw new RuntimeException("Failed to process orphan section on layer " + layerNode.getLayerNumber() + " as last section didn't exist");
+                                throw new RuntimeException(
+                                    "Failed to process orphan section on layer "
+                                    + layerNode.getLayerNumber() + " as last section didn't exist");
                             }
                         }
 
