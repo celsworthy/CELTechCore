@@ -46,12 +46,12 @@ public class STLOutputConverter implements MeshFileOutputConverter
     public List<String> outputFile(Project project, String printJobUUID, boolean outputAsSingleFile)
     {
         return outputFile(project, printJobUUID, ApplicationConfiguration.getPrintSpoolDirectory()
-                + printJobUUID + File.separator, outputAsSingleFile);
+                          + printJobUUID + File.separator, outputAsSingleFile);
     }
 
     @Override
     public List<String> outputFile(Project project, String printJobUUID, String printJobDirectory,
-            boolean outputAsSingleFile)
+        boolean outputAsSingleFile)
     {
         List<String> createdFiles = new ArrayList<>();
         modelFileCount = 0;
@@ -60,10 +60,11 @@ public class STLOutputConverter implements MeshFileOutputConverter
         {
             Set<MeshView> meshViewsToOutput = new HashSet<>();
 
-            project.getLoadedModels().stream().forEach(mc -> meshViewsToOutput.addAll(mc.descendentMeshViews()));
+            project.getLoadedModels().stream().forEach(mc -> meshViewsToOutput.addAll(
+                mc.descendentMeshViews()));
 
             String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-                    + ApplicationConfiguration.stlTempFileExtension;
+                + ApplicationConfiguration.stlTempFileExtension;
 
             createdFiles.add(tempModelFilenameWithPath);
 
@@ -78,11 +79,13 @@ public class STLOutputConverter implements MeshFileOutputConverter
                     ModelGroup group = (ModelGroup) modelContainer;
                     for (ModelContainer container : group.getChildModelContainers())
                     {
-                        outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory, group);
+                        outputAllMeshesFromContainer(container, createdFiles, printJobUUID,
+                                                     printJobDirectory, group);
                     }
                 } else
                 {
-                    outputAllMeshesFromContainer(modelContainer, createdFiles, printJobUUID, printJobDirectory);
+                    outputAllMeshesFromContainer(modelContainer, createdFiles, printJobUUID,
+                                                 printJobDirectory);
                 }
             }
         }
@@ -91,42 +94,42 @@ public class STLOutputConverter implements MeshFileOutputConverter
     }
 
     private void outputAllMeshesFromContainer(ModelContainer container,
-            List<String> createdFiles,
-            String printJobUUID, String printJobDirectory)
+        List<String> createdFiles,
+        String printJobUUID, String printJobDirectory)
     {
-        outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory, container);
+        outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory,
+                                     container);
     }
-    
+
     private void outputAllMeshesFromContainer(ModelContainer container,
-            List<String> createdFiles,
-            String printJobUUID, String printJobDirectory,
-            ModelContainer containerWithWorldTransform)
+        List<String> createdFiles,
+        String printJobUUID, String printJobDirectory,
+        ModelContainer containerWithWorldTransform)
     {
         if (container instanceof ModelGroup)
         {
-            for (ModelContainer subModel : ((ModelGroup)container).getChildModelContainers())
+            for (ModelContainer subModel : ((ModelGroup) container).getChildModelContainers())
             {
-                outputAllMeshesFromContainer(container, createdFiles, printJobUUID, printJobDirectory, container);
+                outputAllMeshesFromContainer(subModel, createdFiles, printJobUUID,
+                                             printJobDirectory, container);
             }
         } else
         {
-            for (MeshView meshView
-                    : container.getMeshViews())
-            {
-                String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-                        + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
+            Set<MeshView> meshViewsToOutput = new HashSet<>();
+            meshViewsToOutput.add(container.getMeshView());
+            String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+                + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
 
-                List<MeshView> meshViewsToOutput = new ArrayList<>();
-                meshViewsToOutput.add(meshView);
-                outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput, containerWithWorldTransform);
-                createdFiles.add(tempModelFilenameWithPath);
-                modelFileCount++;
-            }
+            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput,
+                                        containerWithWorldTransform);
+            createdFiles.add(tempModelFilenameWithPath);
+            modelFileCount++;
         }
     }
 
     private void outputMeshViewsInSingleFile(final String tempModelFilenameWithPath,
-            Set<MeshView> meshViewsToOutput)
+        Set<MeshView> meshViewsToOutput,
+        ModelContainer containerWithWorldTransform)
     {
         File fFile = new File(tempModelFilenameWithPath);
 
@@ -154,7 +157,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 // Int containing number of facets
                 ByteBuffer headerBuffer = ByteBuffer.allocate(80);
                 headerBuffer.put(("Generated by " + ApplicationConfiguration.getTitleAndVersion()).
-                        getBytes("UTF-8"));
+                    getBytes("UTF-8"));
 
                 dataOutput.write(headerBuffer.array());
 
@@ -197,11 +200,11 @@ public class STLOutputConverter implements MeshFileOutputConverter
                         {
                             int vertexIndex = faceArray.get((facetNumber * 6) + (vertexNumber * 2));
 
-                            Point3D vertex = containerWithWorldTransforms
-                                    .transformMeshToRealWorldCoordinates(
-                                            pointArray.get(vertexIndex * 3),
-                                            pointArray.get((vertexIndex * 3) + 1),
-                                            pointArray.get((vertexIndex * 3) + 2));
+                            Point3D vertex = containerWithWorldTransform
+                                .transformMeshToRealWorldCoordinates(
+                                    pointArray.get(vertexIndex * 3),
+                                    pointArray.get((vertexIndex * 3) + 1),
+                                    pointArray.get((vertexIndex * 3) + 2));
 
                             dataBuffer.putFloat((float) vertex.getX());
                             dataBuffer.putFloat((float) vertex.getZ());
