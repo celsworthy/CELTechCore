@@ -995,18 +995,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void suppressFirmwareErrors(FirmwareError... firmwareErrors)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1068,6 +1056,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void loadFirmware(String firmwareFilePath)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

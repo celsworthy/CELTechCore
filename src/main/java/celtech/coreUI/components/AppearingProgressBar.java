@@ -267,5 +267,6 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     public void progressRequired(boolean required)
     {
         progressBar.setVisible(required);
+        progressBar.progressProperty().unbind();
     }
 }

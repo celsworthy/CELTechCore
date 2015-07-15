@@ -5,14 +5,11 @@ import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.GCodeMacroButton;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
-import celtech.services.firmware.FirmwareLoadResult;
-import celtech.services.firmware.FirmwareLoadService;
 import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.TransferGCodeToPrinterService;
 import java.io.File;
@@ -45,7 +42,7 @@ public class MaintenancePanelController implements Initializable
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        MaintenancePanelController.class.getName());
+            MaintenancePanelController.class.getName());
     private Printer connectedPrinter = null;
 
     private ProgressDialog firmwareUpdateProgress = null;
@@ -69,16 +66,16 @@ public class MaintenancePanelController implements Initializable
     private AnchorPane container;
 
     @FXML
-    private GCodeMacroButton YTestButton;
+    private Button YTestButton;
 
     @FXML
     private Button PurgeMaterialButton;
 
     @FXML
-    private Button loadFirmwareGCodeMacroButton;
+    private Button loadFirmwareButton;
 
     @FXML
-    private GCodeMacroButton T1CleanButton;
+    private Button T1CleanButton;
 
     @FXML
     private Button EjectStuckMaterialButton1;
@@ -87,25 +84,25 @@ public class MaintenancePanelController implements Initializable
     private Button EjectStuckMaterialButton2;
 
     @FXML
-    private GCodeMacroButton SpeedTestButton;
+    private Button SpeedTestButton;
 
     @FXML
-    private GCodeMacroButton XTestButton;
+    private Button XTestButton;
 
     @FXML
-    private GCodeMacroButton T0CleanButton;
+    private Button T0CleanButton;
 
     @FXML
     private Label currentFirmwareField;
 
     @FXML
-    private GCodeMacroButton LevelGantryButton;
+    private Button LevelGantryButton;
 
     @FXML
-    private Button sendGCodeSDGCodeMacroButton;
+    private Button sendGCodeSDButton;
 
     @FXML
-    private GCodeMacroButton ZTestButton;
+    private Button ZTestButton;
 
     @FXML
     void ejectStuckMaterial1(ActionEvent event)
@@ -186,23 +183,11 @@ public class MaintenancePanelController implements Initializable
     }
 
     @FXML
-    void speedTest(ActionEvent event)
+    void cleanNozzleT0(ActionEvent event)
     {
         try
         {
-            connectedPrinter.speedTest(false, null);
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't speed test");
-        }
-    }
-
-    @FXML
-    void t0NozzleClean(ActionEvent event)
-    {
-        try
-        {
-            connectedPrinter.t0NozzleClean(false, null);
+            connectedPrinter.cleanNozzle(0, false, null);
         } catch (PrinterException ex)
         {
             steno.error("Couldn't clean nozzle 0");
@@ -210,14 +195,26 @@ public class MaintenancePanelController implements Initializable
     }
 
     @FXML
-    void t1NozzleClean(ActionEvent event)
+    void cleanNozzleT1(ActionEvent event)
     {
         try
         {
-            connectedPrinter.t1NozzleClean(false, null);
+            connectedPrinter.cleanNozzle(1, false, null);
         } catch (PrinterException ex)
         {
             steno.error("Couldn't clean nozzle 1");
+        }
+    }
+
+    @FXML
+    void speedTest(ActionEvent event)
+    {
+        try
+        {
+            connectedPrinter.speedTest(false, null);
+        } catch (PrinterException ex)
+        {
+            steno.error("Couldn't run speed test");
         }
     }
 
@@ -227,13 +224,13 @@ public class MaintenancePanelController implements Initializable
         firmwareFileChooser.setInitialFileName("Untitled");
 
         firmwareFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-            DirectoryMemoryProperty.FIRMWARE)));
+                DirectoryMemoryProperty.FIRMWARE)));
 
         final File file = firmwareFileChooser.showOpenDialog(DisplayManager.getMainStage());
         if (file != null)
         {
             ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.FIRMWARE, file.
-                                                      getParentFile().getAbsolutePath());
+                    getParentFile().getAbsolutePath());
             connectedPrinter.loadFirmware(file.getAbsolutePath());
         }
     }
@@ -259,7 +256,7 @@ public class MaintenancePanelController implements Initializable
         gcodeFileChooser.setInitialFileName("Untitled");
 
         gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-            DirectoryMemoryProperty.GCODE)));
+                DirectoryMemoryProperty.GCODE)));
 
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
 
@@ -273,7 +270,7 @@ public class MaintenancePanelController implements Initializable
                 steno.error("Error sending SD job");
             }
             ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.GCODE, file.
-                                                      getParentFile().getAbsolutePath());
+                    getParentFile().getAbsolutePath());
         }
     }
 
@@ -326,19 +323,19 @@ public class MaintenancePanelController implements Initializable
 
             LevelGantryButton.disableProperty().bind(printingDisabled);
             ZTestButton.disableProperty().bind(printingDisabled);
-            loadFirmwareGCodeMacroButton.disableProperty().bind(printingDisabled.or(Lookup.
+            loadFirmwareButton.disableProperty().bind(printingDisabled.or(Lookup.
                 getUserPreferences().advancedModeProperty().not()));
-            sendGCodeSDGCodeMacroButton.disableProperty().bind(printingDisabled.or(Lookup.
+            sendGCodeSDButton.disableProperty().bind(printingDisabled.or(Lookup.
                 getUserPreferences().advancedModeProperty().not()));
 
             currentFirmwareField.setStyle("-fx-font-weight: bold;");
 
             gcodeFileChooser.setTitle(Lookup.i18n("maintenancePanel.gcodeFileChooserTitle"));
             gcodeFileChooser.getExtensionFilters()
-                .addAll(
-                    new FileChooser.ExtensionFilter(Lookup.i18n(
-                            "maintenancePanel.gcodeFileDescription"),
-                                                    "*.gcode"));
+                    .addAll(
+                            new FileChooser.ExtensionFilter(Lookup.i18n(
+                                            "maintenancePanel.gcodeFileDescription"),
+                                    "*.gcode"));
 
             gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
             {
@@ -349,15 +346,15 @@ public class MaintenancePanelController implements Initializable
                     if (result.isSuccess())
                     {
                         Notifier.showInformationNotification(Lookup.i18n(
-                            "maintenancePanel.gcodePrintSuccessTitle"),
-                                                             Lookup.i18n(
-                                                                 "maintenancePanel.gcodePrintSuccessMessage"));
+                                "maintenancePanel.gcodePrintSuccessTitle"),
+                                Lookup.i18n(
+                                        "maintenancePanel.gcodePrintSuccessMessage"));
                     } else
                     {
                         Notifier.showErrorNotification(Lookup.i18n(
-                            "maintenancePanel.gcodePrintFailedTitle"),
-                                                       Lookup.i18n(
-                                                           "maintenancePanel.gcodePrintFailedMessage"));
+                                "maintenancePanel.gcodePrintFailedTitle"),
+                                Lookup.i18n(
+                                        "maintenancePanel.gcodePrintFailedMessage"));
 
                         steno.warning("In gcode print succeeded but with failure flag");
                     }
@@ -370,24 +367,24 @@ public class MaintenancePanelController implements Initializable
                 public void handle(WorkerStateEvent t)
                 {
                     Notifier.
-                        showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
-                                              Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
+                            showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
+                                    Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
                 }
             });
 
             firmwareFileChooser.setTitle(Lookup.i18n("maintenancePanel.firmwareFileChooserTitle"));
             firmwareFileChooser.getExtensionFilters()
-                .addAll(
-                    new FileChooser.ExtensionFilter(Lookup.i18n(
-                            "maintenancePanel.firmwareFileDescription"), "*.bin"));
+                    .addAll(
+                            new FileChooser.ExtensionFilter(Lookup.i18n(
+                                            "maintenancePanel.firmwareFileDescription"), "*.bin"));
 
             Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     if (connectedPrinter != null)
                     {
-                        sendGCodeSDGCodeMacroButton.disableProperty().unbind();
-                        loadFirmwareGCodeMacroButton.disableProperty().unbind();
+                        sendGCodeSDButton.disableProperty().unbind();
+                        loadFirmwareButton.disableProperty().unbind();
 
                         printingDisabled.unbind();
                         printingDisabled.set(true);

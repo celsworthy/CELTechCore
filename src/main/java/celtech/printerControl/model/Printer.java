@@ -262,10 +262,6 @@ public interface Printer extends RoboxResponseConsumer
 
     public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
-    public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-
-    public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-
     /**
      *
      * @param blockUntilFinished
@@ -305,6 +301,15 @@ public interface Printer extends RoboxResponseConsumer
      * @throws PrinterException
      */
     public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
+    /**
+     *
+     * @param nozzleNumber
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
+    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     /**
      *
