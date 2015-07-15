@@ -72,7 +72,7 @@ public class ModelGroup extends ModelContainer
     }
 
     /**
-     * Return a set of all descendent ModelContainers (and include this one) that have MeshView
+     * Return a set of all descendent ModelContainers that have MeshView
      * children.
      */
     @Override

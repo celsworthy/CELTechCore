@@ -120,7 +120,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SelectionHighlighter selectionHighlighter = null;
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
-    private Set<Node> selectedMarkers;
 
     /**
      * Print the part using the extruder of the given number.
@@ -153,7 +152,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (getParent() instanceof ModelContainer)
         {
             return (ModelContainer) getParent();
-        } else if (getParent() != null && getParent().getParent()  instanceof ModelContainer ) {
+        } else if (getParent() != null && getParent().getParent() instanceof ModelContainer)
+        {
             return (ModelContainer) getParent().getParent();
         } else
         {
@@ -291,8 +291,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationLean = new SimpleDoubleProperty(0);
         preferredRotationTwist = new SimpleDoubleProperty(0);
         preferredRotationTurn = new SimpleDoubleProperty(0);
-
-        selectedMarkers = new HashSet<>();
 
     }
 
@@ -515,7 +513,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Return a set of all descendent ModelContainers (and include this one) that have MeshView
      * children.
-     * @return 
+     *
+     * @return
      */
     public Set<ModelContainer> getModelsHoldingMeshViews()
     {
@@ -759,10 +758,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             {
                 addSelectionHighlighter();
             }
-            showSelectedMarkers();
+            showSelectionHighlighter();
         } else
         {
-            hideSelectedMarkers();
+            hideSelectionHighlighter();
         }
         isSelected.set(selected);
     }
@@ -813,7 +812,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         throws IOException, ClassNotFoundException
     {
         associateWithExtruderNumber = new SimpleIntegerProperty(0);
-        
+
         String modelName = in.readUTF();
 
         int numberOfMeshesNowUnused = in.readInt();
@@ -1486,7 +1485,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         selectionHighlighter = new SelectionHighlighter(this);
         getChildren().add(selectionHighlighter);
-        selectedMarkers.add(selectionHighlighter);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
@@ -1511,20 +1509,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    private void showSelectedMarkers()
+    private void showSelectionHighlighter()
     {
-        for (Node selectedMarker : selectedMarkers)
-        {
-            selectedMarker.setVisible(true);
-        }
+
+        selectionHighlighter.setVisible(true);
     }
 
-    private void hideSelectedMarkers()
+    private void hideSelectionHighlighter()
     {
-        for (Node selectedMarker : selectedMarkers)
-        {
-            selectedMarker.setVisible(false);
-        }
+        selectionHighlighter.setVisible(false);
     }
 
     @Override
