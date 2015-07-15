@@ -1887,6 +1887,7 @@ modal-dialogue{
     -fx-max-height: 30px;
     -fx-min-height: 30px;
     -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
 .statusBar #progBar .bar {
@@ -1895,7 +1896,7 @@ modal-dialogue{
     -fx-max-height: 30px;
     -fx-min-height: 30px;
     -fx-background-insets: 0;
-    /*-fx-padding: 0.416667em;  5*/ 
+    -fx-background-radius: 0;
 }
 
 .statusBar #progBar .track {
@@ -1929,6 +1930,7 @@ modal-dialogue{
     -fx-pref-height: 30px;
     -fx-max-height: 30px;
     -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
 .secondaryStatusBar #progBar .bar {
@@ -1937,7 +1939,7 @@ modal-dialogue{
     -fx-max-height: 30px;
     -fx-min-height: 30px;
     -fx-background-insets: 0;
-    /*-fx-padding: 0.416667em;  5*/ 
+    -fx-background-radius: 0;
 }
 
 .secondaryStatusBar #progBar .track {
