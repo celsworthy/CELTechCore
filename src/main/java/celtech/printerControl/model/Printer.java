@@ -359,6 +359,23 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
+     * @param nozzleNumber
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
+    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
+    /**
+     *
+     * @param blockUntilFinished
+     * @param cancellable
+     * @throws PrinterException
+     */
+    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
+    /**
+     *
      * @param macro
      * @param cancellable
      * @throws PrinterException

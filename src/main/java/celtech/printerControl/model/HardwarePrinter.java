@@ -312,7 +312,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canCancel.bind(
                 (printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
                 .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT))).not()
-                .and(
+                .or(
                         pauseStatus.isEqualTo(PauseStatus.PAUSED)
                         .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING))
                         .or(printEngine.postProcessorService.runningProperty())
@@ -989,6 +989,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void ejectStuckMaterial(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.EJECT_STUCK_MATERIAL,
+                blockUntilFinished, cancellable);
+    }
+
+    @Override
+    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        if (nozzleNumber == 0)
+        {
+            executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE_0,
+                    blockUntilFinished, cancellable);
+        } else if (nozzleNumber == 1)
+        {
+            executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE_1,
+                    blockUntilFinished, cancellable);
+        }
+    }
+
+    @Override
+    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.SPEED_TEST,
                 blockUntilFinished, cancellable);
     }
 
@@ -3931,7 +3952,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return calibrationAlignmentManager;
     }
-    
+
     @Override
     public void loadFirmware(String firmwareFilePath)
     {

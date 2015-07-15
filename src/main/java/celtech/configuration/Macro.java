@@ -21,6 +21,9 @@ public enum Macro
     TEST_Y("y_test", "printerStatus.macro.testY", "M8"),
     TEST_Z("z_test", "printerStatus.macro.testZ", "M9"),
     LEVEL_Y("level_Y", "printerStatus.macro.levellingY", "M10"),
+    CLEAN_NOZZLE_0("T0_nozzle_clean", "printerStatus.macro.cleanNozzle0", "M11"),
+    CLEAN_NOZZLE_1("T1_nozzle_clean", "printerStatus.macro.cleanNozzle1", "M12"),
+    SPEED_TEST("speed_test", "printerStatus.macro.speedTest", "M13"),
     // Commissionator macros
     COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
     COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),

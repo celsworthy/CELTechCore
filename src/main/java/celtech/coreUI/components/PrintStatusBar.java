@@ -205,6 +205,11 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                         currentValueRequired(false);
                     }
 
+                    if (progressBar.progressProperty().isBound())
+                    {
+                        progressBar.progressProperty().unbind();
+                    }
+
                     progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                     progressRequired(true);
                     buttonsAllowed.set(true);
@@ -218,11 +223,16 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     targetValueRequired(false);
                     currentValueRequired(false);
 
+                    if (progressBar.progressProperty().isBound())
+                    {
+                        progressBar.progressProperty().unbind();
+                    }
+
                     if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
                     {
                         if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
                         {
-                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
                             progressRequired(true);
                         } else
                         {
@@ -232,7 +242,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     {
                         progressRequired(false);
                     }
-                    buttonsAllowed.set(false);
+                    buttonsAllowed.set(true);
                     break;
                 case CALIBRATING_NOZZLE_ALIGNMENT:
                 case CALIBRATING_NOZZLE_OPENING:
