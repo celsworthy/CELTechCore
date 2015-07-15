@@ -313,7 +313,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canCancel.bind(
                 (printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
                 .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT))).not()
-                .and(
+                .or(
                         pauseStatus.isEqualTo(PauseStatus.PAUSED)
                         .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING))
                         .or(printEngine.postProcessorService.runningProperty())
@@ -1013,27 +1013,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.SPEED_TEST,
-                blockUntilFinished, cancellable);
-    }
-
-    @Override
-    public void t0NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.NOZZLE_CLEAN_0,
-                blockUntilFinished, cancellable);
-    }
-
-    @Override
-    public void t1NozzleClean(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.NOZZLE_CLEAN_1,
-                blockUntilFinished, cancellable);
-    }
-
-    @Override
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.LEVEL_GANTRY,
@@ -1065,6 +1044,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.EJECT_STUCK_MATERIAL_D,
+                blockUntilFinished, cancellable);
+    }
+
+    @Override
+    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        if (nozzleNumber == 0)
+        {
+            executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE_0,
+                    blockUntilFinished, cancellable);
+        } else if (nozzleNumber == 1)
+        {
+            executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE_1,
+                    blockUntilFinished, cancellable);
+        }
+    }
+
+    @Override
+    public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.SPEED_TEST,
                 blockUntilFinished, cancellable);
     }
 
@@ -3911,7 +3911,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return calibrationAlignmentManager;
     }
-    
+
     @Override
     public void loadFirmware(String firmwareFilePath)
     {

@@ -10,20 +10,20 @@
     <children>
         <GridPane alignment="TOP_CENTER" hgap="10.0" layoutX="18.0" layoutY="24.0" vgap="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <Button fx:id="sendGCodeSDGCodeMacroButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeSD" text="%maintenancePanel.sendGCodeSD" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
+                <Button fx:id="sendGCodeSDButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeSD" text="%maintenancePanel.sendGCodeSD" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
                 <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
                     <padding>
                         <Insets bottom="5.0" top="5.0" />
                     </padding>
                 </Separator>
                 
-                <GCodeMacroButton fx:id="T0CleanButton" layoutX="23.0" layoutY="152.0" macroName="T0 Nozzle Clean" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#t0NozzleClean" text="%maintenancePanel.nozzle0Clean" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <GCodeMacroButton fx:id="T1CleanButton" layoutX="23.0" layoutY="152.0" macroName="T1 Nozzle Clean" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#t1NozzleClean" text="%maintenancePanel.nozzle1Clean" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <GCodeMacroButton fx:id="LevelGantryButton" layoutX="18.0" layoutY="48.0" macroName="level_gantry" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#levelGantry" text="%maintenancePanel.LevelGantry" GridPane.rowIndex="3" />
-                <GCodeMacroButton fx:id="XTestButton" layoutX="23.0" layoutY="120.0" macroName="x_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#testX" text="%maintenancePanel.XTest" GridPane.rowIndex="4" />
-                <GCodeMacroButton fx:id="YTestButton" layoutX="23.0" layoutY="88.0" macroName="y_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#testY" text="%maintenancePanel.YTest" GridPane.rowIndex="5" />
-                <GCodeMacroButton fx:id="ZTestButton" layoutX="23.0" layoutY="24.0" macroName="z_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#testZ" text="%maintenancePanel.ZTest" GridPane.rowIndex="6" />               
-                <GCodeMacroButton fx:id="SpeedTestButton" layoutX="23.0" layoutY="152.0" macroName="speed_test" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#speedTest" text="%maintenancePanel.SpeedTest" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Button fx:id="T0CleanButton" layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#cleanNozzleT0" text="%maintenancePanel.nozzle0Clean" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Button fx:id="T1CleanButton" layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#cleanNozzleT1" text="%maintenancePanel.nozzle1Clean" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Button fx:id="LevelGantryButton" layoutX="18.0" layoutY="48.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#levelGantry" text="%maintenancePanel.LevelGantry" GridPane.rowIndex="3" />
+                <Button fx:id="XTestButton" layoutX="23.0" layoutY="120.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#testX" text="%maintenancePanel.XTest" GridPane.rowIndex="4" />
+                <Button fx:id="YTestButton" layoutX="23.0" layoutY="88.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#testY" text="%maintenancePanel.YTest" GridPane.rowIndex="5" />
+                <Button fx:id="ZTestButton" layoutX="23.0" layoutY="24.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#testZ" text="%maintenancePanel.ZTest" GridPane.rowIndex="6" />               
+                <Button fx:id="SpeedTestButton" layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#speedTest" text="%maintenancePanel.SpeedTest" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <Button fx:id="PurgeMaterialButton" layoutX="23.0" layoutY="152.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#purge" text="%maintenancePanel.purgeMaterial" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <Button fx:id="EjectStuckMaterialButton1" layoutX="23.0" layoutY="152.0" maxHeight="60.0" maxWidth="1.7976931348623157E308" minHeight="60.0" mnemonicParsing="false" onAction="#ejectStuckMaterial1" prefHeight="60.0" text="%maintenancePanel.ejectStuckMaterial1" wrapText="true" GridPane.rowIndex="7" />
 
