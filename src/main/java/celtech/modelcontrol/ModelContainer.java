@@ -1454,7 +1454,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledHeight()
     {
-        return getTransformedBoundsInBed().getHeight();
+        return getLocalBounds().getHeight() * preferredYScale.doubleValue();
     }
 
     @Override
@@ -1466,19 +1466,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledDepth()
     {
-        return getTransformedBoundsInBed().getDepth();
+        return getLocalBounds().getDepth() * preferredZScale.doubleValue();
     }
 
     @Override
     public double getOriginalWidth()
     {
-        return getTransformedBoundsInBed().getWidth();
+        return getLocalBounds().getWidth();
     }
 
     @Override
     public double getScaledWidth()
     {
-        return getTransformedBoundsInBed().getWidth();
+        return getLocalBounds().getWidth() * preferredXScale.doubleValue();
     }
 
     public void addSelectionHighlighter()
