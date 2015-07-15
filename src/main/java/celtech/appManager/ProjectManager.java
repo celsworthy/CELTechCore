@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +32,7 @@ public class ProjectManager implements Savable, Serializable
     private static List<Project> openProjects = new ArrayList<>();
     private final static String projectFileName = "projects.dat";
     private final static Stenographer steno = StenographerFactory.getStenographer(
-        ProjectManager.class.getName());
+            ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
 
     private ProjectManager()
@@ -48,45 +52,59 @@ public class ProjectManager implements Savable, Serializable
                 instance = new ProjectManager();
             }
         }
-        
+
         return instance;
     }
 
     private static ProjectManager loadState()
     {
-        File projectDirHandle = new File(ApplicationConfiguration.getProjectDirectory());
-
-        if (!projectDirHandle.exists())
-        {
-            projectDirHandle.mkdirs();
-        }
-
         ProjectManager pm = null;
-        try
+
+        Path projectPath = Paths.get(ApplicationConfiguration.getProjectDirectory());
+        if (!Files.exists(projectPath))
         {
-            steno.debug("load project manager from " + ApplicationConfiguration.getProjectDirectory() + projectFileName);
-            FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
-            ObjectInputStream reader = new ObjectInputStream(projectFile);
-            pm = new ProjectManager();
-            int numberOfOpenProjects = reader.readInt();
-            for (int counter = 0; counter < numberOfOpenProjects; counter++)
+            try
             {
-                String projectPath = reader.readUTF();
-                Project project = loadProject(projectPath);
-                if (project != null)
-                {
-                    pm.projectOpened(project);
-                } else
-                {
-                    steno.warning("Project Manager tried to load " + projectPath
-                        + " but it couldn't be opened");
-                }
+                Files.createDirectories(projectPath);
+            } catch (IOException ex)
+            {
+                ex.printStackTrace();
+                steno.error("Failed to create project directory");
             }
-            reader.close();
-        } catch (Exception ex)
-        {
-            steno.exception("Failed to load project manager", ex);
         }
+
+        Path projectDataFilePath = Paths.get(ApplicationConfiguration.getProjectDirectory() + projectFileName);
+
+        if (Files.exists(projectDataFilePath))
+        {
+            try
+            {
+                steno.debug("load project manager from " + ApplicationConfiguration.getProjectDirectory() + projectFileName);
+                FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
+                ObjectInputStream reader = new ObjectInputStream(projectFile);
+                pm = new ProjectManager();
+                int numberOfOpenProjects = reader.readInt();
+                for (int counter = 0; counter < numberOfOpenProjects; counter++)
+                {
+                    String projectPathData = reader.readUTF();
+                    Project project = loadProject(projectPathData);
+                    if (project != null)
+                    {
+                        pm.projectOpened(project);
+                    } else
+                    {
+                        steno.warning("Project Manager tried to load " + projectPathData
+                                + " but it couldn't be opened");
+                    }
+                }
+                reader.close();
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+                steno.error("Failed to load project manager: " + ex);
+            }
+        }
+
         return pm;
     }
 
@@ -104,7 +122,7 @@ public class ProjectManager implements Savable, Serializable
         try
         {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
-                ApplicationConfiguration.getProjectDirectory() + projectFileName));
+                    ApplicationConfiguration.getProjectDirectory() + projectFileName));
             out.writeInt(openProjects.size());
             for (Project project : openProjects)
             {

@@ -77,7 +77,9 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     public void initialize(URL location, ResourceBundle resources)
     {
         super.initialize(location, resources);
-        targetRequired(false);
+        targetLegendRequired(false);
+        targetValueRequired(false);
+        currentValueRequired(false);
         progressRequired(true);
 
     }

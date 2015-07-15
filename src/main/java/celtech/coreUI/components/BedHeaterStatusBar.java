@@ -61,10 +61,12 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
     public void initialize(URL location, ResourceBundle resources)
     {
         super.initialize(location, resources);
-        targetRequired(true);
+        targetLegendRequired(true);
+        targetValueRequired(true);
+        currentValueRequired(true);
         progressRequired(true);
     }
-    
+
     private void reassessStatus()
     {
         boolean showHeaterBar = false;
@@ -81,6 +83,8 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(bedFirstLayerTargetTemperature.asString("%d").get()
+                            .concat(Lookup.i18n("misc.degreesC")));
+                    currentValue.textProperty().set(bedTemperature.asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
 
                     if (bedFirstLayerTargetTemperature.doubleValue() > 0)
@@ -107,7 +111,9 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(bedTargetTemperature.asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
-                    
+                    currentValue.textProperty().set(bedTemperature.asString("%d").get()
+                            .concat(Lookup.i18n("misc.degreesC")));
+
                     if (bedTargetTemperature.doubleValue() > 0)
                     {
                         double normalisedProgress = 0;

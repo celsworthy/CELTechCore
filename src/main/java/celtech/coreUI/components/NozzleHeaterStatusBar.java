@@ -8,7 +8,6 @@ import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.NozzleHeater;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.Initializable;
@@ -52,10 +51,12 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
     public void initialize(URL location, ResourceBundle resources)
     {
         super.initialize(location, resources);
-        targetRequired(true);
+        targetLegendRequired(true);
+        targetValueRequired(true);
+        currentValueRequired(true);
         progressRequired(true);
     }
-    
+
     private void reassessStatus()
     {
         boolean showHeaterBar = false;
@@ -72,6 +73,8 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d").get()
+                            .concat(Lookup.i18n("misc.degreesC")));
+                    currentValue.textProperty().set(heater.nozzleTemperatureProperty().asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
 
                     if (heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue() > 0)
@@ -99,6 +102,8 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleTargetTemperatureProperty().asString("%d").get()
+                            .concat(Lookup.i18n("misc.degreesC")));
+                    currentValue.textProperty().set(heater.nozzleTemperatureProperty().asString("%d").get()
                             .concat(Lookup.i18n("misc.degreesC")));
 
                     if (heater.nozzleFirstLayerTargetTemperatureProperty().doubleValue() > 0)

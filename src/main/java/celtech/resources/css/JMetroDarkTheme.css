@@ -1900,6 +1900,7 @@ modal-dialogue{
     -fx-max-height: 30px;
     -fx-min-height: 30px;
     -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
 .statusBar #progBar .bar {
@@ -1908,7 +1909,7 @@ modal-dialogue{
     -fx-max-height: 30px;
     -fx-min-height: 30px;
     -fx-background-insets: 0;
-    /*-fx-padding: 0.416667em;  5*/ 
+    -fx-background-radius: 0;
 }
 
 .statusBar #progBar .track {
@@ -1937,13 +1938,20 @@ modal-dialogue{
 }
 
 .statusBar #targetValue {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 14px;
+}
+
+.statusBar #currentValue {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
 }
+
 .secondaryStatusBar #progBar {
     -fx-pref-height: 30px;
     -fx-max-height: 30px;
     -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
 .secondaryStatusBar #progBar .bar {
@@ -1952,7 +1960,7 @@ modal-dialogue{
     -fx-max-height: 30px;
     -fx-min-height: 30px;
     -fx-background-insets: 0;
-    /*-fx-padding: 0.416667em;  5*/ 
+    -fx-background-radius: 0;
 }
 
 .secondaryStatusBar #progBar .track {
@@ -1977,11 +1985,19 @@ modal-dialogue{
 }
 
 .secondaryStatusBar #targetLegend {
+    -fx-font-family: 'Source Sans Pro Light';
     -fx-font-size: 14px;
     -fx-text-fill: black;
 }
 
 .secondaryStatusBar #targetValue {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 14px;
+    -fx-text-fill: black;
+}
+
+.secondaryStatusBar #currentValue {
+    -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
     -fx-text-fill: black;
 }
