@@ -10,16 +10,12 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.Transition;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -36,6 +32,9 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
 
     @FXML
     protected Label largeTargetValue;
+
+    @FXML
+    protected Label currentValue;
 
     @FXML
     protected Label largeProgressDescription;
@@ -250,10 +249,19 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
         return slidOutOfView || slidingOutOfView;
     }
 
-    public void targetRequired(boolean required)
+    public void targetLegendRequired(boolean required)
     {
         largeTargetLegend.setVisible(required);
+    }
+
+    public void targetValueRequired(boolean required)
+    {
         largeTargetValue.setVisible(required);
+    }
+
+    public void currentValueRequired(boolean required)
+    {
+        currentValue.setVisible(required);
     }
 
     public void progressRequired(boolean required)
