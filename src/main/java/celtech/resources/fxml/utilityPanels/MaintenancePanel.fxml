@@ -35,7 +35,7 @@
             
                 <Label text="%maintenancePanel.firmwareCurrentVersion" GridPane.halignment="RIGHT" GridPane.rowIndex="12" />
                 <Label fx:id="currentFirmwareField" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="12" />
-                <Button fx:id="loadFirmwareGCodeMacroButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loadFirmware" text="Load firmware" GridPane.columnSpan="2" GridPane.rowIndex="13" />
+                <Button fx:id="loadFirmwareButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#loadFirmware" text="Load firmware" GridPane.columnSpan="2" GridPane.rowIndex="13" />
             <Button fx:id="EjectStuckMaterialButton2" maxHeight="60.0" maxWidth="1.7976931348623157E308" minHeight="60.0" mnemonicParsing="false" onAction="#ejectStuckMaterial2" prefHeight="60.0" text="%maintenancePanel.ejectStuckMaterial2" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="7" />
             </children>
             <columnConstraints>
