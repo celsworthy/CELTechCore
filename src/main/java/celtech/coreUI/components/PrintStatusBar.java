@@ -135,7 +135,9 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 barShouldBeDisplayed = true;
                 largeProgressDescription.setText(printer.busyStatusProperty().get().getI18nString());
                 progressRequired(false);
-                targetRequired(false);
+                targetLegendRequired(false);
+                targetValueRequired(false);
+                currentValueRequired(false);
                 buttonsAllowed.set(false);
                 break;
             default:
@@ -156,7 +158,9 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.pauseStatusProperty().get().getI18nString());
                     progressRequired(false);
-                    targetRequired(false);
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
                     buttonsAllowed.set(true);
                     break;
                 default:
@@ -184,17 +188,21 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                         {
                             String hoursMinutes = convertToHoursMinutes(
                                     secondsRemaining);
-                            largeTargetValue.setText(hoursMinutes);
+                            currentValue.setText(hoursMinutes);
                         } else
                         {
-                            largeTargetValue.setText(Lookup.i18n("dialogs.lessThanOneMinute"));
+                            currentValue.setText(Lookup.i18n("dialogs.lessThanOneMinute"));
                         }
 
                         largeTargetLegend.setText(Lookup.i18n("dialogs.progressETCLabel"));
-                        targetRequired(true);
+                        targetLegendRequired(true);
+                        targetValueRequired(false);
+                        currentValueRequired(true);
                     } else
                     {
-                        targetRequired(false);
+                        targetLegendRequired(false);
+                        targetValueRequired(false);
+                        currentValueRequired(false);
                     }
 
                     progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
@@ -206,7 +214,9 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(printer.getPrintEngine().macroBeingRun.get().getFriendlyName());
 
-                    targetRequired(false);
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
 
                     if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
                     {
@@ -276,7 +286,9 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 default:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
-                    targetRequired(false);
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
                     progressRequired(false);
                     largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
                     buttonsAllowed.set(false);

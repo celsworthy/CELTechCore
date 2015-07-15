@@ -1924,8 +1924,13 @@ modal-dialogue{
 }
 
 .statusBar #targetValue {
+    -fx-font-size: 14px;
+}
+
+.statusBar #currentValue {
     -fx-font-size: 18px;
 }
+
 .secondaryStatusBar #progBar {
     -fx-pref-height: 30px;
     -fx-max-height: 30px;
@@ -1969,6 +1974,11 @@ modal-dialogue{
 }
 
 .secondaryStatusBar #targetValue {
+    -fx-font-size: 14px;
+    -fx-text-fill: black;
+}
+
+.secondaryStatusBar #currentValue {
     -fx-font-size: 18px;
     -fx-text-fill: black;
 }
