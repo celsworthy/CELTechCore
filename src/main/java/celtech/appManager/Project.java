@@ -43,7 +43,6 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -533,7 +532,7 @@ public class Project implements Serializable
         }
     }
 
-    public void deleteModel(ModelContainer modelContainer)
+    public void removeModel(ModelContainer modelContainer)
     {
         loadedModels.remove(modelContainer);
         projectModified();
@@ -600,7 +599,7 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
-        deleteModels(modelContainers);
+        removeModels(modelContainers);
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         addModel(modelGroup);
         return modelGroup;
@@ -608,7 +607,7 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
-        deleteModels(modelContainers);
+        removeModels(modelContainers);
         ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
         addModel(modelGroup);
         return modelGroup;
@@ -621,7 +620,7 @@ public class Project implements Serializable
             if (modelContainer instanceof ModelGroup)
             {
                 ModelGroup modelGroup = (ModelGroup) modelContainer;
-                deleteModel(modelGroup);
+                removeModel(modelGroup);
                 for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
                 {
                     addModel(childModelContainer);
@@ -646,7 +645,7 @@ public class Project implements Serializable
                 (TriangleMesh) modelContainer.getMeshView().getMesh());
             if (subMeshes.size() > 1)
             {
-                deleteModel(modelContainer);
+                removeModel(modelContainer);
                 int ix = 1;
                 for (TriangleMesh subMesh : subMeshes)
                 {
@@ -978,12 +977,12 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void deleteModels(Set<ModelContainer> modelContainers)
+    public void removeModels(Set<ModelContainer> modelContainers)
     {
         for (ModelContainer model : modelContainers)
         {
             {
-                deleteModel(model);
+                removeModel(model);
             }
         }
     }

@@ -46,7 +46,7 @@ public class AddModelCommand extends Command
     public void undo()
     {
         modelContainer.clearMeshes();
-        project.deleteModel(modelContainer);
+        project.removeModel(modelContainer);
     }
 
     @Override

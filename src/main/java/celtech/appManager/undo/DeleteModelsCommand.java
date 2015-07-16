@@ -29,7 +29,7 @@ public class DeleteModelsCommand extends Command
     @Override
     public void do_()
     {
-        project.deleteModels(modelContainers);
+        project.removeModels(modelContainers);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DeleteModelsCommand extends Command
     @Override
     public void redo()
     {
-        project.deleteModels(modelContainers);
+        project.removeModels(modelContainers);
     }
 
     @Override

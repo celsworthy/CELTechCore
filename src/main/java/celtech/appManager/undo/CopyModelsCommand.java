@@ -47,7 +47,7 @@ public class CopyModelsCommand extends Command
     {
         for (ModelContainer modelContainer : newModelContainers)
         {
-            project.deleteModel(modelContainer);
+            project.removeModel(modelContainer);
         }
     }
 

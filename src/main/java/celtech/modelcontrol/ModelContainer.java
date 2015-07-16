@@ -47,6 +47,7 @@ import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -596,20 +597,28 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         final Vector3D faceNormal;
         final Vector3D faceCentre;
+        Transform localToBedTransform;
+        Node bed;
 
         public ApplyTwist(MeshView meshView, int faceIndex)
         {
             faceNormal = getFaceNormal(meshView, faceIndex);
             faceCentre = getFaceCentre(meshView, faceIndex);
+            localToBedTransform = getLocalToParentTransform();
+            bed = getRootModelContainer(meshView).getParent();
         }
 
         Point3D getRotatedFaceNormal()
         {
-            Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
-                toPoint3D(faceCentre));
+//            Point3D rotatedFaceCentre = localToBedTransform.transform(
+//                toPoint3D(faceCentre));
+//
+//            Point3D rotatedFaceCentrePlusNormal = localToBedTransform.transform(
+//                toPoint3D(faceCentre.add(faceNormal)));
+            
+            Point3D rotatedFaceCentre = bed.sceneToLocal(localToScene(toPoint3D(faceCentre)));
 
-            Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
-                toPoint3D(faceCentre.add(faceNormal)));
+            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(localToScene(toPoint3D(faceCentre.add(faceNormal))));            
 
             Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
             return rotatedFaceNormal;
