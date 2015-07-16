@@ -56,7 +56,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     protected GCodePostProcessingResult call() throws Exception
     {
         GCodePostProcessingResult postProcessingResult = null;
-        
+
         try
         {
             updateMessage("");
@@ -73,7 +73,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             ex.printStackTrace();
             steno.error("Error in post processing");
         }
-            return postProcessingResult;
+        return postProcessingResult;
     }
 
     public static GCodePostProcessingResult doPostProcessing(String printJobUUID,
@@ -84,9 +84,11 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     {
         SlicerType selectedSlicer = null;
         HeadType headType;
-        if (printer != null && printer.headProperty().get() != null) {
+        if (printer != null && printer.headProperty().get() != null)
+        {
             headType = printer.headProperty().get().headTypeProperty().get();
-        } else {
+        } else
+        {
             headType = HeadContainer.defaultHeadType;
         }
         if (project.getPrinterSettings().getSettings(headType).getSlicerOverride() != null)
@@ -129,7 +131,8 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     headFileToUse,
                     project,
                     ppFeatures,
-                    headType);
+                    headType,
+                    taskProgress);
 
             RoboxiserResult roboxiserResult = postProcessor.processInput();
             if (roboxiserResult.isSuccess())

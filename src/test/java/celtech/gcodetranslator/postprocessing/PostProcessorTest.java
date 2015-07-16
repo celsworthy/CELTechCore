@@ -76,7 +76,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 testProject,
                 ppFeatures,
-                HeadType.SINGLE_MATERIAL_HEAD);
+                HeadType.SINGLE_MATERIAL_HEAD,
+                null);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
@@ -118,12 +119,13 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 testProject,
                 ppFeatures,
-                HeadType.SINGLE_MATERIAL_HEAD);
+                HeadType.SINGLE_MATERIAL_HEAD,
+                null);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
     }
-    
+
     /**
      * Test of processInput method, of class PostProcessor.
      */
@@ -160,7 +162,8 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 testProject,
                 ppFeatures,
-                HeadType.SINGLE_MATERIAL_HEAD);
+                HeadType.SINGLE_MATERIAL_HEAD,
+                null);
 
         RoboxiserResult result = postProcessor.processInput();
         assertTrue(result.isSuccess());
