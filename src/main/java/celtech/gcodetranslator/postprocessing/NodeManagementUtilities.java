@@ -294,10 +294,10 @@ public class NodeManagementUtilities
 
         if (forwards)
         {
-            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsIterator();
+            nozzlePositionCandidates = lastExtrusionNode.siblingsIterator();
         } else
         {
-            nozzlePositionCandidates = lastExtrusionNode.meAndSiblingsBackwardsIterator();
+            nozzlePositionCandidates = lastExtrusionNode.siblingsBackwardsIterator();
         }
 
         while (nozzlePositionCandidates.hasNext())
