@@ -183,10 +183,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void setUseExtruder0(boolean useExtruder0)
     {
-        for (ModelContainer modelContainer : getModelsHoldingMeshViews())
-        {
-            modelContainer.associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
-        }
+        associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
     }
 
     public void printTransforms()
@@ -325,8 +322,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * Make a copy of this ModelContainer and return it.
-     *
-     * @return
      */
     public ModelContainer makeCopy()
     {
@@ -615,10 +610,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //
 //            Point3D rotatedFaceCentrePlusNormal = localToBedTransform.transform(
 //                toPoint3D(faceCentre.add(faceNormal)));
-            
+
             Point3D rotatedFaceCentre = bed.sceneToLocal(localToScene(toPoint3D(faceCentre)));
 
-            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(localToScene(toPoint3D(faceCentre.add(faceNormal))));            
+            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(localToScene(toPoint3D(
+                faceCentre.add(faceNormal))));
 
             Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
             return rotatedFaceNormal;
@@ -1731,7 +1727,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return getChildren();
 
     }
-    
+
     public Set<ModelContainer> getChildModelContainers()
     {
         return Collections.EMPTY_SET;

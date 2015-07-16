@@ -3,6 +3,7 @@
  */
 package celtech.modelcontrol;
 
+import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,10 +13,12 @@ import java.util.Set;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 
 /**
  * ModelGroup is a ModelContainer that is a group of child ModelContainers or other ModelGroups.
+ *
  * @author tony
  */
 public class ModelGroup extends ModelContainer
@@ -46,7 +49,8 @@ public class ModelGroup extends ModelContainer
     {
         this(modelContainers);
         modelId = groupModelId;
-        if (modelId <= nextModelId) {
+        if (modelId <= nextModelId)
+        {
             // avoid any duplicate ids
             nextModelId = modelId + 1;
         }
@@ -73,8 +77,7 @@ public class ModelGroup extends ModelContainer
     }
 
     /**
-     * Return a set of all descendent ModelContainers that have MeshView
-     * children.
+     * Return a set of all descendent ModelContainers that have MeshView children.
      */
     @Override
     public Set<ModelContainer> getModelsHoldingMeshViews()
@@ -188,6 +191,35 @@ public class ModelGroup extends ModelContainer
             modelContainer.updateColour(displayColourExtruder0, displayColourExtruder1,
                                         showMisplacedColour);
         }
+    }
+
+    @Override
+    public void setUseExtruder0(boolean useExtruder0)
+    {
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            modelContainer.setUseExtruder0(useExtruder0);
+        }
+    }
+
+    @Override
+    public ModelContainer makeCopy()
+    {
+        Set<ModelContainer> childModels = new HashSet<>();
+        for (ModelContainer childModel : childModelContainers)
+        {   
+            ModelContainer modelContainerCopy = childModel.makeCopy();
+            modelContainerCopy.setState(childModel.getState());
+            childModels.add(modelContainerCopy);
+        }
+        ModelGroup copy = new ModelGroup(childModels);
+        copy.setXScale(this.getXScale());
+        copy.setYScale(this.getYScale());
+        copy.setZScale(this.getZScale());
+        copy.setRotationLean(this.getRotationLean());
+        copy.setRotationTwist(this.getRotationTwist());
+        copy.setRotationTurn(this.getRotationTurn());
+        return copy;
     }
 
 }
