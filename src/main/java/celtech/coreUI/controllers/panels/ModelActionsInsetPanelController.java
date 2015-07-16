@@ -37,9 +37,6 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     private HBox modelActionsInsetRoot;
 
     @FXML
-    private Button splitIntoParts;
-
-    @FXML
     private Button group;
 
     @FXML
@@ -77,24 +74,9 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         undoableProject = new UndoableProject(project);
 
         ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumModelsSelectedProperty();
-        splitIntoParts.disableProperty().bind(numModelsSelected.isEqualTo(0));
         group.disableProperty().bind(numModelsSelected.isEqualTo(0));
         ungroup.disableProperty().bind(numModelsSelected.isEqualTo(0));
 
-    }
-
-    @FXML
-    void doSplit(ActionEvent event)
-    {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
-        try
-        {
-            undoableProject.splitIntoParts(modelContainers);
-        } catch (StackOverflowError soe)
-        {
-            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n(
-                "splitParts.title"), Lookup.i18n("splitParts.message"));
-        }
     }
 
     @FXML

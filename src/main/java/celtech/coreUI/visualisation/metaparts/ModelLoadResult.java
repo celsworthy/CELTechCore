@@ -9,7 +9,7 @@ import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.scene.Group;
+import java.util.Set;
 
 /**
  *
@@ -21,99 +21,57 @@ public class ModelLoadResult
     private boolean modelTooLargeForPrintbed = false;
     private ModelLoadResultType resultType = ModelLoadResultType.Mesh;
     private String filename = null;
-    // STL files create a single mesh - change to match GCode/Obj
-    private ModelContainer modelContainer = null;
-    // GCode and obj create a group
-    private Group groupedParts = null;
-    private Project targetProject = null;
+    private Set<ModelContainer> modelContainers;
+    private Project targetProject;
     // File lines are only used for gcode at present
-    private final ArrayList<String> fileLines = new ArrayList<>();
-    private String fullFilename = null;
+    private final List<String> fileLines = new ArrayList<>();
+    private String fullFilename;
 
-    /**
-     *
-     * @param modelIsTooLarge
-     * @param fullFilename
-     * @param filename
-     * @param targetProject
-     * @param modelContainer
-     */
-    public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, Project targetProject, ModelContainer modelContainer)
+    public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, 
+        Project targetProject, Set<ModelContainer> modelContainers)
     {
         this.modelTooLargeForPrintbed = modelIsTooLarge;
         this.fullFilename = fullFilename;
         this.filename = filename;
         this.targetProject = targetProject;
-        this.modelContainer = modelContainer;
+        this.modelContainers = modelContainers;
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isModelTooLarge()
     {
         return modelTooLargeForPrintbed;
     }
 
-    /**
-     *
-     * @return
-     */
     public String getModelFilename()
     {
         return filename;
     }
-    
-    /**
-     *
-     * @return
-     */
+
     public String getFullFilename()
     {
         return fullFilename;
     }
-    
-    /**
-     *
-     * @return
-     */
-    public ModelContainer getModelContainer()
+
+    public Set<ModelContainer> getModelContainers()
     {
-        return modelContainer;
+        return modelContainers;
     }
-    
-    /**
-     *
-     * @return
-     */
+
     public Project getTargetProject()
     {
         return targetProject;
     }
-    
-    /**
-     *
-     * @param fileData
-     */
+
     public void setFileLines(ArrayList<String> fileData)
     {
         this.fileLines.addAll(0, fileData);
     }
 
-    /**
-     *
-     * @return
-     */
-    public ArrayList<String> getFileLines()
+    public List<String> getFileLines()
     {
         return fileLines;
     }
-    
-    /**
-     *
-     * @return
-     */
+
     public ModelLoadResultType getResultType()
     {
         return resultType;

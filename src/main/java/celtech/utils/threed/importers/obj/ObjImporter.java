@@ -38,7 +38,6 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelGroup;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
 import java.io.File;
@@ -125,31 +124,24 @@ public class ObjImporter
                 extruderAssociations.add(materialNumber);
             }
 
-            ModelContainer modelContainer = null;
-            if (meshes_.size() == 1)
-            {
-                modelContainer = new ModelContainer(modelFile, meshes_.get(0),
-                                                    extruderAssociations.get(0));
-            } else
-            {
-                Set<ModelContainer> modelContainers = new HashSet<>();
+            Set<ModelContainer> modelContainers = new HashSet<>();
 
-                for (int i = 0; i < meshes_.size(); i++)
-                {
-                    MeshView meshView = meshes_.get(i);
-                    int extruder = extruderAssociations.get(i);
-                    ModelContainer childModelContainer = new ModelContainer(modelFile, meshView,
-                                                                            extruder);
-                    modelContainers.add(childModelContainer);
+            boolean modelIsTooLarge = false;
+            for (int i = 0; i < meshes_.size(); i++)
+            {
+                MeshView meshView = meshes_.get(i);
+                int extruder = extruderAssociations.get(i);
+                ModelContainer childModelContainer = new ModelContainer(modelFile, meshView,
+                                                                        extruder);
+                modelContainers.add(childModelContainer);
+                if (PrintBed.isBiggerThanPrintVolume(childModelContainer.getOriginalModelBounds())) {
+                    modelIsTooLarge = true;
                 }
-                modelContainer = new ModelGroup(modelContainers);
             }
-            boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(
-                modelContainer.getOriginalModelBounds());
 
             modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
                                                   modelFile.getName(), targetProject,
-                                                  modelContainer);
+                                                  modelContainers);
 
         } catch (Exception ex)
         {

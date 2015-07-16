@@ -38,9 +38,9 @@ public class ModelGroup extends ModelContainer
         {
             modelContainer.clearBedTransform();
         }
-        lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         originalModelBounds = calculateBoundsInLocal();
+        checkOffBed();
     }
 
     public ModelGroup(Set<ModelContainer> modelContainers, int groupModelId)

@@ -41,8 +41,8 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         th.start();
         ModelLoadResults modelLoadResults = modelLoaderTask.get();
         ModelLoadResult modelLoadResult = modelLoadResults.getResults().get(0);
-        ModelContainer modelContainer = modelLoadResult.getModelContainer();
-        return modelContainer;
+        Set<ModelContainer> modelContainers = modelLoadResult.getModelContainers();
+        return modelContainers.iterator().next();
     }
 
     @Test

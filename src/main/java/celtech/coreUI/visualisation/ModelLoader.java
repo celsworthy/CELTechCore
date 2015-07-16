@@ -8,17 +8,20 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * ModelLoader contains methods for loading models from file.
+ * ModelLoader contains methods for loading models from a file.
  *
  * @author tony
  */
@@ -66,12 +69,16 @@ public class ModelLoader
                     shrinkModel = Lookup.getSystemNotificationHandler().
                         showModelTooBigDialog(loadResult.getModelFilename());
                 }
-                ModelContainer modelContainer = loadResult.getModelContainer();
+                Set<ModelContainer> modelContainers = loadResult.getModelContainers();
                 if (shrinkModel)
                 {
-                    modelContainer.shrinkToFitBed();
+                    for (ModelContainer modelContainer : modelContainers)
+                    {
+                        modelContainer.shrinkToFitBed();
+                    }
+
                 }
-                addToProject(loadResult, modelContainer);
+                addToProject(loadResult, modelContainers);
             } else
             {
                 steno.error("Error whilst attempting to load model");
@@ -92,9 +99,6 @@ public class ModelLoader
 
     /**
      * Load each model in modelsToLoad, do not lay them out on the bed.
-     *
-     * @param project
-     * @param modelsToLoad
      */
     public void loadExternalModels(Project project, List<File> modelsToLoad)
     {
@@ -104,11 +108,6 @@ public class ModelLoader
     /**
      * Load each model in modelsToLoad, do not lay them out on the bed. If there are already models
      * loaded in the project then do not relayout even if relayout=true;
-     *
-     * @param project
-     * @param modelsToLoad
-     * @param newTab
-     * @param relayout
      */
     public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
     {
@@ -118,10 +117,22 @@ public class ModelLoader
         modelLoaderService.start();
     }
 
-    private void addToProject(ModelLoadResult loadResult, ModelContainer modelContainer)
+    private void addToProject(ModelLoadResult loadResult, Set<ModelContainer> modelContainers)
     {
         UndoableProject undoableProject = new UndoableProject(loadResult.getTargetProject());
-        undoableProject.addModel(modelContainer);
+        Set<ModelContainer> splitModelContainers = new HashSet<>();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            splitModelContainers.add(modelContainer.splitIntoParts());
+        }
+        if (splitModelContainers.size() == 1)
+        {
+            undoableProject.addModel(splitModelContainers.iterator().next());
+        } else
+        {
+            ModelGroup modelGroup = new ModelGroup(splitModelContainers);
+            undoableProject.addModel(modelGroup);
+        }
     }
 
 }
