@@ -54,35 +54,40 @@ public class UtilityMethods
             lastToolNumber = lastLayerPostProcessResult.getNozzleStateAtEndOfLayer().get().getNozzleReferenceNumber();
         }
 
+        List<ToolSelectNode> toolSelectNodes = new ArrayList<>();
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode potentialToolSelectNode = layerIterator.next();
 
             if (potentialToolSelectNode instanceof ToolSelectNode)
             {
-                ToolSelectNode toolSelectNode = (ToolSelectNode) potentialToolSelectNode;
+                toolSelectNodes.add((ToolSelectNode) potentialToolSelectNode);
+            }
+        }
 
-                if (lastToolNumber == toolSelectNode.getToolNumber())
+        for (ToolSelectNode toolSelectNode : toolSelectNodes)
+        {
+            if (lastToolNumber == toolSelectNode.getToolNumber())
+            {
+                toolSelectNode.suppressNodeOutput(true);
+            } else
+            {
+                // The tool number has changed
+                // Close the nozzle if it isn't already...
+                //Insert a close at the end if there isn't already a close following the last extrusion
+                GCodeEventNode lastEvent = toolSelectNode.getAbsolutelyTheLastEvent();
+
+                try
                 {
-                    toolSelectNode.suppressNodeOutput(true);
-                } else
-                {
-                    // The tool number has changed
-                    // Close the nozzle if it isn't already...
-                    //Insert a close at the end if there isn't already a close following the last extrusion
-                    Iterator<GCodeEventNode> toolSelectChildIterator = toolSelectNode.childrenAndMeBackwardsIterator();
+                    Optional<ExtrusionNode> lastExtrusion;
 
-                    Optional<ExtrusionNode> lastExtrusion = Optional.empty();
-
-                    while (toolSelectChildIterator.hasNext())
+                    if (lastEvent instanceof ExtrusionNode)
                     {
-                        GCodeEventNode potentialExtrusionNode = toolSelectChildIterator.next();
-
-                        if (potentialExtrusionNode instanceof ExtrusionNode)
-                        {
-                            lastExtrusion = Optional.of((ExtrusionNode) potentialExtrusionNode);
-                            break;
-                        }
+                        lastExtrusion = Optional.of((ExtrusionNode)lastEvent);
+                    } else
+                    {
+                        lastExtrusion = nodeManagementUtilities.findPriorExtrusion(lastEvent);
                     }
 
                     if (lastExtrusion.isPresent())
@@ -90,23 +95,19 @@ public class UtilityMethods
                         if (!lastExtrusion.get().getNozzlePosition().isBSet()
                                 || lastExtrusion.get().getNozzlePosition().getB() > 0)
                         {
-                            try
-                            {
-                                //We need to close
-                                double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusion.get(), false);
+                            //We need to close
+                            double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusion.get(), false);
 
-                                closeLogic.insertNozzleCloses(availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
-
-                            } catch (NodeProcessingException ex)
-                            {
-                                throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
-                            }
+                            closeLogic.insertNozzleCloses(availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
                         }
                     }
+                } catch (NodeProcessingException ex)
+                {
+                    throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
                 }
-
-                lastToolNumber = toolSelectNode.getToolNumber();
             }
+
+            lastToolNumber = toolSelectNode.getToolNumber();
         }
     }
 
@@ -182,8 +183,8 @@ public class UtilityMethods
 //                                    try
 //                                    {
 //                                        GCodeEventNode nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(layerNode, (GCodeEventNode) nozzlePositionProvider).orElseThrow(NodeProcessingException::new);
-                                        nodesToOpenBefore.add((ExtrusionNode) nozzlePositionProvider);
-                                        lastBPosition = 1.0;
+                                    nodesToOpenBefore.add((ExtrusionNode) nozzlePositionProvider);
+                                    lastBPosition = 1.0;
 //                                    } catch (NodeProcessingException ex)
 //                                    {
 //                                        throw new RuntimeException("Failed to insert open nodes on layer " + layerNode.getLayerNumber(), ex);

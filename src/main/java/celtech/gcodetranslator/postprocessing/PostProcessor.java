@@ -14,26 +14,25 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
-import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.Head.HeadType;
+import celtech.utils.SystemUtils;
 import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.parboiled.Parboiled;
-import static org.parboiled.errors.ErrorUtils.printParseErrors;
 import org.parboiled.parserunners.BasicParseRunner;
-import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /**
@@ -56,12 +55,14 @@ public class PostProcessor
     private final String layerResultTimerName = "LayerResult";
     private final String parseLayerTimerName = "ParseLayer";
     private final String writeOutputTimerName = "WriteOutput";
+    private final String countLinesTimerName = "CountLines";
 
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
     private final HeadFile headFile;
     private final Project project;
     private final SlicerParametersFile slicerParametersFile;
+    private final DoubleProperty taskProgress;
 
     private final List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
@@ -86,7 +87,8 @@ public class PostProcessor
             HeadFile headFile,
             Project project,
             PostProcessorFeatureSet postProcessorFeatureSet,
-            HeadType headType)
+            HeadType headType,
+            DoubleProperty taskProgress)
     {
         this.gcodeFileToProcess = gcodeFileToProcess;
         this.gcodeOutputFile = gcodeOutputFile;
@@ -95,6 +97,8 @@ public class PostProcessor
         this.featureSet = postProcessorFeatureSet;
 
         this.slicerParametersFile = project.getPrinterSettings().getSettings(headType);
+
+        this.taskProgress = taskProgress;
 
         nozzleProxies.clear();
 
@@ -160,7 +164,16 @@ public class PostProcessor
         //Cura has line delineators like this ';LAYER:1'
         try
         {
-            fileReader = new BufferedReader(new FileReader(gcodeFileToProcess));
+            File inputFile = new File(gcodeFileToProcess);
+            timeUtils.timerStart(this, countLinesTimerName);
+            int linesInGCodeFile = SystemUtils.countLinesInFile(inputFile);
+            timeUtils.timerStop(this, countLinesTimerName);
+
+            int linesRead = 0;
+            double lastPercentSoFar = 0;
+
+            fileReader = new BufferedReader(new FileReader(inputFile));
+
             writer = Lookup.getPostProcessorOutputWriterFactory().create(gcodeOutputFile);
 
             outputUtilities.prependPrePrintHeader(writer);
@@ -170,6 +183,17 @@ public class PostProcessor
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
             {
+                linesRead++;
+                double percentSoFar = ((double) linesRead / (double) linesInGCodeFile) * 100;
+                if (percentSoFar - lastPercentSoFar >= 1)
+                {
+                    if (taskProgress != null)
+                    {
+                        taskProgress.set(percentSoFar);
+                    }
+                    lastPercentSoFar = percentSoFar;
+                }
+                
                 lineRead = lineRead.trim();
                 if (lineRead.matches(";LAYER:[0-9]+"))
                 {

@@ -124,7 +124,7 @@ public class CloseLogic
                         || !closeResult.hasSucceeded())
                 {
                     // If we have an available inner section to close over and we can close in the required volume then do it
-                    Optional<GCodeEventNode> innerSection = nodeToAppendClosesTo.getParent().get().getSiblingAfter();
+                    Optional<GCodeEventNode> innerSection = nodeToAppendClosesTo.getParent().get().getSiblingBefore();
                     if (innerSection.isPresent())
                     {
                         if (innerSection.get() instanceof InnerPerimeterSectionNode)
@@ -158,7 +158,7 @@ public class CloseLogic
                             lastNodeConsidered = potentialExtrusionNode;
                         }
                     }
-                    
+
                     if (limitNode == null && lastNodeConsidered != null)
                     {
                         //No problem - we just didn't find a prior close in this section
@@ -447,7 +447,7 @@ public class CloseLogic
             {
                 availableExtrusion += ((ExtrusionNode) potentialMovementProvider).getExtrusion().getE();
             }
-            
+
             if (potentialMovementProvider == endNode)
             {
                 break;
@@ -486,13 +486,12 @@ public class CloseLogic
                     {
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         bValue = 1 - (runningTotalOfExtrusion / volumeToCloseOver);
-                    }
-                    else
+                    } else
                     {
                         bValue = runningTotalOfExtrusion / volumeToCloseOver;
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                     }
-                    
+
                     extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
                     //No extrusion during a close
                     extrusionNodeBeingExamined.getExtrusion().eNotInUse();
@@ -504,13 +503,12 @@ public class CloseLogic
                     {
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         bValue = 1 - (runningTotalOfExtrusion / volumeToCloseOver);
-                    }
-                    else
+                    } else
                     {
                         bValue = runningTotalOfExtrusion / volumeToCloseOver;
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                     }
-                    
+
                     extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
                     //No extrusion during a close
                     extrusionNodeBeingExamined.getExtrusion().eNotInUse();
@@ -839,14 +837,33 @@ public class CloseLogic
                                     steno.warning("Discarding retract from layer " + layerNode.getLayerNumber());
                                 } else
                                 {
+                                    GCodeEventNode lastExtrusionEventEventLastLayer = null;
+
                                     GCodeEventNode priorExtrusionNodeLastLayer = lastLayer.getAbsolutelyTheLastEvent();
-                                    if (priorExtrusionNodeLastLayer == null)
+
+                                    if (priorExtrusionNodeLastLayer != null)
+                                    {
+                                        if (!(priorExtrusionNodeLastLayer instanceof ExtrusionNode))
+                                        {
+                                            Optional<ExtrusionNode> potentialLastExtrusion = nodeManagementUtilities.findPriorExtrusion(layerChild);
+                                            if (potentialLastExtrusion.isPresent())
+                                            {
+                                                lastExtrusionEventEventLastLayer = potentialLastExtrusion.get();
+                                            }
+                                        } else
+                                        {
+                                            lastExtrusionEventEventLastLayer = priorExtrusionNodeLastLayer;
+                                        }
+                                    }
+                                    
+                                    if (lastExtrusionEventEventLastLayer == null)
                                     {
                                         throw new NodeProcessingException("No suitable prior extrusion in previous layer", (GCodeEventNode) retractNode);
                                     }
-                                    double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(priorExtrusionNodeLastLayer, false);
 
-                                    closeResult = insertNozzleCloses(availableExtrusion, priorExtrusionNodeLastLayer, nozzleInUse);
+                                    double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusionEventEventLastLayer, false);
+
+                                    closeResult = insertNozzleCloses(availableExtrusion, lastExtrusionEventEventLastLayer, nozzleInUse);
                                 }
                             }
 

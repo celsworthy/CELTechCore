@@ -215,13 +215,13 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         try
         {
             double result1 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode1, true);
-            assertEquals(21, result1, 0.1);
+            assertEquals(20, result1, 0.1);
 
             double result2 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode4, true);
-            assertEquals(15, result2, 0.1);
+            assertEquals(11, result2, 0.1);
 
             double result3 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode6, true);
-            assertEquals(6, result3, 0.1);
+            assertEquals(0, result3, 0.1);
         } catch (NodeProcessingException ex)
         {
             fail("Got exception during test " + ex);
@@ -268,13 +268,13 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         try
         {
             double result1 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode1, false);
-            assertEquals(1, result1, 0.1);
+            assertEquals(0, result1, 0.1);
 
             double result2 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode4, false);
-            assertEquals(10, result2, 0.1);
+            assertEquals(6, result2, 0.1);
 
             double result3 = nodeManagementUtilities.findAvailableExtrusion(extrusionNode6, false);
-            assertEquals(21, result3, 0.1);
+            assertEquals(15, result3, 0.1);
         } catch (NodeProcessingException ex)
         {
             fail("Got exception during test " + ex);
