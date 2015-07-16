@@ -3,7 +3,6 @@
  */
 package celtech.modelcontrol;
 
-import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import java.util.Set;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 
 /**
@@ -49,7 +47,7 @@ public class ModelGroup extends ModelContainer
     {
         this(modelContainers);
         modelId = groupModelId;
-        if (modelId <= nextModelId)
+        if (modelId >= nextModelId)
         {
             // avoid any duplicate ids
             nextModelId = modelId + 1;
@@ -141,7 +139,7 @@ public class ModelGroup extends ModelContainer
 
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child model is this model
+            ModelBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child is this model
             minX = Math.min(bounds.getMinX(), minX);
             minY = Math.min(bounds.getMinY(), minY);
             minZ = Math.min(bounds.getMinZ(), minZ);

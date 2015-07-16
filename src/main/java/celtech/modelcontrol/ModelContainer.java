@@ -355,6 +355,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         checkOffBed();
 
     }
+    
+    public double getMoveToPreferredX() {
+        return transformMoveToPreferred.getX();
+    }
+    
+    public double getMoveToPreferredZ() {
+        return transformMoveToPreferred.getZ();
+    }    
 
     public ModelBounds getTransformedBoundsInBed()
     {
@@ -385,7 +393,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * This method checks if the model is off the print bed and if so it adjusts the
-     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     * transformMoveToPreferred to bring it back to the nearest edge of the bed. N.B. It only works
+     * for top level objects i.e. top level groups or ungrouped models.
      */
     private void keepOnBedXZ()
     {
@@ -395,13 +404,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + 1;
         double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
             - 1;
-        if (getTransformedBoundsInBed().getMinX() < minBedX)
+        if (lastTransformedBoundsInParent.getMinX() < minBedX)
         {
-            deltaX = -(getTransformedBoundsInBed().getMinX() - minBedX);
+            deltaX = -(lastTransformedBoundsInParent.getMinX() - minBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        } else if (getTransformedBoundsInBed().getMaxX() > maxBedX)
+        } else if (lastTransformedBoundsInParent.getMaxX() > maxBedX)
         {
-            deltaX = -(getTransformedBoundsInBed().getMaxX() - maxBedX);
+            deltaX = -(lastTransformedBoundsInParent.getMaxX() - maxBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
         }
         updateLastTransformedBoundsInParentForTranslateByX(deltaX);
@@ -411,13 +420,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + 1;
         double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
             - 1;
-        if (getTransformedBoundsInBed().getMinZ() < minBedZ)
+        if (lastTransformedBoundsInParent.getMinZ() < minBedZ)
         {
-            deltaZ = -(getTransformedBoundsInBed().getMinZ() - minBedZ);
+            deltaZ = -(lastTransformedBoundsInParent.getMinZ() - minBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        } else if (getTransformedBoundsInBed().getMaxZ() > maxBedZ)
+        } else if (lastTransformedBoundsInParent.getMaxZ() > maxBedZ)
         {
-            deltaZ = -(getTransformedBoundsInBed().getMaxZ() - maxBedZ);
+            deltaZ = -(lastTransformedBoundsInParent.getMaxZ() - maxBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
         }
         updateLastTransformedBoundsInParentForTranslateByZ(deltaZ);
@@ -1009,9 +1018,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    /**
+     *  Check if this object is off the bed. N.B. It only works
+     * for top level objects i.e. top level groups or ungrouped models.
+     */
     private void checkOffBed()
     {
-        ModelBounds bounds = getTransformedBoundsInBed();
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double epsilon = 0.001;
 

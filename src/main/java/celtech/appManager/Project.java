@@ -613,7 +613,7 @@ public class Project implements Serializable
         return modelGroup;
     }
 
-    public void ungroup(Set<ModelContainer> modelContainers)
+    public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
         for (ModelContainer modelContainer : modelContainers)
         {
@@ -625,9 +625,22 @@ public class Project implements Serializable
                 {
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
+                    applyGroupTransformToChild(modelGroup, childModelContainer);
                 }
             }
         }
+    }
+
+    private void applyGroupTransformToChild(ModelGroup modelGroup,
+        ModelContainer childModelContainer)
+    {
+        childModelContainer.setXScale(childModelContainer.getXScale() * modelGroup.getXScale());
+        childModelContainer.setYScale(childModelContainer.getYScale() * modelGroup.getYScale());
+        childModelContainer.setZScale(childModelContainer.getZScale() * modelGroup.getZScale());
+        
+        // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
+        // from centre of group, which needs to be taken into account
+        childModelContainer.translateBy(modelGroup.getMoveToPreferredX(), modelGroup.getMoveToPreferredZ());
     }
 
     public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
@@ -789,7 +802,7 @@ public class Project implements Serializable
     /**
      * Return the set of models for the given set of modelIds.
      */
-    private Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds) throws ProjectLoadException
+    public Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds) throws ProjectLoadException
     {
         Set<ModelContainer> modelContainers = new HashSet<>();
         for (int modelId : modelIds)
@@ -800,7 +813,7 @@ public class Project implements Serializable
                 modelContainers.add(modelContainer.get());
             } else
             {
-                throw new ProjectLoadException("unexpected model id when rereating groups");
+                throw new ProjectLoadException("unexpected model id when recreating groups");
             }
         }
         return modelContainers;
