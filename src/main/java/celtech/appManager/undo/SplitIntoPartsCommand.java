@@ -46,7 +46,7 @@ public class SplitIntoPartsCommand extends Command
         {
             return;
         }
-        project.deleteModels(newModelContainers);
+        project.removeModels(newModelContainers);
         for (ModelContainer modelContainer : modelContainers)
         {
             project.addModel(modelContainer);
@@ -60,7 +60,7 @@ public class SplitIntoPartsCommand extends Command
         {
             return;
         }
-        project.deleteModels(modelContainers);
+        project.removeModels(modelContainers);
         for (ModelContainer modelContainer : newModelContainers)
         {
             project.addModel(modelContainer);

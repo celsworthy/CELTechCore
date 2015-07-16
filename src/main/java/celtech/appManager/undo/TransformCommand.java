@@ -46,7 +46,7 @@ class TransformCommand extends Command
             newStates = project.getModelStates();
         } catch (Exception ex)
         {
-            steno.error("Failed running command " + ex);
+            steno.exception("Failed running command ", ex);
         }
     }
 

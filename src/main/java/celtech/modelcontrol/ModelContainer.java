@@ -20,6 +20,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -120,7 +122,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SelectionHighlighter selectionHighlighter = null;
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
-    private Set<Node> selectedMarkers;
 
     /**
      * Print the part using the extruder of the given number.
@@ -153,7 +154,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (getParent() instanceof ModelContainer)
         {
             return (ModelContainer) getParent();
-        } else if (getParent() != null && getParent().getParent()  instanceof ModelContainer ) {
+        } else if (getParent() != null && getParent().getParent() instanceof ModelContainer)
+        {
             return (ModelContainer) getParent().getParent();
         } else
         {
@@ -181,7 +183,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void setUseExtruder0(boolean useExtruder0)
     {
-        this.associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
+        associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
     }
 
     public void printTransforms()
@@ -292,8 +294,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationTwist = new SimpleDoubleProperty(0);
         preferredRotationTurn = new SimpleDoubleProperty(0);
 
-        selectedMarkers = new HashSet<>();
-
     }
 
     void clearBedTransform()
@@ -322,8 +322,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * Make a copy of this ModelContainer and return it.
-     *
-     * @return
      */
     public ModelContainer makeCopy()
     {
@@ -357,6 +355,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         checkOffBed();
 
     }
+    
+    public double getMoveToPreferredX() {
+        return transformMoveToPreferred.getX();
+    }
+    
+    public double getMoveToPreferredZ() {
+        return transformMoveToPreferred.getZ();
+    }    
 
     public ModelBounds getTransformedBoundsInBed()
     {
@@ -387,7 +393,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * This method checks if the model is off the print bed and if so it adjusts the
-     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     * transformMoveToPreferred to bring it back to the nearest edge of the bed. N.B. It only works
+     * for top level objects i.e. top level groups or ungrouped models.
      */
     private void keepOnBedXZ()
     {
@@ -397,13 +404,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + 1;
         double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
             - 1;
-        if (getTransformedBoundsInBed().getMinX() < minBedX)
+        if (lastTransformedBoundsInParent.getMinX() < minBedX)
         {
-            deltaX = -(getTransformedBoundsInBed().getMinX() - minBedX);
+            deltaX = -(lastTransformedBoundsInParent.getMinX() - minBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        } else if (getTransformedBoundsInBed().getMaxX() > maxBedX)
+        } else if (lastTransformedBoundsInParent.getMaxX() > maxBedX)
         {
-            deltaX = -(getTransformedBoundsInBed().getMaxX() - maxBedX);
+            deltaX = -(lastTransformedBoundsInParent.getMaxX() - maxBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
         }
         updateLastTransformedBoundsInParentForTranslateByX(deltaX);
@@ -413,13 +420,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + 1;
         double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
             - 1;
-        if (getTransformedBoundsInBed().getMinZ() < minBedZ)
+        if (lastTransformedBoundsInParent.getMinZ() < minBedZ)
         {
-            deltaZ = -(getTransformedBoundsInBed().getMinZ() - minBedZ);
+            deltaZ = -(lastTransformedBoundsInParent.getMinZ() - minBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        } else if (getTransformedBoundsInBed().getMaxZ() > maxBedZ)
+        } else if (lastTransformedBoundsInParent.getMaxZ() > maxBedZ)
         {
-            deltaZ = -(getTransformedBoundsInBed().getMaxZ() - maxBedZ);
+            deltaZ = -(lastTransformedBoundsInParent.getMaxZ() - maxBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
         }
         updateLastTransformedBoundsInParentForTranslateByZ(deltaZ);
@@ -515,7 +522,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Return a set of all descendent ModelContainers (and include this one) that have MeshView
      * children.
-     * @return 
+     *
+     * @return
      */
     public Set<ModelContainer> getModelsHoldingMeshViews()
     {
@@ -544,9 +552,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      *
      * @param snapFaceIndex
      */
-    public void snapToGround(int snapFaceIndex)
+    public void snapToGround(MeshView meshView, int snapFaceIndex)
     {
-        Vector3D faceNormal = getFaceNormal(snapFaceIndex);
+        Vector3D faceNormal = getFaceNormal(meshView, snapFaceIndex);
         Vector3D downVector = new Vector3D(0, 1, 0);
 
         Rotation requiredRotation = new Rotation(faceNormal, downVector);
@@ -571,7 +579,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
         UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(70),
                                                            new UnivariateObjectiveFunction(
-                                                               new ApplyTwist(snapFaceIndex)),
+                                                               new ApplyTwist(meshView,
+                                                                              snapFaceIndex)),
                                                            GoalType.MINIMIZE,
                                                            new SearchInterval(0, 360));
         steno.debug("optimiser took " + (int) ((System.nanoTime() - start) * 10e-6) + " ms"
@@ -592,20 +601,29 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         final Vector3D faceNormal;
         final Vector3D faceCentre;
+        Transform localToBedTransform;
+        Node bed;
 
-        public ApplyTwist(int faceIndex)
+        public ApplyTwist(MeshView meshView, int faceIndex)
         {
-            faceNormal = getFaceNormal(faceIndex);
-            faceCentre = getFaceCentre(faceIndex);
+            faceNormal = getFaceNormal(meshView, faceIndex);
+            faceCentre = getFaceCentre(meshView, faceIndex);
+            localToBedTransform = getLocalToParentTransform();
+            bed = getRootModelContainer(meshView).getParent();
         }
 
         Point3D getRotatedFaceNormal()
         {
-            Point3D rotatedFaceCentre = getLocalToParentTransform().transform(
-                toPoint3D(faceCentre));
+//            Point3D rotatedFaceCentre = localToBedTransform.transform(
+//                toPoint3D(faceCentre));
+//
+//            Point3D rotatedFaceCentrePlusNormal = localToBedTransform.transform(
+//                toPoint3D(faceCentre.add(faceNormal)));
 
-            Point3D rotatedFaceCentrePlusNormal = getLocalToParentTransform().transform(
-                toPoint3D(faceCentre.add(faceNormal)));
+            Point3D rotatedFaceCentre = bed.sceneToLocal(localToScene(toPoint3D(faceCentre)));
+
+            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(localToScene(toPoint3D(
+                faceCentre.add(faceNormal))));
 
             Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
             return rotatedFaceNormal;
@@ -759,10 +777,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             {
                 addSelectionHighlighter();
             }
-            showSelectedMarkers();
+            showSelectionHighlighter();
         } else
         {
-            hideSelectedMarkers();
+            hideSelectionHighlighter();
         }
         isSelected.set(selected);
     }
@@ -813,7 +831,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         throws IOException, ClassNotFoundException
     {
         associateWithExtruderNumber = new SimpleIntegerProperty(0);
-        
+
         String modelName = in.readUTF();
 
         int numberOfMeshesNowUnused = in.readInt();
@@ -884,7 +902,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         if (convertSnapFace)
         {
-            snapToGround(storedSnapFaceIndexLegacy);
+            snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
 
         notifyShapeChange();
@@ -1000,9 +1018,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    /**
+     *  Check if this object is off the bed. N.B. It only works
+     * for top level objects i.e. top level groups or ungrouped models.
+     */
     private void checkOffBed()
     {
-        ModelBounds bounds = getTransformedBoundsInBed();
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double epsilon = 0.001;
 
@@ -1356,7 +1378,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Return the face normal for the face of the given index.
      *
      */
-    Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
+    Vector3D getFaceNormal(MeshView meshView, int faceNumber) throws MathArithmeticException
     {
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
         int baseFaceIndex = faceNumber * 6;
@@ -1374,7 +1396,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return currentVectorNormalised;
     }
 
-    Vector3D getFaceCentre(int faceNumber)
+    Vector3D getFaceCentre(MeshView meshView, int faceNumber)
     {
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
         int baseFaceIndex = faceNumber * 6;
@@ -1455,7 +1477,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledHeight()
     {
-        return getTransformedBoundsInBed().getHeight();
+        return getLocalBounds().getHeight() * preferredYScale.doubleValue();
     }
 
     @Override
@@ -1467,26 +1489,25 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledDepth()
     {
-        return getTransformedBoundsInBed().getDepth();
+        return getLocalBounds().getDepth() * preferredZScale.doubleValue();
     }
 
     @Override
     public double getOriginalWidth()
     {
-        return getTransformedBoundsInBed().getWidth();
+        return getLocalBounds().getWidth();
     }
 
     @Override
     public double getScaledWidth()
     {
-        return getTransformedBoundsInBed().getWidth();
+        return getLocalBounds().getWidth() * preferredXScale.doubleValue();
     }
 
     public void addSelectionHighlighter()
     {
         selectionHighlighter = new SelectionHighlighter(this);
         getChildren().add(selectionHighlighter);
-        selectedMarkers.add(selectionHighlighter);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
@@ -1511,20 +1532,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    private void showSelectedMarkers()
+    private void showSelectionHighlighter()
     {
-        for (Node selectedMarker : selectedMarkers)
-        {
-            selectedMarker.setVisible(true);
-        }
+
+        selectionHighlighter.setVisible(true);
     }
 
-    private void hideSelectedMarkers()
+    private void hideSelectionHighlighter()
     {
-        for (Node selectedMarker : selectedMarkers)
-        {
-            selectedMarker.setVisible(false);
-        }
+        selectionHighlighter.setVisible(false);
     }
 
     @Override
@@ -1723,6 +1739,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return getChildren();
 
+    }
+
+    public Set<ModelContainer> getChildModelContainers()
+    {
+        return Collections.EMPTY_SET;
     }
 
     /**

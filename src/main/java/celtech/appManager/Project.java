@@ -43,7 +43,6 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -510,6 +509,11 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelAdded(modelContainer);
         addModelListeners(modelContainer);
+        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        {
+            addModelListeners(childModelContainer);
+        }
+
     }
 
     private void fireWhenModelAdded(ModelContainer modelContainer)
@@ -528,12 +532,16 @@ public class Project implements Serializable
         }
     }
 
-    public void deleteModel(ModelContainer modelContainer)
+    public void removeModel(ModelContainer modelContainer)
     {
         loadedModels.remove(modelContainer);
         projectModified();
         fireWhenModelRemoved(modelContainer);
         removeModelListeners(modelContainer);
+        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        {
+            removeModelListeners(childModelContainer);
+        }
     }
 
     private void fireWhenModelRemoved(ModelContainer modelContainer)
@@ -591,7 +599,7 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
-        deleteModels(modelContainers);
+        removeModels(modelContainers);
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         addModel(modelGroup);
         return modelGroup;
@@ -599,27 +607,40 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
-        deleteModels(modelContainers);
+        removeModels(modelContainers);
         ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
         addModel(modelGroup);
         return modelGroup;
     }
 
-    public void ungroup(Set<ModelContainer> modelContainers)
+    public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
         for (ModelContainer modelContainer : modelContainers)
         {
             if (modelContainer instanceof ModelGroup)
             {
                 ModelGroup modelGroup = (ModelGroup) modelContainer;
-                deleteModel(modelGroup);
+                removeModel(modelGroup);
                 for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
                 {
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
+                    applyGroupTransformToChild(modelGroup, childModelContainer);
                 }
             }
         }
+    }
+
+    private void applyGroupTransformToChild(ModelGroup modelGroup,
+        ModelContainer childModelContainer)
+    {
+        childModelContainer.setXScale(childModelContainer.getXScale() * modelGroup.getXScale());
+        childModelContainer.setYScale(childModelContainer.getYScale() * modelGroup.getYScale());
+        childModelContainer.setZScale(childModelContainer.getZScale() * modelGroup.getZScale());
+        
+        // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
+        // from centre of group, which needs to be taken into account
+        childModelContainer.translateBy(modelGroup.getMoveToPreferredX(), modelGroup.getMoveToPreferredZ());
     }
 
     public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
@@ -637,7 +658,7 @@ public class Project implements Serializable
                 (TriangleMesh) modelContainer.getMeshView().getMesh());
             if (subMeshes.size() > 1)
             {
-                deleteModel(modelContainer);
+                removeModel(modelContainer);
                 int ix = 1;
                 for (TriangleMesh subMesh : subMeshes)
                 {
@@ -781,7 +802,7 @@ public class Project implements Serializable
     /**
      * Return the set of models for the given set of modelIds.
      */
-    private Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds) throws ProjectLoadException
+    public Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds) throws ProjectLoadException
     {
         Set<ModelContainer> modelContainers = new HashSet<>();
         for (int modelId : modelIds)
@@ -792,7 +813,7 @@ public class Project implements Serializable
                 modelContainers.add(modelContainer.get());
             } else
             {
-                throw new ProjectLoadException("unexpected model id when rereating groups");
+                throw new ProjectLoadException("unexpected model id when recreating groups");
             }
         }
         return modelContainers;
@@ -969,12 +990,12 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void deleteModels(Set<ModelContainer> modelContainers)
+    public void removeModels(Set<ModelContainer> modelContainers)
     {
         for (ModelContainer model : modelContainers)
         {
             {
-                deleteModel(model);
+                removeModel(model);
             }
         }
     }
@@ -1015,9 +1036,9 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
-        modelContainer.snapToGround(faceNumber);
+        modelContainer.snapToGround(pickedMesh, faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);

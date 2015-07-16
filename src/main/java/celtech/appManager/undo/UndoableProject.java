@@ -170,11 +170,11 @@ public class UndoableProject
         });
     }
 
-    public void snapToGround(ModelContainer modelContainer, int faceNumber)
+    public void snapToGround(ModelContainer modelContainer, MeshView meshView, int faceNumber)
     {
         doTransformCommand(() ->
         {
-            project.snapToGround(modelContainer, faceNumber);
+            project.snapToGround(modelContainer, meshView, faceNumber);
         });
     }
 
