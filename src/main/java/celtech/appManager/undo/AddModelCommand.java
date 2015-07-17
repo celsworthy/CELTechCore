@@ -11,6 +11,7 @@ import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javafx.concurrent.WorkerStateEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -60,9 +61,13 @@ public class AddModelCommand extends Command
         {
             ModelLoadResults modelLoadResults = modelLoaderTask.getValue();
             ModelLoadResult modelLoadResult = modelLoadResults.getResults().get(0);
-            ModelContainer loadedModelContainer = modelLoadResult.getModelContainer();
-            modelContainer.addChildNodes(loadedModelContainer.getMeshGroupChildren());
-            project.addModel(modelContainer);
+            Set<ModelContainer> loadedModelContainers = modelLoadResult.getModelContainers();
+            for (ModelContainer loadedModelContainer : loadedModelContainers)
+            {
+                modelContainer.addChildNodes(loadedModelContainer.getMeshGroupChildren());
+            }
+            project.addModel(modelContainer);    
+            
         });
         modelLoaderTask.setOnFailed((WorkerStateEvent event) ->
         {

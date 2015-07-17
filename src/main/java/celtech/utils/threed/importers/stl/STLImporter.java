@@ -22,7 +22,9 @@ import java.io.LineNumberReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import javafx.geometry.BoundingBox;
 import javafx.scene.shape.CullFace;
@@ -119,18 +121,17 @@ public class STLImporter
             meshView.setCullFace(CullFace.BACK);
             meshView.setId(modelFile.getName() + "_mesh");
 
+            Set<ModelContainer> modelContainers = new HashSet<>();
             ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
+            modelContainers.add(modelContainer);
 
-            BoundingBox bounds = (BoundingBox) modelContainer.getBoundsInLocal();
-            steno.debug("Model bounds are : " + bounds);
             ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
-            steno.debug("Model orig bounds are : " + originalBounds);
             modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
 
             ModelLoadResult result = new ModelLoadResult(modelIsTooLarge,
                                                          modelFile.getAbsolutePath(),
                                                          modelFile.getName(), targetProject,
-                                                         modelContainer);
+                                                         modelContainers);
             return result;
         } else
         {

@@ -227,12 +227,6 @@ public class UndoableProject
         commandStack.do_(setUserExtruder0Command);
     }
 
-    public void splitIntoParts(Set<ModelContainer> modelContainers)
-    {
-        Command splitIntoPartsCommand = new SplitIntoPartsCommand(project, modelContainers);
-        commandStack.do_(splitIntoPartsCommand);
-    }
-    
     public void group(Set<ModelContainer> modelContainers)
     {
         Command groupCommand = new GroupCommand(project, modelContainers);

@@ -12,6 +12,7 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
+import celtech.utils.threed.MeshSeparator;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -117,9 +118,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
-    protected ModelBounds lastTransformedBoundsInBed;
+
+    /**
+     * The bounds of the object in its parent. For top level objects this is also the bounds
+     * in the bed coordinates. They are kept valid even after translates etc.
+     */
     protected ModelBounds lastTransformedBoundsInParent;
-    private SelectionHighlighter selectionHighlighter = null;
+    private SelectionHighlighter selectionHighlighter;
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
 
@@ -141,6 +146,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         initialise(modelFile);
         initialiseTransforms();
+        checkOffBed();
     }
 
     public ModelContainer(File modelFile, MeshView meshView, int extruderAssociation)
@@ -256,7 +262,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setY(0);
         transformMoveToPreferred.setZ(0);
 
-        lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
@@ -355,18 +360,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         checkOffBed();
 
     }
-    
-    public double getMoveToPreferredX() {
+
+    public double getMoveToPreferredX()
+    {
         return transformMoveToPreferred.getX();
     }
-    
-    public double getMoveToPreferredZ() {
-        return transformMoveToPreferred.getZ();
-    }    
 
-    public ModelBounds getTransformedBoundsInBed()
+    public double getMoveToPreferredZ()
     {
-        return lastTransformedBoundsInBed;
+        return transformMoveToPreferred.getZ();
     }
 
     public ModelBounds getLocalBounds()
@@ -374,21 +376,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return originalModelBounds;
     }
 
+    /**
+     * N．B．It only works for top level objects ie．top level groups or ungrouped models.
+     */
+    
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
-        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBoundsInBed().getWidth()
-            / 2.0;
-        double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBoundsInBed().getHeight()
-            / 2.0;
+        double newXPosition = xPosition - bedCentreOffsetX
+            + lastTransformedBoundsInParent.getWidth() / 2.0;
+        double newZPosition = zPosition - bedCentreOffsetZ
+            + lastTransformedBoundsInParent.getHeight() / 2.0;
         double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
         double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
-        transformMoveToPreferred.setX(newXPosition);
-        transformMoveToPreferred.setZ(newZPosition);
-        updateLastTransformedBoundsInParentForTranslateByX(deltaXPosition);
-        updateLastTransformedBoundsInParentForTranslateByZ(deltaZPosition);
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        translateBy(deltaXPosition, deltaZPosition);
     }
 
     /**
@@ -964,9 +964,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    /*
+     * N.B. It only works for top level objects i.e. top level groups or ungrouped models.
+     */
     public void translateXTo(double xPosition)
     {
-        ModelBounds bounds = getTransformedBoundsInBed();
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -991,9 +994,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    /*
+     * N.B. It only works for top level objects i.e. top level groups or ungrouped models.
+     */
     public void translateZTo(double zPosition)
     {
-        ModelBounds bounds = getTransformedBoundsInBed();
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
@@ -1019,10 +1025,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     *  Check if this object is off the bed. N.B. It only works
-     * for top level objects i.e. top level groups or ungrouped models.
+     * Check if this object is off the bed. N.B. It only works for top level objects i.e. top level
+     * groups or ungrouped models.
      */
-    private void checkOffBed()
+    protected void checkOffBed()
     {
         ModelBounds bounds = lastTransformedBoundsInParent;
 
@@ -1128,9 +1134,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
+            System.out.println("calculate bounds in bed for node " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
-//            Transform transform = getCombinedTransformForAllGroups(meshView);
             ModelContainer rootModelContainer = getRootModelContainer(meshView);
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
@@ -1142,7 +1148,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 float yPos = originalPoints.get(pointOffset + 1);
                 float zPos = originalPoints.get(pointOffset + 2);
 
-//                Point3D pointInParent = transform.transform(xPos, yPos, zPos);
                 Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
 
                 Point3D pointInBed = rootModelContainer.localToParent(
@@ -1159,6 +1164,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 maxZ = Math.max(pointInBed.getZ(), maxZ);
             }
         }
+        System.out.println("end");
 
         double newwidth = maxX - minX;
         double newdepth = maxZ - minZ;
@@ -1194,6 +1200,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
+            System.out.println("calculate bounds in parent for node " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
@@ -1217,6 +1224,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 maxZ = Math.max(pointInParent.getZ(), maxZ);
             }
         }
+        System.out.println("end2");
 
         double newwidth = maxX - minX;
         double newdepth = maxZ - minZ;
@@ -1230,6 +1238,46 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newheight, newdepth, newcentreX, newcentreY,
                                newcentreZ);
     }
+    
+/**
+     * Try to split into parts. If the ModelContainer is composed
+     * of more than one part then make a group of them.
+     */
+    public ModelContainer splitIntoParts()
+    {
+            Set<ModelContainer> parts = new HashSet<>();
+            ModelContainer.State state = getState();
+            double transformCentreX = getTransformMoveToCentre().getX();
+            double transformCentreZ = getTransformMoveToCentre().getZ();
+            String modelName = getModelName();
+
+            ModelContainer modelContainer = this;
+            
+            List<TriangleMesh> subMeshes = MeshSeparator.separate((TriangleMesh) getMeshView().getMesh());
+            if (subMeshes.size() > 1)
+            {
+                int ix = 1;
+                for (TriangleMesh subMesh : subMeshes)
+                {
+                    MeshView meshView = new MeshView(subMesh);
+                    ModelContainer newModelContainer = new ModelContainer(
+                        getModelFile(), meshView);
+                    newModelContainer.setState(state);
+                    parts.add(newModelContainer);
+                    double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
+                    double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
+                    double deltaX = newTransformCentreX - transformCentreX;
+                    double deltaZ = newTransformCentreZ - transformCentreZ;
+                    newModelContainer.translateBy(-deltaX, -deltaZ);
+                    newModelContainer.setModelName(modelName + " " + ix);
+                    
+                    ix++;
+                }
+                modelContainer = new ModelGroup(parts);
+            } 
+        return modelContainer;
+    }
+    
 
     /**
      * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR OF AN APPROACH
@@ -1357,23 +1405,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return returnVal;
     }
 
-    public double getTotalWidth()
-    {
-        double totalwidth = originalModelBounds.getWidth() * preferredXScale.get();
-        return totalwidth;
-    }
-
-    public double getTotalDepth()
-    {
-        double totaldepth = originalModelBounds.getDepth() * preferredZScale.get();
-        return totaldepth;
-    }
-
-    public double getTotalSize()
-    {
-        return getTotalWidth() + getTotalDepth();
-    }
-
     /**
      * Return the face normal for the face of the given index.
      *
@@ -1436,7 +1467,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformPostRotationYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
         transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
-        lastTransformedBoundsInBed = calculateBoundsInBedCoordinateSystem();
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
@@ -1460,12 +1490,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public double getTransformedCentreZ()
     {
-        return getTransformedBoundsInBed().getCentreZ();
+        return lastTransformedBoundsInParent.getCentreZ();
     }
 
     public double getTransformedCentreX()
     {
-        return getTransformedBoundsInBed().getCentreX();
+        return lastTransformedBoundsInParent.getCentreX();
     }
 
     @Override
@@ -1502,6 +1532,32 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public double getScaledWidth()
     {
         return getLocalBounds().getWidth() * preferredXScale.doubleValue();
+    }
+
+    /**
+     * Get the width on the bed but ONLY for top-level models.
+     */
+    public double getTotalWidth()
+    {
+        double totalwidth = lastTransformedBoundsInParent.getWidth();
+        return totalwidth;
+    }
+
+    /**
+     * Get the depth on the bed but ONLY for top-level models.
+     */
+    public double getTotalDepth()
+    {
+        double totaldepth = lastTransformedBoundsInParent.getDepth();
+        return totaldepth;
+    }
+
+     /**
+     * Get a relative measure of the total size on the bed but ONLY for top-level models.
+     */
+    public double getTotalSize()
+    {
+        return getTotalWidth() + getTotalDepth();
     }
 
     public void addSelectionHighlighter()

@@ -4,11 +4,9 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
-import celtech.coreUI.components.AppearingProgressBar;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.TesStatusBar;
-import celtech.coreUI.visualisation.threed.StaticModelOverlay;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -28,12 +26,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -51,7 +47,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
-    private StaticModelOverlay staticModelOverlay = null;
 
     private String transferringDataString = null;
 

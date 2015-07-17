@@ -643,47 +643,6 @@ public class Project implements Serializable
         childModelContainer.translateBy(modelGroup.getMoveToPreferredX(), modelGroup.getMoveToPreferredZ());
     }
 
-    public Set<ModelContainer> splitIntoParts(Set<ModelContainer> modelContainers)
-    {
-        Set<ModelContainer> newModelContainers = new HashSet<>();
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            ModelContainer.State state = modelContainer.getState();
-            double transformCentreX = modelContainer.getTransformMoveToCentre().getX();
-            double transformCentreZ = modelContainer.getTransformMoveToCentre().getZ();
-            String modelName = modelContainer.getModelName();
-
-            //TODO modify to work with multiple mesh views
-            List<TriangleMesh> subMeshes = MeshSeparator.separate(
-                (TriangleMesh) modelContainer.getMeshView().getMesh());
-            if (subMeshes.size() > 1)
-            {
-                removeModel(modelContainer);
-                int ix = 1;
-                for (TriangleMesh subMesh : subMeshes)
-                {
-                    MeshView meshView = new MeshView(subMesh);
-                    ModelContainer newModelContainer = new ModelContainer(
-                        modelContainer.getModelFile(), meshView);
-                    newModelContainer.setState(state);
-                    addModel(newModelContainer);
-                    double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
-                    double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
-                    double deltaX = newTransformCentreX - transformCentreX;
-                    double deltaZ = newTransformCentreZ - transformCentreZ;
-                    newModelContainer.translateBy(-deltaX, -deltaZ);
-                    newModelContainer.setModelName(modelName + " " + ix);
-                    newModelContainers.add(newModelContainer);
-                    ix++;
-                }
-            } else
-            {
-                newModelContainers.add(modelContainer);
-            }
-        }
-        return newModelContainers;
-    }
-
     private Set<ModelContainer> getModelsHoldingMeshViews()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();

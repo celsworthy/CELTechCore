@@ -636,7 +636,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
 
-        MeshView outerMeshView = bedOuterLoadResult.getModelContainer().getMeshView();
+        MeshView outerMeshView = bedOuterLoadResult.getModelContainers().iterator().next().getMeshView();
         outerMeshView.setMaterial(bedOuterMaterial);
 
         bed.getChildren().addAll(outerMeshView);
@@ -646,7 +646,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         bed.getChildren().add(createBoundingBox());
 
-        MeshView innerMeshView = bedInnerLoadResult.getModelContainer().getMeshView();
+        MeshView innerMeshView = bedInnerLoadResult.getModelContainers().iterator().next().getMeshView();
         innerMeshView.setMaterial(bedInnerMaterial);
 
         bed.getChildren().addAll(innerMeshView);

@@ -36,21 +36,6 @@ public class ModelBounds
     {
     }
 
-    /**
-     *
-     * @param minX
-     * @param maxX
-     * @param minY
-     * @param maxY
-     * @param minZ
-     * @param maxZ
-     * @param width
-     * @param height
-     * @param depth
-     * @param centreX
-     * @param centreY
-     * @param centreZ
-     */
     public ModelBounds(double minX,
         double maxX,
         double minY,
@@ -78,226 +63,126 @@ public class ModelBounds
         this.centreZ = centreZ;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getMinX()
     {
         return minX;
     }
 
-    /**
-     *
-     * @param minX
-     */
     public void setMinX(double minX)
     {
         this.minX = minX;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getMaxX()
     {
         return maxX;
     }
 
-    /**
-     *
-     * @param maxX
-     */
     public void setMaxX(double maxX)
     {
         this.maxX = maxX;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getMinY()
     {
         return minY;
     }
 
-    /**
-     *
-     * @param minY
-     */
     public void setMinY(double minY)
     {
         this.minY = minY;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getMaxY()
     {
         return maxY;
     }
 
-    /**
-     *
-     * @param maxY
-     */
     public void setMaxY(double maxY)
     {
         this.maxY = maxY;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getMinZ()
     {
         return minZ;
     }
 
-    /**
-     *
-     * @param minZ
-     */
     public void setMinZ(double minZ)
     {
         this.minZ = minZ;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getMaxZ()
     {
         return maxZ;
     }
 
-    /**
-     *
-     * @param maxZ
-     */
     public void setMaxZ(double maxZ)
     {
         this.maxZ = maxZ;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getWidth()
     {
         return width;
     }
 
-    /**
-     *
-     * @param width
-     */
     public void setWidth(double width)
     {
         this.width = width;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getHeight()
     {
         return height;
     }
 
-    /**
-     *
-     * @param height
-     */
     public void setHeight(double height)
     {
         this.height = height;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getDepth()
     {
         return depth;
     }
 
-    /**
-     *
-     * @param depth
-     */
     public void setDepth(double depth)
     {
         this.depth = depth;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getCentreX()
     {
         return centreX;
     }
 
-    /**
-     *
-     * @param centreX
-     */
     public void setCentreX(double centreX)
     {
         this.centreX = centreX;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getCentreY()
     {
         return centreY;
     }
 
-    /**
-     *
-     * @param centreY
-     */
     public void setCentreY(double centreY)
     {
         this.centreY = centreY;
     }
 
-    /**
-     *
-     * @return
-     */
     public double getCentreZ()
     {
         return centreZ;
     }
 
-    /**
-     *
-     * @param centreZ
-     */
     public void setCentreZ(double centreZ)
     {
         this.centreZ = centreZ;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public String toString()
     {
