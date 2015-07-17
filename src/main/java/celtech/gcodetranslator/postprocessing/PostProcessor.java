@@ -15,6 +15,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.Head.HeadType;
@@ -179,7 +180,7 @@ public class PostProcessor
             outputUtilities.prependPrePrintHeader(writer);
 
             StringBuilder layerBuffer = new StringBuilder();
-            LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null);
+            LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1);
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
             {
@@ -193,7 +194,7 @@ public class PostProcessor
                     }
                     lastPercentSoFar = percentSoFar;
                 }
-                
+
                 lineRead = lineRead.trim();
                 if (lineRead.matches(";LAYER:[0-9]+"))
                 {
@@ -228,7 +229,9 @@ public class PostProcessor
                                     parseResult.getTimeForLayer(),
                                     parseResult.getLastObjectNumber().orElse(-1),
                                     null,
-                                    null);
+                                    null,
+                                    lastLayerParseResult.getLastFeedrateInForce());
+
                         }
                     }
 
@@ -442,6 +445,7 @@ public class PostProcessor
         float eValue = 0;
         float dValue = 0;
         double timeForLayer = 0;
+        int lastFeedrate = -1;
 
         SupportsPrintTimeCalculation lastMovementProvider = null;
 
@@ -488,6 +492,11 @@ public class PostProcessor
                     }
                 }
                 lastMovementProvider = timeCalculationNode;
+                if (((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin() < 0)
+                {
+                    ((FeedrateProvider) lastMovementProvider).getFeedrate().setFeedRate_mmPerMin(lastLayerPostProcessResult.getLastFeedrateInForce());
+                }
+                lastFeedrate = ((FeedrateProvider)lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
             }
         }
 
@@ -524,7 +533,7 @@ public class PostProcessor
         }
 
         return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer, -1,
-                lastSectionNode, lastToolSelectNode);
+                lastSectionNode, lastToolSelectNode, lastFeedrate);
     }
 
     private void outputPostProcessingTimerReport()

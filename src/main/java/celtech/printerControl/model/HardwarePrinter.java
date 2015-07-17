@@ -607,16 +607,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     + nozzleHeaterNumber);
         }
 
-        if (settingsFilament == null)
+        if (settingsFilament != null)
         {
-            throw new RuntimeException("no filament in settings for nozzle heater "
-                    + nozzleHeaterNumber);
+            float reelNozzleTemperature = settingsFilament.getNozzleTemperature();
+
+            headToWrite.nozzleHeaters.get(nozzleHeaterNumber).lastFilamentTemperature.set(
+                    reelNozzleTemperature);
         }
-
-        float reelNozzleTemperature = settingsFilament.getNozzleTemperature();
-
-        headToWrite.nozzleHeaters.get(nozzleHeaterNumber).lastFilamentTemperature.set(
-                reelNozzleTemperature);
     }
 
     /*
