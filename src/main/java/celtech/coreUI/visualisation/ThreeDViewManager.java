@@ -46,7 +46,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
+import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -619,15 +621,22 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private Group buildBed()
     {
         String bedOuterURL = CoreTest.class
-            .getResource(ApplicationConfiguration.modelResourcePath + "bedOuter.obj").
+            .getResource(ApplicationConfiguration.modelResourcePath + "bedBase.obj").
             toExternalForm();
-        String bedInnerURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
-            + "bedInner.obj").toExternalForm();
+        
+        String peiSheetURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
+            + "pei.obj").toExternalForm();
+
+        String bedClipsURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
+            + "clips.obj").toExternalForm();
 
         PhongMaterial bedOuterMaterial = new PhongMaterial(Color.web("#0a0a0a"));
 
-        PhongMaterial bedInnerMaterial = new PhongMaterial(Color.web("#696969"));
-        bedInnerMaterial.setSpecularPower(1.2f);
+        PhongMaterial peiSheetMaterial = new PhongMaterial(Color.web("#a0a0a0"));
+        peiSheetMaterial.setSpecularPower(1.2f);
+
+        PhongMaterial bedClipsMaterial = new PhongMaterial(Color.web("#f0f0f0"));
+        bedClipsMaterial.setSpecularPower(20f);
 
         Group bed = new Group();
 
@@ -635,24 +644,27 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
-
         MeshView outerMeshView = bedOuterLoadResult.getModelContainers().iterator().next().getMeshView();
         outerMeshView.setMaterial(bedOuterMaterial);
-
         bed.getChildren().addAll(outerMeshView);
 
-        ObjImporter bedInnerImporter = new ObjImporter();
-        ModelLoadResult bedInnerLoadResult = bedInnerImporter.loadFile(null, bedInnerURL, null);
+        ObjImporter peiSheetImporter = new ObjImporter();
+        ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadFile(null, peiSheetURL, null);
+        MeshView peiMeshView = peiSheetLoadResult.getModelContainers().iterator().next().getMeshView();
+        peiMeshView.setMaterial(peiSheetMaterial);
+        
+        bed.getChildren().addAll(peiMeshView);
+
+        ObjImporter bedClipsImporter = new ObjImporter();
+        ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadFile(null, bedClipsURL, null);
+        MeshView bedClipsMeshView = bedClipsLoadResult.getModelContainers().iterator().next().getMeshView();
+        bedClipsMeshView.setMaterial(bedClipsMaterial);
+        bed.getChildren().addAll(bedClipsMeshView);
 
         bed.getChildren().add(createBoundingBox());
 
-        MeshView innerMeshView = bedInnerLoadResult.getModelContainers().iterator().next().getMeshView();
-        innerMeshView.setMaterial(bedInnerMaterial);
-
-        bed.getChildren().addAll(innerMeshView);
-
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
-            ApplicationConfiguration.imageResourcePath + "roboxLogo.png").toExternalForm());
+            ApplicationConfiguration.imageResourcePath + "BedGraphics.png").toExternalForm());
         final ImageView roboxLogoView = new ImageView();
 
         roboxLogoView.setImage(roboxLogoImage);
