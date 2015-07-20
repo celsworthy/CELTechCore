@@ -1536,7 +1536,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 
         LayerNode emptyLayer = new LayerNode(0);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), emptyLayer, 0, 0, 0, 0, null, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), emptyLayer, 0, 0, 0, 0, null, null, -1);
 
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
@@ -1647,7 +1647,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         }
 
         LayerNode emptyLayer = new LayerNode(0);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), emptyLayer, 0, 0, 0, 0, null, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), emptyLayer, 0, 0, 0, 0, null, null, -1);
 
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 
@@ -1741,7 +1741,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null, -1);
 
         CloseLogic closeLogic = new CloseLogic(testProject, ppFeatures, HeadType.SINGLE_MATERIAL_HEAD);
 

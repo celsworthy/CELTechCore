@@ -27,23 +27,11 @@ public class LayerPostProcessResult
             LayerNode layerData,
             float eVolume,
             float dVolume,
-            double timeForLayer_secs)
-    {
-        this.nozzleStateAtEndOfLayer = nozzleStateAtEndOfLayer;
-        this.layerData = layerData;
-        this.eVolume = eVolume;
-        this.dVolume = dVolume;
-        this.timeForLayer_secs = timeForLayer_secs;
-    }
-
-    public LayerPostProcessResult(Optional<NozzleProxy> nozzleStateAtEndOfLayer,
-            LayerNode layerData,
-            float eVolume,
-            float dVolume,
             double timeForLayer_secs,
             int lastObjectNumber,
             SectionNode sectionNode,
-            ToolSelectNode toolSelectNode)
+            ToolSelectNode toolSelectNode,
+            int lastFeedrateInForce)
     {
         this.nozzleStateAtEndOfLayer = nozzleStateAtEndOfLayer;
         this.layerData = layerData;
@@ -53,6 +41,7 @@ public class LayerPostProcessResult
         this.lastObjectNumber = Optional.of(lastObjectNumber);
         this.lastSectionNodeInForce = sectionNode;
         this.lastToolSelectInForce = toolSelectNode;
+        this.lastFeedrateInForce = lastFeedrateInForce;
     }
 
     public Optional<NozzleProxy> getNozzleStateAtEndOfLayer()

@@ -11,8 +11,8 @@ import java.util.Locale;
 public final class Feedrate implements Renderable
 {
     private boolean isFeedRateSet = false;
-    private double feedRate_mmPerMin = 0;
-    private double feedRate_mmPerSec = 0;
+    private int feedRate_mmPerMin = 0;
+    private int feedRate_mmPerSec = 0;
     
     public boolean isFeedrateSet()
     {
@@ -24,7 +24,7 @@ public final class Feedrate implements Renderable
      *
      * @return
      */
-    public double getFeedRate_mmPerMin()
+    public int getFeedRate_mmPerMin()
     {
         return feedRate_mmPerMin;
     }
@@ -34,7 +34,7 @@ public final class Feedrate implements Renderable
      *
      * @return
      */
-    public double getFeedRate_mmPerSec()
+    public int getFeedRate_mmPerSec()
     {
         return feedRate_mmPerSec;
     }
@@ -43,18 +43,18 @@ public final class Feedrate implements Renderable
      *
      * @param feedRate_mmPerMin
      */
-    public void setFeedRate_mmPerMin(double feedRate_mmPerMin)
+    public void setFeedRate_mmPerMin(int feedRate_mmPerMin)
     {
         isFeedRateSet = true;
         this.feedRate_mmPerMin = feedRate_mmPerMin;
-        this.feedRate_mmPerSec = feedRate_mmPerMin / 60;
+        this.feedRate_mmPerSec = (int)((double)feedRate_mmPerMin / 60.0);
     }
 
     /**
      *
      * @param feedRate_mmPerSec
      */
-    public void setFeedRate_mmPerSec(double feedRate_mmPerSec)
+    public void setFeedRate_mmPerSec(int feedRate_mmPerSec)
     {
         isFeedRateSet = true;
         this.feedRate_mmPerSec = feedRate_mmPerSec;
@@ -68,16 +68,12 @@ public final class Feedrate implements Renderable
     @Override
     public String renderForOutput()
     {
-        NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
-        threeDPformatter.setMaximumFractionDigits(3);
-        threeDPformatter.setGroupingUsed(false);
-
         StringBuilder stringToReturn = new StringBuilder();
 
         if (isFeedRateSet)
         {
             stringToReturn.append('F');
-            stringToReturn.append(threeDPformatter.format(feedRate_mmPerMin));
+            stringToReturn.append(feedRate_mmPerMin);
         }
 
         return stringToReturn.toString().trim();

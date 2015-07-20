@@ -212,7 +212,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         }
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.insertOpenNodes(testLayer, lastLayerParseResult);
 
@@ -453,7 +453,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         }
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
 
@@ -681,7 +681,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         }
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testProxy, testLayer, 0, 0, 0, 10, null, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testProxy, testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
 
