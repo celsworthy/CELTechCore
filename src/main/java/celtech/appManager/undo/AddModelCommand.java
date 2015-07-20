@@ -10,6 +10,7 @@ import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javafx.concurrent.WorkerStateEvent;
@@ -47,7 +48,9 @@ public class AddModelCommand extends Command
     public void undo()
     {
         modelContainer.clearMeshes();
-        project.removeModel(modelContainer);
+        Set<ModelContainer> modelContainers = new HashSet<>();
+        modelContainers.add(modelContainer);
+        project.removeModels(modelContainers);
     }
 
     @Override

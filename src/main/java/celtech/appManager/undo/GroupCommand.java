@@ -46,9 +46,7 @@ public class GroupCommand extends Command
         {
             return;
         }
-        System.out.println("S");
         group = project.group(modelContainers);
-        System.out.println("R");
     }
 
     @Override

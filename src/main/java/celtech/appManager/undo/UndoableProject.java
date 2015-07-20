@@ -229,9 +229,7 @@ public class UndoableProject
 
     public void group(Set<ModelContainer> modelContainers)
     {
-        System.out.println("X");
         Command groupCommand = new GroupCommand(project, modelContainers);
-        System.out.println("W");
         commandStack.do_(groupCommand);
         
     }    

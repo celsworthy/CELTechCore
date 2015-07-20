@@ -128,38 +128,41 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         primarySelectedModelDetails.updateSelectedProperties();
     }
-    
+
     @Override
     public void whenModelAdded(ModelContainer modelContainer)
     {
     }
 
     @Override
-    public void whenModelRemoved(ModelContainer modelContainer)
+    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
     {
-        removeModelContainer(modelContainer);
-    }    
-    
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            removeModelContainer(modelContainer);
+        }
+    }
+
     @Override
     public void whenAutoLaidOut()
     {
-    } 
-    
+    }
+
     @Override
     public void whenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         updateSelectedValues();
-    }    
-    
+    }
+
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
-    }    
-    
+    }
+
     @Override
     public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
     {
-    }    
+    }
 
     /**
      * Add a listener that will be notified whenever a ModelContainer is selected or deselected.
@@ -270,31 +273,31 @@ public class SelectedModelContainers implements ProjectChangesListener
         {
             return scaleX;
         }
-        
+
         public DoubleProperty getScaleY()
         {
             return scaleY;
         }
-        
+
         public DoubleProperty getScaleZ()
         {
             return scaleZ;
-        }  
-        
+        }
+
         public DoubleProperty getRotationLean()
         {
             return rotationLean;
-        }        
+        }
 
         public DoubleProperty getRotationTwist()
         {
             return rotationTwist;
         }
-        
+
         public DoubleProperty getRotationTurn()
         {
             return rotationTurn;
-        }        
+        }
     }
 
 }

@@ -57,7 +57,6 @@ public class MeshSeparator
             Set<Integer> faceGroup = new HashSet<>();
             visitVertex(facesWithVertex, faceGroup, mesh, vertexVisited, faceVisited, startVertex);
 
-            System.out.println("face group contains num faces: " + faceGroup.size());
             if (faceGroup.size() == mesh.getFaces().size() / 6) {
                 // there is only one part, don't bother recreating it with makeSubMesh
                 meshes.add(mesh);

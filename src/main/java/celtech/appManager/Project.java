@@ -327,7 +327,6 @@ public class Project implements Serializable
                 projectFile.populateFromProject(this);
                 File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
                 mapper.writeValue(file, projectFile);
-                System.out.println(FileUtils.readFileToString(file, Charsets.UTF_8));
                 saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
             } catch (FileNotFoundException ex)
             {
@@ -532,29 +531,26 @@ public class Project implements Serializable
         }
     }
 
-    public void removeModel(ModelContainer modelContainer)
+    public void removeModels(Set<ModelContainer> modelContainers)
     {
-        System.out.println("B1 " + modelContainer.getModelName());
-        loadedModels.remove(modelContainer);
-        System.out.println("B2");
-        projectModified();
-        System.out.println("B3");
-        fireWhenModelRemoved(modelContainer);
-        System.out.println("B4");
-        removeModelListeners(modelContainer);
-        System.out.println("B5");
-        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+        loadedModels.removeAll(modelContainers);
+        for (ModelContainer modelContainer : modelContainers)
         {
-            System.out.println("B6 " + childModelContainer);
-            removeModelListeners(childModelContainer);
+                removeModelListeners(modelContainer);
+                for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+                {
+                    removeModelListeners(childModelContainer);
+                }
         }
+        projectModified();
+        fireWhenModelsRemoved(modelContainers);
     }
 
-    private void fireWhenModelRemoved(ModelContainer modelContainer)
+    private void fireWhenModelsRemoved(Set<ModelContainer> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
-            projectChangesListener.whenModelRemoved(modelContainer);
+            projectChangesListener.whenModelsRemoved(modelContainers);
         }
     }
 
@@ -605,25 +601,17 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
-        System.out.println("A1");
         removeModels(modelContainers);
-        System.out.println("A2");
         ModelGroup modelGroup = new ModelGroup(modelContainers);
-        System.out.println("A3");
         addModel(modelGroup);
-        System.out.println("A4");
         return modelGroup;
     }
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
-        System.out.println("A");
         removeModels(modelContainers);
-        System.out.println("B");
         ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
-        System.out.println("C");
         addModel(modelGroup);
-        System.out.println("D");
         return modelGroup;
     }
 
@@ -634,7 +622,9 @@ public class Project implements Serializable
             if (modelContainer instanceof ModelGroup)
             {
                 ModelGroup modelGroup = (ModelGroup) modelContainer;
-                removeModel(modelGroup);
+                Set<ModelContainer> modelGroups = new HashSet<>();
+                modelGroups.add(modelGroup);
+                removeModels(modelGroups);
                 for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
                 {
                     addModel(childModelContainer);
@@ -651,10 +641,11 @@ public class Project implements Serializable
         childModelContainer.setXScale(childModelContainer.getXScale() * modelGroup.getXScale());
         childModelContainer.setYScale(childModelContainer.getYScale() * modelGroup.getYScale());
         childModelContainer.setZScale(childModelContainer.getZScale() * modelGroup.getZScale());
-        
+
         // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
         // from centre of group, which needs to be taken into account
-        childModelContainer.translateBy(modelGroup.getMoveToPreferredX(), modelGroup.getMoveToPreferredZ());
+        childModelContainer.translateBy(modelGroup.getMoveToPreferredX(),
+                                        modelGroup.getMoveToPreferredZ());
     }
 
     private Set<ModelContainer> getModelsHoldingMeshViews()
@@ -736,9 +727,7 @@ public class Project implements Serializable
             if (allModelsInstantiated(entry.getValue()))
             {
                 Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
-                System.out.println("make group for ids " + entry.getValue());
                 int groupModelId = entry.getKey();
-                System.out.println("new group id is " + groupModelId);
                 ModelGroup group = group(modelContainers, groupModelId);
                 recreateGroupState(group, groupStates);
                 numGroups++;
@@ -828,7 +817,7 @@ public class Project implements Serializable
         /**
          * This should be fired when a model is removed from the project.
          */
-        void whenModelRemoved(ModelContainer modelContainer);
+        void whenModelsRemoved(Set<ModelContainer> modelContainers);
 
         /**
          * This should be fired when the project is auto laid out.
@@ -961,17 +950,6 @@ public class Project implements Serializable
         }
         projectModified();
         fireWhenModelsTransformed(modelContainers);
-    }
-
-    public void removeModels(Set<ModelContainer> modelContainers)
-    {
-        for (ModelContainer model : modelContainers)
-        {
-            {
-                System.out.println("remove " + model);
-                removeModel(model);
-            }
-        }
     }
 
     public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)

@@ -220,7 +220,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             }
 
             @Override
-            public void whenModelRemoved(ModelContainer modelContainer)
+            public void whenModelsRemoved(Set<ModelContainer> modelContainers)
             {
                 updateFields(project);
             }

@@ -1037,9 +1037,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     @Override
-    public void whenModelRemoved(ModelContainer modelContainer)
+    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
     {
-        models.getChildren().remove(modelContainer);
+        models.getChildren().removeAll(modelContainers);
         collideModels();
     }
 

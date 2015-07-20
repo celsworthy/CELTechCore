@@ -875,7 +875,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
 
         @Override
-        public void whenModelRemoved(ModelContainer modelContainer)
+        public void whenModelsRemoved(Set<ModelContainer> modelContainers)
         {
             whenProjectOrSettingsPrinterChange();
         }
