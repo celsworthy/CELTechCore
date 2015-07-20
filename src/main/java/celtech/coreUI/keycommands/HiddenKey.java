@@ -89,7 +89,7 @@ public class HiddenKey
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     if (Lookup.getSelectedPrinterProperty().get().
-                        extrudersProperty().get(0).filamentLoadedProperty().get())
+                        extrudersProperty().get(1).filamentLoadedProperty().get())
                     {
                         triggerListeners("dummy:", "UNLOAD 1");
                     } else

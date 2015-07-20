@@ -52,11 +52,14 @@ public class CommandStack
 
     public void do_(Command command)
     {
+        System.out.println("V");
         clearEndOfList();
         commands.add(command);
+        System.out.println("U");
         command.do_();
         index.set(index.get() + 1);
         tryMerge();
+        System.out.println("T");
     }
     
     /**

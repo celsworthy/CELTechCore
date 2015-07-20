@@ -27,20 +27,26 @@ public class ModelGroup extends ModelContainer
 
     public ModelGroup(Set<ModelContainer> modelContainers)
     {
+        System.out.println("1");
         initialise(null);
         childModelContainers = new HashSet<>();
         getChildren().add(modelContainersGroup);
         childModelContainers.addAll(modelContainers);
         modelContainersGroup.getChildren().addAll(modelContainers);
+        System.out.println("2");
         initialiseTransforms();
         clearTransformMoveToCentre();
         for (ModelContainer modelContainer : modelContainers)
         {
             modelContainer.clearBedTransform();
         }
+        System.out.println("3");
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        System.out.println("4");
         originalModelBounds = calculateBoundsInLocal();
+        System.out.println("5");
         checkOffBed();
+        System.out.println("6");
     }
 
     public ModelGroup(Set<ModelContainer> modelContainers, int groupModelId)

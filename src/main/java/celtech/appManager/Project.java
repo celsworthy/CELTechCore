@@ -534,12 +534,18 @@ public class Project implements Serializable
 
     public void removeModel(ModelContainer modelContainer)
     {
+        System.out.println("B1 " + modelContainer.getModelName());
         loadedModels.remove(modelContainer);
+        System.out.println("B2");
         projectModified();
+        System.out.println("B3");
         fireWhenModelRemoved(modelContainer);
+        System.out.println("B4");
         removeModelListeners(modelContainer);
+        System.out.println("B5");
         for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
         {
+            System.out.println("B6 " + childModelContainer);
             removeModelListeners(childModelContainer);
         }
     }
@@ -599,17 +605,25 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
+        System.out.println("A1");
         removeModels(modelContainers);
+        System.out.println("A2");
         ModelGroup modelGroup = new ModelGroup(modelContainers);
+        System.out.println("A3");
         addModel(modelGroup);
+        System.out.println("A4");
         return modelGroup;
     }
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
+        System.out.println("A");
         removeModels(modelContainers);
+        System.out.println("B");
         ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
+        System.out.println("C");
         addModel(modelGroup);
+        System.out.println("D");
         return modelGroup;
     }
 
@@ -954,6 +968,7 @@ public class Project implements Serializable
         for (ModelContainer model : modelContainers)
         {
             {
+                System.out.println("remove " + model);
                 removeModel(model);
             }
         }
