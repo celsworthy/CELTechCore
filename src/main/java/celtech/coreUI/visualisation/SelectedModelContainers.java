@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
@@ -28,6 +29,7 @@ public class SelectedModelContainers implements ProjectChangesListener
     private final ObservableSet<ModelContainer> modelContainers;
     private final PrimarySelectedModelDetails primarySelectedModelDetails;
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
+    private final IntegerProperty numGroupsSelected = new SimpleIntegerProperty(0);
     private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
 
     public SelectedModelContainers(Project project)
@@ -53,6 +55,9 @@ public class SelectedModelContainers implements ProjectChangesListener
                 selectedModelContainersListener.whenAdded(modelContainer);
             }
             numModelsSelected.set(numModelsSelected.get() + 1);
+            if (modelContainer instanceof ModelGroup) {
+                numGroupsSelected.set(numGroupsSelected.get() + 1);
+            }
         }
     }
 
@@ -65,6 +70,9 @@ public class SelectedModelContainers implements ProjectChangesListener
         {
             modelContainers.remove(modelContainer);
             numModelsSelected.set(numModelsSelected.get() - 1);
+            if (modelContainer instanceof ModelGroup) {
+                numGroupsSelected.set(numGroupsSelected.get() - 1);
+            }
             modelContainer.setSelected(false);
             for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
             {
@@ -112,6 +120,14 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         return numModelsSelected;
     }
+    
+    /**
+     * Return the number of selected ModelGroups as an observable number.
+     */
+    public ReadOnlyIntegerProperty getNumGroupsSelectedProperty()
+    {
+        return numGroupsSelected;
+    }    
 
     /**
      * Return the details of the primary selected ModelContainer.

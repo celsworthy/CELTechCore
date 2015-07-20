@@ -18,6 +18,8 @@
          <children>
             <Button fx:id="group" mnemonicParsing="false" onAction="#doGroup" text="Group" />
             <Button fx:id="ungroup" mnemonicParsing="false" onAction="#doUngroup" text="Ungroup" />
+            <Button fx:id="applyMaterial0" mnemonicParsing="false" onAction="#doApplyMaterial0" text="Material 1" />
+            <Button fx:id="applyMaterial1" mnemonicParsing="false" onAction="#doApplyMaterial1" text="Material 2" />
          </children>
       </VBox>
    </children>

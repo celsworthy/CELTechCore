@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
-import javafx.geometry.BoundingBox;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -48,14 +47,7 @@ public class STLImporter
     private DoubleProperty percentProgressProperty = null;
     private final String spacePattern = "[ ]+";
 
-    /**
-     *
-     * @param parentTask
-     * @param modelFile
-     * @param targetProject
-     * @param percentProgressProperty
-     * @return
-     */
+
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, File modelFile,
         Project targetProject, DoubleProperty percentProgressProperty)
     {
@@ -203,12 +195,7 @@ public class STLImporter
         return fileIsBinary;
     }
 
-    /**
-     *
-     * @param stlFile
-     * @return
-     * @throws STLFileParsingException
-     */
+
     public TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
     {
         ByteBuffer dataBuffer;

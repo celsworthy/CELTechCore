@@ -74,8 +74,9 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         undoableProject = new UndoableProject(project);
 
         ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumModelsSelectedProperty();
-        group.disableProperty().bind(numModelsSelected.isEqualTo(0));
-        ungroup.disableProperty().bind(numModelsSelected.isEqualTo(0));
+        ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumGroupsSelectedProperty();
+        group.disableProperty().bind(numModelsSelected.lessThan(2));
+        ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
 
     }
 
@@ -89,8 +90,29 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     @FXML
     void doUngroup(ActionEvent event)
     {
-       Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
-       undoableProject.ungroup(modelContainers);
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        undoableProject.ungroup(modelContainers);
+    }
+
+    @FXML
+    void doApplyMaterial0(ActionEvent event)
+    {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            undoableProject.setUseExtruder0Filament(modelContainer, true);
+        }
+
+    }
+
+    @FXML
+    void doApplyMaterial1(ActionEvent event)
+    {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            undoableProject.setUseExtruder0Filament(modelContainer, false);
+        }
     }
 
     @Override

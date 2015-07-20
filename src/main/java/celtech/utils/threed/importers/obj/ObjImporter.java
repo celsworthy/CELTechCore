@@ -91,13 +91,6 @@ public class ObjImporter
     private final Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
     private String objFileUrl;
 
-    /**
-     *
-     * @param parentTask
-     * @param modelFileToLoad
-     * @param targetProjectTab
-     * @return
-     */
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
         Project targetProject)
     {
@@ -157,30 +150,17 @@ public class ObjImporter
         return modelLoadResult;
     }
 
-    /**
-     *
-     * @return
-     */
+
     public TriangleMesh getMesh()
     {
         return meshes.values().iterator().next();
     }
 
-    /**
-     *
-     * @param key
-     * @return
-     */
     public TriangleMesh getMesh(String key)
     {
         return meshes.get(key);
     }
 
-    /**
-     *
-     * @param key
-     * @return
-     */
     public MeshView buildMeshView(String key)
     {
         MeshView meshView = new MeshView();
@@ -191,19 +171,11 @@ public class ObjImporter
         return meshView;
     }
 
-    /**
-     *
-     * @param debug
-     */
     public static void setDebug(boolean debug)
     {
         ObjImporter.debug = debug;
     }
 
-    /**
-     *
-     * @param scale
-     */
     public static void setScale(float scale)
     {
         ObjImporter.scale = scale;
@@ -427,10 +399,6 @@ public class ObjImporter
         facesStart = facesFromFile.size();
     }
 
-    /**
-     *
-     * @param flatXZ
-     */
     public static void setFlatXZ(boolean flatXZ)
     {
         ObjImporter.flatXZ = flatXZ;

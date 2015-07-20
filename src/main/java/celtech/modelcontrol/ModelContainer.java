@@ -1134,7 +1134,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
-            System.out.println("calculate bounds in bed for node " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
             ModelContainer rootModelContainer = getRootModelContainer(meshView);
@@ -1164,7 +1163,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 maxZ = Math.max(pointInBed.getZ(), maxZ);
             }
         }
-        System.out.println("end");
 
         double newwidth = maxX - minX;
         double newdepth = maxZ - minZ;
@@ -1200,7 +1198,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         for (Node meshViewNode : descendentMeshViews())
         {
-            System.out.println("calculate bounds in parent for node " + meshViewNode);
             MeshView meshView = (MeshView) meshViewNode;
 
             TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
