@@ -472,7 +472,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         VBox vBoxLeft = new VBox();
         vBoxLeft.setSpacing(30);
         Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml");
+        Node gcodePanel = loadInsetPanel("GCodePanel.fxml");
         vBoxLeft.getChildren().add(diagnosticPanel);
+        vBoxLeft.getChildren().add(gcodePanel);
 
         VBox vBoxRight = new VBox();
         vBoxRight.setSpacing(30);

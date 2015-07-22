@@ -276,9 +276,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         if (instance == null)
         {
-            try {
-            instance = new DisplayManager();
-            } catch (Exception ex) {
+            try
+            {
+                instance = new DisplayManager();
+            } catch (Exception ex)
+            {
                 ex.printStackTrace();
             }
         }
@@ -547,7 +549,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         loadProjectsAtStartup();
 
         rootAnchorPane.layout();
-        
+
         steno.debug("end configure display manager");
     }
 
@@ -619,8 +621,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             try
             {
                 URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
-                steno.debug("About to load slideout fxml: "
-                    + fxmlSlideOutFileName);
+                steno.debug("About to load slideout fxml: " + fxmlSlideOutFileName);
                 FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName,
                                                            Lookup.getLanguageBundle());
                 slideOut = (HBox) slideOutLoader.load();
@@ -631,9 +632,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             {
                 slideOutPanels.put(mode, null);
                 slideOutControllers.put(mode, null);
-                steno.error("Couldn't load slideout panel for mode:" + mode
-                    + ". " + ex + " : " + ex.getCause());
-                System.out.println("Exception: " + ex.getMessage());
+                steno.exception("Couldn't load slideout panel for mode:" + mode, ex);
             }
         } else
         {
@@ -717,7 +716,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         if (event.isShortcutDown() && (!event.isShiftDown()))
                         {
                             undoCommand(project);
-                        } else if (event.isShortcutDown() && event.isShiftDown()) {
+                        } else if (event.isShortcutDown() && event.isShiftDown())
+                        {
                             redoCommand(project);
                         }
                         break;
@@ -748,7 +748,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         Set<ModelContainer> selectedModels
             = Lookup.getProjectGUIState(project).getSelectedModelContainers().
-                getSelectedModelsSnapshot();
+            getSelectedModelsSnapshot();
         undoableProject.deleteModels(selectedModels);
     }
 
@@ -811,7 +811,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     public PurgeInsetPanelController getPurgeInsetPanelController()
     {
         return (PurgeInsetPanelController) insetPanelControllers.get(ApplicationMode.PURGE);
-    }    
+    }
 
     /**
      * This is fired when the main window or one of the internal windows may have changed size.
