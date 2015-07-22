@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
+import celtech.coreUI.controllers.StatusInsetController;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
@@ -17,7 +18,7 @@ import javafx.scene.control.Label;
  *
  * @author Ian
  */
-public class DiagnosticPanelController implements Initializable
+public class DiagnosticPanelController implements Initializable, StatusInsetController
 {
 
     private Printer connectedPrinter = null;

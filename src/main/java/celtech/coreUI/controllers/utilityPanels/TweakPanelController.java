@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
+import celtech.coreUI.controllers.StatusInsetController;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -20,7 +21,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class TweakPanelController implements Initializable
+public class TweakPanelController implements Initializable, StatusInsetController
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(TweakPanelController.class.getName());

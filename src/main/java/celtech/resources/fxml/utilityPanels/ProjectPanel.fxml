@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <children>
+            <Label text="Project" />
+            <Label fx:id="projectName" text="Label" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <children>
+            <Label text="Layer Height" />
+            <Label fx:id="layerHeight" text="Label" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

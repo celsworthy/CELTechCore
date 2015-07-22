@@ -13,6 +13,7 @@ import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
+import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -22,10 +23,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -42,7 +45,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-            PrinterStatusPageController.class.getName());
+        PrinterStatusPageController.class.getName());
     private Printer printerToUse = null;
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
@@ -54,6 +57,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private NumberFormat threeDPformatter;
     private NumberFormat fiveDPformatter;
+
+    @FXML
+    private AnchorPane container;
 
     @FXML
     private ImageView printerSilhouette;
@@ -184,7 +190,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         try
         {
             printerToUse.jogAxis(button.getAxis(), button.getDistance(), button.getFeedRate(),
-                    button.getUseG1());
+                                 button.getUseG1());
         } catch (PrinterException ex)
         {
             steno.error("Failed to jog printer - " + ex.getMessage());
@@ -203,10 +209,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
         Lookup.getUserPreferences().advancedModeProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    setAdvancedControlsVisibility();
-                });
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                setAdvancedControlsVisibility();
+            });
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -219,13 +225,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         ResourceBundle i18nBundle = Lookup.getLanguageBundle();
 
         transferringDataString = i18nBundle.getString(
-                "PrintQueue.SendingToPrinter");
+            "PrintQueue.SendingToPrinter");
 
         printerColourChangeListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
         {
             printerColourRectangle.setFill(
-                    colourMap.printerToDisplayColour(
-                            newValue));
+                colourMap.printerToDisplayColour(
+                    newValue));
         };
 
         printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
@@ -257,73 +263,74 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         };
 
         setAdvancedControlsVisibility();
+        loadInsetPanels();
 
         Lookup.getSelectedPrinterProperty().addListener(
-                new ChangeListener<Printer>()
+            new ChangeListener<Printer>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Printer> ov,
+                    Printer t, Printer selectedPrinter)
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Printer> ov,
-                            Printer t, Printer selectedPrinter)
+                    printerToUse = selectedPrinter;
+
+                    if (selectedPrinter == null)
                     {
-                        printerToUse = selectedPrinter;
-
-                        if (selectedPrinter == null)
-                        {
-                            printerSilhouette.setVisible(true);
-                        } else
-                        {
-                            printerSilhouette.setVisible(false);
-                        }
-
-                        if (selectedPrinter == null)
-                        {
-                            unbindFromSelectedPrinter();
-
-                            printerColourRectangle.setVisible(false);
-
-                            temperatureWarning.setVisible(false);
-
-                            reel.setVisible(false);
-                            filamentRectangle.setVisible(false);
-                        } else
-                        {
-                            unbindFromSelectedPrinter();
-
-                            progressDisplay.bindToPrinter(printerToUse);
-
-                            printerColourRectangle.setVisible(true);
-                            printerColourRectangle.setFill(
-                                    colourMap.printerToDisplayColour(
-                                            selectedPrinter.getPrinterIdentity().printerColourProperty().get()));
-                            selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
-                                    printerColourChangeListener);
-
-                            temperatureWarning.visibleProperty().bind(
-                                    selectedPrinter.getPrinterAncillarySystems().bedTemperatureProperty()
-                                    .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
-
-                            //TODO The printer status page only has room to display one filament colour at the moment...
-                            if (selectedPrinter.reelsProperty().get(0) != null)
-                            {
-                                filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).
-                                        displayColourProperty().get());
-                            }
-                            selectedPrinter.printerStatusProperty().addListener(
-                                    printerStatusChangeListener);
-                            selectedPrinter.pauseStatusProperty().addListener(
-                                    pauseStatusChangeListener);
-                            printerOpenImage.visibleProperty().bind(selectedPrinter.
-                                    getPrinterAncillarySystems().doorOpenProperty());
-                            printerClosedImage.visibleProperty().bind(selectedPrinter.
-                                    getPrinterAncillarySystems().doorOpenProperty().not());
-
-                        }
-
-                        setAdvancedControlsVisibility();
-
-                        lastSelectedPrinter = selectedPrinter;
+                        printerSilhouette.setVisible(true);
+                    } else
+                    {
+                        printerSilhouette.setVisible(false);
                     }
-                });
+
+                    if (selectedPrinter == null)
+                    {
+                        unbindFromSelectedPrinter();
+
+                        printerColourRectangle.setVisible(false);
+
+                        temperatureWarning.setVisible(false);
+
+                        reel.setVisible(false);
+                        filamentRectangle.setVisible(false);
+                    } else
+                    {
+                        unbindFromSelectedPrinter();
+
+                        progressDisplay.bindToPrinter(printerToUse);
+
+                        printerColourRectangle.setVisible(true);
+                        printerColourRectangle.setFill(
+                            colourMap.printerToDisplayColour(
+                                selectedPrinter.getPrinterIdentity().printerColourProperty().get()));
+                        selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
+                            printerColourChangeListener);
+
+                        temperatureWarning.visibleProperty().bind(
+                            selectedPrinter.getPrinterAncillarySystems().bedTemperatureProperty()
+                            .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
+
+                        //TODO The printer status page only has room to display one filament colour at the moment...
+                        if (selectedPrinter.reelsProperty().get(0) != null)
+                        {
+                            filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).
+                                displayColourProperty().get());
+                        }
+                        selectedPrinter.printerStatusProperty().addListener(
+                            printerStatusChangeListener);
+                        selectedPrinter.pauseStatusProperty().addListener(
+                            pauseStatusChangeListener);
+                        printerOpenImage.visibleProperty().bind(selectedPrinter.
+                            getPrinterAncillarySystems().doorOpenProperty());
+                        printerClosedImage.visibleProperty().bind(selectedPrinter.
+                            getPrinterAncillarySystems().doorOpenProperty().not());
+
+                    }
+
+                    setAdvancedControlsVisibility();
+
+                    lastSelectedPrinter = selectedPrinter;
+                }
+            });
 
     }
 
@@ -332,7 +339,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         boolean visible = false;
 
         if (printerToUse != null
-                && Lookup.getUserPreferences().isAdvancedMode())
+            && Lookup.getUserPreferences().isAdvancedMode())
         {
             switch (printerToUse.printerStatusProperty().get())
             {
@@ -373,7 +380,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable,
-                    Number oldValue, Number newValue)
+                Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
             }
@@ -382,7 +389,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable,
-                    Number oldValue, Number newValue)
+                Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
             }
@@ -427,7 +434,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         if (lastSelectedPrinter != null)
         {
             lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
-                    printerColourChangeListener);
+                printerColourChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
             lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
         }
@@ -441,6 +448,45 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         printerOpenImage.setVisible(false);
         printerClosedImage.visibleProperty().unbind();
         printerClosedImage.setVisible(false);
+    }
+
+    private Node loadInsetPanel(String innerPanelFXMLName)
+    {
+        URL insetPanelURL = getClass().getResource(
+            ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
+        FXMLLoader loader = new FXMLLoader(insetPanelURL, Lookup.getLanguageBundle());
+        Node insetPanel = null;
+        try
+        {
+            insetPanel = loader.load();
+            StatusInsetController projectAwareController = (StatusInsetController) loader.getController();
+        } catch (IOException ex)
+        {
+            steno.error("Unable to load inset panel: " + innerPanelFXMLName + "  " + ex);
+        }
+        return insetPanel;
+    }
+
+    private void loadInsetPanels()
+    {
+        VBox vBoxLeft = new VBox();
+        vBoxLeft.setSpacing(30);
+        Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml");
+        vBoxLeft.getChildren().add(diagnosticPanel);
+
+        VBox vBoxRight = new VBox();
+        vBoxRight.setSpacing(30);
+        Node projectPanel = loadInsetPanel("ProjectPanel.fxml");
+        Node tweakPanel = loadInsetPanel("tweakPanel.fxml");
+        vBoxRight.getChildren().add(projectPanel);
+        vBoxRight.getChildren().add(tweakPanel);
+        
+        container.getChildren().add(vBoxLeft);
+        AnchorPane.setTopAnchor(vBoxLeft, 30.0);
+        AnchorPane.setLeftAnchor(vBoxLeft, 30.0);
+        container.getChildren().add(vBoxRight);
+        AnchorPane.setTopAnchor(vBoxRight, 30.0);
+        AnchorPane.setRightAnchor(vBoxRight, 30.0);
     }
 
     @Override
