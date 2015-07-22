@@ -168,7 +168,7 @@ public class ProjectTab extends Tab
                 public void changed(ObservableValue<? extends Boolean> ov,
                     Boolean t, Boolean t1)
                 {
-                    if (t1.booleanValue() == false)
+                    if (! t1)
                     {
                         switchToNonEditableTitle();
                     }

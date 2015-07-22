@@ -41,6 +41,7 @@
     light_grey: rgb(99,99,99);
     robox_blue: #0096e1;
     highlight_colour: rgb(0, 157, 226);
+    highlight_colour_orange: #ff661b;
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -2693,18 +2694,24 @@ color-picker-label .text-field {
 {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18pt;
-    -fx-fill: #16b21d;
+    -fx-fill: robox_blue;
     -fx-text-alignment: center;
+} 
+
+.dimension-group
+{
+    -fx-stroke: highlight_colour_orange;
+    -fx-fill: highlight_colour_orange;
 } 
 
 .dimension-line
 {
-    -fx-stroke: #16b21d;
+    -fx-stroke: robox_blue;
 } 
 
 .dimension-arrow
 {
-    -fx-fill: #16b21d;
+    -fx-fill: robox_blue;
 } 
 
 .rotationField {

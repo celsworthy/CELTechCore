@@ -1,9 +1,9 @@
 package celtech.coreUI.visualisation;
 
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.utils.Math.MathUtils;
 import javafx.geometry.Point2D;
-import javafx.geometry.Point3D;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
@@ -76,13 +76,22 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     public void initialise(ModelContainer modelContainer, LineDirection direction)
     {
         this.direction = direction;
-        dimensionText.getStyleClass().add("dimension-label");
         dimensionText.getTransforms().addAll(textTranslate, textRotate);
 
-        dimensionLine.getStyleClass().add("dimension-line");
+        dimensionText.getStyleClass().add("dimension-label");
 
-        upArrow.getStyleClass().add("dimension-arrow");
-        downArrow.getStyleClass().add("dimension-arrow");
+        if (modelContainer instanceof ModelGroup)
+        {
+            dimensionText.getStyleClass().add("dimension-group");
+            dimensionLine.getStyleClass().add("dimension-group");
+            upArrow.getStyleClass().add("dimension-group");
+            downArrow.getStyleClass().add("dimension-group");
+        } else
+        {
+            dimensionLine.getStyleClass().add("dimension-line");
+            upArrow.getStyleClass().add("dimension-arrow");
+            downArrow.getStyleClass().add("dimension-arrow");
+        }
 
         downArrow.getPoints().setAll(0d, 0d,
                                      arrowWidth / 2, -arrowHeight,

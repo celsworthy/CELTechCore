@@ -10,9 +10,12 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import java.net.URL;
+import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -80,11 +83,25 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
     }
 
+    /**
+     * Group the selection. If one group was made then select it.
+     * @param event 
+     */
     @FXML
     void doGroup(ActionEvent event)
     {
+        Set<ModelContainer> modelGroups = currentProject.getLoadedModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
+                Collectors.toSet());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
+        Set<ModelContainer> changedModelGroups = currentProject.getLoadedModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
+                Collectors.toSet());
+        changedModelGroups.removeAll(modelGroups);
+        Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().deselectAllModels();
+        if (changedModelGroups.size() == 1) {
+            Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().addModelContainer(
+                changedModelGroups.iterator().next());
+        }
     }
 
     @FXML
@@ -92,6 +109,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     {
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
         undoableProject.ungroup(modelContainers);
+        Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().deselectAllModels();
     }
 
     @FXML

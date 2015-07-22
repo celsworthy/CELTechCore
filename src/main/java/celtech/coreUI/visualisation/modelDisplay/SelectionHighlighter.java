@@ -1,13 +1,14 @@
 package celtech.coreUI.visualisation.modelDisplay;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.StandardColours;
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.utils.Math.MathUtils;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
@@ -25,7 +26,10 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         SelectionHighlighter.class.getName());
     public static final String idString = "selectionHighlighter";
 
-    private final PhongMaterial greenMaterial = new PhongMaterial(Color.LIMEGREEN);
+    private final PhongMaterial blueMaterial = new PhongMaterial(StandardColours.ROBOX_BLUE);
+    private final PhongMaterial orangeMaterial = new PhongMaterial(StandardColours.ORANGE);
+    
+    private boolean selectionIsGroup = false;
 
     private Xform selectionBoxBackLeftTop = null;
     private Xform selectionBoxBackRightTop = null;
@@ -49,7 +53,11 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     {
         this.setId(idString);
         Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "greenIlluminationMap.png").toExternalForm());
-        greenMaterial.setSelfIlluminationMap(illuminationMap);
+        blueMaterial.setSelfIlluminationMap(illuminationMap);
+//        orangeMaterial.setSelfIlluminationMap(illuminationMap);
+        if (modelContainer instanceof ModelGroup) {
+            selectionIsGroup = true;
+        }
         buildSelectionBox();
 
 //        scaleControls = new ScaleControls(this);
@@ -136,25 +144,27 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     {
 
         final double cylRadius = .05;
+        
+        PhongMaterial material = selectionIsGroup ? orangeMaterial : blueMaterial;
 
         Xform selectionCornerTransform = new Xform();
         Group selectionCorner = new Group();
         selectionCornerTransform.getChildren().add(selectionCorner);
 
         Box part1 = new Box(cylRadius, cornerBracketLength, cylRadius);
-        part1.setMaterial(greenMaterial);
+        part1.setMaterial(material);
         part1.setDrawMode(DrawMode.LINE);
         part1.setTranslateY(-cornerBracketLength / 2);
 
         Box part2 = new Box(cylRadius, cornerBracketLength, cylRadius);
-        part2.setMaterial(greenMaterial);
+        part2.setMaterial(material);
         part2.setDrawMode(DrawMode.LINE);
         part2.setRotationAxis(MathUtils.zAxis);
         part2.setRotate(-90);
         part2.setTranslateX(cornerBracketLength / 2);
 
         Box part3 = new Box(cylRadius, cornerBracketLength, cylRadius);
-        part3.setMaterial(greenMaterial);
+        part3.setMaterial(material);
         part3.setRotationAxis(MathUtils.xAxis);
         part3.setDrawMode(DrawMode.LINE);
         part3.setRotate(-90);
