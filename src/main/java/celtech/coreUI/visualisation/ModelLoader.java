@@ -58,7 +58,7 @@ public class ModelLoader
             return true;
         }
         ModelLoadResult firstResult = loadResults.getResults().get(0);
-        boolean projectIsEmpty = firstResult.getTargetProject().getLoadedModels().isEmpty();
+        boolean projectIsEmpty = firstResult.getTargetProject().getTopLevelModels().isEmpty();
         for (ModelLoadResult loadResult : loadResults.getResults())
         {
             if (loadResult != null)

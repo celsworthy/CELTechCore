@@ -42,7 +42,7 @@ public class CanPrintConditionalTextBindings
                 //TODO check for programming reel
                 super.bind(project.getExtruder0FilamentProperty(),
                            project.getExtruder1FilamentProperty(),
-                           project.getLoadedModels(),
+                           project.getTopLevelModels(),
                            project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
                            project.getPrinterSettings().getFilament0Property(),
                            project.getPrinterSettings().getFilament1Property());
@@ -140,7 +140,7 @@ public class CanPrintConditionalTextBindings
                 //TODO check for programming reel
                 super.bind(project.getExtruder0FilamentProperty(),
                            project.getExtruder1FilamentProperty(),
-                           project.getLoadedModels(),
+                           project.getTopLevelModels(),
                            project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
                            project.getPrinterSettings().getFilament0Property(),
                            project.getPrinterSettings().getFilament1Property());
@@ -184,7 +184,7 @@ public class CanPrintConditionalTextBindings
             {
                 super.bind(project.getExtruder0FilamentProperty(),
                            project.getExtruder1FilamentProperty(),
-                           project.getLoadedModels(),
+                           project.getTopLevelModels(),
                            project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
                            project.getPrinterSettings().getFilament0Property(),
                            project.getPrinterSettings().getFilament1Property());
@@ -215,7 +215,7 @@ public class CanPrintConditionalTextBindings
             {
                 super.bind(project.getExtruder0FilamentProperty(),
                            project.getExtruder1FilamentProperty(),
-                           project.getLoadedModels(),
+                           project.getTopLevelModels(),
                            project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
                            project.getPrinterSettings().getFilament0Property(),
                            project.getPrinterSettings().getFilament1Property());

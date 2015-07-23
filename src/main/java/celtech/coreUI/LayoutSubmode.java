@@ -22,9 +22,5 @@ public enum LayoutSubmode
      * The next object to be clicked on should be snapped to ground.
      */
     SNAP_TO_GROUND,
-
-    /**
-     * Associate the next object to be clicked on with the chosen MaterialComponent filament/extruder.
-     */
-    ASSOCIATE_WITH_EXTRUDER0, ASSOCIATE_WITH_EXTRUDER1;
+   
 }

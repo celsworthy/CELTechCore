@@ -974,7 +974,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         if (printer != null && project != null)
         {
-            if (project.getLoadedModels().size() == 0)
+            if (project.getTopLevelModels().size() == 0)
             {
                 printButton.disableProperty().unbind();
                 printButton.setDisable(true);
@@ -1062,10 +1062,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
         BooleanBinding notSelectModeOrNoLoadedModels
                 = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
-                        Bindings.isEmpty(project.getLoadedModels()));
+                        Bindings.isEmpty(project.getTopLevelModels()));
         BooleanBinding snapToGround
                 = Bindings.equal(LayoutSubmode.SNAP_TO_GROUND, layoutSubmodeProperty);
-        BooleanBinding noLoadedModels = Bindings.isEmpty(project.getLoadedModels());
+        BooleanBinding noLoadedModels = Bindings.isEmpty(project.getTopLevelModels());
         deleteModelButton.disableProperty().bind(notSelectModeOrNoSelectedModels);
         duplicateModelButton.disableProperty().bind(notSelectModeOrNoSelectedModels);
         distributeModelsButton.setDisable(true);

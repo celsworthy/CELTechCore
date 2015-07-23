@@ -90,11 +90,11 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     @FXML
     void doGroup(ActionEvent event)
     {
-        Set<ModelContainer> modelGroups = currentProject.getLoadedModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
+        Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
                 Collectors.toSet());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
-        Set<ModelContainer> changedModelGroups = currentProject.getLoadedModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
+        Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
                 Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
         Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().deselectAllModels();

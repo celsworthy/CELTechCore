@@ -45,7 +45,7 @@ public class CopyModelsCommand extends Command
     @Override
     public void undo()
     {
-        project.removeModels(modelContainers);
+        project.removeModels(newModelContainers);
     }
 
     @Override

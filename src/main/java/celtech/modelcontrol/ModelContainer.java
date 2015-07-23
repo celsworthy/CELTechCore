@@ -79,12 +79,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * The modelId is only unique at the project level because it is reloaded from saved models.
      */
     protected int modelId;
-    private Stenographer steno = null;
-    private PrintBed printBed = null;
+    private Stenographer steno;
+    private PrintBed printBed;
     private boolean isCollided = false;
-    private BooleanProperty isSelected = null;
-    private BooleanProperty isOffBed = null;
-    private SimpleStringProperty modelName = null;
+    private BooleanProperty isSelected;
+    private BooleanProperty isOffBed;
+    private SimpleStringProperty modelName;
 
     ModelBounds originalModelBounds;
 
@@ -120,8 +120,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private double bedCentreOffsetZ;
 
     /**
-     * The bounds of the object in its parent. For top level objects this is also the bounds
-     * in the bed coordinates. They are kept valid even after translates etc.
+     * The bounds of the object in its parent. For top level objects this is also the bounds in the
+     * bed coordinates. They are kept valid even after translates etc.
      */
     protected ModelBounds lastTransformedBoundsInParent;
     private SelectionHighlighter selectionHighlighter;
@@ -379,7 +379,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * N．B．It only works for top level objects ie．top level groups or ungrouped models.
      */
-    
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
         double newXPosition = xPosition - bedCentreOffsetX
@@ -1235,46 +1234,45 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                                newheight, newdepth, newcentreX, newcentreY,
                                newcentreZ);
     }
-    
-/**
-     * Try to split into parts. If the ModelContainer is composed
-     * of more than one part then make a group of them.
+
+    /**
+     * Try to split into parts. If the ModelContainer is composed of more than one part then make a
+     * group of them.
      */
     public ModelContainer splitIntoParts()
     {
-            Set<ModelContainer> parts = new HashSet<>();
-            ModelContainer.State state = getState();
-            double transformCentreX = getTransformMoveToCentre().getX();
-            double transformCentreZ = getTransformMoveToCentre().getZ();
-            String modelName = getModelName();
+        Set<ModelContainer> parts = new HashSet<>();
+        ModelContainer.State state = getState();
+        double transformCentreX = getTransformMoveToCentre().getX();
+        double transformCentreZ = getTransformMoveToCentre().getZ();
+        String modelName = getModelName();
 
-            ModelContainer modelContainer = this;
-            
-            List<TriangleMesh> subMeshes = MeshSeparator.separate((TriangleMesh) getMeshView().getMesh());
-            if (subMeshes.size() > 1)
+        ModelContainer modelContainer = this;
+
+        List<TriangleMesh> subMeshes = MeshSeparator.separate((TriangleMesh) getMeshView().getMesh());
+        if (subMeshes.size() > 1)
+        {
+            int ix = 1;
+            for (TriangleMesh subMesh : subMeshes)
             {
-                int ix = 1;
-                for (TriangleMesh subMesh : subMeshes)
-                {
-                    MeshView meshView = new MeshView(subMesh);
-                    ModelContainer newModelContainer = new ModelContainer(
-                        getModelFile(), meshView);
-                    newModelContainer.setState(state);
-                    parts.add(newModelContainer);
-                    double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
-                    double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
-                    double deltaX = newTransformCentreX - transformCentreX;
-                    double deltaZ = newTransformCentreZ - transformCentreZ;
-                    newModelContainer.translateBy(-deltaX, -deltaZ);
-                    newModelContainer.setModelName(modelName + " " + ix);
-                    
-                    ix++;
-                }
-                modelContainer = new ModelGroup(parts);
-            } 
+                MeshView meshView = new MeshView(subMesh);
+                ModelContainer newModelContainer = new ModelContainer(
+                    getModelFile(), meshView);
+                newModelContainer.setState(state);
+                parts.add(newModelContainer);
+                double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
+                double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
+                double deltaX = newTransformCentreX - transformCentreX;
+                double deltaZ = newTransformCentreZ - transformCentreZ;
+                newModelContainer.translateBy(-deltaX, -deltaZ);
+                newModelContainer.setModelName(modelName + " " + ix);
+
+                ix++;
+            }
+            modelContainer = new ModelGroup(parts);
+        }
         return modelContainer;
     }
-    
 
     /**
      * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR OF AN APPROACH
@@ -1549,7 +1547,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return totaldepth;
     }
 
-     /**
+    /**
      * Get a relative measure of the total size on the bed but ONLY for top-level models.
      */
     public double getTotalSize()

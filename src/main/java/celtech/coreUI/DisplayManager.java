@@ -738,7 +738,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         SelectedModelContainers selectionModel
             = Lookup.getProjectGUIState(project).getSelectedModelContainers();
-        for (ModelContainer modelContainer : project.getLoadedModels())
+        for (ModelContainer modelContainer : project.getTopLevelModels())
         {
             selectionModel.addModelContainer(modelContainer);
         }

@@ -12,7 +12,6 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
-import celtech.utils.threed.MeshSeparator;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,7 +28,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -45,11 +43,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -82,7 +77,7 @@ public class Project implements Serializable
 
     Set<ProjectChangesListener> projectChangesListeners;
 
-    private ObservableList<ModelContainer> loadedModels;
+    private ObservableList<ModelContainer> topLevelModels;
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament;
     private ObjectProperty<Filament> extruder1Filament;
@@ -126,7 +121,7 @@ public class Project implements Serializable
 
     private void initialise()
     {
-        loadedModels = FXCollections.observableArrayList();
+        topLevelModels = FXCollections.observableArrayList();
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
         modelColourChanged = new SimpleBooleanProperty();
@@ -194,7 +189,7 @@ public class Project implements Serializable
                 projectFileStream));
             Project loadedProject = (Project) reader.readObject();
             reader.close();
-            for (ModelContainer modelContainer : loadedProject.loadedModels)
+            for (ModelContainer modelContainer : loadedProject.topLevelModels)
             {
                 project.addModel(modelContainer);
             }
@@ -319,7 +314,7 @@ public class Project implements Serializable
 
     private void save(String basePath)
     {
-        if (loadedModels.size() > 0)
+        if (topLevelModels.size() > 0)
         {
             try
             {
@@ -370,7 +365,7 @@ public class Project implements Serializable
     public Set<Integer> getUsedExtruders()
     {
         Set<Integer> usedExtruders = new HashSet<>();
-        for (ModelContainer loadedModel : loadedModels)
+        for (ModelContainer loadedModel : topLevelModels)
         {
             getUsedExtruders(loadedModel, usedExtruders);
         }
@@ -396,10 +391,31 @@ public class Project implements Serializable
         }
     }
 
-    public ObservableList<ModelContainer> getLoadedModels()
+    /**
+     * Return all top-level groups and model containers.
+     */
+    public ObservableList<ModelContainer> getTopLevelModels()
     {
-        return loadedModels;
+        return topLevelModels;
     }
+    
+    /**
+     * Return all ModelGroups and ModelContainers within the project.
+     */
+    public Set<ModelContainer> getAllModels()
+    {
+        Set<ModelContainer> allModelContainers = new HashSet<>();
+        for (ModelContainer loadedModel : topLevelModels)
+        {
+            allModelContainers.add(loadedModel);
+            for (ModelContainer container : loadedModel.getChildModelContainers())
+            {
+                allModelContainers.add(container);
+            }
+        }
+        return allModelContainers;
+    }
+    
 
     @Override
     public String toString()
@@ -504,7 +520,7 @@ public class Project implements Serializable
 
     public void addModel(ModelContainer modelContainer)
     {
-        loadedModels.add(modelContainer);
+        topLevelModels.add(modelContainer);
         projectModified();
         fireWhenModelAdded(modelContainer);
         addModelListeners(modelContainer);
@@ -533,7 +549,7 @@ public class Project implements Serializable
 
     public void removeModels(Set<ModelContainer> modelContainers)
     {
-        loadedModels.removeAll(modelContainers);
+        topLevelModels.removeAll(modelContainers);
         for (ModelContainer modelContainer : modelContainers)
         {
                 removeModelListeners(modelContainer);
@@ -651,7 +667,7 @@ public class Project implements Serializable
     private Set<ModelContainer> getModelsHoldingMeshViews()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
-        for (ModelContainer model : loadedModels)
+        for (ModelContainer model : topLevelModels)
         {
             modelsHoldingMeshViews.addAll(model.getModelsHoldingMeshViews());
         }
@@ -661,7 +677,7 @@ public class Project implements Serializable
     private Set<ModelContainer> getModelsHoldingModels()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
-        for (ModelContainer model : loadedModels)
+        for (ModelContainer model : topLevelModels)
         {
             modelsHoldingMeshViews.addAll(model.getModelsHoldingModels());
         }
@@ -744,7 +760,7 @@ public class Project implements Serializable
         for (int modelId : modelIds)
         {
             boolean modelFound = false;
-            for (ModelContainer modelContainer : loadedModels)
+            for (ModelContainer modelContainer : topLevelModels)
             {
                 if (modelContainer.getModelId() == modelId)
                 {
@@ -783,7 +799,7 @@ public class Project implements Serializable
 
     private Optional<ModelContainer> getModelContainerOfModelId(int modelId)
     {
-        for (ModelContainer modelContainer : loadedModels)
+        for (ModelContainer modelContainer : topLevelModels)
         {
             if (modelContainer.getModelId() == modelId)
             {
@@ -846,11 +862,11 @@ public class Project implements Serializable
 
     public void autoLayout()
     {
-        Collections.sort(loadedModels);
+        Collections.sort(topLevelModels);
         PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
                                               (int) PrintBed.maxPrintableZSize);
 
-        thing.reference(loadedModels, 10);
+        thing.reference(topLevelModels, 10);
         thing.pack();
         thing.relocateBlocks();
 
@@ -1094,7 +1110,7 @@ public class Project implements Serializable
     public Set<ModelContainer.State> getModelStates()
     {
         Set<ModelContainer.State> modelStates = new HashSet<>();
-        for (ModelContainer model : loadedModels)
+        for (ModelContainer model : topLevelModels)
         {
             modelStates.add(model.getState());
         }
@@ -1106,7 +1122,7 @@ public class Project implements Serializable
         Set<ModelContainer> modelContainers = new HashSet<>();
         for (ModelContainer.State modelState : modelStates)
         {
-            for (ModelContainer model : loadedModels)
+            for (ModelContainer model : topLevelModels)
             {
                 if (model.getModelId() == modelState.modelId)
                 {

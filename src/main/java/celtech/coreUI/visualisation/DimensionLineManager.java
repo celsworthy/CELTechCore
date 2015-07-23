@@ -17,14 +17,10 @@ import javafx.scene.layout.Pane;
 public class DimensionLineManager
 {
 
-    private final Pane paneToAddDimensionsTo;
-    private final Project associatedProject;
     private final Map<ModelContainer, List<DimensionLine>> dimensionLines = new HashMap<>();
 
     public DimensionLineManager(Pane paneToAddDimensionsTo, Project project)
     {
-        this.paneToAddDimensionsTo = paneToAddDimensionsTo;
-        this.associatedProject = project;
 
         Lookup.getProjectGUIState(project).getSelectedModelContainers().addListener(
             new SelectedModelContainers.SelectedModelContainersListener()

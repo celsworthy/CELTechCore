@@ -2751,3 +2751,7 @@ color-picker-label .text-field {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 14px;
 }
+
+.modelOutsideIsolation {
+    
+}

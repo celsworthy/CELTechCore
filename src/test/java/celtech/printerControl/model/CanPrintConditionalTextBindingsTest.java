@@ -139,7 +139,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        project.getLoadedModels().get(0).setUseExtruder0(false);
+        project.getTopLevelModels().get(0).setUseExtruder0(false);
         BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
@@ -160,7 +160,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        project.getLoadedModels().get(0).setUseExtruder0(false);
+        project.getTopLevelModels().get(0).setUseExtruder0(false);
         BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();

@@ -71,7 +71,7 @@ public class NozzleAssignmentUtilities
         }
 
         objectToNozzleNumberMap = new ArrayList<>();
-        for (ModelContainer model : project.getLoadedModels())
+        for (ModelContainer model : project.getTopLevelModels())
         {
             for (MeshView meshView : model.descendentMeshViews())
             {

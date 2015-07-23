@@ -139,7 +139,7 @@ public class ProjectTest extends JavaFXConfiguredTest
 
         Pair<Project, ModelGroup> pair = makeProject();
         Project project = pair.getKey();
-        Set<Integer> expectedIds = project.getLoadedModels().stream().map(
+        Set<Integer> expectedIds = project.getTopLevelModels().stream().map(
             x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
 
         ProjectFile projectFile = new ProjectFile();
@@ -150,10 +150,10 @@ public class ProjectTest extends JavaFXConfiguredTest
         Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
             + File.separator + project.getProjectName());
 
-        Assert.assertEquals(2, newProject.getLoadedModels().size());
+        Assert.assertEquals(2, newProject.getTopLevelModels().size());
 
         Assert.assertEquals(expectedIds,
-                            newProject.getLoadedModels().stream().map(x -> x.getModelId()).collect(
+                            newProject.getTopLevelModels().stream().map(x -> x.getModelId()).collect(
                                 Collectors.toSet()));
     }
 
@@ -175,18 +175,18 @@ public class ProjectTest extends JavaFXConfiguredTest
         Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
             + File.separator + project.getProjectName());
 
-        Assert.assertEquals(1, newProject.getLoadedModels().size());
+        Assert.assertEquals(1, newProject.getTopLevelModels().size());
 
-        Set<ModelContainer> modelContainers = new HashSet<>(newProject.getLoadedModels());
+        Set<ModelContainer> modelContainers = new HashSet<>(newProject.getTopLevelModels());
         newProject.ungroup(modelContainers);
 
-        Assert.assertEquals(3, newProject.getLoadedModels().size());
+        Assert.assertEquals(3, newProject.getTopLevelModels().size());
 
         Assert.assertEquals(expectedIds,
-                            newProject.getLoadedModels().stream().map(x -> x.getModelId()).collect(
+                            newProject.getTopLevelModels().stream().map(x -> x.getModelId()).collect(
                                 Collectors.toSet()));
 
-        Set<ModelGroup> modelGroups = newProject.getLoadedModels().stream().
+        Set<ModelGroup> modelGroups = newProject.getTopLevelModels().stream().
             filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
 
         Assert.assertEquals(1, modelGroups.size());
@@ -214,7 +214,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
             + File.separator + project.getProjectName());
         
-        Set<ModelGroup> modelGroups = newProject.getLoadedModels().stream().
+        Set<ModelGroup> modelGroups = newProject.getTopLevelModels().stream().
             filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
         
         Assert.assertEquals(1, modelGroups.size());

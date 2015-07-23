@@ -49,14 +49,14 @@ public class AMFOutputConverter implements MeshFileOutputConverter
         streamWriter.writeStartElement("mesh");
         int vertexOffset = 0;
         streamWriter.writeStartElement("vertices");
-        for (ModelContainer modelContainer : project.getLoadedModels())
+        for (ModelContainer modelContainer : project.getTopLevelModels())
         {
             vertexOffsetForModels.put(modelContainer, vertexOffset);
             int numVerticesWritten = outputVertices(modelContainer, streamWriter);
             vertexOffset += numVerticesWritten;
         }
         streamWriter.writeEndElement();
-        for (ModelContainer modelContainer : project.getLoadedModels())
+        for (ModelContainer modelContainer : project.getTopLevelModels())
         {
             outputVolume(modelContainer, vertexOffsetForModels.get(modelContainer), streamWriter);
         }

@@ -51,7 +51,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private int extruderNumber;
     private Mode mode;
     private boolean selected;
-    private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private final static String UNKNOWN = Lookup.i18n("materialComponent.unknown");
     private final ObjectProperty<Filament> selectedFilamentProperty = new SimpleObjectProperty<>();
     private UndoableProject undoableProject;
@@ -733,15 +732,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * Visually indicate that this component is selected.
-     */
-    public void select(boolean selected)
-    {
-        this.selected = selected;
-        anchorPane.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, selected);
-    }
-
-    /**
      * In SETTINGS mode, when a reel is removed then re-add the Unknown option.
      */
     private void readdUnknownToCombo()
@@ -794,17 +784,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (printer != null && printer.extrudersProperty().get(extruderNumber) != null)
         {
             printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().addListener(
-                new ChangeListener<Boolean>()
-                {
-
-                    @Override
-                    public void changed(
-                        ObservableValue<? extends Boolean> observable, Boolean oldValue,
-                        Boolean newValue)
-                    {
-                        updateGUIForModeAndPrinterExtruder();
-                        }
-                });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                updateGUIForModeAndPrinterExtruder();
+            });
         }
     }
 

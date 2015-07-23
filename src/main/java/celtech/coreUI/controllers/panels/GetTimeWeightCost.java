@@ -219,7 +219,7 @@ public class GetTimeWeightCost
                 slicerTypeToUse);
 
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
         configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
                 (float) (centreOfPrintedObject.getZ()));
         configWriter.generateConfigForSlicer(settings,

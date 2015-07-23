@@ -916,7 +916,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private void unbindProject(Project project)
     {
-        layoutSubmode.removeListener(layoutSubmodeListener);
         selectionModel.removeListener(tableViewSelectionListener);
         numSelectedModels.unbind();
     }
@@ -944,10 +943,9 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
-        modelDataTableView.setItems(project.getLoadedModels());
+        modelDataTableView.setItems(project.getTopLevelModels());
         resetTableViewSelection(selectionModel);
         selectionModel.addListener(tableViewSelectionListener);
-        layoutSubmode.addListener(layoutSubmodeListener);
 
         SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
             = selectionModel.getPrimarySelectedModelDetails();
@@ -1025,45 +1023,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         materialComponent0 = new MaterialComponent(MaterialComponent.Mode.LAYOUT, null, 0);
         materialComponent1 = new MaterialComponent(MaterialComponent.Mode.LAYOUT, null, 1);
         materialContainer.getChildren().addAll(materialComponent0, materialComponent1);
-
-        materialComponent0.setOnMouseClicked((MouseEvent event) ->
-        {
-            selectMaterialComponent(materialComponent0);
-        });
-
-        materialComponent1.setOnMouseClicked((MouseEvent event) ->
-        {
-            selectMaterialComponent(materialComponent1);
-        });
     }
-
-    private void selectMaterialComponent(MaterialComponent materialComponent)
-    {
-        materialComponent.select(true);
-        selectedMaterialComponent = materialComponent;
-        if (materialComponent == materialComponent0)
-        {
-            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER0);
-        } else
-        {
-            layoutSubmode.set(LayoutSubmode.ASSOCIATE_WITH_EXTRUDER1);
-        }
-    }
-
-    private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
-    {
-        materialComponent0.select(false);
-        materialComponent1.select(false);
-        switch (layoutSubmode.get())
-        {
-            case ASSOCIATE_WITH_EXTRUDER0:
-                selectMaterialComponent(materialComponent0);
-                break;
-            case ASSOCIATE_WITH_EXTRUDER1:
-                selectMaterialComponent(materialComponent1);
-                break;
-        }
-
-    };
 
 }

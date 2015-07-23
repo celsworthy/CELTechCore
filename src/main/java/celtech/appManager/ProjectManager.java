@@ -126,7 +126,7 @@ public class ProjectManager implements Savable, Serializable
             out.writeInt(openProjects.size());
             for (Project project : openProjects)
             {
-                if (project.getLoadedModels().size() > 0)
+                if (project.getTopLevelModels().size() > 0)
                 {
                     out.writeUTF(project.getAbsolutePath());
                 }

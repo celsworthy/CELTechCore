@@ -140,7 +140,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
                 macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
                 linuxSlicerCommand = "Slic3r/bin/slic3r";
-                Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+                Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
                 configLoadCommand += "--print-center "
                         + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
                         + ","

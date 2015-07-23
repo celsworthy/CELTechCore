@@ -663,7 +663,7 @@ public class PrintEngine implements ControllableService
         }
         // End of hack
 
-        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
         configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
                 (float) (centreOfPrintedObject.getZ()));
         configWriter.generateConfigForSlicer(settingsToUse,
