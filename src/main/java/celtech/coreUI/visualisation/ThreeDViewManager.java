@@ -97,7 +97,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private ReadOnlyDoubleProperty widthPropertyToFollow;
     private ReadOnlyDoubleProperty heightPropertyToFollow;
-    private Set<ModelContainer> excludedFromSelection = new HashSet<>();
+    private final Set<ModelContainer> excludedFromSelection = new HashSet<>();
 
     /*
      * ALT stuff
@@ -259,7 +259,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             Set<MeshView> selectedMeshViews
                 = selectedModelContainers.stream().
                 map(mc -> mc.descendentMeshViews()).
-                reduce(new HashSet<MeshView>(), (a, b) ->
+                reduce(new HashSet<>(), (a, b) ->
                        {
                            a.addAll(b);
                            return a;
@@ -270,7 +270,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                 System.out.println("B");
                 isolateForSelectedMeshView((MeshView) intersectedNode);
             }
-
         }
     }
 
@@ -301,24 +300,29 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         if (handleThisEvent)
         {
-            ModelContainer modelContainer = null;
             if (intersectedNode instanceof MeshView)
             {
-                modelContainer = ModelContainer.getRootModelContainer((MeshView) intersectedNode);
                 if (excludedFromSelection.contains((ModelContainer) intersectedNode.getParent()))
                 {
                     return;
                 }
-            }
 
-            switch (layoutSubmode.get())
+                ModelContainer rootModelContainer = 
+                    ModelContainer.getRootModelContainer((MeshView) intersectedNode);
+                switch (layoutSubmode.get())
+                {
+                    case SNAP_TO_GROUND:
+                        doSnapToGround(rootModelContainer, (MeshView) intersectedNode, pickResult);
+                        break;
+                    case SELECT:
+                        doSelectTranslateModel(intersectedNode, pickedPoint, event);
+                        break;
+                }
+            } else
             {
-                case SNAP_TO_GROUND:
-                    doSnapToGround(modelContainer, (MeshView) intersectedNode, pickResult);
-                    break;
-                case SELECT:
-                    doSelectTranslateModel(intersectedNode, pickedPoint, event);
-                    break;
+                selectedModelContainers.deselectAllModels();
+                excludedFromSelection.clear();
+                updateModelColoursForPositionModeAndTargetPrinter();
             }
         }
     }
@@ -342,36 +346,32 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         setDragMode(DragMode.TRANSLATING);
         justEnteredDragMode = true;
 
-        if (intersectedNode instanceof MeshView)
+        Parent parent = intersectedNode.getParent();
+        if (!(parent instanceof ModelContainer))
         {
-            Parent parent = intersectedNode.getParent();
-            if (!(parent instanceof ModelContainer))
-            {
-                parent = parent.getParent();
-            }
+            parent = parent.getParent();
+        }
 
-            ModelContainer pickedModel = (ModelContainer) parent;
-            // get top-level ModelContainer (could be grouped)
-            while (pickedModel.getParentModelContainer() instanceof ModelContainer)
-            {
-                pickedModel = (ModelContainer) pickedModel.getParentModelContainer();
-            }
-
-            if (pickedModel.isSelected() == false)
-            {
-                boolean multiSelect = event.isShortcutDown();
-                selectModel(pickedModel, multiSelect);
-            } else
-            {
-                boolean multiSelect = event.isShortcutDown();
-                if (multiSelect)
-                {
-                    deselectModel(pickedModel);
-                }
-            }
-        } else if (true) //intersectedNode == subScene)
+        ModelContainer pickedModel = (ModelContainer) parent;
+        // get top-level ModelContainer (could be grouped) that is not excluded from
+        // selection
+        while (pickedModel.getParentModelContainer() instanceof ModelContainer
+            && !excludedFromSelection.contains(pickedModel.getParentModelContainer()))
         {
-            selectedModelContainers.deselectAllModels();
+            pickedModel = (ModelContainer) pickedModel.getParentModelContainer();
+        }
+
+        if (pickedModel.isSelected() == false)
+        {
+            boolean multiSelect = event.isShortcutDown();
+            selectModel(pickedModel, multiSelect);
+        } else
+        {
+            boolean multiSelect = event.isShortcutDown();
+            if (multiSelect)
+            {
+                deselectModel(pickedModel);
+            }
         }
     }
 
@@ -385,9 +385,26 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
+    
+    /**
+     * If any of the current selection are a child of a group then return true.
+     */
+    private boolean selectionHasChildOfGroup() {
+        for (ModelContainer modelContainer : selectedModelContainers.getSelectedModelsSnapshot())
+        {
+            if (modelContainer.getParentModelContainer() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void handleMouseDragEvent(MouseEvent event)
     {
+        
+        if (selectionHasChildOfGroup()) {
+            return;
+        }
 
         mouseOldX = mousePosX;
         mouseOldY = mousePosY;

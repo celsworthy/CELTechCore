@@ -66,6 +66,10 @@ public class ModelGroup extends ModelContainer
     {
         return Collections.unmodifiableSet(childModelContainers);
     }
+    
+    public void removeModel(ModelContainer modelContainer) {
+        childModelContainers.remove(modelContainer);
+    }
 
     @Override
     protected void initialiseTransforms()

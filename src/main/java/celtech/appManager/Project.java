@@ -398,7 +398,7 @@ public class Project implements Serializable
     {
         return topLevelModels;
     }
-    
+
     /**
      * Return all ModelGroups and ModelContainers within the project.
      */
@@ -415,7 +415,6 @@ public class Project implements Serializable
         }
         return allModelContainers;
     }
-    
 
     @Override
     public String toString()
@@ -550,13 +549,23 @@ public class Project implements Serializable
     public void removeModels(Set<ModelContainer> modelContainers)
     {
         topLevelModels.removeAll(modelContainers);
+//        for (ModelContainer modelContainer : modelContainers)
+//        {
+//            for (ModelContainer model : getAllModels())
+//            {
+//                if (model.getChildModelContainers().contains(modelContainer))
+//                {
+//                    ((ModelGroup) model).removeModel(modelContainer);
+//                }
+//            }
+//        }
         for (ModelContainer modelContainer : modelContainers)
         {
-                removeModelListeners(modelContainer);
-                for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
-                {
-                    removeModelListeners(childModelContainer);
-                }
+            removeModelListeners(modelContainer);
+            for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
+            {
+                removeModelListeners(childModelContainer);
+            }
         }
         projectModified();
         fireWhenModelsRemoved(modelContainers);

@@ -155,6 +155,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         associateWithExtruderNumber.set(extruderAssociation);
     }
 
+    /**
+     * Return the parent ModelGroup else return null.
+     */
     public ModelContainer getParentModelContainer()
     {
         if (getParent() instanceof ModelContainer)
