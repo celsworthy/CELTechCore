@@ -178,11 +178,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void notifyModelsOfCameraViewChange()
     {
-        for (Node node : models.getChildren())
+        for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
-            //Relying on only models being here...
-            ModelContainer model = (ModelContainer) node;
-            model.cameraViewOfYouHasChanged();
+            modelContainer.cameraViewOfYouHasChanged();
         }
     }
 
