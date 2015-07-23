@@ -10,6 +10,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import java.util.HashSet;
 import java.util.Set;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -31,6 +32,10 @@ public class SelectedModelContainers implements ProjectChangesListener
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
     private final IntegerProperty numGroupsSelected = new SimpleIntegerProperty(0);
     private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
+    /**
+     * If any of the current selection are a child of a group then return true.
+     */
+    private final BooleanBinding selectionHasChildOfGroup;
 
     public SelectedModelContainers(Project project)
     {
@@ -38,6 +43,32 @@ public class SelectedModelContainers implements ProjectChangesListener
         primarySelectedModelDetails = new PrimarySelectedModelDetails();
         selectedModelContainersListeners = new HashSet<>();
         project.addProjectChangesListener(this);
+
+        selectionHasChildOfGroup = new BooleanBinding()
+        {
+            {
+                super.bind(modelContainers);
+            }
+
+            @Override
+            protected boolean computeValue()
+            {
+                for (ModelContainer modelContainer : modelContainers)
+                {
+                    if (modelContainer.getParentModelContainer() != null)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+        };
+    }
+
+    public BooleanBinding getSelectionHasChildOfGroup()
+    {
+        return selectionHasChildOfGroup;
     }
 
     /**
@@ -55,7 +86,8 @@ public class SelectedModelContainers implements ProjectChangesListener
                 selectedModelContainersListener.whenAdded(modelContainer);
             }
             numModelsSelected.set(numModelsSelected.get() + 1);
-            if (modelContainer instanceof ModelGroup) {
+            if (modelContainer instanceof ModelGroup)
+            {
                 numGroupsSelected.set(numGroupsSelected.get() + 1);
             }
         }
@@ -70,7 +102,8 @@ public class SelectedModelContainers implements ProjectChangesListener
         {
             modelContainers.remove(modelContainer);
             numModelsSelected.set(numModelsSelected.get() - 1);
-            if (modelContainer instanceof ModelGroup) {
+            if (modelContainer instanceof ModelGroup)
+            {
                 numGroupsSelected.set(numGroupsSelected.get() - 1);
             }
             modelContainer.setSelected(false);
@@ -120,14 +153,14 @@ public class SelectedModelContainers implements ProjectChangesListener
     {
         return numModelsSelected;
     }
-    
+
     /**
      * Return the number of selected ModelGroups as an observable number.
      */
     public ReadOnlyIntegerProperty getNumGroupsSelectedProperty()
     {
         return numGroupsSelected;
-    }    
+    }
 
     /**
      * Return the details of the primary selected ModelContainer.

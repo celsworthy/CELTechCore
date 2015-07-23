@@ -11,6 +11,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
@@ -97,7 +98,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private ReadOnlyDoubleProperty widthPropertyToFollow;
     private ReadOnlyDoubleProperty heightPropertyToFollow;
-    private final Set<ModelContainer> excludedFromSelection = new HashSet<>();
+    private final Set<ModelContainer> excludedFromSelection;
 
     /*
      * ALT stuff
@@ -144,6 +145,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final UndoableProject undoableProject;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     private boolean justEnteredDragMode;
+    private final ProjectGUIRules projectGUIRules;
 
     private void rotateCameraAroundAxes(double xangle, double yangle)
     {
@@ -386,26 +388,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
     
-    /**
-     * If any of the current selection are a child of a group then return true.
-     */
-    private boolean selectionHasChildOfGroup() {
-        for (ModelContainer modelContainer : selectedModelContainers.getSelectedModelsSnapshot())
-        {
-            if (modelContainer.getParentModelContainer() != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void handleMouseDragEvent(MouseEvent event)
     {
         
-        if (selectionHasChildOfGroup()) {
+        if (projectGUIRules.canTranslateRotateOrScaleSelection().not().get()) {
             return;
         }
-
+        
         mouseOldX = mousePosX;
         mouseOldY = mousePosY;
         mousePosX = event.getSceneX();
@@ -542,6 +531,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         loadedModels = project.getTopLevelModels();
         selectedModelContainers = Lookup.getProjectGUIState(project).getSelectedModelContainers();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
+        excludedFromSelection = Lookup.getProjectGUIState(project).getExcludedFromSelection();
+        projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
 
         widthPropertyToFollow = widthProperty;
         heightPropertyToFollow = heightProperty;

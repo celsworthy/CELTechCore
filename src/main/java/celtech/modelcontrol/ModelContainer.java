@@ -76,7 +76,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
     /**
-     * The modelId is only unique at the project level because it is reloaded from saved models.
+     * The modelId is only guaranteed unique at the project level 
+     * because it could be reloaded with duplicate values from saved models into other projects.
      */
     protected int modelId;
     private Stenographer steno;

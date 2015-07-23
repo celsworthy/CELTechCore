@@ -51,7 +51,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     public interface NoArgsVoidFunc
     {
-
         void run() throws Exception;
     }
 
@@ -166,9 +165,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     /**
      * Initialises the controller class.
-     *
-     * @param url
-     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -880,11 +876,13 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     }
 
     /**
-     * This updates size and scale fields to be editable or not according to whether we are in a
+     * This updates location, size and scale fields to be editable or not according to whether we are in a
      * multi-selection or not.
      */
     private void setFieldsEditable()
     {
+        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
         depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
@@ -974,10 +972,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             boundProject.getExtruder1FilamentProperty().get());
     }
 
-    /**
-     *
-     * @param slideOutController
-     */
     @Override
     public void configure(Initializable slideOutController)
     {
