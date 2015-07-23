@@ -878,7 +878,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     /**
      * This updates location, size and scale fields to be editable or not according to whether we are in a
-     * multi-selection or not.
+     * multi-selection or not or child of a group.
      */
     private void setFieldsEditable()
     {

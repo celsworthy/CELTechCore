@@ -408,10 +408,7 @@ public class Project implements Serializable
         for (ModelContainer loadedModel : topLevelModels)
         {
             allModelContainers.add(loadedModel);
-            for (ModelContainer container : loadedModel.getChildModelContainers())
-            {
-                allModelContainers.add(container);
-            }
+            allModelContainers.addAll(loadedModel.getDescendentModelContainers());
         }
         return allModelContainers;
     }
@@ -549,16 +546,7 @@ public class Project implements Serializable
     public void removeModels(Set<ModelContainer> modelContainers)
     {
         topLevelModels.removeAll(modelContainers);
-//        for (ModelContainer modelContainer : modelContainers)
-//        {
-//            for (ModelContainer model : getAllModels())
-//            {
-//                if (model.getChildModelContainers().contains(modelContainer))
-//                {
-//                    ((ModelGroup) model).removeModel(modelContainer);
-//                }
-//            }
-//        }
+
         for (ModelContainer modelContainer : modelContainers)
         {
             removeModelListeners(modelContainer);

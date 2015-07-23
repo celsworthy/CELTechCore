@@ -33,7 +33,7 @@ public class SelectedModelContainers implements ProjectChangesListener
     private final IntegerProperty numGroupsSelected = new SimpleIntegerProperty(0);
     private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
     /**
-     * If any of the current selection are a child of a group then return true.
+     * If any of the current selection are a child of a group then value is true.
      */
     private final BooleanBinding selectionHasChildOfGroup;
 
@@ -57,11 +57,9 @@ public class SelectedModelContainers implements ProjectChangesListener
                 {
                     if (modelContainer.getParentModelContainer() != null)
                     {
-                        System.out.println("XXX TRUE");
                         return true;
                     }
                 }
-                System.out.println("XXX FALSE");
                 return false;
             }
 

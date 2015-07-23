@@ -254,8 +254,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             {
                 return;
             }
-            // if clicked mc is within a selected group then isolate the group below the selected
-            // group that contains selected mc.
+            // if clicked mc is within a selected group then isolate the objects below the selected
+            // group.
             Set<ModelContainer> selectedModelContainers
                 = Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
             Set<MeshView> selectedMeshViews
@@ -266,10 +266,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                            a.addAll(b);
                            return a;
                 });
-            System.out.println("selected mcs is " + selectedMeshViews);
             if (selectedMeshViews.contains((MeshView) intersectedNode))
             {
-                System.out.println("B");
                 isolateForSelectedMeshView((MeshView) intersectedNode);
             }
         }
@@ -391,7 +389,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private void handleMouseDragEvent(MouseEvent event)
     {
         
-        if (projectGUIRules.canTranslateRotateOrScaleSelection().not().get()) {
+        if (event.isPrimaryButtonDown() && projectGUIRules.canTranslateRotateOrScaleSelection().not().get()) {
             return;
         }
         
@@ -922,8 +920,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     /**
-     * Isolate the group contents for the group under the currently selected group that contains the
-     * selected MeshView.
+     * Isolate the group contents for the selected group that contains the selected MeshView.
      */
     private void isolateForSelectedMeshView(MeshView meshView)
     {
@@ -933,7 +930,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             System.out.println("C " + ancestorSelectedGroup + " "
                 + ancestorSelectedGroup.getChildModelContainers());
             // isolate children of ancestor group
-            isolateModelContainer(ancestorSelectedGroup);
+            isolateGroupChildren(ancestorSelectedGroup);
             //get group/container under ancestor group that contains meshview
             //then select that group
             selectedModelContainers.deselectAllModels();
@@ -960,21 +957,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     /**
      * Isolate the given ModelGroup/Container. De-isolate all other modelgroups/containers.
      */
-    private void isolateModelContainer(ModelContainer modelGroupOrContainer)
+    private void isolateGroupChildren(ModelGroup modelGroup)
     {
         for (ModelContainer modelContainer : project.getAllModels())
         {
             excludedFromSelection.add(modelContainer);
         }
-        Set<MeshView> meshViews = modelGroupOrContainer.descendentMeshViews();
-        Set<ModelContainer> isolatedModelContainers = new HashSet<>();
-        for (MeshView meshView : meshViews)
+        
+        for (ModelContainer modelContainer : modelGroup.getChildModelContainers())
         {
-            isolatedModelContainers.add((ModelContainer) meshView.getParent());
-        }
-        for (ModelContainer modelContainer : isolatedModelContainers)
-        {
+            System.out.println("remove from exclusion: " + modelContainer);
             excludedFromSelection.remove(modelContainer);
+            for (ModelContainer modelContainer1 : modelContainer.getDescendentModelContainers())
+            {
+                excludedFromSelection.remove(modelContainer1);
+            }
         }
 
         updateModelColoursForPositionModeAndTargetPrinter();
@@ -982,18 +979,17 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     }
 
     /**
-     * Get the ancestor group that is selected. If no ancestor is selected then return null.
+     * Get the first ancestor group that is selected. If no ancestor is selected then return null.
      */
     private ModelGroup getAncestorSelectedGroup(MeshView meshView)
     {
-        Set<ModelContainer> selectedModelGroups
-            = Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot().
-            stream().filter(mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
-        for (ModelContainer selectedModelGroup : selectedModelGroups)
-        {
-            if (selectedModelGroup.descendentMeshViews().contains(meshView))
-            {
-                return (ModelGroup) selectedModelGroup;
+        ModelContainer parentModelContainer = (ModelContainer) meshView.getParent();
+        if (parentModelContainer != null) {
+            while(parentModelContainer.getParentModelContainer() != null) {
+                parentModelContainer = parentModelContainer.getParentModelContainer();
+                if (selectedModelContainers.isSelected(parentModelContainer)) {
+                    return (ModelGroup) parentModelContainer;
+                }
             }
         }
         return null;

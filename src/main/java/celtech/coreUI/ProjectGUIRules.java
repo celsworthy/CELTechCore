@@ -5,23 +5,22 @@ package celtech.coreUI;
 
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
-import java.util.Set;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableSet;
 
 /**
- * ProjectGUIRules indicates if the project selection can be translated, removed, scaled etc.
+ * ProjectGUIRules indicates eg if the project selection can be translated, removed, scaled etc.
  */
 public class ProjectGUIRules
 {
 
-    private final Set<ModelContainer> excludedFromSelection;
-    
-   private final SelectedModelContainers selectedModelContainers;
+    private final ObservableSet<ModelContainer> excludedFromSelection;
+
+    private final SelectedModelContainers selectedModelContainers;
 
     public ProjectGUIRules(SelectedModelContainers selectedModelContainers,
-        Set<ModelContainer> excludedFromSelection)
+        ObservableSet<ModelContainer> excludedFromSelection)
     {
         this.selectedModelContainers = selectedModelContainers;
         this.excludedFromSelection = excludedFromSelection;
@@ -29,8 +28,22 @@ public class ProjectGUIRules
 
     public BooleanBinding canTranslateRotateOrScaleSelection()
     {
-       return selectedModelContainers.getSelectionHasChildOfGroup().not();
+        return selectedModelContainers.getSelectionHasChildOfGroup().not();
     }
 
+    public BooleanBinding canSnapToGroundSelection()
+    {
+        return selectedModelContainers.getSelectionHasChildOfGroup().not();
+    }
+
+    public BooleanBinding canRemoveOrDuplicateSelection()
+    {
+        return Bindings.isEmpty(excludedFromSelection);
+    }
+
+    public BooleanBinding canAddModel()
+    {
+        return Bindings.isEmpty(excludedFromSelection);
+    }
 
 }

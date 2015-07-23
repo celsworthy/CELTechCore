@@ -1800,6 +1800,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return Collections.EMPTY_SET;
     }
+    
+    public Set<ModelContainer> getDescendentModelContainers()
+    {
+        return Collections.EMPTY_SET;
+    }     
 
     /**
      * State captures the state of all the transforms being applied to this ModelContainer. It is

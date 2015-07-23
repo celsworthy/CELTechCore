@@ -7,10 +7,10 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.CommandStack;
 import celtech.coreUI.visualisation.SelectedModelContainers;
 import celtech.modelcontrol.ModelContainer;
-import java.util.HashSet;
-import java.util.Set;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
 
 /**
  * The ProjectGUIState class contains GUI information for a project such as the selected models. It
@@ -24,7 +24,7 @@ public class ProjectGUIState
     
     private final CommandStack commandStack;
     
-    private final Set<ModelContainer> excludedFromSelection = new HashSet<>();
+    private final ObservableSet<ModelContainer> excludedFromSelection = FXCollections.observableSet();
     
     private final ProjectGUIRules projectGUIRules;
 
@@ -45,7 +45,7 @@ public class ProjectGUIState
         return projectGUIRules;
     }
     
-    public Set<ModelContainer> getExcludedFromSelection() {
+    public ObservableSet<ModelContainer> getExcludedFromSelection() {
         return excludedFromSelection;
     }
     

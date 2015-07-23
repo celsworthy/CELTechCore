@@ -61,11 +61,26 @@ public class ModelGroup extends ModelContainer
         transformMoveToCentre.setZ(0);
     }
 
+    /**
+     * Return the immediate children of this group.
+     */
     @Override
     public Set<ModelContainer> getChildModelContainers()
     {
         return Collections.unmodifiableSet(childModelContainers);
     }
+    
+    @Override
+    public Set<ModelContainer> getDescendentModelContainers()
+    {
+        Set<ModelContainer> modelContainers = new HashSet<>(childModelContainers);
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            modelContainers.addAll(modelContainer.getDescendentModelContainers());
+        }
+    
+        return modelContainers;
+    }    
     
     public void removeModel(ModelContainer modelContainer) {
         childModelContainers.remove(modelContainer);
