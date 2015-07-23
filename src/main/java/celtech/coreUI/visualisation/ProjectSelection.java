@@ -20,11 +20,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
 /**
- * SelectedModelContainers captures all required state about the currently selected ModelContainers.
+ * ProjectSelection captures all required state about the currently selected ModelContainers.
  *
  * @author tony
  */
-public class SelectedModelContainers implements ProjectChangesListener
+public class ProjectSelection implements ProjectChangesListener
 {
 
     private final ObservableSet<ModelContainer> modelContainers;
@@ -37,7 +37,7 @@ public class SelectedModelContainers implements ProjectChangesListener
      */
     private final BooleanBinding selectionHasChildOfGroup;
 
-    public SelectedModelContainers(Project project)
+    public ProjectSelection(Project project)
     {
         modelContainers = FXCollections.observableSet();
         primarySelectedModelDetails = new PrimarySelectedModelDetails();

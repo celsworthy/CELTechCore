@@ -3,7 +3,7 @@
  */
 package celtech.coreUI;
 
-import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -17,23 +17,23 @@ public class ProjectGUIRules
 
     private final ObservableSet<ModelContainer> excludedFromSelection;
 
-    private final SelectedModelContainers selectedModelContainers;
+    private final ProjectSelection projectSelection;
 
-    public ProjectGUIRules(SelectedModelContainers selectedModelContainers,
+    public ProjectGUIRules(ProjectSelection projectSelection,
         ObservableSet<ModelContainer> excludedFromSelection)
     {
-        this.selectedModelContainers = selectedModelContainers;
+        this.projectSelection = projectSelection;
         this.excludedFromSelection = excludedFromSelection;
     }
 
     public BooleanBinding canTranslateRotateOrScaleSelection()
     {
-        return selectedModelContainers.getSelectionHasChildOfGroup().not();
+        return projectSelection.getSelectionHasChildOfGroup().not();
     }
 
     public BooleanBinding canSnapToGroundSelection()
     {
-        return selectedModelContainers.getSelectionHasChildOfGroup().not();
+        return projectSelection.getSelectionHasChildOfGroup().not();
     }
 
     public BooleanBinding canRemoveOrDuplicateSelection()

@@ -76,8 +76,8 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         currentProject = project;
         undoableProject = new UndoableProject(project);
 
-        ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumModelsSelectedProperty();
-        ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(project).getSelectedModelContainers().getNumGroupsSelectedProperty();
+        ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getProjectSelection().getNumModelsSelectedProperty();
+        ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(project).getProjectSelection().getNumGroupsSelectedProperty();
         group.disableProperty().bind(numModelsSelected.lessThan(2));
         ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
 
@@ -92,14 +92,14 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     {
         Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
                 Collectors.toSet());
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
         Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
                 Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
-        Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().deselectAllModels();
+        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1) {
-            Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().addModelContainer(
+            Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
                 changedModelGroups.iterator().next());
         }
     }
@@ -107,15 +107,15 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     @FXML
     void doUngroup(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.ungroup(modelContainers);
-        Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().deselectAllModels();
+        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
     }
 
     @FXML
     void doApplyMaterial0(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         for (ModelContainer modelContainer : modelContainers)
         {
             undoableProject.setUseExtruder0Filament(modelContainer, true);
@@ -126,7 +126,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     @FXML
     void doApplyMaterial1(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getSelectedModelContainers().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         for (ModelContainer modelContainer : modelContainers)
         {
             undoableProject.setUseExtruder0Filament(modelContainer, false);

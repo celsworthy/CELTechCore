@@ -10,8 +10,8 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
-import celtech.coreUI.visualisation.SelectedModelContainers;
-import celtech.coreUI.visualisation.SelectedModelContainers.SelectedModelContainersListener;
+import celtech.coreUI.visualisation.ProjectSelection;
+import celtech.coreUI.visualisation.ProjectSelection.SelectedModelContainersListener;
 import celtech.modelcontrol.ModelContainer;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -111,7 +111,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private final TableColumn modelNameColumn = new TableColumn();
 
-    private SelectedModelContainers selectionModel;
+    private ProjectSelection projectSelection;
     private SelectedModelContainersListener tableViewSelectionListener = null;
 
     private ChangeListener<Number> modelScaleXChangeListener = null;
@@ -377,12 +377,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
     private boolean inMultiSelectWithFixedAR()
     {
         return preserveAspectRatio.isSelected()
-            && (selectionModel.getNumModelsSelectedProperty().get() > 1);
+            && (projectSelection.getNumModelsSelectedProperty().get() > 1);
     }
 
     private boolean inMultiSelect()
     {
-        return selectionModel.getNumModelsSelectedProperty().get() > 1;
+        return projectSelection.getNumModelsSelectedProperty().get() > 1;
     }
 
     /**
@@ -472,7 +472,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 lastRotationX = newRotationX;
             }
-            undoableProject.rotateLeanModels(selectionModel.getSelectedModelsSnapshot(),
+            undoableProject.rotateLeanModels(projectSelection.getSelectedModelsSnapshot(),
                                              rotationXTextField.getAsDouble());
         } catch (ParseException ex)
         {
@@ -493,7 +493,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 lastRotationY = newRotationY;
             }
-            undoableProject.rotateTwistModels(selectionModel.getSelectedModelsSnapshot(),
+            undoableProject.rotateTwistModels(projectSelection.getSelectedModelsSnapshot(),
                                               rotationYTextField.getAsDouble());
         } catch (ParseException ex)
         {
@@ -514,7 +514,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 lastRotationZ = newRotationZ;
             }
-            undoableProject.rotateTurnModels(selectionModel.getSelectedModelsSnapshot(),
+            undoableProject.rotateTurnModels(projectSelection.getSelectedModelsSnapshot(),
                                              rotationZTextField.getAsDouble());
         } catch (ParseException ex)
         {
@@ -572,7 +572,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 lastY = newY;
             }
-            undoableProject.translateModelsZTo(selectionModel.getSelectedModelsSnapshot(), newY);
+            undoableProject.translateModelsZTo(projectSelection.getSelectedModelsSnapshot(), newY);
         } catch (ParseException ex)
         {
             steno.error("Error parsing y translate string " + ex + " : " + ex.getMessage());
@@ -591,7 +591,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             {
                 lastX = newX;
             }
-            undoableProject.translateModelsXTo(selectionModel.getSelectedModelsSnapshot(), newX);
+            undoableProject.translateModelsXTo(projectSelection.getSelectedModelsSnapshot(), newX);
 
         } catch (ParseException ex)
         {
@@ -617,11 +617,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 double ratio = depthTextField.getAsDouble() / modelContainer.getScaledDepth();
 
                 undoableProject.scaleXYZRatioSelection(
-                    selectionModel.getSelectedModelsSnapshot(), ratio);
+                    projectSelection.getSelectedModelsSnapshot(), ratio);
 
             } else
             {
-                undoableProject.resizeModelsDepth(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.resizeModelsDepth(projectSelection.getSelectedModelsSnapshot(),
                                                   depthTextField.getAsDouble());
             }
         } catch (ParseException ex)
@@ -647,10 +647,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 ModelContainer modelContainer = getSingleSelection();
                 double ratio = heightTextField.getAsDouble() / modelContainer.getScaledHeight();
                 undoableProject.scaleXYZRatioSelection(
-                    selectionModel.getSelectedModelsSnapshot(), ratio);
+                    projectSelection.getSelectedModelsSnapshot(), ratio);
             } else
             {
-                undoableProject.resizeModelsHeight(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.resizeModelsHeight(projectSelection.getSelectedModelsSnapshot(),
                                                    heightTextField.getAsDouble());
             }
         } catch (ParseException ex)
@@ -676,10 +676,10 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 ModelContainer modelContainer = getSingleSelection();
                 double ratio = widthTextField.getAsDouble() / modelContainer.getScaledWidth();
                 undoableProject.scaleXYZRatioSelection(
-                    selectionModel.getSelectedModelsSnapshot(), ratio);
+                    projectSelection.getSelectedModelsSnapshot(), ratio);
             } else
             {
-                undoableProject.resizeModelsWidth(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.resizeModelsWidth(projectSelection.getSelectedModelsSnapshot(),
                                                   widthTextField.getAsDouble());
             }
         } catch (ParseException ex)
@@ -690,8 +690,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private ModelContainer getSingleSelection()
     {
-        assert (selectionModel.getNumModelsSelectedProperty().get() == 1);
-        ModelContainer modelContainer = selectionModel.getSelectedModelsSnapshot().iterator().next();
+        assert (projectSelection.getNumModelsSelectedProperty().get() == 1);
+        ModelContainer modelContainer = projectSelection.getSelectedModelsSnapshot().iterator().next();
         return modelContainer;
     }
 
@@ -713,12 +713,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 double ratio = scaleFactor / lastScaleRatio;
                 lastScaleRatio = scaleFactor;
                 undoableProject.scaleXYZRatioSelection(
-                    selectionModel.getSelectedModelsSnapshot(),
+                    projectSelection.getSelectedModelsSnapshot(),
                     ratio);
                 showScaleForXYZ(lastScaleRatio);
             } else
             {
-                undoableProject.scaleZModels(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.scaleZModels(projectSelection.getSelectedModelsSnapshot(),
                                              scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
@@ -745,12 +745,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 double ratio = scaleFactor / lastScaleRatio;
                 lastScaleRatio = scaleFactor;
                 undoableProject.scaleXYZRatioSelection(
-                    selectionModel.getSelectedModelsSnapshot(),
+                    projectSelection.getSelectedModelsSnapshot(),
                     ratio);
                 showScaleForXYZ(lastScaleRatio);
             } else
             {
-                undoableProject.scaleYModels(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.scaleYModels(projectSelection.getSelectedModelsSnapshot(),
                                              scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
@@ -777,12 +777,12 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                 double ratio = scaleFactor / lastScaleRatio;
                 lastScaleRatio = scaleFactor;
                 undoableProject.scaleXYZRatioSelection(
-                    selectionModel.getSelectedModelsSnapshot(),
+                    projectSelection.getSelectedModelsSnapshot(),
                     ratio);
                 showScaleForXYZ(lastScaleRatio);
             } else
             {
-                undoableProject.scaleXModels(selectionModel.getSelectedModelsSnapshot(),
+                undoableProject.scaleXModels(projectSelection.getSelectedModelsSnapshot(),
                                              scaleFactor, inFixedAR());
             }
         } catch (ParseException ex)
@@ -826,11 +826,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
                     return;
                 }
                 suppressModelDataTableViewNotifications = true;
-                selectionModel.deselectAllModels();
+                projectSelection.deselectAllModels();
                 for (ModelContainer modelContainer : modelDataTableView.getSelectionModel().
                     getSelectedItems())
                 {
-                    selectionModel.addModelContainer(modelContainer);
+                    projectSelection.addModelContainer(modelContainer);
                 }
                 suppressModelDataTableViewNotifications = false;
             }
@@ -903,7 +903,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         if (inMultiSelect())
         {
             showScaleForXYZ(1.0d);
-        } else if (selectionModel.getNumModelsSelectedProperty().get() == 1)
+        } else if (projectSelection.getNumModelsSelectedProperty().get() == 1)
         {
             ModelContainer modelContainer = getSingleSelection();
             populateScaleXField(modelContainer.getXScale());
@@ -920,7 +920,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
 
     private void unbindProject(Project project)
     {
-        selectionModel.removeListener(tableViewSelectionListener);
+        projectSelection.removeListener(tableViewSelectionListener);
         numSelectedModels.unbind();
     }
 
@@ -942,18 +942,18 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         materialComponent0.setLayoutProject(project);
         materialComponent1.setLayoutProject(project);
 
-        selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
-        numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
+        numSelectedModels.bind(projectSelection.getNumModelsSelectedProperty());
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         modelDataTableView.setItems(project.getTopLevelModels());
-        resetTableViewSelection(selectionModel);
-        selectionModel.addListener(tableViewSelectionListener);
+        resetTableViewSelection(projectSelection);
+        projectSelection.addListener(tableViewSelectionListener);
 
-        SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails
-            = selectionModel.getPrimarySelectedModelDetails();
+        ProjectSelection.PrimarySelectedModelDetails selectedModelDetails
+            = projectSelection.getPrimarySelectedModelDetails();
         selectedModelDetails.getWidth().addListener(widthListener);
         selectedModelDetails.getHeight().addListener(heightListener);
         selectedModelDetails.getDepth().addListener(depthListener);
@@ -971,7 +971,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         repopulate(selectedModelDetails);
 
         selectedItemDetails.visibleProperty().bind(
-            Bindings.lessThan(0, selectionModel.getNumModelsSelectedProperty()));
+            Bindings.lessThan(0, projectSelection.getNumModelsSelectedProperty()));
 
         materialComponent0.setSelectedFilamentInComboBox(
             boundProject.getExtruder0FilamentProperty().get());
@@ -990,11 +990,11 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      * Reset the table view selection to the current selection in the viewManager, used when
      * switching ProjectTabs.
      */
-    private void resetTableViewSelection(SelectedModelContainers selectionModel)
+    private void resetTableViewSelection(ProjectSelection projectSelection)
     {
         suppressModelDataTableViewNotifications = true;
         modelDataTableView.getSelectionModel().clearSelection();
-        for (ModelContainer modelContainer : selectionModel.getSelectedModelsSnapshot())
+        for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
             modelDataTableView.getSelectionModel().select(modelContainer);
         }
@@ -1006,7 +1006,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      *
      * @param selectedModelDetails
      */
-    private void repopulate(SelectedModelContainers.PrimarySelectedModelDetails selectedModelDetails)
+    private void repopulate(ProjectSelection.PrimarySelectedModelDetails selectedModelDetails)
     {
         populateScaleXField(selectedModelDetails.getScaleX().get());
         populateScaleYField(selectedModelDetails.getScaleY().get());

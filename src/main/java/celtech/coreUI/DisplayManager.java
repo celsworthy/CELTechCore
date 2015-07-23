@@ -22,7 +22,7 @@ import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ModelLoader;
-import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.comms.RoboxCommsManager;
 import java.io.File;
@@ -736,18 +736,18 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private void selectAllModels(Project project)
     {
-        SelectedModelContainers selectionModel
-            = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        ProjectSelection projectSelection
+            = Lookup.getProjectGUIState(project).getProjectSelection();
         for (ModelContainer modelContainer : project.getTopLevelModels())
         {
-            selectionModel.addModelContainer(modelContainer);
+            projectSelection.addModelContainer(modelContainer);
         }
     }
 
     private void deleteSelectedModels(Project project, UndoableProject undoableProject)
     {
         Set<ModelContainer> selectedModels
-            = Lookup.getProjectGUIState(project).getSelectedModelContainers().
+            = Lookup.getProjectGUIState(project).getProjectSelection().
             getSelectedModelsSnapshot();
         undoableProject.deleteModels(selectedModels);
     }

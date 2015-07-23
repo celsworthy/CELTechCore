@@ -22,7 +22,7 @@ import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.ModelLoader;
-import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.printerControl.model.Head;
@@ -163,7 +163,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private Project selectedProject;
     private UndoableProject undoableSelectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
-    private SelectedModelContainers modelSelection;
+    private ProjectSelection projectSelection;
     private final ModelLoader modelLoader = new ModelLoader();
 
     @FXML
@@ -328,13 +328,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void deleteModel(ActionEvent event)
     {
-        undoableSelectedProject.deleteModels(modelSelection.getSelectedModelsSnapshot());
+        undoableSelectedProject.deleteModels(projectSelection.getSelectedModelsSnapshot());
     }
 
     @FXML
     void copyModel(ActionEvent event)
     {
-        undoableSelectedProject.copyModels(modelSelection.getSelectedModelsSnapshot());
+        undoableSelectedProject.copyModels(projectSelection.getSelectedModelsSnapshot());
     }
 
     @FXML
@@ -964,7 +964,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         undoableSelectedProject = new UndoableProject(project);
         printerSettings = project.getPrinterSettings();
         currentSettingsPrinter = Lookup.getSelectedPrinterProperty().get();
-        modelSelection = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
         bindProject(project);
@@ -1052,7 +1052,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void bindSelectedModels(Project project)
     {
         ProjectGUIState projectGUIState = Lookup.getProjectGUIState(project);
-        SelectedModelContainers selectionModel = projectGUIState.getSelectedModelContainers();
+        ProjectSelection projectSelection = projectGUIState.getProjectSelection();
         ProjectGUIRules projectGUIRules = projectGUIState.getProjectGUIRules();
         ReadOnlyObjectProperty<LayoutSubmode> layoutSubmodeProperty = projectGUIState.
             getLayoutSubmodeProperty();
@@ -1065,7 +1065,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         BooleanBinding notSelectModeOrNoSelectedModels
             = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
-                Bindings.equal(0, selectionModel.getNumModelsSelectedProperty()));
+                Bindings.equal(0, projectSelection.getNumModelsSelectedProperty()));
         BooleanBinding notSelectModeOrNoLoadedModels
             = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
                 Bindings.isEmpty(project.getTopLevelModels()));

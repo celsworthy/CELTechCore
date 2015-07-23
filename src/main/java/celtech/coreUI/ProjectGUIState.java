@@ -5,7 +5,7 @@ package celtech.coreUI;
 
 import celtech.appManager.Project;
 import celtech.appManager.undo.CommandStack;
-import celtech.coreUI.visualisation.SelectedModelContainers;
+import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -18,7 +18,7 @@ import javafx.collections.ObservableSet;
  */
 public class ProjectGUIState
 {
-    private final SelectedModelContainers selectedModelContainers;
+    private final ProjectSelection projectSelection;
     
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     
@@ -30,10 +30,10 @@ public class ProjectGUIState
 
     public ProjectGUIState(Project project)
     {
-        selectedModelContainers = new SelectedModelContainers(project);
+        projectSelection = new ProjectSelection(project);
         layoutSubmode = new SimpleObjectProperty<>(LayoutSubmode.SELECT);
         commandStack = new CommandStack();
-        projectGUIRules = new ProjectGUIRules(selectedModelContainers, excludedFromSelection);
+        projectGUIRules = new ProjectGUIRules(projectSelection, excludedFromSelection);
     }
 
     public CommandStack getCommandStack()
@@ -49,8 +49,8 @@ public class ProjectGUIState
         return excludedFromSelection;
     }
     
-    public SelectedModelContainers getSelectedModelContainers() {
-        return selectedModelContainers;
+    public ProjectSelection getProjectSelection() {
+        return projectSelection;
     }
     
     public ObjectProperty<LayoutSubmode> getLayoutSubmodeProperty() {

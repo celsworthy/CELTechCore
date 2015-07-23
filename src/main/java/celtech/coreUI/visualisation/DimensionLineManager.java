@@ -22,8 +22,8 @@ public class DimensionLineManager
     public DimensionLineManager(Pane paneToAddDimensionsTo, Project project)
     {
 
-        Lookup.getProjectGUIState(project).getSelectedModelContainers().addListener(
-            new SelectedModelContainers.SelectedModelContainersListener()
+        Lookup.getProjectGUIState(project).getProjectSelection().addListener(
+            new ProjectSelection.SelectedModelContainersListener()
             {
 
                 @Override

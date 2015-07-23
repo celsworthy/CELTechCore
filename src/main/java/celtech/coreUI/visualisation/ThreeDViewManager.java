@@ -122,7 +122,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final double bedXOffsetFromCameraZero;
     private final double bedZOffsetFromCameraZero;
 
-    private SelectedModelContainers selectedModelContainers = null;
+    private ProjectSelection projectSelection;
 
     private long lastAnimationTrigger = 0;
 
@@ -257,7 +257,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             // if clicked mc is within a selected group then isolate the objects below the selected
             // group.
             Set<ModelContainer> selectedModelContainers
-                = Lookup.getProjectGUIState(project).getSelectedModelContainers().getSelectedModelsSnapshot();
+                = Lookup.getProjectGUIState(project).getProjectSelection().getSelectedModelsSnapshot();
             Set<MeshView> selectedMeshViews
                 = selectedModelContainers.stream().
                 map(mc -> mc.descendentMeshViews()).
@@ -320,7 +320,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                 }
             } else
             {
-                selectedModelContainers.deselectAllModels();
+                projectSelection.deselectAllModels();
                 excludedFromSelection.clear();
                 updateModelColoursForPositionModeAndTargetPrinter();
             }
@@ -397,8 +397,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         mouseOldY = mousePosY;
         mousePosX = event.getSceneX();
         mousePosY = event.getSceneY();
-        mouseDeltaX = (mousePosX - mouseOldX); //*DELTA_MULTIPLIER;
-        mouseDeltaY = (mousePosY - mouseOldY); //*DELTA_MULTIPLIER;
+        mouseDeltaX = (mousePosX - mouseOldX);
+        mouseDeltaY = (mousePosY - mouseOldY);
 
         boolean shortcut = event.isShortcutDown();
         if (shortcut && event.isSecondaryButtonDown())
@@ -527,7 +527,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         this.project = project;
         this.undoableProject = new UndoableProject(project);
         loadedModels = project.getTopLevelModels();
-        selectedModelContainers = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
         excludedFromSelection = Lookup.getProjectGUIState(project).getExcludedFromSelection();
         projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
@@ -817,20 +817,20 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         if (selectedNode == null)
         {
-            selectedModelContainers.deselectAllModels();
+            projectSelection.deselectAllModels();
         } else if (selectedNode.isSelected() == false)
         {
             if (multiSelect == false)
             {
-                selectedModelContainers.deselectAllModels();
+                projectSelection.deselectAllModels();
             }
-            selectedModelContainers.addModelContainer(selectedNode);
+            projectSelection.addModelContainer(selectedNode);
         }
     }
 
     private void translateSelection(double x, double z)
     {
-        undoableProject.translateModelsBy(selectedModelContainers.getSelectedModelsSnapshot(), x, z,
+        undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(), x, z,
                                           !justEnteredDragMode);
     }
 
@@ -842,7 +842,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         if (pickedModel.isSelected())
         {
-            selectedModelContainers.removeModelContainer(pickedModel);
+            projectSelection.removeModelContainer(pickedModel);
         }
     }
 
@@ -927,29 +927,19 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         ModelGroup ancestorSelectedGroup = getAncestorSelectedGroup(meshView);
         if (ancestorSelectedGroup != null)
         {
-            System.out.println("C " + ancestorSelectedGroup + " "
-                + ancestorSelectedGroup.getChildModelContainers());
             // isolate children of ancestor group
             isolateGroupChildren(ancestorSelectedGroup);
             //get group/container under ancestor group that contains meshview
             //then select that group
-            selectedModelContainers.deselectAllModels();
+            projectSelection.deselectAllModels();
 
             for (ModelContainer modelContainer : ancestorSelectedGroup.getChildModelContainers())
             {
-                System.out.println("consider " + modelContainer + " "
-                    + modelContainer.descendentMeshViews());
                 if (modelContainer.descendentMeshViews().contains(meshView))
                 {
-                    System.out.println(modelContainer + " contains mesh view " + meshView);
-                    System.out.println("isolate " + modelContainer);
-                    selectedModelContainers.addModelContainer(modelContainer);
-                    System.out.println("D");
+                    projectSelection.addModelContainer(modelContainer);
                     break;
-                } else
-                {
-                    System.out.println(modelContainer + " does not contain mesh view " + meshView);
-                }
+                } 
             }
         }
     }
@@ -987,7 +977,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         if (parentModelContainer != null) {
             while(parentModelContainer.getParentModelContainer() != null) {
                 parentModelContainer = parentModelContainer.getParentModelContainer();
-                if (selectedModelContainers.isSelected(parentModelContainer)) {
+                if (projectSelection.isSelected(parentModelContainer)) {
                     return (ModelGroup) parentModelContainer;
                 }
             }
