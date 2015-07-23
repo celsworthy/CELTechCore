@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
+import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.visualisation.SelectedModelContainers;
@@ -48,6 +49,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class LayoutSidePanelController implements Initializable, SidePanelManager
 {
+    private ProjectGUIRules projectGUIRules;
 
     public interface NoArgsVoidFunc
     {
@@ -181,7 +183,6 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         setUpNumberFieldListeners();
         setupMaterialContainer();
         setupProjectSelectedListener();
-        setFieldsEditable();
         setUpNumSelectedModelsListener();
         setUpAspectRatioListener(rb);
 
@@ -881,14 +882,19 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
      */
     private void setFieldsEditable()
     {
-        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
-        rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+        rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
+    
+        scaleTextWidthField.disableProperty().bind(projectGUIRules.canTranslateRotateOrScaleSelection().not());
+        scaleTextHeightField.disableProperty().bind(projectGUIRules.canTranslateRotateOrScaleSelection().not());
+        scaleTextDepthField.disableProperty().bind(projectGUIRules.canTranslateRotateOrScaleSelection().not());
+    
     }
 
     private void whenNumSelectedModelsChanged()
@@ -937,6 +943,7 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         materialComponent1.setLayoutProject(project);
 
         selectionModel = Lookup.getProjectGUIState(project).getSelectedModelContainers();
+        projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
         numSelectedModels.bind(selectionModel.getNumModelsSelectedProperty());
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -970,6 +977,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
             boundProject.getExtruder0FilamentProperty().get());
         materialComponent1.setSelectedFilamentInComboBox(
             boundProject.getExtruder1FilamentProperty().get());
+        
+        setFieldsEditable();
     }
 
     @Override

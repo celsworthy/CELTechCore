@@ -57,9 +57,11 @@ public class SelectedModelContainers implements ProjectChangesListener
                 {
                     if (modelContainer.getParentModelContainer() != null)
                     {
+                        System.out.println("XXX TRUE");
                         return true;
                     }
                 }
+                System.out.println("XXX FALSE");
                 return false;
             }
 
