@@ -8,12 +8,11 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
 import celtech.gcodetranslator.PrintJobStatistics;
-import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -117,14 +116,20 @@ public class GetTimeWeightCost
         {
             return;
         }
+        
+        Printer printer = Lookup.getSelectedPrinterProperty().get();
+        
+        steno.debug("start post processing");
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
                 settings.getProfileName(),
                 temporaryDirectory,
-                //TODO this should use the printer selected on the settings page
-                Lookup.getSelectedPrinterProperty().get(),
+                printer,
                 project,
+                settings,
                 null);
+        
+        steno.debug("end post processing");
 
         if (result != null
                 && result.getRoboxiserResult().isSuccess())

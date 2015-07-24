@@ -1,6 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
@@ -28,11 +29,11 @@ public class CloseUtilities
     private final float maxDistanceFromEndPoint;
     private final int maxNumberOfIntersectionsToConsider;
 
-    public CloseUtilities(Project project, HeadType headType)
+    public CloseUtilities(Project project, SlicerParametersFile settings, HeadType headType)
     {
         this.project = project;
-        maxNumberOfIntersectionsToConsider = project.getPrinterSettings().getSettings(headType).getNumberOfPerimeters();
-        maxDistanceFromEndPoint = project.getPrinterSettings().getSettings(headType).getPerimeterExtrusionWidth_mm()
+        maxNumberOfIntersectionsToConsider = settings.getNumberOfPerimeters();
+        maxDistanceFromEndPoint = settings.getPerimeterExtrusionWidth_mm()
                 * 1.01f * maxNumberOfIntersectionsToConsider;
     }
 

@@ -174,8 +174,8 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
             + TEMPFILENAME;
         configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("raftBaseThickness=0"));
-        assertTrue(outputData.contains("raftInterfaceThickness=280"));
+        assertTrue(!outputData.contains("raftBaseThickness"));
+        assertTrue(!outputData.contains("raftInterfaceThickness"));
     }
 
     @Test
@@ -191,8 +191,8 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
             + TEMPFILENAME;
         configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("raftBaseThickness=0"));
-        assertTrue(outputData.contains("raftInterfaceThickness=280"));
+        assertTrue(!outputData.contains("raftBaseThickness"));
+        assertTrue(!outputData.contains("raftInterfaceThickness"));
     }
 
     @Test
@@ -208,8 +208,8 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
             + TEMPFILENAME;
         configWriter.generateConfigForSlicer(printerSettings.getSettings(HeadType.SINGLE_MATERIAL_HEAD), destinationFile);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("raftBaseThickness=0"));
-        assertTrue(outputData.contains("raftInterfaceThickness=280"));
+        assertTrue(!outputData.contains("raftBaseThickness"));
+        assertTrue(!outputData.contains("raftInterfaceThickness"));
     }
 
     @Test

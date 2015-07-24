@@ -6,6 +6,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.GCodeRoboxiser;
 import celtech.gcodetranslator.GCodeRoboxisingEngine;
 import celtech.gcodetranslator.RoboxiserResult;
@@ -39,15 +40,18 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     private final Printer printerToUse;
     private final Project project;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
+    private final SlicerParametersFile settings;
 
     public PostProcessorTask(String printJobUUID,
             Printer printerToUse,
-            Project project)
+            Project project,
+            SlicerParametersFile settings)
     {
         this.printJobUUID = printJobUUID;
         this.printJobDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator;
         this.printerToUse = printerToUse;
         this.project = project;
+        this.settings = settings;
         updateTitle("Post Processor");
         updateProgress(0.0, 100.0);
     }
@@ -67,7 +71,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                         updateProgress(newValue.doubleValue(), 100.0);
                     });
             postProcessingResult = doPostProcessing(printJobUUID,
-                    printJobDirectory, printerToUse, project, taskProgress);
+                    printJobDirectory, printerToUse, project, settings, taskProgress);
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -80,6 +84,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             String printJobDirectory,
             Printer printer,
             Project project,
+            SlicerParametersFile settings,
             DoubleProperty taskProgress) throws IOException
     {
         SlicerType selectedSlicer = null;
@@ -91,9 +96,9 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         {
             headType = HeadContainer.defaultHeadType;
         }
-        if (project.getPrinterSettings().getSettings(headType).getSlicerOverride() != null)
+        if (settings.getSlicerOverride() != null)
         {
-            selectedSlicer = project.getPrinterSettings().getSettings(headType).getSlicerOverride();
+            selectedSlicer = settings.getSlicerOverride();
         } else
         {
             selectedSlicer = Lookup.getUserPreferences().getSlicerType();
@@ -130,6 +135,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     gcodeOutputFile,
                     headFileToUse,
                     project,
+                    settings,
                     ppFeatures,
                     headType,
                     taskProgress);

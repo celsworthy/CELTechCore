@@ -33,7 +33,9 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
         
-        CloseUtilities closeUtilities = new CloseUtilities(testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        CloseUtilities closeUtilities = new CloseUtilities(testProject, 
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+            HeadType.SINGLE_MATERIAL_HEAD);
 
         Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
                 ((SectionNode) tool1.getChildren().get(0)));

@@ -196,6 +196,9 @@ public class PrintEngine implements ControllableService
                 postProcessorService.setPrinterToUse(
                         result.getPrinterToUse());
                 postProcessorService.setProject(result.getProject());
+                postProcessorService.setSettings(
+                    result.getProject().getPrinterSettings().getSettings(
+                        associatedPrinter.headProperty().get().headType.get()));
                 postProcessorService.start();
 
                 if (raiseProgressNotifications)

@@ -1,6 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
@@ -32,11 +33,12 @@ public class UtilityMethods
 
     public UtilityMethods(final PostProcessorFeatureSet ppFeatureSet,
             final Project project,
+            SlicerParametersFile settings,
             HeadType headType)
     {
         this.ppFeatureSet = ppFeatureSet;
         nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);
-        this.closeLogic = new CloseLogic(project, ppFeatureSet, headType);
+        this.closeLogic = new CloseLogic(project, settings, ppFeatureSet, headType);
     }
 
     protected void suppressUnnecessaryToolChangesAndInsertToolchangeCloses(LayerNode layerNode,

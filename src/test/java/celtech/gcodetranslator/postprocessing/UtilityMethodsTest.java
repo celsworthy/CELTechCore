@@ -211,7 +211,9 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+            HeadType.SINGLE_MATERIAL_HEAD);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.insertOpenNodes(testLayer, lastLayerParseResult);
@@ -452,7 +454,9 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+            HeadType.SINGLE_MATERIAL_HEAD);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
@@ -680,7 +684,9 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD), 
+            HeadType.SINGLE_MATERIAL_HEAD);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testProxy, testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
@@ -727,7 +733,9 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, 
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD), 
+            HeadType.SINGLE_MATERIAL_HEAD);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
 
         assertEquals(3, testLayer.getChildren().size());
@@ -770,7 +778,9 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+            HeadType.SINGLE_MATERIAL_HEAD);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
 
         assertEquals(3, testLayer.getChildren().size());
@@ -813,7 +823,9 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, HeadType.SINGLE_MATERIAL_HEAD);
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+            HeadType.SINGLE_MATERIAL_HEAD);
         extrusionNode1.setElidedExtrusion(0.4);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
         OutputUtilities output = new OutputUtilities();

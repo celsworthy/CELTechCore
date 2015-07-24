@@ -440,8 +440,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         cmbHeadType.getItems().add(HeadType.SINGLE_MATERIAL_HEAD);
         cmbHeadType.getItems().add(HeadType.DUAL_MATERIAL_HEAD);
 
-        cmbHeadType.valueProperty().addListener(
-            (ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
+        cmbHeadType.valueProperty().addListener((ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
             {
                 currentHeadType.set(newValue);
                 repopulateCmbPrintProfile();
@@ -503,16 +502,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     private void setupWidgetsForHeadType()
     {
-        firstLayerNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
-            HeadType.DUAL_MATERIAL_HEAD));
-        perimeterNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
-            HeadType.DUAL_MATERIAL_HEAD));
-        fillNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
-            HeadType.DUAL_MATERIAL_HEAD));
-        supportNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
-            HeadType.DUAL_MATERIAL_HEAD));
-        supportInterfaceNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(
-            HeadType.DUAL_MATERIAL_HEAD));
+        firstLayerNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
+        perimeterNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
+        fillNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
+        supportNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
+        supportInterfaceNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
     }
 
     private void setupPrintProfileCombo()

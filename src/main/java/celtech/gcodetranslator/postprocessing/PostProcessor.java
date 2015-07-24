@@ -87,6 +87,7 @@ public class PostProcessor
             String gcodeOutputFile,
             HeadFile headFile,
             Project project,
+            SlicerParametersFile settings,
             PostProcessorFeatureSet postProcessorFeatureSet,
             HeadType headType,
             DoubleProperty taskProgress)
@@ -97,7 +98,7 @@ public class PostProcessor
         this.project = project;
         this.featureSet = postProcessorFeatureSet;
 
-        this.slicerParametersFile = project.getPrinterSettings().getSettings(headType);
+        this.slicerParametersFile = settings;
 
         this.taskProgress = taskProgress;
 
@@ -132,10 +133,10 @@ public class PostProcessor
             postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
         }
 
-        postProcessorUtilityMethods = new UtilityMethods(featureSet, project, headType);
+        postProcessorUtilityMethods = new UtilityMethods(featureSet, project, settings, headType);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, project, postProcessingMode);
-        closeLogic = new CloseLogic(project, featureSet, headType);
+        closeLogic = new CloseLogic(project, slicerParametersFile, featureSet, headType);
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
     }
 

@@ -90,7 +90,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private Printer currentPrinter;
     private HeadType currentHeadType;
 
-    private TimeCostThreadManager timeCostThreadManager;
+    private TimeCostThreadManager timeCostThreadManager = new TimeCostThreadManager();
 
     /**
      * Initialises the controller class.
@@ -123,8 +123,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             );
 
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
-
-            timeCostThreadManager = new TimeCostThreadManager();
 
 //            Lookup.getSelectedProjectProperty().addListener(
 //                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->

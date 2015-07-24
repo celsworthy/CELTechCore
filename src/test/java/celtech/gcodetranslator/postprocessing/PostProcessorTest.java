@@ -75,6 +75,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
+                testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
                 ppFeatures,
                 HeadType.SINGLE_MATERIAL_HEAD,
                 null);
@@ -118,6 +119,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
+                testProject.getPrinterSettings().getSettings(HeadType.DUAL_MATERIAL_HEAD),
                 ppFeatures,
                 HeadType.SINGLE_MATERIAL_HEAD,
                 null);
@@ -161,6 +163,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
+                testProject.getPrinterSettings().getSettings(HeadType.DUAL_MATERIAL_HEAD),
                 ppFeatures,
                 HeadType.SINGLE_MATERIAL_HEAD,
                 null);
