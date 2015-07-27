@@ -28,18 +28,11 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
         getStenographer(ModelLoaderTask.class.getName());
 
     private final List<File> modelFilesToLoad;
-    private Project targetProject;
-    private ResourceBundle languageBundle = null;
     private final DoubleProperty percentProgress = new SimpleDoubleProperty();
-    private final boolean relayout;
 
-    public ModelLoaderTask(List<File> modelFilesToLoad, Project targetProject,
-        boolean relayout)
+    public ModelLoaderTask(List<File> modelFilesToLoad)
     {
         this.modelFilesToLoad = modelFilesToLoad;
-        this.relayout = relayout;
-        this.targetProject = targetProject;
-        languageBundle = Lookup.getLanguageBundle();
 
         percentProgress.addListener(new ChangeListener<Number>()
         {
@@ -56,7 +49,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
     {
         List<ModelLoadResult> modelLoadResultList = new ArrayList<>();
 
-        updateTitle(languageBundle.getString("dialogs.loadModelTitle"));
+        updateTitle(Lookup.i18n("dialogs.loadModelTitle"));
 
         for (File modelFileToLoad : modelFilesToLoad)
         {
@@ -64,24 +57,23 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
 
             ModelLoadResult modelLoadResult = null;
             String modelFilePath = modelFileToLoad.getAbsolutePath();
-            updateMessage(languageBundle.getString("dialogs.gcodeLoadMessagePrefix")
+            updateMessage(Lookup.i18n("dialogs.gcodeLoadMessagePrefix")
                 + modelFileToLoad.getName());
             updateProgress(0, 100);
             if (modelFilePath.toUpperCase().endsWith("OBJ"))
             {
                 ObjImporter reader = new ObjImporter();
-                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath,
-                                                  targetProject);
+                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath);
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
-                modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProject,
+                modelLoadResult = reader.loadFile(this, modelFileToLoad,
                                                   percentProgress);
             }
             modelLoadResultList.add(modelLoadResult);
         }
 
-        return new ModelLoadResults(modelLoadResultList, relayout);
+        return new ModelLoadResults(modelLoadResultList);
     }
 
     /**

@@ -22,7 +22,7 @@ import javafx.scene.shape.MeshView;
 public class ModelGroup extends ModelContainer
 {
 
-    private Group modelContainersGroup = new Group();
+    private final Group modelContainersGroup = new Group();
     private Set<ModelContainer> childModelContainers;
 
     public ModelGroup(Set<ModelContainer> modelContainers)
@@ -69,7 +69,7 @@ public class ModelGroup extends ModelContainer
     {
         return Collections.unmodifiableSet(childModelContainers);
     }
-    
+
     @Override
     public Set<ModelContainer> getDescendentModelContainers()
     {
@@ -78,11 +78,12 @@ public class ModelGroup extends ModelContainer
         {
             modelContainers.addAll(modelContainer.getDescendentModelContainers());
         }
-    
+
         return modelContainers;
-    }    
-    
-    public void removeModel(ModelContainer modelContainer) {
+    }
+
+    public void removeModel(ModelContainer modelContainer)
+    {
         childModelContainers.remove(modelContainer);
     }
 
@@ -141,6 +142,51 @@ public class ModelGroup extends ModelContainer
             groupStructure.get(modelId).add(modelContainer.modelId);
         }
     }
+    
+    /**
+     * Clear the move to centre transform for all descendent models/groups and apply just to the
+     * top level model/group.
+     */
+    @Override
+    public void applyMoveToCentreAtTopLevelOnly()
+    {
+        for (ModelContainer childModelContainer : childModelContainers)
+        {
+            childModelContainer.clearMoveToCentreTransformRecursive();
+        }
+        moveToCentre();
+    }       
+
+    /**
+     * Clear the drop to bed transform for all descendent models/groups and apply just to the top
+     * level model/group.
+     */
+    @Override
+    public void applyDropToBedAtTopLevelOnly()
+    {
+        for (ModelContainer childModelContainer : childModelContainers)
+        {
+            childModelContainer.clearDropToBedTransformRecursive();
+        }
+        dropToBedAndUpdateLastTransformedBounds();
+    }
+
+    @Override
+    void clearDropToBedTransformRecursive()
+    {
+        for (ModelContainer childModelContainer : childModelContainers)
+        {
+            childModelContainer.clearDropToBedTransformRecursive();
+        }
+    }
+    
+    @Override
+    void clearMoveToCentreTransformRecursive() {
+        for (ModelContainer childModelContainer : childModelContainers)
+        {
+            childModelContainer.clearMoveToCentreTransformRecursive();
+        }
+    }    
 
     /**
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
@@ -224,7 +270,7 @@ public class ModelGroup extends ModelContainer
     {
         Set<ModelContainer> childModels = new HashSet<>();
         for (ModelContainer childModel : childModelContainers)
-        {   
+        {
             ModelContainer modelContainerCopy = childModel.makeCopy();
             modelContainerCopy.setState(childModel.getState());
             childModels.add(modelContainerCopy);

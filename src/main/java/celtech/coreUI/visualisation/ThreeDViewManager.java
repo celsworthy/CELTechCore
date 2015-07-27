@@ -682,20 +682,20 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         bed.setId("Bed");
 
         ObjImporter bedOuterImporter = new ObjImporter();
-        ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL, null);
+        ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL);
         MeshView outerMeshView = bedOuterLoadResult.getModelContainers().iterator().next().getMeshView();
         outerMeshView.setMaterial(bedOuterMaterial);
         bed.getChildren().addAll(outerMeshView);
 
         ObjImporter peiSheetImporter = new ObjImporter();
-        ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadFile(null, peiSheetURL, null);
+        ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadFile(null, peiSheetURL);
         MeshView peiMeshView = peiSheetLoadResult.getModelContainers().iterator().next().getMeshView();
         peiMeshView.setMaterial(peiSheetMaterial);
 
         bed.getChildren().addAll(peiMeshView);
 
         ObjImporter bedClipsImporter = new ObjImporter();
-        ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadFile(null, bedClipsURL, null);
+        ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadFile(null, bedClipsURL);
         MeshView bedClipsMeshView = bedClipsLoadResult.getModelContainers().iterator().next().getMeshView();
         bedClipsMeshView.setMaterial(bedClipsMaterial);
         bed.getChildren().addAll(bedClipsMeshView);

@@ -35,7 +35,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         List<File> modelFiles = new ArrayList<>();
         URL statisticsFile = this.getClass().getResource(stlLocation);
         modelFiles.add(new File(statisticsFile.getFile()));
-        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles, null, true);
+        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles);
         Thread th = new Thread(modelLoaderTask);
         th.setDaemon(true);
         th.start();

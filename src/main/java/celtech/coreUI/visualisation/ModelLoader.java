@@ -6,7 +6,9 @@ package celtech.coreUI.visualisation;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
+import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.services.modelLoader.ModelLoadResults;
@@ -35,59 +37,29 @@ public class ModelLoader
      */
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
 
-    private boolean undoableMode = false;
-
-    public ModelLoader()
-    {
-        modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
-        {
-            whenModelLoadSucceeded();
-        });
-    }
-
-    private void whenModelLoadSucceeded()
-    {
-        offerShrinkAndAddToProject();
-    }
-
-    private boolean offerShrinkAndAddToProject()
+    private boolean offerShrinkAndAddToProject(Project project, boolean relayout)
     {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
         {
             return true;
         }
-        ModelLoadResult firstResult = loadResults.getResults().get(0);
-        boolean projectIsEmpty = firstResult.getTargetProject().getTopLevelModels().isEmpty();
+        boolean projectIsEmpty = project.getTopLevelModels().isEmpty();
+        Set<ModelContainer> allModelContainers = new HashSet<>();
         for (ModelLoadResult loadResult : loadResults.getResults())
         {
             if (loadResult != null)
             {
-                boolean shrinkModel = false;
-                if (loadResult.isModelTooLarge())
-                {
-                    shrinkModel = Lookup.getSystemNotificationHandler().
-                        showModelTooBigDialog(loadResult.getModelFilename());
-                }
-                Set<ModelContainer> modelContainers = loadResult.getModelContainers();
-                if (shrinkModel)
-                {
-                    for (ModelContainer modelContainer : modelContainers)
-                    {
-                        modelContainer.shrinkToFitBed();
-                    }
-
-                }
-                addToProject(loadResult, modelContainers);
+                allModelContainers.add(makeGroup(loadResult.getModelContainers()));
             } else
             {
                 steno.error("Error whilst attempting to load model");
             }
         }
-        if (loadResults.isRelayout() && projectIsEmpty && loadResults.getResults().size() > 1)
+        addToProject(project, allModelContainers);
+        if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
         {
-            Project project = loadResults.getResults().get(0).getTargetProject();
-            project.autoLayout();
+//            project.autoLayout();
         }
         return false;
     }
@@ -113,13 +85,58 @@ public class ModelLoader
     {
         modelLoaderService.reset();
         modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
-        modelLoaderService.setProject(project);
+        modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
+        {
+            offerShrinkAndAddToProject(project, relayout);
+        });
         modelLoaderService.start();
     }
 
-    private void addToProject(ModelLoadResult loadResult, Set<ModelContainer> modelContainers)
+    /**
+     * Add the given ModelContainers to the project. Some may be ModelGroups. If there is more than
+     * one ModelContainer/Group then put them in one overarching group.
+     */
+    private void addToProject(Project project, Set<ModelContainer> modelContainers)
     {
-        UndoableProject undoableProject = new UndoableProject(loadResult.getTargetProject());
+        UndoableProject undoableProject = new UndoableProject(project);
+
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            modelContainer.applyDropToBedAtTopLevelOnly();
+        }
+
+        ModelContainer modelContainer;
+        if (modelContainers.size() == 1)
+        {
+            modelContainer = modelContainers.iterator().next();
+            undoableProject.addModel(modelContainer);
+        } else
+        {
+            modelContainer = new ModelGroup(modelContainers);
+            modelContainer.applyMoveToCentreAtTopLevelOnly();
+            undoableProject.addModel(modelContainer);
+        }
+        shrinkIfRequested(modelContainer);
+    }
+
+    private void shrinkIfRequested(ModelContainer modelContainer)
+    {
+        boolean shrinkModel = false;
+        ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
+        boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
+        if (modelIsTooLarge)
+        {
+            shrinkModel = Lookup.getSystemNotificationHandler().
+                showModelTooBigDialog(modelContainer.getModelName());
+        }
+        if (shrinkModel)
+        {
+            modelContainer.shrinkToFitBed();
+        }
+    }
+
+    private ModelContainer makeGroup(Set<ModelContainer> modelContainers)
+    {
         Set<ModelContainer> splitModelContainers = new HashSet<>();
         for (ModelContainer modelContainer : modelContainers)
         {
@@ -127,11 +144,10 @@ public class ModelLoader
         }
         if (splitModelContainers.size() == 1)
         {
-            undoableProject.addModel(splitModelContainers.iterator().next());
+            return splitModelContainers.iterator().next();
         } else
         {
-            ModelGroup modelGroup = new ModelGroup(splitModelContainers);
-            undoableProject.addModel(modelGroup);
+            return new ModelGroup(splitModelContainers);
         }
     }
 

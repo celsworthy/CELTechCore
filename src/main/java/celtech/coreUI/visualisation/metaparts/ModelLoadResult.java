@@ -18,28 +18,18 @@ import java.util.Set;
 public class ModelLoadResult
 {
 
-    private boolean modelTooLargeForPrintbed = false;
     private ModelLoadResultType resultType = ModelLoadResultType.Mesh;
     private String filename = null;
     private Set<ModelContainer> modelContainers;
-    private Project targetProject;
     // File lines are only used for gcode at present
     private final List<String> fileLines = new ArrayList<>();
     private String fullFilename;
 
-    public ModelLoadResult(boolean modelIsTooLarge, String fullFilename, String filename, 
-        Project targetProject, Set<ModelContainer> modelContainers)
+    public ModelLoadResult(String fullFilename, String filename, Set<ModelContainer> modelContainers)
     {
-        this.modelTooLargeForPrintbed = modelIsTooLarge;
         this.fullFilename = fullFilename;
         this.filename = filename;
-        this.targetProject = targetProject;
         this.modelContainers = modelContainers;
-    }
-
-    public boolean isModelTooLarge()
-    {
-        return modelTooLargeForPrintbed;
     }
 
     public String getModelFilename()
@@ -55,11 +45,6 @@ public class ModelLoadResult
     public Set<ModelContainer> getModelContainers()
     {
         return modelContainers;
-    }
-
-    public Project getTargetProject()
-    {
-        return targetProject;
     }
 
     public void setFileLines(ArrayList<String> fileData)

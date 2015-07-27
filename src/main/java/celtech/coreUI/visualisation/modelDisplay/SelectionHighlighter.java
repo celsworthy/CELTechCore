@@ -52,7 +52,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     public SelectionHighlighter(final ModelContainer modelContainer)
     {
         this.setId(idString);
-        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "greenIlluminationMap.png").toExternalForm());
+        Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "blueIlluminationMap.png").toExternalForm());
         blueMaterial.setSelfIlluminationMap(illuminationMap);
 //        orangeMaterial.setSelfIlluminationMap(illuminationMap);
         if (modelContainer instanceof ModelGroup) {

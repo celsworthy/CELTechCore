@@ -20,33 +20,18 @@ public class ModelLoaderService extends Service<ModelLoadResults> implements
 {
 
     private List<File> modelFilesToLoad;
-    private Project targetProject;
-    private boolean relayout;
 
-    /**
-     *
-     * @param value
-     */
     public final void setModelFilesToLoad(List<File> modelFiles, boolean relayout)
     {
         modelFilesToLoad = modelFiles;
-        this.relayout = relayout;
     }
 
     @Override
     protected Task<ModelLoadResults> createTask()
     {
-        return new ModelLoaderTask(modelFilesToLoad, targetProject, relayout);
-    }
-    
-    public void setProject(Project project) {
-        this.targetProject = project;
+        return new ModelLoaderTask(modelFilesToLoad);
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public boolean cancelRun()
     {

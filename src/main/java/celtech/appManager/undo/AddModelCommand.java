@@ -59,7 +59,7 @@ public class AddModelCommand extends Command
         //TODO ensure that user does not try to undo/redo while this is still loading
         List<File> modelFiles = new ArrayList<>();
         modelFiles.add(modelContainer.getModelFile());
-        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles, null, true);
+        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles);
         modelLoaderTask.setOnSucceeded((WorkerStateEvent event) ->
         {
             ModelLoadResults modelLoadResults = modelLoaderTask.getValue();

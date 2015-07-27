@@ -69,8 +69,6 @@ public class ObjImporter
     private static final Stenographer steno = StenographerFactory.getStenographer(
         ObjImporter.class.getName());
 
-    private ModelLoaderTask parentTask = null;
-
     private int vertexIndex(int vertexIndex)
     {
         if (vertexIndex < 0)
@@ -91,10 +89,8 @@ public class ObjImporter
     private final Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
     private String objFileUrl;
 
-    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
-        Project targetProject)
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad)
     {
-        this.parentTask = parentTask;
         this.objFileUrl = modelFileToLoad;
 
         ModelLoadResult modelLoadResult = null;
@@ -119,7 +115,6 @@ public class ObjImporter
 
             Set<ModelContainer> modelContainers = new HashSet<>();
 
-            boolean modelIsTooLarge = false;
             for (int i = 0; i < meshes_.size(); i++)
             {
                 MeshView meshView = meshes_.get(i);
@@ -127,13 +122,10 @@ public class ObjImporter
                 ModelContainer childModelContainer = new ModelContainer(modelFile, meshView,
                                                                         extruder);
                 modelContainers.add(childModelContainer);
-                if (PrintBed.isBiggerThanPrintVolume(childModelContainer.getOriginalModelBounds())) {
-                    modelIsTooLarge = true;
-                }
             }
 
-            modelLoadResult = new ModelLoadResult(modelIsTooLarge, modelFileToLoad,
-                                                  modelFile.getName(), targetProject,
+            modelLoadResult = new ModelLoadResult(modelFileToLoad,
+                                                  modelFile.getName(), 
                                                   modelContainers);
 
         } catch (Exception ex)
@@ -142,14 +134,12 @@ public class ObjImporter
             steno.error("Exception whilst reading obj file " + modelFileToLoad + ":" + ex);
         }
 
-        if (parentTask
-            != null && parentTask.isCancelled())
+        if (parentTask != null && parentTask.isCancelled())
         {
             modelLoadResult = null;
         }
         return modelLoadResult;
     }
-
 
     public TriangleMesh getMesh()
     {

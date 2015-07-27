@@ -14,29 +14,15 @@ import java.util.List;
 public class ModelLoadResults
 {
     private List<ModelLoadResult> results;
-    private boolean relayout = false;
 
-    public ModelLoadResults(List<ModelLoadResult> results, boolean relayout)
+    public ModelLoadResults(List<ModelLoadResult> results)
     {
         this.results = results;
-        this.relayout = relayout;
     }
 
-    /**
-     * @return the results
-     */
     public List<ModelLoadResult> getResults()
     {
         return results;
     }
 
-    /**
-     * @return the relayout
-     */
-    public boolean isRelayout()
-    {
-        return relayout;
-    }
-    
-    
 }
