@@ -242,13 +242,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         originalModelBounds = calculateBoundsInLocal();
 
-        moveToCentre();
-
         setRotationPivotsToCentreOfModel();
-
-        transformMoveToPreferred.setX(0);
-        transformMoveToPreferred.setY(0);
-        transformMoveToPreferred.setZ(0);
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
@@ -940,17 +934,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
-        setXScale(storedScaleX);
-        setYScale(storedScaleY);
-        setZScale(storedScaleZ);
-        setRotationLean(storedRotationLean);
-        setRotationTwist(storedRotationTwist);
-        setRotationTurn(storedRotationTurn);
+        
+        preferredXScale.set(storedScaleX);
+        preferredYScale.set(storedScaleY);
+        preferredZScale.set(storedScaleZ);
+        preferredRotationLean.set(storedRotationLean);
+        preferredRotationTwist.set(storedRotationTwist);
+        preferredRotationTurn.set(storedRotationTurn);
+        
+        updateTransformsFromLeanTwistTurnAngles();
 
         if (convertSnapFace)
         {
             snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
+        
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -1011,7 +1010,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    /*
+    /**
      * N.B. It only works for top level objects i.e. top level groups or ungrouped models.
      */
     public void translateXTo(double xPosition)
@@ -1041,7 +1040,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    /*
+    /**
      * N.B. It only works for top level objects i.e. top level groups or ungrouped models.
      */
     public void translateZTo(double zPosition)

@@ -88,6 +88,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
         ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
         assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
         assertEquals(BED_CENTRE_X + 1, bounds.getMaxX(), 0);
@@ -121,6 +122,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         int TRANSLATE_Z = 5;
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
         ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
         assertEquals(BED_CENTRE_X - 1 + TRANSLATE_X, bounds.getMinX(), 0);
@@ -156,6 +158,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
@@ -205,6 +208,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         int TRANSLATE_Z = 5;
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
@@ -232,6 +236,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         int TRANSLATE_Z_GROUP = 8;
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
@@ -256,6 +261,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
     {
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
@@ -284,6 +290,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         int TRANSLATE_Z_GROUP_GROUP = 21;
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
@@ -326,6 +333,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
 
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
+        mc.moveToCentre();
 
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
