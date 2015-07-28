@@ -15,7 +15,6 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,17 +138,17 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
-                testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+                testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 singleMaterialHead,
                 ppFeatures,
                 testProject,
@@ -287,10 +286,10 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
@@ -307,7 +306,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
-                testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+                testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 dualMaterialHead,
                 ppFeatures,
                 testProject,
@@ -501,17 +500,17 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
-                testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+                testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 singleMaterialHead,
                 ppFeatures,
                 testProject,

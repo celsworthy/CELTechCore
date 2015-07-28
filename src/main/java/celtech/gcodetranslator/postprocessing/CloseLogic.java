@@ -21,7 +21,6 @@ import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOr
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.Math.MathUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,7 +46,7 @@ public class CloseLogic
     private final SlicerParametersFile settings;
 
     public CloseLogic(Project project, SlicerParametersFile settings,
-            PostProcessorFeatureSet featureSet, HeadType headType)
+            PostProcessorFeatureSet featureSet, String headType)
     {
         this.project = project;
         this.settings = settings;

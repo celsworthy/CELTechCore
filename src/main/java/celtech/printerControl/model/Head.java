@@ -52,7 +52,7 @@ public class Head implements Cloneable, RepairableComponent
         }
 
     }
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.
         getName());
 

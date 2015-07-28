@@ -6,7 +6,6 @@ package celtech.configuration.datafileaccessors;
 import celtech.JavaFXConfiguredTest;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.printerControl.model.Head.HeadType;
 import java.io.File;
 import javafx.collections.ObservableList;
 import org.junit.Assert;
@@ -52,7 +51,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         SlicerParametersContainer.getInstance();
         ObservableList<SlicerParametersFile> userProfiles = SlicerParametersContainer.getUserProfileList();
         ObservableList<SlicerParametersFile> completeProfiles = SlicerParametersContainer.getCompleteProfileList();
-        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, HeadType.SINGLE_MATERIAL_HEAD);
+        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, "RBX01-SM");
 
         SlicerParametersFile draftCopy = draftSlicerParametersFile.clone();
         draftCopy.setProfileName(NEW_NAME);
@@ -62,7 +61,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         assertEquals(1, userProfiles.size());
         assertEquals(9, completeProfiles.size());
 
-        SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(NEW_NAME, HeadType.SINGLE_MATERIAL_HEAD);
+        SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(NEW_NAME, "RBX01-SM");
         assertEquals(retrievedProfile, draftCopy);
     }
 
@@ -74,7 +73,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         ObservableList<SlicerParametersFile> userProfiles = SlicerParametersContainer.getUserProfileList();
         ObservableList<SlicerParametersFile> completeProfiles = SlicerParametersContainer.getCompleteProfileList();
         SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(
-            ApplicationConfiguration.draftSettingsProfileName, HeadType.SINGLE_MATERIAL_HEAD);
+            ApplicationConfiguration.draftSettingsProfileName, "RBX01-SM");
 
         SlicerParametersFile draftCopy = draftSlicerParametersFile.clone();
         draftCopy.setProfileName(NEW_NAME);
@@ -82,11 +81,11 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         SlicerParametersContainer.saveProfile(draftCopy);
         assertEquals(1, userProfiles.size());
 
-        SlicerParametersContainer.deleteUserProfile(NEW_NAME, HeadType.SINGLE_MATERIAL_HEAD);
+        SlicerParametersContainer.deleteUserProfile(NEW_NAME, "RBX01-SM");
         assertEquals(0, userProfiles.size());
         assertEquals(8, completeProfiles.size());
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(
-            NEW_NAME, HeadType.SINGLE_MATERIAL_HEAD);
+            NEW_NAME, "RBX01-SM");
         Assert.assertNull(retrievedProfile);
 
     }
@@ -98,7 +97,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         SlicerParametersContainer.getInstance();
         ObservableList<SlicerParametersFile> userProfiles = SlicerParametersContainer.getUserProfileList();
         ObservableList<SlicerParametersFile> completeProfiles = SlicerParametersContainer.getCompleteProfileList();
-        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, HeadType.SINGLE_MATERIAL_HEAD);
+        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, "RBX01-SM");
 
         SlicerParametersFile draftCopy = draftSlicerParametersFile.clone();
         draftCopy.setProfileName(NEW_NAME);
@@ -109,7 +108,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         SlicerParametersContainer.saveProfile(draftCopy);
 
         SlicerParametersContainer.reload();
-        SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(NEW_NAME, HeadType.SINGLE_MATERIAL_HEAD);
+        SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(NEW_NAME, "RBX01-SM");
         assertEquals(10, newEditedProfile.getBrimWidth_mm());
         assertNotSame(draftCopy, newEditedProfile);
 
@@ -122,7 +121,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         SlicerParametersContainer.getInstance();
         ObservableList<SlicerParametersFile> userProfiles = SlicerParametersContainer.getUserProfileList();
         ObservableList<SlicerParametersFile> completeProfiles = SlicerParametersContainer.getCompleteProfileList();
-        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, HeadType.SINGLE_MATERIAL_HEAD);
+        SlicerParametersFile draftSlicerParametersFile = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName, "RBX01-SM");
 
         SlicerParametersFile draftCopy = draftSlicerParametersFile.clone();
         draftCopy.setProfileName(NEW_NAME);
@@ -140,7 +139,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         assertEquals(1, userProfiles.size());
         assertEquals(9, completeProfiles.size());        
         SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(
-            CHANGED_NAME, HeadType.SINGLE_MATERIAL_HEAD);
+            CHANGED_NAME, "RBX01-SM");
         assertEquals(5, newEditedProfile.getBrimWidth_mm());
         assertNotSame(draftCopy, newEditedProfile);
 

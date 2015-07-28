@@ -16,7 +16,6 @@ import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
 import java.util.List;
@@ -203,17 +202,17 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"),
+            "RBX01-SM");
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.insertOpenNodes(testLayer, lastLayerParseResult);
@@ -446,17 +445,17 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"),
+            "RBX01-SM");
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
@@ -676,17 +675,17 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
         for (int nozzleIndex = 0;
-                nozzleIndex < testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters()
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
                 .size(); nozzleIndex++)
         {
-            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD).getNozzleParameters().get(nozzleIndex));
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD), 
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"), 
+            "RBX01-SM");
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testProxy, testLayer, 0, 0, 0, 10, null, null, -1);
 
         utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
@@ -734,8 +733,8 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject, 
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD), 
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"), 
+            "RBX01-SM");
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
 
         assertEquals(3, testLayer.getChildren().size());
@@ -779,8 +778,8 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"),
+            "RBX01-SM");
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
 
         assertEquals(3, testLayer.getChildren().size());
@@ -824,8 +823,8 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"),
+            "RBX01-SM");
         extrusionNode1.setElidedExtrusion(0.4);
         utilityMethods.insertNozzleOpenFullyBeforeEvent(extrusionNode1);
         OutputUtilities output = new OutputUtilities();

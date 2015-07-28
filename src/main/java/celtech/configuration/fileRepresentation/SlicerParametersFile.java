@@ -51,7 +51,7 @@ public class SlicerParametersFile
 
     private int version = 5;
     private String profileName;
-    private HeadType headType;
+    private String headType;
     private SlicerType slicerOverride;
 
     /*
@@ -135,7 +135,7 @@ public class SlicerParametersFile
     
     @JsonIgnore
     public String getProfileKey() {
-        return profileName + "#" + headType.name();
+        return profileName + "#" + headType;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener)
@@ -170,12 +170,12 @@ public class SlicerParametersFile
         firePropertyChange("profileName", null, profileName);
     }
     
-    public HeadType getHeadType()
+    public String getHeadType()
     {
         return headType;
     }
 
-    public void setHeadType(HeadType headType)
+    public void setHeadType(String headType)
     {
         this.headType = headType;
         firePropertyChange("headType", null, headType);

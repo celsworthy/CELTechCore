@@ -18,7 +18,6 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.SystemUtils;
 import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
@@ -89,7 +88,7 @@ public class PostProcessor
             Project project,
             SlicerParametersFile settings,
             PostProcessorFeatureSet postProcessorFeatureSet,
-            HeadType headType,
+            String headType,
             DoubleProperty taskProgress)
     {
         this.gcodeFileToProcess = gcodeFileToProcess;

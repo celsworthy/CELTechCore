@@ -11,7 +11,6 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.PrinterListChangesAdapter;
@@ -88,7 +87,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private Project currentProject;
     private PrinterSettings printerSettings;
     private Printer currentPrinter;
-    private HeadType currentHeadType;
+    private String currentHeadType;
 
     private TimeCostThreadManager timeCostThreadManager = new TimeCostThreadManager();
 
@@ -163,13 +162,13 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     private void updateHeadType(Printer printer)
     {
-        HeadType headTypeBefore = currentHeadType;
+        String headTypeBefore = currentHeadType;
         if (printer != null && printer.headProperty().get() != null)
         {
-            currentHeadType = printer.headProperty().get().headTypeProperty().get();
+            currentHeadType = printer.headProperty().get().typeCodeProperty().get();
         } else
         {
-            currentHeadType = HeadContainer.defaultHeadType;
+            currentHeadType = HeadContainer.defaultHeadID;
         }
         if (headTypeBefore != currentHeadType)
         {

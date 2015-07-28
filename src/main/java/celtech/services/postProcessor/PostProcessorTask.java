@@ -14,7 +14,6 @@ import celtech.gcodetranslator.postprocessing.PostProcessor;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeature;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeatureSet;
 import celtech.printerControl.PrintJob;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
 import java.io.File;
 import java.io.IOException;
@@ -88,13 +87,13 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             DoubleProperty taskProgress) throws IOException
     {
         SlicerType selectedSlicer = null;
-        HeadType headType;
+        String headType;
         if (printer != null && printer.headProperty().get() != null)
         {
-            headType = printer.headProperty().get().headTypeProperty().get();
+            headType = printer.headProperty().get().typeCodeProperty().get();
         } else
         {
-            headType = HeadContainer.defaultHeadType;
+            headType = HeadContainer.defaultHeadID;
         }
         if (settings.getSlicerOverride() != null)
         {

@@ -1290,8 +1290,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         Set<ModelContainer> parts = new HashSet<>();
         ModelContainer.State state = getState();
-        double transformCentreX = getTransformMoveToCentre().getX();
-        double transformCentreZ = getTransformMoveToCentre().getZ();
         String modelName = getModelName();
 
         ModelContainer modelContainer = this;

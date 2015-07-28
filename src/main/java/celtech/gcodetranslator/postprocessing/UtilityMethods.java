@@ -13,12 +13,10 @@ import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
-import celtech.printerControl.model.Head.HeadType;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -34,7 +32,7 @@ public class UtilityMethods
     public UtilityMethods(final PostProcessorFeatureSet ppFeatureSet,
             final Project project,
             SlicerParametersFile settings,
-            HeadType headType)
+            String headType)
     {
         this.ppFeatureSet = ppFeatureSet;
         nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);

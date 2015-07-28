@@ -9,7 +9,6 @@ import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import org.junit.After;
@@ -75,9 +74,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
-                testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
+                testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 ppFeatures,
-                HeadType.SINGLE_MATERIAL_HEAD,
+                "RBX01-SM",
                 null);
 
         RoboxiserResult result = postProcessor.processInput();
@@ -119,9 +118,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
-                testProject.getPrinterSettings().getSettings(HeadType.DUAL_MATERIAL_HEAD),
+                testProject.getPrinterSettings().getSettings("RBX01-DM"),
                 ppFeatures,
-                HeadType.SINGLE_MATERIAL_HEAD,
+                "RBX01-SM",
                 null);
 
         RoboxiserResult result = postProcessor.processInput();
@@ -163,9 +162,9 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 outputFilename,
                 singleMaterialHead,
                 testProject,
-                testProject.getPrinterSettings().getSettings(HeadType.DUAL_MATERIAL_HEAD),
+                testProject.getPrinterSettings().getSettings("RBX01-DM"),
                 ppFeatures,
-                HeadType.SINGLE_MATERIAL_HEAD,
+                "RBX01-SM",
                 null);
 
         RoboxiserResult result = postProcessor.processInput();

@@ -4,7 +4,6 @@
  */
 package celtech.services.modelLoader;
 
-import celtech.appManager.Project;
 import celtech.services.ControllableService;
 import java.io.File;
 import java.util.List;

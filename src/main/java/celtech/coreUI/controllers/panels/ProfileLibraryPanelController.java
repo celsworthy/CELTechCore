@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.Lookup;
 import celtech.configuration.CustomSlicerType;
 import celtech.configuration.SlicerType;
@@ -13,17 +14,20 @@ import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.model.Head.HeadType;
-import static celtech.printerControl.model.Head.HeadType.DUAL_MATERIAL_HEAD;
-import static celtech.printerControl.model.Head.HeadType.SINGLE_MATERIAL_HEAD;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -126,7 +130,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private final BooleanProperty canDelete = new SimpleBooleanProperty(false);
     private final BooleanProperty isNameValid = new SimpleBooleanProperty(false);
     private String currentProfileName;
-    private final ObjectProperty<HeadType> currentHeadType = new SimpleObjectProperty<>();
+    private final StringProperty currentHeadType = new SimpleStringProperty();
+    private final IntegerProperty numNozzleHeaters = new SimpleIntegerProperty();
 
     private final Stenographer steno = StenographerFactory.getStenographer(
         ProfileLibraryPanelController.class.getName());
@@ -135,7 +140,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private VBox container;
 
     @FXML
-    private ComboBox<HeadType> cmbHeadType;
+    private ComboBox<String> cmbHeadType;
 
     @FXML
     private ComboBox<SlicerParametersFile> cmbPrintProfile;
@@ -437,18 +442,22 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     private void setupHeadType()
     {
-        cmbHeadType.getItems().add(HeadType.SINGLE_MATERIAL_HEAD);
-        cmbHeadType.getItems().add(HeadType.DUAL_MATERIAL_HEAD);
+        
+        for (HeadFile head : HeadContainer.getCompleteHeadList())
+        {
+            cmbHeadType.getItems().add(head.getTypeCode());
+        }
 
-        cmbHeadType.valueProperty().addListener((ObservableValue<? extends HeadType> observable, HeadType oldValue, HeadType newValue) ->
+        cmbHeadType.valueProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
             {
                 currentHeadType.set(newValue);
+                numNozzleHeaters.set(HeadContainer.getHeadByID(newValue).getNozzleHeaters().size());
                 repopulateCmbPrintProfile();
                 selectFirstPrintProfile();
                 setSliderLimits(newValue);
             });
 
-        cmbHeadType.setValue(HeadContainer.defaultHeadType);
+        cmbHeadType.setValue(HeadContainer.defaultHeadID);
     }
 
     private void bringValueWithinDualHeadTypeLimits(RestrictedNumberField field) {
@@ -461,11 +470,12 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 }
     }
     
-    private void setSliderLimits(HeadType headType)
+    private void setSliderLimits(String headType)
     {
-        switch (headType)
+        int numNozzleHeaters = HeadContainer.getHeadByID(headType).getNozzleHeaters().size();
+        switch (numNozzleHeaters)
         {
-            case SINGLE_MATERIAL_HEAD:
+            case 1:
                 setFirstLayerExtrusionWidthLimits(
                     firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
                 setSupportExtrusionWidthLimits(
@@ -475,7 +485,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                 setPerimeterExtrusionWidthLimits(
                     perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
                 break;
-            case DUAL_MATERIAL_HEAD:
+            case 2:
                 bringValueWithinDualHeadTypeLimits(firstLayerExtrusionWidth);
                 bringValueWithinDualHeadTypeLimits(supportExtrusionWidth);
                 bringValueWithinDualHeadTypeLimits(infillExtrusionWidth);
@@ -502,11 +512,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     private void setupWidgetsForHeadType()
     {
-        firstLayerNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
-        perimeterNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
-        fillNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
-        supportNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
-        supportInterfaceNozzleChoice.disableProperty().bind(currentHeadType.isEqualTo(HeadType.DUAL_MATERIAL_HEAD));
+        firstLayerNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
+        perimeterNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
+        fillNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
+        supportNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
+        supportInterfaceNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
     }
 
     private void setupPrintProfileCombo()
@@ -571,7 +581,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         try
         {
             ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
-            HeadType headType = cmbHeadType.getValue();
+            String headType = cmbHeadType.getValue();
             List filesForHeadType = parametersFiles.stream().
                 filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(
                         headType)).

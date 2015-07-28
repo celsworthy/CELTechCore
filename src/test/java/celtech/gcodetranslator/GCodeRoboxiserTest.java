@@ -15,7 +15,6 @@ import celtech.gcodetranslator.events.LayerChangeWithTravelEvent;
 import celtech.gcodetranslator.events.NozzleChangeEvent;
 import celtech.gcodetranslator.events.NozzleOpenFullyEvent;
 import celtech.gcodetranslator.events.TravelEvent;
-import celtech.printerControl.model.Head.HeadType;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +36,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     public void testShortPathPartialOpenAndClose() throws IOException, URISyntaxException
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
-                                                                                HeadType.SINGLE_MATERIAL_HEAD);
+                                                                                "RBX01-SM");
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
@@ -69,7 +68,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     public void testInsertTravelAndClosePathBox() throws IOException, URISyntaxException
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
-                                                                                HeadType.SINGLE_MATERIAL_HEAD);
+                                                                                "RBX01-SM");
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
@@ -155,7 +154,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     public void testInsertTravelAndClosePathConcentricBox() throws IOException, URISyntaxException
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
-                                                                                HeadType.SINGLE_MATERIAL_HEAD);
+                                                                                "RBX01-SM");
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();
 
@@ -389,7 +388,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
     public void testInsertTravelAndClosePathBoxScenario2() throws IOException, URISyntaxException
     {
         SlicerParametersFile parameters = SlicerParametersContainer.getSettings(ApplicationConfiguration.draftSettingsProfileName,
-                                                                                HeadType.SINGLE_MATERIAL_HEAD);
+                                                                                "RBX01-SM");
         parameters.setSlicerOverride(SlicerType.Cura);
 
         LegacyExtrusionBuffer extrusionBuffer = new LegacyExtrusionBuffer();

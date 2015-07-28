@@ -7,12 +7,9 @@ import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.Math.MathUtils;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -29,7 +26,7 @@ public class CloseUtilities
     private final float maxDistanceFromEndPoint;
     private final int maxNumberOfIntersectionsToConsider;
 
-    public CloseUtilities(Project project, SlicerParametersFile settings, HeadType headType)
+    public CloseUtilities(Project project, SlicerParametersFile settings, String headType)
     {
         this.project = project;
         maxNumberOfIntersectionsToConsider = settings.getNumberOfPerimeters();

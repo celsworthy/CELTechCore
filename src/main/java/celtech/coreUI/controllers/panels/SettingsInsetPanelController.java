@@ -85,7 +85,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private Printer currentPrinter;
     private Project currentProject;
     private PrinterSettings printerSettings;
-    private HeadType currentHeadType = HeadContainer.defaultHeadType;
+    private String currentHeadType = HeadContainer.defaultHeadID;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
     private boolean populatingForProject = false;
 
@@ -374,10 +374,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             updateSupportCombo(printer);
             if (printer.headProperty().get() != null)
             {
-                currentHeadType = printer.headProperty().get().headTypeProperty().get();
+                currentHeadType = printer.headProperty().get().typeCodeProperty().get();
             } else
             {
-                currentHeadType = HeadContainer.defaultHeadType;
+                currentHeadType = HeadContainer.defaultHeadID;
             }
             populateCustomProfileChooser();
             updateSupportCombo(currentPrinter);
@@ -398,7 +398,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         if (getNumExtruders(printer) < 2 
             || !cbSupport.isSelected()
-            || currentHeadType == HeadType.SINGLE_MATERIAL_HEAD)
+            || currentHeadType == HeadContainer.defaultHeadID)
         {
             supportComboBox.setDisable(true);
         } else
@@ -467,10 +467,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void selectCurrentCustomSettings()
     {
         Head currentHead = currentPrinter.headProperty().get();
-        HeadType headType = HeadType.SINGLE_MATERIAL_HEAD;
+        String headType = HeadContainer.defaultHeadID;
         if (currentHead != null)
         {
-            headType = currentHead.headTypeProperty().get();
+            headType = currentHead.typeCodeProperty().get();
         }
         customProfileChooser.getSelectionModel().select(
             printerSettings.getSettings(headType));

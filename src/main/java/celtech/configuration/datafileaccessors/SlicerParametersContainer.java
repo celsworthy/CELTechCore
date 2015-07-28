@@ -3,7 +3,6 @@ package celtech.configuration.datafileaccessors;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileFileFilter;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.printerControl.model.Head.HeadType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,11 +44,11 @@ public class SlicerParametersContainer
         loadProfileData();
     }
     
-    private static String getSettingsKey(String profileName, HeadType headType) {
-        return profileName + "#" + headType.name();
+    private static String getSettingsKey(String profileName, String headType) {
+        return profileName + "#" + headType;
     }
 
-    public static String constructFilePath(String profileName, HeadType headType)
+    public static String constructFilePath(String profileName, String headType)
     {
         return ApplicationConfiguration.getUserPrintProfileDirectory() + getSettingsKey(profileName, headType)
             + ApplicationConfiguration.printProfileFileExtension;
@@ -130,7 +129,7 @@ public class SlicerParametersContainer
         
         if (newSettings.getVersion() < 5) {
             steno.info("Convert " + newSettings.getProfileName() + " profile to version 5");
-            newSettings.setHeadType(HeadContainer.defaultHeadType);
+            newSettings.setHeadType(HeadContainer.defaultHeadID);
             newSettings.setVersion(5);
             doSaveEditedUserProfile(newSettings);
         }
@@ -162,7 +161,7 @@ public class SlicerParametersContainer
     private static void doSaveAndChangeUserProfileName(SlicerParametersFile profile)
     {
         String originalName = "";
-        HeadType originalHeadType = null;
+        String originalHeadType = null;
         for (Map.Entry<String, SlicerParametersFile> entrySet : profileMap.entrySet())
         {
             originalName = entrySet.getKey().split("#")[0];
@@ -221,7 +220,7 @@ public class SlicerParametersContainer
         }
     }
 
-    public static void deleteUserProfile(String profileName, HeadType headType)
+    public static void deleteUserProfile(String profileName, String headType)
     {
         SlicerParametersFile deletedProfile = getSettings(profileName, headType);
         assert(deletedProfile != null);
@@ -243,7 +242,7 @@ public class SlicerParametersContainer
         return instance;
     }
 
-    public static SlicerParametersFile getSettings(String profileName, HeadType headType)
+    public static SlicerParametersFile getSettings(String profileName, String headType)
     {
         if (instance == null)
         {

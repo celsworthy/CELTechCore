@@ -198,7 +198,7 @@ public class PrintEngine implements ControllableService
                 postProcessorService.setProject(result.getProject());
                 postProcessorService.setSettings(
                     result.getProject().getPrinterSettings().getSettings(
-                        associatedPrinter.headProperty().get().headType.get()));
+                        associatedPrinter.headProperty().get().typeCode.get()));
                 postProcessorService.start();
 
                 if (raiseProgressNotifications)
@@ -603,7 +603,7 @@ public class PrintEngine implements ControllableService
     private boolean printFromScratch(Project project, boolean acceptedPrintRequest)
     {
         Head currentHead = associatedPrinter.headProperty().get();
-        HeadType headType = currentHead.headTypeProperty().get();
+        String headType = currentHead.typeCodeProperty().get();
         SlicerParametersFile settingsToUse = project.getPrinterSettings().getSettings(headType).clone();
 
         //Create the print job directory

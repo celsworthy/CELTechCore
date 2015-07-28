@@ -9,7 +9,6 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.Optional;
 import org.junit.Test;
@@ -34,8 +33,8 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
         
         CloseUtilities closeUtilities = new CloseUtilities(testProject, 
-            testProject.getPrinterSettings().getSettings(HeadType.SINGLE_MATERIAL_HEAD),
-            HeadType.SINGLE_MATERIAL_HEAD);
+            testProject.getPrinterSettings().getSettings("RBX01-SM"),
+            "RBX01-SM");
 
         Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
                 ((SectionNode) tool1.getChildren().get(0)));

@@ -45,7 +45,7 @@ public class PrinterSettings
     {
         customSettingsName.set("");
         SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettings(
-            ApplicationConfiguration.draftSettingsProfileName, HeadContainer.defaultHeadType);
+            ApplicationConfiguration.draftSettingsProfileName, HeadContainer.defaultHeadID);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
         printSupportOverride.set(SupportType.NO_SUPPORT);
@@ -137,7 +137,7 @@ public class PrinterSettings
         return customSettingsName;
     }
 
-    public SlicerParametersFile getSettings(HeadType headType)
+    public SlicerParametersFile getSettings(String headType)
     {
         SlicerParametersFile settings = null;
         switch (printQuality.get())
