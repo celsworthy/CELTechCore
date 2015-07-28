@@ -280,6 +280,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToCentre.setX(centreXOffset);
         transformMoveToCentre.setY(centreYOffset);
         transformMoveToCentre.setZ(centreZOffset);
+        
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     protected void initialise(File modelFile)
@@ -630,12 +632,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     void clearDropToBedTransformRecursive()
     {
         transformPostRotationYAdjust.setY(0);
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
     
     void clearMoveToCentreTransformRecursive() {
         transformMoveToCentre.setX(0);
         transformMoveToCentre.setY(0);
         transformMoveToCentre.setZ(0);
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     private class ApplyTwist implements UnivariateFunction
@@ -1304,11 +1308,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                     getModelFile(), meshView);
                 newModelContainer.setState(state);
                 parts.add(newModelContainer);
-                double newTransformCentreX = newModelContainer.getTransformMoveToCentre().getX();
-                double newTransformCentreZ = newModelContainer.getTransformMoveToCentre().getZ();
-                double deltaX = newTransformCentreX - transformCentreX;
-                double deltaZ = newTransformCentreZ - transformCentreZ;
-                newModelContainer.translateBy(-deltaX, -deltaZ);
+                
+                newModelContainer.clearMoveToCentreTransformRecursive();
                 newModelContainer.setModelName(modelName + " " + ix);
 
                 ix++;

@@ -113,7 +113,7 @@ public class ModelLoader
         } else
         {
             modelContainer = new ModelGroup(modelContainers);
-//            modelContainer.applyMoveToCentreAtTopLevelOnly();
+            modelContainer.applyMoveToCentreAtTopLevelOnly();
             undoableProject.addModel(modelContainer);
         }
         shrinkIfRequested(modelContainer);

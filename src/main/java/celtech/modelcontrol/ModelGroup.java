@@ -177,6 +177,7 @@ public class ModelGroup extends ModelContainer
         for (ModelContainer childModelContainer : childModelContainers)
         {
             childModelContainer.clearDropToBedTransformRecursive();
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         }
     }
     
@@ -185,6 +186,7 @@ public class ModelGroup extends ModelContainer
         for (ModelContainer childModelContainer : childModelContainers)
         {
             childModelContainer.clearMoveToCentreTransformRecursive();
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         }
     }    
 
