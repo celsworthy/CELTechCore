@@ -7,6 +7,7 @@ import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.controllers.panels.userpreferences.Preferences;
+import celtech.coreUI.controllers.utilityPanels.HeadEEPROMController;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -88,6 +89,10 @@ public class ExtrasMenuPanelController implements Initializable
             ApplicationConfiguration.fxmlPanelResourcePath + "filamentLibraryPanel.fxml",
             new FilamentLibraryPanelController());
         
+        loadInnerPanel(
+            ApplicationConfiguration.fxmlUtilityPanelResourcePath + "headEEPROM.fxml",
+            new HeadEEPROMController());
+        
         profileDetailsController = new ProfileLibraryPanelController();
         profileDetails = loadInnerPanel(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml",
@@ -102,7 +107,8 @@ public class ExtrasMenuPanelController implements Initializable
             ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
             new PreferencesInnerPanelController("preferences.printing",
                                                 Preferences.createPrintingPreferences(
-                                                    userPreferences)));   
+                                                    userPreferences)));  
+        
         
         
     }

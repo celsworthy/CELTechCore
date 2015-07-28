@@ -3,6 +3,7 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.Lookup;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
+import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
@@ -13,6 +14,8 @@ import celtech.utils.PrinterListChangesListener;
 import celtech.utils.PrinterUtils;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -31,7 +34,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class HeadEEPROMController implements Initializable, PrinterListChangesListener
+public class HeadEEPROMController implements Initializable, PrinterListChangesListener,
+    ExtrasMenuInnerPanel
 {
 
     Stenographer steno = StenographerFactory.getStenographer(HeadEEPROMController.class.getName());
@@ -445,6 +449,19 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             head.getNozzles().get(1).zOffsetProperty().removeListener(headChangeListener);
             head.getNozzles().get(1).bOffsetProperty().removeListener(headChangeListener);
         }
+    }
+
+    @Override
+    public String getMenuTitle()
+    {
+        return "extrasMenu.headEEPROM";
+    }
+
+    @Override
+    public List<OperationButton> getOperationButtons()
+    {
+        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        return operationButtons;
     }
 
 }
