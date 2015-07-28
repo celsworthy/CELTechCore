@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
+import static celtech.coreUI.controllers.panels.FXMLUtilities.addColonsToLabels;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.model.Head;
@@ -17,7 +18,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -25,8 +25,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -92,19 +92,18 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private RestrictedTextField headType;
 
     @FXML
-    private Button writeOffsetsButton;
-
-    @FXML
     private GridPane headEEPROMOffsets;
+    
+    @FXML
+    private VBox headFullContainer;
 
     private ModalDialog eepromCommsError = null;
 
     private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
 
     private Printer selectedPrinter;
-
-    @FXML
-    void resetToDefaults(ActionEvent event)
+    
+    void whenResetToDefaultsPressed()
     {
         try
         {
@@ -115,12 +114,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         }
     }
 
-    @FXML
     /**
      * Write the values from the text fields onto the actual head. If the unique id is already
      * stored on the head then do not overwrite it.
      */
-    void writeHeadConfig(ActionEvent event)
+    void whenSavePressed()
     {
         try
         {
@@ -218,6 +216,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                 setSelectedPrinter(
                     Lookup.getSelectedPrinterProperty().get());
             }
+            
+            addColonsToLabels(headFullContainer);
 
         } catch (Exception ex)
         {
@@ -241,8 +241,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         nozzle2XOffset.textProperty().addListener(offsetsChangedListener);
         nozzle2YOffset.textProperty().addListener(offsetsChangedListener);
         nozzle2ZOverrun.textProperty().addListener(offsetsChangedListener);
-
-        writeOffsetsButton.disableProperty().bind(Bindings.not(offsetFieldsDirty));
 
     }
 
@@ -461,6 +459,75 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public List<OperationButton> getOperationButtons()
     {
         List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "genericFirstLetterCapitalised.Save";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "saveButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "genericFirstLetterCapitalised.Save";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenSavePressed();
+            }
+
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return offsetFieldsDirty;
+            }
+
+        };
+        operationButtons.add(saveButton);
+        
+        ExtrasMenuInnerPanel.OperationButton resetToDefaultsButton = new ExtrasMenuInnerPanel.OperationButton()
+        {
+            @Override
+            public String getTextId()
+            {
+                return "headPanel.resetToDefaults";
+            }
+
+            @Override
+            public String getFXMLName()
+            {
+                return "saveButton";
+            }
+
+            @Override
+            public String getTooltipTextId()
+            {
+                return "headPanel.resetToDefaults";
+            }
+
+            @Override
+            public void whenClicked()
+            {
+                whenResetToDefaultsPressed();
+            }
+
+            @Override
+            public BooleanProperty whenEnabled()
+            {
+                return new SimpleBooleanProperty(true);
+            }
+
+        };
+        operationButtons.add(resetToDefaultsButton);
         return operationButtons;
     }
 
