@@ -14,7 +14,6 @@ import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.PrinterListChangesAdapter;

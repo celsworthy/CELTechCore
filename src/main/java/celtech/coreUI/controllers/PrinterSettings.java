@@ -6,7 +6,6 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;

@@ -61,10 +61,6 @@ public class HeadContainer
         return headList;
     }
 
-    /**
-     *
-     * @return
-     */
     public static HeadContainer getInstance()
     {
         if (instance == null)
@@ -75,11 +71,6 @@ public class HeadContainer
         return instance;
     }
 
-    /**
-     *
-     * @param headID
-     * @return
-     */
     public static HeadFile getHeadByID(String headID)
     {
         if (instance == null)
@@ -91,10 +82,6 @@ public class HeadContainer
         return returnedHead;
     }
 
-    /**
-     *
-     * @return
-     */
     public static ObservableList<HeadFile> getCompleteHeadList()
     {
         if (instance == null)

@@ -27,7 +27,6 @@ import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerService;

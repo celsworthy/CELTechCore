@@ -5,7 +5,6 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.slicer.FillPattern;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
-import celtech.printerControl.model.Head.HeadType;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
