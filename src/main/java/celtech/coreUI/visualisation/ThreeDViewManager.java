@@ -21,7 +21,6 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Printer;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -96,13 +95,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
      */
     private ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
 
-    private ReadOnlyDoubleProperty widthPropertyToFollow;
-    private ReadOnlyDoubleProperty heightPropertyToFollow;
+    private final ReadOnlyDoubleProperty widthPropertyToFollow;
+    private final ReadOnlyDoubleProperty heightPropertyToFollow;
     private final Set<ModelContainer> excludedFromSelection;
 
-    /*
-     * ALT stuff
-     */
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
     private final Group bed;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
@@ -116,13 +112,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private double mousePosY;
     private double mouseOldX;
     private double mouseOldY;
-    private double mouseDeltaX;
-    private double mouseDeltaY;
 
     private final double bedXOffsetFromCameraZero;
     private final double bedZOffsetFromCameraZero;
 
-    private ProjectSelection projectSelection;
+    private final ProjectSelection projectSelection;
 
     private long lastAnimationTrigger = 0;
 
@@ -381,8 +375,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void handleMouseDragEvent(MouseEvent event)
     {
-        mouseDeltaX = (mousePosX - mouseOldX);
-        mouseDeltaY = (mousePosY - mouseOldY);
+        
+        double mouseDeltaX = (mousePosX - mouseOldX);
+        double mouseDeltaY = (mousePosY - mouseOldY);
         
         if (event.isPrimaryButtonDown()
             && projectGUIRules.canTranslateRotateOrScaleSelection().not().get())
@@ -792,16 +787,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         return boxGroup;
     }
 
-    public void addGCodeParts(Group gCodeParts)
-    {
-        if (this.gcodeParts != null)
-        {
-            models.getChildren().remove(this.gcodeParts);
-        }
-        this.gcodeParts = gCodeParts;
-        models.getChildren().add(gCodeParts);
-    }
-
     public void shutdown()
     {
         applicationStatus.modeProperty().removeListener(applicationModeListener);
@@ -829,10 +814,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                                           !justEnteredDragMode);
     }
 
-    /**
-     *
-     * @param pickedModel
-     */
     public void deselectModel(ModelContainer pickedModel)
     {
         if (pickedModel.isSelected())

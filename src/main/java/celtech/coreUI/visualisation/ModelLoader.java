@@ -84,7 +84,7 @@ public class ModelLoader
     public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
     {
         modelLoaderService.reset();
-        modelLoaderService.setModelFilesToLoad(modelsToLoad, relayout);
+        modelLoaderService.setModelFilesToLoad(modelsToLoad);
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
             offerShrinkAndAddToProject(project, relayout);

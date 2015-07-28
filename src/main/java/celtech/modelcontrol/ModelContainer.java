@@ -90,7 +90,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     ModelBounds originalModelBounds;
 
     protected Scale transformScalePreferred;
-    private Translate transformPostRotationYAdjust;
+    private Translate transformPostScaleOrRotationYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
     private static final Point3D X_AXIS = new Point3D(1, 0, 0);
@@ -110,7 +110,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private DoubleProperty preferredYScale;
     private DoubleProperty preferredZScale;
     /**
-     * Property wrapper around the rotationY.
+     * Property wrappers around the rotations.
      */
     private DoubleProperty preferredRotationTwist;
     private DoubleProperty preferredRotationLean;
@@ -203,7 +203,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("Scale preferred is " + transformScalePreferred);
         System.out.println("Move to centre is " + transformMoveToCentre);
         System.out.println("Move to preferred is " + transformMoveToPreferred);
-        System.out.println("transformSnapToGroundYAdjust is " + transformPostRotationYAdjust);
+        System.out.println("transformSnapToGroundYAdjust is " + transformPostScaleOrRotationYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
         System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
         System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
@@ -214,7 +214,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     protected void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
-        transformPostRotationYAdjust = new Translate(0, 0, 0);
+        transformPostScaleOrRotationYAdjust = new Translate(0, 0, 0);
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
@@ -228,7 +228,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * Rotations (which are all around the centre of the model) must be applied before any
          * translations.
          */
-        getTransforms().addAll(transformPostRotationYAdjust, transformMoveToPreferred,
+        getTransforms().addAll(transformPostScaleOrRotationYAdjust, transformMoveToPreferred,
                                transformMoveToCentre, transformBedCentre,
                                transformRotateTurnPreferred,
                                transformRotateLeanPreferred,
@@ -625,7 +625,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     void clearDropToBedTransformRecursive()
     {
-        transformPostRotationYAdjust.setY(0);
+        transformPostScaleOrRotationYAdjust.setY(0);
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
     
@@ -1502,10 +1502,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     protected void dropToBedAndUpdateLastTransformedBounds()
     {
-        // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
-        transformPostRotationYAdjust.setY(0);
+        // Correct transformPostRotationYAdjust for change in height (Y)
+        transformPostScaleOrRotationYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
-        transformPostRotationYAdjust.setY(-modelBoundsParent.getMaxY());
+        transformPostScaleOrRotationYAdjust.setY(-modelBoundsParent.getMaxY());
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 

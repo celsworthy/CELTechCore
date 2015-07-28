@@ -129,6 +129,9 @@ public class ModelGroup extends ModelContainer
         return modelsHoldingModels;
     }
 
+    /**
+     * Update the given group structure with the details of this group.
+     */
     @Override
     public void addGroupStructure(Map<Integer, Set<Integer>> groupStructure)
     {

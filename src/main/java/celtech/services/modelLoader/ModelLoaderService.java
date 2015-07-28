@@ -21,7 +21,7 @@ public class ModelLoaderService extends Service<ModelLoadResults> implements
 
     private List<File> modelFilesToLoad;
 
-    public final void setModelFilesToLoad(List<File> modelFiles, boolean relayout)
+    public final void setModelFilesToLoad(List<File> modelFiles)
     {
         modelFilesToLoad = modelFiles;
     }
