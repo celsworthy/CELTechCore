@@ -275,11 +275,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     {
         boolean handleThisEvent = true;
 
-        mousePosX = event.getSceneX();
-        mousePosY = event.getSceneY();
-        mouseOldX = event.getSceneX();
-        mouseOldY = event.getSceneY();
-
         PickResult pickResult = event.getPickResult();
         Point3D pickedPoint = pickResult.getIntersectedPoint();
         Node intersectedNode = pickResult.getIntersectedNode();
@@ -305,8 +300,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                     return;
                 }
 
-                ModelContainer rootModelContainer = 
-                    ModelContainer.getRootModelContainer((MeshView) intersectedNode);
+                ModelContainer rootModelContainer
+                    = ModelContainer.getRootModelContainer((MeshView) intersectedNode);
                 switch (layoutSubmode.get())
                 {
                     case SNAP_TO_GROUND:
@@ -383,20 +378,17 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
             layoutSubmode.set(LayoutSubmode.SELECT);
         }
     }
-    
+
     private void handleMouseDragEvent(MouseEvent event)
     {
-        
-        if (event.isPrimaryButtonDown() && projectGUIRules.canTranslateRotateOrScaleSelection().not().get()) {
-            return;
-        }
-        
-        mouseOldX = mousePosX;
-        mouseOldY = mousePosY;
-        mousePosX = event.getSceneX();
-        mousePosY = event.getSceneY();
         mouseDeltaX = (mousePosX - mouseOldX);
         mouseDeltaY = (mousePosY - mouseOldY);
+        
+        if (event.isPrimaryButtonDown()
+            && projectGUIRules.canTranslateRotateOrScaleSelection().not().get())
+        {
+            return;
+        }
 
         boolean shortcut = event.isShortcutDown();
         if (shortcut && event.isSecondaryButtonDown())
@@ -442,6 +434,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
+        
+        mouseOldX = mousePosX;
+        mouseOldY = mousePosY;
+        mousePosX = event.getSceneX();
+        mousePosY = event.getSceneY();
 
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
@@ -937,7 +934,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                 {
                     projectSelection.addModelContainer(modelContainer);
                     break;
-                } 
+                }
             }
         }
     }
@@ -951,10 +948,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         {
             excludedFromSelection.add(modelContainer);
         }
-        
+
         for (ModelContainer modelContainer : modelGroup.getChildModelContainers())
         {
-            System.out.println("remove from exclusion: " + modelContainer);
             excludedFromSelection.remove(modelContainer);
             for (ModelContainer modelContainer1 : modelContainer.getDescendentModelContainers())
             {
@@ -972,10 +968,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private ModelGroup getAncestorSelectedGroup(MeshView meshView)
     {
         ModelContainer parentModelContainer = (ModelContainer) meshView.getParent();
-        if (parentModelContainer != null) {
-            while(parentModelContainer.getParentModelContainer() != null) {
+        if (parentModelContainer != null)
+        {
+            while (parentModelContainer.getParentModelContainer() != null)
+            {
                 parentModelContainer = parentModelContainer.getParentModelContainer();
-                if (projectSelection.isSelected(parentModelContainer)) {
+                if (projectSelection.isSelected(parentModelContainer))
+                {
                     return (ModelGroup) parentModelContainer;
                 }
             }

@@ -57,7 +57,6 @@ public class PrinterChangesNotifier
                 {
                     for (PrinterChangesListener printerChangesListener : listeners)
                     {
-                        System.out.println("head added to " + printer);
                         printerChangesListener.whenHeadAdded();
                     }
                 } else
