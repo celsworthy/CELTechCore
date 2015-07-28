@@ -1,6 +1,8 @@
-package celtech.coreUI.controllers.utilityPanels;
+package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
@@ -27,7 +29,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -37,32 +39,31 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class MaintenancePanelController implements Initializable
+public class MaintenanceInsetPanelController implements Initializable
 {
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(
-            MaintenancePanelController.class.getName());
-    private Printer connectedPrinter = null;
+    private static final Stenographer steno = StenographerFactory.getStenographer(MaintenanceInsetPanelController.class.getName());
+    private Printer connectedPrinter;
 
-    private ProgressDialog firmwareUpdateProgress = null;
+    private ProgressDialog firmwareUpdateProgress;
     private final FileChooser firmwareFileChooser = new FileChooser();
 
-    private ProgressDialog gcodeUpdateProgress = null;
+    private ProgressDialog gcodeUpdateProgress;
     private final FileChooser gcodeFileChooser = new FileChooser();
     private final TransferGCodeToPrinterService gcodePrintService = new TransferGCodeToPrinterService();
 
     private final BooleanProperty printingDisabled = new SimpleBooleanProperty(false);
     private final BooleanProperty noHead = new SimpleBooleanProperty(false);
-    private BooleanProperty dualHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty dualHead = new SimpleBooleanProperty(false);
     ;
-    private BooleanProperty singleHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty singleHead = new SimpleBooleanProperty(false);
     ;
     private final BooleanProperty noFilamentE = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentD = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentEOrD = new SimpleBooleanProperty(false);
 
     @FXML
-    private AnchorPane container;
+    private VBox container;
 
     @FXML
     private Button YTestButton;
@@ -102,6 +103,11 @@ public class MaintenancePanelController implements Initializable
 
     @FXML
     private Button ZTestButton;
+    
+    @FXML
+    void back(ActionEvent event) {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
+    }
 
     @FXML
     void ejectStuckMaterial1(ActionEvent event)

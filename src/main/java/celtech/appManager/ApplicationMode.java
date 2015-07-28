@@ -16,6 +16,7 @@ public enum ApplicationMode
     CALIBRATION_CHOICE("printerStatus", "Calibration"),
     REGISTRATION("printerStatus", "registration"),
     PURGE("printerStatus", "purge"),
+    MAINTENANCE("printerStatus", "Maintenance"),
     ABOUT("printerStatus", "about"),
     SYSTEM_INFORMATION("printerStatus", "systemInformation"),
     EXTRAS_MENU("printerStatus", "extrasMenu"),

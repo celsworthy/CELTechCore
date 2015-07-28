@@ -236,6 +236,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
     }
+    
+    @FXML
+    void maintenance(ActionEvent event)
+    {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.MAINTENANCE);
+    }    
 
     @FXML
     void register(ActionEvent event)
