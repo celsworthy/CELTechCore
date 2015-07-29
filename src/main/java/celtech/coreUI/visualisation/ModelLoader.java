@@ -108,8 +108,8 @@ public class ModelLoader
         {
             modelContainer = new ModelGroup(modelContainers);
         }
-        modelContainer.moveToCentre();
-//            modelContainer.dropToBed();
+//        modelContainer.moveToCentre();
+        modelContainer.dropToBed();
         undoableProject.addModel(modelContainer);
         shrinkIfRequested(modelContainer);
     }
