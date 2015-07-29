@@ -90,7 +90,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     ModelBounds originalModelBounds;
 
     protected Scale transformScalePreferred;
-    private Translate transformPostScaleOrRotationYAdjust;
+    private Translate transformDropToBedYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
     private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
     private static final Point3D X_AXIS = new Point3D(1, 0, 0);
@@ -201,7 +201,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("==============================================");
         System.out.println("Scale preferred is " + transformScalePreferred);
         System.out.println("Move to preferred is " + transformMoveToPreferred);
-        System.out.println("transformSnapToGroundYAdjust is " + transformPostScaleOrRotationYAdjust);
+        System.out.println("transformSnapToGroundYAdjust is " + transformDropToBedYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
         System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
         System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
@@ -212,7 +212,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     protected void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
-        transformPostScaleOrRotationYAdjust = new Translate(0, 0, 0);
+        transformDropToBedYAdjust = new Translate(0, 0, 0);
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
@@ -225,7 +225,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * Rotations (which are all around the centre of the model) must be applied before any
          * translations.
          */
-        getTransforms().addAll(transformPostScaleOrRotationYAdjust, transformMoveToPreferred,
+        getTransforms().addAll(transformDropToBedYAdjust, 
+                               transformMoveToPreferred,
                                transformBedCentre,
                                transformRotateTurnPreferred,
                                transformRotateLeanPreferred,
@@ -618,17 +619,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             faceNormal = getFaceNormal(meshView, faceIndex);
             faceCentre = getFaceCentre(meshView, faceIndex);
-            localToBedTransform = getLocalToParentTransform();
             bed = getRootModelContainer(meshView).getParent();
         }
 
         Point3D getRotatedFaceNormal()
         {
-//            Point3D rotatedFaceCentre = localToBedTransform.transform(
-//                toPoint3D(faceCentre));
-//
-//            Point3D rotatedFaceCentrePlusNormal = localToBedTransform.transform(
-//                toPoint3D(faceCentre.add(faceNormal)));
 
             Point3D rotatedFaceCentre = bed.sceneToLocal(localToScene(toPoint3D(faceCentre)));
 
@@ -655,10 +650,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void updateScaleTransform()
     {
         setScalePivotToCentreOfModel();
-        
-        transformScalePreferred.setX(preferredXScale.get());
-        transformScalePreferred.setY(preferredYScale.get());
-        transformScalePreferred.setZ(preferredZScale.get());
 
         dropToBed();
         checkOffBed();
@@ -669,18 +660,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void setXScale(double scaleFactor)
     {
         preferredXScale.set(scaleFactor);
+        transformScalePreferred.setX(scaleFactor);
         updateScaleTransform();
     }
 
     public void setYScale(double scaleFactor)
     {
         preferredYScale.set(scaleFactor);
+        transformScalePreferred.setY(scaleFactor);
         updateScaleTransform();
     }
 
     public void setZScale(double scaleFactor)
     {
         preferredZScale.set(scaleFactor);
+        transformScalePreferred.setZ(scaleFactor);
         updateScaleTransform();
     }
 
@@ -831,6 +825,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getZScale());
         out.writeDouble(getRotationLean());
         out.writeDouble(getRotationTurn());
+        
+        out.writeDouble(transformDropToBedYAdjust.getY());
     }
 
     private void readObject(ObjectInputStream in)
@@ -867,6 +863,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         initialise(new File(modelName));
 
         double storedX = in.readDouble();
+        double storedY = 0;
         double storedZ = in.readDouble();
         double storedScaleX = in.readDouble();
         double storedRotationTwist = in.readDouble();
@@ -894,11 +891,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             convertSnapFace = true;
         }
+        
+        if (in.available() > 0) {
+            
+            storedY = in.readDouble();
+            System.out.println("read in y adjust: " + storedY);
+        } else {
+            System.out.println("no y adjust");
+        }
 
         initialiseTransforms();
 
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
+        transformDropToBedYAdjust.setY(storedY);
         
         preferredXScale.set(storedScaleX);
         preferredYScale.set(storedScaleY);
@@ -1033,6 +1039,38 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
+    }
+    
+    double getYAdjust() {
+        return transformDropToBedYAdjust.getY();
+    }
+    
+    /**
+     * This method is used during an ungroup to blend the group's transform into this one, thereby
+     * keeping this model in the same place.read 
+    */
+     public void applyGroupTransformToThis(ModelGroup modelGroup)
+    {
+        double scaleFactor = getXScale() * modelGroup.getXScale();
+        preferredXScale.set(scaleFactor);
+        transformScalePreferred.setX(scaleFactor);
+        
+        scaleFactor = getYScale() * modelGroup.getYScale();
+        preferredYScale.set(scaleFactor);
+        transformScalePreferred.setY(scaleFactor);
+        
+        scaleFactor = getZScale() * modelGroup.getZScale();
+        preferredZScale.set(scaleFactor);
+        transformScalePreferred.setZ(scaleFactor);
+        
+
+        // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
+        // from centre of group, which needs to be taken into account
+        translateBy(modelGroup.getMoveToPreferredX(),
+                                        modelGroup.getMoveToPreferredZ());
+        
+        transformDropToBedYAdjust.setY(modelGroup.getYAdjust());
+        
     }
 
     /**
@@ -1460,9 +1498,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void dropToBed()
     {
         // Correct transformPostRotationYAdjust for change in height (Y)
-        transformPostScaleOrRotationYAdjust.setY(0);
+        transformDropToBedYAdjust.setY(0);
         ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
-        transformPostScaleOrRotationYAdjust.setY(-modelBoundsParent.getMaxY());
+        transformDropToBedYAdjust.setY(-modelBoundsParent.getMaxY());
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
@@ -1802,6 +1840,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         public int modelId;
         public double x;
+        public double y;
         public double z;
         public double preferredXScale;
         public double preferredYScale;
@@ -1814,6 +1853,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         public State(
             @JsonProperty("modelId") int modelId,
             @JsonProperty("x") double x,
+            @JsonProperty("y") double y,
             @JsonProperty("z") double z,
             @JsonProperty("preferredXScale") double preferredXScale,
             @JsonProperty("preferredYScale") double preferredYScale,
@@ -1824,6 +1864,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             this.modelId = modelId;
             this.x = x;
+            this.y = y;
             this.z = z;
             this.preferredXScale = preferredXScale;
             this.preferredYScale = preferredYScale;
@@ -1839,6 +1880,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         public void assignFrom(State fromState)
         {
             this.x = fromState.x;
+            this.y = fromState.y;
             this.z = fromState.z;
             this.preferredXScale = fromState.preferredXScale;
             this.preferredYScale = fromState.preferredYScale;
@@ -1853,6 +1895,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return new State(modelId,
                          transformMoveToPreferred.getX(),
+                         transformDropToBedYAdjust.getY(),
                          transformMoveToPreferred.getZ(),
                          preferredXScale.get(), preferredYScale.get(), preferredZScale.get(),
                          preferredRotationTwist.get(), preferredRotationTurn.get(),
@@ -1863,6 +1906,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         transformMoveToPreferred.setX(state.x);
         transformMoveToPreferred.setZ(state.z);
+        transformDropToBedYAdjust.setY(state.y);
         
         preferredXScale.set(state.preferredXScale);
         transformScalePreferred.setX(state.preferredXScale);

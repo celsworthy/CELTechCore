@@ -642,23 +642,10 @@ public class Project implements Serializable
                 {
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
-                    applyGroupTransformToChild(modelGroup, childModelContainer);
+                    childModelContainer.applyGroupTransformToThis(modelGroup);
                 }
             }
         }
-    }
-
-    private void applyGroupTransformToChild(ModelGroup modelGroup,
-        ModelContainer childModelContainer)
-    {
-        childModelContainer.setXScale(childModelContainer.getXScale() * modelGroup.getXScale());
-        childModelContainer.setYScale(childModelContainer.getYScale() * modelGroup.getYScale());
-        childModelContainer.setZScale(childModelContainer.getZScale() * modelGroup.getZScale());
-
-        // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
-        // from centre of group, which needs to be taken into account
-        childModelContainer.translateBy(modelGroup.getMoveToPreferredX(),
-                                        modelGroup.getMoveToPreferredZ());
     }
 
     private Set<ModelContainer> getModelsHoldingMeshViews()
