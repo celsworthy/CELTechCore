@@ -5,9 +5,9 @@ package celtech.modelcontrol;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.TestUtils;
-import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.services.modelLoader.ModelLoadResults;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.File;
 import java.net.URL;
@@ -89,6 +89,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
+        mc.dropToBed();
         ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
         assertEquals(BED_CENTRE_X - 1, bounds.getMinX(), 0);
         assertEquals(BED_CENTRE_X + 1, bounds.getMaxX(), 0);
@@ -123,6 +124,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
+        mc.dropToBed();
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
         ModelBounds bounds = mc.calculateBoundsInBedCoordinateSystem();
         assertEquals(BED_CENTRE_X - 1 + TRANSLATE_X, bounds.getMinX(), 0);
@@ -159,7 +161,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
-
+        mc.dropToBed();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelGroup(modelContainers);
@@ -209,7 +211,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
-
+        mc.dropToBed();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelGroup(modelContainers);
@@ -237,7 +239,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
-
+        mc.dropToBed();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
@@ -262,7 +264,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
-
+        mc.dropToBed();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         ModelContainer groupModelContainer = new ModelGroup(modelContainers);
@@ -291,7 +293,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
-
+        mc.dropToBed();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
@@ -334,7 +336,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         TestUtils utils = new TestUtils();
         ModelContainer mc = utils.makeModelContainer(true);
         mc.moveToCentre();
-
+        mc.dropToBed();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(mc);
         mc.translateBy(TRANSLATE_X, TRANSLATE_Z);
@@ -372,8 +374,7 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(-3.0, bounds.getMinY(), 0);
         assertEquals(0, bounds.getMaxY(), 0);
         assertEquals(0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMinZ(), 0);
-        assertEquals( 0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMaxZ(), 0);
+        assertEquals(0 + TRANSLATE_Z + TRANSLATE_Z_GROUP, bounds.getMaxZ(), 0);
     }
-
 
 }

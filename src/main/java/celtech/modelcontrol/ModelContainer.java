@@ -97,7 +97,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Rotate transformRotateTwistPreferred;
     private Rotate transformRotateTurnPreferred;
     private Rotate transformRotateLeanPreferred;
-    protected Translate transformMoveToCentre;
     private Translate transformMoveToPreferred;
     private Translate transformBedCentre;
 
@@ -201,7 +200,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("Transforms for: " + getId());
         System.out.println("==============================================");
         System.out.println("Scale preferred is " + transformScalePreferred);
-        System.out.println("Move to centre is " + transformMoveToCentre);
         System.out.println("Move to preferred is " + transformMoveToPreferred);
         System.out.println("transformSnapToGroundYAdjust is " + transformPostScaleOrRotationYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
@@ -218,7 +216,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
-        transformMoveToCentre = new Translate(0, 0, 0);
         transformMoveToPreferred = new Translate(0, 0, 0);
         transformBedCentre = new Translate(0, 0, 0);
 
@@ -229,7 +226,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * translations.
          */
         getTransforms().addAll(transformPostScaleOrRotationYAdjust, transformMoveToPreferred,
-                               transformMoveToCentre, transformBedCentre,
+                               transformBedCentre,
                                transformRotateTurnPreferred,
                                transformRotateLeanPreferred,
                                transformRotateTwistPreferred
@@ -277,13 +274,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void moveToCentre()
     {
-        double centreXOffset = -originalModelBounds.getCentreX();
-        double centreYOffset = -originalModelBounds.getMaxY();
-        double centreZOffset = -originalModelBounds.getCentreZ();
-        
-        transformMoveToCentre.setX(centreXOffset);
-        transformMoveToCentre.setY(centreYOffset);
-        transformMoveToCentre.setZ(centreZOffset);
+        translateTo(bedCentreOffsetX, bedCentreOffsetZ);
         
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
@@ -1464,11 +1455,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelBounds getOriginalModelBounds()
     {
         return originalModelBounds;
-    }
-
-    public Translate getTransformMoveToCentre()
-    {
-        return transformMoveToCentre;
     }
 
     public void dropToBed()

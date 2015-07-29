@@ -5,7 +5,6 @@
  */
 package celtech.coreUI.visualisation.metaparts;
 
-import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import java.util.ArrayList;
 import java.util.List;
