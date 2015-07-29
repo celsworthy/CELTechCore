@@ -238,9 +238,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshView.getTransforms().addAll(transformScalePreferred);
         }
 
-        originalModelBounds = calculateBoundsInLocal();
-        
-        setRotationPivotsToCentreOfModel();
+        updateOriginalModelBounds();
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
@@ -248,7 +246,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    private void setScalePivotToCentreOfModel()
+    void updateOriginalModelBounds()
+    {
+        originalModelBounds = calculateBoundsInLocal();
+        setScalePivotToCentreOfModel();
+        setRotationPivotsToCentreOfModel();
+    }
+
+    void setScalePivotToCentreOfModel()
     {
         transformScalePreferred.setPivotX(getBoundsInLocal().getMinX()
             + getBoundsInLocal().getWidth() / 2.0);
@@ -258,7 +263,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + getBoundsInLocal().getDepth() / 2.0);
     }
 
-    private void setRotationPivotsToCentreOfModel()
+    void setRotationPivotsToCentreOfModel()
     {
         transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
@@ -649,8 +654,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void updateScaleTransform()
     {
-        setScalePivotToCentreOfModel();
-
         dropToBed();
         checkOffBed();
         notifyShapeChange();
@@ -1919,7 +1922,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationTwist.set(state.preferredRotationTwist);
         preferredRotationTurn.set(state.preferredRotationTurn);
         
-        setScalePivotToCentreOfModel();
         updateTransformsFromLeanTwistTurnAngles();
         
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
