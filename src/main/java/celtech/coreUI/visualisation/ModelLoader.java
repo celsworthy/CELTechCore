@@ -78,7 +78,7 @@ public class ModelLoader
     }
 
     /**
-     * Load each model in modelsToLoad and rwelayout if requested. If there are already models
+     * Load each model in modelsToLoad and relayout if requested. If there are already models
      * loaded in the project then do not relayout even if relayout=true;
      */
     public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)

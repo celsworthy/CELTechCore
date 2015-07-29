@@ -2,7 +2,6 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
 import celtech.coreUI.controllers.StatusInsetController;
-import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -51,9 +50,6 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
     private Label reelButtonSwitch;
 
     @FXML
-    private Label printerID;
-
-    @FXML
     private Label zLimitSwitch;
 
     @FXML
@@ -64,20 +60,6 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
 
     @FXML
     private Label extruder1Index;
-
-    @FXML
-    private Label headID;
-
-    private final ChangeListener<Head> headChangeListener = (ObservableValue<? extends Head> observable, Head oldValue, Head newValue) ->
-    {
-        if (newValue != null)
-        {
-            headID.textProperty().bind(newValue.uniqueIDProperty());
-        } else if (oldValue != null)
-        {
-            headID.textProperty().unbind();
-        }
-    };
 
     /**
      * Initializes the controller class.
@@ -112,14 +94,8 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
     {
         if (connectedPrinter != null)
         {
-            printer.headProperty().removeListener(headChangeListener);
-
             xLimitSwitch.textProperty().unbind();
             xLimitSwitch.setText("");
-            printerID.textProperty().unbind();
-            printerID.setText("");
-            headID.textProperty().unbind();
-            headID.setText("");
             yLimitSwitch.textProperty().unbind();
             yLimitSwitch.setText("");
             zLimitSwitch.textProperty().unbind();
@@ -200,7 +176,6 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
             };
             
 
-            printerID.textProperty().bind(printer.getPrinterIdentity().printerUniqueIDProperty());
             xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
                 xStopSwitchProperty().asString());
             yLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
@@ -234,8 +209,6 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
                 isFittedProperty());
             extruder2Index.textProperty().bind(printer.extrudersProperty().get(1).
                 indexWheelStateProperty().asString());
-
-            printer.headProperty().addListener(headChangeListener);
         }
     }
 
