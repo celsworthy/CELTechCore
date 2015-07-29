@@ -15,7 +15,7 @@ import javafx.beans.property.BooleanProperty;
 public interface ExtrasMenuInnerPanel
 {
     /**
-     * An OperationButton defines what buttons are required to be shown when this
+     * An OperationButton defines a button which is required to be shown when this
      * panel is displayed, and the callback to call when the button is pressed.
      */
     public interface OperationButton {

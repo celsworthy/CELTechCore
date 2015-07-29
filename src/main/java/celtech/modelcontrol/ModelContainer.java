@@ -97,7 +97,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Rotate transformRotateTwistPreferred;
     private Rotate transformRotateTurnPreferred;
     private Rotate transformRotateLeanPreferred;
-    protected Translate transformMoveToCentre;
     private Translate transformMoveToPreferred;
     private Translate transformBedCentre;
 
@@ -201,7 +200,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("Transforms for: " + getId());
         System.out.println("==============================================");
         System.out.println("Scale preferred is " + transformScalePreferred);
-        System.out.println("Move to centre is " + transformMoveToCentre);
         System.out.println("Move to preferred is " + transformMoveToPreferred);
         System.out.println("transformSnapToGroundYAdjust is " + transformPostScaleOrRotationYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
@@ -218,7 +216,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
-        transformMoveToCentre = new Translate(0, 0, 0);
         transformMoveToPreferred = new Translate(0, 0, 0);
         transformBedCentre = new Translate(0, 0, 0);
 
@@ -229,7 +226,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * translations.
          */
         getTransforms().addAll(transformPostScaleOrRotationYAdjust, transformMoveToPreferred,
-                               transformMoveToCentre, transformBedCentre,
+                               transformBedCentre,
                                transformRotateTurnPreferred,
                                transformRotateLeanPreferred,
                                transformRotateTwistPreferred
@@ -241,13 +238,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
 
         originalModelBounds = calculateBoundsInLocal();
-
+        
+        setScalePivotToCentreOfModel();
         setRotationPivotsToCentreOfModel();
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
+    }
+
+    private void setScalePivotToCentreOfModel()
+    {
+        transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
+        transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
+        transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
     }
 
     private void setRotationPivotsToCentreOfModel()
@@ -265,17 +270,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
     }
 
-    protected void moveToCentre()
+    public void moveToCentre()
     {
-        double centreXOffset = -originalModelBounds.getCentreX();
-        double centreYOffset = -originalModelBounds.getMaxY();
-        double centreZOffset = -originalModelBounds.getCentreZ();
-        
-        transformMoveToCentre.setX(centreXOffset);
-        transformMoveToCentre.setY(centreYOffset);
-        transformMoveToCentre.setZ(centreZOffset);
-        
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        translateTo(bedCentreOffsetX, bedCentreOffsetZ);
     }
 
     protected void initialise(File modelFile)
@@ -597,7 +594,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             + optimizer.getEvaluations() + " evaluations");
         setRotationTwist(pair.getPoint());
 
-        dropToBedAndUpdateLastTransformedBounds();
+        dropToBed();
     }
 
     private Point3D toPoint3D(Vector3D vector)
@@ -605,37 +602,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
     }
     
-    /**
-     * Clear the move to centre transform for all descendent models/groups and apply just to the
-     * top level model/group.
-     */
-    public void applyMoveToCentreAtTopLevelOnly()
-    {
-        // For a model container this is a noop.
-    }    
-
-    /**
-     * Clear the drop to bed transform for all descendent models/groups and apply just to the
-     * top level model/group.
-     */
-    public void applyDropToBedAtTopLevelOnly()
-    {
-        // For a model container this is a noop.
-    }
-
-    void clearDropToBedTransformRecursive()
-    {
-        transformPostScaleOrRotationYAdjust.setY(0);
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-    }
-    
-    void clearMoveToCentreTransformRecursive() {
-        transformMoveToCentre.setX(0);
-        transformMoveToCentre.setY(0);
-        transformMoveToCentre.setZ(0);
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-    }
-
     private class ApplyTwist implements UnivariateFunction
     {
 
@@ -682,20 +648,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    private void updateScaleTransform()
+    private void dropToBedAndNotify()
     {
-
-        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX()
-            + getBoundsInLocal().getWidth() / 2.0);
-        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY()
-            + getBoundsInLocal().getHeight() / 2.0);
-        transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ()
-            + getBoundsInLocal().getDepth() / 2.0);
-        transformScalePreferred.setX(preferredXScale.get());
-        transformScalePreferred.setY(preferredYScale.get());
-        transformScalePreferred.setZ(preferredZScale.get());
-
-        dropToBedAndUpdateLastTransformedBounds();
+        dropToBed();
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -704,19 +659,22 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void setXScale(double scaleFactor)
     {
         preferredXScale.set(scaleFactor);
-        updateScaleTransform();
+        transformScalePreferred.setX(scaleFactor);
+        dropToBedAndNotify();
     }
 
     public void setYScale(double scaleFactor)
     {
         preferredYScale.set(scaleFactor);
-        updateScaleTransform();
+        transformScalePreferred.setY(scaleFactor);
+        dropToBedAndNotify();
     }
 
     public void setZScale(double scaleFactor)
     {
         preferredZScale.set(scaleFactor);
-        updateScaleTransform();
+        transformScalePreferred.setZ(scaleFactor);
+        dropToBedAndNotify();
     }
 
     /**
@@ -766,10 +724,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationTwist.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
-        dropToBedAndUpdateLastTransformedBounds();
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        dropToBedAndNotify();
     }
 
     public double getRotationTwist()
@@ -782,10 +737,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationTurn.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
-        dropToBedAndUpdateLastTransformedBounds();
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        dropToBedAndNotify();
     }
 
     public double getRotationTurn()
@@ -798,10 +750,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationLean.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
-        dropToBedAndUpdateLastTransformedBounds();
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        dropToBedAndNotify();
     }
 
     public double getRotationLean()
@@ -1306,7 +1255,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 newModelContainer.setState(state);
                 parts.add(newModelContainer);
                 
-                newModelContainer.clearMoveToCentreTransformRecursive();
                 newModelContainer.setModelName(modelName + " " + ix);
 
                 ix++;
@@ -1493,12 +1441,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return originalModelBounds;
     }
 
-    public Translate getTransformMoveToCentre()
-    {
-        return transformMoveToCentre;
-    }
-
-    protected void dropToBedAndUpdateLastTransformedBounds()
+    public void dropToBed()
     {
         // Correct transformPostRotationYAdjust for change in height (Y)
         transformPostScaleOrRotationYAdjust.setY(0);
@@ -1658,12 +1601,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             shapeChangeListener.shapeChanged(this);
         }
-    }
-
-    public void setPreferredScale(double preferredScale)
-    {
-        this.preferredXScale.set(preferredScale);
-        setXScale(preferredScale);
     }
 
     public DoubleProperty preferredScaleProperty()
@@ -1914,12 +1851,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         transformMoveToPreferred.setX(state.x);
         transformMoveToPreferred.setZ(state.z);
-        setXScale(state.preferredXScale);
-        setYScale(state.preferredYScale);
-        setZScale(state.preferredZScale);
-        setRotationLean(state.preferredRotationLean);
-        setRotationTwist(state.preferredRotationTwist);
-        setRotationTurn(state.preferredRotationTurn);
+        
+        preferredXScale.set(state.preferredXScale);
+        transformScalePreferred.setX(state.preferredXScale);
+        preferredYScale.set(state.preferredYScale);
+        transformScalePreferred.setY(state.preferredYScale);
+        preferredZScale.set(state.preferredZScale);
+        transformScalePreferred.setZ(state.preferredZScale);
+       
+        preferredRotationLean.set(state.preferredRotationLean);
+        preferredRotationTwist.set(state.preferredRotationTwist);
+        preferredRotationTurn.set(state.preferredRotationTurn);
+        
+        updateTransformsFromLeanTwistTurnAngles();
     }
 
     public int getModelId()

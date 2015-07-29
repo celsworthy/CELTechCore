@@ -108,9 +108,6 @@ public class ExtrasMenuPanelController implements Initializable
             new PreferencesInnerPanelController("preferences.printing",
                                                 Preferences.createPrintingPreferences(
                                                     userPreferences)));  
-        
-        
-        
     }
 
     /**

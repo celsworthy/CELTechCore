@@ -100,22 +100,17 @@ public class ModelLoader
     {
         UndoableProject undoableProject = new UndoableProject(project);
 
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            modelContainer.applyDropToBedAtTopLevelOnly();
-        }
-
         ModelContainer modelContainer;
         if (modelContainers.size() == 1)
         {
             modelContainer = modelContainers.iterator().next();
-            undoableProject.addModel(modelContainer);
         } else
         {
             modelContainer = new ModelGroup(modelContainers);
-            modelContainer.applyMoveToCentreAtTopLevelOnly();
-            undoableProject.addModel(modelContainer);
         }
+        modelContainer.moveToCentre();
+//            modelContainer.dropToBed();
+        undoableProject.addModel(modelContainer);
         shrinkIfRequested(modelContainer);
     }
 

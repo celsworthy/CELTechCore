@@ -33,7 +33,6 @@ public class ModelGroup extends ModelContainer
         childModelContainers.addAll(modelContainers);
         modelContainersGroup.getChildren().addAll(modelContainers);
         initialiseTransforms();
-        clearTransformMoveToCentre();
         for (ModelContainer modelContainer : modelContainers)
         {
             modelContainer.clearBedTransform();
@@ -52,13 +51,6 @@ public class ModelGroup extends ModelContainer
             // avoid any duplicate ids
             nextModelId = modelId + 1;
         }
-    }
-
-    private void clearTransformMoveToCentre()
-    {
-        transformMoveToCentre.setX(0);
-        transformMoveToCentre.setY(0);
-        transformMoveToCentre.setZ(0);
     }
 
     /**
@@ -145,53 +137,6 @@ public class ModelGroup extends ModelContainer
             groupStructure.get(modelId).add(modelContainer.modelId);
         }
     }
-    
-    /**
-     * Clear the move to centre transform for all descendent models/groups and apply just to the
-     * top level model/group.
-     */
-    @Override
-    public void applyMoveToCentreAtTopLevelOnly()
-    {
-        for (ModelContainer childModelContainer : childModelContainers)
-        {
-            childModelContainer.clearMoveToCentreTransformRecursive();
-        }
-        moveToCentre();
-    }       
-
-    /**
-     * Clear the drop to bed transform for all descendent models/groups and apply just to the top
-     * level model/group.
-     */
-    @Override
-    public void applyDropToBedAtTopLevelOnly()
-    {
-        for (ModelContainer childModelContainer : childModelContainers)
-        {
-            childModelContainer.clearDropToBedTransformRecursive();
-        }
-        dropToBedAndUpdateLastTransformedBounds();
-    }
-
-    @Override
-    void clearDropToBedTransformRecursive()
-    {
-        for (ModelContainer childModelContainer : childModelContainers)
-        {
-            childModelContainer.clearDropToBedTransformRecursive();
-            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        }
-    }
-    
-    @Override
-    void clearMoveToCentreTransformRecursive() {
-        for (ModelContainer childModelContainer : childModelContainers)
-        {
-            childModelContainer.clearMoveToCentreTransformRecursive();
-            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        }
-    }    
 
     /**
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
