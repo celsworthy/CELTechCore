@@ -275,7 +275,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
     }
 
-    protected void moveToCentre()
+    public void moveToCentre()
     {
         double centreXOffset = -originalModelBounds.getCentreX();
         double centreYOffset = -originalModelBounds.getMaxY();
@@ -615,37 +615,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
     }
     
-    /**
-     * Clear the move to centre transform for all descendent models/groups and apply just to the
-     * top level model/group.
-     */
-    public void applyMoveToCentreAtTopLevelOnly()
-    {
-        // For a model container this is a noop.
-    }    
-
-    /**
-     * Clear the drop to bed transform for all descendent models/groups and apply just to the
-     * top level model/group.
-     */
-    public void applyDropToBedAtTopLevelOnly()
-    {
-        // For a model container this is a noop.
-    }
-
-    void clearDropToBedTransformRecursive()
-    {
-        transformPostScaleOrRotationYAdjust.setY(0);
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-    }
-    
-    void clearMoveToCentreTransformRecursive() {
-        transformMoveToCentre.setX(0);
-        transformMoveToCentre.setY(0);
-        transformMoveToCentre.setZ(0);
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-    }
-
     private class ApplyTwist implements UnivariateFunction
     {
 
@@ -1311,7 +1280,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 newModelContainer.setState(state);
                 parts.add(newModelContainer);
                 
-                newModelContainer.clearMoveToCentreTransformRecursive();
                 newModelContainer.setModelName(modelName + " " + ix);
 
                 ix++;
@@ -1923,6 +1891,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         
         setScalePivotToCentreOfModel();
         updateTransformsFromLeanTwistTurnAngles();
+        
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     public int getModelId()
