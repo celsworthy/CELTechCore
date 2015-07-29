@@ -39,7 +39,7 @@ public class ModelGroup extends ModelContainer
         }
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         /**
-         * for a group the originalModelBounds change whenever a child changes
+         * for a group the originalModelBounds changes whenever a child changes
          */
         updateOriginalModelBounds();
         checkOffBed();

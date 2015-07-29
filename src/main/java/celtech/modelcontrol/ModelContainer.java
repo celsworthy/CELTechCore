@@ -896,12 +896,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
         
         if (in.available() > 0) {
-            
             storedY = in.readDouble();
-            System.out.println("read in y adjust: " + storedY);
-        } else {
-            System.out.println("no y adjust");
-        }
+        } 
 
         initialiseTransforms();
 
