@@ -7,6 +7,7 @@ import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.TesStatusBar;
+import celtech.coreUI.controllers.utilityPanels.OuterPanelController;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -450,38 +451,62 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         printerClosedImage.setVisible(false);
     }
 
-    private Node loadInsetPanel(String innerPanelFXMLName)
+    private Node loadInsetPanel(String innerPanelFXMLName, String title)
     {
         URL insetPanelURL = getClass().getResource(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
         FXMLLoader loader = new FXMLLoader(insetPanelURL, Lookup.getLanguageBundle());
-        Node insetPanel = null;
+        Node wrappedPanel = null;
         try
         {
-            insetPanel = loader.load();
-            StatusInsetController projectAwareController = (StatusInsetController) loader.getController();
+            Node insetPanel = loader.load();
+            if (title != null) {
+                wrappedPanel = wrapPanelInOuterPanel(insetPanel, title);
+            } else {
+                wrappedPanel = insetPanel;
+            }    
         } catch (IOException ex)
         {
-            steno.error("Unable to load inset panel: " + innerPanelFXMLName + "  " + ex);
+            steno.exception("Unable to load inset panel: " + innerPanelFXMLName, ex);
         }
-        return insetPanel;
+        return wrappedPanel;
     }
 
+    
+    private Node wrapPanelInOuterPanel(Node insetPanel, String title)
+    {
+        URL outerPanelURL = getClass().getResource(
+            ApplicationConfiguration.fxmlUtilityPanelResourcePath + "outerStatusPanel.fxml");
+        FXMLLoader loader = new FXMLLoader(outerPanelURL, Lookup.getLanguageBundle());
+        Node outerPanel = null;
+        try
+        {
+            outerPanel = loader.load();
+            OuterPanelController outerPanelController = loader.getController();
+            outerPanelController.setInnerPanel(insetPanel);
+            outerPanelController.setTitle(Lookup.i18n(title));
+        } catch (IOException ex)
+        {
+            steno.exception("Unable to load outer panel", ex);
+        }
+        return outerPanel;
+    }
+    
     private void loadInsetPanels()
     {
         VBox vBoxLeft = new VBox();
         vBoxLeft.setSpacing(30);
-        Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml");
-        Node gcodePanel = loadInsetPanel("GCodePanel.fxml");
+        Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title");
+        Node gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title");
         vBoxLeft.getChildren().add(diagnosticPanel);
         vBoxLeft.getChildren().add(gcodePanel);
 
         VBox vBoxRight = new VBox();
         vBoxRight.setSpacing(30);
-        Node projectPanel = loadInsetPanel("ProjectPanel.fxml");
-        Node tweakPanel = loadInsetPanel("tweakPanel.fxml");
+        Node projectPanel = loadInsetPanel("ProjectPanel.fxml", null);
+        Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title");
         vBoxRight.getChildren().add(projectPanel);
-        vBoxRight.getChildren().add(tweakPanel);
+        vBoxRight.getChildren().add(printAdjustmentsPanel);
         
         container.getChildren().add(vBoxLeft);
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
@@ -552,4 +577,5 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
+
 }

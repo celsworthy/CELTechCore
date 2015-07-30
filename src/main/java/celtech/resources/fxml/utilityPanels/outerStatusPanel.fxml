@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxWidth="350.0" minWidth="350.0" prefWidth="350.0" styleClass="status_inner" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.OuterPanelController">
+   <children>
+      <Line endX="10.0" endY="10.0" stroke="#fffdfd" strokeWidth="2.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
+      <Line endY="10.0" layoutX="10.0" layoutY="10.0" startX="10.0" stroke="#f5f3f3" strokeWidth="2.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
+      <HBox alignment="CENTER" maxWidth="350.0" minWidth="350.0" prefWidth="350.0" AnchorPane.topAnchor="5.0">
+         <children>
+            <Label fx:id="title" styleClass="title" text="Title" />
+         </children>
+      </HBox>
+      <VBox fx:id="outerPanel" minWidth="100.0" AnchorPane.topAnchor="40.0" />
+   </children>
+</AnchorPane>

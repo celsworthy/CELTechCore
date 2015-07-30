@@ -2761,13 +2761,28 @@ color-picker-label .text-field {
     -fx-font-size: 14px;
 }
 
+/** 
+* Status inner panel
+*/
+
+.status_inner {
+   -fx-background-color: mid_grey_50; 
+   -fx-font-family: 'Source Sans Pro Light';
+   -fx-font-size: 18px;
+}
+
+.status_inner .title {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 20px;
+}
+
+.status_inner .subtitle {
+    -fx-font-size: 18px;
+}
+
 /**
 * Diagnostics
 */
-
-.diagnosticsPanel {
-    -fx-background-color: mid_grey_50;
-}
 
 .diagnostics .radio-button:disabled {
     -fx-opacity: 1.0;
@@ -2775,13 +2790,4 @@ color-picker-label .text-field {
 
 .diagnostics .radio-button:selected .dot {
     -fx-background-color: robox_blue;
-}
-
-.diagnostics  {
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 18px;
-}
-
-.diagnostics .title {
-    -fx-font-family: 'Source Sans Pro Regular';
 }
