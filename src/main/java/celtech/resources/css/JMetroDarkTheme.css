@@ -2760,3 +2760,28 @@ color-picker-label .text-field {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 14px;
 }
+
+/**
+* Diagnostics
+*/
+
+.diagnosticsPanel {
+    -fx-background-color: mid_grey_50;
+}
+
+.diagnostics .radio-button:disabled {
+    -fx-opacity: 1.0;
+}
+
+.diagnostics .radio-button:selected .dot {
+    -fx-background-color: robox_blue;
+}
+
+.diagnostics  {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;
+}
+
+.diagnostics .title {
+    -fx-font-family: 'Source Sans Pro Regular';
+}

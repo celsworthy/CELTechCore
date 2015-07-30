@@ -5,12 +5,13 @@ import celtech.coreUI.controllers.StatusInsetController;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.binding.StringBinding;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 
 /**
  * FXML Controller class
@@ -23,43 +24,43 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
     private Printer connectedPrinter = null;
 
     @FXML
-    private Label extruder1Loaded;
+    private RadioButton rbXLimit;
 
     @FXML
-    private Label lidSwitch;
+    private RadioButton rbYLimit;
 
     @FXML
-    private Label zPositiveLimitSwitch;
+    private RadioButton rbZLimit;
 
     @FXML
-    private Label extruder2Loaded;
+    private RadioButton rbZPositiveLimit;
 
     @FXML
-    private Label extruder2Index;
+    private RadioButton rbDoor;
 
     @FXML
-    private Label extruder2Label;
+    private RadioButton rbReel;
 
     @FXML
-    private Label extruder2LoadedLabel;
+    private RadioButton rbLoaded0;
 
     @FXML
-    private Label extruder2IndexLabel;
+    private RadioButton rbIndex0;
 
     @FXML
-    private Label reelButtonSwitch;
+    private Label extruder1Label;
 
     @FXML
-    private Label zLimitSwitch;
+    private Label extruder1LoadedLabel;
 
     @FXML
-    private Label xLimitSwitch;
+    private Label extruder1IndexLabel;
 
     @FXML
-    private Label yLimitSwitch;
+    private RadioButton rbLoaded1;
 
     @FXML
-    private Label extruder1Index;
+    private RadioButton rbIndex1;
 
     /**
      * Initializes the controller class.
@@ -88,42 +89,51 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
                 }
             }
         });
+
+        rbXLimit.setDisable(true);
+        rbYLimit.setDisable(true);
+        rbZLimit.setDisable(true);
+        rbZPositiveLimit.setDisable(true);
+        rbDoor.setDisable(true);
+        rbReel.setDisable(true);
+        rbLoaded0.setDisable(true);
+        rbIndex0.setDisable(true);
+        rbLoaded1.setDisable(true);
+        rbIndex1.setDisable(true);
     }
 
     private void unbindFromPrinter(Printer printer)
     {
         if (connectedPrinter != null)
         {
-            xLimitSwitch.textProperty().unbind();
-            xLimitSwitch.setText("");
-            yLimitSwitch.textProperty().unbind();
-            yLimitSwitch.setText("");
-            zLimitSwitch.textProperty().unbind();
-            zLimitSwitch.setText("");
-            zPositiveLimitSwitch.textProperty().unbind();
-            zPositiveLimitSwitch.setText("");
-            lidSwitch.textProperty().unbind();
-            lidSwitch.setText("");
-            reelButtonSwitch.textProperty().unbind();
-            reelButtonSwitch.setText("");
-            extruder1Loaded.visibleProperty().unbind();
-            extruder1Loaded.textProperty().unbind();
-            extruder2Label.visibleProperty().unbind();
-            extruder2Label.setVisible(false);
-            extruder2LoadedLabel.visibleProperty().unbind();
-            extruder2LoadedLabel.setVisible(false);
-            extruder2IndexLabel.visibleProperty().unbind();
-            extruder2IndexLabel.setVisible(false);
-            extruder2Loaded.visibleProperty().unbind();
-            extruder1Loaded.setText("");
-            extruder2Loaded.textProperty().unbind();
-            extruder2Loaded.setText("");
-            extruder1Index.visibleProperty().unbind();
-            extruder1Index.textProperty().unbind();
-            extruder1Index.setText("");
-            extruder2Index.visibleProperty().unbind();
-            extruder2Index.textProperty().unbind();
-            extruder2Index.setText("");
+            rbXLimit.selectedProperty().unbind();
+            rbYLimit.selectedProperty().unbind();
+            rbZLimit.selectedProperty().unbind();
+            rbZPositiveLimit.selectedProperty().unbind();
+            rbDoor.selectedProperty().unbind();
+            rbReel.selectedProperty().unbind();
+            rbLoaded0.selectedProperty().unbind();
+            rbIndex0.selectedProperty().unbind();
+            rbLoaded1.selectedProperty().unbind();
+            rbIndex1.selectedProperty().unbind();
+            
+            rbXLimit.setSelected(false);
+            rbYLimit.setSelected(false);
+            rbZLimit.setSelected(false);
+            rbZPositiveLimit.setSelected(false);
+            rbDoor.setSelected(false);
+            rbReel.setSelected(false);
+            rbLoaded0.setSelected(false);
+            rbIndex0.setSelected(false);
+            rbLoaded1.setSelected(false);
+            rbIndex1.setSelected(false);
+
+            extruder1Label.visibleProperty().unbind();
+            extruder1Label.setVisible(false);
+            extruder1LoadedLabel.visibleProperty().unbind();
+            extruder1LoadedLabel.setVisible(false);
+            extruder1IndexLabel.visibleProperty().unbind();
+            extruder1IndexLabel.setVisible(false);
 
             connectedPrinter = null;
         }
@@ -135,80 +145,41 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
         {
             connectedPrinter = printer;
 
-            StringBinding extruder1LoadedText = new StringBinding()
-            {
-                {
-                    super.bind(printer.extrudersProperty().get(0).filamentLoadedProperty(),
-                               Lookup.getUserPreferences().detectLoadedFilamentProperty());
-                }
+            rbXLimit.selectedProperty().bind(printer.getPrinterAncillarySystems().
+                xStopSwitchProperty());
+            rbYLimit.selectedProperty().bind(printer.getPrinterAncillarySystems().
+                yStopSwitchProperty());
+            rbZLimit.selectedProperty().bind(printer.getPrinterAncillarySystems().
+                zStopSwitchProperty());
+            rbZPositiveLimit.selectedProperty().bind(printer.getPrinterAncillarySystems().
+                zTopStopSwitchProperty());
 
-                @Override
-                protected String computeValue()
-                {
-                    if (! Lookup.getUserPreferences().detectLoadedFilamentProperty().get())
-                    {
-                        return "N/A";
-                    } else
-                    {
-                        return printer.extrudersProperty().get(0).filamentLoadedProperty().asString().get();
-                    }
-                }
-            };
-            
-            StringBinding extruder2LoadedText = new StringBinding()
-            {
-                {
-                    super.bind(printer.extrudersProperty().get(1).filamentLoadedProperty(),
-                               Lookup.getUserPreferences().detectLoadedFilamentProperty());
-                }
+            rbDoor.selectedProperty().bind(printer.getPrinterAncillarySystems().doorOpenProperty());
+            rbReel.selectedProperty().bind(printer.getPrinterAncillarySystems().
+                reelButtonProperty());
 
-                @Override
-                protected String computeValue()
-                {
-                    if (! Lookup.getUserPreferences().detectLoadedFilamentProperty().get())
-                    {
-                        return "N/A";
-                    } else
-                    {
-                        return printer.extrudersProperty().get(1).filamentLoadedProperty().asString().get();
-                    }
-                }
-            };
-            
+            rbLoaded0.selectedProperty().bind(
+                printer.extrudersProperty().get(0).filamentLoadedProperty());
+            rbLoaded0.disableProperty().bind(
+                Lookup.getUserPreferences().detectLoadedFilamentProperty());
+            rbIndex0.selectedProperty().bind(printer.extrudersProperty().get(0).
+                indexWheelStateProperty());
 
-            xLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
-                xStopSwitchProperty().asString());
-            yLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
-                yStopSwitchProperty().asString());
-            zLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
-                zStopSwitchProperty().asString());
-            zPositiveLimitSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
-                zTopStopSwitchProperty().asString());
-            lidSwitch.textProperty().bind(printer.getPrinterAncillarySystems().doorOpenProperty().
-                asString());
-            reelButtonSwitch.textProperty().bind(printer.getPrinterAncillarySystems().
-                reelButtonProperty().asString());
+            rbLoaded1.selectedProperty().bind(
+                printer.extrudersProperty().get(1).filamentLoadedProperty());
+            rbLoaded1.disableProperty().bind(
+                Lookup.getUserPreferences().detectLoadedFilamentProperty());
+            rbIndex1.selectedProperty().bind(printer.extrudersProperty().get(1).
+                indexWheelStateProperty());
 
-            extruder1Loaded.visibleProperty().bind(printer.extrudersProperty().get(0).
-                isFittedProperty());
-            extruder1Loaded.textProperty().bind(extruder1LoadedText);
-            extruder1Index.visibleProperty().bind(printer.extrudersProperty().get(0).
-                isFittedProperty());
-            extruder1Index.textProperty().bind(printer.extrudersProperty().get(0).
-                indexWheelStateProperty().asString());
-            extruder2Label.visibleProperty().bind(printer.extrudersProperty().get(1).
-                isFittedProperty());
-            extruder2LoadedLabel.visibleProperty().bind(printer.extrudersProperty().get(1).
-                isFittedProperty());
-            extruder2IndexLabel.visibleProperty().bind(printer.extrudersProperty().get(1).
-                isFittedProperty());
-            extruder2Loaded.visibleProperty().bind(printer.extrudersProperty().get(1).
-                isFittedProperty());
-            extruder2Loaded.textProperty().bind(extruder2LoadedText);
-            extruder2Index.visibleProperty().bind(printer.extrudersProperty().get(1).
-                isFittedProperty());
-            extruder2Index.textProperty().bind(printer.extrudersProperty().get(1).
-                indexWheelStateProperty().asString());
+            ReadOnlyBooleanProperty extruder1Visible = printer.extrudersProperty().get(1).
+                isFittedProperty();
+            extruder1Label.visibleProperty().bind(extruder1Visible);
+            extruder1LoadedLabel.visibleProperty().bind(extruder1Visible);
+            extruder1IndexLabel.visibleProperty().bind(extruder1Visible);
+            rbLoaded1.visibleProperty().bind(extruder1Visible);
+            rbIndex1.visibleProperty().bind(extruder1Visible);
+
         }
     }
 

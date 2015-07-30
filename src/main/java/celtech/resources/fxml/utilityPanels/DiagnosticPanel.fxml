@@ -4,9 +4,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" maxWidth="1.7976931348623157E308" styleClass="sidePanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.DiagnosticPanelController">
+<AnchorPane id="AnchorPane" maxWidth="1.7976931348623157E308" styleClass="diagnosticsPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.DiagnosticPanelController">
     <children>
-        <GridPane alignment="TOP_CENTER" hgap="5.0" vgap="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <GridPane alignment="TOP_CENTER" hgap="5.0" styleClass="diagnostics" vgap="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columnConstraints>
                 <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="100.0" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="50.0" minWidth="10.0" prefWidth="50.0" />
@@ -15,41 +15,41 @@
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints />
-                <RowConstraints prefHeight="20.0" />
-                <RowConstraints prefHeight="20.0" />
-                <RowConstraints prefHeight="20.0" />
-                <RowConstraints prefHeight="20.0" />
                 <RowConstraints />
-                <RowConstraints prefHeight="20.0" />
-                <RowConstraints prefHeight="20.0" />
+                <RowConstraints prefHeight="30.0" />
+                <RowConstraints prefHeight="30.0" />
+                <RowConstraints prefHeight="30.0" />
+                <RowConstraints prefHeight="30.0" />
                 <RowConstraints />
-                <RowConstraints prefHeight="25.0" />
+                <RowConstraints prefHeight="30.0" />
+                <RowConstraints prefHeight="30.0" />
                 <RowConstraints />
 <RowConstraints />
+            <RowConstraints />
             </rowConstraints>
             <children>
-                <Label styleClass="colon" text="X limit" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <Label styleClass="colon" text="Y limit" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <Label styleClass="colon" text="Z limit" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <Label styleClass="colon" text="Z+ limit" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <Label styleClass="colon" text="Door open" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                <Label styleClass="colon" text="Reel button" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-                <Label text="?" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" fx:id="xLimitSwitch" />
-                <Label fx:id="yLimitSwitch" text="?" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
-                <Label fx:id="zLimitSwitch" text="?" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" />
-                <Label fx:id="zPositiveLimitSwitch" text="?" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
-                <Label fx:id="lidSwitch" text="?" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6" />
-                <Label fx:id="reelButtonSwitch" text="?" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="7" />
-                <Label style="-fx-font-size:14px;" text="Extruder 1" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                <Label styleClass="colon" text="Loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
-                <Label styleClass="colon" text="Index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-                <Label fx:id="extruder1Loaded" text="?" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                <Label fx:id="extruder1Index" text="?" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-                <Label fx:id="extruder2Label" style="-fx-font-size:14px;" text="Extruder 2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
-                <Label fx:id="extruder2LoadedLabel" styleClass="colon" text="Loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
-                <Label fx:id="extruder2IndexLabel" styleClass="colon" text="Index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="9" />
-                <Label fx:id="extruder2Loaded" text="?" GridPane.columnIndex="3" GridPane.rowIndex="7" />
-                <Label fx:id="extruder2Index" text="?" GridPane.columnIndex="3" GridPane.rowIndex="9" />
+                <Label styleClass="colon" text="%diagnosticPanel.xLimit" GridPane.rowIndex="2" />
+                <Label styleClass="colon" text="%diagnosticPanel.yLimit" GridPane.rowIndex="3" />
+                <Label styleClass="colon" text="%diagnosticPanel.zLimit" GridPane.rowIndex="4" />
+                <Label styleClass="colon" text="%diagnosticPanel.zPositiveLimit" GridPane.rowIndex="5" />
+                <Label styleClass="colon" text="%diagnosticPanel.door" GridPane.rowIndex="7" />
+                <Label styleClass="colon" text="%diagnosticPanel.reel" GridPane.rowIndex="8" />
+                <Label styleClass="title" text="%diagnosticPanel.extruder1" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
+                <Label styleClass="colon" text="%diagnosticPanel.loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+                <Label styleClass="colon" text="%diagnosticPanel.index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+                <Label fx:id="extruder1Label" styleClass="title" text="%diagnosticPanel.extruder2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
+                <Label fx:id="extruder1LoadedLabel" styleClass="colon" text="%diagnosticPanel.loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
+                <Label fx:id="extruder1IndexLabel" styleClass="colon" text="%diagnosticPanel.index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="8" />
+            <RadioButton fx:id="rbXLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
+            <RadioButton fx:id="rbYLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+            <RadioButton fx:id="rbZLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+            <RadioButton fx:id="rbZPositiveLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
+            <RadioButton fx:id="rbDoor" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
+            <RadioButton fx:id="rbReel" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="8" />
+            <RadioButton fx:id="rbLoaded0" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+            <RadioButton fx:id="rbIndex0" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+            <RadioButton fx:id="rbLoaded1" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
+            <RadioButton fx:id="rbIndex1" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="8" />
             </children>
         </GridPane>
     </children>
