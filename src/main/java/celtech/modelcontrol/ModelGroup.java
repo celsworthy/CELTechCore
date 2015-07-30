@@ -42,7 +42,6 @@ public class ModelGroup extends ModelContainer
          * for a group the originalModelBounds changes whenever a child changes
          */
         updateOriginalModelBounds();
-        checkOffBed();
     }
 
     public ModelGroup(Set<ModelContainer> modelContainers, int groupModelId)
@@ -212,6 +211,7 @@ public class ModelGroup extends ModelContainer
     @Override
     public void setUseExtruder0(boolean useExtruder0)
     {
+        associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
         for (ModelContainer modelContainer : childModelContainers)
         {
             modelContainer.setUseExtruder0(useExtruder0);

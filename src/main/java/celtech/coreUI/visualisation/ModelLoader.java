@@ -106,10 +106,11 @@ public class ModelLoader
             modelContainer = modelContainers.iterator().next();
         } else
         {
-            modelContainer = new ModelGroup(modelContainers);
+            modelContainer = project.createNewGroup(modelContainers);
         }
         modelContainer.moveToCentre();
         modelContainer.dropToBed();
+        modelContainer.checkOffBed();
         undoableProject.addModel(modelContainer);
         shrinkIfRequested(modelContainer);
     }

@@ -131,7 +131,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Print the part using the extruder of the given number.
      */
-    private IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
+    protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private File modelFile;
 
@@ -146,7 +146,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         initialise(modelFile);
         initialiseTransforms();
-        checkOffBed();
     }
 
     public ModelContainer(File modelFile, MeshView meshView, int extruderAssociation)
@@ -374,8 +373,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateLastTransformedBoundsInParentForTranslateByZ(zMove);
 
         keepOnBedXZ();
-        checkOffBed();
-
     }
 
     public double getMoveToPreferredX()
@@ -459,9 +456,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         translateXTo(xPosition);
         translateZTo(zPosition);
-
-        checkOffBed();
-
     }
 
     public void centreObjectOnBed()
@@ -1046,7 +1040,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     
     /**
      * This method is used during an ungroup to blend the group's transform into this one, thereby
-     * keeping this model in the same place.read 
+     * keeping this model in the same place.
     */
      public void applyGroupTransformToThis(ModelGroup modelGroup)
     {
@@ -1071,12 +1065,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformDropToBedYAdjust.setY(modelGroup.getYAdjust());
         
     }
-
+    
     /**
      * Check if this object is off the bed. N.B. It only works for top level objects i.e. top level
      * groups or ungrouped models.
      */
-    protected void checkOffBed()
+    public void checkOffBed()
     {
         ModelBounds bounds = lastTransformedBoundsInParent;
 
@@ -1158,7 +1152,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public static ModelContainer getRootModelContainer(MeshView meshView)
     {
-        ModelContainer parentModelContainer = (ModelContainer) meshView.getParent();
+        return (ModelContainer) ((ModelContainer) meshView.getParent()).getRootModelContainer();
+    }
+    
+    public ModelContainer getRootModelContainer()
+    {
+        ModelContainer parentModelContainer = this;
 
         while (parentModelContainer.getParentModelContainer() instanceof ModelContainer)
         {
@@ -1672,10 +1671,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
         boolean showMisplacedColour)
     {
-
+        boolean offBed = getRootModelContainer().isOffBed.get();
         if (showMisplacedColour)
         {
-            if (isOffBed.get())
+            if (offBed)
             {
                 meshView.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
             } else if (isCollided)
@@ -1683,7 +1682,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 meshView.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
             }
         }
-        if (!showMisplacedColour || (!isOffBed.get() && !isCollided))
+        if (!showMisplacedColour || (!offBed && !isCollided))
         {
             switch (associateWithExtruderNumber.get())
             {

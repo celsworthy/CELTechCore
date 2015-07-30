@@ -611,20 +611,40 @@ public class Project implements Serializable
     {
         return customSettingsNotChosen;
     }
+    
+    /**
+     * Create a new group from models that are not yet in the project.
+     */
+    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers) {
+        ModelGroup modelGroup = new ModelGroup(modelContainers);
+        addModel(modelGroup);
+        addModelListeners(modelGroup);
+        modelGroup.checkOffBed();
+        return modelGroup;
+    }
+    
+    /**
+     * Create a new group from models that are not yet in the project.
+     */    
+    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers, int groupModelId) {
+        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
+        addModel(modelGroup);
+        addModelListeners(modelGroup);
+        modelGroup.checkOffBed();
+        return modelGroup;
+    }    
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
         removeModels(modelContainers);
-        ModelGroup modelGroup = new ModelGroup(modelContainers);
-        addModel(modelGroup);
+        ModelGroup modelGroup = createNewGroup(modelContainers);
         return modelGroup;
     }
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
         removeModels(modelContainers);
-        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
-        addModel(modelGroup);
+        ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
         return modelGroup;
     }
 
@@ -643,6 +663,7 @@ public class Project implements Serializable
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
                     childModelContainer.applyGroupTransformToThis(modelGroup);
+                    childModelContainer.checkOffBed();
                 }
             }
         }
