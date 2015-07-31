@@ -25,6 +25,9 @@ public class UserPreferences
     private final BooleanProperty advancedMode = new SimpleBooleanProperty(false);
     private final BooleanProperty firstUse = new SimpleBooleanProperty(true);
     private final BooleanProperty detectLoadedFilament = new SimpleBooleanProperty(true);
+    private final BooleanProperty showDiagnostics = new SimpleBooleanProperty(true);
+    private final BooleanProperty showGCode = new SimpleBooleanProperty(true);
+    private final BooleanProperty showAdjustments = new SimpleBooleanProperty(true);
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         saveSettings();
@@ -52,18 +55,24 @@ public class UserPreferences
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
-        this.slicerType = userPreferenceFile.getSlicerType();
+        slicerType = userPreferenceFile.getSlicerType();
         safetyFeaturesOn.set(userPreferenceFile.isSafetyFeaturesOn());
-        this.languageTag = userPreferenceFile.getLanguageTag();
-        this.loggingLevel = userPreferenceFile.getLoggingLevel();
-        this.advancedMode.set(userPreferenceFile.isAdvancedMode());
-        this.firstUse.set(userPreferenceFile.isFirstUse());
-        this.detectLoadedFilament.set(userPreferenceFile.isDetectLoadedFilament());
+        languageTag = userPreferenceFile.getLanguageTag();
+        loggingLevel = userPreferenceFile.getLoggingLevel();
+        advancedMode.set(userPreferenceFile.isAdvancedMode());
+        firstUse.set(userPreferenceFile.isFirstUse());
+        detectLoadedFilament.set(userPreferenceFile.isDetectLoadedFilament());
+        showDiagnostics.set(userPreferenceFile.isShowDiagnostics());
+        showGCode.set(userPreferenceFile.isShowGCode());
+        showAdjustments.set(userPreferenceFile.isShowAdjustments());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
         firstUse.addListener(booleanChangeListener);
         detectLoadedFilament.addListener(booleanChangeListener);
+        showDiagnostics.addListener(booleanChangeListener);
+        showGCode.addListener(booleanChangeListener);
+        showAdjustments.addListener(booleanChangeListener);
     }
 
     public SlicerType getSlicerType()
@@ -185,4 +194,49 @@ public class UserPreferences
         
         suppressAdvancedModeListenerCheck = false;
     }
+
+    public BooleanProperty showDiagnosticsProperty()
+    {
+        return showDiagnostics;
+    }
+    
+    public boolean getShowDiagnostics()
+    {
+        return showDiagnostics.get();
+    }
+
+    public void setShowDiagnostics(boolean showDiagnostics)
+    {
+        this.showDiagnostics.set(showDiagnostics);
+    }    
+    
+    public BooleanProperty showGCodeProperty()
+    {
+        return showGCode;
+    }
+    
+    public boolean getShowGCode()
+    {
+        return showDiagnostics.get();
+    }
+
+    public void setShowGCode(boolean showGCode)
+    {
+        this.showGCode.set(showGCode);
+    }       
+    
+    public BooleanProperty showAdjustmentsProperty()
+    {
+        return showAdjustments;
+    }    
+    
+    public boolean getShowAdjustments()
+    {
+        return showAdjustments.get();
+    }
+
+    public void setShowAdjustments(boolean showAdjustments)
+    {
+        this.showAdjustments.set(showAdjustments);
+    }      
 }

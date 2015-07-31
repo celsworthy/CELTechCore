@@ -108,6 +108,12 @@ public class ExtrasMenuPanelController implements Initializable
             new PreferencesInnerPanelController("preferences.printing",
                                                 Preferences.createPrintingPreferences(
                                                     userPreferences)));  
+        
+        loadInnerPanel(
+            ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
+            new PreferencesInnerPanelController("preferences.interface",
+                                                Preferences.createInterfacePreferences(
+                                                    userPreferences))); 
     }
 
     /**

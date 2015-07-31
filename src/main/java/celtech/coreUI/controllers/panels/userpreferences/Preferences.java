@@ -58,5 +58,26 @@ public class Preferences
 
         return preferences;
     }
+    
+    public static List<PreferencesInnerPanelController.Preference> createInterfacePreferences(
+        UserPreferences userPreferences)
+    {
+        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
+
+        Preference showDiagnosticsPref = new TickBoxPreference(userPreferences.showDiagnosticsProperty(),
+                                                            "preferences.showDiagnostics");
+
+        Preference showGCodePref = new TickBoxPreference(userPreferences.showGCodeProperty(),
+                                                            "preferences.showGCode");
+        Preference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
+                                                        "preferences.showAdjustments");
+
+        preferences.add(showDiagnosticsPref);
+        preferences.add(showGCodePref);
+        preferences.add(showGCodePref);
+        preferences.add(showAdjustmentsPref);
+
+        return preferences;
+    }
 
 }

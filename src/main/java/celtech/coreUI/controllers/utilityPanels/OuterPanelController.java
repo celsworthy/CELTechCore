@@ -39,7 +39,6 @@ public class OuterPanelController implements Initializable
     {
         crossButton.setOnMouseClicked((MouseEvent event) ->
         {
-            System.out.println("clicked");
             rootPane.setVisible(false);
         });
     }
