@@ -6,6 +6,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 /**
@@ -15,12 +18,18 @@ import javafx.scene.layout.VBox;
  */
 public class OuterPanelController implements Initializable
 {
-    
+
     @FXML
     private VBox outerPanel;
     
     @FXML
-    private Label title;    
+    private AnchorPane rootPane;
+
+    @FXML
+    private Label title;
+
+    @FXML
+    private Pane crossButton;
     
     /**
      * Initialises the controller class.
@@ -28,15 +37,21 @@ public class OuterPanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        crossButton.setOnMouseClicked((MouseEvent event) ->
+        {
+            System.out.println("clicked");
+            rootPane.setVisible(false);
+        });
     }
-
+    
     public void setInnerPanel(Node insetPanel)
     {
         outerPanel.getChildren().add(insetPanel);
     }
-    
-    public void setTitle(String title) {
+
+    public void setTitle(String title)
+    {
         this.title.setText(title);
     }
 
-  }
+}

@@ -733,7 +733,7 @@ public class Project implements Serializable
     }
 
     /**
-     * Using the group function, reapply the groupings as given by the given groupStructure. The
+     * Using the group function, reapply the groupings as given by the groupStructure. The
      * first groups to be created must be those containing only non-groups, and then each level of
      * the group hierarchy.<p>
      * First create new groups where all children are already instantiated. Then repeat until no new
