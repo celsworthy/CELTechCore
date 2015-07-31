@@ -586,6 +586,7 @@ public class Project implements Serializable
 
     private void addModelListeners(ModelContainer modelContainer)
     {
+        // XXX this is a bug, modelExtruderNumberListener is being overridden for each model
         modelExtruderNumberListener
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
@@ -611,28 +612,42 @@ public class Project implements Serializable
     {
         return customSettingsNotChosen;
     }
-    
+
     /**
      * Create a new group from models that are not yet in the project.
      */
-    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers) {
+    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers)
+    {
         ModelGroup modelGroup = new ModelGroup(modelContainers);
-        addModel(modelGroup);
-        addModelListeners(modelGroup);
         modelGroup.checkOffBed();
         return modelGroup;
     }
     
     /**
-     * Create a new group from models that are not yet in the project.
-     */    
-    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers, int groupModelId) {
-        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
-        addModel(modelGroup);
+     * Create a new group from models that are not yet in the project, and add model listeners
+     * to all descendent children.
+     */
+    public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
+    {
+        ModelGroup modelGroup = new ModelGroup(modelContainers);
         addModelListeners(modelGroup);
+        for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
+        {
+            addModelListeners(childModelContainer);
+        }
         modelGroup.checkOffBed();
         return modelGroup;
     }    
+
+    /**
+     * Create a new group from models that are not yet in the project.
+     */
+    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers, int groupModelId)
+    {
+        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
+        modelGroup.checkOffBed();
+        return modelGroup;
+    }
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
@@ -645,6 +660,7 @@ public class Project implements Serializable
     {
         removeModels(modelContainers);
         ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
+        addModel(modelGroup);
         return modelGroup;
     }
 

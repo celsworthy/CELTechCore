@@ -106,7 +106,7 @@ public class ModelLoader
             modelContainer = modelContainers.iterator().next();
         } else
         {
-            modelContainer = project.createNewGroup(modelContainers);
+            modelContainer = project.createNewGroupAndAddModelListeners(modelContainers);
         }
         modelContainer.moveToCentre();
         modelContainer.dropToBed();

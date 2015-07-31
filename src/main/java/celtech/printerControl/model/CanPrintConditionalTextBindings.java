@@ -66,52 +66,52 @@ public class CanPrintConditionalTextBindings
                 if (!printer.extrudersProperty().get(1).isFittedProperty().get())
                 {
                     // only one extruder on the printer
-                    System.out.println("One Extruder Only");
-                    System.out.println("Printer Settings filament 0 is "
-                        + project.getPrinterSettings().getFilament0Property());
+//                    System.out.println("One Extruder Only");
+//                    System.out.println("Printer Settings filament 0 is "
+//                        + project.getPrinterSettings().getFilament0Property());
 
                     if (usedExtruders.contains(0))
                     {
-                        System.out.println("extruder 0 is being used");
+//                        System.out.println("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            System.out.println("used filament 0 matches printer filament 0");
+//                            System.out.println("used filament 0 matches printer filament 0");
                             filamentMismatch = false;
                         }
                     }
 
                     if (usedExtruders.contains(1))
                     {
-                        System.out.println("extruder 1 is being used");
+//                        System.out.println("extruder 1 is being used");
                         Filament usedFilament = project.getExtruder1FilamentProperty().get();
                         if (usedFilament.equals(printerFilament))
                         {
-                            System.out.println(
-                                "used filament 1 matches printer filament 0 for single extruder printer");
+//                            System.out.println(
+//                                "used filament 1 matches printer filament 0 for single extruder printer");
                             filamentMismatch = false;
                         }
                     }
                 } else
                 {
-                    System.out.println("Two extruders");
+//                    System.out.println("Two extruders");
                     // two extruders on printer, just check extruder 0
                     if (usedExtruders.contains(0))
                     {
-                        System.out.println("extruder 0 is being used");
+//                        System.out.println("extruder 0 is being used");
                         Filament usedFilament = project.getExtruder0FilamentProperty().get();
-                        System.out.println("project fil 0 is " + usedFilament);
+//                        System.out.println("project fil 0 is " + usedFilament);
                         if (usedFilament != null) {
-                            System.out.println("project fil 0 id is " + usedFilament.getFilamentID());
+//                            System.out.println("project fil 0 id is " + usedFilament.getFilamentID());
                         }
                         if (usedFilament.equals(printerFilament))
                         {
-                            System.out.println("used filament 0 matches printer filament 0");
+//                            System.out.println("used filament 0 matches printer filament 0");
                             filamentMismatch = false;
                         }
                     } else
                     {
-                        System.out.println("Extruder 0 not being used");
+//                        System.out.println("Extruder 0 not being used");
                         filamentMismatch = false;
                     }
 

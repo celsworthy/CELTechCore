@@ -301,7 +301,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (modelFile != null)
         {
             modelName = new SimpleStringProperty(modelFile.getName());
-            this.setId(modelFile.getName());
+            this.setId(modelFile.getName() + Integer.toString(modelId));
         } else
         {
             modelName = new SimpleStringProperty("group " + modelId);
@@ -1268,7 +1268,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 maxZ = Math.max(pointInParent.getZ(), maxZ);
             }
         }
-        System.out.println("end2");
 
         double newwidth = maxX - minX;
         double newdepth = maxZ - minZ;
