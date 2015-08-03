@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -30,6 +31,7 @@ public class OuterPanelController implements Initializable
 
     @FXML
     private Pane crossButton;
+    private BooleanProperty visibilityProperty;
     
     /**
      * Initialises the controller class.
@@ -37,9 +39,13 @@ public class OuterPanelController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        crossButton.setOnMouseClicked((MouseEvent event) ->
+    }
+    
+    public void setPreferredVisibility(BooleanProperty visibilityProperty) {
+        this.visibilityProperty = visibilityProperty;
+         crossButton.setOnMouseClicked((MouseEvent event) ->
         {
-            rootPane.setVisible(false);
+            this.visibilityProperty.set(false);
         });
     }
     

@@ -20,6 +20,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -451,7 +452,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         printerClosedImage.setVisible(false);
     }
 
-    private Node loadInsetPanel(String innerPanelFXMLName, String title)
+    private Node loadInsetPanel(String innerPanelFXMLName, String title,
+        BooleanProperty visibleProperty)
     {
         URL insetPanelURL = getClass().getResource(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
@@ -460,11 +462,14 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         try
         {
             Node insetPanel = loader.load();
-            if (title != null) {
-                wrappedPanel = wrapPanelInOuterPanel(insetPanel, title);
-            } else {
+            if (title != null)
+            {
+                wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
+                wrappedPanel.visibleProperty().bind(visibleProperty);
+            } else
+            {
                 wrappedPanel = insetPanel;
-            }    
+            }
         } catch (IOException ex)
         {
             steno.exception("Unable to load inset panel: " + innerPanelFXMLName, ex);
@@ -472,8 +477,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         return wrappedPanel;
     }
 
-    
-    private Node wrapPanelInOuterPanel(Node insetPanel, String title)
+    private Node wrapPanelInOuterPanel(Node insetPanel, String title,
+        BooleanProperty visibleProperty)
     {
         URL outerPanelURL = getClass().getResource(
             ApplicationConfiguration.fxmlUtilityPanelResourcePath + "outerStatusPanel.fxml");
@@ -485,35 +490,40 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             OuterPanelController outerPanelController = loader.getController();
             outerPanelController.setInnerPanel(insetPanel);
             outerPanelController.setTitle(Lookup.i18n(title));
+            outerPanelController.setPreferredVisibility(visibleProperty);
         } catch (IOException ex)
         {
             steno.exception("Unable to load outer panel", ex);
         }
         return outerPanel;
     }
-    
+
     private void loadInsetPanels()
     {
         VBox vBoxLeft = new VBox();
         vBoxLeft.setSpacing(30);
-        Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title");
-        Node gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title");
+        Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
+                                              Lookup.getUserPreferences().showDiagnosticsProperty());
+        Node gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
+                                         Lookup.getUserPreferences().showGCodeProperty());
         vBoxLeft.getChildren().add(diagnosticPanel);
         vBoxLeft.getChildren().add(gcodePanel);
 
         VBox vBoxRight = new VBox();
         vBoxRight.setSpacing(30);
-        Node projectPanel = loadInsetPanel("ProjectPanel.fxml", null);
-        Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title");
+        Node projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null);
+        Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
+                                                    Lookup.getUserPreferences().showAdjustmentsProperty());
         vBoxRight.getChildren().add(projectPanel);
         vBoxRight.getChildren().add(printAdjustmentsPanel);
-        
+
         container.getChildren().add(vBoxLeft);
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setLeftAnchor(vBoxLeft, 30.0);
         container.getChildren().add(vBoxRight);
         AnchorPane.setTopAnchor(vBoxRight, 30.0);
         AnchorPane.setRightAnchor(vBoxRight, 30.0);
+
     }
 
     @Override

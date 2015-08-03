@@ -74,7 +74,6 @@ public class Preferences
 
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);
-        preferences.add(showGCodePref);
         preferences.add(showAdjustmentsPref);
 
         return preferences;
