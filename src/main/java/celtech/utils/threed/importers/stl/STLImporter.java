@@ -215,7 +215,7 @@ public class STLImporter
                 dataBuffer.order(ByteOrder.nativeOrder());    // Set the right order
                 int numberOfFacets = dataBuffer.getInt();
 
-                steno.debug("There are " + numberOfFacets + " facets");
+                steno.debug("There are " + numberOfFacets + " faces");
 
                 int[] faceIndexArray = new int[6];
 
@@ -254,6 +254,8 @@ public class STLImporter
                         inputVertexX = dataBuffer.getFloat();
                         inputVertexY = dataBuffer.getFloat();
                         inputVertexZ = dataBuffer.getFloat();
+                        
+                        System.out.println("read vertex is " + inputVertexX + " " + inputVertexY + " " + inputVertexZ);
 
                         Vector3D generatedVertex = new Vector3D(inputVertexX,
                                                                 -inputVertexZ,

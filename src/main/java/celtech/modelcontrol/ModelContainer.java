@@ -1811,6 +1811,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         getChildren().addAll(nodes);
     }
+    
+    public void addChildNode(Node node)
+    {
+        getChildren().add(node);
+    }    
 
     public ObservableList<Node> getMeshGroupChildren()
     {

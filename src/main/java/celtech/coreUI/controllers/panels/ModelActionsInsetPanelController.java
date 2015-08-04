@@ -9,10 +9,13 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.controllers.ProjectAwareController;
+import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.utils.threed.MeshCutter;
+import celtech.utils.threed.MeshSeparator;
 import java.net.URL;
-import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,7 +25,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -44,6 +50,12 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
     @FXML
     private Button ungroup;
+    
+    @FXML
+    private Button cut;    
+    
+    @FXML
+    private TextField cutHeight;     
 
     private Project currentProject;
     private UndoableProject undoableProject;
@@ -111,7 +123,37 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         undoableProject.ungroup(modelContainers);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
     }
+    
+    @FXML
+    void doCut(ActionEvent event) {
+        double cutHeightValue = - Double.valueOf(cutHeight.getText());
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        ModelContainer modelContainer = modelContainers.iterator().next();
+        
+        MeshCutter.setDebuggingNode(modelContainer);
+        
+        Set<TriangleMesh> subMeshes = MeshCutter.cut((TriangleMesh) modelContainer.getMeshView().getMesh(), cutHeightValue);
+        
+        ModelContainer.State state = modelContainer.getState();
+        String modelName = modelContainer.getModelName();
 
+        if (subMeshes.size() > 1)
+        {
+            int ix = 1;
+            for (TriangleMesh subMesh : subMeshes)
+            {
+                MeshView meshView = new MeshView(subMesh);
+                ModelContainer newModelContainer = new ModelContainer(
+                    modelContainer.getModelFile(), meshView);
+                newModelContainer.setState(state);
+                newModelContainer.setModelName(modelName + " " + ix);
+                undoableProject.addModel(newModelContainer);
+                ix++;
+            }    
+//            undoableProject.deleteModels(modelContainers);
+        }
+    }
+    
     @FXML
     void doApplyMaterial0(ActionEvent event)
     {
