@@ -99,42 +99,43 @@ public class MeshCutter
             int v0 = mesh.getFaces().get(faceIndex * 6);
             int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
             int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            
+
             double x0 = mesh.getPoints().get(v0 * 3);
             double y0 = mesh.getPoints().get(v0 * 3 + 1);
             double z0 = mesh.getPoints().get(v0 * 3 + 2);
-            
+
             double x1 = mesh.getPoints().get(v1 * 3);
             double y1 = mesh.getPoints().get(v1 * 3 + 1);
-            double z1 = mesh.getPoints().get(v1 * 3 + 2);            
-            
+            double z1 = mesh.getPoints().get(v1 * 3 + 2);
+
             double x2 = mesh.getPoints().get(v2 * 3);
             double y2 = mesh.getPoints().get(v2 * 3 + 1);
-            double z2 = mesh.getPoints().get(v2 * 3 + 2);               
+            double z2 = mesh.getPoints().get(v2 * 3 + 2);
 
             double xMin = Math.min(x0, Math.min(x1, x2));
             double xMax = Math.max(x0, Math.max(x1, x2));
             double x = (xMin + xMax) / 2;
-            
+
             double yMin = Math.min(y0, Math.min(y1, y2));
             double yMax = Math.max(y0, Math.max(y1, y2));
             double y = (yMin + yMax) / 2;
-            
+
             double zMin = Math.min(z0, Math.min(z1, z2));
             double zMax = Math.max(z0, Math.max(z1, z2));
             double z = (zMin + zMax) / 2;
-           
+
             Sphere sphere = new Sphere(0.5);
-            sphere.translateXProperty().set((x0 + x1 + x2)/3d);
-            sphere.translateYProperty().set((y0 + y1 + y2)/3d);
-            sphere.translateZProperty().set((z0 + z1 + z2)/3d);
-            System.out.println("add face centre " + (x0 + x1 + x2)/3d + " " + (y0 + y1 + y2)/3d + " " + (z0 + z1 +z2)/3d);
+            sphere.translateXProperty().set((x0 + x1 + x2) / 3d);
+            sphere.translateYProperty().set((y0 + y1 + y2) / 3d);
+            sphere.translateZProperty().set((z0 + z1 + z2) / 3d);
+            System.out.println("add face centre " + (x0 + x1 + x2) / 3d + " " + (y0 + y1 + y2) / 3d
+                + " " + (z0 + z1 + z2) / 3d);
             sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-            
+
             Text text = new Text(Integer.toString(faceIndex));
-            text.translateXProperty().set((x0 + x1 +x2)/3d);
-            text.translateYProperty().set((y0 + y1 +y2)/3d);
-            text.translateZProperty().set((z0 + z1 +z2)/3d);
+            text.translateXProperty().set((x0 + x1 + x2) / 3d);
+            text.translateYProperty().set((y0 + y1 + y2) / 3d);
+            text.translateZProperty().set((z0 + z1 + z2) / 3d);
             Font font = new Font("Source Sans Pro Regular", 8);
             text.setFont(font);
 
@@ -247,6 +248,7 @@ public class MeshCutter
                 // there should be two faces adjacent to this one that the plane also cuts
                 Set<Integer> facesAdjacentToEdgesOfFace
                     = getFacesAdjacentToEdgesOfFace(mesh, faceIndex, facesWithVertices, edges);
+                System.out.println("adjacent faces is " + facesAdjacentToEdgesOfFace);
 
                 // remove the previously visited face leaving the next face to visit
                 if (previousFaceIndex != -1)
@@ -255,6 +257,7 @@ public class MeshCutter
                 }
                 previousFaceIndex = faceIndex;
                 faceIndex = facesAdjacentToEdgesOfFace.iterator().next();
+
                 if (faceVisited[faceIndex])
                 {
                     // we've completed the loop back to the first intersecting face
@@ -351,8 +354,8 @@ public class MeshCutter
     private static boolean lineIntersectsPlane(TriangleMesh mesh, int vertex0, int vertex1,
         double cutHeight)
     {
-        double y0 = mesh.getPoints().get(vertex0 + 1);
-        double y1 = mesh.getPoints().get(vertex1 + 1);
+        double y0 = mesh.getPoints().get(vertex0 * 3 + 1);
+        double y1 = mesh.getPoints().get(vertex1 * 3 + 1);
         if (((y0 <= cutHeight) && (cutHeight <= y1))
             || ((y1 <= cutHeight) && (cutHeight <= y0)))
         {

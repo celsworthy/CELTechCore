@@ -255,8 +255,6 @@ public class STLImporter
                         inputVertexY = dataBuffer.getFloat();
                         inputVertexZ = dataBuffer.getFloat();
                         
-                        System.out.println("read vertex is " + inputVertexX + " " + inputVertexY + " " + inputVertexZ);
-
                         Vector3D generatedVertex = new Vector3D(inputVertexX,
                                                                 -inputVertexZ,
                                                                 inputVertexY);
