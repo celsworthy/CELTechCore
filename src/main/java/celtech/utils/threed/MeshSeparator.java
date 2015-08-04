@@ -223,7 +223,7 @@ public class MeshSeparator
     /**
      * Create a map of vertex to faces using the vertex.
      */
-    private static Map<Integer, Set<Integer>> makeFacesWithVertex(TriangleMesh mesh)
+    public static Map<Integer, Set<Integer>> makeFacesWithVertex(TriangleMesh mesh)
     {
         
         Map<Integer, Set<Integer>> facesWithVertex = new HashMap<>();
