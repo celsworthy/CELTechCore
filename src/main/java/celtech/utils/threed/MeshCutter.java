@@ -81,7 +81,7 @@ public class MeshCutter
     {
         Set<CutResult> cutResults = new HashSet<>();
         List<Integer> cutFaces = getCutFaceIndices(mesh, cutHeight);
-        showFaceCentres(cutFaces, mesh);
+//        showFaceCentres(cutFaces, mesh);
         System.out.println("cut faces are: " + cutFaces);
         List<Integer> newVertices = makeNewVerticesAlongCut(mesh, cutHeight, cutFaces);
         TriangleMesh lowerMesh = makeLowerMesh(mesh, cutFaces, newVertices);
@@ -178,7 +178,7 @@ public class MeshCutter
             }
         }
 
-//        showNewVertices(newVertices, mesh);
+        showNewVertices(newVertices, mesh);
         return newVertices;
     }
 
@@ -210,12 +210,12 @@ public class MeshCutter
     {
         int v0 = mesh.getFaces().get(faceIndex * 6 + vertexOffset0 * 2);
         int v1 = mesh.getFaces().get(faceIndex * 6 + vertexOffset1 * 2);
-        double v0X = mesh.getPoints().get(v0);
-        double v1X = mesh.getPoints().get(v1);
-        double v0Y = mesh.getPoints().get(v0 + 1);
-        double v1Y = mesh.getPoints().get(v1 + 1);
-        double v0Z = mesh.getPoints().get(v0 + 2);
-        double v1Z = mesh.getPoints().get(v1 + 2);
+        double v0X = mesh.getPoints().get(v0 * 3);
+        double v1X = mesh.getPoints().get(v1 * 3);
+        double v0Y = mesh.getPoints().get(v0 * 3 + 1);
+        double v1Y = mesh.getPoints().get(v1 * 3 + 1);
+        double v0Z = mesh.getPoints().get(v0 * 3 + 2);
+        double v1Z = mesh.getPoints().get(v1 * 3 + 2);
         double proportionAlongEdge = (cutHeight - v0Y) / (v1Y - v0Y);
         double interX = v0X + (v1X - v0X) * proportionAlongEdge;
         double interZ = v0Z + (v1Z - v0Z) * proportionAlongEdge;
