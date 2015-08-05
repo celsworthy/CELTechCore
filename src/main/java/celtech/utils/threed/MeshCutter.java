@@ -5,13 +5,17 @@ package celtech.utils.threed;
 
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.modelcontrol.ModelContainer;
-import static celtech.utils.threed.MeshSeparator.addTextureAndSmoothing;
+import static celtech.utils.threed.MeshSeparator.addPointToMesh;
+import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
+import com.sun.javafx.scene.shape.ObservableFaceArrayImpl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
@@ -41,31 +45,37 @@ public class MeshCutter
         }
     }
 
+    private static void showFace(TriangleMesh mesh, int faceIndex)
+    {
+        TriangleMesh triangle = new TriangleMesh();
+
+        int[] vertices = new int[6];
+        vertices[0] = mesh.getFaces().get(faceIndex * 6);
+        vertices[2] = mesh.getFaces().get(faceIndex * 6 + 2);
+        vertices[4] = mesh.getFaces().get(faceIndex * 6 + 4);
+        triangle.getFaces().addAll(vertices);
+
+        addPointToMesh(mesh, vertices[0], triangle);
+        addPointToMesh(mesh, vertices[2], triangle);
+        addPointToMesh(mesh, vertices[4], triangle);
+
+        setTextureAndSmoothing(triangle, triangle.getFaces().size() / 6);
+
+        MeshView meshView = new MeshView(triangle);
+        meshView.setMaterial(ApplicationMaterials.pickedGCodeMaterial);
+        if (node != null)
+        {
+            node.addChildNode(meshView);
+        }
+    }
+
     /**
      * Cut the given mesh into two, at the given height.
      */
     public static Set<TriangleMesh> cut(TriangleMesh mesh, double cutHeight)
     {
+//        showIncomingMesh(mesh);
 
-//        System.out.println(mesh.getVertexFormat());
-//        System.out.println(mesh.getVertexFormat().getVertexIndexSize());
-//        System.out.println(mesh.getVertexFormat().getPointIndexOffset());
-//
-//        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
-//        {
-//            System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " "
-//                + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
-//
-//            showSphere(mesh.getPoints().get(i * 3),
-//                       mesh.getPoints().get(i * 3 + 1),
-//                       mesh.getPoints().get(i * 3 + 2));
-//        }
-//
-//        for (int i = 0; i < mesh.getFaces().size() / 6; i++)
-//        {
-//            System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " "
-//                + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
-//        }
         Set<TriangleMesh> triangleMeshs = new HashSet<>();
 
         Set<CutResult> splitResults = getCutFaces(mesh, cutHeight);
@@ -76,6 +86,29 @@ public class MeshCutter
         }
 
         return triangleMeshs;
+    }
+
+    private static void showIncomingMesh(TriangleMesh mesh)
+    {
+        System.out.println(mesh.getVertexFormat());
+        System.out.println(mesh.getVertexFormat().getVertexIndexSize());
+        System.out.println(mesh.getVertexFormat().getPointIndexOffset());
+
+        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
+        {
+            System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " "
+                + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
+
+            showSphere(mesh.getPoints().get(i * 3),
+                       mesh.getPoints().get(i * 3 + 1),
+                       mesh.getPoints().get(i * 3 + 2));
+        }
+
+        for (int i = 0; i < mesh.getFaces().size() / 6; i++)
+        {
+            System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " "
+                + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
+        }
     }
 
     private static Set<CutResult> getCutFaces(TriangleMesh mesh, double cutHeight)
@@ -159,19 +192,89 @@ public class MeshCutter
         TriangleMesh childMesh = new TriangleMesh();
         childMesh.getPoints().addAll(mesh.getPoints());
         childMesh.getFaces().addAll(mesh.getFaces());
-        addTextureAndSmoothing(childMesh, childMesh.getFaces().size());
+        setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
 
         removeCutFacesAndFacesAboveCutFaces(childMesh, cutFaces, cutHeight);
-        addFacesAroundCut(childMesh, cutFaces, newVertices);
+//        addLowerFacesAroundCut(mesh, childMesh, cutFaces, newVertices, cutHeight);
 
         return childMesh;
     }
-    
 
-    private static void addFacesAroundCut(TriangleMesh childMesh, List<Integer> cutFaces,
-        List<Integer> newVertices)
+    private static void addLowerFacesAroundCut(TriangleMesh mesh, TriangleMesh childMesh,
+        List<Integer> cutFaces, List<Integer> newVertices, double cutHeight)
     {
-    }    
+        assert (cutFaces.size() == newVertices.size());
+        for (int index = 0; index < cutFaces.size(); index++)
+        {
+            int vertexIndex1 = 0;
+            int cutFaceIndex = cutFaces.get(index);
+            int vertexIndex0 = newVertices.get(index);
+            if (index == cutFaces.size() - 1)
+            {
+                vertexIndex1 = newVertices.get(0);
+            } else
+            {
+                vertexIndex1 = newVertices.get(index + 1);
+            }
+            addLowerDividedFaceToChild(mesh, childMesh, cutFaceIndex, vertexIndex0, vertexIndex1,
+                                       cutHeight);
+        }
+    }
+
+    /**
+     * Cut the face using the given vertexes, and add the lower face to the child mesh.
+     */
+    private static void addLowerDividedFaceToChild(TriangleMesh mesh, TriangleMesh childMesh,
+        int faceIndex, int vertexIntersect0, int vertexIntersect1, double cutHeight)
+    {
+        int v0 = mesh.getFaces().get(faceIndex * 6);
+        int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+        int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+
+        boolean b0 = lineIntersectsPlane(mesh, v0, v1, cutHeight);
+        boolean b1 = lineIntersectsPlane(mesh, v1, v2, cutHeight);
+        boolean b2 = lineIntersectsPlane(mesh, v0, v2, cutHeight);
+
+        // are points below line?
+        boolean h0 = mesh.getPoints().get(v0 * 3 + 1) > cutHeight;
+        boolean h1 = mesh.getPoints().get(v1 * 3 + 1) > cutHeight;
+        boolean h2 = mesh.getPoints().get(v2 * 3 + 1) > cutHeight;
+
+        int numPointsBelowCut = 0;
+        numPointsBelowCut += h0 ? 1 : 0;
+        numPointsBelowCut += h1 ? 1 : 0;
+        numPointsBelowCut += h2 ? 1 : 0;
+
+        // corner indices for new face
+        int c0 = -1;
+        int c1 = -1;
+        int c2 = -1;
+        if (numPointsBelowCut == 1)
+        {
+            if (h0)
+            {
+                c0 = v0;
+            }
+            if (h1)
+            {
+                c0 = v1;
+            }
+            if (h2)
+            {
+                c0 = v2;
+            }
+            c1 = vertexIntersect1;
+            c2 = vertexIntersect0;
+
+            int[] vertices = new int[6];
+            vertices[0] = c0;
+            vertices[2] = c1;
+            vertices[4] = c2;
+            childMesh.getFaces().addAll(vertices);
+            showFace(childMesh, childMesh.getFaces().size() / 6 - 1);
+        }
+
+    }
 
     /**
      * Remove the cut faces and any other faces above cut height from the mesh.
@@ -203,18 +306,22 @@ public class MeshCutter
                 continue;
             }
         }
-        mesh.getFaces().clear();
+
+        ObservableFaceArray newFaceArray = new ObservableFaceArrayImpl();
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
-            if (facesAboveCut.contains(faceIndex)) {
+            if (facesAboveCut.contains(faceIndex))
+            {
                 continue;
             }
             int[] vertices = new int[6];
             vertices[0] = mesh.getFaces().get(faceIndex * 6);
             vertices[2] = mesh.getFaces().get(faceIndex * 6 + 2);
             vertices[4] = mesh.getFaces().get(faceIndex * 6 + 4);
-            mesh.getFaces().addAll(vertices);
+            newFaceArray.addAll(vertices);
         }
+        mesh.getFaces().setAll(newFaceArray);
+        setTextureAndSmoothing(mesh, mesh.getFaces().size() / 6);
     }
 
     /**

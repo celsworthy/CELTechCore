@@ -26,6 +26,7 @@ public class MeshCutterTest
     @Test
     public void testCutCubeReturnsTwoMeshes() throws STLFileParsingException
     {
+        
         URL stlURL = this.getClass().getResource("/simplecube.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);

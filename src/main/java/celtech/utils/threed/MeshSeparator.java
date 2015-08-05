@@ -111,7 +111,7 @@ public class MeshSeparator
             addFaceToMesh(mesh, face, subMesh, newVertexIndices);
         }
 
-        addTextureAndSmoothing(subMesh, numFaces);
+        setTextureAndSmoothing(subMesh, numFaces);
         return subMesh;
     }
     
@@ -136,7 +136,7 @@ public class MeshSeparator
     /**
      * Add the vertex details of the given vertex from the parent mesh to the sub mesh.
      */
-    private static void addPointToMesh(TriangleMesh parentMesh, Integer vertex, TriangleMesh subMesh)
+    public static void addPointToMesh(TriangleMesh parentMesh, Integer vertex, TriangleMesh subMesh)
     {
         subMesh.getPoints().addAll(parentMesh.getPoints(), vertex * 3, 3);
     }
@@ -159,19 +159,19 @@ public class MeshSeparator
     /**
      * Add the boilerplate texture and smoothing data to the given mesh.
      */
-    public static void addTextureAndSmoothing(TriangleMesh mesh, int numFaces)
+    public static void setTextureAndSmoothing(TriangleMesh mesh, int numFaces)
     {
         FloatArrayList texCoords = new FloatArrayList();
         texCoords.add(0f);
         texCoords.add(0f);
-        mesh.getTexCoords().addAll(texCoords.toFloatArray());
+        mesh.getTexCoords().setAll(texCoords.toFloatArray());
 
         int[] smoothingGroups = new int[numFaces];
         for (int i = 0; i < smoothingGroups.length; i++)
         {
             smoothingGroups[i] = 0;
         }
-        mesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+        mesh.getFaceSmoothingGroups().setAll(smoothingGroups);
     }
 
     /**

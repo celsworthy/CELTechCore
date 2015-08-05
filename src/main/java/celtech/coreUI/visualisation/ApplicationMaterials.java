@@ -30,7 +30,7 @@ public class ApplicationMaterials
     private static final PhongMaterial unretractMaterial = new PhongMaterial(Color.BLUE);
     private static final PhongMaterial supportMaterial = new PhongMaterial(Color.BROWN);
     private static final PhongMaterial travelMaterial = new PhongMaterial(Color.LIGHTGREEN);
-    private static final PhongMaterial pickedGCodeMaterial = new PhongMaterial(Color.GOLDENROD);
+    public static final PhongMaterial pickedGCodeMaterial = new PhongMaterial(Color.GOLDENROD);
 
     /**
      *

@@ -9,13 +9,10 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.controllers.ProjectAwareController;
-import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.utils.threed.MeshCutter;
-import celtech.utils.threed.MeshSeparator;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +24,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -134,19 +132,21 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         
         Set<TriangleMesh> subMeshes = MeshCutter.cut((TriangleMesh) modelContainer.getMeshView().getMesh(), cutHeightValue);
         
-        ModelContainer.State state = modelContainer.getState();
         String modelName = modelContainer.getModelName();
 
-        if (subMeshes.size() > 1)
+        if (subMeshes.size() > 0)
         {
             int ix = 1;
             for (TriangleMesh subMesh : subMeshes)
             {
+                System.out.println("add child mesh of " + subMesh.getFaces().size() + " faces");
                 MeshView meshView = new MeshView(subMesh);
+                meshView.cullFaceProperty().set(CullFace.NONE);
                 ModelContainer newModelContainer = new ModelContainer(
                     modelContainer.getModelFile(), meshView);
-                newModelContainer.setState(state);
                 newModelContainer.setModelName(modelName + " " + ix);
+                newModelContainer.moveToCentre();
+                newModelContainer.dropToBed();
                 undoableProject.addModel(newModelContainer);
                 ix++;
             }    
