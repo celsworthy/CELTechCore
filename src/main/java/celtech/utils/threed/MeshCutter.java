@@ -88,29 +88,6 @@ public class MeshCutter
         return triangleMeshs;
     }
 
-    private static void showIncomingMesh(TriangleMesh mesh)
-    {
-        System.out.println(mesh.getVertexFormat());
-        System.out.println(mesh.getVertexFormat().getVertexIndexSize());
-        System.out.println(mesh.getVertexFormat().getPointIndexOffset());
-
-        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
-        {
-            System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " "
-                + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
-
-            showSphere(mesh.getPoints().get(i * 3),
-                       mesh.getPoints().get(i * 3 + 1),
-                       mesh.getPoints().get(i * 3 + 2));
-        }
-
-        for (int i = 0; i < mesh.getFaces().size() / 6; i++)
-        {
-            System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " "
-                + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
-        }
-    }
-
     private static Set<CutResult> getCutFaces(TriangleMesh mesh, double cutHeight)
     {
         Set<CutResult> cutResults = new HashSet<>();
@@ -124,61 +101,6 @@ public class MeshCutter
         CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices);
         cutResults.add(cutResult);
         return cutResults;
-    }
-
-    private static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh)
-    {
-        for (Integer faceIndex : cutFaces)
-        {
-            int v0 = mesh.getFaces().get(faceIndex * 6);
-            int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
-            int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-
-            double x0 = mesh.getPoints().get(v0 * 3);
-            double y0 = mesh.getPoints().get(v0 * 3 + 1);
-            double z0 = mesh.getPoints().get(v0 * 3 + 2);
-
-            double x1 = mesh.getPoints().get(v1 * 3);
-            double y1 = mesh.getPoints().get(v1 * 3 + 1);
-            double z1 = mesh.getPoints().get(v1 * 3 + 2);
-
-            double x2 = mesh.getPoints().get(v2 * 3);
-            double y2 = mesh.getPoints().get(v2 * 3 + 1);
-            double z2 = mesh.getPoints().get(v2 * 3 + 2);
-
-            double xMin = Math.min(x0, Math.min(x1, x2));
-            double xMax = Math.max(x0, Math.max(x1, x2));
-            double x = (xMin + xMax) / 2;
-
-            double yMin = Math.min(y0, Math.min(y1, y2));
-            double yMax = Math.max(y0, Math.max(y1, y2));
-            double y = (yMin + yMax) / 2;
-
-            double zMin = Math.min(z0, Math.min(z1, z2));
-            double zMax = Math.max(z0, Math.max(z1, z2));
-            double z = (zMin + zMax) / 2;
-
-            Sphere sphere = new Sphere(0.5);
-            sphere.translateXProperty().set((x0 + x1 + x2) / 3d);
-            sphere.translateYProperty().set((y0 + y1 + y2) / 3d);
-            sphere.translateZProperty().set((z0 + z1 + z2) / 3d);
-            System.out.println("add face centre " + (x0 + x1 + x2) / 3d + " " + (y0 + y1 + y2) / 3d
-                + " " + (z0 + z1 + z2) / 3d);
-            sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-
-            Text text = new Text(Integer.toString(faceIndex));
-            text.translateXProperty().set((x0 + x1 + x2) / 3d);
-            text.translateYProperty().set((y0 + y1 + y2) / 3d);
-            text.translateZProperty().set((z0 + z1 + z2) / 3d);
-            Font font = new Font("Source Sans Pro Regular", 8);
-            text.setFont(font);
-
-            if (node != null)
-            {
-                node.addChildNode(sphere);
-                node.addChildNode(text);
-            }
-        }
     }
 
     /**
@@ -195,7 +117,9 @@ public class MeshCutter
         setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
 
         removeCutFacesAndFacesAboveCutFaces(childMesh, cutFaces, cutHeight);
-//        addLowerFacesAroundCut(mesh, childMesh, cutFaces, newVertices, cutHeight);
+        addLowerFacesAroundCut(mesh, childMesh, cutFaces, newVertices, cutHeight);
+
+        showFace(mesh, 0);
 
         return childMesh;
     }
@@ -219,6 +143,7 @@ public class MeshCutter
             addLowerDividedFaceToChild(mesh, childMesh, cutFaceIndex, vertexIndex0, vertexIndex1,
                                        cutHeight);
         }
+        setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
     }
 
     /**
@@ -271,7 +196,12 @@ public class MeshCutter
             vertices[2] = c1;
             vertices[4] = c2;
             childMesh.getFaces().addAll(vertices);
-            showFace(childMesh, childMesh.getFaces().size() / 6 - 1);
+            
+            System.out.println("corner vertices are " + c0 + " " + c1 + " " + c2);
+            
+            System.out.println("Child has " + childMesh.getFaces().size() / 6 + " faces");
+            System.out.println("Child has " + childMesh.getPoints().size() / 3 + " points");
+            
         }
 
     }
@@ -352,6 +282,8 @@ public class MeshCutter
         // last added vertex should be same as first - remove it
         newVertices.remove(newVertices.get(newVertices.size() - 1));
 
+        System.out.println("new vertices are " + newVertices);
+        
         showNewVertices(newVertices, mesh);
         return newVertices;
     }
@@ -390,13 +322,13 @@ public class MeshCutter
             for (Integer newVertex : newVertices)
             {
                 Sphere sphere = new Sphere(0.5);
-                sphere.translateXProperty().set(mesh.getPoints().get(newVertex));
-                sphere.translateYProperty().set(mesh.getPoints().get(newVertex + 1));
-                sphere.translateZProperty().set(mesh.getPoints().get(newVertex + 2));
+                sphere.translateXProperty().set(mesh.getPoints().get(newVertex * 3));
+                sphere.translateYProperty().set(mesh.getPoints().get(newVertex * 3 + 1));
+                sphere.translateZProperty().set(mesh.getPoints().get(newVertex * 3 + 2));
                 sphere.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
                 System.out.println("add sphere to " + node + " at "
-                    + mesh.getPoints().get(newVertex) + " " + mesh.getPoints().get(newVertex + 1)
-                    + " " + mesh.getPoints().get(newVertex + 2));
+                    + mesh.getPoints().get(newVertex * 3) + " " + mesh.getPoints().get(newVertex * 3 + 1)
+                    + " " + mesh.getPoints().get(newVertex * 3 + 2));
                 node.addChildNode(sphere);
             }
         }
@@ -420,7 +352,7 @@ public class MeshCutter
         double interX = v0X + (v1X - v0X) * proportionAlongEdge;
         double interZ = v0Z + (v1Z - v0Z) * proportionAlongEdge;
         mesh.getPoints().addAll((float) interX, (float) cutHeight, (float) interZ);
-        return mesh.getPoints().size() - 3;
+        return mesh.getPoints().size() / 3 - 1;
     }
 
     /**
@@ -616,6 +548,84 @@ public class MeshCutter
     public static void setDebuggingNode(ModelContainer node)
     {
         MeshCutter.node = node;
+    }
+
+    private static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh)
+    {
+        for (Integer faceIndex : cutFaces)
+        {
+            int v0 = mesh.getFaces().get(faceIndex * 6);
+            int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+            int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+
+            double x0 = mesh.getPoints().get(v0 * 3);
+            double y0 = mesh.getPoints().get(v0 * 3 + 1);
+            double z0 = mesh.getPoints().get(v0 * 3 + 2);
+
+            double x1 = mesh.getPoints().get(v1 * 3);
+            double y1 = mesh.getPoints().get(v1 * 3 + 1);
+            double z1 = mesh.getPoints().get(v1 * 3 + 2);
+
+            double x2 = mesh.getPoints().get(v2 * 3);
+            double y2 = mesh.getPoints().get(v2 * 3 + 1);
+            double z2 = mesh.getPoints().get(v2 * 3 + 2);
+
+            double xMin = Math.min(x0, Math.min(x1, x2));
+            double xMax = Math.max(x0, Math.max(x1, x2));
+            double x = (xMin + xMax) / 2;
+
+            double yMin = Math.min(y0, Math.min(y1, y2));
+            double yMax = Math.max(y0, Math.max(y1, y2));
+            double y = (yMin + yMax) / 2;
+
+            double zMin = Math.min(z0, Math.min(z1, z2));
+            double zMax = Math.max(z0, Math.max(z1, z2));
+            double z = (zMin + zMax) / 2;
+
+            Sphere sphere = new Sphere(0.5);
+            sphere.translateXProperty().set((x0 + x1 + x2) / 3d);
+            sphere.translateYProperty().set((y0 + y1 + y2) / 3d);
+            sphere.translateZProperty().set((z0 + z1 + z2) / 3d);
+            System.out.println("add face centre " + (x0 + x1 + x2) / 3d + " " + (y0 + y1 + y2) / 3d
+                + " " + (z0 + z1 + z2) / 3d);
+            sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+
+            Text text = new Text(Integer.toString(faceIndex));
+            text.translateXProperty().set((x0 + x1 + x2) / 3d);
+            text.translateYProperty().set((y0 + y1 + y2) / 3d);
+            text.translateZProperty().set((z0 + z1 + z2) / 3d);
+            Font font = new Font("Source Sans Pro Regular", 8);
+            text.setFont(font);
+
+            if (node != null)
+            {
+                node.addChildNode(sphere);
+                node.addChildNode(text);
+            }
+        }
+    }
+
+    private static void showIncomingMesh(TriangleMesh mesh)
+    {
+        System.out.println(mesh.getVertexFormat());
+        System.out.println(mesh.getVertexFormat().getVertexIndexSize());
+        System.out.println(mesh.getVertexFormat().getPointIndexOffset());
+
+        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
+        {
+            System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " "
+                + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
+
+            showSphere(mesh.getPoints().get(i * 3),
+                       mesh.getPoints().get(i * 3 + 1),
+                       mesh.getPoints().get(i * 3 + 2));
+        }
+
+        for (int i = 0; i < mesh.getFaces().size() / 6; i++)
+        {
+            System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " "
+                + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
+        }
     }
 
 }
