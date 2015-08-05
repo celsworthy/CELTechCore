@@ -5,6 +5,7 @@ package celtech.utils.threed;
 
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.modelcontrol.ModelContainer;
+import static celtech.utils.threed.MeshSeparator.addTextureAndSmoothing;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -84,7 +85,7 @@ public class MeshCutter
 //        showFaceCentres(cutFaces, mesh);
         System.out.println("cut faces are: " + cutFaces);
         List<Integer> newVertices = makeNewVerticesAlongCut(mesh, cutHeight, cutFaces);
-        TriangleMesh lowerMesh = makeLowerMesh(mesh, cutFaces, newVertices);
+        TriangleMesh lowerMesh = makeLowerMesh(mesh, cutFaces, newVertices, cutHeight);
         List<List<Integer>> loopsOfVertices = new ArrayList<>();
         loopsOfVertices.add(newVertices);
         CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices);
@@ -147,10 +148,73 @@ public class MeshCutter
         }
     }
 
+    /**
+     * Given the mesh, cut faces and intersection points, create the lower child mesh. Copy the
+     * original mesh, remove all the cut faces and replace with a new set of faces using the new
+     * intersection points. Remove all the faces from above the cut faces.
+     */
     private static TriangleMesh makeLowerMesh(TriangleMesh mesh, List<Integer> cutFaces,
+        List<Integer> newVertices, double cutHeight)
+    {
+        TriangleMesh childMesh = new TriangleMesh();
+        childMesh.getPoints().addAll(mesh.getPoints());
+        childMesh.getFaces().addAll(mesh.getFaces());
+        addTextureAndSmoothing(childMesh, childMesh.getFaces().size());
+
+        removeCutFacesAndFacesAboveCutFaces(childMesh, cutFaces, cutHeight);
+        addFacesAroundCut(childMesh, cutFaces, newVertices);
+
+        return childMesh;
+    }
+    
+
+    private static void addFacesAroundCut(TriangleMesh childMesh, List<Integer> cutFaces,
         List<Integer> newVertices)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }    
+
+    /**
+     * Remove the cut faces and any other faces above cut height from the mesh.
+     */
+    private static void removeCutFacesAndFacesAboveCutFaces(TriangleMesh mesh,
+        List<Integer> cutFaces, double cutHeight)
+    {
+        Set<Integer> facesAboveCut = new HashSet<>();
+
+        // compare vertices -Y to cutHeight
+        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
+        {
+            int vertex0 = mesh.getFaces().get(faceIndex * 6);
+            if (mesh.getPoints().get(vertex0 * 3 + 1) < cutHeight)
+            {
+                facesAboveCut.add(faceIndex);
+                continue;
+            }
+            int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
+            if (mesh.getPoints().get(vertex1 * 3 + 1) < cutHeight)
+            {
+                facesAboveCut.add(faceIndex);
+                continue;
+            }
+            int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
+            if (mesh.getPoints().get(vertex2 * 3 + 1) < cutHeight)
+            {
+                facesAboveCut.add(faceIndex);
+                continue;
+            }
+        }
+        mesh.getFaces().clear();
+        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
+        {
+            if (facesAboveCut.contains(faceIndex)) {
+                continue;
+            }
+            int[] vertices = new int[6];
+            vertices[0] = mesh.getFaces().get(faceIndex * 6);
+            vertices[2] = mesh.getFaces().get(faceIndex * 6 + 2);
+            vertices[4] = mesh.getFaces().get(faceIndex * 6 + 4);
+            mesh.getFaces().addAll(vertices);
+        }
     }
 
     /**
@@ -160,31 +224,31 @@ public class MeshCutter
         List<Integer> cutFaces)
     {
         List<Integer> newVertices = new ArrayList<>();
-        
+
         Edge commonEdgeOfFace0And1 = getCommonEdge(mesh, cutFaces.get(0), cutFaces.get(1));
         Set<Edge> face0Edges = getFaceEdges(mesh, cutFaces.get(0));
         face0Edges.remove(commonEdgeOfFace0And1);
         Edge firstEdge = face0Edges.iterator().next();
         newVertices.add(makeIntersectingVertex(mesh, firstEdge, cutHeight));
-        
+
         Edge previousEdge = firstEdge;
         for (Integer faceIndex : cutFaces)
         {
             Set<Edge> faceEdges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight);
             faceEdges.remove(previousEdge);
-            assert(faceEdges.size() == 1);
+            assert (faceEdges.size() == 1);
             Edge nextEdge = faceEdges.iterator().next();
             newVertices.add(makeIntersectingVertex(mesh, nextEdge, cutHeight));
             previousEdge = nextEdge;
         }
-        
+
         // last added vertex should be same as first - remove it
         newVertices.remove(newVertices.get(newVertices.size() - 1));
 
         showNewVertices(newVertices, mesh);
         return newVertices;
     }
-    
+
     /**
      * Return the edge that is shared between the two faces.
      */
@@ -193,7 +257,7 @@ public class MeshCutter
         Set<Edge> edges0 = getFaceEdges(mesh, faceIndex0);
         Set<Edge> edges1 = getFaceEdges(mesh, faceIndex1);
         edges0.retainAll(edges1);
-        assert(edges0.size() == 1);
+        assert (edges0.size() == 1);
         return edges0.iterator().next();
     }
 
@@ -210,7 +274,7 @@ public class MeshCutter
         edges.add(edge2);
         edges.add(edge3);
         return edges;
-    }    
+    }
 
     private static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
     {
@@ -354,10 +418,11 @@ public class MeshCutter
     }
 
     /**
-     * Return the two edge indices that the plane intersects. V0 -> V1 is called edge 1, V1 -> V2 is edge 2
-     * and V0 -> V2 is edge 3.
+     * Return the two edge indices that the plane intersects. V0 -> V1 is called edge 1, V1 -> V2 is
+     * edge 2 and V0 -> V2 is edge 3.
      */
-    private static Set<Integer> getEdgeIndicesOfFaceThatPlaneIntersects(TriangleMesh mesh, int faceIndex,
+    private static Set<Integer> getEdgeIndicesOfFaceThatPlaneIntersects(TriangleMesh mesh,
+        int faceIndex,
         double cutHeight)
     {
         Set<Integer> edges = new HashSet<>();
@@ -379,10 +444,10 @@ public class MeshCutter
         }
         return edges;
     }
-    
+
     /**
-     * Return the two edge indices that the plane intersects. V0 -> V1 is called edge 1, V1 -> V2 is edge 2
-     * and V0 -> V2 is edge 3.
+     * Return the two edge indices that the plane intersects. V0 -> V1 is called edge 1, V1 -> V2 is
+     * edge 2 and V0 -> V2 is edge 3.
      */
     private static Set<Edge> getEdgesOfFaceThatPlaneIntersects(TriangleMesh mesh, int faceIndex,
         double cutHeight)
@@ -445,11 +510,12 @@ public class MeshCutter
     {
         MeshCutter.node = node;
     }
+
 }
 
+class Edge
+{
 
-class Edge {
-    
     final int v0;
     final int v1;
 
@@ -458,27 +524,33 @@ class Edge {
         this.v0 = v0;
         this.v1 = v1;
     }
-    
+
     @Override
-    public boolean equals(Object obj) {
-       if (!(obj instanceof Edge))
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof Edge))
+        {
             return false;
+        }
         if (obj == this)
+        {
             return true;
+        }
 
         Edge other = (Edge) obj;
-        if ((other.v0 == v0 && other.v1 == v1) || (other.v1 == v0 && other.v0 == v1)) {
+        if ((other.v0 == v0 && other.v1 == v1) || (other.v1 == v0 && other.v0 == v1))
+        {
             return true;
         }
         return false;
     }
-    
+
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return v0 + v1;
     }
 }
-
 
 class CutResult
 {

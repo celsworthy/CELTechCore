@@ -159,7 +159,7 @@ public class MeshSeparator
     /**
      * Add the boilerplate texture and smoothing data to the given mesh.
      */
-    private static void addTextureAndSmoothing(TriangleMesh mesh, int numFaces)
+    public static void addTextureAndSmoothing(TriangleMesh mesh, int numFaces)
     {
         FloatArrayList texCoords = new FloatArrayList();
         texCoords.add(0f);
