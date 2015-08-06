@@ -36,45 +36,6 @@ import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 public class MeshCutter
 {
 
-    private static ModelContainer node;
-
-    private static void showSphere(double x, double y, double z)
-    {
-        Sphere sphere = new Sphere(0.5);
-        sphere.translateXProperty().set(x);
-        sphere.translateYProperty().set(y);
-        sphere.translateZProperty().set(z);
-        sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-        if (node != null)
-        {
-            node.addChildNode(sphere);
-        }
-    }
-
-    private static void showFace(TriangleMesh mesh, int faceIndex)
-    {
-        TriangleMesh triangle = new TriangleMesh();
-
-        int[] vertices = new int[6];
-        vertices[0] = mesh.getFaces().get(faceIndex * 6);
-        vertices[2] = mesh.getFaces().get(faceIndex * 6 + 2);
-        vertices[4] = mesh.getFaces().get(faceIndex * 6 + 4);
-        triangle.getFaces().addAll(vertices);
-
-        addPointToMesh(mesh, vertices[0], triangle);
-        addPointToMesh(mesh, vertices[2], triangle);
-        addPointToMesh(mesh, vertices[4], triangle);
-
-        setTextureAndSmoothing(triangle, triangle.getFaces().size() / 6);
-
-        MeshView meshView = new MeshView(triangle);
-        meshView.setMaterial(ApplicationMaterials.pickedGCodeMaterial);
-        if (node != null)
-        {
-            node.addChildNode(meshView);
-        }
-    }
-
     /**
      * Cut the given mesh into two, at the given height.
      */
@@ -98,13 +59,19 @@ public class MeshCutter
     private static Set<CutResult> getCutFaces(TriangleMesh mesh, double cutHeight)
     {
         Set<CutResult> cutResults = new HashSet<>();
-        List<Integer> cutFaces = getCutFaceIndices(mesh, cutHeight);
+        List<List<Integer>> loopsOfFaces = getCutFaceIndices(mesh, cutHeight);
 //        showFaceCentres(cutFaces, mesh);
-        System.out.println("cut faces are: " + cutFaces);
-        List<Integer> newVertices = makeNewVerticesAlongCut(mesh, cutHeight, cutFaces);
-        TriangleMesh lowerMesh = makeLowerMesh(mesh, cutFaces, newVertices, cutHeight);
+        System.out.println("cut faces are: " + loopsOfFaces.get(0));
+        
         List<List<Integer>> loopsOfVertices = new ArrayList<>();
-        loopsOfVertices.add(newVertices);
+        
+        for (List<Integer> loopOfFaces : loopsOfFaces)
+        {
+            List<Integer> newVertices = makeNewVerticesAlongCut(mesh, cutHeight, loopOfFaces);
+            loopsOfVertices.add(newVertices);
+        }
+        
+        TriangleMesh lowerMesh = makeLowerMesh(mesh, loopsOfFaces.get(0), loopsOfVertices.get(0), cutHeight);
         CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices);
         cutResults.add(cutResult);
         return cutResults;
@@ -322,26 +289,6 @@ public class MeshCutter
         return edges;
     }
 
-    private static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
-    {
-        if (node != null)
-        {
-            for (Integer newVertex : newVertices)
-            {
-                Sphere sphere = new Sphere(0.5);
-                sphere.translateXProperty().set(mesh.getPoints().get(newVertex * 3));
-                sphere.translateYProperty().set(mesh.getPoints().get(newVertex * 3 + 1));
-                sphere.translateZProperty().set(mesh.getPoints().get(newVertex * 3 + 2));
-                sphere.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
-                System.out.println("add sphere to " + node + " at "
-                    + mesh.getPoints().get(newVertex * 3) + " " + mesh.getPoints().get(newVertex * 3
-                        + 1)
-                    + " " + mesh.getPoints().get(newVertex * 3 + 2));
-                node.addChildNode(sphere);
-            }
-        }
-    }
-
     /**
      * Calculate the coordinates of the intersection with the edge, add a new vertex at that point
      * and return the index of the new vertex.
@@ -368,8 +315,11 @@ public class MeshCutter
      * according to adjacency, so that we can get a correct list of ordered vertices on the
      * perimeter.
      */
-    private static List<Integer> getCutFaceIndices(TriangleMesh mesh, double cutHeight)
+    private static List<List<Integer>> getCutFaceIndices(TriangleMesh mesh, double cutHeight)
     {
+        
+        List<List<Integer>> loopsOfFaces = new ArrayList<>();
+        
         Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
         System.out.println("faces with vertices " + facesWithVertices);
         List<Integer> cutFaceIndices = new ArrayList<>();
@@ -405,7 +355,10 @@ public class MeshCutter
                 }
             }
         }
-        return cutFaceIndices;
+        
+        loopsOfFaces.add(cutFaceIndices);
+        
+        return loopsOfFaces;
     }
 
     private static int getFirstUnvisitedIntersectingFace(boolean[] faceVisited, TriangleMesh mesh,
@@ -615,15 +568,75 @@ public class MeshCutter
             vertex.meshVertexIndex = vertexIndex;
             vertexToVertex.put(vertex, vertex);
             return vertex;
-        } else {
+        } else
+        {
             return vertexToVertex.get(vertex);
         }
-        
+
     }
 
     public static void setDebuggingNode(ModelContainer node)
     {
         MeshCutter.node = node;
+    }
+
+    private static ModelContainer node;
+
+    private static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
+    {
+        if (node != null)
+        {
+            for (Integer newVertex : newVertices)
+            {
+                Sphere sphere = new Sphere(0.5);
+                sphere.translateXProperty().set(mesh.getPoints().get(newVertex * 3));
+                sphere.translateYProperty().set(mesh.getPoints().get(newVertex * 3 + 1));
+                sphere.translateZProperty().set(mesh.getPoints().get(newVertex * 3 + 2));
+                sphere.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
+                System.out.println("add sphere to " + node + " at "
+                    + mesh.getPoints().get(newVertex * 3) + " " + mesh.getPoints().get(newVertex * 3
+                        + 1)
+                    + " " + mesh.getPoints().get(newVertex * 3 + 2));
+                node.addChildNode(sphere);
+            }
+        }
+    }
+
+    private static void showSphere(double x, double y, double z)
+    {
+        Sphere sphere = new Sphere(0.5);
+        sphere.translateXProperty().set(x);
+        sphere.translateYProperty().set(y);
+        sphere.translateZProperty().set(z);
+        sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+        if (node != null)
+        {
+            node.addChildNode(sphere);
+        }
+    }
+
+    private static void showFace(TriangleMesh mesh, int faceIndex)
+    {
+        TriangleMesh triangle = new TriangleMesh();
+
+        int[] vertices = new int[6];
+        vertices[0] = mesh.getFaces().get(faceIndex * 6);
+        vertices[2] = mesh.getFaces().get(faceIndex * 6 + 2);
+        vertices[4] = mesh.getFaces().get(faceIndex * 6 + 4);
+        triangle.getFaces().addAll(vertices);
+
+        addPointToMesh(mesh, vertices[0], triangle);
+        addPointToMesh(mesh, vertices[2], triangle);
+        addPointToMesh(mesh, vertices[4], triangle);
+
+        setTextureAndSmoothing(triangle, triangle.getFaces().size() / 6);
+
+        MeshView meshView = new MeshView(triangle);
+        meshView.setMaterial(ApplicationMaterials.pickedGCodeMaterial);
+        if (node != null)
+        {
+            node.addChildNode(meshView);
+        }
     }
 
     private static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh)
