@@ -71,7 +71,7 @@ public class MeshCutter
             loopsOfVertices.add(newVertices);
         }
         
-        TriangleMesh lowerMesh = makeLowerMesh(mesh, loopsOfFaces.get(0), loopsOfVertices.get(0), cutHeight);
+        TriangleMesh lowerMesh = makeLowerMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight);
         CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices);
         cutResults.add(cutResult);
         return cutResults;
@@ -82,16 +82,27 @@ public class MeshCutter
      * original mesh, remove all the cut faces and replace with a new set of faces using the new
      * intersection points. Remove all the faces from above the cut faces.
      */
-    private static TriangleMesh makeLowerMesh(TriangleMesh mesh, List<Integer> cutFaces,
-        List<Integer> newVertices, double cutHeight)
+    private static TriangleMesh makeLowerMesh(TriangleMesh mesh, List<List<Integer>> loopsOfFaces,
+        List<List<Integer>> loopsOfVertices, double cutHeight)
     {
         TriangleMesh childMesh = new TriangleMesh();
         childMesh.getPoints().addAll(mesh.getPoints());
         childMesh.getFaces().addAll(mesh.getFaces());
         setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
 
-        removeCutFacesAndFacesAboveCutFaces(childMesh, cutFaces, cutHeight);
-        addLowerFacesAroundCut(mesh, childMesh, cutFaces, newVertices, cutHeight);
+        List<Integer> allCutFaces = new ArrayList<>();
+        for (List<Integer> loopOfFaces : loopsOfFaces)
+        {
+            allCutFaces.addAll(loopOfFaces);
+        }
+        
+        removeCutFacesAndFacesAboveCutFaces(childMesh, allCutFaces, cutHeight);
+        for (int i = 0; i < loopsOfFaces.size(); i++)
+        {
+            List<Integer> loopOfFaces = loopsOfFaces.get(i);
+            List<Integer> loopOfVertices = loopsOfVertices.get(i);
+            addLowerFacesAroundCut(mesh, childMesh, loopOfFaces, loopOfVertices, cutHeight);
+        }
 
         showFace(mesh, 0);
 
