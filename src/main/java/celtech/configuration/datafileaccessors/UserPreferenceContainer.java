@@ -38,7 +38,7 @@ public class UserPreferenceContainer
                 mapper.writeValue(userPreferenceInputFile, userPreferenceFile);
             } catch (IOException ex)
             {
-                steno.error("Error trying to create user preferences file");
+                steno.exception("Error trying to create user preferences file at " + userPreferenceInputFile.getAbsolutePath(), ex);
             }
         } else
         {

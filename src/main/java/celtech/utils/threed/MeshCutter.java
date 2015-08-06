@@ -10,6 +10,7 @@ import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import com.sun.javafx.scene.shape.ObservableFaceArrayImpl;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,11 @@ import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import org.poly2tri.Poly2Tri;
+import org.poly2tri.geometry.polygon.Polygon;
+import org.poly2tri.geometry.polygon.PolygonPoint;
+import org.poly2tri.triangulation.TriangulationPoint;
+import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
 /**
  * MeshCutter cuts a mesh along a given horizontal plane, triangulates the two resultant open faces,
@@ -82,6 +88,7 @@ public class MeshCutter
         for (CutResult splitResult : splitResults)
         {
             TriangleMesh childMesh = closeOpenFace(splitResult);
+            setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             triangleMeshs.add(childMesh);
         }
 
@@ -188,20 +195,20 @@ public class MeshCutter
             {
                 c0 = v2;
             }
-            c1 = vertexIntersect1;
-            c2 = vertexIntersect0;
+            c1 = vertexIntersect0;
+            c2 = vertexIntersect1;
 
             int[] vertices = new int[6];
             vertices[0] = c0;
             vertices[2] = c1;
             vertices[4] = c2;
             childMesh.getFaces().addAll(vertices);
-            
+
             System.out.println("corner vertices are " + c0 + " " + c1 + " " + c2);
-            
+
             System.out.println("Child has " + childMesh.getFaces().size() / 6 + " faces");
             System.out.println("Child has " + childMesh.getPoints().size() / 3 + " points");
-            
+
         }
 
     }
@@ -283,7 +290,7 @@ public class MeshCutter
         newVertices.remove(newVertices.get(newVertices.size() - 1));
 
         System.out.println("new vertices are " + newVertices);
-        
+
         showNewVertices(newVertices, mesh);
         return newVertices;
     }
@@ -327,7 +334,8 @@ public class MeshCutter
                 sphere.translateZProperty().set(mesh.getPoints().get(newVertex * 3 + 2));
                 sphere.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
                 System.out.println("add sphere to " + node + " at "
-                    + mesh.getPoints().get(newVertex * 3) + " " + mesh.getPoints().get(newVertex * 3 + 1)
+                    + mesh.getPoints().get(newVertex * 3) + " " + mesh.getPoints().get(newVertex * 3
+                        + 1)
                     + " " + mesh.getPoints().get(newVertex * 3 + 2));
                 node.addChildNode(sphere);
             }
@@ -542,7 +550,77 @@ public class MeshCutter
      */
     private static TriangleMesh closeOpenFace(CutResult splitResult)
     {
+        TriangleMesh mesh = splitResult.childMesh;
+        List<Integer> vertices = splitResult.vertexsOnOpenFace.get(0);
+        int numVertices = vertices.size();
+        List<PolygonPoint> points = new ArrayList<>();
+        for (Integer vertexIndex : vertices)
+        {
+            points.add(new PolygonPoint(
+                mesh.getPoints().get(vertexIndex * 3),
+                mesh.getPoints().get(vertexIndex * 3 + 1),
+                mesh.getPoints().get(vertexIndex * 3 + 2)));
+        }
+        Polygon outerPolygon = new Polygon(points);
+
+        Poly2Tri.triangulate(outerPolygon);
+        addTriangulatedFacesToMesh(mesh, outerPolygon, vertices);
+
         return splitResult.childMesh;
+    }
+
+    /**
+     * For each triangle in the polygon add a face to the mesh. If any point in any triangle is not
+     * one of the outerVertices then also add that point to the mesh.
+     */
+    private static void addTriangulatedFacesToMesh(TriangleMesh mesh, Polygon outerPolygon,
+        List<Integer> outerVertices)
+    {
+        Map<Vertex, Vertex> vertexToVertex = new HashMap<>();
+        for (Integer vertexIndex : outerVertices)
+        {
+            Vertex vertex = new Vertex(vertexIndex, mesh.getPoints().get(vertexIndex * 3),
+                                       mesh.getPoints().get(vertexIndex * 3 + 1),
+                                       mesh.getPoints().get(vertexIndex * 3 + 2));
+            vertexToVertex.put(vertex, vertex);
+        }
+
+        for (DelaunayTriangle triangle : outerPolygon.getTriangles())
+        {
+            TriangulationPoint[] points = triangle.points;
+            Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex);
+            Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex);
+            Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex);
+            makeFace(mesh, vertex0.meshVertexIndex, vertex1.meshVertexIndex, vertex2.meshVertexIndex);
+        }
+
+    }
+
+    private static void makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
+        int meshVertexIndex2)
+    {
+        int[] vertices = new int[6];
+        vertices[0] = meshVertexIndex0;
+        vertices[2] = meshVertexIndex1;
+        vertices[4] = meshVertexIndex2;
+        mesh.getFaces().addAll(vertices);
+    }
+
+    private static Vertex getOrMakeVertexForPoint(TriangleMesh mesh, TriangulationPoint point,
+        Map<Vertex, Vertex> vertexToVertex)
+    {
+        Vertex vertex = new Vertex(point.getX(), point.getY(), point.getZ());
+        if (!vertexToVertex.containsKey(vertex))
+        {
+            mesh.getPoints().addAll(point.getXf(), point.getYf(), point.getZf());
+            int vertexIndex = mesh.getPoints().size() / 3 - 1;
+            vertex.meshVertexIndex = vertexIndex;
+            vertexToVertex.put(vertex, vertex);
+            return vertex;
+        } else {
+            return vertexToVertex.get(vertex);
+        }
+        
     }
 
     public static void setDebuggingNode(ModelContainer node)
@@ -627,10 +705,9 @@ public class MeshCutter
                 + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
         }
     }
-
 }
 
-class Edge
+final class Edge
 {
 
     final int v0;
@@ -669,6 +746,70 @@ class Edge
     }
 }
 
+// The main purpose of this Vertex class is to provide an equality operation.
+final class Vertex
+{
+
+    int meshVertexIndex;
+    final double x;
+    final double y;
+    final double z;
+
+    public Vertex(int meshVertexIndex, double x, double y, double z)
+    {
+        this.meshVertexIndex = meshVertexIndex;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public Vertex(double x, double y, double z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    static boolean equalto8places(double a, double b)
+    {
+        return Math.round(a * 10e8) == Math.round(b * 10e8);
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof Vertex))
+        {
+            return false;
+        }
+        if (obj == this)
+        {
+            return true;
+        }
+
+        Vertex other = (Vertex) obj;
+        if (!equalto8places(other.x, x))
+        {
+            return false;
+        }
+        if (!equalto8places(other.y, y))
+        {
+            return false;
+        }
+        if (!equalto8places(other.z, z))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return (int) (Math.round(x * 10e8) + Math.round(y * 10e8) + Math.round(z * 10e8));
+    }
+}
+
 class CutResult
 {
 
@@ -678,8 +819,8 @@ class CutResult
     TriangleMesh childMesh;
     /**
      * The indices of the vertices of the child mesh, in sequence, that form the perimeter of the
-     * new open face that needs to be triangulated. The first List is for the outer perimeter and
-     * any other lists are holes.
+     * new open face that needs to be triangulated. Some loops (list of points) may be holes inside
+     * other loops.
      */
     List<List<Integer>> vertexsOnOpenFace;
 
