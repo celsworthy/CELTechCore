@@ -87,7 +87,7 @@ public class MeshCutter
         Set<CutResult> splitResults = getCutFaces(mesh, cutHeight);
         for (CutResult splitResult : splitResults)
         {
-            TriangleMesh childMesh = closeOpenFace(splitResult);
+            TriangleMesh childMesh = closeOpenFace(splitResult, cutHeight);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             triangleMeshs.add(childMesh);
         }
@@ -548,7 +548,7 @@ public class MeshCutter
      * Take the given mesh and vertices of the open face, close the face and add the new face to the
      * mesh and return it.
      */
-    private static TriangleMesh closeOpenFace(CutResult splitResult)
+    private static TriangleMesh closeOpenFace(CutResult splitResult, double cutHeight)
     {
         TriangleMesh mesh = splitResult.childMesh;
         List<Integer> vertices = splitResult.vertexsOnOpenFace.get(0);
@@ -558,13 +558,12 @@ public class MeshCutter
         {
             points.add(new PolygonPoint(
                 mesh.getPoints().get(vertexIndex * 3),
-                mesh.getPoints().get(vertexIndex * 3 + 1),
                 mesh.getPoints().get(vertexIndex * 3 + 2)));
         }
         Polygon outerPolygon = new Polygon(points);
 
         Poly2Tri.triangulate(outerPolygon);
-        addTriangulatedFacesToMesh(mesh, outerPolygon, vertices);
+        addTriangulatedFacesToMesh(mesh, outerPolygon, vertices, cutHeight);
 
         return splitResult.childMesh;
     }
@@ -574,7 +573,7 @@ public class MeshCutter
      * one of the outerVertices then also add that point to the mesh.
      */
     private static void addTriangulatedFacesToMesh(TriangleMesh mesh, Polygon outerPolygon,
-        List<Integer> outerVertices)
+        List<Integer> outerVertices, double cutHeight)
     {
         Map<Vertex, Vertex> vertexToVertex = new HashMap<>();
         for (Integer vertexIndex : outerVertices)
@@ -588,12 +587,11 @@ public class MeshCutter
         for (DelaunayTriangle triangle : outerPolygon.getTriangles())
         {
             TriangulationPoint[] points = triangle.points;
-            Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex);
-            Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex);
-            Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex);
+            Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight);
+            Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight);
+            Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight);
             makeFace(mesh, vertex0.meshVertexIndex, vertex1.meshVertexIndex, vertex2.meshVertexIndex);
         }
-
     }
 
     private static void makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
@@ -607,12 +605,12 @@ public class MeshCutter
     }
 
     private static Vertex getOrMakeVertexForPoint(TriangleMesh mesh, TriangulationPoint point,
-        Map<Vertex, Vertex> vertexToVertex)
+        Map<Vertex, Vertex> vertexToVertex, double cutHeight)
     {
-        Vertex vertex = new Vertex(point.getX(), point.getY(), point.getZ());
+        Vertex vertex = new Vertex(point.getX(), cutHeight, point.getY());
         if (!vertexToVertex.containsKey(vertex))
         {
-            mesh.getPoints().addAll(point.getXf(), point.getYf(), point.getZf());
+            mesh.getPoints().addAll(point.getXf(), (float) cutHeight, point.getYf());
             int vertexIndex = mesh.getPoints().size() / 3 - 1;
             vertex.meshVertexIndex = vertexIndex;
             vertexToVertex.put(vertex, vertex);
