@@ -311,7 +311,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         canCancel.bind(
                 (printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
-                .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT))).not()
+                .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT).not()))
                 .or(
                         pauseStatus.isEqualTo(PauseStatus.PAUSED)
                         .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING))
