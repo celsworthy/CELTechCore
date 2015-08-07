@@ -62,15 +62,15 @@ public class MeshCutter
         List<List<Integer>> loopsOfFaces = getCutFaceIndices(mesh, cutHeight);
 //        showFaceCentres(cutFaces, mesh);
         System.out.println("cut faces are: " + loopsOfFaces.get(0));
-        
+
         List<List<Integer>> loopsOfVertices = new ArrayList<>();
-        
+
         for (List<Integer> loopOfFaces : loopsOfFaces)
         {
             List<Integer> newVertices = makeNewVerticesAlongCut(mesh, cutHeight, loopOfFaces);
             loopsOfVertices.add(newVertices);
         }
-        
+
         TriangleMesh lowerMesh = makeLowerMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight);
         CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices);
         cutResults.add(cutResult);
@@ -95,7 +95,7 @@ public class MeshCutter
         {
             allCutFaces.addAll(loopOfFaces);
         }
-        
+
         removeCutFacesAndFacesAboveCutFaces(childMesh, allCutFaces, cutHeight);
         for (int i = 0; i < loopsOfFaces.size(); i++)
         {
@@ -328,59 +328,84 @@ public class MeshCutter
      */
     private static List<List<Integer>> getCutFaceIndices(TriangleMesh mesh, double cutHeight)
     {
-        
-        List<List<Integer>> loopsOfFaces = new ArrayList<>();
-        
-        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
-        System.out.println("faces with vertices " + facesWithVertices);
-        List<Integer> cutFaceIndices = new ArrayList<>();
         boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
-        int previousFaceIndex = -1;
-        int faceIndex = getFirstUnvisitedIntersectingFace(faceVisited, mesh, cutHeight);
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+
+        List<List<Integer>> loopsOfFaces = new ArrayList<>();
+
         while (true)
         {
-            System.out.println("treat face B " + faceIndex);
-            Set<Integer> edges = getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight);
-            if (edges.size() != 0)
+            List<Integer> cutFaceIndices = getNextFaceLoop(faceVisited, mesh, cutHeight,
+                                                           facesWithVertices);
+            if (cutFaceIndices.size() > 0)
             {
-                faceVisited[faceIndex] = true;
-                cutFaceIndices.add(faceIndex);
+                loopsOfFaces.add(cutFaceIndices);
+            } else
+            {
+                break;
+            }
+        }
 
-                // there should be two faces adjacent to this one that the plane also cuts
-                Set<Integer> facesAdjacentToEdgesOfFace
-                    = getFacesAdjacentToEdgesOfFace(mesh, faceIndex, facesWithVertices, edges);
-                System.out.println("adjacent faces is " + facesAdjacentToEdgesOfFace);
+        return loopsOfFaces;
+    }
 
-                // remove the previously visited face leaving the next face to visit
-                if (previousFaceIndex != -1)
+    private static List<Integer> getNextFaceLoop(boolean[] faceVisited, TriangleMesh mesh,
+        double cutHeight, Map<Integer, Set<Integer>> facesWithVertices)
+    {
+        List<Integer> cutFaceIndices = new ArrayList<>();
+        int previousFaceIndex = -1;
+        int faceIndex = getFirstUnvisitedIntersectingFace(faceVisited, mesh, cutHeight);
+        if (faceIndex != -1)
+        {
+            while (true)
+            {
+                System.out.println("treat face B " + faceIndex);
+                Set<Integer> edges = getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex,
+                                                                             cutHeight);
+                if (edges.size() != 0)
                 {
-                    facesAdjacentToEdgesOfFace.remove(previousFaceIndex);
-                }
-                previousFaceIndex = faceIndex;
-                faceIndex = facesAdjacentToEdgesOfFace.iterator().next();
+                    faceVisited[faceIndex] = true;
+                    cutFaceIndices.add(faceIndex);
 
-                if (faceVisited[faceIndex])
-                {
-                    // we've completed the loop back to the first intersecting face
-                    break;
+                    // there should be two faces adjacent to this one that the plane also cuts
+                    Set<Integer> facesAdjacentToEdgesOfFace
+                        = getFacesAdjacentToEdgesOfFace(mesh, faceIndex, facesWithVertices, edges);
+                    System.out.println("adjacent faces is " + facesAdjacentToEdgesOfFace);
+
+                    // remove the previously visited face leaving the next face to visit
+                    if (previousFaceIndex != -1)
+                    {
+                        facesAdjacentToEdgesOfFace.remove(previousFaceIndex);
+                    }
+                    previousFaceIndex = faceIndex;
+                    faceIndex = facesAdjacentToEdgesOfFace.iterator().next();
+
+                    if (faceVisited[faceIndex])
+                    {
+                        // we've completed the loop back to the first intersecting face
+                        break;
+                    }
                 }
             }
         }
-        
-        loopsOfFaces.add(cutFaceIndices);
-        
-        return loopsOfFaces;
+        return cutFaceIndices;
     }
 
     private static int getFirstUnvisitedIntersectingFace(boolean[] faceVisited, TriangleMesh mesh,
         double cutHeight)
     {
         int faceIndex = findFirstUnvisitedFace(faceVisited);
-        while (getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight).size() == 0)
+        if (faceIndex != -1)
         {
-            System.out.println("consider face A " + faceIndex);
-            faceVisited[faceIndex] = true;
-            faceIndex = findFirstUnvisitedFace(faceVisited);
+            while (getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight).size() == 0)
+            {
+                System.out.println("consider face A " + faceIndex);
+                faceVisited[faceIndex] = true;
+                faceIndex = findFirstUnvisitedFace(faceVisited);
+                if (faceIndex == -1) {
+                    break;
+                }
+            }
         }
         return faceIndex;
     }
