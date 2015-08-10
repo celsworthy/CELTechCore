@@ -5,7 +5,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.JogButton;
-import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.TesStatusBar;
 import celtech.coreUI.controllers.utilityPanels.OuterPanelController;
 import celtech.printerControl.PrinterStatus;
@@ -160,9 +159,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private Group temperatureWarning;
 
     @FXML
-    private ProgressDisplay progressDisplay;
-
-    @FXML
     private TesStatusBar jim1;
 
     @FXML
@@ -298,8 +294,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     {
                         unbindFromSelectedPrinter();
 
-                        progressDisplay.bindToPrinter(printerToUse);
-
                         printerColourRectangle.setVisible(true);
                         printerColourRectangle.setFill(
                             colourMap.printerToDisplayColour(
@@ -430,8 +424,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void unbindFromSelectedPrinter()
     {
-        progressDisplay.unbindFromPrinter();
-
         reel.visibleProperty().unbind();
         if (lastSelectedPrinter != null)
         {

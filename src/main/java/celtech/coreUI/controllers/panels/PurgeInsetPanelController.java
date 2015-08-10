@@ -6,7 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -163,9 +162,6 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private GridPane purgeDetailsGrid1;
-
-    @FXML
-    private ProgressDisplay progressDisplay;
 
     @FXML
     private ToggleButton purgeThisNozzle0;
@@ -437,11 +433,8 @@ public class PurgeInsetPanelController implements Initializable
      */
     private void bindPrinter(Printer printer)
     {
-        progressDisplay.unbindFromPrinter();
-
         if (this.printer != null)
         {
-            progressDisplay.unbindFromPrinter();
             startPurgeButton.getTag().removeAllConditionalText();
             proceedButton.getTag().removeAllConditionalText();
             cmbCurrentMaterial0.visibleProperty().unbind();
@@ -465,8 +458,6 @@ public class PurgeInsetPanelController implements Initializable
 
         cmbCurrentMaterial1.visibleProperty().bind(reel1Present.not());
         textCurrentMaterial1.visibleProperty().bind(reel1Present);
-
-        progressDisplay.bindToPrinter(printer);
     }
 
     /**

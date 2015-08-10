@@ -310,6 +310,5 @@
                <TesStatusBar fx:id="jim1" /> 
             </children>
         </VBox>-->
-        <ProgressDisplay fx:id="progressDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
 </AnchorPane>

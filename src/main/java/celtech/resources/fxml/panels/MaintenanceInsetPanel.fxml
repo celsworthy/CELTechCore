@@ -108,18 +108,12 @@
                                             </children>
                                         </StackPane>
                                     </children>
-                                    <padding>
-                                        <Insets left="40.0" right="10.0" />
-                                    </padding>
                                 </HBox>
                             </children>
                         </StackPane>
                     </children>
                 </VBox>
             </bottom>
-            <left>
-                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
-            </left>
             <top>
                 <TopMenuStrip BorderPane.alignment="CENTER" />
             </top>

@@ -11,14 +11,14 @@
 <?import celtech.coreUI.components.*?>
 <?import celtech.coreUI.components.buttons.* ?>
 
-<VBox fx:id="topPane" pickOnBounds="false" VBox.vgrow="ALWAYS" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
+<VBox fx:id="topPane" pickOnBounds="false" styleClass="inset-panel" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.CalibrationInsetPanelController">
     <children>
         <BorderPane fx:id="topBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;">
             <center>
-                <AnchorPane>
+                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                     <children>
 
-                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+                              <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <children>
                                 <BorderPane>
                                     <top>
@@ -61,7 +61,7 @@
                                                 <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
                                             </VBox.margin>
                                         </Label>
-                                        <VBox fx:id="diagramContainer" minHeight="100"  alignment="CENTER" fillWidth="false" VBox.vgrow="ALWAYS" />
+                                        <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" minHeight="100" VBox.vgrow="ALWAYS" />
                                         <HBox alignment="CENTER" VBox.vgrow="NEVER">
                                             <children>
                                                 <Button id="buttonA" fx:id="buttonA" mnemonicParsing="false" onAction="#buttonAAction" styleClass="calibrationButtonsAB" text="A">
@@ -83,7 +83,7 @@
                                 </VBox>
                             </children>
                         </HBox>
-                        <ProgressDisplay fx:id="progressDisplay" id="appearingProgressBar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+                  <Pane layoutY="340.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="60.0" styleClass="calibrationBody" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                     </children>
                 </AnchorPane>
             </center>
@@ -96,20 +96,20 @@
                                     <children>
                                         <StackPane>
                                             <children>
-                                                <GraphicButtonWithLabel fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" onAction="#cancelCalibration" labelText="%calibrationPanel.cancelCalibration"/>
-                                                <GraphicButtonWithLabel fx:id="backToStatus" fxmlFileName="backwardButton" onAction="#backToStatusAction" labelText="%buttonText.back" />
+                                                <GraphicButtonWithLabel fx:id="cancelCalibrationButton" fxmlFileName="cancelButton" labelText="%calibrationPanel.cancelCalibration" onAction="#cancelCalibration" />
+                                                <GraphicButtonWithLabel fx:id="backToStatus" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#backToStatusAction" />
                                             </children>
                                         </StackPane>
-                                        <GraphicButtonWithLabel fx:id="retryPrintButton" fxmlFileName="retryButton" onAction="#retryCalibration" labelText="%calibrationPanel.retryCalibration"/>
+                                        <GraphicButtonWithLabel fx:id="retryPrintButton" fxmlFileName="retryButton" labelText="%calibrationPanel.retryCalibration" onAction="#retryCalibration" />
                                     </children>
                                 </HBox>
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
-                                        <GraphicButtonWithLabel fx:id="startCalibrationButton" fxmlFileName="startButton" layoutX="5.0" onAction="#startCalibration" tagOrientation="WEST" labelText="%calibrationPanel.startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                        <GraphicButtonWithLabel id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" onAction="#nextButtonAction" labelText="%buttonText.next" />
+                                        <GraphicButtonWithLabel fx:id="startCalibrationButton" fxmlFileName="startButton" labelText="%calibrationPanel.startCalibration" layoutX="5.0" onAction="#startCalibration" tagOrientation="WEST" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                        <GraphicButtonWithLabel id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" labelText="%buttonText.next" onAction="#nextButtonAction" />
                                     </children>
                                     <StackPane.margin>
-                                        <Insets right="30.0" />
+                                        <Insets />
                                     </StackPane.margin>
                                 </StackPane>
                             </children>
@@ -123,11 +123,8 @@
                     </padding>
                 </VBox>
             </bottom>
-            <left>
-                <Pane fx:id="calibrationLeftBorder" id="calibrationLeftBorder" prefWidth="30.0" BorderPane.alignment="CENTER" />
-            </left>
             <top>
-                <HBox fx:id="topMenuStrip" minHeight="60"/> 
+                <HBox fx:id="topMenuStrip" minHeight="60" /> 
             </top>
         </BorderPane>
     </children>

@@ -1,5 +1,6 @@
 package celtech.coreUI.components;
 
+import celtech.Lookup;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import javafx.beans.value.ChangeListener;
@@ -12,25 +13,34 @@ import javafx.scene.layout.VBox;
  */
 public class ProgressDisplay extends VBox
 {
-
+    
     private Printer printerInUse = null;
     private PrintStatusBar stateDisplayBar;
     private BedHeaterStatusBar bedTemperatureDisplayBar;
     private NozzleHeaterStatusBar nozzle1TemperatureDisplayBar;
     private NozzleHeaterStatusBar nozzle2TemperatureDisplayBar;
     private PrintPreparationStatusBar printPreparationDisplayBar;
-
-    private ChangeListener<Head> headListener = (ObservableValue<? extends Head> ov, Head t, Head t1) ->
+    
+    private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> ov, Head t, Head t1) ->
     {
         createNozzleHeaterBars(t1);
     };
-
+    
     public ProgressDisplay()
     {
         setFillWidth(true);
+        
+        Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer oldSelection, Printer newSelection) ->
+        {
+            unbindFromPrinter();
+            if (newSelection != null)
+            {
+                bindToPrinter(newSelection);
+            }
+        });
     }
-
-    public void bindToPrinter(Printer printer)
+    
+    private void bindToPrinter(Printer printer)
     {
         if (this.printerInUse != null)
         {
@@ -40,16 +50,16 @@ public class ProgressDisplay extends VBox
         stateDisplayBar = new PrintStatusBar(printer);
         printPreparationDisplayBar = new PrintPreparationStatusBar(printer);
         bedTemperatureDisplayBar = new BedHeaterStatusBar(printer.getPrinterAncillarySystems());
-
+        
         printer.headProperty().addListener(headListener);
         if (printer.headProperty().get() != null)
         {
             createNozzleHeaterBars(printer.headProperty().get());
         }
-
+        
         getChildren().addAll(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
     }
-
+    
     private void createNozzleHeaterBars(Head head)
     {
         if (head.getNozzleHeaters().size() > 0)
@@ -57,30 +67,30 @@ public class ProgressDisplay extends VBox
             nozzle1TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(0));
             getChildren().add(0, nozzle1TemperatureDisplayBar);
         }
-
+        
         if (head.getNozzleHeaters().size() == 2)
         {
             nozzle2TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(1));
             getChildren().add(0, nozzle2TemperatureDisplayBar);
         }
     }
-
-    public void unbindFromPrinter()
+    
+    private void unbindFromPrinter()
     {
         if (printerInUse != null)
         {
             printerInUse.headProperty().removeListener(headListener);
-
+            
             stateDisplayBar.unbindAll();
             printPreparationDisplayBar.unbindAll();
             bedTemperatureDisplayBar.unbindAll();
-
+            
             if (nozzle1TemperatureDisplayBar != null)
             {
                 nozzle1TemperatureDisplayBar.unbindAll();
                 nozzle1TemperatureDisplayBar = null;
             }
-
+            
             if (nozzle2TemperatureDisplayBar != null)
             {
                 nozzle2TemperatureDisplayBar.unbindAll();

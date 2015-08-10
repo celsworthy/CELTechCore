@@ -6,7 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.VerticalMenu;
-import celtech.coreUI.components.ProgressDisplay;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -99,9 +98,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     @FXML
     protected Pane altButtonContainer;
-
-    @FXML
-    protected ProgressDisplay progressDisplay;
 
     @FXML
     protected Text stepNumber;
@@ -389,7 +385,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void switchToPrinter(Printer printer)
     {
-        progressDisplay.unbindFromPrinter();
         if (printer != null)
         {
             bindPrinter(printer);
@@ -399,7 +394,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void bindPrinter(Printer printer)
     {
-        progressDisplay.bindToPrinter(printer);
         configureStartButtonForMode(calibrationMode, printer);
     }
 

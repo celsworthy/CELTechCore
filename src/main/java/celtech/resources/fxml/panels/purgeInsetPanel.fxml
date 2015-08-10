@@ -21,7 +21,7 @@
                     <center>
                         <AnchorPane>
                             <children>
-                                <VBox alignment="CENTER" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+                                <VBox alignment="CENTER" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
                                     <children>
                                         <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
                                             <font>
@@ -120,7 +120,7 @@
                                                 <Insets top="30.0" />
                                             </VBox.margin>
                                         </HBox>
-                                        <VBox fx:id="diagramContainer" VBox.vgrow="ALWAYS" alignment="CENTER">
+                                        <VBox fx:id="diagramContainer" alignment="CENTER" VBox.vgrow="ALWAYS">
                                             <children>
                                                 <Group fx:id="diagram">
                                                     <children>
@@ -988,7 +988,7 @@
                                         <Insets top="60.0" />
                                     </BorderPane.margin>
                                 </VBox>
-                                <ProgressDisplay id="appearingProgressBar" fx:id="progressDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" BorderPane.alignment="CENTER" />
+                                <Pane maxHeight="60.0" maxWidth="1.7976931348623157E308" prefHeight="60.0" styleClass="purgeBody" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="684.0" />
                             </children>
                         </AnchorPane>
                     </center>
@@ -1009,7 +1009,7 @@
                                         </StackPane>
                                     </children>
                                     <StackPane.margin>
-                                        <Insets right="10.0" />
+                                        <Insets />
                                     </StackPane.margin>
                                 </HBox>
                                 <HBox alignment="CENTER_LEFT" pickOnBounds="false" spacing="10.0">
@@ -1023,18 +1023,12 @@
                                         </StackPane>
                                         <GraphicButtonWithLabel fx:id="repeatButton" fxmlFileName="retryButton" labelText="%purgeMaterial.repeatPurge" onAction="#repeat" />
                                     </children>
-                                    <padding>
-                                        <Insets left="40.0" right="10.0" />
-                                    </padding>
                                 </HBox>
                             </children>
                         </StackPane>
                     </children>
                 </VBox>
             </bottom>
-            <left>
-                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
-            </left>
             <top>
                 <TopMenuStrip BorderPane.alignment="CENTER" />
             </top>
