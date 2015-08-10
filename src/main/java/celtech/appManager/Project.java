@@ -511,6 +511,7 @@ public class Project implements Serializable
     public void copyModel(ModelContainer modelContainer)
     {
         ModelContainer copy = modelContainer.makeCopy();
+        copy.moveToCentre();
         addModel(copy);
     }
 
@@ -653,6 +654,7 @@ public class Project implements Serializable
     {
         removeModels(modelContainers);
         ModelGroup modelGroup = createNewGroup(modelContainers);
+        addModel(modelGroup);
         return modelGroup;
     }
 

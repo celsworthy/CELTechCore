@@ -87,10 +87,11 @@ public class SlicerParametersContainer
         for (File profileFile : userprofiles)
         {
             SlicerParametersFile newSettings = null;
-            String profileName = profileFile.getName().replaceAll(
+            String profileKey = profileFile.getName().replaceAll(
                 ApplicationConfiguration.printProfileFileExtension, "");
+            String profileName = profileKey.split("#")[0];
 
-            if (profileMap.containsKey(profileName) == false)
+            if (profileMap.containsKey(profileKey) == false)
             {
                 try
                 {
@@ -104,11 +105,11 @@ public class SlicerParametersContainer
                     profileMap.put(newSettings.getProfileKey(), newSettings);
                 } catch (Exception ex)
                 {
-                    steno.error("Error reading profile " + profileName + ": " + ex.getMessage());
+                    steno.error("Error reading profile " + profileKey + ": " + ex.getMessage());
                 }
             } else
             {
-                steno.warning("Profile with name " + profileName
+                steno.warning("Profile with name " + profileKey
                     + " has already been loaded - ignoring " + profileFile.getAbsolutePath());
             }
         }
