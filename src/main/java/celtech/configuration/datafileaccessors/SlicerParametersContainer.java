@@ -87,6 +87,8 @@ public class SlicerParametersContainer
                 try
                 {
                     newSettings = mapper.readValue(profileFile, SlicerParametersFile.class);
+                    // Make sure file name and profile name are in sync
+                    newSettings.setProfileName(profileName);
                     
                     convertToCurrentVersion(newSettings);
                     
