@@ -1494,7 +1494,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
             !slicerMappings.isMapped(slicerType, "fillExtrusionWidth_mm"));
         solidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
                                                                       "solidFillExtrusionWidth_mm"));
+        solidInfillExtrusionWidthSlider.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                      "solidFillExtrusionWidth_mm"));
         topSolidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
+                                                                         "topSolidFillExtrusionWidth_mm"));
+        topSolidInfillExtrusionWidthSlider.setDisable(!slicerMappings.isMapped(slicerType,
                                                                          "topSolidFillExtrusionWidth_mm"));
         supportExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
                                                                   "supportExtrusionWidth_mm"));
