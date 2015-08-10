@@ -86,12 +86,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private StackPane sidePanelContainer;
     private final HashMap<ApplicationMode, Pane> insetPanels;
     private final HashMap<ApplicationMode, HBox> sidePanels;
-    private final HashMap<ApplicationMode, HBox> slideOutPanels;
     private final AnchorPane rhPanel;
     private final VBox projectTabPaneHolder;
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
     private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers;
-    private final HashMap<ApplicationMode, Initializable> slideOutControllers;
 
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
@@ -101,8 +99,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private final HashMap<String, SidePanelManager> sidePanelControllerCache;
     private final HashMap<String, HBox> sidePanelCache;
-    private final HashMap<String, Initializable> slideoutPanelControllerCache;
-    private final HashMap<String, HBox> slideoutPanelCache;
 
     /*
      * Project loading
@@ -125,14 +121,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         this.rootStackPane = new StackPane();
         this.nodesMayHaveMoved = new SimpleBooleanProperty(false);
-        this.slideoutPanelCache = new HashMap<>();
-        this.slideoutPanelControllerCache = new HashMap<>();
         this.sidePanelCache = new HashMap<>();
         this.sidePanelControllerCache = new HashMap<>();
-        this.slideOutControllers = new HashMap<>();
         this.sidePanelControllers = new HashMap<>();
         this.insetPanelControllers = new HashMap<>();
-        this.slideOutPanels = new HashMap<>();
         this.sidePanels = new HashMap<>();
         this.insetPanels = new HashMap<>();
         applicationStatus = ApplicationStatus.getInstance();
@@ -618,40 +610,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             sidePanels.put(mode, sidePanel);
             sidePanelControllers.put(mode, sidePanelController);
         }
-
-        Initializable slideOutController = null;
-        HBox slideOut = null;
-        boolean slideoutPanelLoadedOK = false;
-
-        if (slideoutPanelControllerCache.containsKey(mode.getSlideOutFXMLName()) == false)
-        {
-            try
-            {
-                URL fxmlSlideOutFileName = getClass().getResource(mode.getSlideOutFXMLName());
-                steno.debug("About to load slideout fxml: " + fxmlSlideOutFileName);
-                FXMLLoader slideOutLoader = new FXMLLoader(fxmlSlideOutFileName,
-                        Lookup.getLanguageBundle());
-                slideOut = (HBox) slideOutLoader.load();
-                slideOutController = slideOutLoader.getController();
-                sidePanelControllers.get(mode).configure(slideOutController);
-                slideoutPanelLoadedOK = true;
-            } catch (Exception ex)
-            {
-                slideOutPanels.put(mode, null);
-                slideOutControllers.put(mode, null);
-                steno.exception("Couldn't load slideout panel for mode:" + mode, ex);
-            }
-        } else
-        {
-            slideOutController = slideoutPanelControllerCache.get(mode.getSlideOutFXMLName());
-            slideOut = slideoutPanelCache.get(mode.getSlideOutFXMLName());
-        }
-
-        if (slideoutPanelLoadedOK)
-        {
-            slideOutPanels.put(mode, slideOut);
-            slideOutControllers.put(mode, slideOutController);
-        }
     }
 
     private void addTopMenuStripController()
@@ -799,24 +757,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 steno.debug("cannot undo " + ex);
             }
         }
-    }
-
-    public VBox getSidePanelSlideOutHandle(ApplicationMode mode)
-    {
-        HBox slideOut = slideOutPanels.get(mode);
-
-        VBox container = null;
-
-        for (Node subNode : slideOut.getChildren())
-        {
-            if (subNode.getId().equalsIgnoreCase("Container")
-                    && subNode instanceof VBox)
-            {
-                container = (VBox) subNode;
-                break;
-            }
-        }
-        return container;
     }
 
     public PurgeInsetPanelController getPurgeInsetPanelController()
