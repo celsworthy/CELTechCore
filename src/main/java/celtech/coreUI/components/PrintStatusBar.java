@@ -240,53 +240,64 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     buttonsAllowed.set(true);
                     break;
                 case CALIBRATING_NOZZLE_ALIGNMENT:
-                case CALIBRATING_NOZZLE_OPENING:
-                case CALIBRATING_NOZZLE_HEIGHT:
                     statusProcessed = true;
-//                    barShouldBeDisplayed = true;
-//                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
-//
-//                    targetRequired(false);
-//
-//                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
-//                    {
-//                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
-//                        {
-//                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
-//                            progressRequired(true);
-//                        } else
-//                        {
-//                            progressRequired(false);
-//                        }
-//                    } else
-//                    {
-//                        progressRequired(false);
-//                    }
-//                    buttonsAllowed.set(false);
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
+
+                    if (progressBar.progressProperty().isBound())
+                    {
+                        progressBar.progressProperty().unbind();
+                    }
+
+                    if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressRequired(true);
+                        } else
+                        {
+                            progressRequired(false);
+                        }
+                    } else
+                    {
+                        progressRequired(false);
+                    }
+                    buttonsAllowed.set(false);
                     break;
                 case PURGING_HEAD:
                     statusProcessed = true;
-//                    barShouldBeDisplayed = true;
-//                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
-//
-//                    targetRequired(false);
-//
-//                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.RUNNING_MACRO
-//                            && printer.getPrintEngine().macroBeingRun.get() == Macro.PURGE)
-//                    {
-//                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
-//                        {
-//                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
-//                            progressRequired(true);
-//                        } else
-//                        {
-//                            progressRequired(false);
-//                        }
-//                    } else
-//                    {
-//                        progressRequired(false);
-//                    }
-//                    buttonsAllowed.set(false);
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
+
+                    if (progressBar.progressProperty().isBound())
+                    {
+                        progressBar.progressProperty().unbind();
+                    }
+
+                    if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressRequired(true);
+                        } else
+                        {
+                            progressRequired(false);
+                        }
+                    } else
+                    {
+                        progressRequired(false);
+                    }
+                    buttonsAllowed.set(false);
                     break;
                 default:
                     statusProcessed = true;

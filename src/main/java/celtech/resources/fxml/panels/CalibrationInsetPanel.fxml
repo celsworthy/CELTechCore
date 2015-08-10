@@ -18,7 +18,7 @@
                 <AnchorPane>
                     <children>
 
-                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="calibrationBody" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
                             <children>
                                 <BorderPane>
                                     <top>
