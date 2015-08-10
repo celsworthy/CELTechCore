@@ -126,7 +126,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private String currentProfileName;
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        ProfileLibraryPanelController.class.getName());
+            ProfileLibraryPanelController.class.getName());
 
     @FXML
     private VBox container;
@@ -313,9 +313,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
-    
+
     @FXML
-    private RestrictedNumberField interfaceSpeed;    
+    private RestrictedNumberField interfaceSpeed;
 
     @FXML
     private RestrictedNumberField supportExtrusionWidth;
@@ -350,24 +350,24 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
 
     private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.
-        observableArrayList();
+            observableArrayList();
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
-        "0.3mm", "0.8mm");
+            "0.3mm", "0.8mm");
     private final ObservableList<FillPattern> fillPatternOptions = FXCollections.
-        observableArrayList(
-            FillPattern.values());
+            observableArrayList(
+                    FillPattern.values());
 
     private final ChangeListener<String> dirtyStringListener
-        = (ObservableValue<? extends String> ov, String t, String t1) ->
-        {
-            isDirty.set(true);
-        };
+            = (ObservableValue<? extends String> ov, String t, String t1) ->
+            {
+                isDirty.set(true);
+            };
 
     private final ChangeListener<Boolean> dirtyBooleanListener
-        = (ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
-        {
-            isDirty.set(true);
-        };
+            = (ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
+            {
+                isDirty.set(true);
+            };
 
     private final float minPoint8ExtrusionWidth = 0.5f;
     private final float defaultPoint8ExtrusionWidth = 0.8f;
@@ -391,8 +391,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         slicerMappings = Lookup.getSlicerMappings();
 
         canSave.bind(isNameValid.and(isDirty.and(
-            state.isEqualTo(State.NEW).
-            or(state.isEqualTo(State.CUSTOM)))));
+                state.isEqualTo(State.NEW).
+                or(state.isEqualTo(State.CUSTOM)))));
 
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
 
@@ -417,7 +417,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         setupSupportNozzleChoice();
 
         setupSlicerChooser();
-        
+
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
         forceNozzleFirstLayerOptions.addAll(nozzleOptions);
@@ -434,17 +434,17 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private void setupPrintProfileCombo()
     {
         cmbPrintProfile.setCellFactory(
-            (ListView<SlicerParametersFile> param) -> new PrintProfileCell());
+                (ListView<SlicerParametersFile> param) -> new PrintProfileCell());
 
         cmbPrintProfile.setButtonCell(cmbPrintProfile.getCellFactory().call(null));
 
         repopulateCmbPrintProfile();
 
         cmbPrintProfile.valueProperty().addListener(
-            (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
-            {
-                selectPrintProfile(newValue);
-            });
+                (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
+                {
+                    selectPrintProfile(newValue);
+                });
     }
 
     private void selectFirstPrintProfile()
@@ -472,7 +472,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         currentProfileName = printProfile.getProfileName();
         updateWidgetsFromSettingsFile(printProfile);
         boolean isStandardProfile = SlicerParametersContainer.applicationProfileListContainsProfile(
-            printProfile.getProfileName());
+                printProfile.getProfileName());
         if (!isStandardProfile)
         {
             state.set(State.CUSTOM);
@@ -502,7 +502,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         {
             @Override
             public void changed(ObservableValue<? extends CustomSlicerType> ov,
-                CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
+                    CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
             {
                 if (lastSlicer != newSlicer)
                 {
@@ -516,46 +516,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     {
         firstLayerNozzleChoice.setItems(forceNozzleFirstLayerOptions);
         firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                float currentWidth = firstLayerExtrusionWidth.floatValueProperty().get();
-                switch (newValue.intValue())
-                {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            firstLayerExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            firstLayerExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
-            });
-    }
-
-    private void setupSupportNozzleChoice()
-    {
-        supportNozzleChoice.setItems(nozzleOptions);
-
-        supportNozzleChoice.getSelectionModel()
-            .selectedIndexProperty().addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
-                    float currentWidth = supportExtrusionWidth.floatValueProperty().get();
+                    float currentWidth = firstLayerExtrusionWidth.floatValueProperty().get();
                     switch (newValue.intValue())
                     {
                         case 0:
@@ -563,135 +526,172 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
                             if (currentWidth < minPoint3ExtrusionWidth || currentWidth
                             > maxPoint3ExtrusionWidth)
                             {
-                                supportExtrusionWidth.floatValueProperty().set(
-                                    defaultPoint3ExtrusionWidth);
+                                firstLayerExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint3ExtrusionWidth);
                             }
-                            supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                            supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
                             break;
                         case 1:
                             // The point 8 nozzle has been selected
                             if (currentWidth < minPoint8ExtrusionWidth || currentWidth
                             > maxPoint8ExtrusionWidth)
                             {
-                                supportExtrusionWidth.floatValueProperty().set(
-                                    defaultPoint8ExtrusionWidth);
+                                firstLayerExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint8ExtrusionWidth);
                             }
-                            supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                            supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
                             break;
                     }
                 });
+    }
+
+    private void setupSupportNozzleChoice()
+    {
+        supportNozzleChoice.setItems(nozzleOptions);
+
+        supportNozzleChoice.getSelectionModel()
+                .selectedIndexProperty().addListener(
+                        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                        {
+                            float currentWidth = supportExtrusionWidth.floatValueProperty().get();
+                            switch (newValue.intValue())
+                            {
+                                case 0:
+                                    // The point 3 nozzle has been selected
+                                    if (currentWidth < minPoint3ExtrusionWidth || currentWidth
+                                    > maxPoint3ExtrusionWidth)
+                                    {
+                                        supportExtrusionWidth.floatValueProperty().set(
+                                                defaultPoint3ExtrusionWidth);
+                                    }
+                                    supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                                    supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                                    break;
+                                case 1:
+                                    // The point 8 nozzle has been selected
+                                    if (currentWidth < minPoint8ExtrusionWidth || currentWidth
+                                    > maxPoint8ExtrusionWidth)
+                                    {
+                                        supportExtrusionWidth.floatValueProperty().set(
+                                                defaultPoint8ExtrusionWidth);
+                                    }
+                                    supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                                    supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                                    break;
+                            }
+                        });
     }
 
     private void setupFillNozzleChoice()
     {
         fillNozzleChoice.setItems(nozzleOptions);
         fillNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                float currentInfillWidth = infillExtrusionWidth.floatValueProperty().get();
-                float currentSolidInfillWidth = solidInfillExtrusionWidth.floatValueProperty().get();
-                float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().
-                get();
-                switch (newValue.intValue())
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (currentInfillWidth < minPoint3ExtrusionWidth || currentInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            infillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        if (currentSolidInfillWidth < minPoint3ExtrusionWidth
-                        || currentSolidInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            solidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        if (currentTopSolidInfillWidth < minPoint3ExtrusionWidth
-                        || currentTopSolidInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            topSolidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
+                    float currentInfillWidth = infillExtrusionWidth.floatValueProperty().get();
+                    float currentSolidInfillWidth = solidInfillExtrusionWidth.floatValueProperty().get();
+                    float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().
+                    get();
+                    switch (newValue.intValue())
+                    {
+                        case 0:
+                            // The point 3 nozzle has been selected
+                            if (currentInfillWidth < minPoint3ExtrusionWidth || currentInfillWidth
+                            > maxPoint3ExtrusionWidth)
+                            {
+                                infillExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint3ExtrusionWidth);
+                            }
+                            if (currentSolidInfillWidth < minPoint3ExtrusionWidth
+                            || currentSolidInfillWidth
+                            > maxPoint3ExtrusionWidth)
+                            {
+                                solidInfillExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint3ExtrusionWidth);
+                            }
+                            if (currentTopSolidInfillWidth < minPoint3ExtrusionWidth
+                            || currentTopSolidInfillWidth
+                            > maxPoint3ExtrusionWidth)
+                            {
+                                topSolidInfillExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint3ExtrusionWidth);
+                            }
 
-                        infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (currentInfillWidth < minPoint8ExtrusionWidth || currentInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            infillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        if (currentSolidInfillWidth < minPoint8ExtrusionWidth
-                        || currentSolidInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            solidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        if (currentTopSolidInfillWidth < minPoint8ExtrusionWidth
-                        || currentTopSolidInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            topSolidInfillExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
-            });
+                            infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            break;
+                        case 1:
+                            // The point 8 nozzle has been selected
+                            if (currentInfillWidth < minPoint8ExtrusionWidth || currentInfillWidth
+                            > maxPoint8ExtrusionWidth)
+                            {
+                                infillExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint8ExtrusionWidth);
+                            }
+                            if (currentSolidInfillWidth < minPoint8ExtrusionWidth
+                            || currentSolidInfillWidth
+                            > maxPoint8ExtrusionWidth)
+                            {
+                                solidInfillExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint8ExtrusionWidth);
+                            }
+                            if (currentTopSolidInfillWidth < minPoint8ExtrusionWidth
+                            || currentTopSolidInfillWidth
+                            > maxPoint8ExtrusionWidth)
+                            {
+                                topSolidInfillExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint8ExtrusionWidth);
+                            }
+                            infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            break;
+                    }
+                });
     }
 
     private void setupPerimeterNozzleChoice()
     {
         perimeterNozzleChoice.setItems(nozzleOptions);
         perimeterNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                float currentWidth = perimeterExtrusionWidth.floatValueProperty().get();
-                switch (newValue.intValue())
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
-                    case 0:
-                        // The point 3 nozzle has been selected
-                        if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                        {
-                            perimeterExtrusionWidth.floatValueProperty().set(
-                                defaultPoint3ExtrusionWidth);
-                        }
-                        perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                        perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                        break;
-                    case 1:
-                        // The point 8 nozzle has been selected
-                        if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                        {
-                            perimeterExtrusionWidth.floatValueProperty().set(
-                                defaultPoint8ExtrusionWidth);
-                        }
-                        perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                        perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                        break;
-                }
-            });
+                    float currentWidth = perimeterExtrusionWidth.floatValueProperty().get();
+                    switch (newValue.intValue())
+                    {
+                        case 0:
+                            // The point 3 nozzle has been selected
+                            if (currentWidth < minPoint3ExtrusionWidth || currentWidth
+                            > maxPoint3ExtrusionWidth)
+                            {
+                                perimeterExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint3ExtrusionWidth);
+                            }
+                            perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
+                            perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
+                            break;
+                        case 1:
+                            // The point 8 nozzle has been selected
+                            if (currentWidth < minPoint8ExtrusionWidth || currentWidth
+                            > maxPoint8ExtrusionWidth)
+                            {
+                                perimeterExtrusionWidth.floatValueProperty().set(
+                                        defaultPoint8ExtrusionWidth);
+                            }
+                            perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
+                            perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
+                            break;
+                    }
+                });
     }
 
     private void setupWidgetEditableBindings()
@@ -709,511 +709,511 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private void setupHelpTextListeners()
     {
         profileNameField.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NAME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NAME);
+                });
         slicerChooser.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SLICER_CHOOSER);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SLICER_CHOOSER);
+                });
         layerHeight.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.LAYER_HEIGHT);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.LAYER_HEIGHT);
+                });
         fillDensity.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FILL_DENSITY);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FILL_DENSITY);
+                });
         fillPatternChoice.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FILL_PATTERN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FILL_PATTERN);
+                });
         infillEveryN.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INFILL_EVERYN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INFILL_EVERYN);
+                });
         solidLayersTop.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_LAYERS_TOP);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_LAYERS_TOP);
+                });
         solidLayersBottom.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_LAYERS_BOTTOM);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_LAYERS_BOTTOM);
+                });
         numberOfPerimeters.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NUMBER_OF_PERIMETERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NUMBER_OF_PERIMETERS);
+                });
         brimWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIM_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.BRIM_WIDTH);
+                });
         firstLayerExtrusionWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FIRST_LAYER_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FIRST_LAYER_EXTRUSION_WIDTH);
+                });
         perimeterExtrusionWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.PERIMETER_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.PERIMETER_EXTRUSION_WIDTH);
+                });
         infillExtrusionWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INFILL_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INFILL_EXTRUSION_WIDTH);
+                });
         solidInfillExtrusionWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_INFILL_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_INFILL_EXTRUSION_WIDTH);
+                });
         topSolidInfillExtrusionWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.TOP_SOLID_INFILL_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.TOP_SOLID_INFILL_EXTRUSION_WIDTH);
+                });
         supportExtrusionWidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_EXTRUSION_WIDTH);
+                });
         nozzleOpenVolume0.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+                });
         nozzleOpenVolume1.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+                });
         nozzleEjectionVolume0.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+                });
         nozzleEjectionVolume1.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+                });
         nozzlePartialOpen0.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+                });
         nozzlePartialOpen1.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+                });
         supportMaterialEnabled.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
+                });
         supportOverhangThreshold.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
+                });
         forcedSupportLayers.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FORCED_SUPPORT_LAYERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FORCED_SUPPORT_LAYERS);
+                });
         supportPattern.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_PATTERN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_PATTERN);
+                });
         supportPatternSpacing.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_PATTERN_SPACING);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_PATTERN_SPACING);
+                });
         supportPatternAngle.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_PATTERN_ANGLE);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_PATTERN_ANGLE);
+                });
         firstLayerSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FIRST_LAYER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FIRST_LAYER_SPEED);
+                });
         perimeterSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.PERIMETER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.PERIMETER_SPEED);
+                });
         smallPerimeterSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SMALL_PERIMETER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SMALL_PERIMETER_SPEED);
+                });
         externalPerimeterSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.EXTERNAL_PERIMETER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.EXTERNAL_PERIMETER_SPEED);
+                });
         infillSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INFILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INFILL_SPEED);
+                });
         solidInfillSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_INFILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_INFILL_SPEED);
+                });
         topSolidInfillSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.TOP_SOLID_INFILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.TOP_SOLID_INFILL_SPEED);
+                });
         supportMaterialSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_MATERIAL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_MATERIAL_SPEED);
+                });
         bridgesSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIDGES_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.BRIDGES_SPEED);
+                });
         gapFillSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.GAP_FILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.GAP_FILL_SPEED);
+                });
         enableAutoCooling.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.ENABLE_AUTO_COOLING);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.ENABLE_AUTO_COOLING);
+                });
         minFanSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.MIN_FAN_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.MIN_FAN_SPEED);
+                });
         maxFanSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.MAX_FAN_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.MAX_FAN_SPEED);
+                });
         bridgesFanSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIDGES_FAN_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.BRIDGES_FAN_SPEED);
+                });
         interfaceSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INTERFACE_SPEED);
-            });        
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INTERFACE_SPEED);
+                });
         disableFanForFirstNLayers.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.DISABLE_FAN_FIRST_N_LAYERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.DISABLE_FAN_FIRST_N_LAYERS);
+                });
         enableFanIfLayerTimeBelow.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.ENABLE_FAN_LAYER_TIME_BELOW);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.ENABLE_FAN_LAYER_TIME_BELOW);
+                });
         slowFanIfLayerTimeBelow.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SLOW_FAN_LAYER_TIME_BELOW);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SLOW_FAN_LAYER_TIME_BELOW);
+                });
         minPrintSpeed.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.MIN_PRINT_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.MIN_PRINT_SPEED);
+                });
 
         raftBaseLinewidth.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
+                });
 
         raftAirGapLayer0.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
+                });
 
         interfaceLayers.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INTERFACE_LAYERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INTERFACE_LAYERS);
+                });
 
         profileNameField.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NAME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NAME);
+                });
         slicerChooser.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SLICER_CHOOSER);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SLICER_CHOOSER);
+                });
         layerHeight.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.LAYER_HEIGHT);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.LAYER_HEIGHT);
+                });
         fillDensity.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FILL_DENSITY);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FILL_DENSITY);
+                });
         fillPatternChoice.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FILL_PATTERN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FILL_PATTERN);
+                });
         infillEveryN.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INFILL_EVERYN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INFILL_EVERYN);
+                });
         solidLayersTop.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_LAYERS_TOP);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_LAYERS_TOP);
+                });
         solidLayersBottom.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_LAYERS_BOTTOM);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_LAYERS_BOTTOM);
+                });
         numberOfPerimeters.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NUMBER_OF_PERIMETERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NUMBER_OF_PERIMETERS);
+                });
         brimWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIM_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.BRIM_WIDTH);
+                });
         firstLayerExtrusionWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FIRST_LAYER_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FIRST_LAYER_EXTRUSION_WIDTH);
+                });
         perimeterExtrusionWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.PERIMETER_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.PERIMETER_EXTRUSION_WIDTH);
+                });
         infillExtrusionWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INFILL_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INFILL_EXTRUSION_WIDTH);
+                });
         solidInfillExtrusionWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_INFILL_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_INFILL_EXTRUSION_WIDTH);
+                });
         topSolidInfillExtrusionWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.TOP_SOLID_INFILL_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.TOP_SOLID_INFILL_EXTRUSION_WIDTH);
+                });
         supportExtrusionWidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_EXTRUSION_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_EXTRUSION_WIDTH);
+                });
         nozzleOpenVolume0.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+                });
         nozzleOpenVolume1.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_OPEN_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_OPEN_VOLUME);
+                });
         nozzleEjectionVolume0.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+                });
         nozzleEjectionVolume1.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_EJECTION_VOLUME);
+                });
         nozzlePartialOpen0.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+                });
         nozzlePartialOpen1.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.NOZZLE_PARTIAL_OPEN);
+                });
         supportMaterialEnabled.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_MATERIAL_ENABLED);
+                });
         supportOverhangThreshold.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_OVERHANG_THRESHOLD);
+                });
         forcedSupportLayers.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FORCED_SUPPORT_LAYERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FORCED_SUPPORT_LAYERS);
+                });
         supportPattern.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_PATTERN);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_PATTERN);
+                });
         supportPatternSpacing.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_PATTERN_SPACING);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_PATTERN_SPACING);
+                });
         supportPatternAngle.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_PATTERN_ANGLE);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_PATTERN_ANGLE);
+                });
         firstLayerSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.FIRST_LAYER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.FIRST_LAYER_SPEED);
+                });
         perimeterSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.PERIMETER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.PERIMETER_SPEED);
+                });
         smallPerimeterSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SMALL_PERIMETER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SMALL_PERIMETER_SPEED);
+                });
         externalPerimeterSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.EXTERNAL_PERIMETER_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.EXTERNAL_PERIMETER_SPEED);
+                });
         infillSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INFILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INFILL_SPEED);
+                });
         solidInfillSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SOLID_INFILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SOLID_INFILL_SPEED);
+                });
         topSolidInfillSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.TOP_SOLID_INFILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.TOP_SOLID_INFILL_SPEED);
+                });
         supportMaterialSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SUPPORT_MATERIAL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SUPPORT_MATERIAL_SPEED);
+                });
         bridgesSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIDGES_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.BRIDGES_SPEED);
+                });
         gapFillSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.GAP_FILL_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.GAP_FILL_SPEED);
+                });
         enableAutoCooling.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.ENABLE_AUTO_COOLING);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.ENABLE_AUTO_COOLING);
+                });
         minFanSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.MIN_FAN_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.MIN_FAN_SPEED);
+                });
         maxFanSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.MAX_FAN_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.MAX_FAN_SPEED);
+                });
         bridgesFanSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.BRIDGES_FAN_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.BRIDGES_FAN_SPEED);
+                });
         interfaceSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INTERFACE_SPEED);
-            });        
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INTERFACE_SPEED);
+                });
         disableFanForFirstNLayers.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.DISABLE_FAN_FIRST_N_LAYERS);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.DISABLE_FAN_FIRST_N_LAYERS);
+                });
         enableFanIfLayerTimeBelow.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.ENABLE_FAN_LAYER_TIME_BELOW);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.ENABLE_FAN_LAYER_TIME_BELOW);
+                });
         slowFanIfLayerTimeBelow.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.SLOW_FAN_LAYER_TIME_BELOW);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.SLOW_FAN_LAYER_TIME_BELOW);
+                });
         minPrintSpeed.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.MIN_PRINT_SPEED);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.MIN_PRINT_SPEED);
+                });
         raftBaseLinewidth.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.RAFT_BASE_LINE_WIDTH);
+                });
 
         raftAirGapLayer0.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.RAFT_AIR_GAP_LAYER_0);
+                });
 
         interfaceLayers.hoverProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                showHelpText(Fields.INTERFACE_LAYERS);
-            });        
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    showHelpText(Fields.INTERFACE_LAYERS);
+                });
     }
 
     private void showHelpText(Fields field)
@@ -1224,61 +1224,61 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     private void setupWidgetChangeListeners()
     {
         profileNameField.textProperty().addListener(
-            (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-            {
-                if (!validateProfileName())
+                (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
                 {
-                    isNameValid.set(false);
-                    profileNameField.pseudoClassStateChanged(ERROR, true);
-                } else
-                {
-                    isNameValid.set(true);
-                    profileNameField.pseudoClassStateChanged(ERROR, false);
-                }
-            });
+                    if (!validateProfileName())
+                    {
+                        isNameValid.set(false);
+                        profileNameField.pseudoClassStateChanged(ERROR, true);
+                    } else
+                    {
+                        isNameValid.set(true);
+                        profileNameField.pseudoClassStateChanged(ERROR, false);
+                    }
+                });
 
         //Dirty listeners...
         profileNameField.textProperty().addListener(dirtyStringListener);
 
         slicerChooser.valueProperty().addListener(
-            (ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue, CustomSlicerType newValue) ->
-            {
-                isDirty.set(true);
-            });
+                (ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue, CustomSlicerType newValue) ->
+                {
+                    isDirty.set(true);
+                });
 
         //Nozzle Page
         firstLayerExtrusionWidthSlider.valueProperty()
-            .bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
+                .bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
         firstLayerExtrusionWidth.textProperty().addListener(dirtyStringListener);
         firstLayerNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
-            dirtyStringListener);
+                dirtyStringListener);
 
         perimeterExtrusionWidthSlider.valueProperty().bindBidirectional(
-            perimeterExtrusionWidth.floatValueProperty());
+                perimeterExtrusionWidth.floatValueProperty());
         perimeterExtrusionWidth.textProperty().addListener(dirtyStringListener);
         perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
-            dirtyStringListener);
+                dirtyStringListener);
 
         infillExtrusionWidthSlider.valueProperty().bindBidirectional(
-            infillExtrusionWidth.floatValueProperty());
+                infillExtrusionWidth.floatValueProperty());
         infillExtrusionWidth.textProperty().addListener(dirtyStringListener);
         solidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(
-            solidInfillExtrusionWidth.floatValueProperty());
+                solidInfillExtrusionWidth.floatValueProperty());
         solidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
         fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
         topSolidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(
-            topSolidInfillExtrusionWidth.floatValueProperty());
+                topSolidInfillExtrusionWidth.floatValueProperty());
         topSolidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
 
         supportExtrusionWidthSlider.valueProperty()
-            .bindBidirectional(supportExtrusionWidth.floatValueProperty());
+                .bindBidirectional(supportExtrusionWidth.floatValueProperty());
         supportExtrusionWidth.textProperty()
-            .addListener(dirtyStringListener);
+                .addListener(dirtyStringListener);
         supportNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
+                .selectedItemProperty().addListener(dirtyStringListener);
 
         supportInterfaceNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
+                .selectedItemProperty().addListener(dirtyStringListener);
 
         fillDensity.textProperty().addListener(dirtyStringListener);
         slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
@@ -1294,65 +1294,65 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         perimeterSpeed.textProperty().addListener(dirtyStringListener);
         gapFillSpeed.textProperty().addListener(dirtyStringListener);
         fillPatternChoice.getSelectionModel().selectedItemProperty().addListener(
-            (ObservableValue<? extends FillPattern> observable, FillPattern oldValue, FillPattern newValue) ->
-            {
-                isDirty.set(true);
-            });
-
-        supportMaterialSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        brimWidth.textProperty()
-            .addListener(dirtyStringListener);
-        infillSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        minPrintSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        minFanSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        infillEveryN.textProperty()
-            .addListener(dirtyStringListener);
-        forcedSupportLayers.textProperty()
-            .addListener(dirtyStringListener);
-        supportPatternSpacing.textProperty()
-            .addListener(dirtyStringListener);
-        smallPerimeterSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        maxFanSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        disableFanForFirstNLayers.textProperty()
-            .addListener(dirtyStringListener);
-        bridgesFanSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        bridgesSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        interfaceSpeed.textProperty()
-            .addListener(dirtyStringListener);        
-        layerHeight.textProperty()
-            .addListener(dirtyStringListener);
-        externalPerimeterSpeed.textProperty()
-            .addListener(dirtyStringListener);
-        supportPatternAngle.textProperty()
-            .addListener(dirtyStringListener);
-
-        supportMaterialEnabled.selectedProperty()
-            .addListener(dirtyBooleanListener);
-        enableAutoCooling.selectedProperty()
-            .addListener(dirtyBooleanListener);
-
-        perimeterNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
-        fillNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
-        supportNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
-        supportInterfaceNozzleChoice.getSelectionModel()
-            .selectedItemProperty().addListener(dirtyStringListener);
-        supportPattern.getSelectionModel()
-            .selectedItemProperty().addListener(
-                (ObservableValue<? extends SupportPattern> observable, SupportPattern oldValue, SupportPattern newValue) ->
+                (ObservableValue<? extends FillPattern> observable, FillPattern oldValue, FillPattern newValue) ->
                 {
                     isDirty.set(true);
                 });
+
+        supportMaterialSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        brimWidth.textProperty()
+                .addListener(dirtyStringListener);
+        infillSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        minPrintSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        minFanSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        infillEveryN.textProperty()
+                .addListener(dirtyStringListener);
+        forcedSupportLayers.textProperty()
+                .addListener(dirtyStringListener);
+        supportPatternSpacing.textProperty()
+                .addListener(dirtyStringListener);
+        smallPerimeterSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        maxFanSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        disableFanForFirstNLayers.textProperty()
+                .addListener(dirtyStringListener);
+        bridgesFanSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        bridgesSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        interfaceSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        layerHeight.textProperty()
+                .addListener(dirtyStringListener);
+        externalPerimeterSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        supportPatternAngle.textProperty()
+                .addListener(dirtyStringListener);
+
+        supportMaterialEnabled.selectedProperty()
+                .addListener(dirtyBooleanListener);
+        enableAutoCooling.selectedProperty()
+                .addListener(dirtyBooleanListener);
+
+        perimeterNozzleChoice.getSelectionModel()
+                .selectedItemProperty().addListener(dirtyStringListener);
+        fillNozzleChoice.getSelectionModel()
+                .selectedItemProperty().addListener(dirtyStringListener);
+        supportNozzleChoice.getSelectionModel()
+                .selectedItemProperty().addListener(dirtyStringListener);
+        supportInterfaceNozzleChoice.getSelectionModel()
+                .selectedItemProperty().addListener(dirtyStringListener);
+        supportPattern.getSelectionModel()
+                .selectedItemProperty().addListener(
+                        (ObservableValue<? extends SupportPattern> observable, SupportPattern oldValue, SupportPattern newValue) ->
+                        {
+                            isDirty.set(true);
+                        });
 
         nozzleOpenVolume0.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume0.textProperty().addListener(dirtyStringListener);
@@ -1360,7 +1360,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         nozzleOpenVolume1.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume1.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen1.textProperty().addListener(dirtyStringListener);
-        
+
         raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
         raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
         interfaceLayers.textProperty().addListener(dirtyStringListener);
@@ -1391,30 +1391,30 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         //Nozzle tab
         firstLayerExtrusionWidth.floatValueProperty().set(
-            parametersFile.getFirstLayerExtrusionWidth_mm());
+                parametersFile.getFirstLayerExtrusionWidth_mm());
         firstLayerNozzleChoice.getSelectionModel().select(parametersFile.getFirstLayerNozzle());
 
         perimeterExtrusionWidth.floatValueProperty().set(
-            parametersFile.getPerimeterExtrusionWidth_mm());
+                parametersFile.getPerimeterExtrusionWidth_mm());
         perimeterNozzleChoice.getSelectionModel().select(parametersFile.getPerimeterNozzle());
 
         infillExtrusionWidth.floatValueProperty().set(parametersFile.getFillExtrusionWidth_mm());
         solidInfillExtrusionWidth.floatValueProperty().set(
-            parametersFile.getSolidFillExtrusionWidth_mm());
+                parametersFile.getSolidFillExtrusionWidth_mm());
         fillNozzleChoice.getSelectionModel().select(parametersFile.getFillNozzle());
         topSolidInfillExtrusionWidth.floatValueProperty().set(
-            parametersFile.getTopSolidFillExtrusionWidth_mm());
+                parametersFile.getTopSolidFillExtrusionWidth_mm());
 
         supportExtrusionWidth.floatValueProperty().set(parametersFile.getSupportExtrusionWidth_mm());
         supportNozzleChoice.getSelectionModel().select(parametersFile.getSupportNozzle());
 
         supportInterfaceNozzleChoice.getSelectionModel().select(
-            parametersFile.getSupportInterfaceNozzle());
+                parametersFile.getSupportInterfaceNozzle());
 
         //Support tab
         supportMaterialEnabled.selectedProperty().set(parametersFile.getGenerateSupportMaterial());
         supportOverhangThreshold.intValueProperty().set(
-            parametersFile.getSupportOverhangThreshold_degrees());
+                parametersFile.getSupportOverhangThreshold_degrees());
         forcedSupportLayers.intValueProperty().set(parametersFile.getForcedSupportForFirstNLayers());
         supportPattern.valueProperty().set(parametersFile.getSupportPattern());
         supportPatternSpacing.floatValueProperty().set(parametersFile.getSupportPatternSpacing_mm());
@@ -1428,7 +1428,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         perimeterSpeed.intValueProperty().set(parametersFile.getPerimeterSpeed_mm_per_s());
         smallPerimeterSpeed.intValueProperty().set(parametersFile.getSmallPerimeterSpeed_mm_per_s());
         externalPerimeterSpeed.intValueProperty().set(
-            parametersFile.getExternalPerimeterSpeed_mm_per_s());
+                parametersFile.getExternalPerimeterSpeed_mm_per_s());
         infillSpeed.intValueProperty().set(parametersFile.getFillSpeed_mm_per_s());
         solidInfillSpeed.intValueProperty().set(parametersFile.getSolidFillSpeed_mm_per_s());
         topSolidInfillSpeed.intValueProperty().set(parametersFile.getTopSolidFillSpeed_mm_per_s());
@@ -1444,31 +1444,32 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         bridgesFanSpeed.intValueProperty().set(parametersFile.getBridgeFanSpeed_percent());
         disableFanForFirstNLayers.intValueProperty().set(parametersFile.getDisableFanFirstNLayers());
         enableFanIfLayerTimeBelow.intValueProperty().set(
-            parametersFile.getCoolIfLayerTimeLessThan_secs());
+                parametersFile.getCoolIfLayerTimeLessThan_secs());
         slowFanIfLayerTimeBelow.intValueProperty().set(
-            parametersFile.getSlowDownIfLayerTimeLessThan_secs());
+                parametersFile.getSlowDownIfLayerTimeLessThan_secs());
         minPrintSpeed.intValueProperty().set(parametersFile.getMinPrintSpeed_mm_per_s());
 
         // nozzle
         nozzleOpenVolume0.floatValueProperty().set(
-            parametersFile.getNozzleParameters().get(0).getOpenOverVolume());
+                parametersFile.getNozzleParameters().get(0).getOpenOverVolume());
         nozzleEjectionVolume0.floatValueProperty().set(parametersFile.getNozzleParameters().get(
-            0).getEjectionVolume());
+                0).getEjectionVolume());
         nozzlePartialOpen0.floatValueProperty().set(parametersFile.getNozzleParameters().get(
-            0).getPartialBMinimum());
+                0).getPartialBMinimum());
         nozzleOpenVolume1.floatValueProperty().set(
-            parametersFile.getNozzleParameters().get(1).getOpenOverVolume());
+                parametersFile.getNozzleParameters().get(1).getOpenOverVolume());
         nozzleEjectionVolume1.floatValueProperty().set(parametersFile.getNozzleParameters().get(
-            1).getEjectionVolume());
+                1).getEjectionVolume());
         nozzlePartialOpen1.floatValueProperty().set(parametersFile.getNozzleParameters().get(
-            1).getPartialBMinimum());
+                1).getPartialBMinimum());
 
         updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
     }
 
     /**
      * Enable/Disable fields appropriately according to the selected slicer.
-     * @param slicerType 
+     *
+     * @param slicerType
      */
     private void updateFieldsForSelectedSlicer(SlicerType slicerType)
     {
@@ -1484,47 +1485,65 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         solidLayersBottom.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtBottom"));
         numberOfPerimeters.setDisable(!slicerMappings.isMapped(slicerType, "numberOfPerimeters"));
         brimWidth.setDisable(!slicerMappings.isMapped(slicerType, "brimWidth_mm"));
+        fillPatternChoice.setDisable(!slicerMappings.isMapped(slicerType, "fillPattern"));
+
+        FillPattern currentFillPattern = fillPatternChoice.getValue();
+        if (slicerType == SlicerType.Slic3r)
+        {
+            fillPatternChoice.setItems(FXCollections.observableArrayList(FillPattern.values()));
+            fillPatternChoice.setValue(currentFillPattern);
+        } else
+        {
+            // For Cura (and any other non-Slic3r slicers we only have a LINE fill option
+            fillPatternChoice.getItems().clear();
+            fillPatternChoice.getItems().add(FillPattern.LINE);
+            fillPatternChoice.setValue(FillPattern.LINE);
+        }
 
         //Nozzle tab
         firstLayerExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                     "firstLayerExtrusionWidth_mm"));
+                "firstLayerExtrusionWidth_mm"));
         perimeterExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                    "perimeterExtrusionWidth_mm"));
+                "perimeterExtrusionWidth_mm"));
         infillExtrusionWidth.setDisable(
-            !slicerMappings.isMapped(slicerType, "fillExtrusionWidth_mm"));
+                !slicerMappings.isMapped(slicerType, "fillExtrusionWidth_mm"));
         solidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                      "solidFillExtrusionWidth_mm"));
+                "solidFillExtrusionWidth_mm"));
         solidInfillExtrusionWidthSlider.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                      "solidFillExtrusionWidth_mm"));
+                "solidFillExtrusionWidth_mm"));
         topSolidInfillExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                         "topSolidFillExtrusionWidth_mm"));
+                "topSolidFillExtrusionWidth_mm"));
         topSolidInfillExtrusionWidthSlider.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                         "topSolidFillExtrusionWidth_mm"));
+                "topSolidFillExtrusionWidth_mm"));
         supportExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                  "supportExtrusionWidth_mm"));
+                "supportExtrusionWidth_mm"));
 
         //Support tab
         supportOverhangThreshold.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                     "supportOverhangThreshold_degrees"));
+                "supportOverhangThreshold_degrees"));
         forcedSupportLayers.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                "forcedSupportForFirstNLayers"));
+                "forcedSupportForFirstNLayers"));
         supportPatternSpacing.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                  "supportPatternSpacing_mm"));
+                "supportPatternSpacing_mm"));
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                "supportPatternAngle_degrees"));
-        
+                "supportPatternAngle_degrees"));
+
         SupportPattern currentSupportPattern = supportPattern.getValue();
-        if (slicerType == SlicerType.Slic3r) {
+        if (slicerType == SlicerType.Slic3r)
+        {
             supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
             supportPattern.setValue(currentSupportPattern);
-        } else {
+        } else
+        {
             supportPattern.getItems().clear();
             supportPattern.getItems().add(SupportPattern.RECTILINEAR);
             supportPattern.getItems().add(SupportPattern.RECTILINEAR_GRID);
-            if (currentSupportPattern == SupportPattern.RECTILINEAR || 
-                currentSupportPattern == SupportPattern.RECTILINEAR_GRID) {
+            if (currentSupportPattern == SupportPattern.RECTILINEAR
+                    || currentSupportPattern == SupportPattern.RECTILINEAR_GRID)
+            {
                 supportPattern.setValue(currentSupportPattern);
-            } else {
+            } else
+            {
                 supportPattern.setValue(SupportPattern.RECTILINEAR);
             }
         }
@@ -1533,15 +1552,15 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         firstLayerSpeed.setDisable(!slicerMappings.isMapped(slicerType, "firstLayerSpeed_mm_per_s"));
         perimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType, "perimeterSpeed_mm_per_s"));
         smallPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                "smallPerimeterSpeed_mm_per_s"));
+                "smallPerimeterSpeed_mm_per_s"));
         externalPerimeterSpeed.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                   "externalPerimeterSpeed_mm_per_s"));
+                "externalPerimeterSpeed_mm_per_s"));
         infillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "fillSpeed_mm_per_s"));
         solidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "solidFillSpeed_mm_per_s"));
         topSolidInfillSpeed.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                "topSolidFillSpeed_mm_per_s"));
+                "topSolidFillSpeed_mm_per_s"));
         supportMaterialSpeed.setDisable(
-            !slicerMappings.isMapped(slicerType, "supportSpeed_mm_per_s"));
+                !slicerMappings.isMapped(slicerType, "supportSpeed_mm_per_s"));
         bridgesSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeSpeed_mm_per_s"));
         gapFillSpeed.setDisable(!slicerMappings.isMapped(slicerType, "gapFillSpeed_mm_per_s"));
 
@@ -1550,11 +1569,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         maxFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "maxFanSpeed_percent"));
         bridgesFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeFanSpeed_percent"));
         disableFanForFirstNLayers.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                      "disableFanFirstNLayers"));
+                "disableFanFirstNLayers"));
         enableFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                      "coolIfLayerTimeLessThan_secs"));
+                "coolIfLayerTimeLessThan_secs"));
         slowFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType,
-                                                                    "slowDownIfLayerTimeLessThan_secs"));
+                "slowDownIfLayerTimeLessThan_secs"));
         minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));
     }
 
@@ -1583,43 +1602,43 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         //Nozzle tab
         settingsToUpdate.setFirstLayerExtrusionWidth_mm(
-            firstLayerExtrusionWidth.floatValueProperty().get());
+                firstLayerExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.setFirstLayerNozzle(
-            firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
+                firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.setPerimeterExtrusionWidth_mm(
-            perimeterExtrusionWidth.floatValueProperty().get());
+                perimeterExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.setPerimeterNozzle(
-            perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
+                perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.setFillExtrusionWidth_mm(infillExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.setSolidFillExtrusionWidth_mm(
-            solidInfillExtrusionWidth.floatValueProperty().get());
+                solidInfillExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.setFillNozzle(fillNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setTopSolidFillExtrusionWidth_mm(
-            topSolidInfillExtrusionWidth.floatValueProperty().get());
+                topSolidInfillExtrusionWidth.floatValueProperty().get());
 
         settingsToUpdate.setSupportExtrusionWidth_mm(
-            supportExtrusionWidth.floatValueProperty().get());
+                supportExtrusionWidth.floatValueProperty().get());
         settingsToUpdate.
-            setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
+                setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.setSupportInterfaceNozzle(
-            supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
+                supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
 
         //Support tab
         settingsToUpdate.setGenerateSupportMaterial(supportMaterialEnabled.isSelected());
         settingsToUpdate.setSupportInterfaceNozzle(
-            supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
+                supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(
-            supportOverhangThreshold.intValueProperty().get());
+                supportOverhangThreshold.intValueProperty().get());
         settingsToUpdate.setForcedSupportForFirstNLayers(
-            forcedSupportLayers.intValueProperty().get());
+                forcedSupportLayers.intValueProperty().get());
         settingsToUpdate.setSupportPattern(supportPattern.valueProperty().get());
         settingsToUpdate.setSupportPatternSpacing_mm(
-            supportPatternSpacing.floatValueProperty().get());
+                supportPatternSpacing.floatValueProperty().get());
         settingsToUpdate.
-            setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
+                setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
         settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.floatValueProperty().get());
         settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.floatValueProperty().get());
         settingsToUpdate.setInterfaceLayers(interfaceLayers.intValueProperty().get());
@@ -1628,9 +1647,9 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
         settingsToUpdate.setPerimeterSpeed_mm_per_s(perimeterSpeed.intValueProperty().get());
         settingsToUpdate.setSmallPerimeterSpeed_mm_per_s(
-            smallPerimeterSpeed.intValueProperty().get());
+                smallPerimeterSpeed.intValueProperty().get());
         settingsToUpdate.setExternalPerimeterSpeed_mm_per_s(
-            externalPerimeterSpeed.intValueProperty().get());
+                externalPerimeterSpeed.intValueProperty().get());
         settingsToUpdate.setFillSpeed_mm_per_s(infillSpeed.intValueProperty().get());
         settingsToUpdate.setSolidFillSpeed_mm_per_s(solidInfillSpeed.intValueProperty().get());
         settingsToUpdate.setTopSolidFillSpeed_mm_per_s(topSolidInfillSpeed.intValueProperty().get());
@@ -1645,26 +1664,26 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         settingsToUpdate.setMaxFanSpeed_percent(maxFanSpeed.intValueProperty().get());
         settingsToUpdate.setBridgeFanSpeed_percent(bridgesFanSpeed.intValueProperty().get());
         settingsToUpdate.setDisableFanFirstNLayers(
-            disableFanForFirstNLayers.intValueProperty().get());
+                disableFanForFirstNLayers.intValueProperty().get());
         settingsToUpdate.setCoolIfLayerTimeLessThan_secs(
-            enableFanIfLayerTimeBelow.intValueProperty().get());
+                enableFanIfLayerTimeBelow.intValueProperty().get());
         settingsToUpdate.setSlowDownIfLayerTimeLessThan_secs(
-            slowFanIfLayerTimeBelow.intValueProperty().get());
+                slowFanIfLayerTimeBelow.intValueProperty().get());
         settingsToUpdate.setMinPrintSpeed_mm_per_s(minPrintSpeed.intValueProperty().get());
 
         // Nozzle
         settingsToUpdate.getNozzleParameters().get(0).setOpenOverVolume(
-            nozzleOpenVolume0.floatValueProperty().get());
+                nozzleOpenVolume0.floatValueProperty().get());
         settingsToUpdate.getNozzleParameters().get(0).setEjectionVolume(
-            nozzleEjectionVolume0.floatValueProperty().get());
+                nozzleEjectionVolume0.floatValueProperty().get());
         settingsToUpdate.getNozzleParameters().get(0).setPartialBMinimum(
-            nozzlePartialOpen0.floatValueProperty().get());
+                nozzlePartialOpen0.floatValueProperty().get());
         settingsToUpdate.getNozzleParameters().get(1).setOpenOverVolume(
-            nozzleOpenVolume1.floatValueProperty().get());
+                nozzleOpenVolume1.floatValueProperty().get());
         settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
-            nozzleEjectionVolume1.floatValueProperty().get());
+                nozzleEjectionVolume1.floatValueProperty().get());
         settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
-            nozzlePartialOpen1.floatValueProperty().get());
+                nozzlePartialOpen1.floatValueProperty().get());
 
         return settingsToUpdate;
     }
@@ -1680,11 +1699,11 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         } else
         {
             ObservableList<SlicerParametersFile> existingProfileList = SlicerParametersContainer.
-                getCompleteProfileList();
+                    getCompleteProfileList();
             for (SlicerParametersFile settings : existingProfileList)
             {
                 if (!settings.getProfileName().equals(currentProfileName)
-                    && settings.getProfileName().equals(profileNameText))
+                        && settings.getProfileName().equals(profileNameText))
                 {
                     valid = false;
                     break;
@@ -1695,7 +1714,8 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     }
 
     /**
-     * Validate the data in the widgets and return false if it is invalid else return true.
+     * Validate the data in the widgets and return false if it is invalid else
+     * return true.
      */
     private boolean validateData()
     {
@@ -1737,7 +1757,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         repopulateCmbPrintProfile();
         state.set(ProfileLibraryPanelController.State.CUSTOM);
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettingsByProfileName(
-            parametersFile.getProfileName()));
+                parametersFile.getProfileName()));
     }
 
     void whenNewPressed()
@@ -1754,7 +1774,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile = SlicerParametersContainer.
-            getSettingsByProfileName(currentProfileName).clone();
+                getSettingsByProfileName(currentProfileName).clone();
 
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
@@ -1778,15 +1798,15 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     void whenCopyPressed()
     {
         SlicerParametersFile parametersFile = SlicerParametersContainer.getSettingsByProfileName(
-            currentProfileName).clone();
+                currentProfileName).clone();
         Set<String> allCurrentNames = new HashSet<>();
         SlicerParametersContainer.getCompleteProfileList().forEach(
-            (SlicerParametersFile printProfile) ->
-            {
-                allCurrentNames.add(printProfile.getProfileName());
-            });
+                (SlicerParametersFile printProfile) ->
+                {
+                    allCurrentNames.add(printProfile.getProfileName());
+                });
         String newName = DeDuplicator.suggestNonDuplicateNameCopy(parametersFile.getProfileName(),
-                                                                  allCurrentNames);
+                allCurrentNames);
         parametersFile.setProfileName(newName);
         SlicerParametersContainer.saveProfile(parametersFile);
         repopulateCmbPrintProfile();
