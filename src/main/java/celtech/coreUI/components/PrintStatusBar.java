@@ -28,6 +28,11 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
 
     private Printer printer = null;
 
+    private final ChangeListener<Number> printerNumberElementListener = (ObservableValue<? extends Number> ov, Number lastState, Number newState) ->
+    {
+        reassessStatus();
+    };
+
     private final ChangeListener<PrinterStatus> printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> ov, PrinterStatus lastState, PrinterStatus newState) ->
     {
         reassessStatus();
@@ -48,48 +53,36 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         reassessStatus();
     };
 
-    private final EventHandler<ActionEvent> pauseEventHandler = new EventHandler<ActionEvent>()
+    private final EventHandler<ActionEvent> pauseEventHandler = (ActionEvent t) ->
     {
-        @Override
-        public void handle(ActionEvent t)
+        try
         {
-            try
-            {
-                printer.pause();
-            } catch (PrinterException ex)
-            {
-                System.out.println("Couldn't pause printer");
-            }
+            printer.pause();
+        } catch (PrinterException ex)
+        {
+            System.out.println("Couldn't pause printer");
         }
     };
 
-    private final EventHandler<ActionEvent> resumeEventHandler = new EventHandler<ActionEvent>()
+    private final EventHandler<ActionEvent> resumeEventHandler = (ActionEvent t) ->
     {
-        @Override
-        public void handle(ActionEvent t)
+        try
         {
-            try
-            {
-                printer.resume();
-            } catch (PrinterException ex)
-            {
-                System.out.println("Couldn't resume print");
-            }
+            printer.resume();
+        } catch (PrinterException ex)
+        {
+            System.out.println("Couldn't resume print");
         }
     };
 
-    private final EventHandler<ActionEvent> cancelEventHandler = new EventHandler<ActionEvent>()
+    private final EventHandler<ActionEvent> cancelEventHandler = (ActionEvent t) ->
     {
-        @Override
-        public void handle(ActionEvent t)
+        try
         {
-            try
-            {
-                printer.cancel(null);
-            } catch (PrinterException ex)
-            {
-                System.out.println("Couldn't resume print");
-            }
+            printer.cancel(null);
+        } catch (PrinterException ex)
+        {
+            System.out.println("Couldn't resume print");
         }
     };
 
@@ -104,6 +97,8 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         printer.pauseStatusProperty().addListener(pauseStatusChangeListener);
         printer.busyStatusProperty().addListener(busyStatusChangeListener);
         printer.getPrintEngine().printQueueStatusProperty().addListener(printQueueStatusChangeListener);
+        printer.getPrintEngine().progressETCProperty().addListener(printerNumberElementListener);
+        printer.getPrintEngine().progressProperty().addListener(printerNumberElementListener);
 
         pauseButton.visibleProperty().bind(printer.canPauseProperty().and(buttonsAllowed));
         pauseButton.setOnAction(pauseEventHandler);
@@ -245,53 +240,64 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     buttonsAllowed.set(true);
                     break;
                 case CALIBRATING_NOZZLE_ALIGNMENT:
-                case CALIBRATING_NOZZLE_OPENING:
-                case CALIBRATING_NOZZLE_HEIGHT:
                     statusProcessed = true;
-//                    barShouldBeDisplayed = true;
-//                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
-//
-//                    targetRequired(false);
-//
-//                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
-//                    {
-//                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
-//                        {
-//                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
-//                            progressRequired(true);
-//                        } else
-//                        {
-//                            progressRequired(false);
-//                        }
-//                    } else
-//                    {
-//                        progressRequired(false);
-//                    }
-//                    buttonsAllowed.set(false);
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
+
+                    if (progressBar.progressProperty().isBound())
+                    {
+                        progressBar.progressProperty().unbind();
+                    }
+
+                    if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressRequired(true);
+                        } else
+                        {
+                            progressRequired(false);
+                        }
+                    } else
+                    {
+                        progressRequired(false);
+                    }
+                    buttonsAllowed.set(false);
                     break;
                 case PURGING_HEAD:
                     statusProcessed = true;
-//                    barShouldBeDisplayed = true;
-//                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
-//
-//                    targetRequired(false);
-//
-//                    if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.RUNNING_MACRO
-//                            && printer.getPrintEngine().macroBeingRun.get() == Macro.PURGE)
-//                    {
-//                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
-//                        {
-//                            progressBar.setProgress(printer.getPrintEngine().progressProperty().get());
-//                            progressRequired(true);
-//                        } else
-//                        {
-//                            progressRequired(false);
-//                        }
-//                    } else
-//                    {
-//                        progressRequired(false);
-//                    }
-//                    buttonsAllowed.set(false);
+                    barShouldBeDisplayed = true;
+                    largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
+
+                    targetLegendRequired(false);
+                    targetValueRequired(false);
+                    currentValueRequired(false);
+
+                    if (progressBar.progressProperty().isBound())
+                    {
+                        progressBar.progressProperty().unbind();
+                    }
+
+                    if (printer.getPrintEngine().macroBeingRun.get() != Macro.CANCEL_PRINT)
+                    {
+                        if (printer.getPrintEngine().linesInPrintingFileProperty().get() > 0)
+                        {
+                            progressBar.progressProperty().bind(printer.getPrintEngine().progressProperty());
+                            progressRequired(true);
+                        } else
+                        {
+                            progressRequired(false);
+                        }
+                    } else
+                    {
+                        progressRequired(false);
+                    }
+                    buttonsAllowed.set(false);
                     break;
                 default:
                     statusProcessed = true;
@@ -331,6 +337,8 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             printer.pauseStatusProperty().removeListener(pauseStatusChangeListener);
             printer.busyStatusProperty().removeListener(busyStatusChangeListener);
             printer.getPrintEngine().printQueueStatusProperty().removeListener(printQueueStatusChangeListener);
+            printer.getPrintEngine().progressETCProperty().removeListener(printerNumberElementListener);
+            printer.getPrintEngine().progressProperty().removeListener(printerNumberElementListener);
             pauseButton.visibleProperty().unbind();
             pauseButton.setOnAction(null);
             resumeButton.visibleProperty().unbind();
