@@ -511,7 +511,6 @@ public class Project implements Serializable
     public void copyModel(ModelContainer modelContainer)
     {
         ModelContainer copy = modelContainer.makeCopy();
-        copy.moveToCentre();
         addModel(copy);
     }
 
@@ -1026,6 +1025,18 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
+    
+    public void dropToBed(Set<ModelContainer> modelContainers)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.dropToBed();
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }    
 
     public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {

@@ -354,12 +354,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
         copy.setUseExtruder0(associateWithExtruderNumber.get() == 0);
-        copy.setXScale(this.getXScale());
-        copy.setYScale(this.getYScale());
-        copy.setZScale(this.getZScale());
-        copy.setRotationLean(this.getRotationLean());
-        copy.setRotationTwist(this.getRotationTwist());
-        copy.setRotationTurn(this.getRotationTurn());
+//        copy.setXScale(this.getXScale());
+//        copy.setYScale(this.getYScale());
+//        copy.setZScale(this.getZScale());
+//        copy.setRotationLean(this.getRotationLean());
+//        copy.setRotationTwist(this.getRotationTwist());
+//        copy.setRotationTurn(this.getRotationTurn());
+        copy.setState(this.getState());
         return copy;
     }
 
@@ -1058,7 +1059,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         
 
         // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
-        // from centre of group, which needs to be taken into account
+        // from centre of group and up/down, which needs to be taken into account
         translateBy(modelGroup.getMoveToPreferredX(),
                                         modelGroup.getMoveToPreferredZ());
         

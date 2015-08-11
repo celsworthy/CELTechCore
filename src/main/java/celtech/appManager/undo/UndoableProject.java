@@ -169,6 +169,14 @@ public class UndoableProject
             project.autoLayout();
         });
     }
+    
+    public void dropToBed(Set<ModelContainer> modelContainers)
+    {
+        doTransformCommand(() ->
+        {
+            project.dropToBed(modelContainers);
+        });
+    }   
 
     public void snapToGround(ModelContainer modelContainer, MeshView meshView, int faceNumber)
     {

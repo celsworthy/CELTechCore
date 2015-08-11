@@ -174,6 +174,13 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             undoableProject.setUseExtruder0Filament(modelContainer, false);
         }
     }
+    
+    @FXML
+    void doDropToBed(ActionEvent event)
+    {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        undoableProject.dropToBed(modelContainers);
+    }
 
     @Override
     public void setProject(Project project)
