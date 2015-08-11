@@ -507,6 +507,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             setYScale(scaling);
             setZScale(scaling);
         }
+        
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
     }
 
@@ -1092,6 +1094,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             isOffBed.set(false);
         }
+        System.out.println("CHECK off bed " + lastTransformedBoundsInParent);
+        printTransforms();
+        System.out.println("is off bed: " + isOffBed.get());
     }
 
     public BooleanProperty isOffBedProperty()

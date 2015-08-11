@@ -838,6 +838,7 @@ public class Project implements Serializable
     private void recreateGroupState(ModelGroup group, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         group.setState(groupStates.get(group.getModelId()));
+        group.checkOffBed();
     }
 
     /**
@@ -1032,6 +1033,7 @@ public class Project implements Serializable
         {
             {
                 model.dropToBed();
+                model.checkOffBed();
             }
         }
         projectModified();
