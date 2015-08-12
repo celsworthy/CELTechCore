@@ -198,8 +198,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         System.out.println("Transforms for: " + getId());
         System.out.println("==============================================");
-        System.out.println("Scale preferred is " + transformScalePreferred);
-        System.out.println("Move to preferred is " + transformMoveToPreferred);
+        System.out.println("transformscalepreferred is " + transformScalePreferred);
+        System.out.println("transformMovetopreferred is " + transformMoveToPreferred);
         System.out.println("transformSnapToGroundYAdjust is " + transformDropToBedYAdjust);
         System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
         System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
@@ -909,6 +909,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationTwist.set(storedRotationTwist);
         preferredRotationTurn.set(storedRotationTurn);
         
+        transformScalePreferred.setX(storedScaleX);
+        transformScalePreferred.setY(storedScaleY);
+        transformScalePreferred.setZ(storedScaleZ);
+        
         updateTransformsFromLeanTwistTurnAngles();
 
         if (convertSnapFace)
@@ -1075,9 +1079,27 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void checkOffBed()
     {
+        System.out.println("CHECK off bed " + lastTransformedBoundsInParent);
+
         ModelBounds bounds = lastTransformedBoundsInParent;
 
         double epsilon = 0.001;
+        
+        if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
+            || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
+                                       epsilon) == MathUtils.MORE_THAN) {
+            System.out.println("OFF BED X");
+        }
+        if (MathUtils.compareDouble(bounds.getMinY(), 0, epsilon) == MathUtils.LESS_THAN
+            || MathUtils.compareDouble(bounds.getMaxY(), printBed.getPrintVolumeMaximums().getY(),
+                                       epsilon) == MathUtils.MORE_THAN) {
+            System.out.println("OFF BED Y");
+        }
+        if (MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
+            || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
+                                       epsilon) == MathUtils.MORE_THAN) {
+            System.out.println("OFF BED Z");
+        }
 
         if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
             || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
@@ -1094,7 +1116,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             isOffBed.set(false);
         }
-        System.out.println("CHECK off bed " + lastTransformedBoundsInParent);
         printTransforms();
         System.out.println("is off bed: " + isOffBed.get());
     }
