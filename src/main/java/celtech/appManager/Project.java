@@ -1158,7 +1158,7 @@ public class Project implements Serializable
         Set<ModelContainer> modelContainers = new HashSet<>();
         for (ModelContainer.State modelState : modelStates)
         {
-            for (ModelContainer model : topLevelModels)
+            for (ModelContainer model : getAllModels())
             {
                 if (model.getModelId() == modelState.modelId)
                 {

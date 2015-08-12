@@ -88,7 +88,7 @@ class TransformCommand extends Command
 
     }
 
-    public boolean getCanMerge()
+    protected boolean getCanMerge()
     {
         return canMerge;
     }

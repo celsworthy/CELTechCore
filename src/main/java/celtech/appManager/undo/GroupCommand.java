@@ -17,10 +17,12 @@ public class GroupCommand extends Command
 
     Project project;
     Set<ModelContainer> modelContainers;
+    private Set<ModelContainer.State> states;
     ModelContainer group;
 
     public GroupCommand(Project project, Set<ModelContainer> modelContainers)
     {
+        states = new HashSet<>();
         this.project = project;
         this.modelContainers = modelContainers;
     }
@@ -28,7 +30,11 @@ public class GroupCommand extends Command
     @Override
     public void do_()
     {
-        redo();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            states.add(modelContainer.getState());
+        }
+        doGroup();
     }
 
     @Override
@@ -37,11 +43,16 @@ public class GroupCommand extends Command
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(group);
         project.ungroup(modelContainers);
+        project.setModelStates(states);
     }
 
     @Override
     public void redo()
     {
+        doGroup();
+    }
+    
+    private void doGroup() {
         if (modelContainers.size() == 1)
         {
             return;

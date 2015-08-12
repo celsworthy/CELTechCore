@@ -90,6 +90,8 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(project).getProjectSelection().getNumGroupsSelectedProperty();
         group.disableProperty().bind(numModelsSelected.lessThan(2));
         ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
+        
+        ungroup.setVisible(false);
 
     }
 

@@ -392,7 +392,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * N．B．It only works for top level objects ie．top level groups or ungrouped models.
+     * N.B．It only works for top level objects ie．top level groups or ungrouped models.
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
