@@ -930,7 +930,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             if (project.allModelsOnSameExtruder())
             {
                 // only one extruder required, which one is it?
-                int extruderNumber = project.getUsedExtruders().iterator().next();
+                Set<Integer> usedExtruders = project.getUsedExtruders();
+                int extruderNumber = 0;
+                if (usedExtruders.iterator().hasNext())
+                {
+                    extruderNumber = usedExtruders.iterator().next();
+                }
                 ObjectProperty<Filament> requiredFilamentProperty = null;
                 if (extruderNumber == 0)
                 {
