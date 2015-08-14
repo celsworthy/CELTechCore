@@ -1106,6 +1106,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         models.getChildren().add(modelContainer);
         for (ModelContainer model : modelContainer.getModelsHoldingMeshViews())
         {
+            model.checkOffBed();
             updateModelColour(model);
         }
         collideModels();

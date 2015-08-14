@@ -90,6 +90,8 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(project).getProjectSelection().getNumGroupsSelectedProperty();
         group.disableProperty().bind(numModelsSelected.lessThan(2));
         ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
+        
+        ungroup.setVisible(false);
 
     }
 
@@ -173,6 +175,13 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         {
             undoableProject.setUseExtruder0Filament(modelContainer, false);
         }
+    }
+    
+    @FXML
+    void doDropToBed(ActionEvent event)
+    {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        undoableProject.dropToBed(modelContainers);
     }
 
     @Override

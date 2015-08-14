@@ -511,7 +511,6 @@ public class Project implements Serializable
     public void copyModel(ModelContainer modelContainer)
     {
         ModelContainer copy = modelContainer.makeCopy();
-        copy.moveToCentre();
         addModel(copy);
     }
 
@@ -839,6 +838,7 @@ public class Project implements Serializable
     private void recreateGroupState(ModelGroup group, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         group.setState(groupStates.get(group.getModelId()));
+        group.checkOffBed();
     }
 
     /**
@@ -1026,6 +1026,19 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
+    
+    public void dropToBed(Set<ModelContainer> modelContainers)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.dropToBed();
+                model.checkOffBed();
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }    
 
     public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
@@ -1145,7 +1158,7 @@ public class Project implements Serializable
         Set<ModelContainer> modelContainers = new HashSet<>();
         for (ModelContainer.State modelState : modelStates)
         {
-            for (ModelContainer model : topLevelModels)
+            for (ModelContainer model : getAllModels())
             {
                 if (model.getModelId() == modelState.modelId)
                 {

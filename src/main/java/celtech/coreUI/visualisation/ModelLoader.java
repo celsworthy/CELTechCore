@@ -110,9 +110,9 @@ public class ModelLoader
         }
         modelContainer.moveToCentre();
         modelContainer.dropToBed();
+        shrinkIfRequested(modelContainer);
         modelContainer.checkOffBed();
         undoableProject.addModel(modelContainer);
-        shrinkIfRequested(modelContainer);
     }
 
     private void shrinkIfRequested(ModelContainer modelContainer)
