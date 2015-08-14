@@ -307,8 +307,6 @@ public class PurgeInsetPanelController implements Initializable
         double newWidth = 0;
         double newHeight = 0;
 
-        steno.info("Being called with " + displayWidth + " : " + displayHeight);
-
         if (displayAspect >= aspect)
         {
             // Drive from height
