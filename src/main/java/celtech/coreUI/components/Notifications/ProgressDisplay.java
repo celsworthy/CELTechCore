@@ -1,5 +1,9 @@
-package celtech.coreUI.components;
+package celtech.coreUI.components.Notifications;
 
+import celtech.coreUI.components.Notifications.BedHeaterStatusBar;
+import celtech.coreUI.components.Notifications.PrintPreparationStatusBar;
+import celtech.coreUI.components.Notifications.PrintStatusBar;
+import celtech.coreUI.components.Notifications.NozzleHeaterStatusBar;
 import celtech.Lookup;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;

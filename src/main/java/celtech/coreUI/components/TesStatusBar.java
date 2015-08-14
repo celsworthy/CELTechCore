@@ -3,6 +3,8 @@
  */
 package celtech.coreUI.components;
 
+import celtech.coreUI.components.Notifications.AppearingProgressBar;
+
 /**
  *
  * @author tony

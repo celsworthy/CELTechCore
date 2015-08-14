@@ -1,6 +1,5 @@
 package celtech.coreUI.components.buttons;
 
-import celtech.coreUI.components.tips.TaggablePane;
 import celtech.utils.Math.MathUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -10,13 +9,14 @@ import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 /**
  *
  * @author Ian
  */
-public class GraphicToggleButtonWithLabel extends TaggablePane
+public class GraphicToggleButtonWithLabel extends Pane
 {
 
     private final VBox container = new VBox();
@@ -100,19 +100,5 @@ public class GraphicToggleButtonWithLabel extends TaggablePane
     public BooleanProperty selectedProperty()
     {
         return button.selectedProperty();
-    }
-
-    @Override
-    public Point2D getTagPosition()
-    {
-        double centreX = button.getWidth() / 2;
-        double centreY = button.getHeight() / 2;
-        double offsetFromCentre = 30;
-
-        Point2D tagOffsetFromCentre = MathUtils.angleDegreesToCartesianCWFromTop(
-            tagOrientationProperty().get().getAngle(), offsetFromCentre, true);
-        Point2D position = tagOffsetFromCentre.add(centreX, centreY);
-
-        return new Point2D(0, 0);
     }
 }

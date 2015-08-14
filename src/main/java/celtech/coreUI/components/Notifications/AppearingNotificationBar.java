@@ -1,9 +1,10 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.coreUI.components;
+package celtech.coreUI.components.Notifications;
 
-import celtech.coreUI.components.buttons.GraphicButton;
+import celtech.Lookup;
+import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.utils.Math.MathUtils;
 import java.io.IOException;
 import java.net.URL;
@@ -14,74 +15,69 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.SVGPath;
 import javafx.util.Duration;
 
 /**
  *
  * @author tony
  */
-public abstract class AppearingProgressBar extends StackPane implements Initializable
+public abstract class AppearingNotificationBar extends StackPane implements Initializable
 {
-
+    
     @FXML
-    private StackPane statusBar;
-
+    private StackPane notificationBar;
+    
     @FXML
-    protected Label largeTargetValue;
-
+    protected Label notificationDescription;
+    
     @FXML
-    protected Label currentValue;
-
+    private Label notificationStepXofY;
+    
     @FXML
-    protected Label largeProgressDescription;
-
+    private SVGPath noteIndicator;
+    
     @FXML
-    protected Label largeTargetLegend;
-
+    private Group warningIndicator;
+    
     @FXML
-    protected ProgressBar progressBar;
-
-    @FXML
-    protected GraphicButton pauseButton;
-
-    @FXML
-    protected GraphicButton resumeButton;
-
-    @FXML
-    protected GraphicButton cancelButton;
-
+    private Group cautionIndicator;
+    
     private static final Duration transitionLengthMillis = Duration.millis(200);
-
+    
+    private NotificationType notificationType;
+    
     private Animation hideSidebar = new Transition()
     {
         {
             setCycleDuration(transitionLengthMillis);
         }
-
+        
         @Override
         public void interpolate(double frac)
         {
             slideMenuPanel(1.0 - frac);
         }
     };
+    
     private Animation showSidebar = new Transition()
     {
-
+        
         {
             setCycleDuration(transitionLengthMillis);
         }
-
+        
         @Override
         public void interpolate(double frac)
         {
             slideMenuPanel(frac);
         }
     };
-
+    
     private final double minimumToShow = 0.0;
     private final double maximumToShow = 1.0;
     private boolean slidingIntoView = false;
@@ -90,18 +86,18 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     private boolean slidOutOfView = false;
     private double panelHeight = 0;
     private final Rectangle clippingRectangle = new Rectangle();
-
-    public AppearingProgressBar()
+    
+    public AppearingNotificationBar()
     {
         super();
-
+        
         URL fxml = getClass().getResource(
-                "/celtech/resources/fxml/components/appearingProgressBar.fxml");
+                "/celtech/resources/fxml/components/notifications/appearingNotificationBar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
         fxmlLoader.setClassLoader(getClass().getClassLoader());
-
+        
         try
         {
             fxmlLoader.load();
@@ -110,19 +106,23 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             exception.printStackTrace();
             throw new RuntimeException(exception);
         }
-
+        
         showSidebar.setOnFinished((ActionEvent t) ->
         {
             slidingIntoView = false;
             slidIntoView = true;
+            finishedSlidingIntoView();
         });
-
+        
         hideSidebar.setOnFinished((ActionEvent t) ->
         {
             slidingOutOfView = false;
             slidOutOfView = true;
             setVisible(false);
+            finishedSlidingOutOfView();
         });
+        
+        notificationStepXofY.setVisible(false);
     }
 
     /**
@@ -138,12 +138,12 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
         {
             amountToShow = maximumToShow;
         }
-
+        
         double targetPanelHeight = panelHeight * amountToShow;
-
+        
         clippingRectangle.setY(panelHeight - targetPanelHeight);
         clippingRectangle.setHeight(targetPanelHeight);
-        statusBar.setPrefHeight(targetPanelHeight);
+        notificationBar.setPrefHeight(targetPanelHeight);
     }
 
     /**
@@ -171,12 +171,12 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             hideSidebar.play();
         } else if (slidOutOfView)
         {
-            if (MathUtils.compareDouble(statusBar.getPrefHeight(), 0.0, 0.01) == MathUtils.MORE_THAN)
+            if (MathUtils.compareDouble(notificationBar.getPrefHeight(), 0.0, 0.01) == MathUtils.MORE_THAN)
             {
                 slideMenuPanel(0);
             }
         }
-
+        
     }
 
     /**
@@ -205,68 +205,100 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             showSidebar.play();
         } else if (slidIntoView)
         {
-            if (MathUtils.compareDouble(statusBar.getPrefHeight(), 1.0, 0.01) == MathUtils.LESS_THAN)
+            if (MathUtils.compareDouble(notificationBar.getPrefHeight(), 1.0, 0.01) == MathUtils.LESS_THAN)
             {
                 slideMenuPanel(1.0);
             }
         }
     }
-
+    
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        panelHeight = statusBar.getPrefHeight();
-
-        statusBar.setMinHeight(0);
-
+        panelHeight = notificationBar.getPrefHeight();
+        
+        notificationBar.setMinHeight(0);
+        
         slideMenuPanel(0);
         slidIntoView = false;
         slidOutOfView = true;
         slidingIntoView = false;
         slidingOutOfView = false;
 
-        pauseButton.setVisible(false);
-        resumeButton.setVisible(false);
-        cancelButton.setVisible(false);
-
+//        pauseButton.setVisible(false);
+//        resumeButton.setVisible(false);
+//        cancelButton.setVisible(false);
         clippingRectangle.setX(0);
         clippingRectangle.setY(0);
         clippingRectangle.setHeight(panelHeight);
         clippingRectangle.setWidth(4000);
-
+        
         setVisible(false);
-        statusBar.setClip(clippingRectangle);
-        statusBar.setPrefHeight(0);
+        notificationBar.setClip(clippingRectangle);
+        notificationBar.setPrefHeight(0);
     }
-
+    
     public boolean isSlidInOrSlidingIn()
     {
         return slidIntoView || slidingIntoView;
     }
-
+    
     public boolean isSlidOutOrSlidingOut()
     {
         return slidOutOfView || slidingOutOfView;
     }
-
-    public void targetLegendRequired(boolean required)
+    
+    public void setTitle(String title)
     {
-        largeTargetLegend.setVisible(required);
+        
     }
-
-    public void targetValueRequired(boolean required)
+    
+    public void setMessage(String message)
     {
-        largeTargetValue.setVisible(required);
+        notificationDescription.setText(message);
     }
-
-    public void currentValueRequired(boolean required)
+    
+    public void setType(NotificationType notificationType)
     {
-        currentValue.setVisible(required);
+        switch(notificationType)
+        {
+            case NOTE:
+                noteIndicator.setVisible(true);
+                warningIndicator.setVisible(false);
+                cautionIndicator.setVisible(false);
+                break;
+            case WARNING:
+                noteIndicator.setVisible(false);
+                warningIndicator.setVisible(true);
+                cautionIndicator.setVisible(false);
+                break;
+            case CAUTION:
+                noteIndicator.setVisible(false);
+                warningIndicator.setVisible(false);
+                cautionIndicator.setVisible(true);
+                break;
+            default:
+                noteIndicator.setVisible(false);
+                warningIndicator.setVisible(false);
+                cautionIndicator.setVisible(false);
+                break;
+        }
+        
+        this.notificationType = notificationType;
     }
-
-    public void progressRequired(boolean required)
+    
+    public NotificationType getType()
     {
-        progressBar.setVisible(required);
-        progressBar.progressProperty().unbind();
+        return notificationType;
     }
+    
+    public void setXOfY(int step, int ofSteps)
+    {
+        notificationStepXofY.setText(step + " " + Lookup.i18n("misc.of") + " " + ofSteps);
+        notificationStepXofY.setVisible(true);
+    }
+    
+    public abstract void show();
+    public abstract void finishedSlidingIntoView();
+    public abstract void finishedSlidingOutOfView();
 }
