@@ -146,11 +146,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         ProjectManager pm = ProjectManager.getInstance();
         List<Project> preloadedProjects = pm.getOpenProjects();
 
-        for (Project project : preloadedProjects)
+        for (int projectNumber = preloadedProjects.size() - 1; projectNumber >= 0; projectNumber--)
         {
+            Project project = preloadedProjects.get(projectNumber);
             ProjectTab newProjectTab = new ProjectTab(project, tabDisplay.widthProperty(),
                     tabDisplay.heightProperty());
-            tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+            tabDisplay.getTabs().add(1, newProjectTab);
         }
 
         if (Lookup.getUserPreferences().isFirstUse())
@@ -388,6 +389,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             printerStatusTab.setContent(printerStatusPage);
             tabDisplay.getTabs().add(printerStatusTab);
 
+            addPageTab = new Tab();
+            addPageTab.setText("+");
+            addPageTab.setClosable(false);
+            tabDisplay.getTabs().add(addPageTab);
+
             tabDisplaySelectionModel.selectedItemProperty().addListener(
                     (ObservableValue<? extends Tab> ov, Tab lastTab, Tab newTab) ->
                     {
@@ -528,11 +534,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         steno.debug("load projects");
         loadProjectsAtStartup();
-
-        addPageTab = new Tab();
-        addPageTab.setText("+");
-        addPageTab.setClosable(false);
-        tabDisplay.getTabs().add(addPageTab);
 
         rootAnchorPane.layout();
 
