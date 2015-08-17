@@ -3,6 +3,9 @@
  */
 package celtech.utils.threed;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,7 +108,25 @@ class CutResult
      */
     private List<List<Integer>> sortByArea(Set<List<Integer>> nestedPolygons)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<List<Integer>> sortedNestedPolygons = new ArrayList<>(nestedPolygons);
+        Collections.sort(sortedNestedPolygons, new Comparator<List<Integer>>()
+        {
+
+            @Override
+            public int compare(List<Integer> o1, List<Integer> o2)
+            {
+                double a1 = getPolygonArea(o1);
+                double a2 = getPolygonArea(o2);
+                if (a1 > a2) {
+                    return 1;
+                } else if (a1 == a2) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+        });
+        return sortedNestedPolygons;
     }
     
     private Point getPointAt(List<Integer> loop, int index) {
@@ -145,8 +166,15 @@ class CutResult
         return result;
     }
 
-    double getPolygonArea(Point[] polygon, int N)
+    double getPolygonArea(List<Integer> loop)
     {
+        int N = loop.size();
+        Point[] polygon = new Point[N];
+        for (int k = 0; k < polygon.length; k++)
+        {
+            polygon[k] = getPointAt(loop, k);
+        }
+        
         int i;
         int j;
         double area = 0;
