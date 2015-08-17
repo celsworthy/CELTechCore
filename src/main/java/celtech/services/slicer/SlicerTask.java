@@ -24,8 +24,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author ianhudson
  */
-public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
-{
+public class SlicerTask extends Task<SliceResult> implements ProgressReceiver {
 
     private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.
             getName());
@@ -37,8 +36,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
     private Printer printerToUse = null;
 
     public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality,
-            SlicerParametersFile settings, Printer printerToUse)
-    {
+            SlicerParametersFile settings, Printer printerToUse) {
         this.printJobUUID = printJobUUID;
         this.printJobDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
                 + File.separator;
@@ -52,8 +50,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
     public SlicerTask(String printJobUUID,
             String printJobDirectory,
             Project project, PrintQualityEnumeration printQuality,
-            SlicerParametersFile settings, Printer printerToUse)
-    {
+            SlicerParametersFile settings, Printer printerToUse) {
         this.printJobUUID = printJobUUID;
         this.printJobDirectory = printJobDirectory;
         this.project = project;
@@ -64,10 +61,8 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
     }
 
     @Override
-    protected SliceResult call() throws Exception
-    {
-        if (isCancelled())
-        {
+    protected SliceResult call() throws Exception {
+        if (isCancelled()) {
             return null;
         }
 
@@ -82,13 +77,11 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
 
     public static SliceResult doSlicing(String printJobUUID, SlicerParametersFile settings,
             String printJobDirectory, Project project, PrintQualityEnumeration printQuality,
-            Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno)
-    {
+            Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno) {
         boolean succeeded = false;
 
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-        if (settings.getSlicerOverride() != null)
-        {
+        if (settings.getSlicerOverride() != null) {
             slicerType = settings.getSlicerOverride();
         }
 
@@ -129,24 +122,21 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         String macSlicerCommand = "";
         String linuxSlicerCommand = "";
         String configLoadCommand = "";
+        //The next variable is only required for Slic3r
+        String printCenterCommand = "";
         String combinedConfigSection = "";
         String verboseOutputCommand = "";
         String progressOutputCommand = "";
 
-        switch (slicerType)
-        {
+        switch (slicerType) {
             case Slic3r:
                 windowsSlicerCommand = "\"" + ApplicationConfiguration.
                         getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
                 macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
                 linuxSlicerCommand = "Slic3r/bin/slic3r";
-                Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
-                configLoadCommand += "--print-center "
-                        + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
-                        + ","
-                        + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
-                configLoadCommand += " --load";
+                configLoadCommand = "--load";
                 combinedConfigSection = configLoadCommand + " " + configFile;
+                printCenterCommand = "--print-center";
                 break;
             case Cura:
                 windowsSlicerCommand = "\"" + ApplicationConfiguration.
@@ -162,8 +152,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
 
         steno.debug("Selected slicer is " + slicerType + " : " + Thread.currentThread().getName());
 
-        switch (machineType)
-        {
+        switch (machineType) {
             case WINDOWS_95:
                 commands.add("command.com");
                 commands.add("/S");
@@ -180,8 +169,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         + combinedConfigSection
                         + " -o "
                         + tempGcodeFilename;
-                for (String fileName : createdMeshFiles)
-                {
+                for (String fileName : createdMeshFiles) {
                     win95PrintCommand += " \"";
                     win95PrintCommand += fileName;
                     win95PrintCommand += "\"";
@@ -201,12 +189,20 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         + verboseOutputCommand
                         + " "
                         + progressOutputCommand
-                        + " "
-                        + combinedConfigSection
+                        + " ";
+                if (!printCenterCommand.equals("")) {
+                    windowsPrintCommand += printCenterCommand;
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+                    windowsPrintCommand += " "
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
+                }
+
+                windowsPrintCommand += combinedConfigSection
                         + " -o "
                         + tempGcodeFilename;
-                for (String fileName : createdMeshFiles)
-                {
+                for (String fileName : createdMeshFiles) {
                     windowsPrintCommand += " \"";
                     windowsPrintCommand += fileName;
                     windowsPrintCommand += "\"";
@@ -217,20 +213,24 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
                         + macSlicerCommand);
-                if (!verboseOutputCommand.equals(""))
-                {
+                if (!verboseOutputCommand.equals("")) {
                     commands.add(verboseOutputCommand);
                 }
-                if (!progressOutputCommand.equals(""))
-                {
+                if (!progressOutputCommand.equals("")) {
                     commands.add(progressOutputCommand);
                 }
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
-                for (String fileName : createdMeshFiles)
-                {
+                if (!printCenterCommand.equals("")) {
+                    commands.add(printCenterCommand);
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+                    commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
+                }
+                for (String fileName : createdMeshFiles) {
                     commands.add(fileName);
                 }
                 break;
@@ -238,20 +238,24 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             case LINUX_X64:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
                         + linuxSlicerCommand);
-                if (!verboseOutputCommand.equals(""))
-                {
+                if (!verboseOutputCommand.equals("")) {
                     commands.add(verboseOutputCommand);
                 }
-                if (!progressOutputCommand.equals(""))
-                {
+                if (!progressOutputCommand.equals("")) {
                     commands.add(progressOutputCommand);
                 }
                 commands.add(configLoadCommand);
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
-                for (String fileName : createdMeshFiles)
-                {
+                if (!printCenterCommand.equals("")) {
+                    commands.add(printCenterCommand);
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+                    commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
+                }
+                for (String fileName : createdMeshFiles) {
                     commands.add(fileName);
                 }
                 break;
@@ -259,19 +263,16 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 steno.error("Couldn't determine how to run slicer");
         }
 
-        if (commands.size() > 0)
-        {
+        if (commands.size() > 0) {
             steno.debug("Slicer command is " + String.join(" ", commands));
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
-            if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95)
-            {
+            if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95) {
                 steno.debug("Set working directory (Non-Windows) to " + printJobDirectory);
                 slicerProcessBuilder.directory(new File(printJobDirectory));
             }
 
             Process slicerProcess = null;
-            try
-            {
+            try {
                 slicerProcess = slicerProcessBuilder.start();
                 // any error message?
                 SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(progressReceiver, slicerProcess.
@@ -288,8 +289,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 outputGobbler.start();
 
                 int exitStatus = slicerProcess.waitFor();
-                switch (exitStatus)
-                {
+                switch (exitStatus) {
                     case 0:
                         steno.debug("Slicer terminated successfully ");
                         succeeded = true;
@@ -300,19 +300,15 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         steno.error("Slicer terminated with unknown exit code " + exitStatus);
                         break;
                 }
-            } catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 steno.error("Exception whilst running slicer: " + ex);
-            } catch (InterruptedException ex)
-            {
+            } catch (InterruptedException ex) {
                 steno.warning("Interrupted whilst waiting for slicer to complete");
-                if (slicerProcess != null)
-                {
+                if (slicerProcess != null) {
                     slicerProcess.destroyForcibly();
                 }
             }
-        } else
-        {
+        } else {
             steno.error("Couldn't run autoupdate - no commands for OS ");
         }
 
@@ -321,8 +317,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
     }
 
     @Override
-    public void progressUpdateFromSlicer(String message, float workDone)
-    {
+    public void progressUpdateFromSlicer(String message, float workDone) {
         updateMessage(message);
         updateProgress(workDone, 100.0);
     }
