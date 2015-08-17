@@ -3,7 +3,6 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
@@ -350,13 +349,13 @@ public class MaintenanceInsetPanelController implements Initializable
                     GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
                     if (result.isSuccess())
                     {
-                        Notifier.showInformationNotification(Lookup.i18n(
+                        Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n(
                                 "maintenancePanel.gcodePrintSuccessTitle"),
                                 Lookup.i18n(
                                         "maintenancePanel.gcodePrintSuccessMessage"));
                     } else
                     {
-                        Notifier.showErrorNotification(Lookup.i18n(
+                        Lookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n(
                                 "maintenancePanel.gcodePrintFailedTitle"),
                                 Lookup.i18n(
                                         "maintenancePanel.gcodePrintFailedMessage"));
@@ -371,7 +370,7 @@ public class MaintenanceInsetPanelController implements Initializable
                 @Override
                 public void handle(WorkerStateEvent t)
                 {
-                    Notifier.
+                    Lookup.getSystemNotificationHandler().
                             showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
                                     Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
                 }

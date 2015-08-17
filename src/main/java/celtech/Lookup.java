@@ -16,6 +16,7 @@ import celtech.configuration.fileRepresentation.SlicerMappings;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
+import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
@@ -55,6 +56,7 @@ public class Lookup
     private static PrinterListChangesNotifier printerListChangesNotifier;
     private static final ObservableList<Printer> connectedPrinters;
     private static boolean shuttingDown = false;
+    private static NotificationDisplay notificationDisplay;
 
     static
     {
@@ -226,6 +228,8 @@ public class Lookup
         slicerMappings = SlicerMappingsContainer.getSlicerMappings();
 
         setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
+        
+        setNotificationDisplay(new NotificationDisplay());
     }
 
     public static TaskExecutor getTaskExecutor()
@@ -330,6 +334,16 @@ public class Lookup
     {
         return Lookup.extrasMenuInnerPanel;
     }
+    
+    public static NotificationDisplay getNotificationDisplay()
+    {
+        return notificationDisplay;
+    }
+
+    public static void setNotificationDisplay(NotificationDisplay notificationDisplay)
+    {
+        Lookup.notificationDisplay = notificationDisplay;
+    }
 
     public static boolean isShuttingDown()
     {
@@ -340,6 +354,4 @@ public class Lookup
     {
         Lookup.shuttingDown = shuttingDown;
     }
-    
-    
 }

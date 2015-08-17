@@ -1,5 +1,6 @@
-package celtech.coreUI.components;
+package celtech.coreUI.components.Notifications;
 
+import celtech.Lookup;
 import javafx.scene.layout.VBox;
 
 /**
@@ -13,8 +14,8 @@ public class NotificationArea extends VBox
 
     public NotificationArea()
     {
+        this.getChildren().add(Lookup.getNotificationDisplay());
         this.progressDisplay = new ProgressDisplay();
         this.getChildren().add(progressDisplay);
     }
-
 }

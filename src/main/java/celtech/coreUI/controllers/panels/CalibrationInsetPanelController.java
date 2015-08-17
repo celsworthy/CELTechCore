@@ -5,6 +5,8 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
+import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
+import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.printerControl.model.Head;
@@ -61,6 +63,7 @@ public class CalibrationInsetPanelController implements Initializable,
     CalibrationNozzleOpeningGUI calibrationNozzleOpeningGUI;
     StateTransitionManager stateManager;
     SpinnerControl spinnerControl;
+    private ApplicationStatus applicationStatus = null;
 
     private ResourceBundle resources;
 
@@ -164,6 +167,10 @@ public class CalibrationInsetPanelController implements Initializable,
         }
     };
 
+    private ConditionalNotificationBar cantCalibrateHeadIsDetachedNotificationBar;
+    private ConditionalNotificationBar cantPrintNoFilamentMessageNotificationBar;
+    private ConditionalNotificationBar cantCalibrateNoSmartReelNotificationBar;
+
     @FXML
     void buttonAAction(ActionEvent event)
     {
@@ -240,10 +247,15 @@ public class CalibrationInsetPanelController implements Initializable,
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        applicationStatus = ApplicationStatus.getInstance();
+
+        cantCalibrateHeadIsDetachedNotificationBar = new ConditionalNotificationBar("dialogs.cantCalibrateHeadIsDetached", NotificationDisplay.NotificationType.CAUTION);
+        cantPrintNoFilamentMessageNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationDisplay.NotificationType.CAUTION);
+        cantCalibrateNoSmartReelNotificationBar = new ConditionalNotificationBar("dialogs.cantCalibrateNoSmartReel", NotificationDisplay.NotificationType.CAUTION);
+
         this.resources = resources;
         spinnerControl = Lookup.getSpinnerControl();
 
-        startCalibrationButton.installTag();
         setCalibrationMode(CalibrationMode.CHOICE);
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
@@ -403,21 +415,24 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             return;
         }
-        startCalibrationButton.getTag().removeAllConditionalText();
-        startCalibrationButton.getTag().addConditionalText("dialogs.cantCalibrateHeadIsDetached",
-                Bindings.isNull(printer.headProperty()));
+
+        cantCalibrateHeadIsDetachedNotificationBar.setAppearanceCondition(Bindings.isNull(printer.headProperty())
+                .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
                 startCalibrationButton.disableProperty().bind(
                         printer.canCalibrateNozzleOpeningProperty().not());
-                startCalibrationButton.getTag().addConditionalText(
-                        "dialogs.cantPrintNoFilamentMessage",
-                        printer.extrudersProperty().get(0).
-                        filamentLoadedProperty().not());
-                startCalibrationButton.getTag().addConditionalText(
-                        "dialogs.cantCalibrateNoSmartReel",
-                        Bindings.isEmpty(printer.reelsProperty()));
+
+                cantPrintNoFilamentMessageNotificationBar.setAppearanceCondition(
+                        printer.extrudersProperty().get(0).filamentLoadedProperty().not()
+                        .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+
+                cantCalibrateNoSmartReelNotificationBar.setAppearanceCondition(
+                        Bindings.isEmpty(printer.reelsProperty())
+                        .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+
                 break;
             case NOZZLE_HEIGHT:
                 startCalibrationButton.disableProperty().bind(
