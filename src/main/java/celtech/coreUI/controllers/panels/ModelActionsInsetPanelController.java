@@ -89,10 +89,10 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(project).getProjectSelection().getNumModelsSelectedProperty();
         ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(project).getProjectSelection().getNumGroupsSelectedProperty();
         group.disableProperty().bind(numModelsSelected.lessThan(2));
+        cut.disableProperty().bind(numModelsSelected.lessThan(1));
         ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
         
         ungroup.setVisible(false);
-
     }
 
     /**
@@ -132,6 +132,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         
         MeshCutter.setDebuggingNode(modelContainer);
         
+        cutHeightValue -= modelContainer.getYAdjust();
         Set<TriangleMesh> subMeshes = MeshCutter.cut((TriangleMesh) modelContainer.getMeshView().getMesh(), cutHeightValue);
         
         String modelName = modelContainer.getModelName();

@@ -1041,7 +1041,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
     
-    double getYAdjust() {
+    public double getYAdjust() {
         return transformDropToBedYAdjust.getY();
     }
     
