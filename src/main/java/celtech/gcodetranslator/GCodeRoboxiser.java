@@ -645,6 +645,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     nozzleToUse = currentSettings.getPerimeterNozzle();
                     break;
                 case Fill:
+                case Skin:
                     nozzleToUse = currentSettings.getFillNozzle();
                     break;
                 case Support:

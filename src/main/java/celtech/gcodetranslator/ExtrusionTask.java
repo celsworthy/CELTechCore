@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.gcodetranslator;
 
 import celtech.configuration.SlicerType;
@@ -17,13 +12,14 @@ public enum ExtrusionTask
     Skirt("skirt", "skirt", "TYPE:SKIRT"),
     Perimeter("perimeter", "perimeter", "TYPE:WALL-INNER"),
     ExternalPerimeter("externalPerimeter", "N/A-not-included-in-slic3r", "TYPE:WALL-OUTER"),
+    Skin("skin", "N/A-not-included-in-slic3r", "TYPE:SKIN"),
     Support("support", "support", "TYPE:SUPPORT"),
     Support_Interface("supportInterface", "N/A-not-included-in-slic3r", "N/A-not-included-in-cura"),
     Fill("fill", "fill", "TYPE:FILL");
 
-    private String genericLabelInGCode;
-    private String slic3rLabelInGCode;
-    private String curaLabelInGCode;
+    private final String genericLabelInGCode;
+    private final String slic3rLabelInGCode;
+    private final String curaLabelInGCode;
 
     private ExtrusionTask(String genericLabelInGCode, String slic3rLabelInGCode, String curaLabelInGCode)
     {
