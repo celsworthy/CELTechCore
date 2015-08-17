@@ -27,6 +27,7 @@ import org.poly2tri.geometry.polygon.PolygonPoint;
 import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
+
 /**
  * MeshCutter cuts a mesh along a given horizontal plane, triangulates the two resultant open faces,
  * and creates two child meshes.
@@ -61,8 +62,6 @@ public class MeshCutter
     {
         Set<CutResult> cutResults = new HashSet<>();
         List<List<Integer>> loopsOfFaces = getCutFaceIndices(mesh, cutHeight);
-//        showFaceCentres(cutFaces, mesh);
-//        System.out.println("cut faces are: " + loopsOfFaces.get(0));
 
         List<List<Integer>> loopsOfVertices = new ArrayList<>();
 
@@ -184,10 +183,6 @@ public class MeshCutter
             childMesh.getFaces().addAll(vertices);
 
 //            System.out.println("corner vertices are " + c0 + " " + c1 + " " + c2);
-//
-//            System.out.println("Child has " + childMesh.getFaces().size() / 6 + " faces");
-//            System.out.println("Child has " + childMesh.getPoints().size() / 3 + " points");
-
         }
 
     }
@@ -269,8 +264,7 @@ public class MeshCutter
         newVertices.remove(newVertices.get(newVertices.size() - 1));
 
 //        System.out.println("new vertices are " + newVertices);
-
-//        showNewVertices(newVertices, mesh);s
+        showNewVertices(newVertices, mesh);
         return newVertices;
     }
 
@@ -316,9 +310,11 @@ public class MeshCutter
         double v0Z = mesh.getPoints().get(v0 * 3 + 2);
         double v1Z = mesh.getPoints().get(v1 * 3 + 2);
         double proportionAlongEdge;
-        if (Math.abs(v1Y - v0Y) < 1e-5) {
+        if (Math.abs(v1Y - v0Y) < 1e-5)
+        {
             proportionAlongEdge = 0.5;
-        } else {
+        } else
+        {
             proportionAlongEdge = (cutHeight - v0Y) / (v1Y - v0Y);
         }
         double interX = v0X + (v1X - v0X) * proportionAlongEdge;
@@ -405,7 +401,6 @@ public class MeshCutter
         {
             while (getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight).size() == 0)
             {
-//                System.out.println("consider face A " + faceIndex);
                 faceVisited[faceIndex] = true;
                 faceIndex = findFirstUnvisitedFace(faceVisited);
                 if (faceIndex == -1)
@@ -443,19 +438,13 @@ public class MeshCutter
         Map<Integer, Set<Integer>> facesWithVertices,
         int faceIndex, int vertexIndexOffset0, int vertexIndexOffset1)
     {
-//        System.out.println("fc index " + faceIndex + " " + mesh.getFaces().get(faceIndex * 6
-//            + vertexIndexOffset0 * 2)
-//            + " " + mesh.getFaces().get(faceIndex * 6 + vertexIndexOffset1 * 2));
         Set<Integer> facesWithVertex0 = new HashSet(facesWithVertices.get(
             mesh.getFaces().get(faceIndex * 6 + vertexIndexOffset0 * 2)));
 
         Set<Integer> facesWithVertex1 = facesWithVertices.get(
             mesh.getFaces().get(faceIndex * 6 + vertexIndexOffset1 * 2));
-//        System.out.println("A " + facesWithVertex0);
-//        System.out.println("B " + facesWithVertex1);
         facesWithVertex0.remove(faceIndex);
         facesWithVertex0.retainAll(facesWithVertex1);
-//        System.out.println(facesWithVertex0);
         assert (facesWithVertex0.size() == 1);
         return facesWithVertex0.iterator().next();
     }
@@ -553,20 +542,12 @@ public class MeshCutter
             try
             {
                 List<Integer> vertices = loopSet.outerLoop;
-                List<PolygonPoint> points = new ArrayList<>();
-                for (Integer vertexIndex : vertices)
+                Polygon outerPolygon = makePolygon(vertices, mesh);
+                for (List<Integer> innerVertices : loopSet.innerLoops)
                 {
-                    if (mesh.getPoints().get(vertexIndex * 3) > 1e5 || mesh.getPoints().get(vertexIndex * 3) < -1e5
-                         || mesh.getPoints().get(vertexIndex * 3 + 2) > 1e5 || mesh.getPoints().get(vertexIndex * 3 + 2) < -1e5) {
-                        throw new RuntimeException("invalid point calculated");
-                    }
-                    points.add(new PolygonPoint(
-                        mesh.getPoints().get(vertexIndex * 3),
-                        mesh.getPoints().get(vertexIndex * 3 + 2)));
-                    
-                    
+                    Polygon innerPolygon = makePolygon(innerVertices, mesh);
+                    outerPolygon.addHole(innerPolygon);
                 }
-                Polygon outerPolygon = new Polygon(points);
 
                 Poly2Tri.triangulate(outerPolygon);
                 addTriangulatedFacesToMesh(mesh, outerPolygon, vertices, cutHeight);
@@ -577,6 +558,26 @@ public class MeshCutter
         }
 
         return mesh;
+    }
+
+    private static Polygon makePolygon(List<Integer> vertices, TriangleMesh mesh) throws RuntimeException
+    {
+        List<PolygonPoint> points = new ArrayList<>();
+        for (Integer vertexIndex : vertices)
+        {
+            if (mesh.getPoints().get(vertexIndex * 3) > 1e5 || mesh.getPoints().get(vertexIndex * 3)
+                < -1e5
+                || mesh.getPoints().get(vertexIndex * 3 + 2) > 1e5 || mesh.getPoints().get(
+                    vertexIndex * 3 + 2) < -1e5)
+            {
+                throw new RuntimeException("invalid point calculated");
+            }
+            points.add(new PolygonPoint(
+                mesh.getPoints().get(vertexIndex * 3),
+                mesh.getPoints().get(vertexIndex * 3 + 2)));
+        }
+        Polygon outerPolygon = new Polygon(points);
+        return outerPolygon;
     }
 
     /**
@@ -601,7 +602,7 @@ public class MeshCutter
             Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight);
             Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight);
             Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight);
-            System.out.println(vertex0 + " " + vertex1 + " " + vertex2);
+//            System.out.println(vertex0 + " " + vertex1 + " " + vertex2);
             makeFace(mesh, vertex0.meshVertexIndex, vertex1.meshVertexIndex, vertex2.meshVertexIndex);
         }
     }
@@ -652,10 +653,6 @@ public class MeshCutter
                 sphere.translateYProperty().set(mesh.getPoints().get(newVertex * 3 + 1));
                 sphere.translateZProperty().set(mesh.getPoints().get(newVertex * 3 + 2));
                 sphere.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
-//                System.out.println("add sphere to " + node + " at "
-//                    + mesh.getPoints().get(newVertex * 3) + " " + mesh.getPoints().get(newVertex * 3
-//                        + 1)
-//                    + " " + mesh.getPoints().get(newVertex * 3 + 2));
                 node.addChildNode(sphere);
             }
         }
@@ -777,6 +774,7 @@ public class MeshCutter
     }
 }
 
+
 final class Edge
 {
 
@@ -817,6 +815,7 @@ final class Edge
 }
 
 // The main purpose of this Vertex class is to provide an equality operation.
+
 final class Vertex
 {
 
@@ -843,8 +842,8 @@ final class Vertex
     @Override
     public String toString()
     {
-        return "Vertex{" + "meshVertexIndex=" + meshVertexIndex + ", x=" + x + ", y=" + y + ", z=" +
-            z + '}';
+        return "Vertex{" + "meshVertexIndex=" + meshVertexIndex + ", x=" + x + ", y=" + y + ", z="
+            + z + '}';
     }
 
     static boolean equalto8places(double a, double b)
@@ -887,73 +886,8 @@ final class Vertex
     }
 }
 
-class CutResult
-{
 
-    /**
-     * The child mesh that was created by the split.
-     */
-    TriangleMesh childMesh;
-    /**
-     * The indices of the vertices of the child mesh, in sequence, that form the perimeter of the
-     * new open face that needs to be triangulated. Some loops (list of points) may be holes inside
-     * other loops.
-     */
-    List<List<Integer>> loopsOfVerticesOnOpenFace;
 
-    public CutResult(TriangleMesh childMesh, List<List<Integer>> vertexsOnOpenFace)
-    {
-        this.childMesh = childMesh;
-        this.loopsOfVerticesOnOpenFace = vertexsOnOpenFace;
-    }
-
-    /**
-     * Identify which of the loops in loopsOfVerticesOnOpenFace are internal to other loops. There
-     * should not be any overlapping loops. Each LoopSet has one outer loop and zero or more inner
-     * loops.
-     */
-    public Set<LoopSet> identifyOuterLoopsAndInnerLoops()
-    {
-        Set<LoopSet> loopSets = new HashSet<>();
-        // assume all loops are outer loops for now
-        for (List<Integer> loop : loopsOfVerticesOnOpenFace)
-        {
-            loopSets.add(new LoopSet(loop, new ArrayList()));
-        }
-        return loopSets;
-    }
-
-    /**
-     * Return if the given loop contains the given point. see
-     * http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
-     */
-    public boolean contains(Point test, int loopIndex)
-    {
-
-        List<Integer> loop = loopsOfVerticesOnOpenFace.get(loopIndex);
-        Point points[] = new Point[loop.size()];
-        for (int k = 0; k < points.length; k++)
-        {
-            double x = childMesh.getPoints().get(loop.get(k) * 3);
-            double y = childMesh.getPoints().get(loop.get(k) * 3 + 2);
-            points[k] = new Point(x, y);
-        }
-
-        int i;
-        int j;
-        boolean result = false;
-        for (i = 0, j = points.length - 1; i < points.length; j = i++)
-        {
-            if ((points[i].y > test.y) != (points[j].y > test.y) && (test.x < (points[j].x
-                - points[i].x) * (test.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
-            {
-                result = !result;
-            }
-        }
-        return result;
-    }
-
-}
 
 class LoopSet
 {
@@ -968,6 +902,7 @@ class LoopSet
     }
 
 }
+
 
 class Point
 {
