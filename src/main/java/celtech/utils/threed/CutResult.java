@@ -28,9 +28,9 @@ class CutResult
      * new open face that needs to be triangulated. Some loops (list of points) may be holes inside
      * other loops.
      */
-    List<List<Integer>> loopsOfVerticesOnOpenFace;
+    List<PolygonIndices> loopsOfVerticesOnOpenFace;
 
-    public CutResult(TriangleMesh childMesh, List<List<Integer>> vertexsOnOpenFace)
+    public CutResult(TriangleMesh childMesh, List<PolygonIndices> vertexsOnOpenFace)
     {
         this.childMesh = childMesh;
         this.loopsOfVerticesOnOpenFace = vertexsOnOpenFace;
@@ -47,11 +47,11 @@ class CutResult
     public Set<LoopSet> identifyOuterLoopsAndInnerLoops()
     {
         Set<LoopSet> loopSets = new HashSet<>();
-        Set<Set<List<Integer>>> nestedPolygonsSet = getNestedPolygonSets();
-        for (Set<List<Integer>> nestedPolygons : nestedPolygonsSet)
+        Set<Set<PolygonIndices>> nestedPolygonsSet = getNestedPolygonSets();
+        for (Set<PolygonIndices> nestedPolygons : nestedPolygonsSet)
         {
-            List<List<Integer>> nestedPolygonsList = sortByArea(nestedPolygons);
-            List<Integer> outerPolygon = nestedPolygonsList.get(0);
+            List<PolygonIndices> nestedPolygonsList = sortByArea(nestedPolygons);
+           PolygonIndices outerPolygon = nestedPolygonsList.get(0);
             // inner polygons is remaining polygons after removing outer polygon
             nestedPolygonsList.remove(0);
             loopSets.add(new LoopSet(outerPolygon, nestedPolygonsList));
@@ -64,19 +64,19 @@ class CutResult
      * are nested inside each other. There is no need to sort the nested polygons according to which
      * is nested inside which.
      */
-    Set<Set<List<Integer>>> getNestedPolygonSets()
+    Set<Set<PolygonIndices>> getNestedPolygonSets()
     {
-        Set<Set<List<Integer>>> nestedPolygonSets = new HashSet<>();
-        for (List<Integer> polygon : loopsOfVerticesOnOpenFace)
+        Set<Set<PolygonIndices>> nestedPolygonSets = new HashSet<>();
+        for (PolygonIndices polygon : loopsOfVerticesOnOpenFace)
         {
-            Set<List<Integer>> containingPolygonSet
+            Set<PolygonIndices> containingPolygonSet
                 = polygonSetInsideOrContainingPolygon(nestedPolygonSets, polygon);
             if (containingPolygonSet != null)
             {
                 containingPolygonSet.add(polygon);
             } else
             {
-                Set<List<Integer>> newPolygonSet = new HashSet<>();
+                Set<PolygonIndices> newPolygonSet = new HashSet<>();
                 newPolygonSet.add(polygon);
                 nestedPolygonSets.add(newPolygonSet);
             }
@@ -88,13 +88,13 @@ class CutResult
      * Return the set of polygons that either contains the given polygon or is contained by it. If
      * no polygon set contains/is inside the polygon then return null.
      */
-    private Set<List<Integer>> polygonSetInsideOrContainingPolygon(
-        Set<Set<List<Integer>>> nestedPolygonSets, List<Integer> polygon)
+    private Set<PolygonIndices> polygonSetInsideOrContainingPolygon(
+        Set<Set<PolygonIndices>> nestedPolygonSets, PolygonIndices polygon)
     {
-        for (Set<List<Integer>> polygonSet : nestedPolygonSets)
+        for (Set<PolygonIndices> polygonSet : nestedPolygonSets)
         {
             // we need only consider 1 polygon from the set
-            List<Integer> innerPolygon = polygonSet.iterator().next();
+            PolygonIndices innerPolygon = polygonSet.iterator().next();
             if (contains(innerPolygon, polygon) || contains(polygon, innerPolygon))
             {
                 return polygonSet;
@@ -106,14 +106,14 @@ class CutResult
     /**
      * Sort the given list of polygons by area, largest first.
      */
-    private List<List<Integer>> sortByArea(Set<List<Integer>> nestedPolygons)
+    private List<PolygonIndices> sortByArea(Set<PolygonIndices> nestedPolygons)
     {
-        List<List<Integer>> sortedNestedPolygons = new ArrayList<>(nestedPolygons);
-        Collections.sort(sortedNestedPolygons, new Comparator<List<Integer>>()
+        List<PolygonIndices> sortedNestedPolygons = new ArrayList<>(nestedPolygons);
+        Collections.sort(sortedNestedPolygons, new Comparator<PolygonIndices>()
         {
 
             @Override
-            public int compare(List<Integer> o1, List<Integer> o2)
+            public int compare(PolygonIndices o1, PolygonIndices o2)
             {
                 double a1 = getPolygonArea(o1);
                 double a2 = getPolygonArea(o2);
@@ -129,13 +129,13 @@ class CutResult
         return sortedNestedPolygons;
     }
     
-    private Point getPointAt(List<Integer> loop, int index) {
+    private Point getPointAt(PolygonIndices loop, int index) {
         double x = childMesh.getPoints().get(loop.get(index) * 3);
         double y = childMesh.getPoints().get(loop.get(index) * 3 + 2);
         return new Point(x, y);
     }
 
-    public boolean contains(List<Integer> outerPolygon, List<Integer> innerPolygon)
+    public boolean contains(PolygonIndices outerPolygon, PolygonIndices innerPolygon)
     {
         Point point = getPointAt(innerPolygon, 0);
         return contains(point, outerPolygon);
@@ -145,7 +145,7 @@ class CutResult
      * Return if the given loop contains the given point. see
      * http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
      */
-    public boolean contains(Point test, List<Integer> loop)
+    public boolean contains(Point test, PolygonIndices loop)
     {
         Point[] points = new Point[loop.size()];
         for (int k = 0; k < points.length; k++)
@@ -166,7 +166,7 @@ class CutResult
         return result;
     }
 
-    double getPolygonArea(List<Integer> loop)
+    double getPolygonArea(PolygonIndices loop)
     {
         int N = loop.size();
         Point[] polygon = new Point[N];

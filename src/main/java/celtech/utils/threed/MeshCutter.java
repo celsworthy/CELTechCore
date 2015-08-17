@@ -61,13 +61,13 @@ public class MeshCutter
         double cutHeight)
     {
         Set<CutResult> cutResults = new HashSet<>();
-        List<List<Integer>> loopsOfFaces = getCutFaceIndices(mesh, cutHeight);
+        List<PolygonIndices> loopsOfFaces = getCutFaceIndices(mesh, cutHeight);
 
-        List<List<Integer>> loopsOfVertices = new ArrayList<>();
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
 
-        for (List<Integer> loopOfFaces : loopsOfFaces)
+        for (PolygonIndices loopOfFaces : loopsOfFaces)
         {
-            List<Integer> newVertices = makeNewVerticesAlongCut(mesh, cutHeight, loopOfFaces);
+            PolygonIndices newVertices = makeNewVerticesAlongCut(mesh, cutHeight, loopOfFaces);
             loopsOfVertices.add(newVertices);
         }
 
@@ -82,8 +82,8 @@ public class MeshCutter
      * original mesh, remove all the cut faces and replace with a new set of faces using the new
      * intersection points. Remove all the faces from above the cut faces.
      */
-    private static TriangleMesh makeLowerMesh(TriangleMesh mesh, List<List<Integer>> loopsOfFaces,
-        List<List<Integer>> loopsOfVertices, double cutHeight)
+    private static TriangleMesh makeLowerMesh(TriangleMesh mesh, List<PolygonIndices> loopsOfFaces,
+        List<PolygonIndices> loopsOfVertices, double cutHeight)
     {
         TriangleMesh childMesh = new TriangleMesh();
         childMesh.getPoints().addAll(mesh.getPoints());
@@ -238,10 +238,10 @@ public class MeshCutter
     /**
      * Taking the ordered list of cut faces, return an ordered list of new intersecting vertices.
      */
-    private static List<Integer> makeNewVerticesAlongCut(TriangleMesh mesh, double cutHeight,
-        List<Integer> cutFaces)
+    private static PolygonIndices makeNewVerticesAlongCut(TriangleMesh mesh, double cutHeight,
+        PolygonIndices cutFaces)
     {
-        List<Integer> newVertices = new ArrayList<>();
+        PolygonIndices newVertices = new PolygonIndices();
 
         Edge commonEdgeOfFace0And1 = getCommonEdge(mesh, cutFaces.get(0), cutFaces.get(1));
         Set<Edge> face0Edges = getFaceEdges(mesh, cutFaces.get(0));
@@ -328,16 +328,16 @@ public class MeshCutter
      * according to adjacency, so that we can get a correct list of ordered vertices on the
      * perimeter.
      */
-    private static List<List<Integer>> getCutFaceIndices(TriangleMesh mesh, double cutHeight)
+    private static List<PolygonIndices> getCutFaceIndices(TriangleMesh mesh, double cutHeight)
     {
         boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
         Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 
-        List<List<Integer>> loopsOfFaces = new ArrayList<>();
+        List<PolygonIndices> loopsOfFaces = new ArrayList<>();
 
         while (true)
         {
-            List<Integer> cutFaceIndices = getNextFaceLoop(faceVisited, mesh, cutHeight,
+            PolygonIndices cutFaceIndices = getNextFaceLoop(faceVisited, mesh, cutHeight,
                                                            facesWithVertices);
             if (cutFaceIndices.size() > 0)
             {
@@ -351,10 +351,10 @@ public class MeshCutter
         return loopsOfFaces;
     }
 
-    private static List<Integer> getNextFaceLoop(boolean[] faceVisited, TriangleMesh mesh,
+    private static PolygonIndices getNextFaceLoop(boolean[] faceVisited, TriangleMesh mesh,
         double cutHeight, Map<Integer, Set<Integer>> facesWithVertices)
     {
-        List<Integer> cutFaceIndices = new ArrayList<>();
+        PolygonIndices cutFaceIndices = new PolygonIndices();
         int previousFaceIndex = -1;
         int faceIndex = getFirstUnvisitedIntersectingFace(faceVisited, mesh, cutHeight);
         if (faceIndex != -1)
@@ -775,6 +775,11 @@ public class MeshCutter
 }
 
 
+class PolygonIndices extends ArrayList<Integer> {
+    
+}
+
+
 final class Edge
 {
 
@@ -893,9 +898,9 @@ class LoopSet
 {
 
     final List<Integer> outerLoop;
-    final List<List<Integer>> innerLoops;
+    final List<PolygonIndices> innerLoops;
 
-    public LoopSet(List<Integer> outerLoop, List<List<Integer>> innerLoops)
+    public LoopSet(List<Integer> outerLoop, List<PolygonIndices> innerLoops)
     {
         this.outerLoop = outerLoop;
         this.innerLoops = innerLoops;
