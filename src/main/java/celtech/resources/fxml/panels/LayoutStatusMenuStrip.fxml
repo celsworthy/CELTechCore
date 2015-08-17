@@ -19,7 +19,7 @@
                                         <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" labelText="%buttonText.toLayout" onAction="#forwardPressed" />
                                     </children>
                                 </StackPane>
-                                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" tagOrientation="WEST" />
+                                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
                             </children>
                         </StackPane>
                     </children>

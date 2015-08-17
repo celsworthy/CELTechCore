@@ -105,7 +105,7 @@
                                 </HBox>
                                 <StackPane alignment="CENTER_RIGHT" maxHeight="-Infinity" pickOnBounds="false">
                                     <children>
-                                        <GraphicButtonWithLabel fx:id="startCalibrationButton" fxmlFileName="startButton" labelText="%calibrationPanel.startCalibration" layoutX="5.0" onAction="#startCalibration" tagOrientation="WEST" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                        <GraphicButtonWithLabel fx:id="startCalibrationButton" fxmlFileName="startButton" labelText="%calibrationPanel.startCalibration" layoutX="5.0" onAction="#startCalibration" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
                                         <GraphicButtonWithLabel id="nextButton" fx:id="nextButton" fxmlFileName="nextButton" labelText="%buttonText.next" onAction="#nextButtonAction" />
                                     </children>
                                     <StackPane.margin>
