@@ -1485,8 +1485,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                         getMidPointPercent()
                                         / 100.0))));
                                 }
-                                if (compareDouble(currentNozzlePosition, 0, 10e-5)
-                                    == EQUAL
+                                if (compareDouble(currentNozzlePosition, 0, 0.07)
+                                    == MathUtils.LESS_THAN
                                     || currentNozzlePosition < 0)
                                 {
                                     currentNozzlePosition = 0;
