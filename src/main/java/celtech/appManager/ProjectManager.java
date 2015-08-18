@@ -27,18 +27,18 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeJava;
  */
 public class ProjectManager implements Savable, Serializable
 {
-
+    
     private static ProjectManager instance = null;
     private static List<Project> openProjects = new ArrayList<>();
     private final static String projectFileName = "projects.dat";
     private final static Stenographer steno = StenographerFactory.getStenographer(
             ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
-
+    
     private ProjectManager()
     {
     }
-
+    
     public static ProjectManager getInstance()
     {
         if (instance == null)
@@ -52,14 +52,14 @@ public class ProjectManager implements Savable, Serializable
                 instance = new ProjectManager();
             }
         }
-
+        
         return instance;
     }
-
+    
     private static ProjectManager loadState()
     {
         ProjectManager pm = null;
-
+        
         Path projectPath = Paths.get(ApplicationConfiguration.getProjectDirectory());
         if (!Files.exists(projectPath))
         {
@@ -72,9 +72,9 @@ public class ProjectManager implements Savable, Serializable
                 steno.error("Failed to create project directory");
             }
         }
-
+        
         Path projectDataFilePath = Paths.get(ApplicationConfiguration.getProjectDirectory() + projectFileName);
-
+        
         if (Files.exists(projectDataFilePath))
         {
             try
@@ -104,26 +104,37 @@ public class ProjectManager implements Savable, Serializable
                 steno.error("Failed to load project manager: " + ex);
             }
         }
-
+        
         return pm;
     }
-
+    
     public static Project loadProject(String projectPath)
     {
         String basePath = projectPath.substring(0, projectPath.lastIndexOf('.'));
         return Project.loadProject(basePath);
     }
-
+    
     @Override
     public boolean saveState()
     {
         boolean savedSuccessfully = false;
-
+        
         try
         {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
                     ApplicationConfiguration.getProjectDirectory() + projectFileName));
-            out.writeInt(openProjects.size());
+            
+            int numberOfProjectsWithModels = 0;
+            for (Project candidateProject : openProjects)
+            {
+                if (!candidateProject.getLoadedModels().isEmpty())
+                {
+                    numberOfProjectsWithModels++;
+                }
+            }
+            
+            out.writeInt(numberOfProjectsWithModels);
+            
             for (Project project : openProjects)
             {
                 if (project.getLoadedModels().size() > 0)
@@ -139,10 +150,10 @@ public class ProjectManager implements Savable, Serializable
         {
             steno.error("Couldn't write project manager state to file");
         }
-
+        
         return savedSuccessfully;
     }
-
+    
     public void projectOpened(Project project)
     {
         if (!openProjects.contains(project))
@@ -150,21 +161,21 @@ public class ProjectManager implements Savable, Serializable
             openProjects.add(project);
         }
     }
-
+    
     public void projectClosed(Project project)
     {
         openProjects.remove(project);
     }
-
+    
     public List<Project> getOpenProjects()
     {
         return openProjects;
     }
-
+    
     private Set<String> getAvailableProjectNames()
     {
         Set<String> availableProjectNames = new HashSet<>();
-
+        
         File projectDir = new File(ApplicationConfiguration.getProjectDirectory());
         File[] projectFiles = projectDir.listFiles(fileFilter);
         for (File file : projectFiles)
@@ -176,7 +187,7 @@ public class ProjectManager implements Savable, Serializable
         }
         return availableProjectNames;
     }
-
+    
     public Set<String> getOpenAndAvailableProjectNames()
     {
         Set<String> openAndAvailableProjectNames = new HashSet<>();
@@ -187,5 +198,5 @@ public class ProjectManager implements Savable, Serializable
         openAndAvailableProjectNames.addAll(getAvailableProjectNames());
         return openAndAvailableProjectNames;
     }
-
+    
 }
