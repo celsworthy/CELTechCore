@@ -21,6 +21,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point3D;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -133,7 +134,25 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         MeshCutter.setDebuggingNode(modelContainer);
         
         cutHeightValue -= modelContainer.getYAdjust();
-        Set<TriangleMesh> subMeshes = MeshCutter.cut((TriangleMesh) modelContainer.getMeshView().getMesh(), cutHeightValue);
+        
+        MeshCutter.BedToLocalConverter nullBedToLocalConverter = new MeshCutter.BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        Set<TriangleMesh> subMeshes = MeshCutter.cut((TriangleMesh) modelContainer.getMeshView().getMesh(),
+                                                     cutHeightValue, nullBedToLocalConverter);
         
         String modelName = modelContainer.getModelName();
 
