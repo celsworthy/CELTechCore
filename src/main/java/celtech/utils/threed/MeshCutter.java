@@ -157,6 +157,7 @@ public class MeshCutter
         int v12 = -1;
         int v20 = -1;
         
+        // get vertex index for intersections v01, v12, v20
         if (b0) {
             Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), mesh, cutHeight);
             if (vertex01.equals(getVertex(mesh, vertexIntersect0))) {
@@ -201,6 +202,9 @@ public class MeshCutter
         int c0 = -1;
         int c1 = -1;
         int c2 = -1;
+        int c3 = -1;
+        int c4 = -1;
+        int c5 = -1;
         if (numPointsBelowCut == 1)
         {
             if (h0)
@@ -231,7 +235,49 @@ public class MeshCutter
             vertices[4] = c2;
             childMesh.getFaces().addAll(vertices);
 
-        } 
+        } else {
+            if (h0 && h1)
+            {
+                c0 = v0;
+                c1 = v1;
+                c2 = v12;
+                c3 = v0;
+                c4 = v12;
+                c5 = v20;
+            }
+            if (h1 && h2)
+            {
+                c0 = v1;
+                c1 = v2;
+                c2 = v20;
+                c3 = v1;
+                c4 = v20;
+                c5 = v01;
+            }
+            if (h2 && h0)
+            {
+                c0 = v2;
+                c1 = v0;
+                c2 = v01;
+                c3 = v2;
+                c4 = v01;
+                c5 = v12;
+            }
+
+            assert(c0 != -1 && c1 != -1 && c2 != -1 && c3 != -1 && c4 != -1 && c5 != -1 );
+            assert(c0 != c1 && c1 != c2 && c2 != c0): c0 + " " + c1 + " " + c2;
+            assert(c3 != c4 && c4 != c5 && c5 != c3): c3 + " " + c4 + " " + c5;
+            
+            int[] vertices = new int[6];
+            vertices[0] = c0;
+            vertices[2] = c1;
+            vertices[4] = c2;
+            childMesh.getFaces().addAll(vertices);
+            vertices[0] = c3;
+            vertices[2] = c4;
+            vertices[4] = c5;
+            childMesh.getFaces().addAll(vertices);
+        }
 
     }
 
