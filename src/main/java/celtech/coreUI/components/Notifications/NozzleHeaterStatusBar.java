@@ -20,6 +20,8 @@ import javafx.fxml.Initializable;
 public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initializable
 {
 
+    private static final double EJECT_TEMPERATURE = 140.0;
+
     private NozzleHeater heater = null;
     private static final double showBarIfMoreThanXDegreesOut = 3;
 
@@ -95,7 +97,6 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 break;
 
             case NORMAL:
-            case FILAMENT_EJECT:
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
@@ -119,6 +120,28 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                     {
                         progressBar.setProgress(0);
                     }
+                    showHeaterBar = true;
+                }
+                break;
+            case FILAMENT_EJECT:
+                if (Math.abs(heater.nozzleTemperatureProperty().get() - EJECT_TEMPERATURE)
+                        > showBarIfMoreThanXDegreesOut)
+                {
+                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+
+                    largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
+                    largeTargetValue.textProperty().set(String.format("%.0f", EJECT_TEMPERATURE)
+                            + Lookup.i18n("misc.degreesC"));
+                    currentValue.textProperty().set(heater.nozzleTemperatureProperty().asString("%d").get()
+                            .concat(Lookup.i18n("misc.degreesC")));
+
+                    double normalisedProgress = 0;
+                    normalisedProgress = heater.nozzleTemperatureProperty().doubleValue() / EJECT_TEMPERATURE;
+                    normalisedProgress = Math.max(0, normalisedProgress);
+                    normalisedProgress = Math.min(1, normalisedProgress);
+
+                    progressBar.setProgress(normalisedProgress);
+
                     showHeaterBar = true;
                 }
                 break;

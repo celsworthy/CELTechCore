@@ -1043,7 +1043,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                );
+                        .and(printer.headPowerOffFlagProperty().not()));
             } else // this printer has two extruders
             {
                 if (project.allModelsOnSameExtruder())

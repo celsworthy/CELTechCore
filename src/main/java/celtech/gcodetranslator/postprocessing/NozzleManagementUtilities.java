@@ -11,6 +11,7 @@ import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
@@ -90,6 +91,9 @@ public class NozzleManagementUtilities
         } else if (foundNode instanceof SupportInterfaceSectionNode)
         {
             nozzleProxy = nozzleProxies.get(slicerParametersFile.getSupportInterfaceNozzle());
+        } else if (foundNode instanceof SkinSectionNode)
+        {
+            nozzleProxy = nozzleProxies.get(slicerParametersFile.getFillNozzle());
         } else
         {
             nozzleProxy = nozzleProxies.get(slicerParametersFile.getFillNozzle());

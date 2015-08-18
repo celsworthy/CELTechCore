@@ -123,10 +123,17 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                     } else
                     {
                         // We need to connect!
+                        if(keepRunning)
+                        {
                         steno.info("Adding new printer on " + port);
 
                         Printer newPrinter = makeHardwarePrinter(port);
                         pendingPrinters.put(port, newPrinter);
+                        }
+                        else
+                        {
+                            steno.info("Aborted add of printer as we are shutting down");
+                        }
                     }
                 }
             }

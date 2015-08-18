@@ -158,11 +158,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         ProjectManager pm = ProjectManager.getInstance();
         List<Project> preloadedProjects = pm.getOpenProjects();
 
-        for (Project project : preloadedProjects)
+        for (int projectNumber = preloadedProjects.size() - 1; projectNumber >= 0; projectNumber--)
         {
+            Project project = preloadedProjects.get(projectNumber);
             ProjectTab newProjectTab = new ProjectTab(project, tabDisplay.widthProperty(),
                     tabDisplay.heightProperty());
-            tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+            tabDisplay.getTabs().add(1, newProjectTab);
         }
 
         if (Lookup.getUserPreferences().isFirstUse())

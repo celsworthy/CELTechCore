@@ -3040,11 +3040,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             case D_FILAMENT_SLIP:
                 boolean showStandardError = false;
 
-                switch (printerStatus.get())
+                if (pauseStatus.get() == PauseStatus.PAUSED)
                 {
-                    case PRINTING_PROJECT:
-                        if (pauseStatus.get() == PauseStatus.NOT_PAUSED)
-                        {
+                    switch (error)
+                    {
+                        case E_FILAMENT_SLIP:
+                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                    FirmwareError.PSEUDO_E_FILAMENT_SLIP_WHILST_PAUSED,
+                                    this);
+                            break;
+
+                        case D_FILAMENT_SLIP:
+                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                    FirmwareError.PSEUDO_D_FILAMENT_SLIP_WHILST_PAUSED,
+                                    this);
+                            break;
+                    }
+                } else
+                {
+                    switch (printerStatus.get())
+                    {
+                        case PRINTING_PROJECT:
                             boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
                             if (limitOnSlipActionsReached)
                             {
@@ -3057,21 +3073,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 }
                                 showStandardError = true;
                             }
-                        } else
-                        {
+                            break;
+                        case IDLE:
                             showStandardError = true;
-                        }
-                        break;
-                    case IDLE:
-                        showStandardError = true;
-                        break;
-                }
+                            break;
+                    }
 
-                if (showStandardError)
-                {
-                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                            error,
-                            this);
+                    if (showStandardError)
+                    {
+                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                error,
+                                this);
+                    }
                 }
                 break;
 
