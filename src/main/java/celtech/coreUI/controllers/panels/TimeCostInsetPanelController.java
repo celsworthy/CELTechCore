@@ -42,7 +42,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        TimeCostInsetPanelController.class.getName());
+            TimeCostInsetPanelController.class.getName());
 
     @FXML
     private HBox timeCostInsetRoot;
@@ -114,11 +114,11 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             });
 
             Lookup.getSelectedPrinterProperty().addListener(
-                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    currentPrinter = newValue;
-                    updateHeadType(newValue);
-                }
+                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                    {
+                        currentPrinter = newValue;
+                        updateHeadType(newValue);
+                    }
             );
 
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
@@ -129,24 +129,24 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 //                    whenProjectChanged(newValue);
 //                });
             ApplicationStatus.getInstance()
-                .modeProperty().addListener(
-                    (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-                    {
-                        if (newValue == ApplicationMode.SETTINGS)
-                        {
-                            timeCostInsetRoot.setVisible(true);
-                            if (Lookup.getSelectedProjectProperty().get() == currentProject)
+                    .modeProperty().addListener(
+                            (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
                             {
-                                updateFields(currentProject);
-                            }
-                        } else
-                        {
-                            timeCostInsetRoot.setVisible(false);
-                            timeCostThreadManager.cancelRunningTimeCostTasks();
-                        }
+                                if (newValue == ApplicationMode.SETTINGS)
+                                {
+                                    timeCostInsetRoot.setVisible(true);
+                                    if (Lookup.getSelectedProjectProperty().get() == currentProject)
+                                    {
+                                        updateFields(currentProject);
+                                    }
+                                } else
+                                {
+                                    timeCostInsetRoot.setVisible(false);
+                                    timeCostThreadManager.cancelRunningTimeCostTasks();
+                                }
 
-                    }
-                );
+                            }
+                    );
 
 //            if (Lookup.getSelectedProjectProperty().get() != null)
 //            {
@@ -190,10 +190,10 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         rbCustom.setUserData(PrintQualityEnumeration.CUSTOM);
         rbDraft.setSelected(true);
         qualityToggleGroup.selectedToggleProperty().addListener(
-            (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
-            {
-                printerSettings.setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
-            });
+                (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
+                {
+                    printerSettings.setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
+                });
     }
 
     private void unbindProject(Project project)
@@ -277,7 +277,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         try
         {
             String filePath = ApplicationConfiguration.getApplicationStorageDirectory()
-                + ApplicationConfiguration.timeAndCostFileSubpath;
+                    + ApplicationConfiguration.timeAndCostFileSubpath;
             File folder = new File(filePath);
             for (final File fileEntry : folder.listFiles())
             {
@@ -297,8 +297,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     }
 
     /**
-     * Update the time, cost and weight fields. Long running calculations must be performed in a
-     * background thread. Run draft, normal and fine sequentially to avoid flooding the CPU(s).
+     * Update the time, cost and weight fields. Long running calculations must
+     * be performed in a background thread. Run draft, normal and fine
+     * sequentially to avoid flooding the CPU(s).
      */
     private void updateFields(Project project)
     {
@@ -322,74 +323,76 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         lblCustomCost.setText("...");
 
         Cancellable cancellable = new SimpleCancellable();
-        Runnable runUpdateFields = () ->
+        if (currentProject != null
+                && !currentProject.getTopLevelModels().isEmpty())
         {
-
-            try
+            Runnable runUpdateFields = () ->
             {
-                Thread.sleep(500);
-            } catch (InterruptedException ex)
-            {
-                return;
-            }
-            if (cancellable.cancelled().get())
-            {
-                return;
-            }
-
-            if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
-                && !currentProject.getPrinterSettings().getSettingsName().equals(""))
-            {
-                SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
-                    currentHeadType);
-                updateFieldsForProfile(project, customSettings, lblCustomTime,
-                                       lblCustomWeight,
-                                       lblCustomCost, cancellable);
+                try
+                {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex)
+                {
+                    return;
+                }
                 if (cancellable.cancelled().get())
                 {
                     return;
                 }
-            }
-            SlicerParametersFile settings = SlicerParametersContainer.getSettings(
-                ApplicationConfiguration.draftSettingsProfileName,
-                currentHeadType);
-            updateFieldsForProfile(project, settings, lblDraftTime,
-                                   lblDraftWeight,
-                                   lblDraftCost, cancellable);
-            if (cancellable.cancelled().get())
-            {
-                return;
-            }
-            settings = SlicerParametersContainer.getSettings(
-                ApplicationConfiguration.normalSettingsProfileName,
-                currentHeadType);
-            updateFieldsForProfile(project, settings, lblNormalTime,
-                                   lblNormalWeight,
-                                   lblNormalCost, cancellable);
-            if (cancellable.cancelled().get())
-            {
-                return;
-            }
-            settings = SlicerParametersContainer.getSettings(
-                ApplicationConfiguration.fineSettingsProfileName,
-                currentHeadType);
-            updateFieldsForProfile(project, settings, lblFineTime,
-                                   lblFineWeight,
-                                   lblFineCost, cancellable);
-        };
 
-        clearPrintJobDirectories();
+                if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
+                        && !currentProject.getPrinterSettings().getSettingsName().equals(""))
+                {
+                    SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
+                            currentHeadType);
+                    updateFieldsForProfile(project, customSettings, lblCustomTime,
+                            lblCustomWeight,
+                            lblCustomCost, cancellable);
+                    if (cancellable.cancelled().get())
+                    {
+                        return;
+                    }
+                }
+                SlicerParametersFile settings = SlicerParametersContainer.getSettings(
+                        ApplicationConfiguration.draftSettingsProfileName,
+                        currentHeadType);
+                updateFieldsForProfile(project, settings, lblDraftTime,
+                        lblDraftWeight,
+                        lblDraftCost, cancellable);
+                if (cancellable.cancelled().get())
+                {
+                    return;
+                }
+                settings = SlicerParametersContainer.getSettings(
+                        ApplicationConfiguration.normalSettingsProfileName,
+                        currentHeadType);
+                updateFieldsForProfile(project, settings, lblNormalTime,
+                        lblNormalWeight,
+                        lblNormalCost, cancellable);
+                if (cancellable.cancelled().get())
+                {
+                    return;
+                }
+                settings = SlicerParametersContainer.getSettings(
+                        ApplicationConfiguration.fineSettingsProfileName,
+                        currentHeadType);
+                updateFieldsForProfile(project, settings, lblFineTime,
+                        lblFineWeight,
+                        lblFineCost, cancellable);
+            };
 
-        timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
+            clearPrintJobDirectories();
 
+            timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
+        }
     }
 
     /**
-     * Update the time, cost and weight fields for the given profile and fields. Long running
-     * calculations must be performed in a background thread.
+     * Update the time, cost and weight fields for the given profile and fields.
+     * Long running calculations must be performed in a background thread.
      */
     private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
-        Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
+            Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         String working = Lookup.i18n("timeCost.working");
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -400,8 +403,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         });
 
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
-                                                                lblTime, lblWeight,
-                                                                lblCost, cancellable);
+                lblTime, lblWeight,
+                lblCost, cancellable);
         try
         {
             updateDetails.runSlicerAndPostProcessor();

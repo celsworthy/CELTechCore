@@ -129,6 +129,8 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         String macSlicerCommand = "";
         String linuxSlicerCommand = "";
         String configLoadCommand = "";
+        //The next variable is only required for Slic3r
+        String printCenterCommand = "";
         String combinedConfigSection = "";
         String verboseOutputCommand = "";
         String progressOutputCommand = "";
@@ -140,13 +142,9 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
                 macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
                 linuxSlicerCommand = "Slic3r/bin/slic3r";
-                Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
-                configLoadCommand += "--print-center "
-                        + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
-                        + ","
-                        + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
-                configLoadCommand += " --load";
+                configLoadCommand = "--load";
                 combinedConfigSection = configLoadCommand + " " + configFile;
+                printCenterCommand = "--print-center";
                 break;
             case Cura:
                 windowsSlicerCommand = "\"" + ApplicationConfiguration.
@@ -205,6 +203,17 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                         + combinedConfigSection
                         + " -o "
                         + tempGcodeFilename;
+
+                if (!printCenterCommand.equals(""))
+                {
+                    windowsPrintCommand += " " + printCenterCommand;
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
+                    windowsPrintCommand += " "
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
+                }
+
                 for (String fileName : createdMeshFiles)
                 {
                     windowsPrintCommand += " \"";
@@ -229,6 +238,14 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
+                if (!printCenterCommand.equals(""))
+                {
+                    commands.add(printCenterCommand);
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
+                    commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
+                }
                 for (String fileName : createdMeshFiles)
                 {
                     commands.add(fileName);
@@ -250,6 +267,14 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
+                if (!printCenterCommand.equals(""))
+                {
+                    commands.add(printCenterCommand);
+                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
+                    commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
+                }
                 for (String fileName : createdMeshFiles)
                 {
                     commands.add(fileName);
