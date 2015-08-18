@@ -23,7 +23,7 @@ public class MeshCutterTest
     {
     }
 
-//    @Test
+    @Test
     public void testCutCubeReturnsTwoMeshes() throws STLFileParsingException
     {
         

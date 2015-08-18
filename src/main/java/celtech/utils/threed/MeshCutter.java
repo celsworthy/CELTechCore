@@ -104,7 +104,7 @@ public class MeshCutter
             addLowerFacesAroundCut(mesh, childMesh, loopOfFaces, loopOfVertices, cutHeight);
         }
 
-        showFace(mesh, 0);
+//        showFace(mesh, 0);
 
         return childMesh;
     }
@@ -130,6 +130,13 @@ public class MeshCutter
         }
         setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
     }
+    
+    private static Vertex getVertex(TriangleMesh mesh, int vertexIndex) {
+        double x = mesh.getPoints().get(vertexIndex * 3);
+        double y = mesh.getPoints().get(vertexIndex * 3 + 1);
+        double z = mesh.getPoints().get(vertexIndex * 3 + 2);
+        return new Vertex(x, y, z);
+    }
 
     /**
      * Cut the face using the given vertexes, and add the lower face to the child mesh.
@@ -144,6 +151,41 @@ public class MeshCutter
         boolean b0 = lineIntersectsPlane(mesh, v0, v1, cutHeight);
         boolean b1 = lineIntersectsPlane(mesh, v1, v2, cutHeight);
         boolean b2 = lineIntersectsPlane(mesh, v0, v2, cutHeight);
+        
+        // indices of intersecting vertices between v0->v1 etc
+        int v01 = -1;
+        int v12 = -1;
+        int v20 = -1;
+        
+        if (b0) {
+            Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), mesh, cutHeight);
+            if (vertex01.equals(getVertex(mesh, vertexIntersect0))) {
+                v01 = vertexIntersect0;
+            } else {
+                assert(vertex01.equals(getVertex(mesh, vertexIntersect1)));
+                v01 = vertexIntersect1;
+            }
+        }
+        
+        if (b1) {
+            Vertex vertex12 = getIntersectingVertex(new Edge(v1, v2), mesh, cutHeight);
+            if (vertex12.equals(getVertex(mesh, vertexIntersect0))) {
+                v12 = vertexIntersect0;
+            } else {
+                assert(vertex12.equals(getVertex(mesh, vertexIntersect1)));
+                v12 = vertexIntersect1;
+            }
+        }        
+
+        if (b2) {
+            Vertex vertex20 = getIntersectingVertex(new Edge(v2, v0), mesh, cutHeight);
+            if (vertex20.equals(getVertex(mesh, vertexIntersect0))) {
+                v20 = vertexIntersect0;
+            } else {
+                assert(vertex20.equals(getVertex(mesh, vertexIntersect1)));
+                v20 = vertexIntersect1;
+            }
+        }    
 
         // are points below line?
         boolean h0 = mesh.getPoints().get(v0 * 3 + 1) > cutHeight;
@@ -164,26 +206,32 @@ public class MeshCutter
             if (h0)
             {
                 c0 = v0;
+                c1 = v01;
+                c2 = v20;
             }
             if (h1)
             {
                 c0 = v1;
+                c1 = v12;
+                c2 = v01;
             }
             if (h2)
             {
                 c0 = v2;
+                c1 = v20;
+                c2 = v12;
             }
-            c1 = vertexIntersect0;
-            c2 = vertexIntersect1;
 
+            assert(c0 != -1 && c1 != -1 && c2 != -1);
+            assert(c0 != c1 && c1 != c2 && c2 != c0): c0 + " " + c1 + " " + c2;
+            
             int[] vertices = new int[6];
             vertices[0] = c0;
             vertices[2] = c1;
             vertices[4] = c2;
             childMesh.getFaces().addAll(vertices);
 
-//            System.out.println("corner vertices are " + c0 + " " + c1 + " " + c2);
-        }
+        } 
 
     }
 
@@ -301,6 +349,13 @@ public class MeshCutter
      */
     private static Integer makeIntersectingVertex(TriangleMesh mesh, Edge edge, double cutHeight)
     {
+        Vertex vertex = getIntersectingVertex(edge, mesh, cutHeight);
+        mesh.getPoints().addAll((float) vertex.x, (float) vertex.y, (float) vertex.z);
+        return mesh.getPoints().size() / 3 - 1;
+    }
+
+    private static Vertex getIntersectingVertex(Edge edge, TriangleMesh mesh, double cutHeight)
+    {
         int v0 = edge.v0;
         int v1 = edge.v1;
         double v0X = mesh.getPoints().get(v0 * 3);
@@ -319,8 +374,8 @@ public class MeshCutter
         }
         double interX = v0X + (v1X - v0X) * proportionAlongEdge;
         double interZ = v0Z + (v1Z - v0Z) * proportionAlongEdge;
-        mesh.getPoints().addAll((float) interX, (float) cutHeight, (float) interZ);
-        return mesh.getPoints().size() / 3 - 1;
+        Vertex vertex = new Vertex(interX, cutHeight, interZ);
+        return vertex;
     }
 
     /**
@@ -851,9 +906,9 @@ final class Vertex
             + z + '}';
     }
 
-    static boolean equalto8places(double a, double b)
+    static boolean equalto6places(double a, double b)
     {
-        return Math.round(a * 10e8) == Math.round(b * 10e8);
+        return Math.round(a * 10e6) == Math.round(b * 10e6);
     }
 
     @Override
@@ -869,15 +924,15 @@ final class Vertex
         }
 
         Vertex other = (Vertex) obj;
-        if (!equalto8places(other.x, x))
+        if (!equalto6places(other.x, x))
         {
             return false;
         }
-        if (!equalto8places(other.y, y))
+        if (!equalto6places(other.y, y))
         {
             return false;
         }
-        if (!equalto8places(other.z, z))
+        if (!equalto6places(other.z, z))
         {
             return false;
         }
@@ -887,11 +942,9 @@ final class Vertex
     @Override
     public int hashCode()
     {
-        return (int) (Math.round(x * 10e8) + Math.round(y * 10e8) + Math.round(z * 10e8));
+        return (int) (Math.round(x * 10e6) + Math.round(y * 10e6) + Math.round(z * 10e6));
     }
 }
-
-
 
 
 class LoopSet
