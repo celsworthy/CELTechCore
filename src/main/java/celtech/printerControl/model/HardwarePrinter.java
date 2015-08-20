@@ -516,34 +516,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     protected boolean doRemoveHeadActivity(Cancellable cancellable)
     {
         boolean success = false;
-
+        
         try
         {
-            for (int extruderIndex = 0; extruderIndex < extruders.size(); extruderIndex++)
-            {
-                if (extruders.get(extruderIndex).canEject.get())
-                {
-                    ejectFilament(extruderIndex, null);
-                }
-            }
-
-            PrinterUtils.waitOnBusy(this, cancellable);
-
-            setPrinterStatus(PrinterStatus.REMOVING_HEAD);
-
-            transmitDirectGCode(GCodeConstants.carriageAbsoluteMoveMode, false);
-            transmitDirectGCode("G28 X Y Z", false);
-            goToXYZPosition(120, 100, 20);
-            transmitDirectGCode("G37 S", false);
-            PrinterUtils.waitOnBusy(this, cancellable);
-
+            printEngine.runMacroPrintJob(Macro.REMOVE_HEAD);
+            PrinterUtils.waitOnMacroFinished(this, cancellable);
             success = true;
-        } catch (PrinterException ex)
+        } catch (MacroPrintException ex)
         {
-            steno.error("Printer exception whilst executing remove head " + ex.getMessage());
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("Comms exception whilst executing remove head");
+            steno.error("Failed to run remove head macro: " + ex.getMessage());
         }
 
         return success;

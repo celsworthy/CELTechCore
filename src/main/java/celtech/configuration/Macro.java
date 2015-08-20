@@ -10,6 +10,7 @@ import java.util.Optional;
 public enum Macro
 {
     //NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
+//NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
 
     CANCEL_PRINT("abort_print", "printerStatus.macro.cancelling", "M1"),
     HOME_ALL("Home_all", "printerStatus.macro.homing", "M2"),
@@ -24,6 +25,7 @@ public enum Macro
     CLEAN_NOZZLE_0("T0_nozzle_clean", "printerStatus.macro.cleanNozzle0", "M11"),
     CLEAN_NOZZLE_1("T1_nozzle_clean", "printerStatus.macro.cleanNozzle1", "M12"),
     SPEED_TEST("speed_test", "printerStatus.macro.speedTest", "M13"),
+    REMOVE_HEAD("Remove_Head", "printerStatus.macro.removeHead", "M14"),
     // Commissionator macros
     COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
     COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),
