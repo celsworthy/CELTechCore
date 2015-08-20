@@ -310,17 +310,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canInitiateNewState.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
         canCancel.bind(
-                (printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
-                .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT).not()))
-                .or(
-                        pauseStatus.isEqualTo(PauseStatus.PAUSED)
-                        .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING))
-                        .or(printEngine.postProcessorService.runningProperty())
-                        .or(printEngine.slicerService.runningProperty())
-                        .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
-                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
-                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
-                        .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))));
+                (pauseStatus.isEqualTo(PauseStatus.PAUSED)
+                .or(printEngine.postProcessorService.runningProperty())
+                .or(printEngine.slicerService.runningProperty())
+                .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT))
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT))
+                .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING)))
+                .and((printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
+                        .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT))).not()));
 
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(pauseStatus.isEqualTo(PauseStatus.PAUSED))
