@@ -944,14 +944,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                 }
                             } else
                             {
-                                try
-                                {
-                                    int nozzleCloseStartIndex = insertTravelAndClosePath(
-                                        firstUsableExtrusionEventIndex, finalExtrusionEventIndex,
-                                        "Move to start of wipe - partial open", false,
-                                        true,
-                                        lastInwardMoveEvent, currentNozzle.getNozzleParameters().
-                                        getEjectionVolume());
+                                    int nozzleCloseStartIndex = firstUsableExtrusionEventIndex;
 
                                     eventIndices.
                                         put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
@@ -960,11 +953,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                         get(finalExtrusionEventIndex));
                                     nozzleCloseOverVolume = totalExtrusionForPath
                                         - (finalExtrusionEvent.getE() + finalExtrusionEvent.getD());
-                                } catch (CannotCloseOnInnerPerimeterException ex)
-                                {
-                                    steno.error("Failed to close in partial open for non-fill");
-                                }
-
                             }
                         } else
                         {
@@ -1118,7 +1106,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                     }
                                 }
 
-                                int nozzleCloseStartIndex = firstUsableExtrusionEventIndex;
+                                int nozzleCloseStartIndex = firstExtrusionEventIndex;
                                 eventIndices.
                                     put(EventType.NOZZLE_CLOSE_START, nozzleCloseStartIndex);
                                 extrusionBuffer.get(nozzleCloseStartIndex).setComment(
@@ -1485,7 +1473,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                         getMidPointPercent()
                                         / 100.0))));
                                 }
-                                if (compareDouble(currentNozzlePosition, 0, 0.07)
+                                if (compareDouble(currentNozzlePosition, 0.07, 0.001)
                                     == MathUtils.LESS_THAN
                                     || currentNozzlePosition < 0)
                                 {
@@ -2176,7 +2164,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     {
         boolean success = false;
 
-        int eventSearchIndex = extrusionBuffer.size() - 1;
+        int startingIndex = extrusionBuffer.size() - 1;
+        int eventSearchIndex = startingIndex;
         while (eventSearchIndex >= 0)
         {
             if (extrusionBuffer.get(eventSearchIndex) instanceof NozzleOpenFullyEvent)
@@ -2195,12 +2184,13 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 success = true;
                 break;
             }
-            else if (extrusionBuffer.get(eventSearchIndex) instanceof LayerChangeEvent)
-            {
-                //We didn't have a close at the start of our layer - don't go any further and don't bother trying to change the open
-                steno.info("No open in this layer - decided not to partial open");
-                break;
-            }
+//            else if (extrusionBuffer.get(eventSearchIndex) instanceof LayerChangeEvent
+//                    && eventSearchIndex != startingIndex)
+//            {
+//                //We didn't have a close at the start of our layer - don't go any further and don't bother trying to change the open
+//                steno.info("No open in this layer - decided not to partial open");
+//                break;
+//            }
 
             eventSearchIndex--;
         }
