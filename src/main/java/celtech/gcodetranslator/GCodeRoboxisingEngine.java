@@ -122,8 +122,8 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
                 steno.debug("Total XY movement distance " + totalXYMovement + " mm");
                 
                 //Run the gcode validator
-                GCodeValidator validator = new GCodeValidator(outputFilename);
-                validator.validate();
+//                GCodeValidator validator = new GCodeValidator(outputFilename);
+//                validator.validate();
 
                 success = true;
             } catch (IOException ex)
