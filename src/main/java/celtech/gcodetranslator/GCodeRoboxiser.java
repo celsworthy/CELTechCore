@@ -836,6 +836,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                     finalExtrusionEventIndex,
                                     "Move to start of wipe", false,
                                     false,
+                                    true,
                                     lastInwardMoveEvent,
                                     currentNozzle.
                                     getNozzleParameters().
@@ -990,7 +991,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                             {
                                 nozzleCloseStartIndex = insertTravelAndClosePath(
                                         firstUsableExtrusionEventIndex, finalExtrusionEventIndex,
-                                        "Move to start of wipe - full open", false, true,
+                                        "Move to start of wipe - full open", false, true, true,
                                         lastInwardMoveEvent, currentNozzle.getNozzleParameters().
                                         getEjectionVolume());
                             } catch (CannotCloseOnInnerPerimeterException ex)
@@ -1127,7 +1128,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                     {
                                         int nozzleCloseStartIndex = insertTravelAndClosePath(
                                                 firstExtrusionEventIndex, finalExtrusionEventIndex,
-                                                "Short path on fill - forced reverse", true,
+                                                "Short path on fill - forced reverse", false,
+                                                true,
                                                 true,
                                                 lastInwardMoveEvent, currentNozzle.getNozzleParameters().
                                                 getEjectionVolume());
@@ -1722,6 +1724,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     protected int insertTravelAndClosePath(final int firstExtrusionEventIndex,
             final int finalExtrusionEventIndex, final String originalComment, boolean forceReverse,
             final boolean reverseAllowed,
+            final boolean allowedToLookForNearestPoint,
             TravelEvent lastInwardsMoveEvent,
             double targetVolume) throws PostProcessingError, CannotCloseOnInnerPerimeterException
     {
@@ -1742,7 +1745,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         int closestEventIndex = -1;
 
-        boolean finalExtrusionWasPerimeter = false;
+//        boolean finalExtrusionWasPerimeter = false;
 
         int indexToCopyFrom = -1;
         int minimumIndexToCopyFrom = firstExtrusionEventIndex;
@@ -1758,11 +1761,12 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             lastLayerChangeIndex = 0;
         }
 
-        if (reverseWipePath
-                == false && extrusionBuffer.getPreviousExtrusionEventIndex(
-                        modifiedFinalExtrusionEventIndex)
-                >= 0)
+        if (reverseWipePath == false
+                && extrusionBuffer.getPreviousExtrusionEventIndex(modifiedFinalExtrusionEventIndex) >= 0
+                && allowedToLookForNearestPoint)
         {
+            boolean okToPerformSearch = true;
+            
             if (finalExtrusionEvent.getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
             {
                 // We have to make sure we only close on the inner perimeters (if we can!)
@@ -1775,21 +1779,16 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 {
                     // We couldn't find an inner perimeter - revert to reverse
                     steno.info("No inner perimeter found - reversing - on layer " + layer);
-                    finalExtrusionWasPerimeter = false;
+                    okToPerformSearch = false;
                 } else
                 {
                     modifiedFinalExtrusionEventIndex = endOfInnerPerimeter;
                     finalExtrusionEvent = (ExtrusionEvent) extrusionBuffer.get(
                             modifiedFinalExtrusionEventIndex);
-                    finalExtrusionWasPerimeter = true;
                 }
-            } else if (finalExtrusionEvent.getExtrusionTask() == ExtrusionTask.Perimeter)
-            {
-                // We're OK to use the start/end values we were passed
-                finalExtrusionWasPerimeter = true;
             }
 
-            if (finalExtrusionWasPerimeter)
+            if (okToPerformSearch)
             {
                 Segment orthogonalSegment = null;
                 Vector2D orthogonalSegmentMidpoint = null;
@@ -1914,7 +1913,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         steno.warning(
                                 "Couldn't find inner perimeter for close - defaulting to reverse. Got up to line "
                                 + extrusionBuffer.get(extrusionBuffer.size() - 1).getLinesSoFar());
-                        finalExtrusionWasPerimeter = false;
                     } else
                     {
                         steno.warning(
@@ -1937,10 +1935,11 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         int modifiedFirstExtrusionIndex = Math.max(lastLayerChangeIndex, firstExtrusionEventIndex);
 
         // If we're dealing with a perimeter then determine whether we need to go forward or backwards
-        if (finalExtrusionWasPerimeter)
+//        if (finalExtrusionWasPerimeter)
+//        {
+        
+        if (closestEventIndex >= 0)
         {
-            MovementEvent closestEvent = null;
-
             boolean forwardsSearch = true;
 
             double forwardsVolume = 0;
@@ -1991,21 +1990,21 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             reverseWipePath = false;
 
             // Add a travel to the closest point
-            MovementEvent closestEvent = null;
+            MovementEvent closestEventReverse = null;
 
             int previousMovement = extrusionBuffer.getPreviousMovementEventIndex(closestEventIndex);
             if (previousMovement > 0)
             {
-                closestEvent = (MovementEvent) extrusionBuffer.get(previousMovement);
+                closestEventReverse = (MovementEvent) extrusionBuffer.get(previousMovement);
 
             } else
             {
-                closestEvent = (MovementEvent) extrusionBuffer.get(closestEventIndex);
+                closestEventReverse = (MovementEvent) extrusionBuffer.get(closestEventIndex);
             }
 
             TravelEvent travelToClosestPoint = new TravelEvent();
-            travelToClosestPoint.setX(closestEvent.getX());
-            travelToClosestPoint.setY(closestEvent.getY());
+            travelToClosestPoint.setX(closestEventReverse.getX());
+            travelToClosestPoint.setY(closestEventReverse.getY());
             travelToClosestPoint.setComment(originalComment);
             travelToClosestPoint.setFeedRate(wipeFeedRate_mmPerMin);
 
@@ -2019,10 +2018,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 // We need to travel to the start of the close 
                 // Add a travel to the closest point
                 TravelEvent travelToClosestPoint = new TravelEvent();
-                ExtrusionEvent closestEvent = (ExtrusionEvent) extrusionBuffer.get(
+                ExtrusionEvent closestEventForward = (ExtrusionEvent) extrusionBuffer.get(
                         modifiedFinalExtrusionEventIndex);
-                travelToClosestPoint.setX(closestEvent.getX());
-                travelToClosestPoint.setY(closestEvent.getY());
+                travelToClosestPoint.setX(closestEventForward.getX());
+                travelToClosestPoint.setY(closestEventForward.getY());
                 travelToClosestPoint.setComment("Travelling to start of close");
                 travelToClosestPoint.setFeedRate(wipeFeedRate_mmPerMin);
 
@@ -2177,8 +2176,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     } else
                     {
                         dontIncrementEventIndex = true;
-                        steno.info("Elided event of type " + event.getClass().getName()
-                                + " during close");
+//                        steno.info("Elided event of type " + event.getClass().getName()
+//                                + " during close");
                     }
                 }
 
