@@ -128,7 +128,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {            
-            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, null, 0.5);
+            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, true, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);
@@ -362,7 +362,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 33, "nothing", false, false, null, 0.5);
+            gCodeRoboxiser.insertTravelAndClosePath(2, 33, "nothing", false, false, true, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(34);
@@ -511,7 +511,7 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, null, 0.5);
+            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, true, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);

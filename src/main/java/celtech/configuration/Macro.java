@@ -10,6 +10,7 @@ import java.util.Optional;
 public enum Macro
 {
     //NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
+//NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
 
     CANCEL_PRINT("abort_print", "printerStatus.macro.cancelling", "M1"),
     HOME_ALL("Home_all", "printerStatus.macro.homing", "M2"),
@@ -20,14 +21,18 @@ public enum Macro
     TEST_Y("y_test", "printerStatus.macro.testY", "M8"),
     TEST_Z("z_test", "printerStatus.macro.testZ", "M9"),
     LEVEL_Y("level_Y", "printerStatus.macro.levellingY", "M10"),
-    PURGE_MATERIAL_SINGLE("PurgeMaterialSingle", "printerStatus.purging", "M11"),
-    PURGE_MATERIAL_DUAL_0("PurgeMaterialDual0", "printerStatus.purging", "M12"),
-    PURGE_MATERIAL_DUAL_1("PurgeMaterialDual1", "printerStatus.purging", "M13"),
-    PURGE_MATERIAL_DUAL_BOTH("PurgeMaterialDualBoth", "printerStatus.purging", "M14"),
-    CLEAN_NOZZLE_0("T0_nozzle_clean", "printerStatus.macro.cleanNozzle0", "M15"),
-    CLEAN_NOZZLE_1("T1_nozzle_clean", "printerStatus.macro.cleanNozzle1", "M16"),
+    CLEAN_NOZZLE_0("T0_nozzle_clean", "printerStatus.macro.cleanNozzle0", "M11"),
+    CLEAN_NOZZLE_1("T1_nozzle_clean", "printerStatus.macro.cleanNozzle1", "M12"),
+    
+    PURGE_MATERIAL_SINGLE("PurgeMaterialSingle", "printerStatus.purging", "M13"),
+    PURGE_MATERIAL_DUAL_0("PurgeMaterialDual0", "printerStatus.purging", "M14"),
+    PURGE_MATERIAL_DUAL_1("PurgeMaterialDual1", "printerStatus.purging", "M15"),
+    PURGE_MATERIAL_DUAL_BOTH("PurgeMaterialDualBoth", "printerStatus.purging", "M16"),
+    
     EJECT_STUCK_MATERIAL_E("eject_stuck_material_e", "printerStatus.macro.ejectStuckMaterial", "M18"),
     EJECT_STUCK_MATERIAL_D("eject_stuck_material_d", "printerStatus.macro.ejectStuckMaterial", "M19"),
+    
+    REMOVE_HEAD("Remove_Head", "printerStatus.macro.removeHead", "M20"),
     // Commissionator macros
     COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
     COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),
