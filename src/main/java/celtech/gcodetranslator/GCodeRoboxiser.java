@@ -2049,7 +2049,24 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 }
             }
         }
+        
+        int closeExtrusionFeedRate_mmPerMin = wipeFeedRate_mmPerMin;
 
+        //Find the last extrusion rate used in this buffer
+        for (int feedRateIndex = finalExtrusionEventIndex; feedRateIndex > 0; feedRateIndex --)
+        {
+            if (extrusionBuffer.get(feedRateIndex) instanceof ExtrusionEvent)
+            {
+                ExtrusionEvent eventToExamine = (ExtrusionEvent)extrusionBuffer.get(feedRateIndex);
+                if (eventToExamine.getFeedRate() > 0)
+                {
+                    closeExtrusionFeedRate_mmPerMin = (int)eventToExamine.getFeedRate();
+                    break;
+                }
+            }   
+        }
+        
+        
         startOfClose = insertedEventIndex;
 
         double cumulativeExtrusionVolume = 0;
@@ -2086,7 +2103,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         ExtrusionEvent eventToInsert = new ExtrusionEvent();
                         eventToInsert.setE(eventToCopy.getE() * segmentAlterationRatio);
                         eventToInsert.setD(eventToCopy.getD() * segmentAlterationRatio);
-                        eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
+                        eventToInsert.setFeedRate(closeExtrusionFeedRate_mmPerMin);
 
                         Vector2D fromPosition = null;
 
@@ -2135,7 +2152,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         eventToInsert.setComment(originalComment + ":" + wipeTypeComment
                                 + ((startMessageOutput == false) ? " - start -" : " - in progress -"));
                         startMessageOutput = true;
-                        eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
+                        eventToInsert.setFeedRate(closeExtrusionFeedRate_mmPerMin);
 
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                         cumulativeExtrusionVolume += eventToCopy.getE() + eventToCopy.getD();
@@ -2154,7 +2171,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         eventToInsert.setX(eventToCopy.getX());
                         eventToInsert.setY(eventToCopy.getY());
                         eventToInsert.setComment(eventToCopy.getComment());
-                        eventToInsert.setFeedRate(wipeFeedRate_mmPerMin);
+                        eventToInsert.setFeedRate(closeExtrusionFeedRate_mmPerMin);
 
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                     } else
