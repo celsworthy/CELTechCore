@@ -1746,7 +1746,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         int closestEventIndex = -1;
 
 //        boolean finalExtrusionWasPerimeter = false;
-
         int indexToCopyFrom = -1;
         int minimumIndexToCopyFrom = firstExtrusionEventIndex;
 
@@ -1766,7 +1765,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 && allowedToLookForNearestPoint)
         {
             boolean okToPerformSearch = true;
-            
+
             if (finalExtrusionEvent.getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
             {
                 // We have to make sure we only close on the inner perimeters (if we can!)
@@ -1937,7 +1936,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         // If we're dealing with a perimeter then determine whether we need to go forward or backwards
 //        if (finalExtrusionWasPerimeter)
 //        {
-        
         if (closestEventIndex >= 0)
         {
             boolean forwardsSearch = true;
@@ -2048,24 +2046,23 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 }
             }
         }
-        
+
         int closeExtrusionFeedRate_mmPerMin = wipeFeedRate_mmPerMin;
 
         //Find the last extrusion rate used in this buffer
-        for (int feedRateIndex = finalExtrusionEventIndex; feedRateIndex > 0; feedRateIndex --)
+        for (int feedRateIndex = finalExtrusionEventIndex; feedRateIndex > 0; feedRateIndex--)
         {
             if (extrusionBuffer.get(feedRateIndex) instanceof ExtrusionEvent)
             {
-                ExtrusionEvent eventToExamine = (ExtrusionEvent)extrusionBuffer.get(feedRateIndex);
+                ExtrusionEvent eventToExamine = (ExtrusionEvent) extrusionBuffer.get(feedRateIndex);
                 if (eventToExamine.getFeedRate() > 0)
                 {
-                    closeExtrusionFeedRate_mmPerMin = (int)eventToExamine.getFeedRate();
+                    closeExtrusionFeedRate_mmPerMin = (int) eventToExamine.getFeedRate();
                     break;
                 }
-            }   
+            }
         }
-        
-        
+
         startOfClose = insertedEventIndex;
 
         double cumulativeExtrusionVolume = 0;
@@ -2081,7 +2078,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
             while (cumulativeExtrusionVolume < targetVolume
                     && indexToCopyFrom <= modifiedFinalExtrusionEventIndex
-                    && indexToCopyFrom >= minimumIndexToCopyFrom + 1)
+                    && indexToCopyFrom >= minimumIndexToCopyFrom)
             {
                 boolean dontIncrementEventIndex = false;
 
@@ -2107,6 +2104,13 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         Vector2D fromPosition = null;
 
                         Vector2D fromReferencePosition = null;
+
+                        // Zero the extrusion for the events we've copied from
+                        eventToCopy.setE(0);
+                        eventToCopy.setD(0);
+                        String updatedComment = (eventToCopy.getComment() == null ? "" : eventToCopy.getComment())
+                                + " - Elided";
+                        eventToCopy.setComment(updatedComment);
 
                         if (reverseWipePath)
                         {
@@ -2156,6 +2160,13 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         extrusionBuffer.add(insertedEventIndex, eventToInsert);
                         cumulativeExtrusionVolume += eventToCopy.getE() + eventToCopy.getD();
                         lastMovement = eventToInsert;
+
+                        // Zero the extrusion for the events we've copied from
+                        eventToCopy.setE(0);
+                        eventToCopy.setD(0);
+                        String updatedComment = (eventToCopy.getComment() == null ? "" : eventToCopy.getComment())
+                                + " - Elided";
+                        eventToCopy.setComment(updatedComment);
                     }
                 } else
                 {
