@@ -23,14 +23,25 @@ public class MeshCutterTest
     {
     }
 
-//    @Test
+    @Test
     public void testCutCubeReturnsTwoMeshes() throws STLFileParsingException
     {
         
         URL stlURL = this.getClass().getResource("/simplecube.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
-        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -5);
+        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -7);
+        assertEquals(2, triangleMeshs.size());
+    }
+    
+        @Test
+    public void testCutCubeWithHoleReturnsTwoMeshes() throws STLFileParsingException
+    {
+        
+        URL stlURL = this.getClass().getResource("/cubewithhole.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -15);
         assertEquals(2, triangleMeshs.size());
     }
     
