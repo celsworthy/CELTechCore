@@ -109,7 +109,7 @@ public class MeshCutter
             allCutFaces.addAll(loopOfFaces);
         }
 
-        removeCutFacesAndFacesAboveCutFaces(childMesh, allCutFaces, cutHeight);
+        removeCutFacesAndFacesAboveCutFaces(childMesh, allCutFaces, cutHeight, bedToLocalConverter);
         for (int i = 0; i < loopsOfFaces.size(); i++)
         {
             List<Integer> loopOfFaces = loopsOfFaces.get(i);
