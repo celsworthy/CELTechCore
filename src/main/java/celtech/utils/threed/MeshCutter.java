@@ -723,7 +723,7 @@ public class MeshCutter
         return mesh;
     }
 
-    private static Polygon makePolygon(List<Integer> vertices, TriangleMesh mesh) throws RuntimeException
+    private static Polygon makePolygon(List<Integer> vertices, TriangleMesh mesh)
     {
         List<PolygonPoint> points = new ArrayList<>();
         for (Integer vertexIndex : vertices)
