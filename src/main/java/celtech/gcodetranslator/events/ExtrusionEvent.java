@@ -20,6 +20,7 @@ public class ExtrusionEvent extends MovementEvent
     private ExtrusionTask extrusionTask = null;
     private double e;
     private double d;
+    private boolean dontOutputExtrusion = false;
 
     /**
      *
@@ -75,6 +76,11 @@ public class ExtrusionEvent extends MovementEvent
         this.d = d;
     }
 
+    public void setDontOutputExtrusion(boolean value)
+    {
+        dontOutputExtrusion = value;
+    }
+
     /**
      *
      * @return
@@ -90,7 +96,12 @@ public class ExtrusionEvent extends MovementEvent
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        String stringToReturn = "G1 X" + threeDPformatter.format(getX()) + " Y" + threeDPformatter.format(getY()) + " E" + fiveDPformatter.format(e) + " D" + fiveDPformatter.format(d);
+        String stringToReturn = "G1 X" + threeDPformatter.format(getX()) + " Y" + threeDPformatter.format(getY());
+
+        if (!dontOutputExtrusion)
+        {
+            stringToReturn += " E" + fiveDPformatter.format(e) + " D" + fiveDPformatter.format(d);
+        }
 
         if (getFeedRate() > 0)
         {
@@ -98,7 +109,12 @@ public class ExtrusionEvent extends MovementEvent
         }
 
         stringToReturn += " ; ->L" + getLength() + " ->E" + getE() + " ->D" + getD();
-        
+
+        if (dontOutputExtrusion)
+        {
+            stringToReturn += " - extrusion suppressed";
+        }
+
         if (extrusionTask != null)
         {
             stringToReturn += "; " + extrusionTask.name();

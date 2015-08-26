@@ -127,17 +127,17 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {            
-            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, true, null, 0.5);
+            gCodeRoboxiser.closeOverPathElidingExcess(2, 16, "nothing", false, false, false, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);
-            assertEquals(travelToWipe.getX(), 24.25, 1e-12);
-            assertEquals(travelToWipe.getY(), 24.25, 1e-12);
+            assertEquals(0.45, travelToWipe.getX(), 1e-12);
+            assertEquals(24.55, travelToWipe.getY(), 1e-12);
 
             // Check that there is a single wipe extrusion event - we're only wiping 0.5mm3 so this only requires part of the line
             ExtrusionEvent wipeEvent = (ExtrusionEvent) gCodeRoboxiser.extrusionBuffer.get(18);
-            assertEquals(15.922, wipeEvent.getX(), 1e-3);
-            assertEquals(24.25, wipeEvent.getY(), 1e-12);
+            assertEquals(0.45, wipeEvent.getX(), 1e-3);
+            assertEquals(24.55, wipeEvent.getY(), 1e-12);
 
             // Check that the final event is the travel to the next part
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
@@ -360,17 +360,17 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 33, "nothing", false, false, true, null, 0.5);
+            gCodeRoboxiser.closeOverPathElidingExcess(2, 33, "nothing", false, false, false, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(34);
-            assertEquals(0.75, travelToWipe.getX(), 1e-12);
-            assertEquals(0.75, travelToWipe.getY(), 1e-12);
+            assertEquals(22.45, travelToWipe.getX(), 1e-12);
+            assertEquals(2.55, travelToWipe.getY(), 1e-12);
 
             // Check that there is a single wipe extrusion event - we're only wiping 0.5mm3 so this only requires part of the line
             ExtrusionEvent wipeEvent = (ExtrusionEvent) gCodeRoboxiser.extrusionBuffer.get(35);
-            assertEquals(9.077, wipeEvent.getX(), 1e-3);
-            assertEquals(0.75, wipeEvent.getY(), 1e-12);
+            assertEquals(22.45, wipeEvent.getX(), 1e-3);
+            assertEquals(2.55, wipeEvent.getY(), 1e-12);
 
             // Check that the final event is the travel to the next part
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
@@ -508,17 +508,17 @@ public class GCodeRoboxiserTest extends JavaFXConfiguredTest
 
         try
         {
-            gCodeRoboxiser.insertTravelAndClosePath(2, 16, "nothing", false, false, true, null, 0.5);
+            gCodeRoboxiser.closeOverPathElidingExcess(2, 16, "nothing", false, false, false, null, 0.5);
 
             // Check that there is a travel event to the next part
             TravelEvent travelToWipe = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(17);
-            assertEquals(95.595, travelToWipe.getX(), 1e-12);
-            assertEquals(64.539, travelToWipe.getY(), 1e-12);
+            assertEquals(119.395, travelToWipe.getX(), 1e-12);
+            assertEquals(64.239, travelToWipe.getY(), 1e-12);
 
             // Check that there is a single wipe extrusion event - we're only wiping 0.5mm3 so this only requires part of the line
             ExtrusionEvent wipeEvent = (ExtrusionEvent) gCodeRoboxiser.extrusionBuffer.get(18);
-            assertEquals(103.922, wipeEvent.getX(), 1e-3);
-            assertEquals(64.539, wipeEvent.getY(), 1e-12);
+            assertEquals(119.395, wipeEvent.getX(), 1e-3);
+            assertEquals(64.239, wipeEvent.getY(), 1e-12);
 
             // Check that the final event is the travel to the next part
             TravelEvent finalTravel = (TravelEvent) gCodeRoboxiser.extrusionBuffer.get(gCodeRoboxiser.extrusionBuffer.size() - 1);
