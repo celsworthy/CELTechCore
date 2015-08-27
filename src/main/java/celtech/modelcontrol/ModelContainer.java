@@ -351,7 +351,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setZ(0);
     }
 
-    public void restoreClearBedTransform()
+    public void restoreBedTransform()
     {
         transformBedCentre.setX(currenttransformBedCentre.getX());
         transformBedCentre.setY(currenttransformBedCentre.getY());
