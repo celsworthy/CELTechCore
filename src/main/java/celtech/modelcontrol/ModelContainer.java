@@ -12,6 +12,7 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
+import celtech.utils.threed.MeshCutter;
 import celtech.utils.threed.MeshSeparator;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +66,7 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+
 /**
  *
  * @author Ian Hudson @ Liberty Systems Limited
@@ -76,8 +78,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
     /**
-     * The modelId is only guaranteed unique at the project level 
-     * because it could be reloaded with duplicate values from saved models into other projects.
+     * The modelId is only guaranteed unique at the project level because it could be reloaded with
+     * duplicate values from saved models into other projects.
      */
     protected int modelId;
     private Stenographer steno;
@@ -224,7 +226,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
          * Rotations (which are all around the centre of the model) must be applied before any
          * translations.
          */
-        getTransforms().addAll(transformDropToBedYAdjust, 
+        getTransforms().addAll(transformDropToBedYAdjust,
                                transformMoveToPreferred,
                                transformBedCentre,
                                transformRotateTurnPreferred,
@@ -267,11 +269,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
-        
+
         transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
-        
+
         transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
@@ -280,7 +282,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void moveToCentre()
     {
         translateTo(bedCentreOffsetX, bedCentreOffsetZ);
-        
+
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
@@ -324,6 +326,36 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setX(0);
         transformBedCentre.setY(0);
         transformBedCentre.setZ(0);
+    }
+
+    private Translate currenttransformBedCentre;
+
+    double currentDropY;
+
+    public void saveAndClearDropToBedYTransform()
+    {
+        currentDropY = transformDropToBedYAdjust.getY();
+        transformDropToBedYAdjust.setY(0);
+    }
+
+    public void restoreDropToBedYTransform()
+    {
+        transformDropToBedYAdjust.setY(currentDropY);
+    }
+
+    public void saveAndClearBedTransform()
+    {
+        currenttransformBedCentre = transformBedCentre.clone();
+        transformBedCentre.setX(0);
+        transformBedCentre.setY(0);
+        transformBedCentre.setZ(0);
+    }
+
+    public void restoreClearBedTransform()
+    {
+        transformBedCentre.setX(currenttransformBedCentre.getX());
+        transformBedCentre.setY(currenttransformBedCentre.getY());
+        transformBedCentre.setZ(currenttransformBedCentre.getZ());
     }
 
     /**
@@ -507,7 +539,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             setYScale(scaling);
             setZScale(scaling);
         }
-        
+
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
     }
@@ -604,11 +636,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         dropToBed();
     }
 
-    private Point3D toPoint3D(Vector3D vector)
+    private static Point3D toPoint3D(Vector3D vector)
     {
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
     }
-    
+
+
     private class ApplyTwist implements UnivariateFunction
     {
 
@@ -825,7 +858,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(getZScale());
         out.writeDouble(getRotationLean());
         out.writeDouble(getRotationTurn());
-        
+
         out.writeDouble(transformDropToBedYAdjust.getY());
     }
 
@@ -891,35 +924,36 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             convertSnapFace = true;
         }
-        
-        if (in.available() > 0) {
+
+        if (in.available() > 0)
+        {
             storedY = in.readDouble();
-        } 
+        }
 
         initialiseTransforms();
 
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
         transformDropToBedYAdjust.setY(storedY);
-        
+
         preferredXScale.set(storedScaleX);
         preferredYScale.set(storedScaleY);
         preferredZScale.set(storedScaleZ);
         preferredRotationLean.set(storedRotationLean);
         preferredRotationTwist.set(storedRotationTwist);
         preferredRotationTurn.set(storedRotationTurn);
-        
+
         transformScalePreferred.setX(storedScaleX);
         transformScalePreferred.setY(storedScaleY);
         transformScalePreferred.setZ(storedScaleZ);
-        
+
         updateTransformsFromLeanTwistTurnAngles();
 
         if (convertSnapFace)
         {
             snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
-        
+
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
@@ -1040,66 +1074,48 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
-    
-    public double getYAdjust() {
+
+    public double getYAdjust()
+    {
         return transformDropToBedYAdjust.getY();
     }
-    
+
     /**
      * This method is used during an ungroup to blend the group's transform into this one, thereby
      * keeping this model in the same place.
-    */
-     public void applyGroupTransformToThis(ModelGroup modelGroup)
+     */
+    public void applyGroupTransformToThis(ModelGroup modelGroup)
     {
         double scaleFactor = getXScale() * modelGroup.getXScale();
         preferredXScale.set(scaleFactor);
         transformScalePreferred.setX(scaleFactor);
-        
+
         scaleFactor = getYScale() * modelGroup.getYScale();
         preferredYScale.set(scaleFactor);
         transformScalePreferred.setY(scaleFactor);
-        
+
         scaleFactor = getZScale() * modelGroup.getZScale();
         preferredZScale.set(scaleFactor);
         transformScalePreferred.setZ(scaleFactor);
-        
 
         // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
         // from centre of group and up/down, which needs to be taken into account
         translateBy(modelGroup.getMoveToPreferredX(),
-                                        modelGroup.getMoveToPreferredZ());
-        
+                    modelGroup.getMoveToPreferredZ());
+
         transformDropToBedYAdjust.setY(modelGroup.getYAdjust());
-        
+
     }
-    
+
     /**
      * Check if this object is off the bed. N.B. It only works for top level objects i.e. top level
      * groups or ungrouped models.
      */
     public void checkOffBed()
     {
-        System.out.println("CHECK off bed " + lastTransformedBoundsInParent);
-
         ModelBounds bounds = lastTransformedBoundsInParent;
 
         double epsilon = 0.001;
-        
-        if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
-            || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
-                                       epsilon) == MathUtils.MORE_THAN) {
-            System.out.println("OFF BED X");
-        }
-        if (MathUtils.compareDouble(bounds.getMinY(), 0, epsilon) == MathUtils.LESS_THAN
-            || MathUtils.compareDouble(bounds.getMaxY(), printBed.getPrintVolumeMaximums().getY(),
-                                       epsilon) == MathUtils.MORE_THAN) {
-            System.out.println("OFF BED Y");
-        }
-        if (MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
-            || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
-                                       epsilon) == MathUtils.MORE_THAN) {
-            System.out.println("OFF BED Z");
-        }
 
         if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
             || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
@@ -1116,8 +1132,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             isOffBed.set(false);
         }
-        printTransforms();
-        System.out.println("is off bed: " + isOffBed.get());
     }
 
     public BooleanProperty isOffBedProperty()
@@ -1181,7 +1195,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return (ModelContainer) ((ModelContainer) meshView.getParent()).getRootModelContainer();
     }
-    
+
     public ModelContainer getRootModelContainer()
     {
         ModelContainer parentModelContainer = this;
@@ -1191,6 +1205,44 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             parentModelContainer = parentModelContainer.getParentModelContainer();
         }
         return (ModelContainer) parentModelContainer;
+    }
+
+    private Node getBed()
+    {
+        return getRootModelContainer().getParent().getParent();
+    }
+
+    /**
+     * Return a BedToLocal converter for this ModelContainer. Remove effect of bed transform and
+     * drop-to-bed Y adjust.
+     */
+    public MeshCutter.BedToLocalConverter getBedToLocalConverter()
+    {
+        return new MeshCutter.BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                Point3D pointScene = localToScene(point);
+                Node bed = getBed();
+                Point3D pointBed = bed.sceneToLocal(pointScene);
+//                Point3D pointBedNoCentreTranslateOrDrop = pointBed.add(
+//                    -transformBedCentre.getX(), -transformDropToBedYAdjust.getY(), -transformBedCentre.getZ());
+                return pointBed;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                Node bed = getBed();
+                Point3D pointScene = bed.localToScene(point);
+                return sceneToLocal(pointScene);
+//                return pointLocal.add(
+//                    bedCentreOffsetX, transformDropToBedYAdjust.getY(), bedCentreOffsetZ);
+            }
+        };
+
     }
 
     /**
@@ -1332,7 +1384,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                     getModelFile(), meshView);
                 newModelContainer.setState(state);
                 parts.add(newModelContainer);
-                
+
                 newModelContainer.setModelName(modelName + " " + ix);
 
                 ix++;
@@ -1681,7 +1733,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-   
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
         ModelContainer rootModelContainer = getRootModelContainer(meshView);
@@ -1756,7 +1807,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     @Override
-    public void removeScreenExtentsChangeListener(ScreenExtentsProvider.ScreenExtentsListener listener)
+    public void removeScreenExtentsChangeListener(
+        ScreenExtentsProvider.ScreenExtentsListener listener)
     {
         screenExtentsChangeListeners.remove(listener);
     }
@@ -1838,11 +1890,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         getChildren().addAll(nodes);
     }
-    
+
     public void addChildNode(Node node)
     {
         getChildren().add(node);
-    }    
+    }
 
     public ObservableList<Node> getMeshGroupChildren()
     {
@@ -1854,11 +1906,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return Collections.EMPTY_SET;
     }
-    
+
     public Set<ModelContainer> getDescendentModelContainers()
     {
         return Collections.EMPTY_SET;
-    }     
+    }
+
 
     /**
      * State captures the state of all the transforms being applied to this ModelContainer. It is
@@ -1936,20 +1989,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformMoveToPreferred.setX(state.x);
         transformMoveToPreferred.setZ(state.z);
         transformDropToBedYAdjust.setY(state.y);
-        
+
         preferredXScale.set(state.preferredXScale);
         transformScalePreferred.setX(state.preferredXScale);
         preferredYScale.set(state.preferredYScale);
         transformScalePreferred.setY(state.preferredYScale);
         preferredZScale.set(state.preferredZScale);
         transformScalePreferred.setZ(state.preferredZScale);
-       
+
         preferredRotationLean.set(state.preferredRotationLean);
         preferredRotationTwist.set(state.preferredRotationTwist);
         preferredRotationTurn.set(state.preferredRotationTurn);
-        
+
         updateTransformsFromLeanTwistTurnAngles();
-        
+
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
