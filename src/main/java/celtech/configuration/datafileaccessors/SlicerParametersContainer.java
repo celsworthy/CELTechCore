@@ -150,7 +150,7 @@ public class SlicerParametersContainer
     public static void saveProfile(SlicerParametersFile settingsToSave)
     {
         String originalName = getOriginalProfileName(settingsToSave);
-        if (!profileMap.containsKey(settingsToSave.getProfileName()))
+        if (!profileMap.containsKey(settingsToSave.getProfileKey()))
         {
             if (userProfileList.contains(settingsToSave))
             {
@@ -176,11 +176,21 @@ public class SlicerParametersContainer
      */
     private static void doSaveAndChangeUserProfileName(SlicerParametersFile profile)
     {
-        String originalName = getOriginalProfileName(profile);
+        String originalName = "";
+        String originalHeadType = null;
+        for (Map.Entry<String, SlicerParametersFile> entrySet : profileMap.entrySet())
+        {
+            originalName = entrySet.getKey().split("#")[0];
+            SlicerParametersFile value = entrySet.getValue();
+            if (value == profile) {
+                originalHeadType = profile.getHeadType();
+                break;
+            }
+        }
         if (originalName.equals("")) {
             steno.error("Severe error saving profile of changed name.");
         } else {
-            deleteUserProfile(originalName);
+            deleteUserProfile(originalName, originalHeadType);
             doAddNewUserProfile(profile);
         }
     }
@@ -232,7 +242,7 @@ public class SlicerParametersContainer
         }
     }
 
-    public static void deleteUserProfile(String profileName)
+    public static void deleteUserProfile(String profileName, String headType)
     {
         SlicerParametersFile deletedProfile = getSettings(profileName, headType);
         assert(deletedProfile != null);
@@ -241,7 +251,7 @@ public class SlicerParametersContainer
         
         userProfileList.remove(deletedProfile);
         completeProfileList.remove(deletedProfile);
-        profileMap.remove(profileName);
+        profileMap.remove(deletedProfile.getProfileKey());
         
         for (SlicerParametersChangesListener changesListener : changesListeners)
         {

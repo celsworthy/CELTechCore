@@ -49,7 +49,6 @@ public class PrinterSettings
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
         printSupportOverride.set(SupportType.NO_SUPPORT);
-        printSupportOverride = draftParametersFile.getGenerateSupportMaterial();
         
         SlicerParametersContainer.addChangesListener(
             new SlicerParametersContainer.SlicerParametersChangesListener()
@@ -144,7 +143,6 @@ public class PrinterSettings
     {
         if (!customSettingsName.get().equals(settingsName))
         {
-            steno.debug("PSETTINGS: change custom printer settings to " + settingsName);
             customSettingsName.set(settingsName);
             toggleDataChanged();
         }
