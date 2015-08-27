@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
@@ -49,6 +50,27 @@ public class PrinterSettings
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
         printSupportOverride = draftParametersFile.getGenerateSupportMaterial();
+        
+        SlicerParametersContainer.addChangesListener(
+            new SlicerParametersContainer.SlicerParametersChangesListener()
+        {
+
+            @Override
+            public void whenSlicerParametersSaved(String originalSettingsName,
+                SlicerParametersFile changedParameters)
+            {
+                if (originalSettingsName.equals(customSettingsName.get())) {
+                    customSettingsName.set(changedParameters.getProfileName());
+                }
+                toggleDataChanged();
+            }
+
+            @Override
+            public void whenSlicerParametersDeleted(String settingsName)
+            {
+            }
+        });
+        
     }
 
     private void toggleDataChanged()
@@ -135,10 +157,10 @@ public class PrinterSettings
 
     public void setSettingsName(String settingsName)
     {
-        if (!this.customSettingsName.get().equals(settingsName))
+        if (!customSettingsName.get().equals(settingsName))
         {
-            steno.debug("change custom printer settings to " + settingsName);
-            this.customSettingsName.set(settingsName);
+            steno.debug("PSETTINGS: change custom printer settings to " + settingsName);
+            customSettingsName.set(settingsName);
             toggleDataChanged();
         }
     }

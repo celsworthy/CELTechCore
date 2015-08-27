@@ -4,7 +4,9 @@ import celtech.Lookup;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.LogLevel;
@@ -17,7 +19,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class UserPreferences
 {
 
-    private SlicerType slicerType = SlicerType.Cura;
+    private ObjectProperty<SlicerType> slicerType = new SimpleObjectProperty<>(SlicerType.Cura);
     private final BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
     private String languageTag = "";
     private final BooleanProperty showTooltips = new SimpleBooleanProperty(true);
@@ -52,7 +54,7 @@ public class UserPreferences
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
-        this.slicerType = userPreferenceFile.getSlicerType();
+        this.slicerType.set(userPreferenceFile.getSlicerType());
         safetyFeaturesOn.set(userPreferenceFile.isSafetyFeaturesOn());
         this.languageTag = userPreferenceFile.getLanguageTag();
         this.loggingLevel = userPreferenceFile.getLoggingLevel();
@@ -68,12 +70,17 @@ public class UserPreferences
 
     public SlicerType getSlicerType()
     {
-        return slicerType;
+        return slicerType.get();
     }
+    
+    public ObjectProperty<SlicerType> getSlicerTypeProperty()
+    {
+        return slicerType;
+    }    
 
     public void setSlicerType(SlicerType slicerType)
     {
-        this.slicerType = slicerType;
+        this.slicerType.set(slicerType);
         saveSettings();
     }
 
