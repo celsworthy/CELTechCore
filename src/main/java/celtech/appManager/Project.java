@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
+import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.coreUI.controllers.PrinterSettings;
@@ -105,18 +106,25 @@ public class Project implements Serializable
             + formatter.format(now));
         lastModifiedDate.set(now);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        printerSettings.getDataChanged().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                projectModified();
-                fireWhenPrinterSettingsChanged(printerSettings);
-            });
 
         customSettingsNotChosen.bind(
             printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
             .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
+        
+        printerSettings.getDataChanged().addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                projectModified();
+                fireWhenPrinterSettingsChanged(printerSettings);
+            });        
+        
+        Lookup.getUserPreferences().getSlicerTypeProperty().addListener(
+            (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
+        {
+            projectModified();
+        });
     }
 
     private void initialise()
