@@ -855,6 +855,11 @@ public abstract class GCodeEventNode
         return comment.renderComments();
     }
 
+    public String getRawCommentText()
+    {
+        return comment.getComment();
+    }
+
     public void setCommentText(String commentText)
     {
         comment.setComment(commentText);

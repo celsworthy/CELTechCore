@@ -36,10 +36,10 @@ import org.parboiled.support.Var;
  * @author Ian
  */
 //@BuildParseTree
-public class GCodeParser extends BaseParser<GCodeEventNode>
+public class CuraGCodeParser extends BaseParser<GCodeEventNode>
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(GCodeParser.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(CuraGCodeParser.class.getName());
     private LayerNode thisLayer = new LayerNode();
     private int feedrateInForce = -1;
     protected Var<Integer> currentObject = new Var<>(-1);

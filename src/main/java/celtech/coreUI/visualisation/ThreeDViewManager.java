@@ -410,11 +410,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
                     justEnteredDragMode = false;
                 }
                 lastDragPosition = pickedDragPlanePoint;
-            } else
-            {
-                steno.error(
-                    "In translation drag mode but intersected with something other than translation drag plane");
             }
+//            else
+//            {
+//                steno.error(
+//                    "In translation drag mode but intersected with something other than translation drag plane");
+//            }
         } else if (dragMode.get() == DragMode.SCALING && event.isPrimaryButtonDown())
         {
             Node intersectedNode = event.getPickResult().getIntersectedNode();
