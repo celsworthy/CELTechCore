@@ -349,7 +349,7 @@ public class PostProcessor
         // Parse the last layer if it exists...
         if (layerBuffer.length() > 0)
         {
-            GCodeParser gcodeParser = Parboiled.createParser(GCodeParser.class
+            CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class
             );
 
             if (lastLayerParseResult != null)
