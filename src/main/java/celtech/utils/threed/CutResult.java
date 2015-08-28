@@ -14,7 +14,10 @@ import javafx.scene.shape.TriangleMesh;
 
 
 /**
- *
+ * CutResult represents one of the two parts of the cut mesh. It is also responsible for identifying
+ * the topology of the nested polygons forming the perimeters on the closing face (i.e. which 
+ * perimeters/polygons are inside which other polygons).
+ * 
  * @author tony
  */
 class CutResult
@@ -135,7 +138,7 @@ class CutResult
     }
     
     private Point getPointAt(PolygonIndices loop, int index) {
-        Point3D point = MeshCutter.makePoint3D(childMesh, index);
+        Point3D point = MeshCutter.makePoint3D(childMesh, loop.get(index));
         Point3D pointInBed = bedToLocalConverter.localToBed(point);
         return new Point(pointInBed.getX(), pointInBed.getZ());
     }
@@ -194,3 +197,37 @@ class CutResult
     }
 
 }
+
+
+class LoopSet
+{
+
+    final List<Integer> outerLoop;
+    final List<PolygonIndices> innerLoops;
+
+    public LoopSet(List<Integer> outerLoop, List<PolygonIndices> innerLoops)
+    {
+        this.outerLoop = outerLoop;
+        this.innerLoops = innerLoops;
+    }
+
+}
+
+/**
+ * The X and Z coordinate of the point in the bed space maps to X and Y for polygon analysis. The
+ * cut height is fixed in the bed coordinate system so we ignore that dimension for polygon
+ * analysis.
+ */
+class Point
+{
+
+    final double x;
+    final double y;
+
+    public Point(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+

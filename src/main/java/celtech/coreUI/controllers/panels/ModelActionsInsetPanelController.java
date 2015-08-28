@@ -98,20 +98,16 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
     /**
      * Group the selection. If one group was made then select it.
-     *
-     * @param event
      */
     @FXML
     void doGroup(ActionEvent event)
     {
         Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(
-            mc -> mc instanceof ModelGroup).collect(
-                Collectors.toSet());
+            mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
         Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
-            mc -> mc instanceof ModelGroup).collect(
-                Collectors.toSet());
+            mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1)
@@ -151,24 +147,21 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
             String modelName = modelContainer.getModelName();
 
-            if (subMeshes.size() > 0)
+            int ix = 1;
+            for (TriangleMesh subMesh : subMeshes)
             {
-                int ix = 1;
-                for (TriangleMesh subMesh : subMeshes)
-                {
-                    MeshView meshView = new MeshView(subMesh);
-                    meshView.cullFaceProperty().set(CullFace.NONE);
-                    ModelContainer newModelContainer = new ModelContainer(
-                        modelContainer.getModelFile(), meshView);
-                    newModelContainer.setModelName(modelName + " " + ix);
-                    newModelContainer.setState(modelContainer.getState());
-                    newModelContainer.moveToCentre();
-                    newModelContainer.dropToBed();
-                    undoableProject.addModel(newModelContainer);
-                    ix++;
-                }
-//            undoableProject.deleteModels(modelContainers);
+                MeshView meshView = new MeshView(subMesh);
+                meshView.cullFaceProperty().set(CullFace.NONE);
+                ModelContainer newModelContainer = new ModelContainer(
+                    modelContainer.getModelFile(), meshView);
+                newModelContainer.setModelName(modelName + " " + ix);
+                newModelContainer.setState(modelContainer.getState());
+                newModelContainer.moveToCentre();
+                newModelContainer.dropToBed();
+                undoableProject.addModel(newModelContainer);
+                ix++;
             }
+//            undoableProject.deleteModels(modelContainers);
         } finally
         {
             modelContainer.restoreBedTransform();
