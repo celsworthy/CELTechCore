@@ -9,12 +9,12 @@ import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
-import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
-import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
-import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.PreambleNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
+import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
+import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
@@ -27,24 +27,23 @@ import org.parboiled.Action;
 import org.parboiled.BaseParser;
 import org.parboiled.Context;
 import org.parboiled.Rule;
-import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SuppressSubnodes;
+import org.parboiled.support.StringVar;
 import org.parboiled.support.Var;
 
 /**
  *
  * @author Ian
  */
-@BuildParseTree
-public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
+//@BuildParseTree
+public class RoboxGCodeParser extends BaseParser<GCodeEventNode>
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(Slic3rGCodeParser.class.getName());
-
+    private final Stenographer steno = StenographerFactory.getStenographer(RoboxGCodeParser.class.getName());
     private LayerNode thisLayer = new LayerNode();
     private int feedrateInForce = -1;
     protected Var<Integer> currentObject = new Var<>(-1);
-
+    
     public void setFeedrateInForce(int feedrate)
     {
         this.feedrateInForce = feedrate;
@@ -68,12 +67,13 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     public Rule Layer()
     {
         return Sequence(
-                Sequence(LayerChangeDirective(),
+                Sequence(";LAYER:", OneOrMore(Digit()),
                         (Action) (Context context1) ->
                         {
-                            thisLayer.setLayerNumber(((LayerChangeDirectiveNode)context1.getValueStack().pop()).getLayerNumber());
+                            thisLayer.setLayerNumber(Integer.valueOf(context1.getMatch()));
                             return true;
-                        }
+                        },
+                        Newline()
                 ),
                 //                Optional(
                 //                        Sequence(
@@ -134,13 +134,11 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     {
         ObjectSectionActionClass objectSectionAction = new ObjectSectionActionClass();
         Var<Integer> objectNumber = new Var<>(0);
-        Var<String> commentText = new Var<>();
 
         return Sequence(
                 Sequence('T', OneOrMore(Digit()),
                         objectNumber.set(Integer.valueOf(match())),
                         currentObject.set(Integer.valueOf(match())),
-                        Optional(Comment(commentText)),
                         Newline()
                 ),
                 objectSectionAction,
@@ -436,7 +434,7 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     // ;Blah blah blah\n
     Rule CommentDirective()
     {
-        Var<String> commentValue = new Var<>();
+        StringVar comment = new StringVar();
 
         return Sequence(
                 TestNot(FillSectionNode.designator),
@@ -445,14 +443,15 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                 TestNot(SkinSectionNode.designator),
                 TestNot(SupportSectionNode.designator),
                 TestNot(SupportInterfaceSectionNode.designator),
-                Comment(commentValue),
+                ';', ZeroOrMore(NotNewline()),
+                comment.set(match()),
                 Newline(),
                 new Action()
                 {
                     @Override
                     public boolean run(Context context)
                     {
-                        CommentNode node = new CommentNode(commentValue.get());
+                        CommentNode node = new CommentNode(comment.get());
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -465,7 +464,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     {
         Var<Integer> mValue = new Var<>();
         Var<Integer> sValue = new Var<>();
-        Var<String> commentText = new Var<>();
 
         return Sequence(
                 Sequence('M', OneToThreeDigits(),
@@ -477,7 +475,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                                 sValue.set(Integer.valueOf(match()))
                         )
                 ),
-                Optional(Comment(commentText)),
                 Newline(),
                 new Action()
                 {
@@ -490,10 +487,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                         {
                             node.setSNumber(sValue.get());
                         }
-                        if (commentText.isSet())
-                        {
-                            node.setCommentText(commentText.get());
-                        }
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -505,12 +498,10 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     Rule GCodeDirective()
     {
         Var<Integer> gcodeValue = new Var<>();
-        Var<String> commentText = new Var<>();
 
         return Sequence('G', OneOrTwoDigits(),
                 gcodeValue.set(Integer.valueOf(match())),
-                Optional(Comment(commentText)),
-                ZeroOrMore(Newline()),
+                Newline(),
                 new Action()
                 {
                     @Override
@@ -518,12 +509,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                     {
                         GCodeDirectiveNode node = new GCodeDirectiveNode();
                         node.setGValue(gcodeValue.get());
-
-                        if (commentText.isSet())
-                        {
-                            node.setCommentText(commentText.get());
-                        }
-
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -531,17 +516,17 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     }
 
     //Retract
-    // Has a comment in slic3r
-    // The feedrate is after the extrusion values
     // G1 F1800 E-0.50000
     Rule RetractDirective()
     {
         Var<Float> dValue = new Var<>();
         Var<Float> eValue = new Var<>();
         Var<Integer> fValue = new Var<>();
-        Var<String> commentText = new Var<>();
 
         return Sequence("G1 ",
+                Optional(
+                        Feedrate(fValue)
+                ),
                 OneOrMore(
                         FirstOf(
                                 Sequence("D", NegativeFloatingPointNumber(),
@@ -553,10 +538,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                                         Optional(' '))
                         )
                 ),
-                Optional(' '),
-                // The feedrate is after the extrusion in Slic3r
-                Feedrate(fValue),
-                Optional(Comment(commentText)),
                 Newline(),
                 new Action()
                 {
@@ -576,10 +557,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                         {
                             node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
-                        if (commentText.isSet())
-                        {
-                            node.setCommentText(commentText.get());
-                        }
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -594,7 +571,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
         Var<Float> dValue = new Var<>();
         Var<Float> eValue = new Var<>();
         Var<Integer> fValue = new Var<>();
-        Var<String> commentText = new Var<>();
 
         return Sequence("G1 ",
                 Optional(
@@ -611,9 +587,7 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                                         Optional(' '))
                         )
                 ),
-                Feedrate(fValue),
-                Optional(Comment(commentText)),
-                ZeroOrMore(Newline()),
+                Newline(),
                 new Action()
                 {
                     @Override
@@ -633,10 +607,70 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                         {
                             node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
-                        if (commentText.isSet())
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    //Travel
+    // G0 F12000 X88.302 Y42.421 Z1.020
+    Rule TravelDirective()
+    {
+        Var<Integer> fValue = new Var<>();
+        Var<Double> xValue = new Var<>();
+        Var<Double> yValue = new Var<>();
+        Var<Double> zValue = new Var<>();
+
+        return Sequence("G0 ",
+                Optional(
+                        Feedrate(fValue)
+                ),
+                OneOrMore(
+                        FirstOf(
+                                Sequence("X", FloatingPointNumber(),
+                                        xValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("Y", FloatingPointNumber(),
+                                        yValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("Z", FloatingPointNumber(),
+                                        zValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                )
+                        )
+                ),
+                Newline(),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        TravelNode node = new TravelNode();
+
+                        if (fValue.isSet())
                         {
-                            node.setCommentText(commentText.get());
+                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
+
+                        if (xValue.isSet())
+                        {
+                            node.getMovement().setX(xValue.get());
+                        }
+
+                        if (yValue.isSet())
+                        {
+                            node.getMovement().setY(yValue.get());
+                        }
+
+                        if (zValue.isSet())
+                        {
+                            node.getMovement().setZ(zValue.get());
+                        }
+
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -654,9 +688,11 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
         Var<Double> zValue = new Var<>();
         Var<Float> eValue = new Var<>();
         Var<Float> dValue = new Var<>();
-        Var<String> commentText = new Var<>();
 
         return Sequence("G1 ",
+                Optional(
+                        Feedrate(fValue)
+                ),
                 Optional(
                         Sequence("X", FloatingPointNumber(),
                                 xValue.set(Double.valueOf(match())),
@@ -678,8 +714,6 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                                 )
                         )
                 ),
-                Optional(Feedrate(fValue)),
-                Optional(Comment(commentText)),
                 Newline(),
                 new Action()
                 {
@@ -718,40 +752,12 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
                             node.getExtrusion().setE(eValue.get());
                         }
 
-                        if (commentText.isSet())
-                        {
-                            node.setCommentText(commentText.get());
-                        }
-
-                        context.getValueStack().push(node);
+                        context.getValueStack()
+                        .push(node);
 
                         return true;
                     }
                 }
-        );
-    }
-
-    // Comment element within a line
-    // ; move to next layer (0)
-    @SuppressSubnodes
-    Rule LayerChangeComment(Var<Integer> layerNumber)
-    {
-        return Sequence(
-                ZeroOrMore(' '),
-                ';',
-                OneOrMore(NoneOf("(")),
-                '(',
-                OneOrMore(Digit()),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        layerNumber.set(Integer.valueOf(context.getMatch()));
-                        return true;
-                    }
-                },
-                ')'
         );
     }
 
@@ -759,44 +765,10 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     // G[01] Z1.020
     Rule LayerChangeDirective()
     {
-        Var<Integer> layerNumber = new Var<>();
-        Var<Float> zValue = new Var<>();
-        Var<Integer> fValue = new Var<>();
-        Var<String> commentText = new Var<>();
-
         return Sequence('G', FirstOf('0', '1'), ' ',
-                'Z',
-                FloatingPointNumber(),
-                zValue.set(Float.valueOf(match())),
-                Optional(Feedrate(fValue)),
-                LayerChangeComment(layerNumber),
-                Newline(),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        LayerChangeDirectiveNode node = new LayerChangeDirectiveNode();
-
-                        node.setLayerNumber(layerNumber.get());
-                        node.getMovement().setZ(zValue.get());
-
-                        if (fValue.isSet())
-                        {
-                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
-                        }
-
-                        if (commentText.isSet())
-                        {
-                            node.setCommentText(commentText.get());
-                        }
-
-                        context.getValueStack().push(node);
-
-                        return true;
-                    }
-                }
-        );
+                Sequence("Z", FloatingPointNumber()),
+                push(new LayerChangeDirectiveNode()),
+                Newline());
     }
 
     @SuppressSubnodes
@@ -885,22 +857,8 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     {
         return FirstOf(
                 Sequence(
-                        ZeroOrMore(' '),
-                        'F',
-                        OneOrMore(Digit()),
-                        new Action()
-                        {
-                            @Override
-                            public boolean run(Context context)
-                            {
-                                feedrate.set(Integer.valueOf(match().replace("\\.*", "")));
-                                return true;
-                            }
-                        },
-                        //Get rid of any trailing floating point bits
-                        Optional(
-                                Sequence('.', OneOrMore(Digit()))
-                        ),
+                        'F', OneOrMore(Digit()),
+                        feedrate.set(Integer.valueOf(match())),
                         Optional(' '),
                         new Action()
                         {
@@ -924,28 +882,8 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
         );
     }
 
-    // Comment element within a line
-    // ;Blah blah blah\n
-    @SuppressSubnodes
-    Rule Comment(Var<String> commentText)
-    {
-        return Sequence(
-                ZeroOrMore(' '),
-                ';',
-                OneOrMore(NotNewline()),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        commentText.set(context.getMatch());
-                        return true;
-                    }
-                }
-        );
-    }
-
     //Anything else we didn't parse... must always be the last thing we look for
+    // blah blah \n
     //we mustn't match a line beginning with T as this is the start of an object
     @SuppressSubnodes
     Rule UnrecognisedLine()
@@ -977,75 +915,5 @@ public class Slic3rGCodeParser extends BaseParser<GCodeEventNode>
     Rule NotNewline()
     {
         return NoneOf("\n");
-    }
-
-    //Travel
-    // G0 F12000 X88.302 Y42.421 Z1.020
-//    @Override
-    Rule TravelDirective()
-    {
-        Var<Integer> fValue = new Var<>();
-        Var<Double> xValue = new Var<>();
-        Var<Double> yValue = new Var<>();
-        Var<Double> zValue = new Var<>();
-        Var<String> commentText = new Var<>();
-
-        return Sequence("G1 ",
-                OneOrMore(
-                        FirstOf(
-                                Sequence("X", FloatingPointNumber(),
-                                        xValue.set(Double.valueOf(match())),
-                                        Optional(' ')
-                                ),
-                                Sequence("Y", FloatingPointNumber(),
-                                        yValue.set(Double.valueOf(match())),
-                                        Optional(' ')
-                                ),
-                                Sequence("Z", FloatingPointNumber(),
-                                        zValue.set(Double.valueOf(match())),
-                                        Optional(' ')
-                                )
-                        )
-                ),
-                Optional(Feedrate(fValue)),
-                Optional(Comment(commentText)),
-                Newline(),
-                new Action()
-                {
-                    @Override
-                    public boolean run(Context context)
-                    {
-                        TravelNode node = new TravelNode();
-
-                        if (fValue.isSet())
-                        {
-                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
-                        }
-
-                        if (xValue.isSet())
-                        {
-                            node.getMovement().setX(xValue.get());
-                        }
-
-                        if (yValue.isSet())
-                        {
-                            node.getMovement().setY(yValue.get());
-                        }
-
-                        if (zValue.isSet())
-                        {
-                            node.getMovement().setZ(zValue.get());
-                        }
-
-                        if (commentText.isSet())
-                        {
-                            node.setCommentText(commentText.get());
-                        }
-
-                        context.getValueStack().push(node);
-                        return true;
-                    }
-                }
-        );
     }
 }

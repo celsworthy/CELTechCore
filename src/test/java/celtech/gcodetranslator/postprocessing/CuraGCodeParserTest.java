@@ -2,7 +2,9 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
@@ -23,6 +25,7 @@ import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
+import org.parboiled.support.Var;
 
 /**
  *
@@ -109,84 +112,36 @@ public class CuraGCodeParserTest
     }
 
     @Test
-    public void travelDirective()
+    public void feedrateInteger()
     {
-        String inputData = "G0 F12000 X88.302 Y42.421 Z1.020\n";
-        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.TravelDirective());
+        String inputData = "F12000";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+
+        Var<Integer> feedrateResult = new Var<>();
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Feedrate(feedrateResult));
         ParsingResult result = runner.run(inputData);
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
+        assertEquals(0, result.valueStack.size());
+        assertEquals(12000, feedrateResult.get().intValue());
     }
 
     @Test
-    public void retractDirective()
+    public void comment()
     {
-        String inputData = "G1 F1800 E-0.50000\n";
-        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.RetractDirective());
+        String commentPart = " move to first perimeter point ";
+        String inputData = " ;" + commentPart;
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+
+        Var<String> commentResult = new Var<>();
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.Comment(commentResult));
         ParsingResult result = runner.run(inputData);
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
-    }
-
-    @Test
-    public void unretractDirective()
-    {
-        String inputData = "G1 F1800 E0.00000\n";
-        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.UnretractDirective());
-        ParsingResult result = runner.run(inputData);
-
-        assertFalse(result.hasErrors());
-        assertTrue(result.matched);
-    }
-
-    @Test
-    public void gcodeDirective()
-    {
-        String inputData = "G92\n";
-        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class
-        );
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.GCodeDirective());
-        ParsingResult result = runner.run(inputData);
-
-        assertFalse(result.hasErrors());
-        assertTrue(result.matched);
-    }
-
-    @Test
-    public void mcodeDirective()
-    {
-        String inputData = "M107\n";
-        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.MCode());
-        ParsingResult result = runner.run(inputData);
-
-        assertFalse(result.hasErrors());
-        assertTrue(result.matched);
-    }
-
-    @Test
-    public void extrusionDirective()
-    {
-        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.ExtrusionDirective());
-
-        String eOnlyExtrude = "G1 X1.4 Y12.3 E1.3\n";
-        ParsingResult inputData1Result = runner.run(eOnlyExtrude);
-
-        assertFalse(inputData1Result.hasErrors());
-        assertTrue(inputData1Result.matched);
-
-        gcodeParser.resetLayer();
-
-        String dOnlyExtrude = "G1 F100 X1.4 Y12.3 D1.3\n";
-        ParsingResult dOnlyExtrudeResult = runner.run(dOnlyExtrude);
-        assertFalse(dOnlyExtrudeResult.hasErrors());
-        assertTrue(dOnlyExtrudeResult.matched);
+        assertEquals(0, result.valueStack.size());
+        assertEquals(commentPart, commentResult.get());
     }
 
     @Test
@@ -200,6 +155,7 @@ public class CuraGCodeParserTest
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
+
     }
 
     @Test
@@ -216,6 +172,119 @@ public class CuraGCodeParserTest
     }
 
     @Test
+    public void travelDirective()
+    {
+        String inputData = "G0 F12000 X88.302 Y42.421 Z1.020\n";
+        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.TravelDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof TravelNode);
+        assertEquals(88.302, ((TravelNode) result.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(42.421, ((TravelNode) result.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(1.02, ((TravelNode) result.valueStack.peek(0)).getMovement().getZ(), 0.001);
+        assertEquals(12000, ((TravelNode) result.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
+    }
+
+    @Test
+    public void retractDirective()
+    {
+        String inputData = "G1 F1800 E-0.50000\n";
+        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.RetractDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof RetractNode);
+        assertEquals(-0.5, ((RetractNode) result.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0, ((RetractNode) result.valueStack.peek(0)).getExtrusion().getD(), 0.001);
+        assertEquals(1800, ((RetractNode) result.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
+    }
+
+    @Test
+    public void unretractDirective()
+    {
+        String inputData = "G1 F1800 E0.70000\n";
+        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.UnretractDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof UnretractNode);
+        assertEquals(0.7, ((UnretractNode) result.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0, ((UnretractNode) result.valueStack.peek(0)).getExtrusion().getD(), 0.001);
+        assertEquals(1800, ((UnretractNode) result.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
+    }
+
+    @Test
+    public void gcodeDirective()
+    {
+        String inputData = "G92\n";
+        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class
+        );
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.GCodeDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof GCodeDirectiveNode);
+        assertEquals(92, ((GCodeDirectiveNode) result.valueStack.peek(0)).getGValue().intValue());
+    }
+
+    @Test
+    public void mcodeDirective()
+    {
+        String inputData = "M107\n";
+        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.MCode());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof MCodeNode);
+        assertEquals(107, ((MCodeNode) result.valueStack.peek(0)).getMNumber());
+    }
+
+    @Test
+    public void extrusionDirective()
+    {
+        CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.ExtrusionDirective());
+
+        String eOnlyExtrude = "G1 X1.4 Y12.3 E1.3\n";
+        ParsingResult inputData1Result = runner.run(eOnlyExtrude);
+
+        assertFalse(inputData1Result.hasErrors());
+        assertTrue(inputData1Result.matched);
+        assertEquals(1.4, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(12.3, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(0, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getMovement().getZ(), 0.001);
+        assertEquals(1.3, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getExtrusion().getD(), 0.0001);
+
+        gcodeParser.resetLayer();
+
+        String dOnlyExtrude = "G1 F100 X1.4 Y12.3 D1.3\n";
+        ParsingResult dOnlyExtrudeResult = runner.run(dOnlyExtrude);
+        assertFalse(dOnlyExtrudeResult.hasErrors());
+        assertTrue(dOnlyExtrudeResult.matched);
+        assertEquals(1.4, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(12.3, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(0, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getMovement().getZ(), 0.001);
+        assertEquals(0, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(1.3, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getExtrusion().getD(), 0.0001);
+    }
+
+    @Test
     public void layerChangeDirective()
     {
         String inputData = "G0 Z1.3\n";
@@ -226,6 +295,11 @@ public class CuraGCodeParserTest
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof LayerChangeDirectiveNode);
+        assertEquals(0, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(0, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(1.3, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getMovement().getZ(), 0.001);
     }
 
     @Test
@@ -728,7 +802,7 @@ public class CuraGCodeParserTest
         result = runner.run(section4);
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
-        
+
         result = runner.run(section5);
         assertFalse(result.hasErrors());
         assertTrue(result.matched);

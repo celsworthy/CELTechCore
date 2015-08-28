@@ -43,7 +43,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     private LayerNode thisLayer = new LayerNode();
     private int feedrateInForce = -1;
     protected Var<Integer> currentObject = new Var<>(-1);
-    
+
     public void setFeedrateInForce(int feedrate)
     {
         this.feedrateInForce = feedrate;
@@ -431,10 +431,31 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                 Test(SupportInterfaceSectionNode.designator));
     }
 
+    // Comment element within a line
+    // ;Blah blah blah\n
+    @SuppressSubnodes
+    Rule Comment(Var<String> commentText)
+    {
+        return Sequence(
+                ZeroOrMore(' '),
+                ';',
+                OneOrMore(NotNewline()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        commentText.set(context.getMatch());
+                        return true;
+                    }
+                }
+        );
+    }
+
     // ;Blah blah blah\n
     Rule CommentDirective()
     {
-        StringVar comment = new StringVar();
+        Var<String> commentValue = new Var<>();
 
         return Sequence(
                 TestNot(FillSectionNode.designator),
@@ -443,15 +464,14 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                 TestNot(SkinSectionNode.designator),
                 TestNot(SupportSectionNode.designator),
                 TestNot(SupportInterfaceSectionNode.designator),
-                ';', ZeroOrMore(NotNewline()),
-                comment.set(match()),
+                Comment(commentValue),
                 Newline(),
                 new Action()
                 {
                     @Override
                     public boolean run(Context context)
                     {
-                        CommentNode node = new CommentNode(comment.get());
+                        CommentNode node = new CommentNode(commentValue.get());
                         context.getValueStack().push(node);
                         return true;
                     }
@@ -765,10 +785,42 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     // G[01] Z1.020
     Rule LayerChangeDirective()
     {
+        Var<Float> zValue = new Var<>();
+        Var<Integer> fValue = new Var<>();
+        Var<String> commentText = new Var<>();
+
         return Sequence('G', FirstOf('0', '1'), ' ',
-                Sequence("Z", FloatingPointNumber()),
-                push(new LayerChangeDirectiveNode()),
-                Newline());
+                'Z',
+                FloatingPointNumber(),
+                zValue.set(Float.valueOf(match())),
+                Optional(Feedrate(fValue)),
+                Optional(Comment(commentText)),
+                Newline(),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        LayerChangeDirectiveNode node = new LayerChangeDirectiveNode();
+
+                        node.getMovement().setZ(zValue.get());
+
+                        if (fValue.isSet())
+                        {
+                            node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
+                        }
+
+                        if (commentText.isSet())
+                        {
+                            node.setCommentText(commentText.get());
+                        }
+
+                        context.getValueStack().push(node);
+
+                        return true;
+                    }
+                }
+        );
     }
 
     @SuppressSubnodes

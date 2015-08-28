@@ -9,6 +9,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import celtech.utils.threed.ThreeDUtils;
+import celtech.utils.threed.exporters.AMFOutputConverter;
 import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
@@ -95,11 +96,11 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         String tempModelFilename;
         MeshFileOutputConverter outputConverter = null;
 
-//        if (slicerType == SlicerType.Cura)
-//        {
-//            tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
-//            outputConverter = new AMFOutputConverter();
-//        } else
+        if (slicerType == SlicerType.Slic3r)
+        {
+            tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
+            outputConverter = new AMFOutputConverter();
+        } else
         {
             tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
             outputConverter = new STLOutputConverter();
