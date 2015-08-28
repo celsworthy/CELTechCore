@@ -15,7 +15,7 @@ import javafx.scene.shape.TriangleMesh;
 
 /**
  * CutResult represents one of the two parts of the cut mesh. It is also responsible for identifying
- * the topology of the nested polygons forming the perimeters on the closing face (i.e. which 
+ * the topology of the nested polygons forming the perimeters on the closing top face (i.e. which 
  * perimeters/polygons are inside which other polygons).
  * 
  * @author tony
@@ -215,7 +215,7 @@ class LoopSet
 
 /**
  * The X and Z coordinate of the point in the bed space maps to X and Y for polygon analysis. The
- * cut height is fixed in the bed coordinate system so we ignore that dimension for polygon
+ * cut height (Y) is fixed in the bed coordinate system so we ignore that dimension for polygon
  * analysis.
  */
 class Point

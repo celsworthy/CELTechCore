@@ -19,7 +19,9 @@ import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
 
 /**
- *
+ * OpenFaceCloser takes a cut mesh, which therefore has an open face) and closes the open face by
+ * triangulating the perimeters of the cut walls. It must identify which perimeters are inside
+ * which, thereby identifying holes which must be present in the closing face.
  * @author tony
  */
 public class OpenFaceCloser

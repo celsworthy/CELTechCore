@@ -33,6 +33,13 @@ import javafx.scene.text.Text;
 public class MeshCutter
 {
 
+    enum TopBottom
+    {
+
+        TOP, BOTTOM
+    };
+
+
     public interface BedToLocalConverter
     {
 
@@ -78,10 +85,14 @@ public class MeshCutter
             loopsOfVertices.add(newVertices);
         }
 
-        TriangleMesh lowerMesh = makeLowerMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight,
-                                               bedToLocalConverter);
-        CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices, bedToLocalConverter);
-        cutResults.add(cutResult);
+        TriangleMesh lowerMesh = makeSplitMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight,
+                                               bedToLocalConverter, TopBottom.BOTTOM);
+        CutResult cutResultLower = new CutResult(lowerMesh, loopsOfVertices, bedToLocalConverter);
+        cutResults.add(cutResultLower);
+        TriangleMesh upperMesh = makeSplitMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight,
+                                               bedToLocalConverter, TopBottom.TOP);
+        CutResult cutResultUpper = new CutResult(upperMesh, loopsOfVertices, bedToLocalConverter);
+        cutResults.add(cutResultUpper);
         return cutResults;
     }
 
@@ -90,9 +101,9 @@ public class MeshCutter
      * original mesh, remove all the cut faces and replace with a new set of faces using the new
      * intersection points. Remove all the faces from above the cut faces.
      */
-    private static TriangleMesh makeLowerMesh(TriangleMesh mesh, List<PolygonIndices> loopsOfFaces,
+    private static TriangleMesh makeSplitMesh(TriangleMesh mesh, List<PolygonIndices> loopsOfFaces,
         List<PolygonIndices> loopsOfVertices, double cutHeight,
-        BedToLocalConverter bedToLocalConverter)
+        BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
         TriangleMesh childMesh = new TriangleMesh();
         childMesh.getPoints().addAll(mesh.getPoints());
@@ -105,13 +116,14 @@ public class MeshCutter
             allCutFaces.addAll(loopOfFaces);
         }
 
-        removeCutFacesAndFacesAboveCutFaces(childMesh, allCutFaces, cutHeight, bedToLocalConverter);
+        removeCutFacesAndFacesAboveBelowCutFaces(childMesh, allCutFaces, cutHeight,
+                                                 bedToLocalConverter, topBottom);
         for (int i = 0; i < loopsOfFaces.size(); i++)
         {
             List<Integer> loopOfFaces = loopsOfFaces.get(i);
             List<Integer> loopOfVertices = loopsOfVertices.get(i);
-            addLowerFacesAroundCut(mesh, childMesh, loopOfFaces, loopOfVertices, cutHeight,
-                                   bedToLocalConverter);
+            addLowerUpperFacesAroundCut(mesh, childMesh, loopOfFaces, loopOfVertices, cutHeight,
+                                        bedToLocalConverter, topBottom);
         }
 
         showFace(mesh, 0);
@@ -119,9 +131,9 @@ public class MeshCutter
         return childMesh;
     }
 
-    private static void addLowerFacesAroundCut(TriangleMesh mesh, TriangleMesh childMesh,
+    private static void addLowerUpperFacesAroundCut(TriangleMesh mesh, TriangleMesh childMesh,
         List<Integer> cutFaces, List<Integer> newVertices, double cutHeight,
-        BedToLocalConverter bedToLocalConverter)
+        BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
         assert (cutFaces.size() == newVertices.size());
         for (int index = 0; index < cutFaces.size(); index++)
@@ -136,8 +148,9 @@ public class MeshCutter
             {
                 vertexIndex1 = newVertices.get(index + 1);
             }
-            addLowerDividedFaceToChild(mesh, childMesh, cutFaceIndex, vertexIndex0, vertexIndex1,
-                                       cutHeight, bedToLocalConverter);
+            addLowerUpperDividedFaceToChild(mesh, childMesh, cutFaceIndex, vertexIndex0,
+                                            vertexIndex1,
+                                            cutHeight, bedToLocalConverter, topBottom);
         }
         setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
     }
@@ -149,7 +162,7 @@ public class MeshCutter
         float z = mesh.getPoints().get(vertexIndex * 3 + 2);
         return new Vertex(x, y, z);
     }
-    
+
     static Point3D makePoint3D(TriangleMesh mesh, int v0)
     {
         float x = mesh.getPoints().get(v0 * 3);
@@ -158,13 +171,12 @@ public class MeshCutter
         return new Point3D(x, y, z);
     }
 
-
     /**
      * Cut the face using the given vertices, and add the lower face(s) to the child mesh.
      */
-    private static void addLowerDividedFaceToChild(TriangleMesh mesh, TriangleMesh childMesh,
+    private static void addLowerUpperDividedFaceToChild(TriangleMesh mesh, TriangleMesh childMesh,
         int faceIndex, int vertexIntersect0, int vertexIntersect1, double cutHeight,
-        BedToLocalConverter bedToLocalConverter)
+        BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
         int v0 = mesh.getFaces().get(faceIndex * 6);
         int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
@@ -182,7 +194,8 @@ public class MeshCutter
         // get vertex index for intersections v01, v12, v02
         if (b01)
         {
-            Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), mesh, cutHeight, bedToLocalConverter);
+            Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), mesh, cutHeight,
+                                                    bedToLocalConverter);
             if (vertex01.equals(getVertex(mesh, vertexIntersect0)))
             {
                 v01 = vertexIntersect0;
@@ -195,7 +208,8 @@ public class MeshCutter
 
         if (b12)
         {
-            Vertex vertex12 = getIntersectingVertex(new Edge(v1, v2), mesh, cutHeight, bedToLocalConverter);
+            Vertex vertex12 = getIntersectingVertex(new Edge(v1, v2), mesh, cutHeight,
+                                                    bedToLocalConverter);
             if (vertex12.equals(getVertex(mesh, vertexIntersect0)))
             {
                 v12 = vertexIntersect0;
@@ -209,7 +223,8 @@ public class MeshCutter
 
         if (b02)
         {
-            Vertex vertex20 = getIntersectingVertex(new Edge(v0, v2), mesh, cutHeight, bedToLocalConverter);
+            Vertex vertex20 = getIntersectingVertex(new Edge(v0, v2), mesh, cutHeight,
+                                                    bedToLocalConverter);
             if (vertex20.equals(getVertex(mesh, vertexIntersect0)))
             {
                 v02 = vertexIntersect0;
@@ -219,15 +234,26 @@ public class MeshCutter
                 v02 = vertexIntersect1;
             }
         }
-        
+
         float v0Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v0)).getY();
         float v1Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v1)).getY();
         float v2Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v2)).getY();
 
-        // are points below cut?
-        boolean v0belowCut = v0Height > cutHeight;
-        boolean v1belowCut = v1Height > cutHeight;
-        boolean v2belowCut = v2Height > cutHeight;
+        // are points below/above cut?
+        boolean v0belowCut;
+        boolean v1belowCut;
+        boolean v2belowCut;
+        if (topBottom == TopBottom.BOTTOM)
+        {
+            v0belowCut = v0Height > cutHeight;
+            v1belowCut = v1Height > cutHeight;
+            v2belowCut = v2Height > cutHeight;
+        } else
+        {
+            v0belowCut = v0Height < cutHeight;
+            v1belowCut = v1Height < cutHeight;
+            v2belowCut = v2Height < cutHeight;
+        }
 
         int numPointsBelowCut = 0;
         numPointsBelowCut += v0belowCut ? 1 : 0;
@@ -326,33 +352,37 @@ public class MeshCutter
     /**
      * Remove the cut faces and any other faces above cut height from the mesh.
      */
-    private static void removeCutFacesAndFacesAboveCutFaces(TriangleMesh mesh,
-        List<Integer> cutFaces, double cutHeight, BedToLocalConverter bedToLocalConverter)
+    private static void removeCutFacesAndFacesAboveBelowCutFaces(TriangleMesh mesh,
+        List<Integer> cutFaces, double cutHeight, BedToLocalConverter bedToLocalConverter,
+        TopBottom topBottom)
     {
-        Set<Integer> facesAboveCut = new HashSet<>();
+        Set<Integer> facesAboveBelowCut = new HashSet<>();
 
         // compare vertices -Y to cutHeight
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
             int vertex0 = mesh.getFaces().get(faceIndex * 6);
             float vertex0YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0)).getY();
-            if (vertex0YInBed < cutHeight)
+            if (topBottom == TopBottom.BOTTOM && vertex0YInBed < cutHeight || 
+                topBottom == TopBottom.TOP && vertex0YInBed > cutHeight)
             {
-                facesAboveCut.add(faceIndex);
+                facesAboveBelowCut.add(faceIndex);
                 continue;
             }
             int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
             float vertex1YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1)).getY();
-            if (vertex1YInBed < cutHeight)
+            if (topBottom == TopBottom.BOTTOM && vertex1YInBed < cutHeight || 
+                topBottom == TopBottom.TOP && vertex1YInBed > cutHeight)
             {
-                facesAboveCut.add(faceIndex);
+                facesAboveBelowCut.add(faceIndex);
                 continue;
             }
             int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
             float vertex2YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex2)).getY();
-            if (vertex2YInBed < cutHeight)
+            if (topBottom == TopBottom.BOTTOM && vertex2YInBed < cutHeight || 
+                topBottom == TopBottom.TOP && vertex2YInBed > cutHeight)
             {
-                facesAboveCut.add(faceIndex);
+                facesAboveBelowCut.add(faceIndex);
                 continue;
             }
         }
@@ -360,7 +390,7 @@ public class MeshCutter
         ObservableFaceArray newFaceArray = new ObservableFaceArrayImpl();
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
-            if (facesAboveCut.contains(faceIndex))
+            if (facesAboveBelowCut.contains(faceIndex))
             {
                 continue;
             }
@@ -452,10 +482,10 @@ public class MeshCutter
     {
         int v0 = edge.v0;
         int v1 = edge.v1;
-        
+
         Point3D p0Bed = bedToLocalConverter.localToBed(makePoint3D(mesh, v0));
         Point3D p1Bed = bedToLocalConverter.localToBed(makePoint3D(mesh, v1));
-        
+
         double v0X = p0Bed.getX();
         double v1X = p1Bed.getX();
         double v0Y = p0Bed.getY();
@@ -472,10 +502,10 @@ public class MeshCutter
         }
         float interX = (float) (v0X + (v1X - v0X) * proportionAlongEdge);
         float interZ = (float) (v0Z + (v1Z - v0Z) * proportionAlongEdge);
-        
+
         Point3D intersectingPointInBed = new Point3D(interX, (float) cutHeight, interZ);
         Point3D intersectingPoint = bedToLocalConverter.bedToLocal(intersectingPointInBed);
-        
+
         Vertex vertex = new Vertex((float) intersectingPoint.getX(),
                                    (float) intersectingPoint.getY(),
                                    (float) intersectingPoint.getZ());
@@ -517,14 +547,16 @@ public class MeshCutter
     {
         PolygonIndices cutFaceIndices = new PolygonIndices();
         int previousFaceIndex = -1;
-        int faceIndex = getFirstUnvisitedIntersectingFace(faceVisited, mesh, cutHeight, bedToLocalConverter);
+        int faceIndex = getFirstUnvisitedIntersectingFace(faceVisited, mesh, cutHeight,
+                                                          bedToLocalConverter);
         if (faceIndex != -1)
         {
             while (true)
             {
 //                System.out.println("treat face B " + faceIndex);
                 Set<Integer> edges = getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex,
-                                                                    cutHeight, bedToLocalConverter);
+                                                                             cutHeight,
+                                                                             bedToLocalConverter);
                 if (edges.size() != 0)
                 {
                     faceVisited[faceIndex] = true;
@@ -667,10 +699,10 @@ public class MeshCutter
     private static boolean lineIntersectsPlane(TriangleMesh mesh, int vertex0, int vertex1,
         double cutHeight, BedToLocalConverter bedToLocalConverter)
     {
-        
+
         float y0 = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0)).getY();
         float y1 = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1)).getY();
-        
+
         if (((y0 <= cutHeight) && (cutHeight <= y1))
             || ((y1 <= cutHeight) && (cutHeight <= y0)))
         {
@@ -691,7 +723,6 @@ public class MeshCutter
         return -1;
     }
 
-    
     public static void setDebuggingNode(ModelContainer node)
     {
         MeshCutter.node = node;
@@ -831,9 +862,11 @@ public class MeshCutter
     }
 }
 
+
 /**
- * PolygonIndices is a list of Integers each of which is a vertex (or face) id in the mesh.
- * It is therefore effectively a (usually closed) loop of vertices.
+ * PolygonIndices is a list of Integers each of which is a vertex (or face) id in the mesh. It is
+ * therefore effectively a (usually closed) loop of vertices.
+ *
  * @author tony
  */
 class PolygonIndices extends ArrayList<Integer>
@@ -952,5 +985,3 @@ final class Vertex
         return (int) (Math.round(x * 10e6) + Math.round(y * 10e6) + Math.round(z * 10e6));
     }
 }
-
-
