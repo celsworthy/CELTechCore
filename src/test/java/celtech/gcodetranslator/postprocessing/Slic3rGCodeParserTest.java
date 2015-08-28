@@ -3,7 +3,9 @@ package celtech.gcodetranslator.postprocessing;
 import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
@@ -24,6 +26,7 @@ import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
+import org.parboiled.support.Var;
 
 /**
  *
@@ -110,90 +113,36 @@ public class Slic3rGCodeParserTest
     }
 
     @Test
-    public void travelDirective()
+    public void feedrateFloat()
     {
-        String commentPart = " move to first perimeter point";
-        String inputData = "G1 X112.395 Y82.193 F12000.000 \n";
+        String inputData = "F115.433";
         Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.TravelDirective());
+
+        Var<Integer> feedrateResult = new Var<>();
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.Feedrate(feedrateResult));
         ParsingResult result = runner.run(inputData);
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
-        assertEquals(1, result.valueStack.size());
-        assertTrue(result.valueStack.peek(0) instanceof TravelNode);
-        assertEquals(112.395, ((TravelNode) result.valueStack.peek(0)).getMovement().getX(), 0.001);
-        assertEquals(82.193, ((TravelNode) result.valueStack.peek(0)).getMovement().getY(), 0.001);
-        assertEquals(commentPart, ((TravelNode) result.valueStack.peek(0)).getRawCommentText());
+        assertEquals(0, result.valueStack.size());
+        assertEquals(115, feedrateResult.get().intValue());
     }
 
     @Test
-    public void retractDirective()
+    public void comment()
     {
-        String inputData = "G1 E-0.05000 F1200.00000 ; retract\n";
+        String commentPart = " move to first perimeter point ";
+        String inputData = " ;" + commentPart;
         Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.RetractDirective());
+
+        Var<String> commentResult = new Var<>();
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.Comment(commentResult));
         ParsingResult result = runner.run(inputData);
 
         assertFalse(result.hasErrors());
         assertTrue(result.matched);
-    }
-
-    @Test
-    public void unretractDirective()
-    {
-        String inputData = "G1 E0.30000 F1200.00000 ; unretract\n";
-        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.UnretractDirective());
-        ParsingResult result = runner.run(inputData);
-
-        assertFalse(result.hasErrors());
-        assertTrue(result.matched);
-    }
-
-    @Test
-    public void gcodeDirective()
-    {
-        String inputData = "G90 ; use absolute coordinates\n";
-        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
-        );
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.GCodeDirective());
-        ParsingResult result = runner.run(inputData);
-
-        assertFalse(result.hasErrors());
-        assertTrue(result.matched);
-    }
-
-    @Test
-    public void mcodeDirective()
-    {
-        String inputData = "M83 ; use relative distances for extrusion\n";
-        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.MCode());
-        ParsingResult result = runner.run(inputData);
-
-        assertFalse(result.hasErrors());
-        assertTrue(result.matched);
-    }
-
-    @Test
-    public void extrusionDirective()
-    {
-        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.ExtrusionDirective());
-
-        String eOnlyExtrude = "G1 X112.362 Y83.093 E0.04380 ; perimeter\n";
-        ParsingResult inputData1Result = runner.run(eOnlyExtrude);
-
-        assertFalse(inputData1Result.hasErrors());
-        assertTrue(inputData1Result.matched);
-
-        gcodeParser.resetLayer();
-
-        String dOnlyExtrude = "G1 X112.395 Y82.822 D0.123 F480.000 ; perimeter";
-        ParsingResult dOnlyExtrudeResult = runner.run(dOnlyExtrude);
-        assertFalse(dOnlyExtrudeResult.hasErrors());
-        assertTrue(dOnlyExtrudeResult.matched);
+        assertEquals(0, result.valueStack.size());
+        assertEquals(commentPart, commentResult.get());
     }
 
     @Test
@@ -212,148 +161,269 @@ public class Slic3rGCodeParserTest
         assertTrue(result.valueStack.peek(0) instanceof CommentNode);
         assertEquals(commentPart, ((CommentNode) result.valueStack.peek(0)).getRawCommentText());
     }
-//
-//    @Test
-//    public void commentDirectiveNoMatch()
-//    {
-//        String inputData = InnerPerimeterSectionNode.designator + "\n";
-//        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
-//        );
-//        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.CommentDirective());
-//        ParsingResult result = runner.run(inputData);
-//
-//        assertFalse(result.hasErrors());
-//        assertFalse(result.matched);
-//    }
-//
-//    @Test
-//    public void layerChangeDirective()
-//    {
-//        String inputData = "G0 Z1.3\n";
-//        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
-//        );
-//        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.LayerChangeDirective());
-//        ParsingResult result = runner.run(inputData);
-//
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
-//    }
-//
-//    @Test
-//    public void compoundTest()
-//    {
-//        String alternateInput = ";LAYER:0\n"
-//                + "M107\n"
-//                + "G1 F1800 E-0.50000\n"
-//                + "G0 F12000 X63.440 Y93.714 Z0.480\n"
-//                + ";TYPE:WALL-INNER\n"
-//                + "G1 F1800 E0.00000\n"
-//                + "G1 F1200 X63.569 Y94.143 E0.05379\n"
-//                + "G1 X63.398 Y94.154 E0.02058\n"
-//                + "G1 X63.353 Y93.880 E0.03334\n"
-//                + "G1 X63.309 Y93.825 E0.00846\n"
-//                + "G1 X63.440 Y93.714 E0.02062\n"
-//                + "G0 F12000 X63.120 Y93.197\n"
-//                + ";TYPE:WALL-OUTER\n"
-//                + "G1 F1200 X62.564 Y91.751 E0.18603\n"
-//                + "G1 X61.057 Y88.531 E0.42691\n"
-//                + "G1 X60.380 Y86.590 E0.24685\n"
-//                + "G1 X60.346 Y86.419 E0.02094\n"
-//                + "G1 X61.247 Y86.240 E0.11031\n";
-//
-//        String inputData = ";LAYER:0\n"
-//                + "M107\n"
-//                + "G1 F1800 E-0.50000\n"
-//                + "G0 F12000 X88.302 Y42.421 Z1.020\n"
-//                + ";TYPE:WALL-INNER\n"
-//                + "G1 F1800 E0.00000\n"
-//                + "G1 F840 X115.304 Y42.421 E5.40403\n"
-//                + "G1 X115.304 Y114.420 E14.40948\n"
-//                + "G1 X88.302 Y114.420 E5.40403\n"
-//                + "G1 X88.302 Y42.421 E14.40948\n"
-//                + "G0 F12000 X87.302 Y41.421\n"
-//                + ";TYPE:WALL-OUTER\n"
-//                + "G1 F840 X116.304 Y41.421 E5.80430\n"
-//                + "G1 X116.304 Y115.420 E14.80975\n"
-//                + "G1 X87.302 Y115.420 E5.80430\n"
-//                + "G1 X87.302 Y41.421 E14.80975\n"
-//                + "G0 F12000 X87.902 Y41.931\n"
-//                + "G0 X88.782 Y42.820\n"
-//                + ";TYPE:FILL\n"
-//                + "G1 F840 X114.903 Y68.941 E5.91448\n"
-//                + "G0 F12000 X114.903 Y70.355\n"
-//                + "G1 F840 X88.700 Y44.153 E5.93294\n"
-//                + "G0 F12000 X88.700 Y45.567\n"
-//                + "G1 F840 X114.903 Y71.769 E5.93294\n"
-//                + "G0 F12000 X114.903 Y73.184\n";
-//
-//        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-//        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
-//        ParsingResult result = runner.run(inputData);
-//
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
-//        LayerNode layerNode = gcodeParser.getLayerNode();
-//
-//        assertNotNull(layerNode);
-//
-//        assertEquals(
-//                4, layerNode.getChildren().size());
-//
-//        assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
-//        assertEquals(RetractNode.class, layerNode.getChildren().get(1).getClass());
-//        assertEquals(TravelNode.class, layerNode.getChildren().get(2).getClass());
-//        assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(3).getClass());
-//
-//        OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(3);
-//
-//        assertEquals(
-//                3, objectNode.getChildren().size());
-//        assertEquals(InnerPerimeterSectionNode.class, objectNode.getChildren().get(0).getClass());
-//        assertEquals(OuterPerimeterSectionNode.class, objectNode.getChildren().get(1).getClass());
-//        assertEquals(FillSectionNode.class, objectNode.getChildren().get(2).getClass());
-//    }
-//
-//    @Test
-//    public void objectSectionTest()
-//    {
-//        String inputData = "T1\n"
-//                + ";TYPE:FILL\n"
-//                + "G1 F1800 E-0.50000\n"
-//                + "G0 F12000 X88.302 Y42.421 Z1.020\n"
-//                + "G1 F1800 E0.00000\n"
-//                + "G1 X12.3 Y14.5 E1.00000\n"
-//                + ";TYPE:WALL-OUTER\n"
-//                + "G1 X125.3 Y314.5 E1.00000\n";
-//
-//        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
-//        );
-//        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.ObjectSection());
-//        ParsingResult result = runner.run(inputData);
-//
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
-//
-//        assertFalse(result.valueStack.isEmpty());
-//        assertTrue(result.valueStack.peek() instanceof ObjectDelineationNode);
-//
-//        ObjectDelineationNode node = (ObjectDelineationNode) result.valueStack.pop();
-//        assertEquals(2, node.getChildren().size());
-//        assertEquals(FillSectionNode.class, node.getChildren().get(0).getClass());
-//        assertEquals(OuterPerimeterSectionNode.class, node.getChildren().get(1).getClass());
-//
-//        FillSectionNode fillNode = (FillSectionNode) node.getChildren().get(0);
-//        assertEquals(4, fillNode.getChildren().size());
-//        assertEquals(RetractNode.class, fillNode.getChildren().get(0).getClass());
-//        assertEquals(TravelNode.class, fillNode.getChildren().get(1).getClass());
-//        assertEquals(UnretractNode.class, fillNode.getChildren().get(2).getClass());
-//        assertEquals(ExtrusionNode.class, fillNode.getChildren().get(3).getClass());
-//
-//        OuterPerimeterSectionNode outerNode = (OuterPerimeterSectionNode) node.getChildren().get(1);
-//        assertEquals(1, outerNode.getChildren().size());
-//        assertEquals(ExtrusionNode.class, outerNode.getChildren().get(0).getClass());
-//    }
-//
+
+    @Test
+    public void commentDirectiveNoMatch()
+    {
+        String inputData = InnerPerimeterSectionNode.designator + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
+        );
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.CommentDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertFalse(result.matched);
+    }
+
+    @Test
+    public void travelDirective()
+    {
+        String commentPart = " move to first perimeter point";
+        String inputData = "G1 X112.395 Y82.193 F356.000 ;" + commentPart + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.TravelDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof TravelNode);
+        assertEquals(112.395, ((TravelNode) result.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(82.193, ((TravelNode) result.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(356, ((TravelNode) result.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
+        assertEquals(commentPart, ((TravelNode) result.valueStack.peek(0)).getRawCommentText());
+    }
+
+    @Test
+    public void retractDirective()
+    {
+        String commentPart = " move to first perimeter point";
+        String inputData = "G1 E-0.05000 F3545.00000 ;" + commentPart + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.RetractDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof RetractNode);
+        assertEquals(-0.05, ((RetractNode) result.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0, ((RetractNode) result.valueStack.peek(0)).getExtrusion().getD(), 0.001);
+        assertEquals(3545, ((RetractNode) result.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
+        assertEquals(commentPart, ((RetractNode) result.valueStack.peek(0)).getRawCommentText());
+    }
+
+    @Test
+    public void unretractDirective()
+    {
+        String commentPart = " unretract";
+        String inputData = "G1 E0.30000 F1200.00000 ;" + commentPart + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.UnretractDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof UnretractNode);
+        assertEquals(0.3, ((UnretractNode) result.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0, ((UnretractNode) result.valueStack.peek(0)).getExtrusion().getD(), 0.001);
+        assertEquals(1200, ((UnretractNode) result.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
+        assertEquals(commentPart, ((UnretractNode) result.valueStack.peek(0)).getRawCommentText());
+    }
+
+    @Test
+    public void gcodeDirective()
+    {
+        String commentPart = " use absolute coordinates";
+        String inputData = "G90 ;" + commentPart + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
+        );
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.GCodeDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof GCodeDirectiveNode);
+        assertEquals(90, ((GCodeDirectiveNode) result.valueStack.peek(0)).getGValue().intValue());
+        assertEquals(commentPart, ((GCodeDirectiveNode) result.valueStack.peek(0)).getRawCommentText());
+    }
+
+    @Test
+    public void mcodeDirective()
+    {
+        String commentPart = " use relative distances for extrusion";
+        String inputData = "M83 ;" + commentPart + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.MCode());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof MCodeNode);
+        assertEquals(83, ((MCodeNode) result.valueStack.peek(0)).getMNumber());
+        assertEquals(commentPart, ((MCodeNode) result.valueStack.peek(0)).getRawCommentText());
+    }
+
+    @Test
+    public void extrusionDirective()
+    {
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.ExtrusionDirective());
+
+        String commentPart = "perimeter";
+        String eOnlyExtrude = "G1 X112.362 Y83.093 E0.04380 ;" + commentPart + "\n";
+        ParsingResult inputData1Result = runner.run(eOnlyExtrude);
+
+        assertFalse(inputData1Result.hasErrors());
+        assertTrue(inputData1Result.matched);
+        assertEquals(1, inputData1Result.valueStack.size());
+        assertTrue(inputData1Result.valueStack.peek(0) instanceof ExtrusionNode);
+        assertEquals(112.362, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(83.093, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(0, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getMovement().getZ(), 0.001);
+        assertEquals(0.04380, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getExtrusion().getD(), 0.0001);
+        assertEquals(commentPart, ((ExtrusionNode) inputData1Result.valueStack.peek(0)).getRawCommentText());
+
+        gcodeParser.resetLayer();
+
+        String dOnlyExtrude = "G1 X112.395 Y82.822 D0.123 F480.000 ;" + commentPart + "\n";
+        ParsingResult dOnlyExtrudeResult = runner.run(dOnlyExtrude);
+        assertFalse(dOnlyExtrudeResult.hasErrors());
+        assertTrue(dOnlyExtrudeResult.matched);
+        assertEquals(1, dOnlyExtrudeResult.valueStack.size());
+        assertTrue(dOnlyExtrudeResult.valueStack.peek(0) instanceof ExtrusionNode);
+        assertEquals(112.395, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(82.822, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(0, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getMovement().getZ(), 0.001);
+        assertEquals(0, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getExtrusion().getE(), 0.001);
+        assertEquals(0.123, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getExtrusion().getD(), 0.0001);
+        assertEquals(commentPart, ((ExtrusionNode) dOnlyExtrudeResult.valueStack.peek(0)).getRawCommentText());
+    }
+
+    @Test
+    public void layerChangeDirective()
+    {
+        String commentPart = " move to next layer (66)";
+        String inputData = "G1 Z0.300 F12000.000 ;" + commentPart + "\n";
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.LayerChangeDirective());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        assertEquals(1, result.valueStack.size());
+        assertTrue(result.valueStack.peek(0) instanceof LayerChangeDirectiveNode);
+        assertEquals(66, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getLayerNumber());
+        assertEquals(0, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(0, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(0.3, ((LayerChangeDirectiveNode) result.valueStack.peek(0)).getMovement().getZ(), 0.001);
+    }
+
+    @Test
+    public void compoundTest()
+    {
+        String inputData = ";LAYER:0\n"
+                + "M107\n"
+                + "G1 F1800 E-0.50000\n"
+                + "G0 F12000 X88.302 Y42.421 Z1.020\n"
+                + ";TYPE:WALL-INNER\n"
+                + "G1 F1800 E0.00000\n"
+                + "G1 F840 X115.304 Y42.421 E5.40403\n"
+                + "G1 X115.304 Y114.420 E14.40948\n"
+                + "G1 X88.302 Y114.420 E5.40403\n"
+                + "G1 X88.302 Y42.421 E14.40948\n"
+                + "G0 F12000 X87.302 Y41.421\n"
+                + ";TYPE:WALL-OUTER\n"
+                + "G1 F840 X116.304 Y41.421 E5.80430\n"
+                + "G1 X116.304 Y115.420 E14.80975\n"
+                + "G1 X87.302 Y115.420 E5.80430\n"
+                + "G1 X87.302 Y41.421 E14.80975\n"
+                + "G0 F12000 X87.902 Y41.931\n"
+                + "G0 X88.782 Y42.820\n"
+                + ";TYPE:FILL\n"
+                + "G1 F840 X114.903 Y68.941 E5.91448\n"
+                + "G0 F12000 X114.903 Y70.355\n"
+                + "G1 F840 X88.700 Y44.153 E5.93294\n"
+                + "G0 F12000 X88.700 Y45.567\n"
+                + "G1 F840 X114.903 Y71.769 E5.93294\n"
+                + "G0 F12000 X114.903 Y73.184\n";
+
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+        LayerNode layerNode = gcodeParser.getLayerNode();
+
+        assertNotNull(layerNode);
+
+        assertEquals(
+                4, layerNode.getChildren().size());
+
+        assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
+        assertEquals(RetractNode.class, layerNode.getChildren().get(1).getClass());
+        assertEquals(TravelNode.class, layerNode.getChildren().get(2).getClass());
+        assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(3).getClass());
+
+        OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(3);
+
+        assertEquals(
+                3, objectNode.getChildren().size());
+        assertEquals(InnerPerimeterSectionNode.class, objectNode.getChildren().get(0).getClass());
+        assertEquals(OuterPerimeterSectionNode.class, objectNode.getChildren().get(1).getClass());
+        assertEquals(FillSectionNode.class, objectNode.getChildren().get(2).getClass());
+    }
+
+    @Test
+    public void objectSectionTest()
+    {
+        String inputData = "T0 ; change extruder\n"
+                + "G1 Z0.300 F12000.000 ; move to next layer (0)\n"
+                + "G1 E-0.05000 F1200.00000 ; retract for toolchange\n"
+                + "T2 ; change extruder\n"
+                + "G1 E-0.05000 F1200.00000 ; retract\n"
+                + "G1 X36.894 Y119.142 F12000.000 ; move to first perimeter point\n"
+                + "G1 E0.30000 F1200.00000 ; unretract\n"
+                + "G1 X40.334 Y118.098 E0.57770 F480.000 ; perimeter\n"
+                + "G1 X43.703 Y117.765 E0.54395 ; perimeter\n"
+                + "G1 X43.913 Y117.745 E0.03392 F480.000 ; perimeter\n"
+                + "G1 X47.492 Y118.098 E0.57787 ; perimeter\n"
+                + "G1 X50.932 Y119.142 E0.57770 ; perimeter\n"
+                + "G1 X54.104 Y120.836 E0.57776 ; perimeter\n";
+
+        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class
+        );
+        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.ObjectSection());
+        ParsingResult result = runner.run(inputData);
+
+        assertFalse(result.hasErrors());
+        assertTrue(result.matched);
+
+        assertFalse(result.valueStack.isEmpty());
+        assertTrue(result.valueStack.peek() instanceof ObjectDelineationNode);
+
+        ObjectDelineationNode node = (ObjectDelineationNode) result.valueStack.pop();
+        assertEquals(2, node.getChildren().size());
+        assertEquals(FillSectionNode.class, node.getChildren().get(0).getClass());
+        assertEquals(OuterPerimeterSectionNode.class, node.getChildren().get(1).getClass());
+
+        FillSectionNode fillNode = (FillSectionNode) node.getChildren().get(0);
+        assertEquals(4, fillNode.getChildren().size());
+        assertEquals(RetractNode.class, fillNode.getChildren().get(0).getClass());
+        assertEquals(TravelNode.class, fillNode.getChildren().get(1).getClass());
+        assertEquals(UnretractNode.class, fillNode.getChildren().get(2).getClass());
+        assertEquals(ExtrusionNode.class, fillNode.getChildren().get(3).getClass());
+
+        OuterPerimeterSectionNode outerNode = (OuterPerimeterSectionNode) node.getChildren().get(1);
+        assertEquals(1, outerNode.getChildren().size());
+        assertEquals(ExtrusionNode.class, outerNode.getChildren().get(0).getClass());
+    }
+
 //    @Test
 //    public void objectSectionNoTriggerTest()
 //    {
@@ -832,184 +902,4 @@ public class Slic3rGCodeParserTest
 //        assertTrue(result.matched);
 //    }
 //
-//    @Test
-//    public void curaMixedLayerStartTest()
-//    {
-//        String inputData = ";LAYER:1\n"
-//                + "M106 S94\n"
-//                + "G0 F12000 X103.562 Y79.849 Z0.600\n"
-//                + ";TYPE:WALL-INNER\n"
-//                + "G1 F900 X103.749 Y79.311 E0.13679\n"
-//                + "G1 X103.810 Y78.751 E0.13529\n"
-//                + "G1 X103.749 Y78.186 E0.13648\n"
-//                + "G1 X103.561 Y77.649 E0.13664\n"
-//                + "G1 X103.258 Y77.165 E0.13714\n"
-//                + "G1 X102.852 Y76.752 E0.13909\n"
-//                + "G1 X102.302 Y76.409 E0.15567\n"
-//                + "G1 X101.638 Y76.222 E0.16567\n"
-//                + "G1 X101.219 Y76.188 E0.10096\n";
-//
-//        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-//        TracingParseRunner runner = new TracingParseRunner<>(gcodeParser.Layer());
-//        ParsingResult result = runner.run(inputData);
-//
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
-//        LayerNode layerNode = gcodeParser.getLayerNode();
-//
-//        assertNotNull(layerNode);
-//
-//        assertEquals(
-//                3, layerNode.getChildren().size());
-//
-//        assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
-//        assertEquals(TravelNode.class, layerNode.getChildren().get(1).getClass());
-//        assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(2).getClass());
-//
-//        OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(2);
-//
-//        assertEquals(
-//                1, objectNode.getChildren().size());
-//        assertEquals(InnerPerimeterSectionNode.class, objectNode.getChildren().get(0).getClass());
-//
-//        InnerPerimeterSectionNode inner = (InnerPerimeterSectionNode) objectNode.getChildren().get(0);
-//        assertEquals(ExtrusionNode.class, inner.getChildren().get(0).getClass());
-//
-//    }
-//
-//    @Test
-//    public void curaTravelFirstLayerStartTest()
-//    {
-//        String inputData = ";LAYER:7\n"
-//                + "G0 F12000 X109.157 Y81.288 Z2.400\n"
-//                + ";TYPE:WALL-INNER\n"
-//                + "G1 F600 X109.157 Y81.299 E0.00264\n"
-//                + "G1 X99.549 Y81.288 E2.30747\n"
-//                + "G1 X99.351 Y81.246 E0.04861\n"
-//                + "G1 X99.173 Y81.166 E0.04687\n"
-//                + "G1 X99.015 Y81.051 E0.04693\n"
-//                + "G1 X98.885 Y80.905 E0.04695\n"
-//                + "G1 X98.787 Y80.736 E0.04692\n"
-//                + "G1 X98.727 Y80.552 E0.04648\n"
-//                + "G1 X98.700 Y80.293 E0.06254\n"
-//                + "G1 X98.700 Y69.712 E2.54115\n"
-//                + "G1 X98.727 Y69.446 E0.06421\n"
-//                + "G1 X98.788 Y69.258 E0.04747\n"
-//                + "G1 X98.882 Y69.095 E0.04519\n"
-//                + "G1 X99.014 Y68.949 E0.04727\n"
-//                + "G1 X99.174 Y68.832 E0.04760\n"
-//                + "G1 X99.353 Y68.752 E0.04709\n"
-//                + "G1 X99.548 Y68.711 E0.04786\n"
-//                + "G1 X110.451 Y68.711 E2.61848\n"
-//                + "G1 X110.646 Y68.752 E0.04786\n"
-//                + "G1 X110.824 Y68.832 E0.04687\n"
-//                + "G1 X110.984 Y68.948 E0.04746\n"
-//                + "G1 X111.115 Y69.094 E0.04711\n"
-//                + "G1 X111.208 Y69.255 E0.04465\n"
-//                + "G1 X111.274 Y69.454 E0.05035\n"
-//                + "G1 X111.300 Y69.701 E0.05965\n"
-//                + "G1 X111.300 Y80.297 E2.54475\n"
-//                + "G1 X111.272 Y80.553 E0.06185\n"
-//                + "G1 X111.212 Y80.735 E0.04602\n"
-//                + "G1 X111.113 Y80.907 E0.04766\n"
-//                + "G1 X110.982 Y81.052 E0.04693\n"
-//                + "G1 X110.823 Y81.168 E0.04727\n"
-//                + "G1 X110.648 Y81.246 E0.04601\n"
-//                + "G1 X110.451 Y81.288 E0.04838\n"
-//                + "G1 X109.157 Y81.288 E0.31077\n"
-//                + "G0 F12000 X109.957 Y82.088\n"
-//                + ";TYPE:WALL-OUTER\n"
-//                + "G1 F600 X109.957 Y82.100 E0.00288\n"
-//                + "G1 X99.461 Y82.088 E2.52074\n"
-//                + "G1 X99.103 Y82.012 E0.08789\n"
-//                + "G1 X98.766 Y81.860 E0.08879\n"
-//                + "G1 X98.477 Y81.649 E0.08594\n"
-//                + "G1 X98.232 Y81.376 E0.08810\n"
-//                + "G1 X98.053 Y81.065 E0.08618\n"
-//                + "G1 X97.940 Y80.719 E0.08742\n"
-//                + "G1 X97.900 Y80.336 E0.09248\n"
-//                + "G1 X97.900 Y69.670 E2.56156\n"
-//                + "G1 X97.940 Y69.279 E0.09439\n"
-//                + "G1 X98.053 Y68.933 E0.08742\n"
-//                + "G1 X98.232 Y68.621 E0.08639\n"
-//                + "G1 X98.474 Y68.353 E0.08672\n"
-//                + "G1 X98.776 Y68.133 E0.08973\n"
-//                + "G1 X99.103 Y67.987 E0.08600\n"
-//                + "G1 X99.461 Y67.911 E0.08789\n"
-//                + "G1 X110.538 Y67.911 E2.66027\n"
-//                + "G1 X110.896 Y67.987 E0.08789\n"
-//                + "G1 X111.223 Y68.133 E0.08600\n"
-//                + "G1 X111.523 Y68.351 E0.08906\n"
-//                + "G1 X111.765 Y68.620 E0.08690\n"
-//                + "G1 X111.942 Y68.928 E0.08531\n"
-//                + "G1 X112.060 Y69.281 E0.08939\n"
-//                + "G1 X112.100 Y69.664 E0.09248\n"
-//                + "G1 X112.100 Y80.336 E2.56300\n"
-//                + "G1 X112.058 Y80.722 E0.09325\n"
-//                + "G1 X111.944 Y81.067 E0.08726\n"
-//                + "G1 X111.764 Y81.380 E0.08671\n"
-//                + "G1 X111.521 Y81.650 E0.08724\n"
-//                + "G1 X111.225 Y81.864 E0.08772\n"
-//                + "G1 X110.894 Y82.012 E0.08708\n"
-//                + "G1 X110.538 Y82.088 E0.08742\n"
-//                + "G1 X109.957 Y82.088 E0.13953\n"
-//                + "G0 F12000 X109.668 Y80.967\n"
-//                + ";TYPE:FILL\n"
-//                + "G1 F600 X110.313 Y80.322 E0.19141\n"
-//                + "G1 X110.504 Y79.564 E0.19853\n"
-//                + "G1 X110.463 Y78.475 E0.32192\n"
-//                + "G1 X110.978 Y77.394 E0.28757\n"
-//                + "G0 F12000 X110.979 Y75.696\n"
-//                + "G1 F600 X105.700 Y80.975 E1.79296\n"
-//                + "G0 F12000 X105.135 Y80.975\n"
-//                + "G1 F600 X106.336 Y80.339 E0.28844\n"
-//                + "G1 X106.830 Y80.976 E0.14302\n"
-//                + "G1 X108.422 Y79.950 E0.45486\n"
-//                + "G0 F12000 X105.057 Y79.921\n"
-//                + "G1 F600 X103.558 Y80.854 E0.35672\n"
-//                + "G1 X102.677 Y80.604 E0.08000\n"
-//                + "G1 X101.686 Y80.463 E0.24941\n"
-//                + "G1 X100.491 Y80.527 E0.34381\n"
-//                + "G1 X99.261 Y80.625 E0.29411\n"
-//                + "G1 X99.522 Y79.234 E0.34074\n"
-//                + "G1 X100.016 Y78.174 E0.28086\n"
-//                + "G0 F12000 X99.018 Y76.343\n"
-//                + "G1 F600 X106.331 Y69.031 E2.48361\n"
-//                + "G0 F12000 X108.629 Y69.031\n"
-//                + "G1 F600 X110.979 Y71.381 E0.79815\n"
-//                + "G0 F12000 X100.075 Y71.327\n"
-//                + "G1 F600 X99.018 Y71.817 E0.35849\n"
-//                + "G1 X99.707 Y69.997 E0.30262\n"
-//                + "G1 X99.018 Y70.120 E0.16809\n"
-//                + "G0 F12000 X99.018 Y70.734\n"
-//                + "G1 F600 X109.252 Y80.967 E3.47570\n"
-//                + "G0 F12000 X108.525 Y80.979\n"
-//                + "G1 F600 X109.475 Y80.028 E0.32283\n"
-//                + "G0 F12000 X99.675 Y77.383\n"
-//                + "G1 F600 X99.019 Y77.473 E0.22263\n"
-//                + "G1 X99.154 Y76.773 E0.17121\n";
-//
-//        Slic3rGCodeParser gcodeParser = Parboiled.createParser(Slic3rGCodeParser.class);
-//        BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
-//        ParsingResult result = runner.run(inputData);
-//
-//        assertFalse(result.hasErrors());
-//        assertTrue(result.matched);
-//        LayerNode layerNode = gcodeParser.getLayerNode();
-//
-//        assertNotNull(layerNode);
-//
-//        assertEquals(2, layerNode.getChildren().size());
-//
-//        assertEquals(TravelNode.class, layerNode.getChildren().get(0).getClass());
-//        assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(1).getClass());
-//
-//        OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(1);
-//
-//        assertEquals(
-//                3, objectNode.getChildren().size());
-//        assertEquals(InnerPerimeterSectionNode.class, objectNode.getChildren().get(0).getClass());
-//        assertEquals(OuterPerimeterSectionNode.class, objectNode.getChildren().get(1).getClass());
-//        assertEquals(FillSectionNode.class, objectNode.getChildren().get(2).getClass());
-//    }
 }
