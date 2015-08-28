@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
 
 
@@ -22,18 +23,22 @@ class CutResult
     /**
      * The child mesh that was created by the split.
      */
-    TriangleMesh childMesh;
+    final TriangleMesh childMesh;
     /**
      * The indices of the vertices of the child mesh, in sequence, that form the perimeter of the
      * new open face that needs to be triangulated. Some loops (list of points) may be holes inside
      * other loops.
      */
-    List<PolygonIndices> loopsOfVerticesOnOpenFace;
+    final List<PolygonIndices> loopsOfVerticesOnOpenFace;
+    
+    final MeshCutter.BedToLocalConverter bedToLocalConverter;
 
-    public CutResult(TriangleMesh childMesh, List<PolygonIndices> vertexsOnOpenFace)
+    public CutResult(TriangleMesh childMesh, List<PolygonIndices> loopsOfVerticesOnOpenFace,
+        MeshCutter.BedToLocalConverter bedToLocalConverter)
     {
         this.childMesh = childMesh;
-        this.loopsOfVerticesOnOpenFace = vertexsOnOpenFace;
+        this.loopsOfVerticesOnOpenFace = loopsOfVerticesOnOpenFace;
+        this.bedToLocalConverter = bedToLocalConverter;
     }
 
     /**
@@ -51,7 +56,7 @@ class CutResult
         for (Set<PolygonIndices> nestedPolygons : nestedPolygonsSet)
         {
             List<PolygonIndices> nestedPolygonsList = sortByArea(nestedPolygons);
-           PolygonIndices outerPolygon = nestedPolygonsList.get(0);
+            PolygonIndices outerPolygon = nestedPolygonsList.get(0);
             // inner polygons is remaining polygons after removing outer polygon
             nestedPolygonsList.remove(0);
             loopSets.add(new LoopSet(outerPolygon, nestedPolygonsList));
@@ -130,9 +135,9 @@ class CutResult
     }
     
     private Point getPointAt(PolygonIndices loop, int index) {
-        double x = childMesh.getPoints().get(loop.get(index) * 3);
-        double y = childMesh.getPoints().get(loop.get(index) * 3 + 2);
-        return new Point(x, y);
+        Point3D point = MeshCutter.makePoint3D(childMesh, index);
+        Point3D pointInBed = bedToLocalConverter.localToBed(point);
+        return new Point(pointInBed.getX(), pointInBed.getZ());
     }
 
     public boolean contains(PolygonIndices outerPolygon, PolygonIndices innerPolygon)

@@ -156,13 +156,12 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                 int ix = 1;
                 for (TriangleMesh subMesh : subMeshes)
                 {
-                    System.out.println("add child mesh of " + subMesh.getFaces().size() / 6
-                        + " faces");
                     MeshView meshView = new MeshView(subMesh);
                     meshView.cullFaceProperty().set(CullFace.NONE);
                     ModelContainer newModelContainer = new ModelContainer(
                         modelContainer.getModelFile(), meshView);
                     newModelContainer.setModelName(modelName + " " + ix);
+                    newModelContainer.setState(modelContainer.getState());
                     newModelContainer.moveToCentre();
                     newModelContainer.dropToBed();
                     undoableProject.addModel(newModelContainer);

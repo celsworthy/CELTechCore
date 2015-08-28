@@ -60,7 +60,7 @@ public class MeshCutter
                                                                       bedToLocalConverter);
         for (CutResult splitResult : splitResults)
         {
-            TriangleMesh childMesh = closeOpenFace(splitResult, cutHeight);
+            TriangleMesh childMesh = closeOpenFace(splitResult, cutHeight, bedToLocalConverter);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             triangleMeshs.add(childMesh);
         }
@@ -85,7 +85,7 @@ public class MeshCutter
 
         TriangleMesh lowerMesh = makeLowerMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight,
                                                bedToLocalConverter);
-        CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices);
+        CutResult cutResult = new CutResult(lowerMesh, loopsOfVertices, bedToLocalConverter);
         cutResults.add(cutResult);
         return cutResults;
     }
@@ -155,7 +155,7 @@ public class MeshCutter
         return new Vertex(x, y, z);
     }
     
-    private static Point3D makePoint3D(TriangleMesh mesh, int v0)
+    static Point3D makePoint3D(TriangleMesh mesh, int v0)
     {
         float x = mesh.getPoints().get(v0 * 3);
         float y = mesh.getPoints().get(v0 * 3 + 1);
@@ -278,7 +278,6 @@ public class MeshCutter
             vertices[2] = c1;
             vertices[4] = c2;
             childMesh.getFaces().addAll(vertices);
-            System.out.println("add face type A " + c0 + " " + c1 + " " + c2);
 
         } else
         {
@@ -321,12 +320,10 @@ public class MeshCutter
             vertices[2] = c1;
             vertices[4] = c2;
             childMesh.getFaces().addAll(vertices);
-            System.out.println("add face type B " + c0 + " " + c1 + " " + c2);
             vertices[0] = c3;
             vertices[2] = c4;
             vertices[4] = c5;
             childMesh.getFaces().addAll(vertices);
-            System.out.println("add face type C " + c3 + " " + c4 + " " + c5);
         }
 
     }
@@ -704,7 +701,8 @@ public class MeshCutter
      * Take the given mesh and vertices of the open face, close the face and add the new face to the
      * mesh and return it.
      */
-    private static TriangleMesh closeOpenFace(CutResult cutResult, double cutHeight)
+    private static TriangleMesh closeOpenFace(CutResult cutResult, double cutHeight,
+        BedToLocalConverter bedToLocalConverter)
     {
         TriangleMesh mesh = cutResult.childMesh;
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
@@ -713,15 +711,15 @@ public class MeshCutter
             try
             {
                 List<Integer> vertices = loopSet.outerLoop;
-                Polygon outerPolygon = makePolygon(vertices, mesh);
+                Polygon outerPolygon = makePolygon(vertices, mesh, bedToLocalConverter);
                 for (List<Integer> innerVertices : loopSet.innerLoops)
                 {
-                    Polygon innerPolygon = makePolygon(innerVertices, mesh);
+                    Polygon innerPolygon = makePolygon(innerVertices, mesh, bedToLocalConverter);
                     outerPolygon.addHole(innerPolygon);
                 }
 
                 Poly2Tri.triangulate(outerPolygon);
-                addTriangulatedFacesToMesh(mesh, outerPolygon, vertices, cutHeight);
+                addTriangulatedFacesToMesh(mesh, outerPolygon, vertices, cutHeight, bedToLocalConverter);
             } catch (Exception ex)
             {
                 System.out.println("unable to close loop: " + loopSet);
@@ -731,21 +729,27 @@ public class MeshCutter
         return mesh;
     }
 
-    private static Polygon makePolygon(List<Integer> vertices, TriangleMesh mesh)
+    /**
+     * Make a Polygon for the given vertices. 3D points should be in bed coordinates so that
+     * only X and Z are required (Y being a constant at the cut height in bed coordinates).
+     */
+    private static Polygon makePolygon(List<Integer> vertices, TriangleMesh mesh,
+        BedToLocalConverter bedToLocalConverter)
     {
         List<PolygonPoint> points = new ArrayList<>();
         for (Integer vertexIndex : vertices)
         {
-            if (mesh.getPoints().get(vertexIndex * 3) > 1e5 || mesh.getPoints().get(vertexIndex * 3)
-                < -1e5
-                || mesh.getPoints().get(vertexIndex * 3 + 2) > 1e5 || mesh.getPoints().get(
-                    vertexIndex * 3 + 2) < -1e5)
+            Point3D pointInBed = bedToLocalConverter.localToBed(makePoint3D(mesh, vertexIndex));
+            if (pointInBed.getX() > 1e5 || 
+                pointInBed.getX() < -1e5||
+                pointInBed.getZ() > 1e5 ||
+                pointInBed.getZ() < -1e5)
             {
                 throw new RuntimeException("invalid point calculated");
             }
             points.add(new PolygonPoint(
-                mesh.getPoints().get(vertexIndex * 3),
-                mesh.getPoints().get(vertexIndex * 3 + 2)));
+                pointInBed.getX(),
+                pointInBed.getZ()));
         }
         Polygon outerPolygon = new Polygon(points);
         return outerPolygon;
@@ -756,24 +760,27 @@ public class MeshCutter
      * one of the outerVertices then also add that point to the mesh.
      */
     private static void addTriangulatedFacesToMesh(TriangleMesh mesh, Polygon outerPolygon,
-        List<Integer> outerVertices, double cutHeight)
+        List<Integer> outerVertices, double cutHeight, BedToLocalConverter bedToLocalConverter)
     {
+        // vertexToVertex allows us to identify equal vertices (but different instances) and then
+        // get the definitive instance of that vertex, to avoid superfluous vertices in the mesh.
         Map<Vertex, Vertex> vertexToVertex = new HashMap<>();
+        // first add already existing vertices for outer perimeter of polygon to vertexToVertex
         for (Integer vertexIndex : outerVertices)
         {
-            Vertex vertex = new Vertex(vertexIndex, mesh.getPoints().get(vertexIndex * 3),
-                                       mesh.getPoints().get(vertexIndex * 3 + 1),
-                                       mesh.getPoints().get(vertexIndex * 3 + 2));
+            Point3D point = makePoint3D(mesh, vertexIndex);
+            Point3D pointInBed = bedToLocalConverter.localToBed(point);
+            Vertex vertex = new Vertex(vertexIndex,
+                (float) pointInBed.getX(), (float) pointInBed.getY(), (float) pointInBed.getZ());
             vertexToVertex.put(vertex, vertex);
         }
 
         for (DelaunayTriangle triangle : outerPolygon.getTriangles())
         {
             TriangulationPoint[] points = triangle.points;
-            Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight);
-            Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight);
-            Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight);
-//            System.out.println(vertex0 + " " + vertex1 + " " + vertex2);
+            Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight, bedToLocalConverter);
+            Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight, bedToLocalConverter);
+            Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight, bedToLocalConverter);
             makeFace(mesh, vertex0.meshVertexIndex, vertex1.meshVertexIndex, vertex2.meshVertexIndex);
         }
     }
@@ -788,13 +795,20 @@ public class MeshCutter
         mesh.getFaces().addAll(vertices);
     }
 
+    /**
+     * Make a Vertex for the point, in bed coordinates (so that equality comparisons are
+     * all in bed coordinates), and add the points to the mesh in local coordinates.
+     */
     private static Vertex getOrMakeVertexForPoint(TriangleMesh mesh, TriangulationPoint point,
-        Map<Vertex, Vertex> vertexToVertex, double cutHeight)
+        Map<Vertex, Vertex> vertexToVertex, double cutHeight, BedToLocalConverter bedToLocalConverter)
     {
-        Vertex vertex = new Vertex((float) point.getX(), (float) cutHeight, (float) point.getY());
+        Point3D pointInBed = new Point3D(point.getX(), cutHeight, point.getY());
+        Vertex vertex = new Vertex((float) pointInBed.getX(), (float) pointInBed.getY(), (float) pointInBed.getZ());
+        
+        Point3D pointInLocal = bedToLocalConverter.bedToLocal(pointInBed);
         if (!vertexToVertex.containsKey(vertex))
         {
-            mesh.getPoints().addAll(point.getXf(), (float) cutHeight, point.getYf());
+            mesh.getPoints().addAll((float) pointInLocal.getX(), (float) pointInLocal.getY(), (float) pointInLocal.getZ());
             int vertexIndex = mesh.getPoints().size() / 3 - 1;
             vertex.meshVertexIndex = vertexIndex;
             vertexToVertex.put(vertex, vertex);

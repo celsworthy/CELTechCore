@@ -1213,8 +1213,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * Return a BedToLocal converter for this ModelContainer. Remove effect of bed transform and
-     * drop-to-bed Y adjust.
+     * Return a BedToLocal converter for this ModelContainer. N.B. Before using this the bed centre
+     * transform and dropToBed transform must be cleared, otherwise it does not work for the 
+     * purposes intended.
      */
     public MeshCutter.BedToLocalConverter getBedToLocalConverter()
     {
@@ -1227,8 +1228,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 Point3D pointScene = localToScene(point);
                 Node bed = getBed();
                 Point3D pointBed = bed.sceneToLocal(pointScene);
-//                Point3D pointBedNoCentreTranslateOrDrop = pointBed.add(
-//                    -transformBedCentre.getX(), -transformDropToBedYAdjust.getY(), -transformBedCentre.getZ());
                 return pointBed;
             }
 
@@ -1238,8 +1237,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 Node bed = getBed();
                 Point3D pointScene = bed.localToScene(point);
                 return sceneToLocal(pointScene);
-//                return pointLocal.add(
-//                    bedCentreOffsetX, transformDropToBedYAdjust.getY(), bedCentreOffsetZ);
             }
         };
 
