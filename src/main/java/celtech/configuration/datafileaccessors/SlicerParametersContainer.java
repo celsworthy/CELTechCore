@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javafx.collections.FXCollections;
@@ -23,6 +24,13 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class SlicerParametersContainer
 {
+    
+    public interface SlicerParametersChangesListener {
+        
+        public void whenSlicerParametersSaved(String originalSettingsName, SlicerParametersFile changedParameters);
+        
+        public void whenSlicerParametersDeleted(String settingsName);
+    }
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
         SlicerParametersContainer.class.getName());
@@ -32,6 +40,7 @@ public class SlicerParametersContainer
     private static final ObservableList<SlicerParametersFile> completeProfileList = FXCollections.observableArrayList();
     private static final ObservableMap<String, SlicerParametersFile> profileMap = FXCollections.observableHashMap();
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final List<SlicerParametersChangesListener> changesListeners = new ArrayList<>();
 
     public static Set<String> getProfileNames()
     {
@@ -140,6 +149,7 @@ public class SlicerParametersContainer
 
     public static void saveProfile(SlicerParametersFile settingsToSave)
     {
+        String originalName = getOriginalProfileName(settingsToSave);
         if (!profileMap.containsKey(settingsToSave.getProfileKey()))
         {
             if (userProfileList.contains(settingsToSave))
@@ -153,13 +163,16 @@ public class SlicerParametersContainer
         {
             doSaveEditedUserProfile(settingsToSave);
         }
+        for (SlicerParametersChangesListener changesListener : changesListeners)
+        {
+            changesListener.whenSlicerParametersSaved(originalName, settingsToSave);
+        }
+        
     }
 
     /**
      * Save the given user profile which has had its name changed. This amounts to a delete and add
      * new.
-     *
-     * @param profile
      */
     private static void doSaveAndChangeUserProfileName(SlicerParametersFile profile)
     {
@@ -180,6 +193,25 @@ public class SlicerParametersContainer
             deleteUserProfile(originalName, originalHeadType);
             doAddNewUserProfile(profile);
         }
+    }
+
+    /**
+     * Retrieve the original profile name via the profileMap.
+     */
+    private static String getOriginalProfileName(SlicerParametersFile profile)
+    {
+        String originalName = "";
+        String originalHeadType = null;
+        for (Map.Entry<String, SlicerParametersFile> entrySet : profileMap.entrySet())
+        {
+            originalName = entrySet.getKey().split("#")[0];
+            SlicerParametersFile value = entrySet.getValue();
+            if (value == profile) {
+                originalHeadType = profile.getHeadType();
+                break;
+            }
+        }
+        return originalName;
     }
 
     /**
@@ -210,19 +242,6 @@ public class SlicerParametersContainer
         }
     }
 
-    public static void saveProfileWithoutReloading(SlicerParametersFile settingsToSave)
-    {
-        try
-        {
-            mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-            mapper.writeValue(new File(constructFilePath(settingsToSave.getProfileName(), settingsToSave.getHeadType())),
-                              settingsToSave);
-        } catch (IOException ex)
-        {
-            steno.error("Error whilst saving profile " + settingsToSave.getProfileName());
-        }
-    }
-
     public static void deleteUserProfile(String profileName, String headType)
     {
         SlicerParametersFile deletedProfile = getSettings(profileName, headType);
@@ -233,6 +252,12 @@ public class SlicerParametersContainer
         userProfileList.remove(deletedProfile);
         completeProfileList.remove(deletedProfile);
         profileMap.remove(deletedProfile.getProfileKey());
+        
+        for (SlicerParametersChangesListener changesListener : changesListeners)
+        {
+            changesListener.whenSlicerParametersDeleted(profileName);
+        }
+        
     }
 
     public static SlicerParametersContainer getInstance()
@@ -290,6 +315,14 @@ public class SlicerParametersContainer
         return appProfileList.stream()
             .anyMatch((profile) -> profile.getProfileName().equalsIgnoreCase(profileName));
     }
+    
+    public static void addChangesListener(SlicerParametersChangesListener listener) {
+        changesListeners.add(listener);
+    }
+    
+    public static void removeChangesListener(SlicerParametersChangesListener listener) {
+        changesListeners.remove(listener);
+    }    
 
     /**
      * For testing only

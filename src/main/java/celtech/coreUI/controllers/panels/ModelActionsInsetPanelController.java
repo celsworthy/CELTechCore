@@ -30,6 +30,7 @@ import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
+
 /**
  *
  * @author tony
@@ -48,12 +49,12 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
     @FXML
     private Button ungroup;
-    
+
     @FXML
-    private Button cut;    
-    
+    private Button cut;
+
     @FXML
-    private TextField cutHeight;     
+    private TextField cutHeight;
 
     private Project currentProject;
     private UndoableProject undoableProject;
@@ -91,26 +92,30 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         group.disableProperty().bind(numModelsSelected.lessThan(2));
         cut.disableProperty().bind(numModelsSelected.lessThan(1));
         ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
-        
+
         ungroup.setVisible(false);
     }
 
     /**
      * Group the selection. If one group was made then select it.
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     void doGroup(ActionEvent event)
     {
-        Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
+        Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(
+            mc -> mc instanceof ModelGroup).collect(
                 Collectors.toSet());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
-        Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(mc -> mc instanceof ModelGroup).collect(
+        Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
+            mc -> mc instanceof ModelGroup).collect(
                 Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
-        if (changedModelGroups.size() == 1) {
+        if (changedModelGroups.size() == 1)
+        {
             Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
                 changedModelGroups.iterator().next());
         }
@@ -123,40 +128,55 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         undoableProject.ungroup(modelContainers);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
     }
-    
+
     @FXML
-    void doCut(ActionEvent event) {
-        double cutHeightValue = - Double.valueOf(cutHeight.getText());
+    void doCut(ActionEvent event)
+    {
+        double cutHeightValue = -Double.valueOf(cutHeight.getText());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         ModelContainer modelContainer = modelContainers.iterator().next();
-        
-        MeshCutter.setDebuggingNode(modelContainer);
-        
-        cutHeightValue -= modelContainer.getYAdjust();
-        Set<TriangleMesh> subMeshes = MeshCutter.cut((TriangleMesh) modelContainer.getMeshView().getMesh(), cutHeightValue);
-        
-        String modelName = modelContainer.getModelName();
 
-        if (subMeshes.size() > 0)
+        MeshCutter.setDebuggingNode(modelContainer);
+
+        cutHeightValue -= modelContainer.getYAdjust();
+
+        modelContainer.saveAndClearBedTransform();
+        modelContainer.saveAndClearDropToBedYTransform();
+        try
         {
-            int ix = 1;
-            for (TriangleMesh subMesh : subMeshes)
+            Set<TriangleMesh> subMeshes = MeshCutter.cut(
+                (TriangleMesh) modelContainer.getMeshView().getMesh(),
+                cutHeightValue,
+                modelContainer.getBedToLocalConverter());
+
+            String modelName = modelContainer.getModelName();
+
+            if (subMeshes.size() > 0)
             {
-                System.out.println("add child mesh of " + subMesh.getFaces().size() / 6 + " faces");
-                MeshView meshView = new MeshView(subMesh);
-                meshView.cullFaceProperty().set(CullFace.NONE);
-                ModelContainer newModelContainer = new ModelContainer(
-                    modelContainer.getModelFile(), meshView);
-                newModelContainer.setModelName(modelName + " " + ix);
-                newModelContainer.moveToCentre();
-                newModelContainer.dropToBed();
-                undoableProject.addModel(newModelContainer);
-                ix++;
-            }    
+                int ix = 1;
+                for (TriangleMesh subMesh : subMeshes)
+                {
+                    System.out.println("add child mesh of " + subMesh.getFaces().size() / 6
+                        + " faces");
+                    MeshView meshView = new MeshView(subMesh);
+                    meshView.cullFaceProperty().set(CullFace.NONE);
+                    ModelContainer newModelContainer = new ModelContainer(
+                        modelContainer.getModelFile(), meshView);
+                    newModelContainer.setModelName(modelName + " " + ix);
+                    newModelContainer.moveToCentre();
+                    newModelContainer.dropToBed();
+                    undoableProject.addModel(newModelContainer);
+                    ix++;
+                }
 //            undoableProject.deleteModels(modelContainers);
+            }
+        } finally
+        {
+            modelContainer.restoreBedTransform();
+            modelContainer.restoreDropToBedYTransform();
         }
     }
-    
+
     @FXML
     void doApplyMaterial0(ActionEvent event)
     {
@@ -177,7 +197,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             undoableProject.setUseExtruder0Filament(modelContainer, false);
         }
     }
-    
+
     @FXML
     void doDropToBed(ActionEvent event)
     {

@@ -20,6 +20,14 @@ public class TestUtils
         return modelContainer;
     }
     
+    public ModelContainer makeModelContainer(boolean useExtruder0, int x, int y)
+    {
+        MeshView meshView = new MeshView(new Shape3DRectangle(x, y));
+        ModelContainer modelContainer = new ModelContainer(new File("testModel"), meshView);
+        modelContainer.setUseExtruder0(useExtruder0);
+        return modelContainer;
+    }
+    
     public static class Shape3DRectangle extends TriangleMesh
     {
 

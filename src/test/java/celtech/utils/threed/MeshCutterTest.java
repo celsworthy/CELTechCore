@@ -3,11 +3,13 @@
  */
 package celtech.utils.threed;
 
+import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import celtech.utils.threed.importers.stl.STLFileParsingException;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
+import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -30,7 +32,23 @@ public class MeshCutterTest
         URL stlURL = this.getClass().getResource("/simplecube.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
-        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -7);
+        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -7, nullBedToLocalConverter);
         assertEquals(2, triangleMeshs.size());
     }
     
@@ -41,7 +59,24 @@ public class MeshCutterTest
         URL stlURL = this.getClass().getResource("/cubewithhole.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
-        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -15);
+        
+        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -15, nullBedToLocalConverter);
         assertEquals(2, triangleMeshs.size());
     }
     
