@@ -49,7 +49,8 @@ public class OpenFaceCloser
                 }
 
                 Poly2Tri.triangulate(outerPolygon);
-                addTriangulatedFacesToMesh(mesh, outerPolygon, vertices, cutHeight, bedToLocalConverter);
+                addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
+                        cutHeight, bedToLocalConverter, cutResult.topBottom);
             } catch (Exception ex)
             {
                 System.out.println("unable to close loop: " + loopSet);
@@ -90,7 +91,8 @@ public class OpenFaceCloser
      * one of the outerVertices then also add that point to the mesh.
      */
     private static void addTriangulatedFacesToMesh(TriangleMesh mesh, Polygon outerPolygon,
-        List<Integer> outerVertices, double cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter)
+        List<Integer> outerVertices, double cutHeight, 
+        MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom)
     {
         // vertexToVertex allows us to identify equal vertices (but different instances) and then
         // get the definitive instance of that vertex, to avoid superfluous vertices in the mesh.
@@ -111,7 +113,11 @@ public class OpenFaceCloser
             Vertex vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight, bedToLocalConverter);
             Vertex vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight, bedToLocalConverter);
             Vertex vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight, bedToLocalConverter);
-            makeFace(mesh, vertex0.meshVertexIndex, vertex1.meshVertexIndex, vertex2.meshVertexIndex);
+            if (topBottom == MeshCutter.TopBottom.BOTTOM) {
+                makeFace(mesh, vertex0.meshVertexIndex, vertex1.meshVertexIndex, vertex2.meshVertexIndex);
+            } else {
+                makeFace(mesh, vertex0.meshVertexIndex, vertex2.meshVertexIndex, vertex1.meshVertexIndex);
+            }
         }
     }
 

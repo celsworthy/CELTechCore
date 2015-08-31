@@ -94,7 +94,7 @@ public class CutResultTest
         List<PolygonIndices> loopsOfVertices = new ArrayList<>();
         PolygonIndices outerLoop = makeLoop0_3();
         loopsOfVertices.add(outerLoop);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
         Set<Set<PolygonIndices>> nestedPolygonSets = cutResult.getNestedPolygonSets();
         assertEquals(1, nestedPolygonSets.size());
     }
@@ -109,7 +109,7 @@ public class CutResultTest
         loopsOfVertices.add(outerLoop1);
         PolygonIndices outerLoop2 = makeLoop4_7();
         loopsOfVertices.add(outerLoop2);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
         Set<Set<PolygonIndices>> nestedPolygonSets = cutResult.getNestedPolygonSets();
         assertEquals(2, nestedPolygonSets.size());
     }
@@ -125,7 +125,7 @@ public class CutResultTest
 
         PolygonIndices outerLoop3 = makeLoop1_2();
         loopsOfVertices.add(outerLoop3);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
         Set<Set<PolygonIndices>> nestedPolygonSets = cutResult.getNestedPolygonSets();
         assertEquals(1, nestedPolygonSets.size());
         Set<PolygonIndices> nestedPolygonSet = nestedPolygonSets.iterator().next();
@@ -143,7 +143,7 @@ public class CutResultTest
 
         PolygonIndices outerLoop3 = makeLoop1_2();
         loopsOfVertices.add(outerLoop3);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedPolygonSets.size());
         LoopSet loopSet = nestedPolygonSets.iterator().next();

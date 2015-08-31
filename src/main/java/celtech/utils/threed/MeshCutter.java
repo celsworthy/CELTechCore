@@ -85,13 +85,15 @@ public class MeshCutter
             loopsOfVertices.add(newVertices);
         }
 
-        TriangleMesh lowerMesh = makeSplitMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight,
-                                               bedToLocalConverter, TopBottom.BOTTOM);
-        CutResult cutResultLower = new CutResult(lowerMesh, loopsOfVertices, bedToLocalConverter);
+        TriangleMesh lowerMesh = makeSplitMesh(mesh, loopsOfFaces, loopsOfVertices,
+                cutHeight, bedToLocalConverter, TopBottom.BOTTOM);
+        CutResult cutResultLower = new CutResult(lowerMesh, loopsOfVertices, 
+                bedToLocalConverter, TopBottom.BOTTOM);
         cutResults.add(cutResultLower);
-        TriangleMesh upperMesh = makeSplitMesh(mesh, loopsOfFaces, loopsOfVertices, cutHeight,
-                                               bedToLocalConverter, TopBottom.TOP);
-        CutResult cutResultUpper = new CutResult(upperMesh, loopsOfVertices, bedToLocalConverter);
+        TriangleMesh upperMesh = makeSplitMesh(mesh, loopsOfFaces, loopsOfVertices,
+                cutHeight, bedToLocalConverter, TopBottom.TOP);
+        CutResult cutResultUpper = new CutResult(upperMesh, loopsOfVertices,
+                bedToLocalConverter, TopBottom.TOP);
         cutResults.add(cutResultUpper);
         return cutResults;
     }

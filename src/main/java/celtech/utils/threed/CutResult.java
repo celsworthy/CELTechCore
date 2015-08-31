@@ -3,6 +3,7 @@
  */
 package celtech.utils.threed;
 
+import celtech.utils.threed.MeshCutter.TopBottom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,13 +36,16 @@ class CutResult
     final List<PolygonIndices> loopsOfVerticesOnOpenFace;
     
     final MeshCutter.BedToLocalConverter bedToLocalConverter;
+    
+    TopBottom topBottom;
 
     public CutResult(TriangleMesh childMesh, List<PolygonIndices> loopsOfVerticesOnOpenFace,
-        MeshCutter.BedToLocalConverter bedToLocalConverter)
+        MeshCutter.BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
         this.childMesh = childMesh;
         this.loopsOfVerticesOnOpenFace = loopsOfVerticesOnOpenFace;
         this.bedToLocalConverter = bedToLocalConverter;
+        this.topBottom = topBottom;
     }
 
     /**
