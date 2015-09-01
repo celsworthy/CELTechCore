@@ -147,7 +147,7 @@ public class CutResultTest
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedPolygonSets.size());
         LoopSet loopSet = nestedPolygonSets.iterator().next();
-        assertEquals(1, loopSet.innerLoops.size());
+        assertEquals(1, loopSet.innerLoopSets.size());
     }    
 
 }

@@ -66,7 +66,13 @@ class CutResult
             PolygonIndices outerPolygon = nestedPolygonsList.get(0);
             // inner polygons is remaining polygons after removing outer polygon
             nestedPolygonsList.remove(0);
-            loopSets.add(new LoopSet(outerPolygon, nestedPolygonsList));
+            List<LoopSet> innerLoopSets = new ArrayList<>();
+            for (PolygonIndices innerPolygon : nestedPolygonsList)
+            {
+                List<LoopSet> emptyLoopSets = new ArrayList<>();
+                innerLoopSets.add(new LoopSet(innerPolygon, emptyLoopSets));
+            }
+            loopSets.add(new LoopSet(outerPolygon, innerLoopSets));
         }
         return loopSets;
     }
@@ -207,12 +213,12 @@ class LoopSet
 {
 
     final List<Integer> outerLoop;
-    final List<PolygonIndices> innerLoops;
+    final List<LoopSet> innerLoopSets;
 
-    public LoopSet(List<Integer> outerLoop, List<PolygonIndices> innerLoops)
+    public LoopSet(List<Integer> outerLoop, List<LoopSet> innerLoopSets)
     {
         this.outerLoop = outerLoop;
-        this.innerLoops = innerLoops;
+        this.innerLoopSets = innerLoopSets;
     }
 
 }

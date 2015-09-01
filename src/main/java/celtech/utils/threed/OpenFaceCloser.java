@@ -42,9 +42,9 @@ public class OpenFaceCloser
             {
                 List<Integer> vertices = loopSet.outerLoop;
                 Polygon outerPolygon = makePolygon(vertices, mesh, bedToLocalConverter);
-                for (List<Integer> innerVertices : loopSet.innerLoops)
+                for (LoopSet innerLoopSet : loopSet.innerLoopSets)
                 {
-                    Polygon innerPolygon = makePolygon(innerVertices, mesh, bedToLocalConverter);
+                    Polygon innerPolygon = makePolygon(innerLoopSet.outerLoop, mesh, bedToLocalConverter);
                     outerPolygon.addHole(innerPolygon);
                 }
 
