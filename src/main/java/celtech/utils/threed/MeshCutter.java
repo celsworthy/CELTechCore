@@ -63,6 +63,7 @@ public class MeshCutter
         for (CutResult splitResult : splitResults)
         {
             TriangleMesh childMesh = closeOpenFace(splitResult, cutHeight, bedToLocalConverter);
+            MeshUtils.removeUnusedVertices(childMesh);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             triangleMeshs.add(childMesh);
         }
