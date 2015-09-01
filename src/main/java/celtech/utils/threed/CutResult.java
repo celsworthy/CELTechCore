@@ -66,21 +66,25 @@ class CutResult
             {
                 if (loopSet.contains(polygonIndices))
                 {
+                    System.out.println("Loop set " + loopSet.outerLoop.name + " contains " + polygonIndices.name);
                     loopSet.addToContainingChild(polygonIndices);
                     added = true;
                     break;
                 } else if (contains(polygonIndices, loopSet.outerLoop))
                 {
+                    System.out.println(polygonIndices.name + " contains loop set " + loopSet.outerLoop.name);
                     Set<LoopSet> innerLoopSets = new HashSet<>();
                     innerLoopSets.add(loopSet);
                     LoopSet newLoopSet = new LoopSet(this, polygonIndices, innerLoopSets);
                     topLevelLoopSets.add(newLoopSet);
+                    topLevelLoopSets.remove(loopSet);
                     added = true;
                     break;
                 }
             }
             if (!added)
             {
+                System.out.println("Create new loop set for " + polygonIndices.name);
                 // polygonIndices is neither in a topLevelLoopSet nor contains a topLevelLoopSet
                 // so create a new toplevelLoopSet.
                 LoopSet newLoopSet = new LoopSet(this, polygonIndices, new HashSet<>());
@@ -89,7 +93,6 @@ class CutResult
         }
         return topLevelLoopSets;
     }
-
 
     /**
      * Sort the given list of polygons by area, largest first.
@@ -191,6 +194,36 @@ class CutResult
  */
 class PolygonIndices extends ArrayList<Integer>
 {
+    String name;
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "PolygonIndices{" + "name=" + name + '}';
+    }
+    
+}
+
+
+/**
+ * A Region is an outer polygon and zero or more inner polygons (holes), forming a region that can
+ * be triangulated.
+ */
+class Region
+{
+
+    final PolygonIndices outerLoop;
+    final Set<PolygonIndices> innerLoops;
+
+    public Region(PolygonIndices outerLoop, Set<PolygonIndices> innerLoops)
+    {
+        this.outerLoop = outerLoop;
+        this.innerLoops = innerLoops;
+    }
 }
 
 
@@ -214,6 +247,23 @@ class LoopSet
     public boolean contains(PolygonIndices polygonIndices)
     {
         return cutResult.contains(outerLoop, polygonIndices);
+    }
+
+    /**
+     * Return all the Regions ({@link Region}) described by this LoopSet.
+     */
+    public Set<Region> getRegions()
+    {
+        Set<Region> regions = new HashSet<>();
+        Set<PolygonIndices> innerLoops = new HashSet<>();
+
+        for (LoopSet innerLoopSet : innerLoopSets)
+        {
+            innerLoops.add(innerLoopSet.outerLoop);
+        }
+        Region region = new Region(outerLoop, innerLoops);
+        regions.add(region);
+        return regions;
     }
 
     /**

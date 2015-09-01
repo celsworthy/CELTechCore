@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
  */
 public class CutResultTest
 {
-    
+
     MeshCutter.BedToLocalConverter nullConverter = new MeshCutter.BedToLocalConverter()
     {
 
@@ -54,6 +54,15 @@ public class CutResultTest
         triangleMesh.getPoints().addAll(2, Y, 2);
         triangleMesh.getPoints().addAll(2, Y, 1);
 
+        triangleMesh.getPoints().addAll(5, Y, 5);
+        triangleMesh.getPoints().addAll(5, Y, 6);
+        triangleMesh.getPoints().addAll(6, Y, 6);
+        triangleMesh.getPoints().addAll(6, Y, 5);
+
+        triangleMesh.getPoints().addAll(3, Y, 8);
+        triangleMesh.getPoints().addAll(8, Y, 8);
+        triangleMesh.getPoints().addAll(8, Y, 3);
+
         return triangleMesh;
     }
 
@@ -64,27 +73,52 @@ public class CutResultTest
         outerLoop.add(1);
         outerLoop.add(2);
         outerLoop.add(3);
+        outerLoop.setName("0_3");
         return outerLoop;
     }
 
     private PolygonIndices makeLoop4_7()
     {
-        PolygonIndices outerLoop2 = new PolygonIndices();
-        outerLoop2.add(4);
-        outerLoop2.add(5);
-        outerLoop2.add(6);
-        outerLoop2.add(7);
-        return outerLoop2;
+        PolygonIndices outerLoop = new PolygonIndices();
+        outerLoop.add(4);
+        outerLoop.add(5);
+        outerLoop.add(6);
+        outerLoop.add(7);
+        outerLoop.setName("4_7");
+        return outerLoop;
     }
 
     private PolygonIndices makeLoop1_2()
     {
-        PolygonIndices outerLoop3 = new PolygonIndices();
-        outerLoop3.add(8);
-        outerLoop3.add(9);
-        outerLoop3.add(10);
-        outerLoop3.add(11);
-        return outerLoop3;
+        PolygonIndices outerLoop = new PolygonIndices();
+        outerLoop.add(8);
+        outerLoop.add(9);
+        outerLoop.add(10);
+        outerLoop.add(11);
+        outerLoop.setName("1_2");
+        return outerLoop;
+    }
+
+    private PolygonIndices makeLoop5_6()
+    {
+        PolygonIndices outerLoop = new PolygonIndices();
+        outerLoop.add(12);
+        outerLoop.add(13);
+        outerLoop.add(14);
+        outerLoop.add(15);
+        outerLoop.setName("5_6");
+        return outerLoop;
+    }
+
+    private PolygonIndices makeLoop3_8()
+    {
+        PolygonIndices outerLoop = new PolygonIndices();
+        outerLoop.add(2);
+        outerLoop.add(16);
+        outerLoop.add(17);
+        outerLoop.add(18);
+        outerLoop.setName("3_8");
+        return outerLoop;
     }
 
     @Test
@@ -94,7 +128,8 @@ public class CutResultTest
         List<PolygonIndices> loopsOfVertices = new ArrayList<>();
         PolygonIndices outerLoop = makeLoop0_3();
         loopsOfVertices.add(outerLoop);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
     }
@@ -109,7 +144,8 @@ public class CutResultTest
         loopsOfVertices.add(outerLoop1);
         PolygonIndices outerLoop2 = makeLoop4_7();
         loopsOfVertices.add(outerLoop2);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, nestedPolygonSets.size());
     }
@@ -125,13 +161,14 @@ public class CutResultTest
 
         PolygonIndices outerLoop3 = makeLoop1_2();
         loopsOfVertices.add(outerLoop3);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedLoopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedLoopSets.size());
         LoopSet nestedLoopSet = nestedLoopSets.iterator().next();
         assertEquals(1, nestedLoopSet.innerLoopSets.size());
     }
-    
+
     @Test
     public void testIdentifyOuterLoopsAndInnerLoopsOuterLoopWithInner()
     {
@@ -143,11 +180,126 @@ public class CutResultTest
 
         PolygonIndices outerLoop3 = makeLoop1_2();
         loopsOfVertices.add(outerLoop3);
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedPolygonSets.size());
         LoopSet loopSet = nestedPolygonSets.iterator().next();
         assertEquals(1, loopSet.innerLoopSets.size());
-    }    
+    }
 
+    @Test
+    public void testGetRegionsforSingleLoopHasOneRegionWithNoHoles()
+    {
+        TriangleMesh triangleMesh = makeTriangleMesh();
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
+        PolygonIndices outerLoop = makeLoop0_3();
+        loopsOfVertices.add(outerLoop);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(1, loopSets.size());
+        Set<Region> regions = loopSets.iterator().next().getRegions();
+        assertEquals(1, regions.size());
+        Region region = regions.iterator().next();
+        assertEquals(0, region.innerLoops.size());
+    }
+
+    @Test
+    public void testGetRegionsforOneOuterLoopWithOneInnerLoopHasOneRegionWithOneHole()
+    {
+        TriangleMesh triangleMesh = makeTriangleMesh();
+
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
+        PolygonIndices outerLoop1 = makeLoop0_3();
+        loopsOfVertices.add(outerLoop1);
+
+        PolygonIndices outerLoop3 = makeLoop1_2();
+        loopsOfVertices.add(outerLoop3);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(1, loopSets.size());
+        LoopSet loopSet = loopSets.iterator().next();
+        Set<Region> regions = loopSet.getRegions();
+        assertEquals(1, regions.size());
+        Region region = regions.iterator().next();
+        assertEquals(1, region.innerLoops.size());
+    }
+
+    @Test
+    public void testGetRegionsforTwoOuterLoopsHasTwoRegionsWithNoHole()
+    {
+        TriangleMesh triangleMesh = makeTriangleMesh();
+
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
+        PolygonIndices outerLoop1 = makeLoop0_3();
+        loopsOfVertices.add(outerLoop1);
+        PolygonIndices outerLoop2 = makeLoop4_7();
+        loopsOfVertices.add(outerLoop2);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(2, loopSets.size());
+        for (LoopSet loopSet : loopSets)
+        {
+            Set<Region> regions = loopSet.getRegions();
+            assertEquals(1, regions.size());
+            Region region = regions.iterator().next();
+            assertEquals(0, region.innerLoops.size());
+        }
+
+    }
+
+    @Test
+    public void testGetRegionsforTwoOuterLoopsEachWithInnerLoopHasTwoRegionsWithOneHole()
+    {
+        TriangleMesh triangleMesh = makeTriangleMesh();
+
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
+        PolygonIndices outerLoop1 = makeLoop0_3();
+        loopsOfVertices.add(outerLoop1);
+        PolygonIndices outerLoop2 = makeLoop4_7();
+        loopsOfVertices.add(outerLoop2);
+        PolygonIndices outerLoop3 = makeLoop1_2();
+        loopsOfVertices.add(outerLoop3);
+        PolygonIndices outerLoop4 = makeLoop5_6();
+        loopsOfVertices.add(outerLoop4);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(2, loopSets.size());
+        for (LoopSet loopSet : loopSets)
+        {
+            Set<Region> regions = loopSet.getRegions();
+            assertEquals(1, regions.size());
+            Region region = regions.iterator().next();
+            assertEquals(1, region.innerLoops.size());
+        }
+
+    }
+
+    @Test
+    public void testGetRegionsforOneOuterLoopsWithInnerLoopWhichHasInnerLoop()
+    {
+        TriangleMesh triangleMesh = makeTriangleMesh();
+
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
+        PolygonIndices outerLoop2 = makeLoop4_7();
+        loopsOfVertices.add(outerLoop2);
+        PolygonIndices outerLoop4 = makeLoop5_6();
+        loopsOfVertices.add(outerLoop4);
+        PolygonIndices outerLoop5 = makeLoop3_8();
+        loopsOfVertices.add(outerLoop5);
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(1, loopSets.size());
+        LoopSet loopSet = loopSets.iterator().next();
+        Set<Region> regions = loopSet.getRegions();
+        assertEquals(1, regions.size());
+        Region region = regions.iterator().next();
+        assertEquals(1, region.innerLoops.size());
+
+    }
 }
