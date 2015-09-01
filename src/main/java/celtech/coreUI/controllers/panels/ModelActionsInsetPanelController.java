@@ -136,6 +136,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
         cutHeightValue -= modelContainer.getYAdjust();
 
+        //these transforms must be cleared so that bedToLocal conversions work properly in the cutter.
         modelContainer.saveAndClearBedTransform();
         modelContainer.saveAndClearDropToBedYTransform();
         try

@@ -258,9 +258,9 @@ public class MeshCutter
             v2belowCut = v2Height > cutHeight;
         } else
         {
-            v0belowCut = v0Height < cutHeight;
-            v1belowCut = v1Height < cutHeight;
-            v2belowCut = v2Height < cutHeight;
+            v0belowCut = v0Height <= cutHeight;
+            v1belowCut = v1Height <= cutHeight;
+            v2belowCut = v2Height <= cutHeight;
         }
 
         int numPointsBelowCut = 0;
@@ -372,7 +372,7 @@ public class MeshCutter
             int vertex0 = mesh.getFaces().get(faceIndex * 6);
             float vertex0YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0)).getY();
             if (topBottom == TopBottom.BOTTOM && vertex0YInBed < cutHeight || 
-                topBottom == TopBottom.TOP && vertex0YInBed > cutHeight)
+                topBottom == TopBottom.TOP && vertex0YInBed >= cutHeight)
             {
                 facesAboveBelowCut.add(faceIndex);
                 continue;
@@ -380,7 +380,7 @@ public class MeshCutter
             int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
             float vertex1YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1)).getY();
             if (topBottom == TopBottom.BOTTOM && vertex1YInBed < cutHeight || 
-                topBottom == TopBottom.TOP && vertex1YInBed > cutHeight)
+                topBottom == TopBottom.TOP && vertex1YInBed >= cutHeight)
             {
                 facesAboveBelowCut.add(faceIndex);
                 continue;
@@ -388,7 +388,7 @@ public class MeshCutter
             int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
             float vertex2YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex2)).getY();
             if (topBottom == TopBottom.BOTTOM && vertex2YInBed < cutHeight || 
-                topBottom == TopBottom.TOP && vertex2YInBed > cutHeight)
+                topBottom == TopBottom.TOP && vertex2YInBed >= cutHeight)
             {
                 facesAboveBelowCut.add(faceIndex);
                 continue;
