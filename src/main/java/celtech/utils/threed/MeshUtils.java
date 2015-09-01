@@ -5,8 +5,6 @@
  */
 package celtech.utils.threed;
 
-import java.util.HashSet;
-import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
 
 
@@ -32,38 +30,39 @@ public class MeshUtils
         float[] newPoints = new float[childMesh.getPoints().size()];
         int nextNewPointIndex = 0;
 
-        for (int i = 0; i < childMesh.getFaces().size() / 2; i++) 
+        for (int i = 0; i < childMesh.getFaces().size(); i += 2)
         {
-            int vertexIndex = childMesh.getFaces().get(i * 2);
-            if (newVertexIndices[vertexIndex] == -1) {
+            int vertexIndex = childMesh.getFaces().get(i);
+            if (newVertexIndices[vertexIndex] == -1)
+            {
                 newVertexIndices[vertexIndex] = nextNewPointIndex;
                 newPoints[nextNewPointIndex * 3] = childMesh.getPoints().get(vertexIndex * 3);
                 newPoints[nextNewPointIndex * 3 + 1] = childMesh.getPoints().get(vertexIndex * 3 + 1);
                 newPoints[nextNewPointIndex * 3 + 2] = childMesh.getPoints().get(vertexIndex * 3 + 2);
-                childMesh.getFaces().set(i * 2, nextNewPointIndex);
                 nextNewPointIndex++;
-            } else {
-                childMesh.getFaces().set(i * 2, newVertexIndices[vertexIndex]);
-            }    
+            }
+            childMesh.getFaces().set(i, newVertexIndices[vertexIndex]);
         }
-        
+
         childMesh.getPoints().clear();
         childMesh.getPoints().addAll(newPoints, 0, nextNewPointIndex * 3);
     }
 
     /**
-     * Get the vertices being used by the mesh.
+     * Validate the mesh.
      */
-    private static Set<Integer> getUsedVertices(TriangleMesh mesh)
+    public static boolean validate(TriangleMesh childMesh)
     {
-        Set<Integer> vertices = new HashSet<>();
-        for (int i = 0; i < mesh.getFaces().size() / 6; i++)
+        int numPoints = childMesh.getPoints().size() / 3;
+        for (int i = 0; i < childMesh.getFaces().size(); i += 2)
         {
-            vertices.add(mesh.getFaces().get(i * 6));
-            vertices.add(mesh.getFaces().get(i * 6 + 2));
-            vertices.add(mesh.getFaces().get(i * 6 + 4));
+            int vertexIndex = childMesh.getFaces().get(i);
+            if (vertexIndex < 0 || vertexIndex > numPoints)
+            {
+                return false;
+            }
         }
-        return vertices;
+        return true;
     }
 
 }

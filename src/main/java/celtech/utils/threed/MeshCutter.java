@@ -65,6 +65,11 @@ public class MeshCutter
             TriangleMesh childMesh = closeOpenFace(splitResult, cutHeight, bedToLocalConverter);
             MeshUtils.removeUnusedVertices(childMesh);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
+            
+            if (! MeshUtils.validate(childMesh)) {
+                throw new RuntimeException("Invalid mesh");
+            }
+            
             triangleMeshs.add(childMesh);
         }
 
@@ -437,7 +442,7 @@ public class MeshCutter
         // last added vertex should be same as first - remove it
         newVertices.remove(newVertices.get(newVertices.size() - 1));
 
-        showNewVertices(newVertices, mesh);
+//        showNewVertices(newVertices, mesh);
         return newVertices;
     }
 
