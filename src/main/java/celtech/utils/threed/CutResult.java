@@ -16,9 +16,9 @@ import javafx.scene.shape.TriangleMesh;
 
 /**
  * CutResult represents one of the two parts of the cut mesh. It is also responsible for identifying
- * the topology of the nested polygons forming the perimeters on the closing top face (i.e. which 
+ * the topology of the nested polygons forming the perimeters on the closing top face (i.e. which
  * perimeters/polygons are inside which other polygons).
- * 
+ *
  * @author tony
  */
 class CutResult
@@ -27,22 +27,22 @@ class CutResult
     /**
      * The child mesh that was created by the split.
      */
-    final TriangleMesh childMesh;
+    final TriangleMesh mesh;
     /**
      * The indices of the vertices of the child mesh, in sequence, that form the perimeter of the
      * new open face that needs to be triangulated. Some loops (list of points) may be holes inside
      * other loops.
      */
     final List<PolygonIndices> loopsOfVerticesOnOpenFace;
-    
+
     final MeshCutter.BedToLocalConverter bedToLocalConverter;
-    
+
     TopBottom topBottom;
 
-    public CutResult(TriangleMesh childMesh, List<PolygonIndices> loopsOfVerticesOnOpenFace,
+    public CutResult(TriangleMesh mesh, List<PolygonIndices> loopsOfVerticesOnOpenFace,
         MeshCutter.BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
-        this.childMesh = childMesh;
+        this.mesh = mesh;
         this.loopsOfVerticesOnOpenFace = loopsOfVerticesOnOpenFace;
         this.bedToLocalConverter = bedToLocalConverter;
         this.topBottom = topBottom;
@@ -58,68 +58,38 @@ class CutResult
      */
     public Set<LoopSet> identifyOuterLoopsAndInnerLoops()
     {
-        Set<LoopSet> loopSets = new HashSet<>();
-        Set<Set<PolygonIndices>> nestedPolygonsSet = getNestedPolygonSets();
-        for (Set<PolygonIndices> nestedPolygons : nestedPolygonsSet)
+        Set<LoopSet> topLevelLoopSets = new HashSet<>();
+        for (PolygonIndices polygonIndices : loopsOfVerticesOnOpenFace)
         {
-            List<PolygonIndices> nestedPolygonsList = sortByArea(nestedPolygons);
-            PolygonIndices outerPolygon = nestedPolygonsList.get(0);
-            // inner polygons is remaining polygons after removing outer polygon
-            nestedPolygonsList.remove(0);
-            List<LoopSet> innerLoopSets = new ArrayList<>();
-            for (PolygonIndices innerPolygon : nestedPolygonsList)
+            boolean added = false;
+            for (LoopSet loopSet : topLevelLoopSets)
             {
-                List<LoopSet> emptyLoopSets = new ArrayList<>();
-                innerLoopSets.add(new LoopSet(innerPolygon, emptyLoopSets));
+                if (loopSet.contains(polygonIndices))
+                {
+                    loopSet.addToContainingChild(polygonIndices);
+                    added = true;
+                    break;
+                } else if (contains(polygonIndices, loopSet.outerLoop))
+                {
+                    Set<LoopSet> innerLoopSets = new HashSet<>();
+                    innerLoopSets.add(loopSet);
+                    LoopSet newLoopSet = new LoopSet(this, polygonIndices, innerLoopSets);
+                    topLevelLoopSets.add(newLoopSet);
+                    added = true;
+                    break;
+                }
             }
-            loopSets.add(new LoopSet(outerPolygon, innerLoopSets));
+            if (!added)
+            {
+                // polygonIndices is neither in a topLevelLoopSet nor contains a topLevelLoopSet
+                // so create a new toplevelLoopSet.
+                LoopSet newLoopSet = new LoopSet(this, polygonIndices, new HashSet<>());
+                topLevelLoopSets.add(newLoopSet);
+            }
         }
-        return loopSets;
+        return topLevelLoopSets;
     }
 
-    /**
-     * Organise the loops from loopsOfVerticesOnOpenFace into sets. Each set contains polygons that
-     * are nested inside each other. There is no need to sort the nested polygons according to which
-     * is nested inside which.
-     */
-    Set<Set<PolygonIndices>> getNestedPolygonSets()
-    {
-        Set<Set<PolygonIndices>> nestedPolygonSets = new HashSet<>();
-        for (PolygonIndices polygon : loopsOfVerticesOnOpenFace)
-        {
-            Set<PolygonIndices> containingPolygonSet
-                = polygonSetInsideOrContainingPolygon(nestedPolygonSets, polygon);
-            if (containingPolygonSet != null)
-            {
-                containingPolygonSet.add(polygon);
-            } else
-            {
-                Set<PolygonIndices> newPolygonSet = new HashSet<>();
-                newPolygonSet.add(polygon);
-                nestedPolygonSets.add(newPolygonSet);
-            }
-        }
-        return nestedPolygonSets;
-    }
-
-    /**
-     * Return the set of polygons that either contains the given polygon or is contained by it. If
-     * no polygon set contains/is inside the polygon then return null.
-     */
-    private Set<PolygonIndices> polygonSetInsideOrContainingPolygon(
-        Set<Set<PolygonIndices>> nestedPolygonSets, PolygonIndices polygon)
-    {
-        for (Set<PolygonIndices> polygonSet : nestedPolygonSets)
-        {
-            // we need only consider 1 polygon from the set
-            PolygonIndices innerPolygon = polygonSet.iterator().next();
-            if (contains(innerPolygon, polygon) || contains(polygon, innerPolygon))
-            {
-                return polygonSet;
-            }
-        }
-        return null;
-    }
 
     /**
      * Sort the given list of polygons by area, largest first.
@@ -135,20 +105,24 @@ class CutResult
             {
                 double a1 = getPolygonArea(o1);
                 double a2 = getPolygonArea(o2);
-                if (a1 > a2) {
+                if (a1 > a2)
+                {
                     return 1;
-                } else if (a1 == a2) {
+                } else if (a1 == a2)
+                {
                     return 0;
-                } else {
+                } else
+                {
                     return -1;
                 }
             }
         });
         return sortedNestedPolygons;
     }
-    
-    private Point getPointAt(PolygonIndices loop, int index) {
-        Point3D point = MeshCutter.makePoint3D(childMesh, loop.get(index));
+
+    private Point getPointAt(PolygonIndices loop, int index)
+    {
+        Point3D point = MeshCutter.makePoint3D(mesh, loop.get(index));
         Point3D pointInBed = bedToLocalConverter.localToBed(point);
         return new Point(pointInBed.getX(), pointInBed.getZ());
     }
@@ -192,7 +166,7 @@ class CutResult
         {
             polygon[k] = getPointAt(loop, k);
         }
-        
+
         int i;
         int j;
         double area = 0;
@@ -209,19 +183,68 @@ class CutResult
 }
 
 
+/**
+ * PolygonIndices is a list of Integers each of which is a vertex (or face) id in the mesh. It is
+ * therefore effectively a (usually closed) loop of vertices.
+ *
+ * @author tony
+ */
+class PolygonIndices extends ArrayList<Integer>
+{
+}
+
+
+/**
+ * A LoopSet is an outer polygon and a set of contained inner LoopSets.
+ */
 class LoopSet
 {
 
-    final List<Integer> outerLoop;
-    final List<LoopSet> innerLoopSets;
+    final PolygonIndices outerLoop;
+    final Set<LoopSet> innerLoopSets;
+    final CutResult cutResult;
 
-    public LoopSet(List<Integer> outerLoop, List<LoopSet> innerLoopSets)
+    public LoopSet(CutResult cutResult, PolygonIndices outerLoop, Set<LoopSet> innerLoopSets)
     {
+        this.cutResult = cutResult;
         this.outerLoop = outerLoop;
         this.innerLoopSets = innerLoopSets;
     }
 
+    public boolean contains(PolygonIndices polygonIndices)
+    {
+        return cutResult.contains(outerLoop, polygonIndices);
+    }
+
+    /**
+     * If the given polygonIndices is contained by one of the inner LoopSets then ask that inner
+     * LoopSet to add it to one of its inner (containing) children, otherwise if no inner LoopSet
+     * contains the given polygonIndices then add it as another inner LoopSet of this LoopSet.
+     */
+    public void addToContainingChild(PolygonIndices polygonIndices)
+    {
+        if (!contains(polygonIndices))
+        {
+            throw new RuntimeException("given polygonIndices must be contained by outer loop");
+        }
+        boolean innerLoopContainsGivenLoop = false;
+        for (LoopSet innerLoopSet : innerLoopSets)
+        {
+            if (innerLoopSet.contains(polygonIndices))
+            {
+                innerLoopSet.addToContainingChild(polygonIndices);
+                innerLoopContainsGivenLoop = true;
+                break;
+            }
+        }
+        if (!innerLoopContainsGivenLoop)
+        {
+            // add given polygonIndices as a new inner LoopSet.
+            innerLoopSets.add(new LoopSet(cutResult, polygonIndices, new HashSet<>()));
+        }
+    }
 }
+
 
 /**
  * The X and Z coordinate of the point in the bed space maps to X and Y for polygon analysis. The
@@ -240,4 +263,3 @@ class Point
         this.y = y;
     }
 }
-

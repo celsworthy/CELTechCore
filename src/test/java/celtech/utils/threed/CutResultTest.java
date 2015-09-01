@@ -95,8 +95,8 @@ public class CutResultTest
         PolygonIndices outerLoop = makeLoop0_3();
         loopsOfVertices.add(outerLoop);
         CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
-        Set<Set<PolygonIndices>> nestedPolygonSets = cutResult.getNestedPolygonSets();
-        assertEquals(1, nestedPolygonSets.size());
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(1, loopSets.size());
     }
 
     @Test
@@ -110,7 +110,7 @@ public class CutResultTest
         PolygonIndices outerLoop2 = makeLoop4_7();
         loopsOfVertices.add(outerLoop2);
         CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
-        Set<Set<PolygonIndices>> nestedPolygonSets = cutResult.getNestedPolygonSets();
+        Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, nestedPolygonSets.size());
     }
 
@@ -126,10 +126,10 @@ public class CutResultTest
         PolygonIndices outerLoop3 = makeLoop1_2();
         loopsOfVertices.add(outerLoop3);
         CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter, MeshCutter.TopBottom.BOTTOM);
-        Set<Set<PolygonIndices>> nestedPolygonSets = cutResult.getNestedPolygonSets();
-        assertEquals(1, nestedPolygonSets.size());
-        Set<PolygonIndices> nestedPolygonSet = nestedPolygonSets.iterator().next();
-        assertEquals(2, nestedPolygonSet.size());
+        Set<LoopSet> nestedLoopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(1, nestedLoopSets.size());
+        LoopSet nestedLoopSet = nestedLoopSets.iterator().next();
+        assertEquals(1, nestedLoopSet.innerLoopSets.size());
     }
     
     @Test

@@ -34,7 +34,7 @@ public class OpenFaceCloser
     static TriangleMesh closeOpenFace(CutResult cutResult, double cutHeight,
         MeshCutter.BedToLocalConverter bedToLocalConverter)
     {
-        TriangleMesh mesh = cutResult.childMesh;
+        TriangleMesh mesh = cutResult.mesh;
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         for (LoopSet loopSet : loopSets)
         {

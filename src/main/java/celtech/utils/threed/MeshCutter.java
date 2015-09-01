@@ -871,18 +871,6 @@ public class MeshCutter
 }
 
 
-/**
- * PolygonIndices is a list of Integers each of which is a vertex (or face) id in the mesh. It is
- * therefore effectively a (usually closed) loop of vertices.
- *
- * @author tony
- */
-class PolygonIndices extends ArrayList<Integer>
-{
-
-}
-
-
 final class Edge
 {
 
