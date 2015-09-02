@@ -561,7 +561,6 @@ public class MeshCutter
         {
             while (true)
             {
-//                System.out.println("treat face B " + faceIndex);
                 Set<Integer> edges = getEdgeIndicesOfFaceThatPlaneIntersects(mesh, faceIndex,
                                                                              cutHeight,
                                                                              bedToLocalConverter);
@@ -573,7 +572,6 @@ public class MeshCutter
                     // there should be two faces adjacent to this one that the plane also cuts
                     Set<Integer> facesAdjacentToEdgesOfFace
                         = getFacesAdjacentToEdgesOfFace(mesh, faceIndex, facesWithVertices, edges);
-//                    System.out.println("adjacent faces is " + facesAdjacentToEdgesOfFace);
 
                     // remove the previously visited face leaving the next face to visit
                     if (previousFaceIndex != -1)
@@ -647,7 +645,7 @@ public class MeshCutter
             mesh.getFaces().get(faceIndex * 6 + vertexIndexOffset1 * 2));
         facesWithVertex0.remove(faceIndex);
         facesWithVertex0.retainAll(facesWithVertex1);
-        assert (facesWithVertex0.size() == 1);
+        assert facesWithVertex0.size() == 1: "faces with vertex0: " + facesWithVertex0.size();
         return facesWithVertex0.iterator().next();
     }
 
@@ -827,8 +825,6 @@ public class MeshCutter
             sphere.translateXProperty().set((x0 + x1 + x2) / 3d);
             sphere.translateYProperty().set((y0 + y1 + y2) / 3d);
             sphere.translateZProperty().set((z0 + z1 + z2) / 3d);
-//            System.out.println("add face centre " + (x0 + x1 + x2) / 3d + " " + (y0 + y1 + y2) / 3d
-//                + " " + (z0 + z1 + z2) / 3d);
             sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
 
             Text text = new Text(Integer.toString(faceIndex));
@@ -910,8 +906,11 @@ final class Edge
     }
 }
 
-// The main purpose of this Vertex class is to provide an equality operation.
-
+/**
+ * The main purpose of this Vertex class is to provide an equality operation.
+ * 
+ * @author tony
+ */
 final class Vertex
 {
 

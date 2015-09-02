@@ -251,6 +251,8 @@ class LoopSet
 
     /**
      * Return all the Regions ({@link Region}) described by this LoopSet.
+     * The outerLoop of this LoopSet must be the outer perimeter of a Region (i.e. do not call
+     * this method on LoopSets whose outerLoop is an inner perimeter / hole).
      */
     public Set<Region> getRegions()
     {
@@ -260,6 +262,10 @@ class LoopSet
         for (LoopSet innerLoopSet : innerLoopSets)
         {
             innerLoops.add(innerLoopSet.outerLoop);
+            for (LoopSet innerInnerLoopSet : innerLoopSet.innerLoopSets)
+            {
+                regions.addAll(innerInnerLoopSet.getRegions());
+            }
         }
         Region region = new Region(outerLoop, innerLoops);
         regions.add(region);

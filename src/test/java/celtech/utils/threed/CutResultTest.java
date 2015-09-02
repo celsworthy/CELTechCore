@@ -62,6 +62,10 @@ public class CutResultTest
         triangleMesh.getPoints().addAll(3, Y, 8);
         triangleMesh.getPoints().addAll(8, Y, 8);
         triangleMesh.getPoints().addAll(8, Y, 3);
+        
+        triangleMesh.getPoints().addAll(2, Y, 9);
+        triangleMesh.getPoints().addAll(9, Y, 9);
+        triangleMesh.getPoints().addAll(9, Y, 2);        
 
         return triangleMesh;
     }
@@ -120,6 +124,17 @@ public class CutResultTest
         outerLoop.setName("3_8");
         return outerLoop;
     }
+    
+    private PolygonIndices makeLoop2_9()
+    {
+        PolygonIndices outerLoop = new PolygonIndices();
+        outerLoop.add(10);
+        outerLoop.add(19);
+        outerLoop.add(20);
+        outerLoop.add(21);
+        outerLoop.setName("2_9");
+        return outerLoop;
+    }    
 
     @Test
     public void testGetNestedPolygonSetsSingleLoop()
@@ -297,9 +312,44 @@ public class CutResultTest
         assertEquals(1, loopSets.size());
         LoopSet loopSet = loopSets.iterator().next();
         Set<Region> regions = loopSet.getRegions();
-        assertEquals(1, regions.size());
-        Region region = regions.iterator().next();
-        assertEquals(1, region.innerLoops.size());
+        assertEquals(2, regions.size());
+    }
+    
+    @Test
+    public void testGetRegionsforOneOuterLoopWithInnerLoopWhichHasInnerLoopThatAlsoHasInnerLoop()
+    {
+        TriangleMesh triangleMesh = makeTriangleMesh();
+
+        List<PolygonIndices> loopsOfVertices = new ArrayList<>();
+        PolygonIndices outerLoop2 = makeLoop4_7();
+        loopsOfVertices.add(outerLoop2);
+        PolygonIndices outerLoop4 = makeLoop5_6();
+        loopsOfVertices.add(outerLoop4);
+        PolygonIndices outerLoop5 = makeLoop3_8();
+        loopsOfVertices.add(outerLoop5);
+        PolygonIndices outerLoop6 = makeLoop2_9();
+        loopsOfVertices.add(outerLoop6);        
+        CutResult cutResult = new CutResult(triangleMesh, loopsOfVertices, nullConverter,
+                                            MeshCutter.TopBottom.BOTTOM);
+        Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        assertEquals(1, loopSets.size());
+        LoopSet loopSet = loopSets.iterator().next();
+        Set<Region> regions = loopSet.getRegions();
+        assertEquals(2, regions.size());
+        for (Region region : regions)
+        {
+            System.out.println("region outer:" + region.outerLoop);
+            System.out.println("region inner:" + region.innerLoops);
+            if (region.outerLoop.name.equals("3_8")) {
+                assertEquals(1, region.innerLoops.size());
+                assertEquals("4_7", region.innerLoops.iterator().next().name);
+            }
+            if (region.outerLoop.name.equals("4_7")) {
+                assertEquals(1, region.innerLoops.size());
+                assertEquals("5_6", region.innerLoops.iterator().next().name);
+            }
+        }
 
     }
+    
 }

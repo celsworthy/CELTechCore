@@ -53,15 +53,22 @@ public class MeshUtils
      */
     public static boolean validate(TriangleMesh childMesh)
     {
-        int numPoints = childMesh.getPoints().size() / 3;
+        // validate vertex indices
+        int numVertices = childMesh.getPoints().size() / 3;
         for (int i = 0; i < childMesh.getFaces().size(); i += 2)
         {
             int vertexIndex = childMesh.getFaces().get(i);
-            if (vertexIndex < 0 || vertexIndex > numPoints)
+            if (vertexIndex < 0 || vertexIndex > numVertices)
             {
                 return false;
             }
         }
+        
+        // validate mesh is not open (all edges are incident to two faces)
+        
+        
+        // validate mesh is orientable
+        
         return true;
     }
 
