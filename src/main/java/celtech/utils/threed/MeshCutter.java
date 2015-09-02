@@ -47,22 +47,43 @@ public class MeshCutter
 
         Point3D bedToLocal(Point3D point);
     }
+    
+    public static class MeshPair {
+        
+        final TriangleMesh topMesh;
+        final TriangleMesh bottomMesh;
+
+        public MeshPair(TriangleMesh topMesh, TriangleMesh bottomMesh)
+        {
+            this.topMesh = topMesh;
+            this.bottomMesh = bottomMesh;
+        }
+        
+        public List<TriangleMesh> getMeshes() {
+            List<TriangleMesh> meshes = new ArrayList<>();
+            meshes.add(topMesh);
+            meshes.add(bottomMesh);
+            return meshes;
+        }
+    }
 
     /**
      * Cut the given mesh into two, at the given height.
      */
-    public static Set<TriangleMesh> cut(TriangleMesh mesh, double cutHeight,
+    public static MeshPair cut(TriangleMesh mesh, double cutHeight,
         BedToLocalConverter bedToLocalConverter)
     {
 //        showIncomingMesh(mesh);
 
-        Set<TriangleMesh> triangleMeshs = new HashSet<>();
-
-        Set<CutResult> splitResults = getUncoveredUpperAndLowerMeshes(mesh, cutHeight,
+        Set<CutResult> cutResults = getUncoveredUpperAndLowerMeshes(mesh, cutHeight,
                                                                       bedToLocalConverter);
-        for (CutResult splitResult : splitResults)
+        
+        TriangleMesh topMesh = null;
+        TriangleMesh bottomMesh = null;
+        
+        for (CutResult cutResult : cutResults)
         {
-            TriangleMesh childMesh = closeOpenFace(splitResult, cutHeight, bedToLocalConverter);
+            TriangleMesh childMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
             MeshUtils.removeUnusedVertices(childMesh);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             
@@ -70,10 +91,14 @@ public class MeshCutter
                 throw new RuntimeException("Invalid mesh");
             }
             
-            triangleMeshs.add(childMesh);
+            if (cutResult.topBottom == TopBottom.TOP) {
+                topMesh = cutResult.mesh;
+            } else {
+                bottomMesh = cutResult.mesh;
+            }
+            
         }
-
-        return triangleMeshs;
+        return new MeshPair(topMesh, bottomMesh);
     }
 
     private static Set<CutResult> getUncoveredUpperAndLowerMeshes(TriangleMesh mesh,

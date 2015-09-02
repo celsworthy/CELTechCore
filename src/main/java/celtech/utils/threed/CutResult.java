@@ -194,6 +194,9 @@ class CutResult
  */
 class PolygonIndices extends ArrayList<Integer>
 {
+    /**
+     * The name is used only in testing. 
+     */
     String name;
     
     public void setName(String name) {

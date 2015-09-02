@@ -4,14 +4,14 @@
 package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
+import celtech.utils.threed.MeshCutter.MeshPair;
 import celtech.utils.threed.importers.stl.STLFileParsingException;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.net.URL;
-import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -48,8 +48,9 @@ public class MeshCutterTest
             }
         };
         
-        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -7, nullBedToLocalConverter);
-        assertEquals(2, triangleMeshs.size());
+        MeshPair meshes = MeshCutter.cut(mesh, -7, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
     }
     
         @Test
@@ -76,8 +77,9 @@ public class MeshCutterTest
             }
         };
         
-        Set<TriangleMesh> triangleMeshs = MeshCutter.cut(mesh, -15, nullBedToLocalConverter);
-        assertEquals(2, triangleMeshs.size());
+        MeshPair meshes = MeshCutter.cut(mesh, -15, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
     }
     
 }

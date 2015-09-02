@@ -194,9 +194,14 @@ public class OpenFaceCloser
         for (Integer vertexIndex : vertices)
         {
             float perturbationX = (float) (Math.random() / 1e5);
+            float perturbationY = (float) (Math.random() / 1e5);
             float perturbationZ = (float) (Math.random() / 1e5);
+            
             mesh.getPoints().set(vertexIndex * 3, mesh.getPoints().get(vertexIndex * 3)
                                  + perturbationX);
+            // we add a perturbation in Y to introduce some noise into rotated models 
+            mesh.getPoints().set(vertexIndex * 3 + 1, mesh.getPoints().get(vertexIndex * 3 + 1)
+                                 + perturbationY);
             mesh.getPoints().set(vertexIndex * 3 + 2, mesh.getPoints().get(vertexIndex * 3 + 2)
                                  + perturbationZ);
         }

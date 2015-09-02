@@ -67,7 +67,7 @@ public class MeshUtils
         // validate mesh is not open (all edges are incident to two faces)
         
         
-        // validate mesh is orientable
+        // validate mesh is orientable (winding order correct for all faces)
         
         return true;
     }

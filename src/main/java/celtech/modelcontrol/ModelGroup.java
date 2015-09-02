@@ -64,6 +64,9 @@ public class ModelGroup extends ModelContainer
         return Collections.unmodifiableSet(childModelContainers);
     }
 
+    /**
+     * Return all descendent ModelContainers of this ModelGroup.
+     */
     @Override
     public Set<ModelContainer> getDescendentModelContainers()
     {
