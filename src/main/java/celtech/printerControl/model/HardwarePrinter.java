@@ -225,7 +225,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private NozzleOpeningStateTransitionManager calibrationOpeningManager;
     private XAndYStateTransitionManager calibrationAlignmentManager;
 
-    private BooleanProperty headPowerOffFlag = new SimpleBooleanProperty(false);
+    private BooleanProperty headPowerOnFlag = new SimpleBooleanProperty(false);
 
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
@@ -472,9 +472,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public ReadOnlyBooleanProperty headPowerOffFlagProperty()
+    public ReadOnlyBooleanProperty headPowerOnFlagProperty()
     {
-        return headPowerOffFlag;
+        return headPowerOnFlag;
     }
 
     @Override
@@ -3370,7 +3370,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     /*
                      * Ancillary systems
                      */
-                    headPowerOffFlag.set(!statusResponse.isHeadPowerOn());
+                    headPowerOnFlag.set(statusResponse.isHeadPowerOn());
                     printerAncillarySystems.ambientTemperature.set(
                             statusResponse.getAmbientTemperature());
                     printerAncillarySystems.ambientTargetTemperature.set(
