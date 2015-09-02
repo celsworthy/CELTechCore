@@ -14,6 +14,7 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.utils.threed.MeshCutter;
 import celtech.utils.threed.MeshCutter.MeshPair;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -132,14 +133,37 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         double cutHeightValue = -Double.valueOf(cutHeight.getText());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         ModelContainer modelContainer = modelContainers.iterator().next();
-        
-        if (modelContainer instanceof ModelGroup) {
+
+        if (modelContainer instanceof ModelGroup)
+        {
             ModelGroup modelGroup = (ModelGroup) modelContainer;
-            for (ModelContainer descendentModelContainer: modelGroup.getModelsHoldingMeshViews()) {
-                cutModelContainerAtHeight(descendentModelContainer, cutHeightValue);
+            Set<ModelContainer> topModelContainers = new HashSet<>();
+            Set<ModelContainer> bottomModelContainers = new HashSet<>();
+            for (ModelContainer descendentModelContainer : modelGroup.getModelsHoldingMeshViews())
+            {
+                ModelContainerPair modelContainerPair = cutModelContainerAtHeight(
+                    descendentModelContainer, cutHeightValue);
+                topModelContainers.add(modelContainerPair.topModelContainer);
+                bottomModelContainers.add(modelContainerPair.bottomModelContainer);
             }
-        } else {
-            ModelContainerPair modelContainerPair = cutModelContainerAtHeight(modelContainer, cutHeightValue);
+            ModelGroup topGroup = currentProject.createNewGroupAndAddModelListeners(
+                topModelContainers);
+            ModelGroup bottomGroup = currentProject.createNewGroupAndAddModelListeners(
+                bottomModelContainers);
+            topGroup.setState(modelGroup.getState());
+            topGroup.moveToCentre();
+            topGroup.dropToBed();
+            bottomGroup.setState(modelGroup.getState());
+            bottomGroup.moveToCentre();
+            bottomGroup.dropToBed();
+            bottomGroup.translateBy(20, 20);
+            
+            currentProject.addModel(topGroup);
+            currentProject.addModel(bottomGroup);
+        } else
+        {
+            ModelContainerPair modelContainerPair = cutModelContainerAtHeight(modelContainer,
+                                                                              cutHeightValue);
             modelContainerPair.bottomModelContainer.moveToCentre();
             modelContainerPair.bottomModelContainer.dropToBed();
             undoableProject.addModel(modelContainerPair.bottomModelContainer);
@@ -147,11 +171,13 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             modelContainerPair.topModelContainer.dropToBed();
             modelContainerPair.topModelContainer.translateBy(20, 20);
             undoableProject.addModel(modelContainerPair.topModelContainer);
-        }    
+        }
     }
-    
-    class ModelContainerPair {
-        
+
+
+    class ModelContainerPair
+    {
+
         ModelContainer topModelContainer;
         ModelContainer bottomModelContainer;
 
@@ -162,13 +188,14 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             this.bottomModelContainer = bottomModelContainer;
         }
     }
-    
-    private ModelContainerPair cutModelContainerAtHeight(ModelContainer modelContainer, double cutHeightValue)
+
+    private ModelContainerPair cutModelContainerAtHeight(ModelContainer modelContainer,
+        double cutHeightValue)
     {
         ModelContainerPair modelContainerPair = null;
-        
+
         MeshCutter.setDebuggingNode(modelContainer);
-        
+
         cutHeightValue -= modelContainer.getYAdjust();
 
         //these transforms must be cleared so that bedToLocal conversions work properly in the cutter.
@@ -182,7 +209,6 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
             String modelName = modelContainer.getModelName();
 
-            
             ModelContainer topModelContainer = null;
             ModelContainer bottomModelContainer = null;
             int ix = 1;
@@ -194,23 +220,27 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                     modelContainer.getModelFile(), meshView);
                 newModelContainer.setModelName(modelName + " " + ix);
                 newModelContainer.setState(modelContainer.getState());
-                if (ix == 1) {
+                newModelContainer.getAssociateWithExtruderNumberProperty().set(
+                    modelContainer.getAssociateWithExtruderNumberProperty().get());
+                if (ix == 1)
+                {
                     topModelContainer = newModelContainer;
-                } else {
+                } else
+                {
                     bottomModelContainer = newModelContainer;
                 }
                 ix++;
             }
-            
+
             modelContainerPair = new ModelContainerPair(topModelContainer, bottomModelContainer);
-            
+
 //            undoableProject.deleteModels(modelContainers);
         } finally
         {
             modelContainer.restoreBedTransform();
             modelContainer.restoreDropToBedYTransform();
         }
-        
+
         return modelContainerPair;
     }
 
