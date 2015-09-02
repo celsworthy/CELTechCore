@@ -42,25 +42,37 @@ public class OpenFaceCloser
 
             for (Region region : loopSet.getRegions())
             {
-                try
+                int attempts = 0;
+                boolean succeeded = false;
+                while (! succeeded && attempts < 30)
                 {
-                    PolygonIndices vertices = region.outerLoop;
-                    perturbVertices(mesh, vertices);
-                    Polygon outerPolygon = makePolygon(vertices, mesh, bedToLocalConverter);
-                    for (PolygonIndices innerPolygonIndices : region.innerLoops)
+                    try
                     {
-                        Polygon innerPolygon = makePolygon(innerPolygonIndices, mesh,
-                                                           bedToLocalConverter);
-                        outerPolygon.addHole(innerPolygon);
-                    }
+                        PolygonIndices vertices = region.outerLoop;
+                        if (attempts != 0)
+                        {
+                            perturbVertices(mesh, vertices);
+                        }
+                        Polygon outerPolygon = makePolygon(vertices, mesh, bedToLocalConverter);
+                        for (PolygonIndices innerPolygonIndices : region.innerLoops)
+                        {
+                            Polygon innerPolygon = makePolygon(innerPolygonIndices, mesh,
+                                                               bedToLocalConverter);
+                            outerPolygon.addHole(innerPolygon);
+                        }
 
-                    Poly2Tri.triangulate(outerPolygon);
-                    addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
-                                               cutHeight, bedToLocalConverter, cutResult.topBottom);
-                } catch (Exception ex)
-                {
-                    System.out.println("unable to close loop: " + loopSet);
-                    ex.printStackTrace();
+                        Poly2Tri.triangulate(outerPolygon);
+                        succeeded = true;
+                        addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
+                                                   cutHeight, bedToLocalConverter,
+                                                   cutResult.topBottom);
+                    } catch (Exception ex)
+                    {
+                        System.out.println("unable to close loop: " + loopSet);
+                        ex.printStackTrace();
+                        System.out.println("XXX attempts = " + attempts);
+                        attempts++;
+                    }
                 }
             }
         }
@@ -174,17 +186,19 @@ public class OpenFaceCloser
     }
 
     /**
-     * Introduce a tiny bit of noise (maximum 1 nanometre) into the XZ 
-     * position of each perimeter vertex, to avoid problems in the Delauney triangulation.
+     * Introduce a tiny bit of noise (maximum 10 nanometres) into the XZ position of each perimeter
+     * vertex, to avoid problems in the Delauney triangulation.
      */
     private static void perturbVertices(TriangleMesh mesh, PolygonIndices vertices)
     {
         for (Integer vertexIndex : vertices)
         {
-            float perturbationX = (float) (Math.random() / 1e6);
-            float perturbationZ = (float) (Math.random() / 1e6);
-            mesh.getPoints().set(vertexIndex * 3, mesh.getPoints().get(vertexIndex * 3) + perturbationX);
-            mesh.getPoints().set(vertexIndex * 3 + 2, mesh.getPoints().get(vertexIndex * 3 + 2) + perturbationZ);
+            float perturbationX = (float) (Math.random() / 1e5);
+            float perturbationZ = (float) (Math.random() / 1e5);
+            mesh.getPoints().set(vertexIndex * 3, mesh.getPoints().get(vertexIndex * 3)
+                                 + perturbationX);
+            mesh.getPoints().set(vertexIndex * 3 + 2, mesh.getPoints().get(vertexIndex * 3 + 2)
+                                 + perturbationZ);
         }
     }
 
