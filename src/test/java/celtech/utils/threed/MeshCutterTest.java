@@ -82,4 +82,33 @@ public class MeshCutterTest
         Assert.assertNotNull(meshes.topMesh);
     }
     
+    @Test
+    public void testCutCubeAlongMeshingLineReturnsTwoMeshes() throws STLFileParsingException
+    {
+        
+        // this stl is meshed so that many vertices lie along Y=20
+        URL stlURL = this.getClass().getResource("/onecubeabovetheother_remeshed.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        MeshPair meshes = MeshCutter.cut(mesh, -20, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+    }
+    
 }

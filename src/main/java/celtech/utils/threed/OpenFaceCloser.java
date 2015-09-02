@@ -44,7 +44,7 @@ public class OpenFaceCloser
             {
                 int attempts = 0;
                 boolean succeeded = false;
-                while (! succeeded && attempts < 30)
+                while (! succeeded && attempts < 50)
                 {
                     try
                     {

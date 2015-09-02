@@ -75,6 +75,7 @@ public class MeshCutter
     {
 //        showIncomingMesh(mesh);
 
+        perturbVerticesAtCutHeight(mesh, cutHeight, bedToLocalConverter);
         Set<CutResult> cutResults = getUncoveredUpperAndLowerMeshes(mesh, cutHeight,
                                                                       bedToLocalConverter);
         
@@ -458,7 +459,7 @@ public class MeshCutter
             Set<Edge> faceEdges = getEdgesOfFaceThatPlaneIntersects(
                 mesh, faceIndex, cutHeight, bedToLocalConverter);
             faceEdges.remove(previousEdge);
-            assert (faceEdges.size() == 1) : faceIndex + " " + faceEdges.size();
+            assert faceEdges.size() == 1 : "faceEdges for next edge in loop size is: " + faceIndex + " " + faceEdges.size();
             Edge nextEdge = faceEdges.iterator().next();
             newVertices.add(makeIntersectingVertex(mesh, nextEdge, cutHeight, bedToLocalConverter));
             previousEdge = nextEdge;
@@ -753,6 +754,28 @@ public class MeshCutter
         }
         return -1;
     }
+    
+    /**
+     * If a vertex lies on the cutting plane then perturb its Y value to take it off the plane.
+     */
+    private static void perturbVerticesAtCutHeight(TriangleMesh mesh, double cutHeight,
+        BedToLocalConverter bedToLocalConverter)
+    {
+        for (int i = 0; i < mesh.getPoints().size(); i += 3)
+        {
+            Point3D pointInBed = bedToLocalConverter.localToBed(makePoint3D(mesh, i / 3));
+            if (Math.abs(pointInBed.getY() - cutHeight) < 1e-6) {
+                Point3D perturbedPointInBed = new Point3D(
+                    pointInBed.getX(),
+                    pointInBed.getY() + Math.random() / 1e3,
+                    pointInBed.getZ());
+                Point3D perturbedPointInLocal = bedToLocalConverter.bedToLocal(perturbedPointInBed);
+                mesh.getPoints().set(i, (float) perturbedPointInLocal.getX());
+                mesh.getPoints().set(i + 1, (float) perturbedPointInLocal.getY());
+                mesh.getPoints().set(i + 2, (float) perturbedPointInLocal.getZ());
+            }
+        }
+    }    
 
     public static void setDebuggingNode(ModelContainer node)
     {
