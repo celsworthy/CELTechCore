@@ -486,7 +486,7 @@ public class MeshCutter
         return edges0.iterator().next();
     }
 
-    private static Set<Edge> getFaceEdges(TriangleMesh mesh, int faceIndex)
+    static Set<Edge> getFaceEdges(TriangleMesh mesh, int faceIndex)
     {
         int vertex0 = mesh.getFaces().get(faceIndex * 6);
         int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
