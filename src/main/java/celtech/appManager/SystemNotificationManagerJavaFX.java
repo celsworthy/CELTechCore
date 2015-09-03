@@ -5,11 +5,9 @@ import celtech.appManager.errorHandling.SystemErrorHandlerOptions;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
-import celtech.coreUI.components.Notifications.NotificationArea;
 import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
@@ -1245,5 +1243,15 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 }
             });
         }
+    }
+
+    @Override
+    public void informModelIsInvalid()
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            showInformationNotification("Bad Model",
+                    "The model is not valid");
+        });
     }
 }

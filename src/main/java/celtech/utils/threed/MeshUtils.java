@@ -5,6 +5,11 @@
  */
 package celtech.utils.threed;
 
+import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
 
 
@@ -47,29 +52,66 @@ public class MeshUtils
         childMesh.getPoints().clear();
         childMesh.getPoints().addAll(newPoints, 0, nextNewPointIndex * 3);
     }
+    
+    public enum MeshError {
+        INVALID_VERTEX_ID, OPEN_MESH;
+    }
 
     /**
      * Validate the mesh.
      */
-    public static boolean validate(TriangleMesh childMesh)
+    public static Optional<MeshError> validate(TriangleMesh mesh)
     {
         // validate vertex indices
-        int numVertices = childMesh.getPoints().size() / 3;
-        for (int i = 0; i < childMesh.getFaces().size(); i += 2)
+        int numVertices = mesh.getPoints().size() / 3;
+        for (int i = 0; i < mesh.getFaces().size(); i += 2)
         {
-            int vertexIndex = childMesh.getFaces().get(i);
+            int vertexIndex = mesh.getFaces().get(i);
             if (vertexIndex < 0 || vertexIndex > numVertices)
             {
-                return false;
+                return Optional.of(MeshError.INVALID_VERTEX_ID);
             }
         }
-        
+
         // validate mesh is not open (all edges are incident to two faces)
-        
-        
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
+        {
+            if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1)
+            {
+                System.out.println("actual count: " + countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1));
+                return Optional.of(MeshError.OPEN_MESH);
+            }
+            if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
+            {
+                System.out.println("actual count: " + countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2));
+                return Optional.of(MeshError.OPEN_MESH);
+            }
+            if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
+            {
+                System.out.println("actual count: " + countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2));
+                return Optional.of(MeshError.OPEN_MESH);
+            }
+        }
+
         // validate mesh is orientable (winding order correct for all faces)
         
-        return true;
+        
+        return Optional.empty();
+    }
+
+    static int countFacesAdjacentToVertices(TriangleMesh mesh,
+        Map<Integer, Set<Integer>> facesWithVertices,
+        int faceIndex, int vertexIndexOffset0, int vertexIndexOffset1)
+    {
+        Set<Integer> facesWithVertex0 = new HashSet(facesWithVertices.get(
+            mesh.getFaces().get(faceIndex * 6 + vertexIndexOffset0 * 2)));
+
+        Set<Integer> facesWithVertex1 = facesWithVertices.get(
+            mesh.getFaces().get(faceIndex * 6 + vertexIndexOffset1 * 2));
+        facesWithVertex0.remove(faceIndex);
+        facesWithVertex0.retainAll(facesWithVertex1);
+        return facesWithVertex0.size();
     }
 
 }

@@ -5,10 +5,12 @@ package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import celtech.utils.threed.MeshCutter.MeshPair;
+import celtech.utils.threed.MeshUtils.MeshError;
 import celtech.utils.threed.importers.stl.STLFileParsingException;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.net.URL;
+import java.util.Optional;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
 import org.junit.Assert;
@@ -53,13 +55,15 @@ public class MeshCutterTest
         Assert.assertNotNull(meshes.topMesh);
     }
     
-        @Test
+    @Test
     public void testCutCubeWithHoleReturnsTwoMeshes() throws STLFileParsingException
     {
         
         URL stlURL = this.getClass().getResource("/cubewithhole.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
         
         BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
         {

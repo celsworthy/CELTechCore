@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.MeshView;
@@ -88,8 +89,9 @@ public class MeshCutter
             MeshUtils.removeUnusedVertices(childMesh);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             
-            if (! MeshUtils.validate(childMesh)) {
-                throw new RuntimeException("Invalid mesh");
+            Optional<MeshUtils.MeshError> error = MeshUtils.validate(childMesh);
+            if (error.isPresent()) {
+                throw new RuntimeException("Invalid mesh: " + error.toString());
             }
             
             if (cutResult.topBottom == TopBottom.TOP) {
@@ -189,7 +191,7 @@ public class MeshCutter
         setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
     }
 
-    private static Vertex getVertex(TriangleMesh mesh, int vertexIndex)
+    static Vertex getVertex(TriangleMesh mesh, int vertexIndex)
     {
         float x = mesh.getPoints().get(vertexIndex * 3);
         float y = mesh.getPoints().get(vertexIndex * 3 + 1);
@@ -660,7 +662,7 @@ public class MeshCutter
         return faces;
     }
 
-    private static int getFaceAdjacentToVertices(TriangleMesh mesh,
+    static int getFaceAdjacentToVertices(TriangleMesh mesh,
         Map<Integer, Set<Integer>> facesWithVertices,
         int faceIndex, int vertexIndexOffset0, int vertexIndexOffset1)
     {
@@ -756,7 +758,7 @@ public class MeshCutter
     }
     
     /**
-     * If a vertex lies on the cutting plane then perturb its Y value to take it off the plane.
+     * If a vertex lies on the cutting plane then perturb it to take it off the plane.
      */
     private static void perturbVerticesAtCutHeight(TriangleMesh mesh, double cutHeight,
         BedToLocalConverter bedToLocalConverter)

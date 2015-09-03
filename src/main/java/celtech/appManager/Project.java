@@ -519,6 +519,7 @@ public class Project implements Serializable
     public void copyModel(ModelContainer modelContainer)
     {
         ModelContainer copy = modelContainer.makeCopy();
+        copy.moveToCentre();
         addModel(copy);
     }
 

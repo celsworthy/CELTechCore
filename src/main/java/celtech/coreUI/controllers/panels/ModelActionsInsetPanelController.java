@@ -178,8 +178,8 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     class ModelContainerPair
     {
 
-        ModelContainer topModelContainer;
-        ModelContainer bottomModelContainer;
+        final ModelContainer topModelContainer;
+        final ModelContainer bottomModelContainer;
 
         public ModelContainerPair(ModelContainer topModelContainer,
             ModelContainer bottomModelContainer)

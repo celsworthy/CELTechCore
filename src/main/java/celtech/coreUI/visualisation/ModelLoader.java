@@ -13,12 +13,15 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
+import celtech.utils.threed.MeshUtils;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -37,13 +40,27 @@ public class ModelLoader
      */
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
 
-    private boolean offerShrinkAndAddToProject(Project project, boolean relayout)
+    private void offerShrinkAndAddToProject(Project project, boolean relayout)
     {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
         {
-            return true;
+            return;
         }
+        
+        // validate incoming meshes
+        for (ModelLoadResult loadResult : loadResults.getResults()) {
+            Set<ModelContainer> modelContainers = loadResult.getModelContainers();
+            for (ModelContainer modelContainer : modelContainers)
+            {
+                Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
+                if (error.isPresent()) {
+                    Lookup.getSystemNotificationHandler().informModelIsInvalid();
+                    return;
+                }
+            }
+        }
+        
         boolean projectIsEmpty = project.getTopLevelModels().isEmpty();
         Set<ModelContainer> allModelContainers = new HashSet<>();
         for (ModelLoadResult loadResult : loadResults.getResults())
@@ -61,7 +78,7 @@ public class ModelLoader
         {
 //            project.autoLayout();
         }
-        return false;
+        return;
     }
 
     public ReadOnlyBooleanProperty modelLoadingProperty()
