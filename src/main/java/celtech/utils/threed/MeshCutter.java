@@ -91,7 +91,7 @@ public class MeshCutter
             
             Optional<MeshUtils.MeshError> error = MeshUtils.validate(childMesh);
             if (error.isPresent()) {
-                throw new RuntimeException("Invalid mesh: " + error.toString());
+//                throw new RuntimeException("Invalid mesh: " + error.toString());
             }
             
             if (cutResult.topBottom == TopBottom.TOP) {

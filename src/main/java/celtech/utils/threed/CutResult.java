@@ -5,8 +5,6 @@ package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.TopBottom;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,9 +50,6 @@ class CutResult
      * Identify which of the loops in loopsOfVerticesOnOpenFace are internal to other loops. There
      * should not be any overlapping loops. Each LoopSet has one outer loop and zero or more inner
      * loops.
-     *
-     * Find sets of polygons that are nested inside each other. Sort each set by area giving a list
-     * of nested polygons. The first in the list is the outer polygon.
      */
     public Set<LoopSet> identifyOuterLoopsAndInnerLoops()
     {
@@ -91,34 +86,34 @@ class CutResult
         return topLevelLoopSets;
     }
 
-    /**
-     * Sort the given list of polygons by area, largest first.
-     */
-    private List<PolygonIndices> sortByArea(Set<PolygonIndices> nestedPolygons)
-    {
-        List<PolygonIndices> sortedNestedPolygons = new ArrayList<>(nestedPolygons);
-        Collections.sort(sortedNestedPolygons, new Comparator<PolygonIndices>()
-        {
-
-            @Override
-            public int compare(PolygonIndices o1, PolygonIndices o2)
-            {
-                double a1 = getPolygonArea(o1);
-                double a2 = getPolygonArea(o2);
-                if (a1 > a2)
-                {
-                    return 1;
-                } else if (a1 == a2)
-                {
-                    return 0;
-                } else
-                {
-                    return -1;
-                }
-            }
-        });
-        return sortedNestedPolygons;
-    }
+//    /**
+//     * Sort the given list of polygons by area, largest first.
+//     */
+//    private List<PolygonIndices> sortByArea(Set<PolygonIndices> nestedPolygons)
+//    {
+//        List<PolygonIndices> sortedNestedPolygons = new ArrayList<>(nestedPolygons);
+//        Collections.sort(sortedNestedPolygons, new Comparator<PolygonIndices>()
+//        {
+//
+//            @Override
+//            public int compare(PolygonIndices o1, PolygonIndices o2)
+//            {
+//                double a1 = getPolygonArea(o1);
+//                double a2 = getPolygonArea(o2);
+//                if (a1 > a2)
+//                {
+//                    return 1;
+//                } else if (a1 == a2)
+//                {
+//                    return 0;
+//                } else
+//                {
+//                    return -1;
+//                }
+//            }
+//        });
+//        return sortedNestedPolygons;
+//    }
 
     private Point getPointAt(PolygonIndices loop, int index)
     {
@@ -158,27 +153,27 @@ class CutResult
         return result;
     }
 
-    double getPolygonArea(PolygonIndices loop)
-    {
-        int N = loop.size();
-        Point[] polygon = new Point[N];
-        for (int k = 0; k < polygon.length; k++)
-        {
-            polygon[k] = getPointAt(loop, k);
-        }
-
-        int i;
-        int j;
-        double area = 0;
-        for (i = 0; i < N; i++)
-        {
-            j = (i + 1) % N;
-            area += polygon[i].x * polygon[j].y;
-            area -= polygon[i].y * polygon[j].x;
-        }
-        area /= 2;
-        return area < 0 ? -area : area;
-    }
+//    double getPolygonArea(PolygonIndices loop)
+//    {
+//        int N = loop.size();
+//        Point[] polygon = new Point[N];
+//        for (int k = 0; k < polygon.length; k++)
+//        {
+//            polygon[k] = getPointAt(loop, k);
+//        }
+//
+//        int i;
+//        int j;
+//        double area = 0;
+//        for (i = 0; i < N; i++)
+//        {
+//            j = (i + 1) % N;
+//            area += polygon[i].x * polygon[j].y;
+//            area -= polygon[i].y * polygon[j].x;
+//        }
+//        area /= 2;
+//        return area < 0 ? -area : area;
+//    }
 
 }
 

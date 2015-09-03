@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 
 /**
@@ -21,6 +23,9 @@ import javafx.scene.shape.TriangleMesh;
  */
 public class MeshUtils
 {
+    
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+        MeshUtils.class.getName());
 
     /**
      * Remove vertices that are not used by any faces.
@@ -163,10 +168,16 @@ public class MeshUtils
                 Set<Integer> facesWithv1 = facesWithVertices.get(edge.v1);
                 facesWithv0.retainAll(facesWithv1);
                 facesWithv0.remove(faceIndex);
+                if (facesWithv0.size() != 1) {
+                    steno.error("Invalid topology while checking orientability");
+                    return false;
+                }
                 // we should now have the face on other side of the edge
                 int opposingFaceIndex = facesWithv0.iterator().next();
                 assert facesWithv0.size() == 1;
                 if (!checkOrientationCompatible(mesh, faceIndex, opposingFaceIndex, edge)) {
+                    System.out.println("fails for faces " + faceIndex + " " + opposingFaceIndex 
+                    + " edge " + edge.v0 + " " + edge.v1);
                     return false;
                 }
             }
@@ -188,8 +199,8 @@ public class MeshUtils
         Edge edge)
     {
         Orientation face1Orientation = getOrientation(mesh, faceIndex1, edge);
-        Orientation face2Orientation = getOrientation(mesh, faceIndex1, edge);
-        return face1Orientation == face2Orientation;
+        Orientation face2Orientation = getOrientation(mesh, faceIndex2, edge);
+        return face1Orientation != face2Orientation;
     }
     
     /**
