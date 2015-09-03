@@ -6,6 +6,7 @@
 package celtech.utils.threed;
 
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +24,7 @@ public class MeshUtils
     /**
      * Remove vertices that are not used by any faces.
      */
-    static void removeUnusedVertices(TriangleMesh childMesh)
+    static void removeUnusedAndDuplicateVertices(TriangleMesh childMesh)
     {
 
         // array of new vertex index for previous index
@@ -51,9 +52,52 @@ public class MeshUtils
 
         childMesh.getPoints().clear();
         childMesh.getPoints().addAll(newPoints, 0, nextNewPointIndex * 3);
+
+        removeDuplicateVertices(childMesh);
     }
-    
-    public enum MeshError {
+
+    static void removeDuplicateVertices(TriangleMesh mesh)
+    {
+        Map<Integer, Integer> vertexReplacements = new HashMap<>();
+        Map<Vertex, Integer> vertexToVertex = new HashMap<>();
+        for (int vertexIndex = 0; vertexIndex < mesh.getPoints().size() / 3; vertexIndex++)
+        {
+            Vertex vertex = MeshCutter.getVertex(mesh, vertexIndex);
+
+            if (vertexToVertex.containsKey(vertex))
+            {
+                System.out.println("duplicate found at " + vertexIndex);
+                vertexReplacements.put(vertexIndex, vertexToVertex.get(vertex));
+            } else
+            {
+                vertexToVertex.put(vertex, vertexIndex);
+            }
+        }
+        replaceVertices(mesh, vertexReplacements);
+    }
+
+    /**
+     * Replace uses of vertex fromVertex (key) with toVertex (value).
+     */
+    private static void replaceVertices(TriangleMesh mesh, Map<Integer, Integer> vertexReplacements)
+    {
+        System.out.println("replacements is " + vertexReplacements);
+        for (int faceIndex = 0; faceIndex < mesh.getFaces().size(); faceIndex += 2)
+        {
+            System.out.println("consider index " + faceIndex + " value " + mesh.getFaces().get(faceIndex));
+            if (vertexReplacements.containsKey(mesh.getFaces().get(faceIndex)))
+            {
+                System.out.println("contains key at " + faceIndex);
+                mesh.getFaces().set(faceIndex,
+                                    vertexReplacements.get(mesh.getFaces().get(faceIndex)));
+            }
+        }
+    }
+
+
+    public enum MeshError
+    {
+
         INVALID_VERTEX_ID, OPEN_MESH;
     }
 
@@ -72,31 +116,41 @@ public class MeshUtils
                 return Optional.of(MeshError.INVALID_VERTEX_ID);
             }
         }
-
+        
         // validate mesh is not open (all edges are incident to two faces)
+
+//        System.out.println("check " + mesh.getPoints().size() / 3 + " vertices");
+//        for (int vertex = 0; vertex < mesh.getPoints().size() / 3; vertex++)
+//        {
+//            System.out.println(vertex + ": "
+//                + mesh.getFaces().get(vertex * 3) + " " + mesh.getFaces().get(vertex * 3 + 1) + " "
+//                + mesh.getFaces().get(vertex * 3 + 2));
+//        }
+        
         Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+//        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
+//        {
+//            System.out.println(faceIndex + ": "
+//                + mesh.getFaces().get(faceIndex * 6) + " " + mesh.getFaces().get(faceIndex * 6 + 2)
+//                + " " + mesh.getFaces().get(faceIndex * 6 + 4));
+//        }
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1)
             {
-                System.out.println("actual count: " + countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1));
                 return Optional.of(MeshError.OPEN_MESH);
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
             {
-                System.out.println("actual count: " + countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2));
                 return Optional.of(MeshError.OPEN_MESH);
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
             {
-                System.out.println("actual count: " + countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2));
                 return Optional.of(MeshError.OPEN_MESH);
             }
         }
 
         // validate mesh is orientable (winding order correct for all faces)
-        
-        
         return Optional.empty();
     }
 

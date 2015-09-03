@@ -86,7 +86,7 @@ public class MeshCutter
         for (CutResult cutResult : cutResults)
         {
             TriangleMesh childMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
-            MeshUtils.removeUnusedVertices(childMesh);
+            MeshUtils.removeUnusedAndDuplicateVertices(childMesh);
             setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
             
             Optional<MeshUtils.MeshError> error = MeshUtils.validate(childMesh);
