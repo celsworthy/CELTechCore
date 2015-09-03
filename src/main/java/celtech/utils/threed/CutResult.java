@@ -66,13 +66,11 @@ class CutResult
             {
                 if (loopSet.contains(polygonIndices))
                 {
-                    System.out.println("Loop set " + loopSet.outerLoop.name + " contains " + polygonIndices.name);
                     loopSet.addToContainingChild(polygonIndices);
                     added = true;
                     break;
                 } else if (contains(polygonIndices, loopSet.outerLoop))
                 {
-                    System.out.println(polygonIndices.name + " contains loop set " + loopSet.outerLoop.name);
                     Set<LoopSet> innerLoopSets = new HashSet<>();
                     innerLoopSets.add(loopSet);
                     LoopSet newLoopSet = new LoopSet(this, polygonIndices, innerLoopSets);
@@ -84,7 +82,6 @@ class CutResult
             }
             if (!added)
             {
-                System.out.println("Create new loop set for " + polygonIndices.name);
                 // polygonIndices is neither in a topLevelLoopSet nor contains a topLevelLoopSet
                 // so create a new toplevelLoopSet.
                 LoopSet newLoopSet = new LoopSet(this, polygonIndices, new HashSet<>());

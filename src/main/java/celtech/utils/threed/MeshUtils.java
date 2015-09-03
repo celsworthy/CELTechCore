@@ -66,7 +66,6 @@ public class MeshUtils
 
             if (vertexToVertex.containsKey(vertex))
             {
-                System.out.println("duplicate found at " + vertexIndex);
                 vertexReplacements.put(vertexIndex, vertexToVertex.get(vertex));
             } else
             {
@@ -81,13 +80,10 @@ public class MeshUtils
      */
     private static void replaceVertices(TriangleMesh mesh, Map<Integer, Integer> vertexReplacements)
     {
-        System.out.println("replacements is " + vertexReplacements);
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size(); faceIndex += 2)
         {
-            System.out.println("consider index " + faceIndex + " value " + mesh.getFaces().get(faceIndex));
             if (vertexReplacements.containsKey(mesh.getFaces().get(faceIndex)))
             {
-                System.out.println("contains key at " + faceIndex);
                 mesh.getFaces().set(faceIndex,
                                     vertexReplacements.get(mesh.getFaces().get(faceIndex)));
             }
@@ -117,8 +113,20 @@ public class MeshUtils
             }
         }
         
-        // validate mesh is not open (all edges are incident to two faces)
+        if (testMeshIsOpen(mesh))
+        {
+            return Optional.of(MeshError.OPEN_MESH);
+        }
 
+        // quick validate mesh is orientable (winding order correct for all faces)
+        return Optional.empty();
+    }
+
+    /**
+     * Check if mesh is open (not all edges are incident to two faces).
+     */
+    private static boolean testMeshIsOpen(TriangleMesh mesh)
+    {
 //        System.out.println("check " + mesh.getPoints().size() / 3 + " vertices");
 //        for (int vertex = 0; vertex < mesh.getPoints().size() / 3; vertex++)
 //        {
@@ -127,31 +135,31 @@ public class MeshUtils
 //                + mesh.getFaces().get(vertex * 3 + 2));
 //        }
         
-        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 //        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
 //        {
 //            System.out.println(faceIndex + ": "
 //                + mesh.getFaces().get(faceIndex * 6) + " " + mesh.getFaces().get(faceIndex * 6 + 2)
 //                + " " + mesh.getFaces().get(faceIndex * 6 + 4));
-//        }
+//        }        
+        
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1)
             {
-                return Optional.of(MeshError.OPEN_MESH);
+                return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
             {
-                return Optional.of(MeshError.OPEN_MESH);
+                return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
             {
-                return Optional.of(MeshError.OPEN_MESH);
+                return true;
             }
         }
-
-        // validate mesh is orientable (winding order correct for all faces)
-        return Optional.empty();
+        return false;
     }
 
     static int countFacesAdjacentToVertices(TriangleMesh mesh,

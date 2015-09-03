@@ -153,7 +153,12 @@ public class ModelLoader
         Set<ModelContainer> splitModelContainers = new HashSet<>();
         for (ModelContainer modelContainer : modelContainers)
         {
-            splitModelContainers.add(modelContainer.splitIntoParts());
+            try {
+                ModelContainer splitContainerOrGroup = modelContainer.splitIntoParts();
+                splitModelContainers.add(splitContainerOrGroup);
+            } catch (StackOverflowError ex) {
+                splitModelContainers.add(modelContainer);
+            }
         }
         if (splitModelContainers.size() == 1)
         {
