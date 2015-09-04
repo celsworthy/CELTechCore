@@ -337,9 +337,7 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            int stringTestLength = friendlyFilamentName.get().length();
-            if (! friendlyFilamentName.get().substring(0, stringTestLength).equals(
-                referenceFilamentData.getFriendlyFilamentName().substring(0, stringTestLength)))
+            if (!friendlyFilamentName.get().trim().equals(referenceFilamentData.getFriendlyFilamentName().trim()))
             {
                 friendlyFilamentName.set(referenceFilamentData.getFriendlyFilamentName());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
