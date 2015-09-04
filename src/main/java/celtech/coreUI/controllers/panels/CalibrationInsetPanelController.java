@@ -142,9 +142,6 @@ public class CalibrationInsetPanelController implements Initializable,
     private VBox diagramContainer;
 
     @FXML
-    private Pane calibrationLeftBorder;
-
-    @FXML
     private HBox topMenuStrip;
 
     private Printer currentPrinter;
@@ -537,9 +534,6 @@ public class CalibrationInsetPanelController implements Initializable,
 
     public void hideCommonBordersAndBackButton()
     {
-        calibrationLeftBorder.setMinWidth(0);
-        calibrationLeftBorder.setPrefWidth(0);
-        calibrationLeftBorder.setVisible(false);
         topMenuStrip.setMinHeight(0);
         topMenuStrip.setPrefHeight(0);
         topMenuStrip.setVisible(false);
