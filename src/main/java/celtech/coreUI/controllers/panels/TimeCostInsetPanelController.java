@@ -405,13 +405,20 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
                 lblTime, lblWeight,
                 lblCost, cancellable);
+
+        boolean slicedAndPostProcessed = false;
+
         try
         {
-            updateDetails.runSlicerAndPostProcessor();
+            slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
         } catch (Exception ex)
         {
             ex.printStackTrace();
-            steno.exception("Error running slicer/postprocessor ", ex);
+        }
+
+        if (!slicedAndPostProcessed)
+        {
+            steno.error("Error running slicer/postprocessor");
             String failed = Lookup.i18n("timeCost.failed");
             Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
@@ -420,7 +427,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                 lblCost.setText(failed);
             });
         }
-
     }
 
     private void updatePrintQuality(PrinterSettings printerSettings)

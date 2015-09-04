@@ -93,7 +93,7 @@ public class GetTimeWeightCost
         return cancellable.cancelled().get();
     }
 
-    public void runSlicerAndPostProcessor() throws IOException
+    public boolean runSlicerAndPostProcessor() throws IOException
     {
 
         steno.debug("launch time cost process for project " + project + " and settings "
@@ -101,20 +101,18 @@ public class GetTimeWeightCost
 
         if (isCancelled())
         {
-            return;
+            return false;
         }
 
         steno.info("Starting slicing");
         boolean succeeded = doSlicing(project, settings);
-        steno.info("Finished slicing");
-        if (!succeeded)
-        {
-            return;
+        if (! succeeded) {
+            return false;
         }
 
         if (isCancelled())
         {
-            return;
+            return false;
         }
         
         Printer printer = Lookup.getSelectedPrinterProperty().get();
@@ -128,28 +126,23 @@ public class GetTimeWeightCost
                 project,
                 settings,
                 null);
+         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
+            getPrintJobStatistics();
         
-        steno.debug("end post processing");
-
-        if (result != null
-                && result.getRoboxiserResult().isSuccess())
+                if (isCancelled())
         {
-            PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
-                    getPrintJobStatistics();
-
-            if (isCancelled())
-            {
-                return;
-            }
-
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
-            {
-                updateFieldsForStatistics(printJobStatistics);
-            });
-        } else
-        {
-            throw new RuntimeException("Failed to calculate cost/weight");
+            return false;
         }
+                
+        if (result.getRoboxiserResult().isSuccess())
+        {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            updateFieldsForStatistics(printJobStatistics);
+        });
+        }
+        
+        return result.getRoboxiserResult().isSuccess();
     }
 
     /**

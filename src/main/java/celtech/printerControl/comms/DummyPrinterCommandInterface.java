@@ -252,6 +252,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         {
             currentStatus.setHeadEEPROMState(EEPROMState.PROGRAMMED);
             attachedHead = new Head(headData);
+            currentStatus.setHeadPowerOn(true);
             success = true;
         } else if (headName.equalsIgnoreCase("BLANK"))
         {
@@ -448,6 +449,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.startsWith(detachHeadCommand))
             {
                 currentStatus.setHeadEEPROMState(EEPROMState.NOT_PRESENT);
+                currentStatus.setHeadPowerOn(false);
             } else if (messageData.equalsIgnoreCase(detachPrinterCommand))
             {
                 RoboxCommsManager.getInstance().removeDummyPrinter(portName);

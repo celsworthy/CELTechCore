@@ -113,19 +113,50 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
                 }
                 outputWriter.writeOutput("; End of Pre print gcode\n");
 
-                gcodeParser.parse(inputFilename, percentProgress, slicerType);
+                try
+                {
+                    gcodeParser.parse(inputFilename, percentProgress, slicerType);
+                    steno.debug("Finished roboxising " + inputFilename);
+                    steno.debug("Total extrusion volume " + totalExtrudedVolume + " mm3");
+                    steno.debug("Total XY movement distance " + totalXYMovement + " mm");
 
-                outputWriter.close();
-
-                steno.debug("Finished roboxising " + inputFilename);
-                steno.debug("Total extrusion volume " + totalExtrudedVolume + " mm3");
-                steno.debug("Total XY movement distance " + totalXYMovement + " mm");
-                
-                //Run the gcode validator
-                GCodeValidator validator = new GCodeValidator(outputFilename);
+                    //Run the gcode validator
+                    GCodeValidator validator = new GCodeValidator(outputFilename);
 //                validator.validate();
 
-                success = true;
+                    success = true;
+
+                    /**
+                     * TODO: layerNumberToLineNumber uses lines numbers from the
+                     * GCode file so are a little less than the line numbers for
+                     * each layer after roboxisation. As a quick fix for now set
+                     * the line number of the last layer to the actual maximum
+                     * line number.
+                     */
+                    layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
+                            getNumberOfLinesOutput());
+                    int numLines = outputWriter.getNumberOfLinesOutput();
+
+                    double predictedDuration = layerNumberToPredictedDuration.stream().
+                            mapToDouble(
+                                    Double::doubleValue).sum();
+
+                    PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
+                            numLines,
+                            volumeUsed,
+                            0,
+                            lineNumberOfFirstExtrusion,
+                            layerNumberToLineNumber, layerNumberToPredictedDuration,
+                            predictedDuration);
+
+                    result.setRoboxisedStatistics(roboxisedStatistics);
+                } catch (PostProcessingError ex)
+                {
+                    steno.error("Post-processing terminated due to error: " + ex.getMessage());
+                } finally
+                {
+                    outputWriter.close();
+                }
             } catch (IOException ex)
             {
                 steno.error("Error roboxising file " + inputFilename);
@@ -137,30 +168,6 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
             }
 
             result.setSuccess(success);
-
-            /**
-             * TODO: layerNumberToLineNumber uses lines numbers from the GCode
-             * file so are a little less than the line numbers for each layer
-             * after roboxisation. As a quick fix for now set the line number of
-             * the last layer to the actual maximum line number.
-             */
-            layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
-                    getNumberOfLinesOutput());
-            int numLines = outputWriter.getNumberOfLinesOutput();
-
-            double predictedDuration = layerNumberToPredictedDuration.stream().
-                    mapToDouble(
-                            Double::doubleValue).sum();
-
-            PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-                    numLines,
-                    volumeUsed,
-                    0,
-                    lineNumberOfFirstExtrusion,
-                    layerNumberToLineNumber, layerNumberToPredictedDuration,
-                    predictedDuration);
-
-            result.setRoboxisedStatistics(roboxisedStatistics);
         }
 
         return result;

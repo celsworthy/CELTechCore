@@ -768,7 +768,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         chooseACustomProfileNotificationBar.setAppearanceCondition(project.customSettingsNotChosenProperty()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-        printHeadPowerOffNotificationBar.setAppearanceCondition(printer.headPowerOffFlagProperty()
+        printHeadPowerOffNotificationBar.setAppearanceCondition(printer.headPowerOnFlagProperty().not()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         
         CanPrintConditionalTextBindings conditionalTextBindings
@@ -1043,7 +1043,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                        .and(printer.headPowerOffFlagProperty().not()));
+                        .and(printer.headPowerOnFlagProperty()));
             } else // this printer has two extruders
             {
                 if (project.allModelsOnSameExtruder())
@@ -1067,7 +1067,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                             .and(printer.extrudersProperty().get(extruderNumber).
                                     filamentLoadedProperty()
-                                    .and(printer.headPowerOffFlagProperty().not()))
+                                    .and(printer.headPowerOnFlagProperty()))
                     );
                 } else // both extruders are required
                 {
@@ -1080,7 +1080,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                             .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                             .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
-                                    .and(printer.headPowerOffFlagProperty().not()))
+                                    .and(printer.headPowerOnFlagProperty()))
                     );
 
                 }
