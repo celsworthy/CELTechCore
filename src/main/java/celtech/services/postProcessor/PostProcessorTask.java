@@ -24,7 +24,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        PostProcessorTask.class.getName());
+            PostProcessorTask.class.getName());
 
     private String printJobUUID;
     private String printJobDirectory;
@@ -33,24 +33,24 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
 
     public PostProcessorTask(String printJobUUID,
-        String printJobDirectory,
-        SlicerParametersFile settings,
-        Printer printerToUse)
+            String printJobDirectory,
+            SlicerParametersFile settings,
+            Printer printerToUse)
     {
         initialise(printJobUUID, printJobDirectory, settings, printerToUse);
     }
 
     public PostProcessorTask(String printJobUUID, SlicerParametersFile settings,
-        Printer printerToUse)
+            Printer printerToUse)
     {
         initialise(printJobUUID, ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator, settings,
-                   printerToUse);
+                printerToUse);
     }
 
     private void initialise(String printJobUUID,
-        String printJobDirectory,
-        SlicerParametersFile settings,
-        Printer printerToUse)
+            String printJobDirectory,
+            SlicerParametersFile settings,
+            Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
         this.printJobDirectory = printJobDirectory;
@@ -68,12 +68,12 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             updateMessage("");
             updateProgress(0.0, 100.0);
             taskProgress.addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                updateProgress(newValue.doubleValue(), 100.0);
-            });            
+                    (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                    {
+                        updateProgress(newValue.doubleValue(), 100.0);
+                    });
             GCodePostProcessingResult postProcessingResult = doPostProcessing(printJobUUID, settings,
-                                                          printJobDirectory, printerToUse, taskProgress);
+                    printJobDirectory, printerToUse, taskProgress);
             return postProcessingResult;
         } catch (Exception ex)
         {
@@ -85,17 +85,20 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
     }
 
     public static GCodePostProcessingResult doPostProcessing(String printJobUUID, SlicerParametersFile settings,
-        String printJobDirectory, Printer printerToUse, DoubleProperty taskProgress) throws IOException
+            String printJobDirectory, Printer printerToUse, DoubleProperty taskProgress) throws IOException
     {
         GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
         PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID, printJobDirectory);
         String gcodeFileToProcess = printJob.getGCodeFileLocation();
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
         RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
-            gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
-        roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+                gcodeFileToProcess, gcodeOutputFile, settings, taskProgress);
+        if (roboxiserResult.getPrintJobStatistics() != null)
+        {
+            roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+        }
         GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(
-            printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
+                printJobUUID, gcodeOutputFile, printerToUse, roboxiserResult);
         return postProcessingResult;
     }
 

@@ -92,7 +92,7 @@ public class GetTimeWeightCost
         return cancellable.cancelled().get();
     }
 
-    public void runSlicerAndPostProcessor() throws IOException
+    public boolean runSlicerAndPostProcessor() throws IOException
     {
 
         steno.debug("launch time cost process for project " + project + " and settings "
@@ -100,17 +100,17 @@ public class GetTimeWeightCost
 
         if (isCancelled())
         {
-            return;
+            return false;
         }
 
         boolean succeeded = doSlicing(project, settings);
         if (! succeeded) {
-            return;
+            return false;
         }
 
         if (isCancelled())
         {
-            return;
+            return false;
         }
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
@@ -122,14 +122,18 @@ public class GetTimeWeightCost
 
         if (isCancelled())
         {
-            return;
+            return false;
         }
 
+        if (result.getRoboxiserResult().isSuccess())
+        {
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             updateFieldsForStatistics(printJobStatistics);
         });
-
+        }
+        
+        return result.getRoboxiserResult().isSuccess();
     }
 
     /**
