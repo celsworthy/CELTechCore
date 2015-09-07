@@ -761,15 +761,18 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         private final List<ExtrusionBounds> extrusionBoundaries;
         private final List<Integer> inwardsMoveIndexList;
-        private final int lastLayerEventIndex;
+        private final int lastLayerEvent;
+        private final int firstNozzleEvent;
 
         private ExtrusionBufferDigest(List<ExtrusionBounds> extrusionBoundaries,
                 List<Integer> inwardsMoveIndexList,
-                int lastLayerEventIndex)
+                int firstNozzleEvent,
+                int lastLayerEvent)
         {
             this.extrusionBoundaries = extrusionBoundaries;
             this.inwardsMoveIndexList = inwardsMoveIndexList;
-            this.lastLayerEventIndex = lastLayerEventIndex;
+            this.firstNozzleEvent = firstNozzleEvent;
+            this.lastLayerEvent = lastLayerEvent;
         }
 
         public List<ExtrusionBounds> getExtrusionBoundaries()
@@ -782,9 +785,14 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             return inwardsMoveIndexList;
         }
 
-        public int getLastLayerEventIndex()
+        public int getFirstNozzleEvent()
         {
-            return lastLayerEventIndex;
+            return firstNozzleEvent;
+        }
+
+        public int getLastLayerEvent()
+        {
+            return lastLayerEvent;
         }
     }
 
@@ -792,13 +800,14 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     {
         List<ExtrusionBounds> extrusionBoundaries = new ArrayList<>();
         List<Integer> inwardsMoveIndexList = new ArrayList<>();
-        int lastLayerEventIndex = -1;
+        int firstNozzleEvent = -1;
+        int lastLayerIndex = -1;
 
         int indexOfLastDetectedExtrusionEvent = -1;
         ExtrusionTask lastDetectedExtrusionTask = null;
         ExtrusionBounds extrusionBoundary = null;
 
-        for (int extrusionBufferIndex = 0; extrusionBufferIndex <= buffer.size() - 1; extrusionBufferIndex++)
+        for (int extrusionBufferIndex = buffer.size() - 1; extrusionBufferIndex >= 0; extrusionBufferIndex--)
         {
             GCodeParseEvent event = buffer.get(extrusionBufferIndex);
 
@@ -811,12 +820,12 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     if (extrusionBoundary != null)
                     {
                         // Populate the end event in the last boundary
-                        extrusionBoundary.setEndIndex(indexOfLastDetectedExtrusionEvent);
-                        extrusionBoundaries.add(extrusionBoundary);
+                        extrusionBoundary.setStartIndex(indexOfLastDetectedExtrusionEvent);
+                        extrusionBoundaries.add(0, extrusionBoundary);
                     }
 
                     extrusionBoundary = new ExtrusionBounds();
-                    extrusionBoundary.setStartIndex(extrusionBufferIndex);
+                    extrusionBoundary.setEndIndex(extrusionBufferIndex);
                     extrusionBoundary.setExtrusionTask(extrusionEvent.getExtrusionTask());
 
                     lastDetectedExtrusionTask = extrusionEvent.getExtrusionTask();
@@ -836,23 +845,31 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                             //TODO Slic3r specific code!
                             if (eventComment.contains("move inwards"))
                             {
-                                inwardsMoveIndexList.add(extrusionBufferIndex);
+                                inwardsMoveIndexList.add(0, extrusionBufferIndex);
                             }
                         }
                 }
-            } else if (event instanceof LayerChangeEvent)
+            } else if (event instanceof NozzleChangeBValueEvent
+                    || event instanceof NozzleOpenFullyEvent)
             {
-                lastLayerEventIndex = extrusionBufferIndex;
+                firstNozzleEvent = extrusionBufferIndex;
+                // Don't ever go beyond a nozzle event - this would make closing far more complicated
+                break;
+            } else if (event instanceof LayerChangeEvent
+                    && lastLayerIndex < 0)
+            {
+                //Record the last layer event - we need this for perimeter checks
+                lastLayerIndex = extrusionBufferIndex;
             }
         }
 
         if (extrusionBoundary != null)
         {
-            extrusionBoundary.setEndIndex(indexOfLastDetectedExtrusionEvent);
-            extrusionBoundaries.add(extrusionBoundary);
+            extrusionBoundary.setStartIndex(indexOfLastDetectedExtrusionEvent);
+            extrusionBoundaries.add(0, extrusionBoundary);
         }
 
-        return new ExtrusionBufferDigest(extrusionBoundaries, inwardsMoveIndexList, lastLayerEventIndex);
+        return new ExtrusionBufferDigest(extrusionBoundaries, inwardsMoveIndexList, firstNozzleEvent, lastLayerIndex);
     }
 
     class CloseResult
@@ -878,13 +895,28 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         }
     }
 
-    private Optional<CloseResult> closeToEndOfExtrusion(ExtrusionBounds boundsToCloseIn, String comment, Map<EventType, Integer> eventIndices)
+    // If we're here then the last extrusion bounds will not be a perimeter.
+    private Optional<CloseResult> closeToEndOfExtrusion(List<ExtrusionBounds> extrusionBoundaries, String comment, Map<EventType, Integer> eventIndices)
     {
         Optional<CloseResult> closeResult = Optional.empty();
         double nozzleStartPosition = 0;
         double nozzleCloseOverVolume = 0;
+        double availableExtrusion = 0;
 
-        if (boundsToCloseIn.getEExtrusion() >= (currentNozzle.getNozzleParameters().getEjectionVolume()
+        for (int extrusionBoundsCount = extrusionBoundaries.size() - 1; extrusionBoundsCount >= 0; extrusionBoundsCount--)
+        {
+            ExtrusionBounds extrusionBounds = extrusionBoundaries.get(extrusionBoundsCount);
+
+            if (extrusionBounds.getExtrusionTask() == ExtrusionTask.ExternalPerimeter
+                    || extrusionBounds.getExtrusionTask() == ExtrusionTask.Perimeter)
+            {
+                break;
+            }
+
+            availableExtrusion += extrusionBounds.getEExtrusion();
+        }
+
+        if (availableExtrusion >= (currentNozzle.getNozzleParameters().getEjectionVolume()
                 + currentNozzle.getNozzleParameters().getWipeVolume()))
         {
             //OK - we're go for a normal close with wipe
@@ -904,7 +936,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
             closeResult = Optional.of(new CloseResult(nozzleStartPosition, nozzleCloseOverVolume));
 
-        } else if (boundsToCloseIn.getEExtrusion() >= currentNozzle.getNozzleParameters().getEjectionVolume())
+        } else if (availableExtrusion >= currentNozzle.getNozzleParameters().getEjectionVolume())
         {
             //Full open, normal close without wipe
             nozzleStartPosition = 1.0;
@@ -926,7 +958,24 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     private Optional<CloseResult> closeInwardsFromEndOfPerimeter(List<ExtrusionBounds> extrusionBoundaries,
             TravelEvent lastInwardMoveEvent,
             Map<EventType, Integer> eventIndices,
-            int lastLayerEventIndex) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException
+            final int lastLayerIndex) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException
+    {
+        return closeInwardsFrom(extrusionBoundaries, lastInwardMoveEvent, eventIndices, lastLayerIndex, true);
+    }
+
+    private Optional<CloseResult> closeInwardsFromEndOfLastExtrusion(List<ExtrusionBounds> extrusionBoundaries,
+            TravelEvent lastInwardMoveEvent,
+            Map<EventType, Integer> eventIndices,
+            final int lastLayerIndex) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException
+    {
+        return closeInwardsFrom(extrusionBoundaries, lastInwardMoveEvent, eventIndices, lastLayerIndex, false);
+    }
+
+    private Optional<CloseResult> closeInwardsFrom(List<ExtrusionBounds> extrusionBoundaries,
+            TravelEvent lastInwardMoveEvent,
+            Map<EventType, Integer> eventIndices,
+            final int lastLayerIndex,
+            boolean closeFromEndOfPerimeter) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException
     {
         Optional<CloseResult> closeResult = Optional.empty();
         double nozzleStartPosition = 0;
@@ -937,19 +986,25 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         for (int extrusionBoundsCount = extrusionBoundaries.size() - 1; extrusionBoundsCount >= 0; extrusionBoundsCount--)
         {
-            if (extrusionBoundaries.get(extrusionBoundsCount).getExtrusionTask() == ExtrusionTask.ExternalPerimeter)
+            ExtrusionBounds extrusionBounds = extrusionBoundaries.get(extrusionBoundsCount);
+
+            if (extrusionBounds.getExtrusionTask() == ExtrusionTask.ExternalPerimeter
+                    && extrusionBounds.getStartIndex() > lastLayerIndex
+                    && extrusionBounds.getEndIndex() > lastLayerIndex)
             {
-                externalPerimeterBounds = extrusionBoundaries.get(extrusionBoundsCount);
-            } else if (extrusionBoundaries.get(extrusionBoundsCount).getExtrusionTask() == ExtrusionTask.Perimeter)
+                externalPerimeterBounds = extrusionBounds;
+            } else if (extrusionBounds.getExtrusionTask() == ExtrusionTask.Perimeter
+                    && extrusionBounds.getStartIndex() > lastLayerIndex
+                    && extrusionBounds.getEndIndex() > lastLayerIndex)
             {
-                finalInnerPerimeterBounds = extrusionBoundaries.get(extrusionBoundsCount);
+                finalInnerPerimeterBounds = extrusionBounds;
                 break;
             }
         }
 
         ExtrusionBounds boundsContainingInitialExtrusion = null;
         ExtrusionBounds boundsContainingFinalExtrusion = null;
-        ExtrusionBounds boundsContainingExtrusionCloseMustStartFrom = null;
+        ExtrusionBounds boundsContainingExtrusionCloseMustStartFrom = extrusionBoundaries.get(extrusionBoundaries.size() - 1);
 
         double availableExtrusion = 0;
 
@@ -961,14 +1016,20 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             {
                 boundsContainingInitialExtrusion = finalInnerPerimeterBounds;
                 boundsContainingFinalExtrusion = finalInnerPerimeterBounds;
-                boundsContainingExtrusionCloseMustStartFrom = externalPerimeterBounds;
+                if (closeFromEndOfPerimeter)
+                {
+                    boundsContainingExtrusionCloseMustStartFrom = externalPerimeterBounds;
+                }
                 availableExtrusion = boundsContainingInitialExtrusion.getEExtrusion();
             } else if ((finalInnerPerimeterBounds.getEExtrusion()
                     + externalPerimeterBounds.getEExtrusion()) >= currentNozzle.getNozzleParameters().getEjectionVolume())
             {
                 boundsContainingInitialExtrusion = finalInnerPerimeterBounds;
                 boundsContainingFinalExtrusion = externalPerimeterBounds;
-                boundsContainingExtrusionCloseMustStartFrom = externalPerimeterBounds;
+                if (closeFromEndOfPerimeter)
+                {
+                    boundsContainingExtrusionCloseMustStartFrom = externalPerimeterBounds;
+                }
                 availableExtrusion = boundsContainingInitialExtrusion.getEExtrusion() + boundsContainingFinalExtrusion.getEExtrusion();
             } else
             {
@@ -980,7 +1041,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             {
                 boundsContainingInitialExtrusion = externalPerimeterBounds;
                 boundsContainingFinalExtrusion = externalPerimeterBounds;
-                boundsContainingExtrusionCloseMustStartFrom = externalPerimeterBounds;
+                if (closeFromEndOfPerimeter)
+                {
+                    boundsContainingExtrusionCloseMustStartFrom = externalPerimeterBounds;
+                }
                 availableExtrusion = boundsContainingInitialExtrusion.getEExtrusion();
             } else
             {
@@ -992,7 +1056,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             {
                 boundsContainingInitialExtrusion = finalInnerPerimeterBounds;
                 boundsContainingFinalExtrusion = finalInnerPerimeterBounds;
-                boundsContainingExtrusionCloseMustStartFrom = finalInnerPerimeterBounds;
+                if (closeFromEndOfPerimeter)
+                {
+                    boundsContainingExtrusionCloseMustStartFrom = finalInnerPerimeterBounds;
+                }
                 availableExtrusion = boundsContainingInitialExtrusion.getEExtrusion();
             } else
             {
@@ -1001,11 +1068,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         } else
         {
             throw new NoPerimeterToCloseOverException("No perimeter");
-        }
-
-        if (boundsContainingInitialExtrusion.startIndex < lastLayerEventIndex)
-        {
-            throw new CannotCloseFromPerimeterException("First close point ahead of layer event");
         }
 
         if (availableExtrusion >= currentNozzle.getNozzleParameters().getEjectionVolume())
@@ -1071,7 +1133,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
     private Optional<CloseResult> reverseCloseFromEndOfExtrusion(List<ExtrusionBounds> extrusionBoundaries,
             Map<EventType, Integer> eventIndices,
-            int lastLayerEventIndex) throws PostProcessingError, NotEnoughAvailableExtrusionException
+            final int lastLayerIndex) throws PostProcessingError, NotEnoughAvailableExtrusionException
     {
         Optional<CloseResult> closeResult = Optional.empty();
         double nozzleStartPosition = 0;
@@ -1085,17 +1147,20 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         for (ExtrusionBounds extrusionBounds : extrusionBoundaries)
         {
-            if (extrusionBounds.getStartIndex() > lastLayerEventIndex)
+            if (lastLayerIndex < extrusionBounds.getStartIndex()
+                    || lastLayerIndex < extrusionBounds.getEndIndex())
             {
-                availableExtrusion += extrusionBounds.getEExtrusion();
-
-                if (boundsContainingInitialExtrusion == null)
-                {
-                    boundsContainingInitialExtrusion = extrusionBounds;
-                }
-
-                boundsContainingFinalExtrusion = extrusionBounds;
+                break;
             }
+
+            availableExtrusion += extrusionBounds.getEExtrusion();
+
+            if (boundsContainingInitialExtrusion == null)
+            {
+                boundsContainingInitialExtrusion = extrusionBounds;
+            }
+
+            boundsContainingFinalExtrusion = extrusionBounds;
         }
 
         boundsContainingExtrusionCloseMustStartFrom = boundsContainingFinalExtrusion;
@@ -1186,19 +1251,33 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 ExtrusionBounds lastExtrusionBounds = extrusionBoundaries.get(extrusionBoundaries.size() - 1);
                 Optional<CloseResult> closeResult = Optional.empty();
 
+                boolean failedToCloseOverNonPerimeter = false;
+
                 if (lastExtrusionBounds.getExtrusionTask() != ExtrusionTask.ExternalPerimeter
                         && lastExtrusionBounds.getExtrusionTask() != ExtrusionTask.Perimeter)
                 {
                     //Try closing towards the end of the extrusion
-                    closeResult = closeToEndOfExtrusion(lastExtrusionBounds, comment, eventIndices);
+                    closeResult = closeToEndOfExtrusion(extrusionBoundaries, comment, eventIndices);
+                    failedToCloseOverNonPerimeter = !closeResult.isPresent();
                 }
 
                 if (!closeResult.isPresent())
                 {
-                    //Either we couldn't close over the extrusion or the last extrusion was Perimeter or External Perimeter
                     try
                     {
-                        closeResult = closeInwardsFromEndOfPerimeter(extrusionBoundaries, lastInwardMoveEvent, eventIndices, bufferDigest.getLastLayerEventIndex());
+                        if (failedToCloseOverNonPerimeter)
+                        {
+                            closeResult = closeInwardsFromEndOfLastExtrusion(extrusionBoundaries,
+                                    lastInwardMoveEvent,
+                                    eventIndices,
+                                    bufferDigest.getLastLayerEvent());
+                        } else
+                        {
+                            closeResult = closeInwardsFromEndOfPerimeter(extrusionBoundaries,
+                                    lastInwardMoveEvent,
+                                    eventIndices,
+                                    bufferDigest.getLastLayerEvent());
+                        }
                     } catch (CannotCloseFromPerimeterException ex)
                     {
                         steno.warning("Close failed: " + ex.getMessage());
@@ -1209,19 +1288,19 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     {
                         try
                         {
-                            closeResult = reverseCloseFromEndOfExtrusion(extrusionBoundaries, eventIndices, bufferDigest.getLastLayerEventIndex());
+                            closeResult = reverseCloseFromEndOfExtrusion(extrusionBoundaries, eventIndices, bufferDigest.getLastLayerEvent());
                         } catch (NotEnoughAvailableExtrusionException ex2)
                         {
                             closeResult = partialOpenAndCloseAtEndOfExtrusion(extrusionBoundaries, eventIndices);
                         }
                     }
-
-                    if (!closeResult.isPresent())
-                    {
-                        throw new PostProcessingError("Failed to close nozzle - layer " + layerIndex);
-                    }
                 }
-                
+
+                if (!closeResult.isPresent())
+                {
+                    throw new PostProcessingError("Failed to close nozzle - layer " + layerIndex);
+                }
+
                 nozzleCloseOverVolume = closeResult.get().getNozzleCloseOverVolume();
                 nozzleStartPosition = closeResult.get().getNozzleStartPosition();
             }
@@ -2075,8 +2154,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         if (intersectedPointDistances.size() > 0)
         {
-            closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.
-                    size() - 1];
+            //TreeMaps are sorted, so always use the first one 
+            closestEventIndex = (int) intersectedPointDistances.values().toArray()[0];
         }
 
         if (closestEventIndex < 0)
