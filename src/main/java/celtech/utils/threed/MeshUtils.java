@@ -33,6 +33,13 @@ public class MeshUtils
     static void removeUnusedAndDuplicateVertices(TriangleMesh childMesh)
     {
 
+        removeUnusedVertices(childMesh);
+
+        removeDuplicateVertices(childMesh);
+    }
+
+    private static void removeUnusedVertices(TriangleMesh childMesh)
+    {
         // array of new vertex index for previous index
         int[] newVertexIndices = new int[childMesh.getPoints().size()];
         for (int i = 0; i < newVertexIndices.length; i++)
@@ -58,8 +65,6 @@ public class MeshUtils
 
         childMesh.getPoints().clear();
         childMesh.getPoints().addAll(newPoints, 0, nextNewPointIndex * 3);
-
-        removeDuplicateVertices(childMesh);
     }
 
     static void removeDuplicateVertices(TriangleMesh mesh)
@@ -252,14 +257,17 @@ public class MeshUtils
         {
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1)
             {
+                System.out.println("problem 01 for face " + faceIndex);
                 return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
             {
+                System.out.println("problem 12 for face " + faceIndex);
                 return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
             {
+                System.out.println("problem 02 for face " + faceIndex);
                 return true;
             }
         }

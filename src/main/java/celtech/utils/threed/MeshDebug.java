@@ -59,10 +59,10 @@ public class MeshDebug
             text.translateZProperty().set((z0 + z1 + z2) / 3.0);
             Font font = new Font("Source Sans Pro Regular", 8);
             text.setFont(font);
-            if (MeshDebug.node != null)
+            if (node != null)
             {
-                MeshDebug.node.addChildNode(sphere);
-                MeshDebug.node.addChildNode(text);
+                node.addChildNode(sphere);
+                node.addChildNode(text);
             }
         }
     }
@@ -81,9 +81,9 @@ public class MeshDebug
         setTextureAndSmoothing(triangle, triangle.getFaces().size() / 6);
         MeshView meshView = new MeshView(triangle);
         meshView.setMaterial(ApplicationMaterials.pickedGCodeMaterial);
-        if (MeshDebug.node != null)
+        if (node != null)
         {
-            MeshDebug.node.addChildNode(meshView);
+            node.addChildNode(meshView);
         }
     }
 
@@ -94,42 +94,20 @@ public class MeshDebug
         sphere.translateYProperty().set(y);
         sphere.translateZProperty().set(z);
         sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-        if (MeshDebug.node != null)
+        if (node != null)
         {
-            MeshDebug.node.addChildNode(sphere);
+            node.addChildNode(sphere);
         }
     }
 
-    //    /**
-    //     * If a vertex lies on the cutting plane then perturb it to take it off the plane.
-    //     */
-    //    private static void perturbVerticesAtCutHeight(TriangleMesh mesh, double cutHeight,
-    //        BedToLocalConverter bedToLocalConverter)
-    //    {
-    //        for (int i = 0; i < mesh.getPoints().size(); i += 3)
-    //        {
-    //            Point3D pointInBed = bedToLocalConverter.localToBed(makePoint3D(mesh, i / 3));
-    //            if (Math.abs(pointInBed.getY() - cutHeight) < 1e-6) {
-    //                Point3D perturbedPointInBed = new Point3D(
-    //                    pointInBed.getX(),
-    //                    pointInBed.getY() + Math.random() / 1e3,
-    //                    pointInBed.getZ());
-    //                Point3D perturbedPointInLocal = bedToLocalConverter.bedToLocal(perturbedPointInBed);
-    //                mesh.getPoints().set(i, (float) perturbedPointInLocal.getX());
-    //                mesh.getPoints().set(i + 1, (float) perturbedPointInLocal.getY());
-    //                mesh.getPoints().set(i + 2, (float) perturbedPointInLocal.getZ());
-    //            }
-    //        }
-    //    }
     public static void setDebuggingNode(ModelContainer node)
     {
         MeshDebug.node = node;
     }
 
-    private static void showNewVertices(List<Integer> newVertices,
-        TriangleMesh mesh)
+    private static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
     {
-        if (MeshDebug.node != null)
+        if (node != null)
         {
             for (Integer newVertex : newVertices)
             {
@@ -138,7 +116,7 @@ public class MeshDebug
                 sphere.translateYProperty().set(mesh.getPoints().get(newVertex * 3 + 1));
                 sphere.translateZProperty().set(mesh.getPoints().get(newVertex * 3 + 2));
                 sphere.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
-                MeshDebug.node.addChildNode(sphere);
+                node.addChildNode(sphere);
             }
         }
     }

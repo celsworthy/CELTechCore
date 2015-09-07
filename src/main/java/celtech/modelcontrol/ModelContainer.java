@@ -810,7 +810,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 addSelectionHighlighter();
             }
             showSelectionHighlighter();
-            printTransforms();
         } else
         {
             hideSelectionHighlighter();
