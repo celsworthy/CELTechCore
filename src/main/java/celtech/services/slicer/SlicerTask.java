@@ -6,6 +6,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.printerControl.model.Head;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
 import celtech.utils.threed.ThreeDUtils;
@@ -109,14 +110,16 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         List<String> createdMeshFiles = null;
 
         // Output multiple files if we are using Cura
-        if (slicerType == SlicerType.Cura)
+        if (printerToUse == null
+                || printerToUse.headProperty().get() == null
+                || printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
         {
             createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-                                                          false);
+                                                          true);
         } else
         {
             createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-                    true);
+                    false);
         }
 
         String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;

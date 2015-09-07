@@ -278,6 +278,11 @@ public class NozzleAssignmentUtilities
                         lastSectionNode = sectionNodeBeingExamined;
                     } else
                     {
+                        if (toolSelectNode == null)
+                        {
+                            //We got here because a node is sitting outside a section
+
+                        }
                         //Probably a travel node - move it over without changing it
                         childNode.removeFromParent();
                         toolSelectNode.addChildAtEnd(childNode);

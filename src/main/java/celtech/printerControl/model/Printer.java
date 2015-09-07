@@ -229,7 +229,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public PrinterIDResponse readPrinterID() throws PrinterException;
 
-    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException;
+    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber, boolean dontPublishResponseEvent) throws RoboxCommsException;
 
     public ObservableMap<Integer, Reel> reelsProperty();
 

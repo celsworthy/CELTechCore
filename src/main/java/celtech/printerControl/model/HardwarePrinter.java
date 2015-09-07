@@ -517,7 +517,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     protected boolean doRemoveHeadActivity(Cancellable cancellable)
     {
         boolean success = false;
-        
+
         try
         {
             printEngine.runMacroPrintJob(Macro.REMOVE_HEAD);
@@ -1340,10 +1340,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     /**
      *
      * @param reelNumber
+     * @param dontPublishResponseEvent
      * @return @throws RoboxCommsException
      */
     @Override
-    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException
+    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber, boolean dontPublishResponseEvent) throws RoboxCommsException
     {
         steno.info("Reading reel " + reelNumber + " EEPROM");
 
@@ -1363,7 +1364,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 break;
         }
 
-        return (ReelEEPROMDataResponse) commandInterface.writeToPrinter(packet);
+        return (ReelEEPROMDataResponse) commandInterface.writeToPrinter(packet, dontPublishResponseEvent);
     }
 
     /**
@@ -1383,19 +1384,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 writePacket = RoboxTxPacketFactory.
                         createPacket(TxPacketTypeEnum.WRITE_REEL_0_EEPROM);
                 ((WriteReel0EEPROM) writePacket).populateEEPROM(reelToWrite.filamentID.get(),
-                        reelToWrite.firstLayerNozzleTemperature.
-                        get(),
+                        reelToWrite.firstLayerNozzleTemperature.get(),
                         reelToWrite.nozzleTemperature.get(),
-                        reelToWrite.firstLayerBedTemperature.
-                        get(),
+                        reelToWrite.firstLayerBedTemperature.get(),
                         reelToWrite.bedTemperature.get(),
                         reelToWrite.ambientTemperature.get(),
                         reelToWrite.diameter.get(),
                         reelToWrite.filamentMultiplier.get(),
                         reelToWrite.feedRateMultiplier.get(),
                         reelToWrite.remainingFilament.get(),
-                        reelToWrite.friendlyFilamentName.
-                        get(),
+                        reelToWrite.friendlyFilamentName.get(),
                         reelToWrite.material.get(),
                         reelToWrite.displayColour.get());
                 break;
@@ -1404,19 +1402,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 writePacket = RoboxTxPacketFactory.
                         createPacket(TxPacketTypeEnum.WRITE_REEL_1_EEPROM);
                 ((WriteReel1EEPROM) writePacket).populateEEPROM(reelToWrite.filamentID.get(),
-                        reelToWrite.firstLayerNozzleTemperature.
-                        get(),
+                        reelToWrite.firstLayerNozzleTemperature.get(),
                         reelToWrite.nozzleTemperature.get(),
-                        reelToWrite.firstLayerBedTemperature.
-                        get(),
+                        reelToWrite.firstLayerBedTemperature.get(),
                         reelToWrite.bedTemperature.get(),
                         reelToWrite.ambientTemperature.get(),
                         reelToWrite.diameter.get(),
                         reelToWrite.filamentMultiplier.get(),
                         reelToWrite.feedRateMultiplier.get(),
                         reelToWrite.remainingFilament.get(),
-                        reelToWrite.friendlyFilamentName.
-                        get(),
+                        reelToWrite.friendlyFilamentName.get(),
                         reelToWrite.material.get(),
                         reelToWrite.displayColour.get());
                 break;
@@ -1428,7 +1423,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 && writePacket != null)
         {
             response = (AckResponse) commandInterface.writeToPrinter(writePacket);
-            commandInterface.writeToPrinter(readPacket);
+//            commandInterface.writeToPrinter(readPacket);
         }
     }
 
@@ -3535,6 +3530,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     steno.info("Automatically updated reel data");
                                     Lookup.getSystemNotificationHandler().
                                             showReelUpdatedNotification();
+                                    readReelEEPROM(reelResponse.getReelNumber(), true);
                                 } catch (RoboxCommsException ex)
                                 {
                                     steno.error("Error updating reel after repair " + ex.
@@ -3748,7 +3744,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         case PROGRAMMED:
                             try
                             {
-                                readReelEEPROM(reelNumber);
+                                readReelEEPROM(reelNumber, false);
                             } catch (RoboxCommsException ex)
                             {
                                 steno.error("Error attempting to read reel " + reelNumber

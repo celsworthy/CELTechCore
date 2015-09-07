@@ -85,7 +85,6 @@ public class GetTimeWeightCost
             lblWeight.setText(cancelled);
             lblCost.setText(cancelled);
         });
-
     }
 
     private boolean isCancelled()
@@ -96,9 +95,8 @@ public class GetTimeWeightCost
     public boolean runSlicerAndPostProcessor() throws IOException
     {
 
-        steno.debug("launch time cost process for project " + project + " and settings "
-                + settings.getProfileName());
-
+//        steno.debug("launch time cost process for project " + project + " and settings "
+//                + settings.getProfileName());
         if (isCancelled())
         {
             return false;
