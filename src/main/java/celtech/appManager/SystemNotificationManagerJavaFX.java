@@ -383,13 +383,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
 
     @Override
-    public void showDetectedPrintInProgressNotification()
-    {
-        showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
-                "notification.activePrintDetected"));
-    }
-
-    @Override
     public void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result)
     {
         switch (result.getStatus())

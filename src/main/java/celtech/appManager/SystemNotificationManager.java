@@ -38,8 +38,6 @@ public interface SystemNotificationManager
 
     void showCalibrationDialogue();
 
-    void showDetectedPrintInProgressNotification();
-
     void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result);
 
     void showGCodePostProcessFailedNotification();

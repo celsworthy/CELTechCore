@@ -32,11 +32,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showDetectedPrintInProgressNotification()
-    {
-    }
-
-    @Override
     public void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result)
     {
     }

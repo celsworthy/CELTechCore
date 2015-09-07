@@ -1134,12 +1134,6 @@ public class PrintEngine implements ControllableService
                             updateETCUsingLineNumber(associatedPrinter.printJobLineNumberProperty().get());
                         }
 
-                        if (raiseProgressNotifications
-                                && associatedPrinter.printerStatusProperty().get() != PrinterStatus.PRINTING_PROJECT)
-                        {
-                            Lookup.getSystemNotificationHandler().
-                                    showDetectedPrintInProgressNotification();
-                        }
                         steno.debug("Printer "
                                 + associatedPrinter.getPrinterIdentity().printerFriendlyName.get()
                                 + " is printing");
