@@ -13,6 +13,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.utils.threed.MeshCutter;
 import celtech.utils.threed.MeshCutter.MeshPair;
+import celtech.utils.threed.MeshDebug;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.ResourceBundle;
@@ -194,7 +195,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     {
         ModelContainerPair modelContainerPair = null;
 
-        MeshCutter.setDebuggingNode(modelContainer);
+        MeshDebug.setDebuggingNode(modelContainer);
 
         cutHeightValue -= modelContainer.getYAdjust();
 

@@ -48,8 +48,8 @@ class CutResult
 
     /**
      * Identify which of the loops in loopsOfVerticesOnOpenFace are internal to other loops. There
-     * should not be any overlapping loops. Each LoopSet has one outer loop and zero or more inner
-     * loops.
+     * should not be any overlapping loops in the incoming data.
+     * Each LoopSet has one outer loop and zero or more inner loops.
      */
     public Set<LoopSet> identifyOuterLoopsAndInnerLoops()
     {
@@ -198,7 +198,7 @@ class PolygonIndices extends ArrayList<Integer>
     @Override
     public String toString()
     {
-        return "PolygonIndices{" + "name=" + name + '}';
+        return "PolygonIndices{" + "name=" + name + super.toString() +  '}';
     }
     
 }

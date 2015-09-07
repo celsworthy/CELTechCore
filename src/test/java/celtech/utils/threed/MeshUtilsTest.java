@@ -83,6 +83,7 @@ public class MeshUtilsTest
         mesh.getFaces().addAll(0, 0, 3, 0, 4, 0);
         
         mesh.getFaces().addAll(0, 0, 1, 0, 2, 0);
+        // this face is the wrong way round
         mesh.getFaces().addAll(0, 0, 3, 0, 2, 0);
         
         boolean orientable = MeshUtils.testMeshIsOrientable(mesh);
