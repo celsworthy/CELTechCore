@@ -67,7 +67,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
 
             createdFiles.add(tempModelFilenameWithPath);
 
-//            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput, project.);
+            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
         } else
         {
             for (ModelContainer modelContainer : project.getTopLevelModels())
@@ -88,14 +88,16 @@ public class STLOutputConverter implements MeshFileOutputConverter
         {
             String tempModelFilenameWithPath = printJobDirectory + printJobUUID
             + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
-            outputMeshViewInSingleFile(tempModelFilenameWithPath, meshView);
+            Set<MeshView> meshViewToOutput = new HashSet<>();
+            meshViewToOutput.add(meshView);
+            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewToOutput);
             createdFiles.add(tempModelFilenameWithPath);
             modelFileCount++;
         }
     }
 
-    private void outputMeshViewInSingleFile(final String tempModelFilenameWithPath,
-        MeshView meshView)
+    private void outputMeshViewsInSingleFile(final String tempModelFilenameWithPath,
+        Set<MeshView> meshViews)
     {
         File fFile = new File(tempModelFilenameWithPath);
 
@@ -110,10 +112,13 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 int totalNumberOfFacets = 0;
                 ByteBuffer headerByteBuffer = null;
 
+                for (MeshView meshView : meshViews)
+                {
                 TriangleMesh triangles = (TriangleMesh) meshView.getMesh();
                 ObservableFaceArray faceArray = triangles.getFaces();
                 int numberOfFacets = faceArray.size() / 6;
                 totalNumberOfFacets += numberOfFacets;
+                }
 
                 //File consists of:
                 // 80 byte ascii header
@@ -144,7 +149,12 @@ public class STLOutputConverter implements MeshFileOutputConverter
                 //  3 floats for facet normals
                 //  3 x 3 floats for vertices (x,y,z * 3)
                 //  2 byte spacer
+                for (MeshView meshView : meshViews)
+                {
+                    TriangleMesh triangles = (TriangleMesh) meshView.getMesh();
+                    ObservableFaceArray faceArray = triangles.getFaces();
                 ObservableFloatArray pointArray = triangles.getPoints();
+                    int numberOfFacets = faceArray.size() / 6;
 
                 for (int facetNumber = 0; facetNumber < numberOfFacets; facetNumber++)
                 {
@@ -172,6 +182,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                     dataBuffer.putShort(blankSpace);
 
                     dataOutput.write(dataBuffer.array());
+                }
                 }
             } catch (IOException ex)
             {

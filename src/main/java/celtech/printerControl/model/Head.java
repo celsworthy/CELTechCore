@@ -31,7 +31,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class Head implements Cloneable, RepairableComponent
 {
-    
+
     public enum HeadType
     {
 
@@ -52,12 +52,12 @@ public class Head implements Cloneable, RepairableComponent
         }
 
     }
-    
+
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.
-        getName());
+            getName());
 
     protected ObjectProperty<HeadType> headType = new SimpleObjectProperty<>(
-        HeadType.SINGLE_MATERIAL_HEAD);
+            HeadType.SINGLE_MATERIAL_HEAD);
 
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
@@ -102,9 +102,9 @@ public class Head implements Cloneable, RepairableComponent
     protected NozzleHeater makeNozzleHeater(NozzleHeaterData nozzleHeaterData)
     {
         return new NozzleHeater(nozzleHeaterData.getMaximum_temperature_C(),
-                                nozzleHeaterData.getBeta(),
-                                nozzleHeaterData.getTcal(),
-                                0, 0, 0, 0, "");
+                nozzleHeaterData.getBeta(),
+                nozzleHeaterData.getTcal(),
+                0, 0, 0, 0, "");
     }
 
     private void updateFromHeadFileData(HeadFile headData)
@@ -114,31 +114,31 @@ public class Head implements Cloneable, RepairableComponent
 
         nozzleHeaters.clear();
         headData.getNozzleHeaters().stream().
-            map((nozzleHeaterData) -> makeNozzleHeater(nozzleHeaterData))
-            .forEach((newNozzleHeater) ->
-                {
-                    nozzleHeaters.add(newNozzleHeater);
-            });
+                map((nozzleHeaterData) -> makeNozzleHeater(nozzleHeaterData))
+                .forEach((newNozzleHeater) ->
+                        {
+                            nozzleHeaters.add(newNozzleHeater);
+                });
 
         nozzles.clear();
         headData.getNozzles().stream().
-            map((nozzleData) -> new Nozzle(nozzleData.getDiameter(),
-                                           nozzleData.getDefaultXOffset(),
-                                           nozzleData.getDefaultYOffset(),
-                                           nozzleData.getDefaultZOffset(),
-                                           nozzleData.getDefaultBOffset())).
-            forEach((newNozzle) ->
-                {
-                    nozzles.add(newNozzle);
-            });
+                map((nozzleData) -> new Nozzle(nozzleData.getDiameter(),
+                                nozzleData.getDefaultXOffset(),
+                                nozzleData.getDefaultYOffset(),
+                                nozzleData.getDefaultZOffset(),
+                                nozzleData.getDefaultBOffset())).
+                forEach((newNozzle) ->
+                        {
+                            nozzles.add(newNozzle);
+                });
     }
 
     private Head(String typeCode,
-        String friendlyName,
-        String uniqueID,
-        float headHours,
-        List<NozzleHeater> nozzleHeaters,
-        List<Nozzle> nozzles)
+            String friendlyName,
+            String uniqueID,
+            float headHours,
+            List<NozzleHeater> nozzleHeaters,
+            List<Nozzle> nozzles)
     {
         setTypeCode(typeCode);
         this.name.set(friendlyName);
@@ -221,32 +221,42 @@ public class Head implements Cloneable, RepairableComponent
         ArrayList<Nozzle> newNozzles = new ArrayList<>();
 
         nozzleHeaters.stream().
-            forEach((nozzleHeater) ->
-                {
-                    newNozzleHeaters.add(nozzleHeater.clone());
-            });
+                forEach((nozzleHeater) ->
+                        {
+                            newNozzleHeaters.add(nozzleHeater.clone());
+                });
 
         nozzles.stream().
-            forEach((nozzle) ->
-                {
-                    newNozzles.add(nozzle.clone());
-            });
+                forEach((nozzle) ->
+                        {
+                            newNozzles.add(nozzle.clone());
+                });
 
         Head clone = new Head(
-            typeCode.get(),
-            name.get(),
-            uniqueID.get(),
-            headHours.get(),
-            newNozzleHeaters,
-            newNozzles
+                typeCode.get(),
+                name.get(),
+                uniqueID.get(),
+                headHours.get(),
+                newNozzleHeaters,
+                newNozzles
         );
 
         return clone;
     }
-    
-    private void setTypeCode(String typeCode) {
+
+    private void setTypeCode(String typeCode)
+    {
         this.typeCode.set(typeCode);
-        headType.set(HeadContainer.getHeadByID(typeCode).getType());
+
+        HeadFile headFile = HeadContainer.getHeadByID(typeCode);
+        if (headFile != null)
+        {
+            headType.set(HeadContainer.getHeadByID(typeCode).getType());
+        }
+        else
+        {
+            headType.set(null);
+        }
     }
 
     public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
@@ -260,7 +270,7 @@ public class Head implements Cloneable, RepairableComponent
             nozzleHeaters.get(i).beta.set(eepromData.getBeta());
             nozzleHeaters.get(i).tcal.set(eepromData.getTCal());
             nozzleHeaters.get(i).lastFilamentTemperature.
-                set(eepromData.getLastFilamentTemperature(i));
+                    set(eepromData.getLastFilamentTemperature(i));
             nozzleHeaters.get(i).maximumTemperature.set(eepromData.getMaximumTemperature());
             nozzleHeaters.get(i).filamentID.set(eepromData.getFilamentID(i));
         }
@@ -287,20 +297,20 @@ public class Head implements Cloneable, RepairableComponent
         boolean matches = false;
 
         if (response.getTypeCode().equals(typeCodeProperty().get())
-            && response.getHeadHours() == headHoursProperty().get()
-            && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
-            && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
-            && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
-            && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
-            && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
-            && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
-            && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
-            && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
-            && response.getMaximumTemperature() == getNozzleHeaters().get(0)
-            .maximumTemperatureProperty().get()
-            && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
-            && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
-            && response.getUniqueID().equals(uniqueIDProperty().get()))
+                && response.getHeadHours() == headHoursProperty().get()
+                && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
+                && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
+                && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
+                && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
+                && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
+                && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
+                && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
+                && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
+                && response.getMaximumTemperature() == getNozzleHeaters().get(0)
+                .maximumTemperatureProperty().get()
+                && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
+                && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
+                && response.getUniqueID().equals(uniqueIDProperty().get()))
         {
             matches = true;
         }
@@ -325,22 +335,22 @@ public class Head implements Cloneable, RepairableComponent
                 NozzleHeaterData nozzleHeaterData = referenceHeadData.getNozzleHeaters().get(i);
 
                 if (MathUtils.compareDouble(nozzleHeater.maximumTemperatureProperty().get(),
-                                            nozzleHeaterData.getMaximum_temperature_C(), epsilon)
-                    != MathUtils.EQUAL)
+                        nozzleHeaterData.getMaximum_temperature_C(), epsilon)
+                        != MathUtils.EQUAL)
                 {
                     nozzleHeater.maximumTemperature.set(nozzleHeaterData.getMaximum_temperature_C());
                     result = RepairResult.REPAIRED_WRITE_ONLY;
                 }
 
                 if (Math.abs(nozzleHeater.tCalProperty().get() - nozzleHeaterData.getTcal())
-                    > epsilon)
+                        > epsilon)
                 {
                     nozzleHeater.tcal.set(nozzleHeaterData.getTcal());
                     result = RepairResult.REPAIRED_WRITE_ONLY;
                 }
 
                 if (Math.abs(nozzleHeater.betaProperty().get() - nozzleHeaterData.getBeta())
-                    > epsilon)
+                        > epsilon)
                 {
                     nozzleHeater.beta.set(nozzleHeaterData.getBeta());
                     result = RepairResult.REPAIRED_WRITE_ONLY;
@@ -354,28 +364,28 @@ public class Head implements Cloneable, RepairableComponent
                 NozzleData nozzleData = referenceHeadData.getNozzles().get(i);
 
                 if (nozzle.xOffsetProperty().get() < nozzleData.getMinXOffset() || nozzle.
-                    xOffsetProperty().get() > nozzleData.getMaxXOffset())
+                        xOffsetProperty().get() > nozzleData.getMaxXOffset())
                 {
                     nozzle.xOffset.set(nozzleData.getDefaultXOffset());
                     result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
 
                 if (nozzle.yOffsetProperty().get() < nozzleData.getMinYOffset() || nozzle.
-                    yOffsetProperty().get() > nozzleData.getMaxYOffset())
+                        yOffsetProperty().get() > nozzleData.getMaxYOffset())
                 {
                     nozzle.yOffset.set(nozzleData.getDefaultYOffset());
                     result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
 
                 if (nozzle.zOffsetProperty().get() < nozzleData.getMinZOffset() || nozzle.
-                    zOffsetProperty().get() > nozzleData.getMaxZOffset())
+                        zOffsetProperty().get() > nozzleData.getMaxZOffset())
                 {
                     nozzle.zOffset.set(nozzleData.getDefaultZOffset());
                     result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
                 }
 
                 if (nozzle.bOffsetProperty().get() < nozzleData.getMinBOffset() || nozzle.
-                    bOffsetProperty().get() > nozzleData.getMaxBOffset())
+                        bOffsetProperty().get() > nozzleData.getMaxBOffset())
                 {
                     nozzle.bOffset.set(nozzleData.getDefaultBOffset());
                     result = RepairResult.REPAIRED_WRITE_AND_RECALIBRATE;
@@ -404,7 +414,7 @@ public class Head implements Cloneable, RepairableComponent
             for (NozzleHeater heater : nozzleHeaters)
             {
                 NozzleHeaterData heaterData
-                    = referenceHeadData.getNozzleHeaters().get(nozzleHeaterIndex);
+                        = referenceHeadData.getNozzleHeaters().get(nozzleHeaterIndex);
                 heater.maximumTemperature.set(heaterData.getMaximum_temperature_C());
                 heater.beta.set(heaterData.getBeta());
                 heater.tcal.set(heaterData.getTcal());
@@ -421,7 +431,7 @@ public class Head implements Cloneable, RepairableComponent
             for (Nozzle nozzle : nozzles)
             {
                 NozzleData nozzleData
-                    = referenceHeadData.getNozzles().get(nozzleIndex);
+                        = referenceHeadData.getNozzles().get(nozzleIndex);
 
                 nozzle.diameter.set(nozzleData.getDiameter());
                 nozzle.xOffset.set(nozzleData.getDefaultXOffset());
@@ -437,7 +447,7 @@ public class Head implements Cloneable, RepairableComponent
         } else
         {
             steno.warning(
-                "Attempt to reset head to defaults failed - reference data cannot be derived");
+                    "Attempt to reset head to defaults failed - reference data cannot be derived");
         }
     }
 
@@ -446,7 +456,7 @@ public class Head implements Cloneable, RepairableComponent
         boolean typeCodeIsValid = false;
 
         if (typeCode != null
-            && typeCode.matches("RBX[0-9]{2}-.*"))
+                && typeCode.matches("RBX[0-9]{2}-.*"))
         {
             typeCodeIsValid = true;
         }
@@ -459,7 +469,7 @@ public class Head implements Cloneable, RepairableComponent
         boolean typeCodeIsInDatabase = false;
 
         if (typeCode != null
-            && HeadContainer.getHeadByID(typeCode) != null)
+                && HeadContainer.getHeadByID(typeCode) != null)
         {
             typeCodeIsInDatabase = true;
         }
@@ -471,7 +481,7 @@ public class Head implements Cloneable, RepairableComponent
     public void allocateRandomID()
     {
         String idToCreate = typeCode.get() + SystemUtils.generate16DigitID().substring(typeCode.
-            get().length());
+                get().length());
         uniqueID.set(idToCreate);
     }
 

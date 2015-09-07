@@ -30,7 +30,7 @@ public enum MaterialType
     /**
      *
      */
-    PET("PETG", 1.27),
+    PET("CO-PET", 1.27),
     /**
      *
      */

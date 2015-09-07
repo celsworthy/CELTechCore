@@ -682,7 +682,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber) throws RoboxCommsException
+    public ReelEEPROMDataResponse readReelEEPROM(int reelNumber, boolean dontPublishResponseEvent) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1049,7 +1049,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public ReadOnlyBooleanProperty headPowerOffFlagProperty()
+    public ReadOnlyBooleanProperty headPowerOnFlagProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
