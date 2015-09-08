@@ -6,7 +6,6 @@ package celtech.utils.threed;
 import celtech.utils.threed.MeshCutter.TopBottom;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
@@ -31,17 +30,21 @@ class CutResult
      * new open face that needs to be triangulated. Some loops (list of points) may be holes inside
      * other loops.
      */
-    final List<PolygonIndices> loopsOfVerticesOnOpenFace;
+    final Set<PolygonIndices> loopsOfVerticesOnOpenFace;
 
     final MeshCutter.BedToLocalConverter bedToLocalConverter;
 
     TopBottom topBottom;
 
-    public CutResult(TriangleMesh mesh, List<PolygonIndices> loopsOfVerticesOnOpenFace,
+    public CutResult(TriangleMesh mesh, Set<MeshCutter.LoopOfFacesAndVertices> cutFaces,
         MeshCutter.BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
+        loopsOfVerticesOnOpenFace = new HashSet<>();
+        for (MeshCutter.LoopOfFacesAndVertices cutFace : cutFaces)
+        {
+            loopsOfVerticesOnOpenFace.add(cutFace.loopOfVertices);
+        }
         this.mesh = mesh;
-        this.loopsOfVerticesOnOpenFace = loopsOfVerticesOnOpenFace;
         this.bedToLocalConverter = bedToLocalConverter;
         this.topBottom = topBottom;
     }
@@ -77,6 +80,7 @@ class CutResult
             }
             if (!added)
             {
+                System.out.println("new top level");
                 // polygonIndices is neither in a topLevelLoopSet nor contains a topLevelLoopSet
                 // so create a new toplevelLoopSet.
                 LoopSet newLoopSet = new LoopSet(this, polygonIndices, new HashSet<>());
@@ -85,35 +89,6 @@ class CutResult
         }
         return topLevelLoopSets;
     }
-
-//    /**
-//     * Sort the given list of polygons by area, largest first.
-//     */
-//    private List<PolygonIndices> sortByArea(Set<PolygonIndices> nestedPolygons)
-//    {
-//        List<PolygonIndices> sortedNestedPolygons = new ArrayList<>(nestedPolygons);
-//        Collections.sort(sortedNestedPolygons, new Comparator<PolygonIndices>()
-//        {
-//
-//            @Override
-//            public int compare(PolygonIndices o1, PolygonIndices o2)
-//            {
-//                double a1 = getPolygonArea(o1);
-//                double a2 = getPolygonArea(o2);
-//                if (a1 > a2)
-//                {
-//                    return 1;
-//                } else if (a1 == a2)
-//                {
-//                    return 0;
-//                } else
-//                {
-//                    return -1;
-//                }
-//            }
-//        });
-//        return sortedNestedPolygons;
-//    }
 
     private Point getPointAt(PolygonIndices loop, int index)
     {
@@ -278,17 +253,27 @@ class LoopSet
         {
             throw new RuntimeException("given polygonIndices must be contained by outer loop");
         }
-        boolean innerLoopContainsGivenLoop = false;
+        boolean added = false;
         for (LoopSet innerLoopSet : innerLoopSets)
         {
             if (innerLoopSet.contains(polygonIndices))
             {
                 innerLoopSet.addToContainingChild(polygonIndices);
-                innerLoopContainsGivenLoop = true;
+                added = true;
                 break;
-            }
+            } else if (cutResult.contains(polygonIndices, innerLoopSet.outerLoop))
+                {
+                    System.out.println("INNER contains loop set " + innerLoopSet.outerLoop);
+                    Set<LoopSet> innerInnerLoopSets = new HashSet<>();
+                    innerInnerLoopSets.add(innerLoopSet);
+                    LoopSet newLoopSet = new LoopSet(cutResult, polygonIndices, innerInnerLoopSets);
+                    innerLoopSets.add(newLoopSet);
+                    innerLoopSets.remove(innerLoopSet);
+                    added = true;
+                    break;
+                }
         }
-        if (!innerLoopContainsGivenLoop)
+        if (!added)
         {
             // add given polygonIndices as a new inner LoopSet.
             innerLoopSets.add(new LoopSet(cutResult, polygonIndices, new HashSet<>()));
