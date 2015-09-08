@@ -18,17 +18,17 @@ public class Preferences
 {
 
     public static List<PreferencesInnerPanelController.Preference> createPrintingPreferences(
-        UserPreferences userPreferences)
+            UserPreferences userPreferences)
     {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
         Preference slicerTypePref = new SlicerTypePreference(userPreferences);
 
         Preference safetyFeaturesOnPref = new TickBoxPreference(userPreferences.
-            safetyFeaturesOnProperty(), "preferences.safetyFeaturesOn");
-        
+                safetyFeaturesOnProperty(), "preferences.safetyFeaturesOn");
+
         Preference detectFilamentLoadedPref = new TickBoxPreference(userPreferences.
-            detectLoadedFilamentProperty(), "preferences.detectLoadedFilament");
+                detectLoadedFilamentProperty(), "preferences.detectLoadedFilament");
 
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
@@ -38,23 +38,29 @@ public class Preferences
     }
 
     public static List<PreferencesInnerPanelController.Preference> createEnvironmentPreferences(
-        UserPreferences userPreferences)
+            UserPreferences userPreferences)
     {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
         Preference languagePref = new LanguagePreference(userPreferences);
         Preference showTooltipsPref = new TickBoxPreference(userPreferences.showTooltipsProperty(),
-                                                            "preferences.showTooltips");
+                "preferences.showTooltips");
         Preference logLevelPref = new LogLevelPreference(userPreferences);
         Preference advancedModePref = new TickBoxPreference(userPreferences.advancedModeProperty(),
-                                                            "preferences.advancedMode");
+                "preferences.advancedMode");
         Preference firstUsePref = new TickBoxPreference(userPreferences.firstUseProperty(),
-                                                        "preferences.firstUse");
+                "preferences.firstUse");
+
+        Preference currencySymbolPref = new CurrencySymbolPreference(userPreferences);
+        Preference currencyGBPToLocalMultiplierPref = new FloatingPointPreference(userPreferences.currencyGBPToLocalMultiplierProperty(),
+                2, 7, false, "preferences.currencyGBPToLocalMultiplier");
 
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
         preferences.add(advancedModePref);
+        preferences.add(currencySymbolPref);
+        preferences.add(currencyGBPToLocalMultiplierPref);
 
         return preferences;
     }

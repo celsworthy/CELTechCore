@@ -2,6 +2,7 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
+import celtech.configuration.units.CurrencySymbol;
 import libertysystems.stenographer.LogLevel;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
@@ -13,6 +14,7 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 public class UserPreferenceFile
 {
+
     private SlicerType slicerType = null;
     private boolean safetyFeaturesOn = true;
     private String languageTag = "";
@@ -21,6 +23,8 @@ public class UserPreferenceFile
     private boolean advancedMode = false;
     private boolean firstUse = true;
     private boolean detectLoadedFilament = true;
+    private CurrencySymbol currencySymbol = CurrencySymbol.POUND;
+    private float currencyGBPToLocalMultiplier = 1;
 
     public String getLanguageTag()
     {
@@ -86,8 +90,9 @@ public class UserPreferenceFile
     {
         return firstUse;
     }
-    
-    public boolean isDetectLoadedFilament() {
+
+    public boolean isDetectLoadedFilament()
+    {
         return detectLoadedFilament;
     }
 
@@ -95,11 +100,31 @@ public class UserPreferenceFile
     {
         this.firstUse = value;
     }
-    
+
     public void setDetectLoadedFilament(boolean value)
     {
         this.detectLoadedFilament = value;
-    }    
+    }
+
+    public CurrencySymbol getCurrencySymbol()
+    {
+        return currencySymbol;
+    }
+
+    public void setCurrencySymbol(CurrencySymbol currencySymbol)
+    {
+        this.currencySymbol = currencySymbol;
+    }
+
+    public float getCurrencyGBPToLocalMultiplier()
+    {
+        return currencyGBPToLocalMultiplier;
+    }
+
+    public void setCurrencyGBPToLocalMultiplier(float currencyGBPToLocalMultiplier)
+    {
+        this.currencyGBPToLocalMultiplier = currencyGBPToLocalMultiplier;
+    }
 
     public void populateFromSettings(UserPreferences userPreferences)
     {
@@ -111,5 +136,7 @@ public class UserPreferenceFile
         setAdvancedMode(userPreferences.isAdvancedMode());
         setFirstUse(userPreferences.isFirstUse());
         setDetectLoadedFilament(userPreferences.getDetectLoadedFilament());
+        setCurrencySymbol(userPreferences.getCurrencySymbol());
+        setCurrencyGBPToLocalMultiplier(userPreferences.getcurrencyGBPToLocalMultiplier());
     }
 }

@@ -8,6 +8,7 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
+import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
@@ -50,7 +51,7 @@ public class GetTimeWeightCost
     private File printJobDirectory;
     private final Cancellable cancellable;
     private Random random = new Random();
-
+    
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
         Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
@@ -236,11 +237,12 @@ public class GetTimeWeightCost
     /**
      * Take the cost in pounds and return a string in the format £1.43.
      */
-    private String formatCost(double cost)
+    private String formatCost(final double cost)
     {
-        int numPounds = (int) cost;
-        int numPence = (int) ((cost - numPounds) * 100);
-        return String.format("£%s.%02d", numPounds, numPence);
+        double convertedCost = cost * Lookup.getUserPreferences().getcurrencyGBPToLocalMultiplier();
+        int numPounds = (int) convertedCost;
+        int numPence = (int) ((convertedCost - numPounds) * 100);
+        return String.format(Lookup.getUserPreferences().getCurrencySymbol().getDisplayString() + "%s.%02d", numPounds, numPence);
     }
 
 }
