@@ -86,7 +86,7 @@
 }
 
 .project-view-background{
-    -fx-background-color: linear-gradient(to bottom, #838383, #dadada);
+    -fx-background-color:#a0a0a0;
 }
 
 .label{

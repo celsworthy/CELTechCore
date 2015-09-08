@@ -18,29 +18,67 @@
     <children>
         <StackPane fx:id="statusPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <ImageView fx:id="printerSilhouette" fitHeight="0.0" fitWidth="600.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
-                    <image>
-                        <Image url="@../images/printer_silhouette.png" />
-                    </image>
-                </ImageView>
-                <Rectangle fx:id="filamentRectangle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="271.0" mouseTransparent="true" scaleX="1.0" stroke="BLACK" strokeType="INSIDE" translateX="-220.0" translateY="40.0" width="159.0" />
-                <ImageView fx:id="printerClosedImage" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
-                    <image>
-                        <Image url="@../images/Printer_closed.png" />
-                    </image>
-                </ImageView>
-                <ImageView fx:id="printerOpenImage" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="true">
-                    <image>
-                        <Image url="@../images/Printer_open.png" />
-                    </image>
-                </ImageView>
-                <ImageView fx:id="reel" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" opacity="0.43" preserveRatio="true" visible="true">
-                    <image>
-                        <Image url="@../images/Filament_reel.png" />
-                    </image>
-                </ImageView>
-                <Rectangle fx:id="printerColourRectangle" arcHeight="10.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" mouseTransparent="true" stroke="BLACK" strokeType="INSIDE" translateX="24.0" translateY="-94.0" width="105.0" />
-                <Group fx:id="temperatureWarning" mouseTransparent="true" scaleX="0.25" scaleY="0.25" translateX="25.0" translateY="125.0">
+            <ImageView fx:id="reel1Background" fitHeight="0.0" fitWidth="0.0" layoutX="10.0" layoutY="10.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Reel%201%20Background.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="reel2Background" fitHeight="0.0" fitWidth="0.0" layoutX="10.0" layoutY="10.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Reel%202%20Background.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="baseNoReels" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Base%20Render%20(No%20Reels).png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="baseReel2" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Base%20Render%20(Reel%202).png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="baseReel1" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Base%20Render%20(Reel%202).png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="baseReelBoth" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Base%20Render%20(Both%20Reels).png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="doorClosed" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Door%20Closed.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="doorOpen" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Door%20Open.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="singleMaterialHead" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Single%20Material%20Head.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="ambientLight" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Ambient%20Light%20(White).png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="dualMaterialHead" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Single%20Material%20Head.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="bed" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Bed.png" />
+               </image>
+            </ImageView>
+                <Group fx:id="temperatureWarning" mouseTransparent="true" scaleX="0.2" scaleY="0.2" translateX="174.0" translateY="185.0">
                     <children>
                         <Group>
                             <children>
