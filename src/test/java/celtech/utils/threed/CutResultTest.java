@@ -141,8 +141,8 @@ public class CutResultTest
         TriangleMesh triangleMesh = makeTriangleMesh();
         PolygonIndices outerLoop = makeLoop0_3();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);
         
         CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
@@ -159,9 +159,9 @@ public class CutResultTest
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop2 = makeLoop4_7();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop1);
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop2);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         loopsOfFacesAndVertices.add(cutFaces2);
         
@@ -179,9 +179,9 @@ public class CutResultTest
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop3 = makeLoop1_2();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop1);
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop3);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         loopsOfFacesAndVertices.add(cutFaces2);        
         
@@ -201,9 +201,9 @@ public class CutResultTest
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop3 = makeLoop1_2();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop1);
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop3);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         loopsOfFacesAndVertices.add(cutFaces2);        
         
@@ -221,8 +221,8 @@ public class CutResultTest
         TriangleMesh triangleMesh = makeTriangleMesh();
         PolygonIndices outerLoop = makeLoop0_3();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         
         CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
@@ -243,9 +243,9 @@ public class CutResultTest
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop3 = makeLoop1_2();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop1);
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop3);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         loopsOfFacesAndVertices.add(cutFaces2);  
         
@@ -268,9 +268,9 @@ public class CutResultTest
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop2 = makeLoop4_7();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop1);
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop2);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         loopsOfFacesAndVertices.add(cutFaces2);          
         
@@ -298,11 +298,11 @@ public class CutResultTest
         PolygonIndices outerLoop3 = makeLoop1_2();
         PolygonIndices outerLoop4 = makeLoop5_6();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop1);
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop2);
-        MeshCutter.LoopOfFacesAndVertices cutFaces3 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop3);
-        MeshCutter.LoopOfFacesAndVertices cutFaces4 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop4);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces3 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces4 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop4);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces);  
         loopsOfFacesAndVertices.add(cutFaces2);          
         loopsOfFacesAndVertices.add(cutFaces3); 
@@ -331,10 +331,10 @@ public class CutResultTest
         PolygonIndices outerLoop4 = makeLoop5_6();
         PolygonIndices outerLoop5 = makeLoop3_8();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop2);
-        MeshCutter.LoopOfFacesAndVertices cutFaces4 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop4);
-        MeshCutter.LoopOfFacesAndVertices cutFaces5 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop5);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces4 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop4);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces5 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop5);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces2);          
         loopsOfFacesAndVertices.add(cutFaces4); 
         loopsOfFacesAndVertices.add(cutFaces5);         
@@ -358,11 +358,11 @@ public class CutResultTest
         PolygonIndices outerLoop5 = makeLoop3_8();
         PolygonIndices outerLoop6 = makeLoop2_9();
         
-        MeshCutter.LoopOfFacesAndVertices cutFaces2 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop2);
-        MeshCutter.LoopOfFacesAndVertices cutFaces4 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop4);
-        MeshCutter.LoopOfFacesAndVertices cutFaces5 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop5);
-        MeshCutter.LoopOfFacesAndVertices cutFaces6 = new MeshCutter.LoopOfFacesAndVertices(null, outerLoop6);
-        Set<MeshCutter.LoopOfFacesAndVertices> loopsOfFacesAndVertices = new HashSet<>();
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces4 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop4);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces5 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop5);
+        MeshCutter.LoopOfVerticesAndCutFaces cutFaces6 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop6);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
         loopsOfFacesAndVertices.add(cutFaces2);          
         loopsOfFacesAndVertices.add(cutFaces4); 
         loopsOfFacesAndVertices.add(cutFaces5);             

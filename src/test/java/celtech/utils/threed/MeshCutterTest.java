@@ -5,14 +5,12 @@ package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import celtech.utils.threed.MeshCutter.MeshPair;
-import static celtech.utils.threed.MeshCutter.getLoopsOfFaces;
+import static celtech.utils.threed.MeshCutter.getLoopsOfVertices;
 import celtech.utils.threed.MeshUtils.MeshError;
 import celtech.utils.threed.importers.stl.STLFileParsingException;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javafx.geometry.Point3D;
@@ -184,7 +182,7 @@ public class MeshCutterTest
             }
         };
         
-        Set<MeshCutter.LoopOfFacesAndVertices> cutFaces = getLoopsOfFaces(mesh, 1, nullBedToLocalConverter);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, 1, nullBedToLocalConverter);
         System.out.println("loopsOfFaces" + cutFaces);
                 
         MeshPair meshes = MeshCutter.cut(mesh, 1, nullBedToLocalConverter);
@@ -243,8 +241,80 @@ public class MeshCutterTest
             }
         };
         
-        double cutHeight = 1d;
-        Set<MeshCutter.LoopOfFacesAndVertices> cutFaces = getLoopsOfFaces(mesh, cutHeight, nullBedToLocalConverter);
+        float cutHeight = 1f;
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, cutHeight, nullBedToLocalConverter);
+        assertEquals(1, cutFaces.size());
+                
+        MeshPair meshes = MeshCutter.cut(mesh, cutHeight, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+        
+
+    }   
+    
+    @Test
+    public void testMeshWithTrianglesWithOneVertexOnPlane()
+    {
+        TriangleMesh mesh = new TriangleMesh();
+        mesh.getPoints().addAll(0, 0, 0);
+        mesh.getPoints().addAll(0, 0, 1);
+        mesh.getPoints().addAll(1, 0, 1);
+        mesh.getPoints().addAll(1, 0, 0);
+        
+        mesh.getPoints().addAll(0, 1, 0);
+        mesh.getPoints().addAll(0, 1, 1);
+        mesh.getPoints().addAll(1, 1, 1);
+        mesh.getPoints().addAll(1, 1, 0);
+        
+        mesh.getPoints().addAll(0, 2, 0);
+        mesh.getPoints().addAll(0, 2, 1);
+        mesh.getPoints().addAll(1, 2, 1);
+        mesh.getPoints().addAll(1, 2, 0);
+        
+        // double height parallelepiped
+        mesh.getFaces().addAll(0, 0, 1, 0, 2, 0);
+        mesh.getFaces().addAll(0, 0, 2, 0, 3, 0);
+        
+        mesh.getFaces().addAll(0, 0, 7, 0, 8, 0);
+        mesh.getFaces().addAll(0, 0, 3, 0, 7, 0);
+        mesh.getFaces().addAll(7, 0, 11, 0, 8, 0);
+        
+        mesh.getFaces().addAll(2, 0, 10, 0, 7, 0);
+        mesh.getFaces().addAll(2, 0, 7, 0, 3, 0);
+        mesh.getFaces().addAll(7, 0, 10, 0, 11, 0);
+        
+        mesh.getFaces().addAll(2, 0, 5, 0, 10, 0);
+        mesh.getFaces().addAll(2, 0, 1, 0, 5, 0);
+        mesh.getFaces().addAll(5, 0, 9, 0, 10, 0);
+        
+        mesh.getFaces().addAll(0, 0, 8, 0, 5, 0);
+        mesh.getFaces().addAll(0, 0, 5, 0, 1, 0);
+        mesh.getFaces().addAll(8, 0, 9, 0, 5, 0);
+        
+        mesh.getFaces().addAll(11, 0, 10, 0, 8, 0);
+        mesh.getFaces().addAll(8, 0, 10, 0, 9, 0);
+        
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        assertTrue(! error.isPresent());
+        
+        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        float cutHeight = 1f;
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, cutHeight, nullBedToLocalConverter);
         assertEquals(1, cutFaces.size());
                 
         MeshPair meshes = MeshCutter.cut(mesh, cutHeight, nullBedToLocalConverter);
