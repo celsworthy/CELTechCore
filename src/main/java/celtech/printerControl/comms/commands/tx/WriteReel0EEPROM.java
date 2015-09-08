@@ -23,7 +23,7 @@ public class WriteReel0EEPROM extends RoboxTxPacket
 
     private Stenographer steno = StenographerFactory.getStenographer(WriteReel0EEPROM.class.getName());
 
-    public static final int FRIENDLY_NAME_LENGTH = 30;
+    public static final int FRIENDLY_NAME_LENGTH = 40;
     public static final int MATERIAL_TYPE_LENGTH = 1;
     public static final int DISPLAY_COLOUR_LENGTH = 6;
     public static final int REEL_EEPROM_PADDING_LENGTH = 
