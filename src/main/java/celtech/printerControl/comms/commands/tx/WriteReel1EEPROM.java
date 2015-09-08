@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.tx;
 
 import celtech.configuration.MaterialType;
@@ -23,7 +19,7 @@ public class WriteReel1EEPROM extends RoboxTxPacket
 
     private Stenographer steno = StenographerFactory.getStenographer(WriteReel1EEPROM.class.getName());
 
-    public static final int FRIENDLY_NAME_LENGTH = 30;
+    public static final int FRIENDLY_NAME_LENGTH = 40;
     public static final int MATERIAL_TYPE_LENGTH = 1;
     public static final int DISPLAY_COLOUR_LENGTH = 6;
     public static final int REEL_EEPROM_PADDING_LENGTH = 
