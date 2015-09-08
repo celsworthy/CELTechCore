@@ -3505,12 +3505,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     if (!reels.containsKey(reelResponse.getReelNumber()))
                     {
                         reel = new Reel();
+                        reel.updateFromEEPROMData(reelResponse);
                         reels.put(reelResponse.getReelNumber(), reel);
                     } else
                     {
                         reel = reels.get(reelResponse.getReelNumber());
+                        reel.updateFromEEPROMData(reelResponse);
                     }
-                    reel.updateFromEEPROMData(reelResponse);
 
                     extruders.get(reelResponse.getReelNumber()).lastFeedrateMultiplierInUse.set(reelResponse.getFeedRateMultiplier());
 
