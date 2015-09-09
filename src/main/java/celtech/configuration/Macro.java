@@ -10,7 +10,6 @@ import java.util.Optional;
 public enum Macro
 {
     //NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
-//NOTE - don't change or reuse any of these macro job numbers - just keep on incrementing
 
     CANCEL_PRINT("abort_print", "printerStatus.macro.cancelling", "M1"),
     HOME_ALL("Home_all", "printerStatus.macro.homing", "M2"),

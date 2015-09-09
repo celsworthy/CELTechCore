@@ -2,6 +2,7 @@ package celtech.printerControl.comms.commands;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.printerControl.model.Head;
 import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,17 +25,46 @@ public class GCodeMacros
     private static final String safetyFeaturesOffDirectory = "Safety_Features_OFF";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.
-        getName());
+            getName());
     private static final String macroDefinitionString = "Macro:";
+
+    public enum SafetyIndicator
+    {
+
+        // Safeties off
+        U,
+        // Safeties on
+        S,
+        DONT_CARE
+    }
+
+    public enum NozzleUseIndicator
+    {
+
+        // Nozzle 0 only
+        NOZZLE_0,
+        // Nozzle 1 only
+        NOZZLE_1,
+        //Both nozzles
+        BOTH,
+        DONT_CARE
+    }
 
     /**
      *
-     * @param macroName - this can include the macro execution directive at the start of the line
+     * @param macroName - this can include the macro execution directive at the
+     * start of the line
+     * @param headType
+     * @param nozzleUse
+     * @param safeties
      * @return
      * @throws java.io.IOException
      * @throws celtech.printerControl.comms.commands.MacroLoadException
      */
-    public static ArrayList<String> getMacroContents(String macroName) throws IOException, MacroLoadException
+    public static ArrayList<String> getMacroContents(String macroName,
+            Head.HeadType headType,
+            NozzleUseIndicator nozzleUse,
+            SafetyIndicator safeties) throws IOException, MacroLoadException
     {
         ArrayList<String> contents = new ArrayList<>();
         ArrayList<String> parentMacros = new ArrayList<>();
@@ -47,11 +77,12 @@ public class GCodeMacros
             contents.add("; Printed with safety features OFF");
         }
 
-        appendMacroContents(contents, parentMacros, macroName);
+        appendMacroContents(contents, parentMacros, macroName,
+                headType, nozzleUse, safeties);
 
         return contents;
     }
-    
+
     private static String cleanMacroName(String macroName)
     {
         return macroName.replaceFirst(macroDefinitionString, "").trim();
@@ -63,8 +94,11 @@ public class GCodeMacros
      * @return
      */
     private static ArrayList<String> appendMacroContents(ArrayList<String> contents,
-        final ArrayList<String> parentMacros,
-        final String macroName) throws IOException, MacroLoadException
+            final ArrayList<String> parentMacros,
+            final String macroName,
+            Head.HeadType headType,
+            NozzleUseIndicator nozzleUse,
+            SafetyIndicator safeties) throws IOException, MacroLoadException
     {
         String cleanedMacroName = cleanMacroName(macroName);
 
@@ -81,7 +115,11 @@ public class GCodeMacros
 
             try
             {
-                fileReader = new FileReader(GCodeMacros.getFilename(cleanedMacroName));
+                fileReader = new FileReader(GCodeMacros.getFilename(cleanedMacroName,
+                        headType,
+                        nozzleUse,
+                        safeties
+                ));
                 Scanner scanner = new Scanner(fileReader);
 
                 while (scanner.hasNextLine())
@@ -106,7 +144,7 @@ public class GCodeMacros
             } catch (FileNotFoundException ex)
             {
                 throw new MacroLoadException("Failure to load contents of macro file " + macroName
-                    + " : " + ex.getMessage());
+                        + " : " + ex.getMessage());
             } finally
             {
                 if (fileReader != null)
@@ -138,11 +176,21 @@ public class GCodeMacros
     }
 
     /**
+     * Macros are stored in a single directory They are named as follows:
+     * <baseMacroName>_<[S|U]>_<headType>_<[nozzle0Used|nozzle1Used]>
+     * e.g. macroA_S_RBX01-SM - is a macro that should be used for safe mode
+     * when using head RBX01-SM
      *
      * @param macroName
+     * @param headType
+     * @param nozzleUse
+     * @param safeties
      * @return
      */
-    public static String getFilename(String macroName)
+    public static String getFilename(String macroName,
+            Head.HeadType headType,
+            NozzleUseIndicator nozzleUse,
+            SafetyIndicator safeties)
     {
         StringBuilder fileNameBuffer = new StringBuilder();
 

@@ -218,7 +218,9 @@ public class PostProcessor
                             lastLayerParseResult = parseResult;
                             if (lastLayerParseResult.getLayerData().getLayerNumber() == 1)
                             {
-                                outputUtilities.outputTemperatureCommands(writer);
+                                boolean heatNozzle0 = project.getUsedExtruders().contains(0);
+                                boolean heatNozzle1 = project.getUsedExtruders().contains(1);
+                                outputUtilities.outputTemperatureCommands(writer, heatNozzle0, heatNozzle1);
                             }
                         } else
                         {
