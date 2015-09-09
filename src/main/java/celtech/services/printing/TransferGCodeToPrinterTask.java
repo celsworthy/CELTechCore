@@ -115,7 +115,7 @@ public class TransferGCodeToPrinterTask extends Task<GCodePrintResult>
                 if (GCodeMacros.isMacroExecutionDirective(line))
                 {
                     //Put in contents of macro
-                    List<String> macroLines = GCodeMacros.getMacroContents(line, null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE);
+                    List<String> macroLines = GCodeMacros.getMacroContents(line, printerToUse.headProperty().get().typeCodeProperty().get(), false, false);
                     for (String macroLine : macroLines)
                     {
                         outputLine(macroLine);
@@ -127,7 +127,7 @@ public class TransferGCodeToPrinterTask extends Task<GCodePrintResult>
 
                 if (lineCounter < numberOfLines)
                 {
-                    updateProgress((float)lineCounter, (float)numberOfLines);
+                    updateProgress((float) lineCounter, (float) numberOfLines);
                 }
             }
             gotToEndOK = true;

@@ -177,7 +177,9 @@ public class PostProcessor
 
             writer = Lookup.getPostProcessorOutputWriterFactory().create(gcodeOutputFile);
 
-            outputUtilities.prependPrePrintHeader(writer);
+            outputUtilities.prependPrePrintHeader(writer, headFile.getTypeCode(),
+                    project.getUsedExtruders().contains(0),
+                    project.getUsedExtruders().contains(1));
 
             StringBuilder layerBuffer = new StringBuilder();
             LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1);
@@ -273,7 +275,10 @@ public class PostProcessor
             predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
 
             timeUtils.timerStart(this, writeOutputTimerName);
-            outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs);
+            outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs,
+                    headFile.getTypeCode(),
+                    project.getUsedExtruders().contains(0),
+                    project.getUsedExtruders().contains(1));
             timeUtils.timerStop(this, writeOutputTimerName);
 
             /**

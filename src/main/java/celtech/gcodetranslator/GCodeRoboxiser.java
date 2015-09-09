@@ -538,7 +538,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             try
             {
                 outputWriter.writeOutput(";\n; Post print gcode\n");
-                for (String macroLine : GCodeMacros.getMacroContents("after_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
+                for (String macroLine : GCodeMacros.getMacroContents("after_print", null, false, false))
                 {
                     outputWriter.writeOutput(macroLine + "\n");
                 }

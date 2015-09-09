@@ -22,7 +22,7 @@ import java.util.Locale;
 public class OutputUtilities
 {
 
-    protected void prependPrePrintHeader(GCodeOutputWriter writer)
+    protected void prependPrePrintHeader(GCodeOutputWriter writer, String headType, boolean useNozzle0, boolean useNozzle1)
     {
         SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
         try
@@ -33,7 +33,7 @@ public class OutputUtilities
 
             writer.writeOutput(";\n; Pre print gcode\n");
 
-            for (String macroLine : GCodeMacros.getMacroContents("before_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
+            for (String macroLine : GCodeMacros.getMacroContents("before_print", headType, useNozzle0, useNozzle1))
             {
                 writer.writeOutput(macroLine);
                 writer.newLine();
@@ -46,12 +46,13 @@ public class OutputUtilities
         }
     }
 
-    protected void appendPostPrintFooter(GCodeOutputWriter writer, final float totalEVolume, final float totalDVolume, final double totalTimeInSecs)
+    protected void appendPostPrintFooter(GCodeOutputWriter writer, final float totalEVolume, final float totalDVolume, final double totalTimeInSecs,
+            String headType, boolean useNozzle0, boolean useNozzle1)
     {
         try
         {
             writer.writeOutput(";\n; Post print gcode\n");
-            for (String macroLine : GCodeMacros.getMacroContents("after_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
+            for (String macroLine : GCodeMacros.getMacroContents("after_print", headType, useNozzle0, useNozzle1))
             {
                 writer.writeOutput(macroLine);
                 writer.newLine();
@@ -68,20 +69,20 @@ public class OutputUtilities
         }
     }
 
-    protected void outputTemperatureCommands(GCodeOutputWriter writer, boolean heatNozzle0, boolean heatNozzle1)
+    protected void outputTemperatureCommands(GCodeOutputWriter writer, boolean useNozzle0, boolean useNozzle1)
     {
         try
         {
             MCodeNode nozzleTemp = new MCodeNode(104);
-            if (heatNozzle0)
+            if (useNozzle0)
             {
                 nozzleTemp.setSOnly(true);
             }
-            if (heatNozzle1)
+            if (useNozzle1)
             {
                 nozzleTemp.setTOnly(true);
             }
-            
+
             nozzleTemp.setCommentText("Go to nozzle temperature from loaded reel - don't wait");
             writer.writeOutput(nozzleTemp.renderForOutput());
             writer.newLine();

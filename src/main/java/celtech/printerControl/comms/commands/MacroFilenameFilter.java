@@ -1,6 +1,7 @@
 package celtech.printerControl.comms.commands;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.printerControl.model.Head;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -13,18 +14,18 @@ public class MacroFilenameFilter implements FilenameFilter
 {
 
     private final String baseMacroName;
-    private final Head.HeadType headType;
+    private final String headTypeCode;
     private final GCodeMacros.NozzleUseIndicator nozzleUse;
     private final GCodeMacros.SafetyIndicator safeties;
     private final String separator = "#";
 
     public MacroFilenameFilter(String baseMacroName,
-            Head.HeadType headType,
+            String headTypeCode,
             GCodeMacros.NozzleUseIndicator nozzleUse,
             GCodeMacros.SafetyIndicator safeties)
     {
         this.baseMacroName = baseMacroName;
-        this.headType = headType;
+        this.headTypeCode = headTypeCode;
         this.nozzleUse = nozzleUse;
         this.safeties = safeties;
     }
@@ -32,30 +33,73 @@ public class MacroFilenameFilter implements FilenameFilter
     @Override
     public boolean accept(File dir, String name)
     {
-        boolean okToAccept = false;
+        String[] filenameSplit = name.split("\\.");
 
-        String stringToMatchAgainst = baseMacroName;
-
-        if (baseMacroName != null)
+        if (filenameSplit.length == 2
+                && ("." + filenameSplit[1]).equalsIgnoreCase(ApplicationConfiguration.macroFileExtension))
         {
-            if (safeties == GCodeMacros.SafetyIndicator.SAFETIES_OFF)
-            {
-                stringToMatchAgainst += separator + GCodeMacros.SafetyIndicator.SAFETIES_OFF.getFilenameCode();
-            }
+            String[] nameParts = filenameSplit[0].split(separator);
 
-            if (nozzleUse != GCodeMacros.NozzleUseIndicator.DONT_CARE)
-            {
-                stringToMatchAgainst += separator + nozzleUse.getFilenameCode();
-            }
-            
-            stringToMatchAgainst += ApplicationConfiguration.macroFileExtension;
+            int partsRequired = 0;
 
-            if (name.equalsIgnoreCase(stringToMatchAgainst))
+            if (baseMacroName != null
+                    && nameParts.length > 0)
             {
-                okToAccept = true;
+                if (nameParts[0].equalsIgnoreCase(baseMacroName))
+                {
+                    partsRequired++;
+
+                    if (headTypeCode != null
+                            && !headTypeCode.equalsIgnoreCase(HeadContainer.defaultHeadID))
+                    {
+                        partsRequired++;
+                        if (!doesAttributeExist(nameParts, headTypeCode))
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nozzleUse != GCodeMacros.NozzleUseIndicator.DONT_CARE)
+                    {
+                        partsRequired++;
+                        if (!doesAttributeExist(nameParts, nozzleUse.getFilenameCode()))
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (safeties == GCodeMacros.SafetyIndicator.SAFETIES_OFF)
+                    {
+                        partsRequired++;
+                        if (!doesAttributeExist(nameParts, GCodeMacros.SafetyIndicator.SAFETIES_OFF.getFilenameCode()))
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nameParts.length != partsRequired)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
             }
         }
-        return okToAccept;
+
+        return false;
+    }
+
+    private boolean doesAttributeExist(String[] parts, String attribute)
+    {
+        for (String part : parts)
+        {
+            if (part.equalsIgnoreCase(attribute))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
