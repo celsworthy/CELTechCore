@@ -250,7 +250,9 @@ public class PrintEngine implements ControllableService
             GCodePostProcessingResult result = (GCodePostProcessingResult) (t.getSource().
                     getValue());
 
-            if (result.getRoboxiserResult().isSuccess())
+            if (result != null
+                    && result.getRoboxiserResult() != null
+                    && result.getRoboxiserResult().isSuccess())
             {
                 steno.info(t.getSource().getTitle() + " has succeeded");
                 String jobUUID = result.getPrintJobUUID();
@@ -659,12 +661,12 @@ public class PrintEngine implements ControllableService
             settingsToUse.setRaftAirGapLayer0_mm(0.285f);
             settingsToUse.setInterfaceLayers(1);
         }
-        
+
         if (project.getPrintQuality() == PrintQualityEnumeration.NORMAL
                 && project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS)
         {
             settingsToUse.setRaftAirGapLayer0_mm(0.4f);
-        }        
+        }
         // End of hack
 
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
