@@ -37,6 +37,7 @@ public class OpenFaceCloser
     {
         TriangleMesh mesh = cutResult.mesh;
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
+        int MAX_ATTEMPTS = 30;
         for (LoopSet loopSet : loopSets)
         {
 
@@ -44,7 +45,7 @@ public class OpenFaceCloser
             {
                 int attempts = 0;
                 boolean succeeded = false;
-                while (!succeeded && attempts < 50)
+                while (!succeeded && attempts < MAX_ATTEMPTS)
                 {
                     try
                     {
@@ -74,9 +75,16 @@ public class OpenFaceCloser
                     {
                         System.out.println("unable to close loop: " + loopSet);
                         ex.printStackTrace();
-                        System.out.println("XXX attempts = " + attempts);
+                        System.out.println("attempts = " + attempts);
                         attempts++;
                     }
+                }
+                if (attempts == MAX_ATTEMPTS) {
+                    System.out.println("outer loop is " + region.outerLoop);
+                    for (PolygonIndices innerPolygonIndices : region.innerLoops) {
+                        System.out.println("inner loop is " + innerPolygonIndices);
+                    }
+                    throw new RuntimeException("Unable to triangulate");
                 }
             }
         }

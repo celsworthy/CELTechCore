@@ -324,4 +324,66 @@ public class MeshCutterTest
 
     }   
     
+    @Test
+    public void testEnricoSTLAt1() throws STLFileParsingException
+    {
+        
+        URL stlURL = this.getClass().getResource("/enrico.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
+        
+        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        MeshPair meshes = MeshCutter.cut(mesh, -1, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+    }
+    
+    @Test
+    public void testEnricoSTLAt2() throws STLFileParsingException
+    {
+        
+        URL stlURL = this.getClass().getResource("/enrico.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
+        
+        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
+        MeshPair meshes = MeshCutter.cut(mesh, -2, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+    }
+    
 }
