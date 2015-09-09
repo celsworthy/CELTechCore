@@ -1094,7 +1094,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         try
         {
-            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName);
+            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName, null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE);
             macroContents.forEach(line ->
             {
                 String lineToOutput = SystemUtils.cleanGCodeForTransmission(line);

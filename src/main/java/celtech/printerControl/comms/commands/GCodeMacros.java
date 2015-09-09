@@ -7,12 +7,14 @@ import celtech.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -28,26 +30,58 @@ public class GCodeMacros
             getName());
     private static final String macroDefinitionString = "Macro:";
 
-    public enum SafetyIndicator
+    public interface FilenameEncoder
+    {
+
+        public String getFilenameCode();
+    }
+
+    public enum SafetyIndicator implements FilenameEncoder
     {
 
         // Safeties off
-        U,
+        SAFETIES_OFF("U"),
         // Safeties on
-        S,
-        DONT_CARE
+        SAFETIES_ON("S"),
+        DONT_CARE(null);
+
+        private final String filenameCode;
+
+        private SafetyIndicator(String filenameCode)
+        {
+            this.filenameCode = filenameCode;
+        }
+
+        @Override
+        public String getFilenameCode()
+        {
+            return filenameCode;
+        }
     }
 
-    public enum NozzleUseIndicator
+    public enum NozzleUseIndicator implements FilenameEncoder
     {
 
         // Nozzle 0 only
-        NOZZLE_0,
+        NOZZLE_0("N0"),
         // Nozzle 1 only
-        NOZZLE_1,
+        NOZZLE_1("N1"),
         //Both nozzles
-        BOTH,
-        DONT_CARE
+        BOTH("NB"),
+        DONT_CARE(null);
+
+        private final String filenameCode;
+
+        private NozzleUseIndicator(String filenameCode)
+        {
+            this.filenameCode = filenameCode;
+        }
+
+        @Override
+        public String getFilenameCode()
+        {
+            return filenameCode;
+        }
     }
 
     /**
@@ -134,7 +168,10 @@ public class GCodeMacros
                         {
                             steno.debug("Sub-macro " + subMacroName + " detected");
 
-                            appendMacroContents(contents, parentMacros, subMacroName);
+                            appendMacroContents(contents, parentMacros, subMacroName,
+                                    headType,
+                                    nozzleUse,
+                                    safeties);
                         }
                     } else
                     {
@@ -196,19 +233,28 @@ public class GCodeMacros
 
         fileNameBuffer.append(ApplicationConfiguration.getCommonApplicationDirectory());
         fileNameBuffer.append(ApplicationConfiguration.macroFileSubpath);
-        if (Lookup.getUserPreferences().isSafetyFeaturesOn())
-        {
-            fileNameBuffer.append(safetyFeaturesOnDirectory);
-            fileNameBuffer.append(File.separator);
-        } else
-        {
-            fileNameBuffer.append(safetyFeaturesOffDirectory);
-            fileNameBuffer.append(File.separator);
-        }
+
+        FilenameFilter filter = new MacroFilenameFilter(macroName, null, NozzleUseIndicator.DONT_CARE, SafetyIndicator.DONT_CARE);
+
+        File macroDirectory = new File(ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath);
+
+        File[] macroFiles = macroDirectory.listFiles(filter);
+
         fileNameBuffer.append(macroName);
         fileNameBuffer.append(ApplicationConfiguration.macroFileExtension);
 
-        return fileNameBuffer.toString();
+        if (macroFiles.length > 0)
+        {
+            steno.info("Found " + macroFiles.length + " macro files:");
+            for (int counter = 0; counter < macroFiles.length; counter++)
+            {
+                steno.info(macroFiles[counter].getName());
+            }
+            return macroFiles[0].getAbsolutePath();
+        } else
+        {
+            return null;
+        }
     }
 
     public static boolean isMacroExecutionDirective(String input)
@@ -238,7 +284,7 @@ public class GCodeMacros
         {
             try
             {
-                List<String> contents = getMacroContents(macro);
+                List<String> contents = getMacroContents(macro, null, NozzleUseIndicator.DONT_CARE, SafetyIndicator.DONT_CARE);
                 for (String line : contents)
                 {
                     if (line.trim().startsWith(";") == false && line.equals("") == false)

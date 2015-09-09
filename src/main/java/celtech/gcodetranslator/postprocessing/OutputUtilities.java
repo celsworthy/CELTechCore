@@ -33,7 +33,7 @@ public class OutputUtilities
 
             writer.writeOutput(";\n; Pre print gcode\n");
 
-            for (String macroLine : GCodeMacros.getMacroContents("before_print"))
+            for (String macroLine : GCodeMacros.getMacroContents("before_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
             {
                 writer.writeOutput(macroLine);
                 writer.newLine();
@@ -51,7 +51,7 @@ public class OutputUtilities
         try
         {
             writer.writeOutput(";\n; Post print gcode\n");
-            for (String macroLine : GCodeMacros.getMacroContents("after_print"))
+            for (String macroLine : GCodeMacros.getMacroContents("after_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
             {
                 writer.writeOutput(macroLine);
                 writer.newLine();

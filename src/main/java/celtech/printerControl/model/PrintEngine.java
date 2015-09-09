@@ -921,7 +921,7 @@ public class PrintEngine implements ControllableService
 
         try
         {
-            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macro.getMacroFileName());
+            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macro.getMacroFileName(), null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE);
             // Write the contents of the macro file to the print area
             FileUtils.writeLines(printjobFile, macroContents, false);
         } catch (IOException ex)

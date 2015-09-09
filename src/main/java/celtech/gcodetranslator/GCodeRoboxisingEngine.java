@@ -107,7 +107,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
                         writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
 
                 outputWriter.writeOutput(";\n; Pre print gcode\n");
-                for (String macroLine : GCodeMacros.getMacroContents("before_print"))
+                for (String macroLine : GCodeMacros.getMacroContents("before_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
                 {
                     outputWriter.writeOutput(macroLine + "\n");
                 }
