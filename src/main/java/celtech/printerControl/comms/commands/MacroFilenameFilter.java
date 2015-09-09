@@ -1,5 +1,6 @@
 package celtech.printerControl.comms.commands;
 
+import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.model.Head;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -35,19 +36,24 @@ public class MacroFilenameFilter implements FilenameFilter
 
         String stringToMatchAgainst = baseMacroName;
 
-        if (safeties == GCodeMacros.SafetyIndicator.SAFETIES_OFF)
+        if (baseMacroName != null)
         {
-            stringToMatchAgainst += separator + GCodeMacros.SafetyIndicator.SAFETIES_OFF.getFilenameCode();
-        }
+            if (safeties == GCodeMacros.SafetyIndicator.SAFETIES_OFF)
+            {
+                stringToMatchAgainst += separator + GCodeMacros.SafetyIndicator.SAFETIES_OFF.getFilenameCode();
+            }
 
-        if (nozzleUse != GCodeMacros.NozzleUseIndicator.DONT_CARE)
-        {
-            stringToMatchAgainst += separator + nozzleUse.getFilenameCode();
-        }
+            if (nozzleUse != GCodeMacros.NozzleUseIndicator.DONT_CARE)
+            {
+                stringToMatchAgainst += separator + nozzleUse.getFilenameCode();
+            }
+            
+            stringToMatchAgainst += ApplicationConfiguration.macroFileExtension;
 
-        if (name.equalsIgnoreCase(stringToMatchAgainst))
-        {
-            okToAccept = true;
+            if (name.equalsIgnoreCase(stringToMatchAgainst))
+            {
+                okToAccept = true;
+            }
         }
         return okToAccept;
     }
