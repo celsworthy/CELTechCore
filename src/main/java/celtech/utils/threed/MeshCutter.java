@@ -777,6 +777,10 @@ public class MeshCutter
         return Optional.of(loopOfFacesAndVertices);
     }
 
+    /**
+     * Find the next vertex/face in the loop, given that the previous vertex lay along an edge of
+     * the previous face.
+     */
     private static NextVertexResult getNextVertexInLoopEdgeBased(TriangleMesh mesh, float cutHeight,
         BedToLocalConverter bedToLocalConverter, boolean[] faceVisited,
         Map<Integer, Set<Integer>> facesWithVertices,
@@ -798,7 +802,7 @@ public class MeshCutter
         Set<Edge> otherEdges = getEdgesOfFaceThatPlaneIntersects(mesh, otherFaceIndex,
                                                                  cutHeight,
                                                                  bedToLocalConverter);
-        System.out.println("pervious edge: " + previousEdge + " " + previousEdge.v0 + " "
+        System.out.println("previous edge: " + previousEdge + " " + previousEdge.v0 + " "
             + previousEdge.v1);
         otherEdges.remove(previousEdge);
 
@@ -842,6 +846,7 @@ public class MeshCutter
         int vertexIndex = -1;
         int faceIndex = -1;
 
+        Set<NextVertexResult> possibleResults = new HashSet<>();
         for (Integer otherFaceIndex : facesWithVertices.get(previousVertexIndex))
         {
 //                    System.out.println("consider face " + otherFaceIndex);
@@ -858,6 +863,7 @@ public class MeshCutter
             {
                 System.out.println("found next face which has an edge: " + otherFaceIndex);
                 faceIndex = otherFaceIndex;
+                faceVisited[faceIndex] = true;
 
                 Vertex previousVertex = getVertex(mesh, previousVertexIndex);
                 for (Edge edge : edges)
@@ -870,65 +876,84 @@ public class MeshCutter
                     } else
                     {
                         vertexIndex = addNewOrGetVertex(mesh, vertex);
-
+                        possibleResults.add(new NextVertexResult(otherFaceIndex, vertexIndex));
                         break;
                     }
                 }
-
-                assert vertexIndex != -1;
-                break;
-            }
-
-            Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
-                mesh, otherFaceIndex, cutHeight, bedToLocalConverter);
-            if (vertexIndices.size() == 2)
+            } else
             {
-                System.out.println("found face with 2 intersecting vertices "
-                    + otherFaceIndex);
-                faceIndex = otherFaceIndex;
 
-                for (Integer vertexIndex2 : vertexIndices)
+                Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
+                    mesh, otherFaceIndex, cutHeight, bedToLocalConverter);
+                if (vertexIndices.size() == 2)
                 {
-                    if (vertexIndex2 == previousVertexIndex)
+                    System.out.println("found face with 2 intersecting vertices "
+                        + otherFaceIndex);
+                    faceIndex = otherFaceIndex;
+
+                    for (Integer vertexIndex2 : vertexIndices)
                     {
-                        continue;
-                    } else
-                    {
-                        vertexIndex = vertexIndex2;
-                            // need to mark face opposite to this one as visited, to prevent
-                        // it being found as the next face
-                        Set<Integer> facesWithV0 = new HashSet(facesWithVertices.get(
-                            vertexIndex));
-                        Set<Integer> facesWithV1 = facesWithVertices.get(previousVertexIndex);
-                        facesWithV0.retainAll(facesWithV1);
-                        facesWithV0.remove(faceIndex);
-                        if (facesWithV0.size() > 0)
+                        if (vertexIndex2 == previousVertexIndex)
                         {
-                            assert facesWithV0.size() == 1 : "size is " + facesWithV0.size();
-                            int otherFaceIndex2 = facesWithV0.iterator().next();
-                            faceVisited[otherFaceIndex2] = true;
+                            continue;
+                        } else
+                        {
+                            vertexIndex = vertexIndex2;
+                            possibleResults.add(new NextVertexResult(otherFaceIndex, vertexIndex));
+                            // need to mark face opposite to this one as visited, to prevent
+                            // it being found as the next face
+//                            Set<Integer> facesWithV0 = new HashSet(facesWithVertices.get(
+//                                vertexIndex));
+//                            Set<Integer> facesWithV1 = facesWithVertices.get(previousVertexIndex);
+//                            facesWithV0.retainAll(facesWithV1);
+//                            facesWithV0.remove(faceIndex);
+//                            if (facesWithV0.size() > 0)
+//                            {
+//                                assert facesWithV0.size() == 1 : "size is " + facesWithV0.size();
+//                                int otherFaceIndex2 = facesWithV0.iterator().next();
+//                                faceVisited[otherFaceIndex2] = true;
+//                            }
+                            break;
                         }
-                        break;
                     }
                 }
-
-                assert vertexIndex != -1;
-                break;
             }
         }
-
+        
         assert vertexIndex != -1;
-        return new NextVertexResult(faceIndex, vertexIndex);
+        
+        if (possibleResults.size() == 1) {
+            return possibleResults.iterator().next();
+        } else {
+            for (NextVertexResult possibleResult : possibleResults)
+            {
+                // add new vertex if there is one
+                if (!loopOfVertices.contains(possibleResult.vertexIndex)) {
+                    return possibleResult;
+                }
+            }
+            for (NextVertexResult possibleResult : possibleResults)
+            {
+                // were back to the beginning
+                if (possibleResult.vertexIndex == loopOfVertices.get(0)) {
+                    return possibleResult;
+                }
+            }
+        }
+        throw new RuntimeException("should not get here");
+        
 
     }
 
+    /**
+     * Find the next vertexIndex/faceIndex to extend this cutting loop.
+     */
     private static NextVertexResult getNextVertexInLoop(TriangleMesh mesh, float cutHeight,
         BedToLocalConverter bedToLocalConverter, boolean[] faceVisited,
         Map<Integer, Set<Integer>> facesWithVertices,
         PolygonIndices loopOfVertices, int previousFaceIndex)
     {
 
-        // get the next vertex/face along the cut loop
         int vertexIndex = -1;
         int faceIndex = -1;
 
@@ -950,7 +975,6 @@ public class MeshCutter
         } else
         {
             System.out.println("previous vertex is on an edge");
-            // previous vertex was created on an edge
 
             NextVertexResult result = getNextVertexInLoopEdgeBased(mesh, cutHeight,
                                                                    bedToLocalConverter,
