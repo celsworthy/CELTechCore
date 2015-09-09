@@ -72,7 +72,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
     {
         saveSettings();
 //        Thread.sleep(3000);
-        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised"), false);
+        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE), false);
         PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
     }
 

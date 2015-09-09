@@ -538,7 +538,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             try
             {
                 outputWriter.writeOutput(";\n; Post print gcode\n");
-                for (String macroLine : GCodeMacros.getMacroContents("after_print"))
+                for (String macroLine : GCodeMacros.getMacroContents("after_print", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE))
                 {
                     outputWriter.writeOutput(macroLine + "\n");
                 }
@@ -864,7 +864,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         return new ExtrusionBufferDigest(extrusionBoundaries, firstNozzleEvent, lastLayerIndex);
     }
 
-    private List<Integer> getInwardMoves(ExtrusionBuffer buffer)
+    private List<Integer> getInwardMoves(LegacyExtrusionBuffer buffer)
     {
         List<Integer> inwardsMoveIndexList = new ArrayList<>();
 

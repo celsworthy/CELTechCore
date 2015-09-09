@@ -115,7 +115,7 @@ public class TransferGCodeToPrinterTask extends Task<GCodePrintResult>
                 if (GCodeMacros.isMacroExecutionDirective(line))
                 {
                     //Put in contents of macro
-                    List<String> macroLines = GCodeMacros.getMacroContents(line);
+                    List<String> macroLines = GCodeMacros.getMacroContents(line, null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE);
                     for (String macroLine : macroLines)
                     {
                         outputLine(macroLine);
