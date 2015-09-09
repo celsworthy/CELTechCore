@@ -80,7 +80,7 @@ public class MeshCutter
         Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
         if (error.isPresent())
         {
-//            throw new RuntimeException("Invalid mesh: " + error.toString());
+            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
         cutResult = getUncoveredLowerMesh(mesh, cutHeight, bedToLocalConverter);
@@ -91,7 +91,7 @@ public class MeshCutter
         error = MeshUtils.validate(bottomMesh);
         if (error.isPresent())
         {
-//            throw new RuntimeException("Invalid mesh: " + error.toString());
+            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
         return new MeshPair(topMesh, bottomMesh);
@@ -919,29 +919,32 @@ public class MeshCutter
                 }
             }
         }
-        
+
         assert vertexIndex != -1;
-        
-        if (possibleResults.size() == 1) {
+
+        if (possibleResults.size() == 1)
+        {
             return possibleResults.iterator().next();
-        } else {
+        } else
+        {
             for (NextVertexResult possibleResult : possibleResults)
             {
                 // add new vertex if there is one
-                if (!loopOfVertices.contains(possibleResult.vertexIndex)) {
+                if (!loopOfVertices.contains(possibleResult.vertexIndex))
+                {
                     return possibleResult;
                 }
             }
             for (NextVertexResult possibleResult : possibleResults)
             {
                 // were back to the beginning
-                if (possibleResult.vertexIndex == loopOfVertices.get(0)) {
+                if (possibleResult.vertexIndex == loopOfVertices.get(0))
+                {
                     return possibleResult;
                 }
             }
         }
         throw new RuntimeException("should not get here");
-        
 
     }
 
@@ -1109,8 +1112,6 @@ public class MeshCutter
             vertices.add(getVertex(mesh, vertexIndex));
         }
 
-        assert vertices.size() == 2 || vertices.size() == 1 : "num intersecting vertices: "
-            + vertices.size();
         return vertices;
     }
 
@@ -1274,9 +1275,15 @@ public class MeshCutter
         int faceIndex = findFirstUnvisitedFace(faceVisited);
         if (faceIndex != -1)
         {
-            while (getEdgeIndicesOfFaceThatPlaneIntersectsOrTouches(
-                mesh, faceIndex, cutHeight, bedToLocalConverter).size() == 0)
+            while (true)
             {
+                int numIntersectingVertices = getIntersectingVertices(mesh, faceIndex, cutHeight,
+                                                                      bedToLocalConverter).size();
+                if (numIntersectingVertices > 1)
+                {
+                    break;
+                }
+           
                 faceVisited[faceIndex] = true;
                 faceIndex = findFirstUnvisitedFace(faceVisited);
                 if (faceIndex == -1)

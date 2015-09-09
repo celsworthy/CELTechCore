@@ -127,6 +127,8 @@ public class MeshUtils
         {
             return Optional.of(MeshError.MESH_NOT_ORIENTABLE);
         }
+        
+        System.out.println("check passed");
 
         return Optional.empty();
     }
@@ -161,6 +163,10 @@ public class MeshUtils
 
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
+            int v0 = mesh.getFaces().get(faceIndex * 6);
+            int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+            int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+            System.out.println("check face " + faceIndex + " " + v0 + " " + v1 + " " + v2);
             Set<Edge> edges = getFaceEdges(mesh, faceIndex);
             for (Edge edge : edges)
             {
