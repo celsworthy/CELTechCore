@@ -3,9 +3,12 @@ package celtech.configuration;
 import celtech.Lookup;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
+import celtech.configuration.units.CurrencySymbol;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,7 +22,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class UserPreferences
 {
 
-    private ObjectProperty<SlicerType> slicerType = new SimpleObjectProperty<>(SlicerType.Cura);
+    private final ObjectProperty<SlicerType> slicerType = new SimpleObjectProperty<>(SlicerType.Cura);
     private final BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
     private String languageTag = "";
     private final BooleanProperty showTooltips = new SimpleBooleanProperty(true);
@@ -30,7 +33,14 @@ public class UserPreferences
     private final BooleanProperty showDiagnostics = new SimpleBooleanProperty(true);
     private final BooleanProperty showGCode = new SimpleBooleanProperty(true);
     private final BooleanProperty showAdjustments = new SimpleBooleanProperty(true);
+    private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
+    private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
+
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    {
+        saveSettings();
+    };
+    private final ChangeListener<Number> numberChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         saveSettings();
     };
@@ -44,17 +54,6 @@ public class UserPreferences
         saveSettings();
     };
 
-    public String getLanguageTag()
-    {
-        return languageTag;
-    }
-
-    public void setLanguageTag(String language)
-    {
-        this.languageTag = language;
-        saveSettings();
-    }
-
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType.set(userPreferenceFile.getSlicerType());
@@ -67,6 +66,8 @@ public class UserPreferences
         showDiagnostics.set(userPreferenceFile.isShowDiagnostics());
         showGCode.set(userPreferenceFile.isShowGCode());
         showAdjustments.set(userPreferenceFile.isShowAdjustments());
+        this.currencySymbol.set(userPreferenceFile.getCurrencySymbol());
+        this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -75,17 +76,29 @@ public class UserPreferences
         showDiagnostics.addListener(booleanChangeListener);
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
+        currencyGBPToLocalMultiplier.addListener(numberChangeListener);
+    }
+
+    public String getLanguageTag()
+    {
+        return languageTag;
+    }
+
+    public void setLanguageTag(String language)
+    {
+        this.languageTag = language;
+        saveSettings();
     }
 
     public SlicerType getSlicerType()
     {
         return slicerType.get();
     }
-    
+
     public ObjectProperty<SlicerType> getSlicerTypeProperty()
     {
         return slicerType;
-    }    
+    }
 
     public void setSlicerType(SlicerType slicerType)
     {
@@ -164,7 +177,7 @@ public class UserPreferences
     {
         return firstUse;
     }
-    
+
     public boolean getDetectLoadedFilament()
     {
         return detectLoadedFilament.get();
@@ -178,7 +191,37 @@ public class UserPreferences
     public BooleanProperty detectLoadedFilamentProperty()
     {
         return detectLoadedFilament;
-    }    
+    }
+
+    public ObjectProperty<CurrencySymbol> currencySymbolProperty()
+    {
+        return currencySymbol;
+    }
+
+    public CurrencySymbol getCurrencySymbol()
+    {
+        return currencySymbol.get();
+    }
+
+    public void setCurrencySymbol(CurrencySymbol currencySymbol)
+    {
+        this.currencySymbol.set(currencySymbol);
+    }
+
+    public FloatProperty currencyGBPToLocalMultiplierProperty()
+    {
+        return currencyGBPToLocalMultiplier;
+    }
+
+    public float getcurrencyGBPToLocalMultiplier()
+    {
+        return currencyGBPToLocalMultiplier.get();
+    }
+
+    public void setcurrencyGBPToLocalMultiplier(float value)
+    {
+        this.currencyGBPToLocalMultiplier.set(value);
+    }
 
     private void saveSettings()
     {
@@ -198,7 +241,7 @@ public class UserPreferences
         {
             this.advancedMode.set(advancedMode);
         }
-        
+
         suppressAdvancedModeListenerCheck = false;
     }
 

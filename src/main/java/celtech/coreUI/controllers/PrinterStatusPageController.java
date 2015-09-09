@@ -19,8 +19,6 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -248,8 +246,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         doorClosed.setVisible(false);
         doorOpen.setVisible(false);
 
-        bed.setVisible(false);
-        
         ambientLight.setEffect(ambientColourEffect);
         reel1Background.setEffect(reel1BackgroundColourEffect);
         reel2Background.setEffect(reel2BackgroundColourEffect);
@@ -364,6 +360,14 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         setupReel2Colour();
     }
 
+    private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
+    {
+        effect.setHue(hueConverter(desiredColor.getHue()));
+        effect.setBrightness(desiredColor.getBrightness() - 1);
+        effect.setSaturation(desiredColor.getSaturation());
+        steno.info("Colour - h=" + hueConverter(desiredColor.getHue()) + " s=" + desiredColor.getSaturation() + " b" + desiredColor.getBrightness());
+    }
+
     private void setupReel1Colour()
     {
         if (printerToUse == null
@@ -373,9 +377,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         } else
         {
             Color reel1Colour = printerToUse.reelsProperty().get(0).displayColourProperty().get();
-            reel1BackgroundColourEffect.setSaturation(1);
-            reel1BackgroundColourEffect.setBrightness(1);
-            reel1BackgroundColourEffect.setHue(hueConverter(reel1Colour.getHue()));
+            setColorAdjustFromDesiredColour(reel1BackgroundColourEffect, reel1Colour);
             reel1Background.setVisible(true);
         }
     }
@@ -389,9 +391,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         } else
         {
             Color reel2Colour = printerToUse.reelsProperty().get(1).displayColourProperty().get();
-            reel2BackgroundColourEffect.setSaturation(1);
-            reel2BackgroundColourEffect.setBrightness(1);
-            reel2BackgroundColourEffect.setHue(hueConverter(reel2Colour.getHue()));
+            setColorAdjustFromDesiredColour(reel2BackgroundColourEffect, reel2Colour);
             reel2Background.setVisible(true);
         }
     }
@@ -417,8 +417,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         } else
         {
             Color ambientColour = colourMap.printerToDisplayColour(printerToUse.getPrinterIdentity().printerColourProperty().get());
-            ambientColourEffect.setSaturation(1);
-            ambientColourEffect.setHue(hueConverter(ambientColour.getHue()));
+            setColorAdjustFromDesiredColour(ambientColourEffect, ambientColour);
             ambientLight.setVisible(true);
         }
     }

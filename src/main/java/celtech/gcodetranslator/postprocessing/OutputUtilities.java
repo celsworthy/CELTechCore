@@ -68,11 +68,20 @@ public class OutputUtilities
         }
     }
 
-    protected void outputTemperatureCommands(GCodeOutputWriter writer)
+    protected void outputTemperatureCommands(GCodeOutputWriter writer, boolean heatNozzle0, boolean heatNozzle1)
     {
         try
         {
             MCodeNode nozzleTemp = new MCodeNode(104);
+            if (heatNozzle0)
+            {
+                nozzleTemp.setSOnly(true);
+            }
+            if (heatNozzle1)
+            {
+                nozzleTemp.setTOnly(true);
+            }
+            
             nozzleTemp.setCommentText("Go to nozzle temperature from loaded reel - don't wait");
             writer.writeOutput(nozzleTemp.renderForOutput());
             writer.newLine();

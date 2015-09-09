@@ -416,7 +416,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             ex.printStackTrace();
         }
 
-        if (!slicedAndPostProcessed)
+        if (!slicedAndPostProcessed
+                && !cancellable.cancelled().get())
         {
             steno.error("Error running slicer/postprocessor");
             String failed = Lookup.i18n("timeCost.failed");

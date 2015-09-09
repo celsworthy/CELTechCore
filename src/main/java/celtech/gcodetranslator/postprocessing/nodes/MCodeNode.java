@@ -12,7 +12,11 @@ public class MCodeNode extends GCodeEventNode implements Renderable
 
     private int mNumber;
     private boolean sNumberPresent = false;
+    private boolean sNumberOnly = false;
     private int sNumber;
+    private boolean tNumberPresent = false;
+    private boolean tNumberOnly = false;
+    private int tNumber;
 
     public MCodeNode()
     {
@@ -56,8 +60,49 @@ public class MCodeNode extends GCodeEventNode implements Renderable
      */
     public void setSNumber(int value)
     {
+        sNumberOnly = false;
         sNumberPresent = true;
         this.sNumber = value;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setSOnly(boolean sOnly)
+    {
+        sNumberOnly = true;
+        sNumberPresent = false;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public int getTNumber()
+    {
+        return tNumber;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setTNumber(int value)
+    {
+        tNumberOnly = false;
+        tNumberPresent = true;
+        this.tNumber = value;
+    }
+
+    /**
+     *
+     * @param value
+     */
+    public void setTOnly(boolean tOnly)
+    {
+        tNumberOnly = true;
+        tNumberPresent = false;
     }
 
     /**
@@ -77,6 +122,21 @@ public class MCodeNode extends GCodeEventNode implements Renderable
             stringToOutput.append(" S");
             stringToOutput.append(sNumber);
         }
+        else if (sNumberOnly)
+        {            
+            stringToOutput.append(" S");
+        }
+
+        if (tNumberPresent)
+        {
+            stringToOutput.append(" T");
+            stringToOutput.append(tNumber);
+        }
+        else if (tNumberOnly)
+        {            
+            stringToOutput.append(" T");
+        }
+
         stringToOutput.append(' ');
         stringToOutput.append(getCommentText());
 

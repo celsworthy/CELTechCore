@@ -40,7 +40,7 @@
             </ImageView>
             <ImageView fx:id="baseReel1" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
                <image>
-                  <Image url="@../images/statusRender/Base%20Render%20(Reel%202).png" />
+                  <Image url="@../images/statusRender/Base%20Render%20(Reel%201).png" />
                </image>
             </ImageView>
             <ImageView fx:id="baseReelBoth" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
