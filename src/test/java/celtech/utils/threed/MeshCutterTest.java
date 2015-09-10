@@ -6,12 +6,16 @@ package celtech.utils.threed;
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import celtech.utils.threed.MeshCutter.Intersection;
 import celtech.utils.threed.MeshCutter.MeshPair;
+import static celtech.utils.threed.MeshCutter.getFaceIntersections;
 import static celtech.utils.threed.MeshCutter.getLoopsOfVertices;
+import static celtech.utils.threed.MeshCutter.getAdjacentIntersections;
+import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import celtech.utils.threed.MeshUtils.MeshError;
 import celtech.utils.threed.importers.stl.STLFileParsingException;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javafx.geometry.Point3D;
@@ -157,6 +161,10 @@ public class MeshCutterTest
         Edge edge3 = new Edge(200, 200);
         Intersection intersection5 = new MeshCutter.Intersection(12, Optional.of(edge3), 51);
         assertFalse(intersection1.equals(intersection5));
+        
+        Intersection intersection6 = new MeshCutter.Intersection(12, Optional.empty(), 51);
+        Intersection intersection7 = new MeshCutter.Intersection(12, Optional.empty(), 51);
+        assertEquals(intersection6, intersection7);
     }
 
     @Test
@@ -237,48 +245,46 @@ public class MeshCutterTest
         mesh.getFaces().addAll(7, 0, 5, 0, 6, 0);
         return mesh;
     }
+    
+    @Test
+    public void testgetFaceIntersectionsForTrianglesWithOneVertexOnPlane()
+    {
+        TriangleMesh mesh = createMeshWithOneVertexOnPlane();
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        
+        int faceIndex = 2;
+        Set<Intersection> intersections = getFaceIntersections(faceIndex, mesh,
+                                                         1,  nullBedToLocalConverter);
+        assertEquals(2, intersections.size());
+        for (Intersection intersection : intersections)
+        {
+            System.out.println(intersection);
+        }
+    }    
+    
+     @Test
+    public void testgetPossibleIntersectionsForTrianglesWithOneVertexOnPlane()
+    {
+        TriangleMesh mesh = createMeshWithOneVertexOnPlane();
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        
+        boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+    
+        Intersection intersection = new Intersection(2, Optional.empty(), 7);
+        
+        Set<Intersection> intersections = getAdjacentIntersections(intersection, mesh,
+                        1, nullBedToLocalConverter, facesWithVertices,  faceVisited);
+        for (Intersection intersection2 : intersections)
+        {
+            System.out.println(intersection2);
+        }
+        }
 
     @Test
     public void testMeshWithTrianglesWithOneVertexOnPlane()
     {
-        TriangleMesh mesh = new TriangleMesh();
-        mesh.getPoints().addAll(0, 0, 0);
-        mesh.getPoints().addAll(0, 0, 1);
-        mesh.getPoints().addAll(1, 0, 1);
-        mesh.getPoints().addAll(1, 0, 0);
-
-        mesh.getPoints().addAll(0, 1, 0);
-        mesh.getPoints().addAll(0, 1, 1);
-        mesh.getPoints().addAll(1, 1, 1);
-        mesh.getPoints().addAll(1, 1, 0);
-
-        mesh.getPoints().addAll(0, 2, 0);
-        mesh.getPoints().addAll(0, 2, 1);
-        mesh.getPoints().addAll(1, 2, 1);
-        mesh.getPoints().addAll(1, 2, 0);
-
-        // double height parallelepiped
-        mesh.getFaces().addAll(0, 0, 1, 0, 2, 0);
-        mesh.getFaces().addAll(0, 0, 2, 0, 3, 0);
-
-        mesh.getFaces().addAll(0, 0, 7, 0, 8, 0);
-        mesh.getFaces().addAll(0, 0, 3, 0, 7, 0);
-        mesh.getFaces().addAll(7, 0, 11, 0, 8, 0);
-
-        mesh.getFaces().addAll(2, 0, 10, 0, 7, 0);
-        mesh.getFaces().addAll(2, 0, 7, 0, 3, 0);
-        mesh.getFaces().addAll(7, 0, 10, 0, 11, 0);
-
-        mesh.getFaces().addAll(2, 0, 5, 0, 10, 0);
-        mesh.getFaces().addAll(2, 0, 1, 0, 5, 0);
-        mesh.getFaces().addAll(5, 0, 9, 0, 10, 0);
-
-        mesh.getFaces().addAll(0, 0, 8, 0, 5, 0);
-        mesh.getFaces().addAll(0, 0, 5, 0, 1, 0);
-        mesh.getFaces().addAll(8, 0, 9, 0, 5, 0);
-
-        mesh.getFaces().addAll(11, 0, 10, 0, 8, 0);
-        mesh.getFaces().addAll(8, 0, 10, 0, 9, 0);
+        TriangleMesh mesh = createMeshWithOneVertexOnPlane();
 
         Optional<MeshError> error = MeshUtils.validate(mesh);
         assertTrue(!error.isPresent());
@@ -294,6 +300,41 @@ public class MeshCutterTest
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
 
+    }
+
+    private TriangleMesh createMeshWithOneVertexOnPlane()
+    {
+        TriangleMesh mesh = new TriangleMesh();
+        mesh.getPoints().addAll(0, 0, 0);
+        mesh.getPoints().addAll(0, 0, 1);
+        mesh.getPoints().addAll(1, 0, 1);
+        mesh.getPoints().addAll(1, 0, 0);
+        mesh.getPoints().addAll(0, 1, 0);
+        mesh.getPoints().addAll(0, 1, 1);
+        mesh.getPoints().addAll(1, 1, 1);
+        mesh.getPoints().addAll(1, 1, 0);
+        mesh.getPoints().addAll(0, 2, 0);
+        mesh.getPoints().addAll(0, 2, 1);
+        mesh.getPoints().addAll(1, 2, 1);
+        mesh.getPoints().addAll(1, 2, 0);
+        // double height parallelepiped
+        mesh.getFaces().addAll(0, 0, 1, 0, 2, 0);
+        mesh.getFaces().addAll(0, 0, 2, 0, 3, 0);
+        mesh.getFaces().addAll(0, 0, 7, 0, 8, 0);
+        mesh.getFaces().addAll(0, 0, 3, 0, 7, 0);
+        mesh.getFaces().addAll(7, 0, 11, 0, 8, 0);
+        mesh.getFaces().addAll(2, 0, 10, 0, 7, 0);
+        mesh.getFaces().addAll(2, 0, 7, 0, 3, 0);
+        mesh.getFaces().addAll(7, 0, 10, 0, 11, 0);
+        mesh.getFaces().addAll(2, 0, 5, 0, 10, 0);
+        mesh.getFaces().addAll(2, 0, 1, 0, 5, 0);
+        mesh.getFaces().addAll(5, 0, 9, 0, 10, 0);
+        mesh.getFaces().addAll(0, 0, 8, 0, 5, 0);
+        mesh.getFaces().addAll(0, 0, 5, 0, 1, 0);
+        mesh.getFaces().addAll(8, 0, 9, 0, 5, 0);
+        mesh.getFaces().addAll(11, 0, 10, 0, 8, 0);
+        mesh.getFaces().addAll(8, 0, 10, 0, 9, 0);
+        return mesh;
     }
 
     @Test

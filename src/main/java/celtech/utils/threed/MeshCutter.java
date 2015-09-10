@@ -705,7 +705,14 @@ public class MeshCutter
         @Override
         public String toString()
         {
-            return "Intersection{" + "faceIndex=" + faceIndex + ", edge=" + edge.get() + ", vertexIndex=" +
+            String edgeString;
+            if (edge.isPresent()) {
+                edgeString = edge.get().toString();
+            } else {
+                edgeString = "Corner";
+            }
+                
+            return "Intersection{" + "faceIndex=" + faceIndex + ", edge=" + edgeString + ", vertexIndex=" +
                 vertexIndex + '}';
         }
 
@@ -731,7 +738,18 @@ public class MeshCutter
             {
                 return false;
             }
-            if (!Objects.equals(this.edge.get(), other.edge.get()))
+            
+            if (! this.edge.isPresent() && other.edge.isPresent())
+            {
+                return false;
+            }
+            
+            if (this.edge.isPresent() && ! other.edge.isPresent())
+            {
+                return false;
+            }
+            
+            if (this.edge.isPresent() && other.edge.isPresent() && (!Objects.equals(this.edge.get(), other.edge.get())))
             {
                 return false;
             }
@@ -743,7 +761,7 @@ public class MeshCutter
         }
     }
 
-    static Set<Intersection> getFaceIntersections(int faceIndex, TriangleMesh mesh,
+    static Set<Intersection> getFaceIntersections(final int faceIndex, TriangleMesh mesh,
         float cutHeight, BedToLocalConverter bedToLocalConverter)
     {
 
@@ -781,32 +799,45 @@ public class MeshCutter
         return otherFaceIndex;
     }
 
-    static Set<Intersection> getPossibleNextIntersections(Intersection intersection,
+    /**
+     * Get the adjacent intersections(face/vertex) to the given intersection. Find the other
+     * intersection in the same face as the given intersection, which has vertex V2.
+     * Then, for each face adjacent to that intersection, if it has two intersections 
+     * then include the intersection on the other face which is for vertex V2.
+     */
+    static Set<Intersection> getAdjacentIntersections(Intersection intersection,
         TriangleMesh mesh,
         float cutHeight, BedToLocalConverter bedToLocalConverter,
         Map<Integer, Set<Integer>> facesWithVertices, boolean[] faceVisited)
     {
+        
+        Set<Intersection> intersectionsForThisFace = getFaceIntersections(intersection.faceIndex, mesh, cutHeight,
+                                                                          bedToLocalConverter);
+        assert intersectionsForThisFace.contains(intersection);
+        intersectionsForThisFace.remove(intersection);
+        Intersection nextIntersectionSameFace = intersectionsForThisFace.iterator().next();
+        System.out.println("nexy intersection same face is " + nextIntersectionSameFace);
 
         Set<Intersection> possibleIntersections = new HashSet<>();
 
-        if (intersection.edge.isPresent())
+        if (nextIntersectionSameFace.edge.isPresent())
         {
-            int oppositeFaceIndex = getFaceOppositeEdge(intersection.faceIndex,
-                                                        intersection.edge.get(), facesWithVertices);
-            System.out.println("opposite face to face,edge " + intersection.faceIndex + " " + intersection.edge.get() + " is " + oppositeFaceIndex);
+            int oppositeFaceIndex = getFaceOppositeEdge(nextIntersectionSameFace.faceIndex,
+                                                        nextIntersectionSameFace.edge.get(), facesWithVertices);
+            System.out.println("opposite face to face,edge " + nextIntersectionSameFace.faceIndex + " " + nextIntersectionSameFace.edge.get() + " is " + oppositeFaceIndex);
             faceVisited[oppositeFaceIndex] = true;
             Set<Intersection> intersections = getFaceIntersections(oppositeFaceIndex, mesh, cutHeight, bedToLocalConverter);
             for (Intersection oppositeFaceIntersection : intersections)
             {
-                if (! oppositeFaceIntersection.edge.get().equals(intersection.edge.get())) {
-                    System.out.println("opposite edge is " + oppositeFaceIntersection.edge);
+                if (oppositeFaceIntersection.vertexIndex == nextIntersectionSameFace.vertexIndex) {
+                    System.out.println("opposite edge inter " + oppositeFaceIntersection);
                     possibleIntersections.add(oppositeFaceIntersection);
                     break;
                 }
             }
         } else
         {
-            for (Integer otherFaceIndex : facesWithVertices.get(intersection.vertexIndex))
+            for (Integer otherFaceIndex : facesWithVertices.get(nextIntersectionSameFace.vertexIndex))
             {
                 if (otherFaceIndex == intersection.faceIndex)
                 {
@@ -854,14 +885,13 @@ public class MeshCutter
             return Optional.empty();
         }
         faceVisited[firstFaceIndex] = true;
-        System.out.println("first face index is " + firstFaceIndex);
 
         Set<Intersection> firstIntersections = getFaceIntersections(firstFaceIndex, mesh, cutHeight,
                                                                     bedToLocalConverter);
         Intersection firstIntersection = firstIntersections.iterator().next();
         Intersection lastIntersection = firstIntersection;
 
-        System.out.println("first vertex index is " + firstIntersection.vertexIndex);
+        System.out.println("first intersection is " + firstIntersection);
         loopOfFacesAndVertices.loopOfVertices.add(firstIntersection.vertexIndex);
 
         List<Integer> faceIndices = new ArrayList<>();
@@ -874,16 +904,24 @@ public class MeshCutter
         {
 
             System.out.println("faces so far: " + faceIndices);
-            Set<Intersection> possibleIntersections = getPossibleNextIntersections(lastIntersection,
+            System.out.println("vertices so far: " + loopOfFacesAndVertices.loopOfVertices);
+            Set<Intersection> possibleIntersections = getAdjacentIntersections(lastIntersection,
                                                                                    mesh, cutHeight,
                                                                                    bedToLocalConverter,
                                                                                    facesWithVertices,
                                                                                    faceVisited);
 
             Intersection nextIntersection = null;
-            System.out.println("possible intersections: " + possibleIntersections);
+            System.out.println("possible intersections: ");
+            for (Intersection possibleIntersection : possibleIntersections)
+            {
+                System.out.println(possibleIntersection);
+            }
             for (Intersection intersection : possibleIntersections)
             {
+                if (faceIndices.contains(intersection.faceIndex)) {
+                    continue;
+                }
                 if (!intersections.contains(intersection))
                 {
                     nextIntersection = intersection;
@@ -903,6 +941,7 @@ public class MeshCutter
             }
             assert nextIntersection != null;
             lastIntersection = nextIntersection;
+            System.out.println("next intersection: " + nextIntersection);
 
             int vertexIndex = nextIntersection.vertexIndex;
             int faceIndex = nextIntersection.faceIndex;
