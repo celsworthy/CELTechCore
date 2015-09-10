@@ -569,14 +569,24 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         URL insetPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
         FXMLLoader loader = new FXMLLoader(insetPanelURL, Lookup.getLanguageBundle());
-        Node wrappedPanel = null;
+        VBox wrappedPanel = null;
         try
         {
-            Node insetPanel = loader.load();
+            VBox insetPanel = loader.load();
             if (title != null)
             {
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
                 wrappedPanel.visibleProperty().bind(visibleProperty);
+                final VBox panelToChangeHeightOf = wrappedPanel;
+                panelVisibilityAction(visibleProperty.get(), panelToChangeHeightOf);
+                wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
+                {
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
+                    {
+                        panelVisibilityAction(visible, panelToChangeHeightOf);
+                    }
+                });
             } else
             {
                 wrappedPanel = insetPanel;
@@ -588,13 +598,25 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         return wrappedPanel;
     }
 
-    private Node wrapPanelInOuterPanel(Node insetPanel, String title,
+    private void panelVisibilityAction(boolean visible, VBox panel)
+    {
+        if (visible)
+        {
+            panel.setMaxHeight(1000);
+        } else
+        {
+            panel.setMinHeight(0);
+            panel.setMaxHeight(0);
+        }
+    }
+
+    private VBox wrapPanelInOuterPanel(Node insetPanel, String title,
             BooleanProperty visibleProperty)
     {
         URL outerPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "outerStatusPanel.fxml");
         FXMLLoader loader = new FXMLLoader(outerPanelURL, Lookup.getLanguageBundle());
-        Node outerPanel = null;
+        VBox outerPanel = null;
         try
         {
             outerPanel = loader.load();
