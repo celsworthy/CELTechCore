@@ -383,11 +383,11 @@ public class MeshCutterTest
 
         BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-        MeshPair meshes = MeshCutter.cut(mesh, -1, nullBedToLocalConverter);
+        MeshPair meshes = MeshCutter.cut(mesh, -1f, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
-
+    
     @Test
     public void testEnricoSTLAt2() throws STLFileParsingException
     {
@@ -400,7 +400,24 @@ public class MeshCutterTest
 
         BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-        MeshPair meshes = MeshCutter.cut(mesh, -2, nullBedToLocalConverter);
+        MeshPair meshes = MeshCutter.cut(mesh, -2f, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+    }    
+
+    @Test
+    public void testEnricoSTLAt15() throws STLFileParsingException
+    {
+
+        URL stlURL = this.getClass().getResource("/enrico.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
+
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+
+        MeshPair meshes = MeshCutter.cut(mesh, -1.5f, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }

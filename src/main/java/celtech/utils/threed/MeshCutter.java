@@ -72,6 +72,8 @@ public class MeshCutter
         BedToLocalConverter bedToLocalConverter)
     {
 
+        System.out.println("cut at " + cutHeight);
+        
 //        perturbVerticesOnCut(mesh, cutHeight, bedToLocalConverter);
         CutResult cutResult = getUncoveredUpperMesh(mesh, cutHeight, bedToLocalConverter);
 
@@ -295,7 +297,11 @@ public class MeshCutter
         boolean b12 = lineIntersectsPlane(mesh, v1, v2, cutHeight, bedToLocalConverter);
         boolean b02 = lineIntersectsPlane(mesh, v0, v2, cutHeight, bedToLocalConverter);
 
-        // first check for special case where one vertex of face is on cutting plane
+        if (v0 == v1 || v1 == v2 || v0 == v2) {
+            assert false;
+        }
+        
+        // check for special case where one vertex of face is on cutting plane
         Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
             mesh, faceIndex, cutHeight, bedToLocalConverter);
 
@@ -962,8 +968,7 @@ public class MeshCutter
             }
             for (Intersection intersection : possibleIntersections)
             {
-                if (faceIndices.contains(intersection.faceIndex)
-                    || loopOfFacesAndVertices.loopOfVertices.contains(intersection.vertexIndex))
+                if (faceIndices.contains(intersection.faceIndex))
                 {
                     continue;
                 }
@@ -1027,260 +1032,27 @@ public class MeshCutter
         return Optional.of(loopOfFacesAndVertices);
     }
 
-    /**
-     * Find the next vertex/face in the loop, given that the previous vertex lay along an edge of
-     * the previous face.
-     */
-    private static NextVertexResult getNextVertexInLoopEdgeBased(TriangleMesh mesh, float cutHeight,
-        BedToLocalConverter bedToLocalConverter, boolean[] faceVisited,
-        Map<Integer, Set<Integer>> facesWithVertices,
-        PolygonIndices loopOfVertices, int previousFaceIndex)
-    {
-
-        int vertexIndex = -1;
-        int faceIndex = -1;
-
-        Edge previousEdge = getEdgeOnVertex(mesh, previousFaceIndex, loopOfVertices.get(
-                                            loopOfVertices.size() - 1),
-                                            bedToLocalConverter, cutHeight);
-        Set<Integer> facesWithV0 = new HashSet(facesWithVertices.get(previousEdge.v0));
-        Set<Integer> facesWithV1 = facesWithVertices.get(previousEdge.v1);
-        facesWithV0.retainAll(facesWithV1);
-        facesWithV0.remove(previousFaceIndex);
-        assert facesWithV0.size() == 1;
-        int otherFaceIndex = facesWithV0.iterator().next();
-        System.out.println("face on other side of edge is " + otherFaceIndex);
-        faceVisited[otherFaceIndex] = true;
-        Set<Edge> otherEdges = getEdgesOfFaceThatPlaneIntersects(mesh, otherFaceIndex,
-                                                                 cutHeight,
-                                                                 bedToLocalConverter);
-        System.out.println("previous edge: " + previousEdge + " " + previousEdge.v0 + " "
-            + previousEdge.v1);
-        otherEdges.remove(previousEdge);
-
-        if (otherEdges.size() == 1)
-        {
-
-            Edge nextEdge = otherEdges.iterator().next();
-            System.out.println("found other edge: " + nextEdge + " " + nextEdge.v0 + " "
-                + nextEdge.v1);
-            Vertex nextVertex = getIntersectingVertex(nextEdge, mesh, cutHeight,
-                                                      bedToLocalConverter);
-            vertexIndex = addNewOrGetVertex(mesh, nextVertex);
-            faceIndex = otherFaceIndex;
-        } else
-        {
-            System.out.println("must have vertex on plane: other edges: " + otherEdges.size());
-            // this triangle must have one vertex on the plane
-            Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
-                mesh, otherFaceIndex, cutHeight, bedToLocalConverter);
-            assert vertexIndices.size() == 1;
-            vertexIndex = vertexIndices.iterator().next();
-            faceIndex = otherFaceIndex;
-        }
-        assert vertexIndex != -1 : "no vertex found for loop " + loopOfVertices;
-        return new NextVertexResult(faceIndex, vertexIndex);
-
-    }
-
-    /**
-     * Go through faces that use this vertex (other than the previous face) and if the face has an
-     * edge that intersects the plane, or two vertices on the plane, then this is the next face.
-     */
-    private static NextVertexResult getNextVertexInLoopVertexBased(TriangleMesh mesh,
-        float cutHeight,
-        BedToLocalConverter bedToLocalConverter, boolean[] faceVisited,
-        Map<Integer, Set<Integer>> facesWithVertices,
-        PolygonIndices loopOfVertices, int previousFaceIndex)
-    {
-        int previousVertexIndex = loopOfVertices.get(loopOfVertices.size() - 1);
-        int vertexIndex = -1;
-        int faceIndex = -1;
-
-        Set<NextVertexResult> possibleResults = new HashSet<>();
-        for (Integer otherFaceIndex : facesWithVertices.get(previousVertexIndex))
-        {
-            if (otherFaceIndex == previousFaceIndex)
-            {
-                continue;
-            }
-
-            Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, otherFaceIndex,
-                                                                cutHeight,
-                                                                bedToLocalConverter);
-            if (!edges.isEmpty())
-            {
-                System.out.println("found next face which has an edge: " + otherFaceIndex);
-                faceIndex = otherFaceIndex;
-                faceVisited[faceIndex] = true;
-
-                Vertex previousVertex = getVertex(mesh, previousVertexIndex);
-                for (Edge edge : edges)
-                {
-                    Vertex vertex = getIntersectingVertex(edge, mesh, cutHeight,
-                                                          bedToLocalConverter);
-                    if (vertex.equals(previousVertex))
-                    {
-                        continue;
-                    } else
-                    {
-                        vertexIndex = addNewOrGetVertex(mesh, vertex);
-                        possibleResults.add(new NextVertexResult(otherFaceIndex, vertexIndex));
-                        break;
-                    }
-                }
-            } else
-            {
-
-                Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
-                    mesh, otherFaceIndex, cutHeight, bedToLocalConverter);
-                if (vertexIndices.size() == 2)
-                {
-                    System.out.println("found face with 2 intersecting vertices " + otherFaceIndex);
-                    faceIndex = otherFaceIndex;
-                    faceVisited[faceIndex] = true;
-
-                    for (Integer vertexIndex2 : vertexIndices)
-                    {
-                        if (vertexIndex2 == previousVertexIndex)
-                        {
-                            continue;
-                        } else
-                        {
-                            vertexIndex = vertexIndex2;
-                            possibleResults.add(new NextVertexResult(otherFaceIndex, vertexIndex));
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        assert vertexIndex != -1;
-
-        System.out.println("num possible results " + possibleResults.size());
-        if (possibleResults.size() == 1)
-        {
-            return possibleResults.iterator().next();
-        } else
-        {
-            for (NextVertexResult possibleResult : possibleResults)
-            {
-                // add new vertex if there is one
-                if (!loopOfVertices.contains(possibleResult.vertexIndex))
-                {
-                    return possibleResult;
-                }
-            }
-            for (NextVertexResult possibleResult : possibleResults)
-            {
-                // we're back to the beginning
-                if (possibleResult.vertexIndex == loopOfVertices.get(0))
-                {
-                    return possibleResult;
-                }
-            }
-        }
-        throw new RuntimeException("should not get here");
-
-    }
-
-    /**
-     * Find the next vertexIndex/faceIndex to extend this cutting loop.
-     */
-    private static NextVertexResult getNextVertexInLoop(TriangleMesh mesh, float cutHeight,
-        BedToLocalConverter bedToLocalConverter, boolean[] faceVisited,
-        Map<Integer, Set<Integer>> facesWithVertices,
-        PolygonIndices loopOfVertices, int previousFaceIndex)
-    {
-
-        int vertexIndex = -1;
-        int faceIndex = -1;
-
-        int previousVertexIndex = loopOfVertices.get(loopOfVertices.size() - 1);
-        System.out.println("previous face passed in is " + previousFaceIndex);
-
-        if (facesWithVertices.containsKey(previousVertexIndex))
-        {
-            System.out.println("previous vertex is in original mesh");
-
-            NextVertexResult result = getNextVertexInLoopVertexBased(mesh, cutHeight,
-                                                                     bedToLocalConverter,
-                                                                     faceVisited, facesWithVertices,
-                                                                     loopOfVertices,
-                                                                     previousFaceIndex);
-            vertexIndex = result.vertexIndex;
-            faceIndex = result.faceIndex;
-
-        } else
-        {
-            System.out.println("previous vertex is on an edge");
-
-            NextVertexResult result = getNextVertexInLoopEdgeBased(mesh, cutHeight,
-                                                                   bedToLocalConverter,
-                                                                   faceVisited, facesWithVertices,
-                                                                   loopOfVertices,
-                                                                   previousFaceIndex);
-            vertexIndex = result.vertexIndex;
-            faceIndex = result.faceIndex;
-
-        }
-        assert vertexIndex != -1;
-        if (vertexIndex == loopOfVertices.get(0))
-        {
-            System.out.println("next vertex is same as first vertex: stopping " + vertexIndex);
-            System.out.println("loop is " + loopOfVertices);
-            return new NextVertexResult(faceIndex, vertexIndex);
-        }
-
-        int lastVertexIndex = loopOfVertices.get(loopOfVertices.size() - 1);
-        if (loopOfVertices.contains(vertexIndex) && (vertexIndex != lastVertexIndex))
-        {
-            System.out.println("new vertex " + getVertex(mesh, vertexIndex));
-            System.out.println("loop: " + loopOfVertices);
-            System.out.println("face: " + faceIndex);
-            int vertex0 = mesh.getFaces().get(faceIndex * 6);
-            int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
-            int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            System.out.println("vertices " + vertex0 + " " + vertex1 + " " + vertex2);
-            System.out.println(getVertex(mesh, vertex0));
-            System.out.println(getVertex(mesh, vertex1));
-            System.out.println(getVertex(mesh, vertex2));
-            Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex,
-                                                                cutHeight,
-                                                                bedToLocalConverter);
-            for (Edge edge : edges)
-            {
-                System.out.println("Face Edge " + edge + " " + edge.v0 + " " + edge.v1);
-            }
-            throw new RuntimeException("vertex already in loop: " + vertexIndex);
-        }
-
-        return new NextVertexResult(faceIndex, vertexIndex);
-
-    }
-
-    /**
-     * Return the edge that the vertex lies on.
-     */
-    private static Edge getEdgeOnVertex(TriangleMesh mesh, int faceIndex, int vertexIndex,
-        BedToLocalConverter bedToLocalConverter, float cutHeight)
-    {
-        Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex,
-                                                            cutHeight,
-                                                            bedToLocalConverter);
-        for (Edge edge : edges)
-        {
-            Vertex vertex = getIntersectingVertex(edge, mesh, cutHeight,
-                                                  bedToLocalConverter);
-            if (vertex.equals(getVertex(mesh, vertexIndex)))
-            {
-                return edge;
-            }
-
-        }
-        throw new RuntimeException("Edge not found");
-    }
+//    /**
+//     * Return the edge that the vertex lies on.
+//     */
+//    private static Edge getEdgeOnVertex(TriangleMesh mesh, int faceIndex, int vertexIndex,
+//        BedToLocalConverter bedToLocalConverter, float cutHeight)
+//    {
+//        Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex,
+//                                                            cutHeight,
+//                                                            bedToLocalConverter);
+//        for (Edge edge : edges)
+//        {
+//            Vertex vertex = getIntersectingVertex(edge, mesh, cutHeight,
+//                                                  bedToLocalConverter);
+//            if (vertex.equals(getVertex(mesh, vertexIndex)))
+//            {
+//                return edge;
+//            }
+//
+//        }
+//        throw new RuntimeException("Edge not found");
+//    }
 
     private static void addIntersectedFaces(List<Integer> faceIndices, TriangleMesh mesh,
         float cutHeight, BedToLocalConverter bedToLocalConverter,
