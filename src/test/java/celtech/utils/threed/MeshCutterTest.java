@@ -4,6 +4,7 @@
 package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
+import celtech.utils.threed.MeshCutter.Intersection;
 import celtech.utils.threed.MeshCutter.MeshPair;
 import static celtech.utils.threed.MeshCutter.getLoopsOfVertices;
 import celtech.utils.threed.MeshUtils.MeshError;
@@ -17,8 +18,10 @@ import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
 
 /**
  *
@@ -26,7 +29,7 @@ import org.junit.Test;
  */
 public class MeshCutterTest
 {
-    
+
     public MeshCutterTest()
     {
     }
@@ -34,91 +37,49 @@ public class MeshCutterTest
     @Test
     public void testCutCubeReturnsTwoMeshes() throws STLFileParsingException
     {
-        
+
         URL stlURL = this.getClass().getResource("/simplecube.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
-
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
         MeshPair meshes = MeshCutter.cut(mesh, -7, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
-    
+
     @Test
     public void testCutCubeWithHoleReturnsTwoMeshes() throws STLFileParsingException
     {
-        
+
         URL stlURL = this.getClass().getResource("/cubewithhole.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         Optional<MeshError> error = MeshUtils.validate(mesh);
         Assert.assertFalse(error.isPresent());
-        
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
         MeshPair meshes = MeshCutter.cut(mesh, -15, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
-    
+
     @Test
     public void testCutCubeAlongMeshingLineReturnsTwoMeshes() throws STLFileParsingException
     {
-        
+
         // this stl is meshed so that many vertices lie along Y=20
         URL stlURL = this.getClass().getResource("/onecubeabovetheother_remeshed.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
-
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
         MeshPair meshes = MeshCutter.cut(mesh, -20, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
-    
+
     @Test
     public void testMeshWithPointsOnCutPlane()
     {
@@ -127,21 +88,21 @@ public class MeshCutterTest
         mesh.getPoints().addAll(0, 0, 1);
         mesh.getPoints().addAll(1, 0, 1);
         mesh.getPoints().addAll(1, 0, 0);
-        
+
         mesh.getPoints().addAll(0, 1, 0);
         mesh.getPoints().addAll(0, 1, 1);
         mesh.getPoints().addAll(1, 1, 1);
         mesh.getPoints().addAll(1, 1, 0);
-        
+
         mesh.getPoints().addAll(0, 2, 0);
         mesh.getPoints().addAll(0, 2, 1);
         mesh.getPoints().addAll(1, 2, 1);
         mesh.getPoints().addAll(1, 2, 0);
-        
+
         // one cube upon another
         mesh.getFaces().addAll(0, 0, 2, 0, 1, 0);
         mesh.getFaces().addAll(0, 0, 3, 0, 2, 0);
-        
+
         mesh.getFaces().addAll(0, 0, 1, 0, 5, 0);
         mesh.getFaces().addAll(0, 0, 5, 0, 4, 0);
         mesh.getFaces().addAll(1, 0, 6, 0, 5, 0);
@@ -150,7 +111,7 @@ public class MeshCutterTest
         mesh.getFaces().addAll(2, 0, 3, 0, 7, 0);
         mesh.getFaces().addAll(3, 0, 4, 0, 7, 0);
         mesh.getFaces().addAll(3, 0, 0, 0, 4, 0);
-        
+
         mesh.getFaces().addAll(4, 0, 5, 0, 9, 0);
         mesh.getFaces().addAll(4, 0, 9, 0, 8, 0);
         mesh.getFaces().addAll(5, 0, 10, 0, 9, 0);
@@ -159,13 +120,79 @@ public class MeshCutterTest
         mesh.getFaces().addAll(6, 0, 7, 0, 11, 0);
         mesh.getFaces().addAll(7, 0, 8, 0, 11, 0);
         mesh.getFaces().addAll(7, 0, 4, 0, 8, 0);
-        
+
         mesh.getFaces().addAll(11, 0, 8, 0, 10, 0);
         mesh.getFaces().addAll(8, 0, 9, 0, 10, 0);
-        
+
         Optional<MeshError> error = MeshUtils.validate(mesh);
-        assertTrue(! error.isPresent());
-        
+        assertTrue(!error.isPresent());
+
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, 1,
+                                                                                nullBedToLocalConverter);
+        System.out.println("loopsOfFaces" + cutFaces);
+
+        MeshPair meshes = MeshCutter.cut(mesh, 1, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+
+    }
+
+    @Test
+    public void testIntersectionEquality()
+    {
+        Edge edge = new Edge(100, 200);
+        Intersection intersection1 = new MeshCutter.Intersection(12, Optional.of(edge), 51);
+        Intersection intersection2 = new MeshCutter.Intersection(12, Optional.of(edge), 51);
+        assertEquals(intersection1, intersection2);
+
+        Intersection intersection3 = new MeshCutter.Intersection(12, Optional.of(edge), 52);
+        assertFalse(intersection1.equals(intersection3));
+
+        Edge edge2 = new Edge(100, 200);
+        Intersection intersection4 = new MeshCutter.Intersection(12, Optional.of(edge2), 51);
+        assertEquals(intersection1, intersection4);
+
+        Edge edge3 = new Edge(200, 200);
+        Intersection intersection5 = new MeshCutter.Intersection(12, Optional.of(edge3), 51);
+        assertFalse(intersection1.equals(intersection5));
+    }
+
+    @Test
+    public void testGetFaceIntersections()
+    {
+        TriangleMesh mesh = createSimpleCube();
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        Set<Intersection> intersections = MeshCutter.getFaceIntersections(5, mesh, 1f,
+                                                                          nullBedToLocalConverter);
+        assertEquals(2, intersections.size());
+        System.out.println(intersections);
+    }
+
+    @Test
+    public void testMeshWithNoPointsOnCutPlaneSimpleCube()
+    {
+        TriangleMesh mesh = createSimpleCube();
+
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        assertTrue(!error.isPresent());
+
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+
+        float cutHeight = 1f;
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, cutHeight,
+                                                                                nullBedToLocalConverter);
+        assertEquals(1, cutFaces.size());
+
+        MeshPair meshes = MeshCutter.cut(mesh, cutHeight, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+
+    }
+
+    private BedToLocalConverter makeNullConverter()
+    {
         BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
         {
 
@@ -181,35 +208,23 @@ public class MeshCutterTest
                 return point;
             }
         };
-        
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, 1, nullBedToLocalConverter);
-        System.out.println("loopsOfFaces" + cutFaces);
-                
-        MeshPair meshes = MeshCutter.cut(mesh, 1, nullBedToLocalConverter);
-        Assert.assertNotNull(meshes.bottomMesh);
-        Assert.assertNotNull(meshes.topMesh);
-        
+        return nullBedToLocalConverter;
+    }
 
-    }    
-    
-    @Test
-    public void testMeshWithNoPointsOnCutPlaneSimpleCube()
+    private TriangleMesh createSimpleCube()
     {
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().addAll(0, 0, 0);
         mesh.getPoints().addAll(0, 0, 2);
         mesh.getPoints().addAll(2, 0, 2);
         mesh.getPoints().addAll(2, 0, 0);
-        
         mesh.getPoints().addAll(0, 2, 0);
         mesh.getPoints().addAll(0, 2, 2);
         mesh.getPoints().addAll(2, 2, 2);
         mesh.getPoints().addAll(2, 2, 0);
-        
         // one cube
         mesh.getFaces().addAll(0, 0, 2, 0, 1, 0);
         mesh.getFaces().addAll(0, 0, 3, 0, 2, 0);
-        
         mesh.getFaces().addAll(0, 0, 1, 0, 5, 0);
         mesh.getFaces().addAll(0, 0, 5, 0, 4, 0);
         mesh.getFaces().addAll(1, 0, 6, 0, 5, 0);
@@ -218,40 +233,11 @@ public class MeshCutterTest
         mesh.getFaces().addAll(2, 0, 3, 0, 7, 0);
         mesh.getFaces().addAll(3, 0, 4, 0, 7, 0);
         mesh.getFaces().addAll(3, 0, 0, 0, 4, 0);
-        
         mesh.getFaces().addAll(7, 0, 4, 0, 5, 0);
         mesh.getFaces().addAll(7, 0, 5, 0, 6, 0);
-        
-        Optional<MeshError> error = MeshUtils.validate(mesh);
-        assertTrue(! error.isPresent());
-        
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
+        return mesh;
+    }
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
-
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
-        float cutHeight = 1f;
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, cutHeight, nullBedToLocalConverter);
-        assertEquals(1, cutFaces.size());
-                
-        MeshPair meshes = MeshCutter.cut(mesh, cutHeight, nullBedToLocalConverter);
-        Assert.assertNotNull(meshes.bottomMesh);
-        Assert.assertNotNull(meshes.topMesh);
-        
-
-    }   
-    
     @Test
     public void testMeshWithTrianglesWithOneVertexOnPlane()
     {
@@ -260,130 +246,88 @@ public class MeshCutterTest
         mesh.getPoints().addAll(0, 0, 1);
         mesh.getPoints().addAll(1, 0, 1);
         mesh.getPoints().addAll(1, 0, 0);
-        
+
         mesh.getPoints().addAll(0, 1, 0);
         mesh.getPoints().addAll(0, 1, 1);
         mesh.getPoints().addAll(1, 1, 1);
         mesh.getPoints().addAll(1, 1, 0);
-        
+
         mesh.getPoints().addAll(0, 2, 0);
         mesh.getPoints().addAll(0, 2, 1);
         mesh.getPoints().addAll(1, 2, 1);
         mesh.getPoints().addAll(1, 2, 0);
-        
+
         // double height parallelepiped
         mesh.getFaces().addAll(0, 0, 1, 0, 2, 0);
         mesh.getFaces().addAll(0, 0, 2, 0, 3, 0);
-        
+
         mesh.getFaces().addAll(0, 0, 7, 0, 8, 0);
         mesh.getFaces().addAll(0, 0, 3, 0, 7, 0);
         mesh.getFaces().addAll(7, 0, 11, 0, 8, 0);
-        
+
         mesh.getFaces().addAll(2, 0, 10, 0, 7, 0);
         mesh.getFaces().addAll(2, 0, 7, 0, 3, 0);
         mesh.getFaces().addAll(7, 0, 10, 0, 11, 0);
-        
+
         mesh.getFaces().addAll(2, 0, 5, 0, 10, 0);
         mesh.getFaces().addAll(2, 0, 1, 0, 5, 0);
         mesh.getFaces().addAll(5, 0, 9, 0, 10, 0);
-        
+
         mesh.getFaces().addAll(0, 0, 8, 0, 5, 0);
         mesh.getFaces().addAll(0, 0, 5, 0, 1, 0);
         mesh.getFaces().addAll(8, 0, 9, 0, 5, 0);
-        
+
         mesh.getFaces().addAll(11, 0, 10, 0, 8, 0);
         mesh.getFaces().addAll(8, 0, 10, 0, 9, 0);
-        
+
         Optional<MeshError> error = MeshUtils.validate(mesh);
-        assertTrue(! error.isPresent());
-        
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
+        assertTrue(!error.isPresent());
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
         float cutHeight = 1f;
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, cutHeight, nullBedToLocalConverter);
+        Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces = getLoopsOfVertices(mesh, cutHeight,
+                                                                                nullBedToLocalConverter);
         assertEquals(1, cutFaces.size());
-                
+
         MeshPair meshes = MeshCutter.cut(mesh, cutHeight, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
-        
 
-    }   
-    
+    }
+
     @Test
     public void testEnricoSTLAt1() throws STLFileParsingException
     {
-        
+
         URL stlURL = this.getClass().getResource("/enrico.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         Optional<MeshError> error = MeshUtils.validate(mesh);
         Assert.assertFalse(error.isPresent());
-        
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
         MeshPair meshes = MeshCutter.cut(mesh, -1, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
-    
+
     @Test
     public void testEnricoSTLAt2() throws STLFileParsingException
     {
-        
+
         URL stlURL = this.getClass().getResource("/enrico.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
         TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
         Optional<MeshError> error = MeshUtils.validate(mesh);
         Assert.assertFalse(error.isPresent());
-        
-        BedToLocalConverter nullBedToLocalConverter = new BedToLocalConverter()
-        {
 
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-        
         MeshPair meshes = MeshCutter.cut(mesh, -2, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
-    
+
 }
