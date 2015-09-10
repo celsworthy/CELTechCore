@@ -1135,7 +1135,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 / currentNozzle.getNozzleParameters().
                 getEjectionVolume());
 
-        bValue = Math.max(bValue, currentNozzle.getNozzleParameters().getEjectionVolume());
+        bValue = Math.max(bValue, currentNozzle.getNozzleParameters().getPartialBMinimum());
 
         nozzleStartPosition = bValue;
         nozzleCloseOverVolume = extrusionForCompletePath;
