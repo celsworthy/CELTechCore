@@ -56,6 +56,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
 
     public static final String defaultRoboxAttachCommand = "DEFAULT";
     public static final String defaultRoboxAttachCommand2 = "DEFAULS";
+    public static final String defaultRoboxAttachCommand3 = "DEFAULT3";
     private final String attachHeadCommand = "ATTACH HEAD ";
     private final String detachHeadCommand = "DETACH HEAD";
     private final String attachReelCommand = "ATTACH REEL ";
@@ -419,20 +420,30 @@ public class DummyPrinterCommandInterface extends CommandInterface
                     RxPacketTypeEnum.GCODE_RESPONSE);
 
             String messageData = request.getMessageData().trim();
-            if (messageData.startsWith(defaultRoboxAttachCommand))
+            if (messageData.equalsIgnoreCase(defaultRoboxAttachCommand))
             {
                 gcodeResponse.setMessagePayload(
                         "Adding single material head, 1 extruder loaded with orange PLA to dummy printer");
                 attachExtruder(0);
                 attachHead("RBX01-SM");
                 currentStatus.setFilament1SwitchStatus(true);
-            } else if (messageData.startsWith(defaultRoboxAttachCommand2))
+            } else if (messageData.equalsIgnoreCase(defaultRoboxAttachCommand2))
             {
                 gcodeResponse.setMessagePayload(
                         "Adding dual material head, 1 extruder loaded with red ABS to dummy printer");
                 attachExtruder(0);
                 attachHead("RBX01-DM");
                 attachReel("RBX-ABS-RD537", 0);
+
+            }else if (messageData.equalsIgnoreCase(defaultRoboxAttachCommand3))
+            {
+                gcodeResponse.setMessagePayload(
+                        "Adding dual material head, 2 extruders loaded with red and black ABS to dummy printer");
+                attachExtruder(0);
+                attachExtruder(1);
+                attachHead("RBX01-DM");
+                attachReel("RBX-ABS-RD537", 0);
+                attachReel("RBX-ABS-BK091", 1);
 
             } else if (messageData.startsWith(attachHeadCommand))
             {
