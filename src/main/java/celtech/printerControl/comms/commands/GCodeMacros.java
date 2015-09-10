@@ -2,6 +2,7 @@ package celtech.printerControl.comms.commands;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.printerControl.model.Head;
 import celtech.utils.SystemUtils;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TreeMap;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.io.FileUtils;
@@ -88,17 +90,17 @@ public class GCodeMacros
      *
      * @param macroName - this can include the macro execution directive at the
      * start of the line
-     * @param headType
-     * @param nozzleUse
-     * @param safeties
+     * @param headTypeCode
+     * @param useNozzle0
+     * @param useNozzle1
      * @return
      * @throws java.io.IOException
      * @throws celtech.printerControl.comms.commands.MacroLoadException
      */
     public static ArrayList<String> getMacroContents(String macroName,
-            Head.HeadType headType,
-            NozzleUseIndicator nozzleUse,
-            SafetyIndicator safeties) throws IOException, MacroLoadException
+            String headTypeCode,
+            boolean useNozzle0,
+            boolean useNozzle1) throws IOException, MacroLoadException
     {
         ArrayList<String> contents = new ArrayList<>();
         ArrayList<String> parentMacros = new ArrayList<>();
@@ -111,8 +113,32 @@ public class GCodeMacros
             contents.add("; Printed with safety features OFF");
         }
 
+        NozzleUseIndicator nozzleUse;
+
+        if (headTypeCode == null
+                || headTypeCode.equalsIgnoreCase(HeadContainer.defaultHeadID))
+        {
+            nozzleUse = NozzleUseIndicator.DONT_CARE;
+        } else
+        {
+            if (!useNozzle0 && !useNozzle1)
+            {
+                nozzleUse = NozzleUseIndicator.DONT_CARE;
+            } else if (useNozzle0 && !useNozzle1)
+            {
+                nozzleUse = NozzleUseIndicator.NOZZLE_0;
+            } else if (!useNozzle0 && useNozzle1)
+            {
+                nozzleUse = NozzleUseIndicator.NOZZLE_1;
+            } else
+            {
+                nozzleUse = NozzleUseIndicator.BOTH;
+            }
+        }
+
         appendMacroContents(contents, parentMacros, macroName,
-                headType, nozzleUse, safeties);
+                headTypeCode, nozzleUse,
+                (Lookup.getUserPreferences().safetyFeaturesOnProperty().get() == false) ? GCodeMacros.SafetyIndicator.SAFETIES_OFF : GCodeMacros.SafetyIndicator.DONT_CARE);
 
         return contents;
     }
@@ -130,7 +156,7 @@ public class GCodeMacros
     private static ArrayList<String> appendMacroContents(ArrayList<String> contents,
             final ArrayList<String> parentMacros,
             final String macroName,
-            Head.HeadType headType,
+            String headTypeCode,
             NozzleUseIndicator nozzleUse,
             SafetyIndicator safeties) throws IOException, MacroLoadException
     {
@@ -150,7 +176,7 @@ public class GCodeMacros
             try
             {
                 fileReader = new FileReader(GCodeMacros.getFilename(cleanedMacroName,
-                        headType,
+                        headTypeCode,
                         nozzleUse,
                         safeties
                 ));
@@ -169,7 +195,7 @@ public class GCodeMacros
                             steno.debug("Sub-macro " + subMacroName + " detected");
 
                             appendMacroContents(contents, parentMacros, subMacroName,
-                                    headType,
+                                    headTypeCode,
                                     nozzleUse,
                                     safeties);
                         }
@@ -219,42 +245,101 @@ public class GCodeMacros
      * when using head RBX01-SM
      *
      * @param macroName
-     * @param headType
+     * @param headTypeCode
      * @param nozzleUse
      * @param safeties
      * @return
      */
     public static String getFilename(String macroName,
-            Head.HeadType headType,
+            String headTypeCode,
             NozzleUseIndicator nozzleUse,
-            SafetyIndicator safeties)
+            SafetyIndicator safeties) throws FileNotFoundException
     {
-        StringBuilder fileNameBuffer = new StringBuilder();
 
-        fileNameBuffer.append(ApplicationConfiguration.getCommonApplicationDirectory());
-        fileNameBuffer.append(ApplicationConfiguration.macroFileSubpath);
-
-        FilenameFilter filter = new MacroFilenameFilter(macroName, null, NozzleUseIndicator.DONT_CARE, SafetyIndicator.DONT_CARE);
+        //Try with all attributes first
+        //
+        FilenameFilter filterForMacrosWithCorrectBase = new FilenameStartsWithFilter(macroName);
 
         File macroDirectory = new File(ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath);
 
-        File[] macroFiles = macroDirectory.listFiles(filter);
+        String[] matchingMacroFilenames = macroDirectory.list(filterForMacrosWithCorrectBase);
 
-        fileNameBuffer.append(macroName);
-        fileNameBuffer.append(ApplicationConfiguration.macroFileExtension);
+        int highestScore = -1;
+        int indexOfHighestScoringFilename = -1;
 
-        if (macroFiles.length > 0)
+        if (matchingMacroFilenames.length > 0)
         {
-            steno.info("Found " + macroFiles.length + " macro files:");
-            for (int counter = 0; counter < macroFiles.length; counter++)
+            for (int filenameCounter = 0; filenameCounter < matchingMacroFilenames.length; filenameCounter++)
             {
-                steno.info(macroFiles[counter].getName());
+                int score = scoreMacroFilename(matchingMacroFilenames[filenameCounter], headTypeCode, nozzleUse, safeties);
+                if (score > highestScore)
+                {
+                    indexOfHighestScoringFilename = filenameCounter;
+                    highestScore = score;
+                }
             }
-            return macroFiles[0].getAbsolutePath();
+
+            return ApplicationConfiguration.getCommonApplicationDirectory()
+                    + ApplicationConfiguration.macroFileSubpath
+                    + matchingMacroFilenames[indexOfHighestScoringFilename];
         } else
         {
-            return null;
+            steno.error("Couldn't find macro " + macroName + " with head " + headTypeCode + " nozzle " + nozzleUse.name() + " safety " + safeties.name());
+            throw new FileNotFoundException("Couldn't find macro " + macroName + " with head " + headTypeCode + " nozzle " + nozzleUse.name() + " safety " + safeties.name());
         }
+//        
+//        if (macroFiles.length == 0 && safeties == SafetyIndicator.SAFETIES_OFF)
+//        {
+//            //There may not be a safeties off version of the file - look for it with a don't care
+//            filterForMacrosWithCorrectBase = new MacroFilenameFilter(macroName, headTypeCode, nozzleUse, SafetyIndicator.DONT_CARE);
+//            macroFiles = macroDirectory.listFiles(filterForMacrosWithCorrectBase);
+//        }
+//
+//        if (macroFiles.length > 0)
+//        {
+//            if (macroFiles.length > 1)
+//            {
+//                steno.info("Found " + macroFiles.length + " macro files:");
+//                for (int counter = 0; counter < macroFiles.length; counter++)
+//                {
+//                    steno.info(macroFiles[counter].getName());
+//                }
+//            }
+//            return macroFiles[0].getAbsolutePath();
+//        } else
+//        {
+//            steno.error("Couldn't find macro " + macroName + " with head " + headTypeCode + " nozzle " + nozzleUse.name() + " safety " + safeties.name());
+//            throw new FileNotFoundException("Couldn't find macro " + macroName + " with head " + headTypeCode + " nozzle " + nozzleUse.name() + " safety " + safeties.name());
+//        }
+    }
+
+    private static int scoreMacroFilename(String filename,
+            String headTypeCode,
+            NozzleUseIndicator nozzleUse,
+            SafetyIndicator safeties)
+    {
+        int score = 0;
+        final String separator = "#";
+
+        String[] filenameSplit = filename.split("\\.");
+
+        if (filenameSplit.length == 2
+                && ("." + filenameSplit[1]).equalsIgnoreCase(ApplicationConfiguration.macroFileExtension))
+        {
+            String[] nameParts = filenameSplit[0].split(separator);
+
+            for (String namePart : nameParts)
+            {
+                if (namePart.equalsIgnoreCase(headTypeCode)
+                        || namePart.equalsIgnoreCase(nozzleUse.getFilenameCode())
+                        || namePart.equalsIgnoreCase(safeties.getFilenameCode()))
+                {
+                    score++;
+                }
+            }
+        }
+
+        return score;
     }
 
     public static boolean isMacroExecutionDirective(String input)
@@ -276,7 +361,10 @@ public class GCodeMacros
         return macroName;
     }
 
-    public static int getNumberOfOperativeLinesInMacro(String macroDirective)
+    public static int getNumberOfOperativeLinesInMacro(String macroDirective,
+            String headType,
+            boolean useNozzle0,
+            boolean useNozzle1)
     {
         int linesInMacro = 0;
         String macro = cleanMacroName(macroDirective);
@@ -284,7 +372,7 @@ public class GCodeMacros
         {
             try
             {
-                List<String> contents = getMacroContents(macro, null, NozzleUseIndicator.DONT_CARE, SafetyIndicator.DONT_CARE);
+                List<String> contents = getMacroContents(macro, headType, useNozzle0, useNozzle1);
                 for (String line : contents)
                 {
                     if (line.trim().startsWith(";") == false && line.equals("") == false)

@@ -10,6 +10,7 @@ import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
+import java.io.FileNotFoundException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -72,8 +73,16 @@ public class CalibrationXAndYActions extends StateTransitionActions
     {
         saveSettings();
 //        Thread.sleep(3000);
+        //TODO needs to be changed for DM head
+        try
+        {
         printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE), false);
         PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
+        }
+        catch (FileNotFoundException ex)
+        {
+            throw new PrinterException("Failed to access calibration macro");
+        }
     }
 
     private void switchHeatersOffAndRaiseHead() throws PrinterException

@@ -312,6 +312,24 @@ public class SystemUtils
      */
     public static int countLinesInFile(File aFile, String commentCharacter)
     {
+        return countLinesInFile(aFile, commentCharacter, null, false, false);
+    }
+
+    /**
+     *
+     * @param aFile
+     * @param commentCharacter
+     * @param headType
+     * @param useNozzle0
+     * @param useNozzle1
+     * @return
+     */
+    public static int countLinesInFile(File aFile,
+            String commentCharacter,
+            String headType,
+            boolean useNozzle0,
+            boolean useNozzle1)
+    {
         LineNumberReader reader = null;
         int numberOfLines = 0;
         try
@@ -324,7 +342,7 @@ public class SystemUtils
                 lineRead = lineRead.trim();
                 if (GCodeMacros.isMacroExecutionDirective(lineRead))
                 {
-                    numberOfLines += GCodeMacros.getNumberOfOperativeLinesInMacro(lineRead);
+                    numberOfLines += GCodeMacros.getNumberOfOperativeLinesInMacro(lineRead, headType, useNozzle0, useNozzle1);
                 } else if (lineRead.startsWith(commentCharacter) == false && lineRead.equals("")
                         == false)
                 {
@@ -455,5 +473,5 @@ public class SystemUtils
     public static String cleanGCodeForTransmission(String gcode)
     {
         return gcode.trim().replaceFirst(";.*$", "").replaceFirst("\\s+$", "");
-    }  
+    }
 }

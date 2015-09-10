@@ -1092,26 +1092,33 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private void sendMacroFileBitByBit(String macroName, Cancellable cancellable) throws PrinterException
     {
-        try
+        if (headProperty().get() != null)
         {
-            ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName, null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE);
-            macroContents.forEach(line ->
+            try
             {
-                String lineToOutput = SystemUtils.cleanGCodeForTransmission(line);
-                if (!line.equals(""))
+                ArrayList<String> macroContents = GCodeMacros.getMacroContents(macroName, headProperty().get().typeCodeProperty().get(), false, false);
+                macroContents.forEach(line ->
                 {
-                    sendRawGCode(lineToOutput, false);
-                    PrinterUtils.waitOnBusy(this, cancellable);
-                }
-            });
-        } catch (IOException | MacroLoadException ex)
+                    String lineToOutput = SystemUtils.cleanGCodeForTransmission(line);
+                    if (!line.equals(""))
+                    {
+                        sendRawGCode(lineToOutput, false);
+                        PrinterUtils.waitOnBusy(this, cancellable);
+                    }
+                });
+            } catch (IOException | MacroLoadException ex)
+            {
+                throw new PrinterException("Failed to open macro file for streaming " + macroName);
+            }
+        } else
         {
             throw new PrinterException("Failed to open macro file for streaming " + macroName);
         }
     }
 
     @Override
-    public void callbackWhenNotBusy(TaskResponder responder)
+    public void callbackWhenNotBusy(TaskResponder responder
+    )
     {
         final Cancellable cancellable = new SimpleCancellable();
 
@@ -1126,10 +1133,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         }, "Waiting until not busy").start();
     }
-
     /*
      * Data transmission commands
      */
+
     /**
      *
      * @param gcodeToSend
