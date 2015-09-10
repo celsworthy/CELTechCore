@@ -663,6 +663,7 @@ public class MeshCutter
         BedToLocalConverter bedToLocalConverter)
     {
         boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
+        boolean[] perimeterVertex = new boolean[mesh.getPoints().size()];
         Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 
         Set<LoopOfVerticesAndCutFaces> loopsOfFaces = new HashSet<>();
@@ -670,7 +671,7 @@ public class MeshCutter
         while (true)
         {
             Optional<LoopOfVerticesAndCutFaces> loopOfFaces
-                = getNextLoopOfVertices(faceVisited, mesh, cutHeight,
+                = getNextLoopOfVertices(faceVisited, perimeterVertex, mesh, cutHeight,
                                         facesWithVertices, bedToLocalConverter);
             if (loopOfFaces.isPresent() && loopOfFaces.get().loopOfVertices.size() > 2)
             {
@@ -706,14 +707,16 @@ public class MeshCutter
         public String toString()
         {
             String edgeString;
-            if (edge.isPresent()) {
+            if (edge.isPresent())
+            {
                 edgeString = edge.get().toString();
-            } else {
+            } else
+            {
                 edgeString = "Corner";
             }
-                
-            return "Intersection{" + "faceIndex=" + faceIndex + ", edge=" + edgeString + ", vertexIndex=" +
-                vertexIndex + '}';
+
+            return "Intersection{" + "faceIndex=" + faceIndex + ", edge=" + edgeString
+                + ", vertexIndex=" + vertexIndex + '}';
         }
 
         @Override
@@ -738,18 +741,19 @@ public class MeshCutter
             {
                 return false;
             }
-            
-            if (! this.edge.isPresent() && other.edge.isPresent())
+
+            if (!this.edge.isPresent() && other.edge.isPresent())
             {
                 return false;
             }
-            
-            if (this.edge.isPresent() && ! other.edge.isPresent())
+
+            if (this.edge.isPresent() && !other.edge.isPresent())
             {
                 return false;
             }
-            
-            if (this.edge.isPresent() && other.edge.isPresent() && (!Objects.equals(this.edge.get(), other.edge.get())))
+
+            if (this.edge.isPresent() && other.edge.isPresent() && (!Objects.equals(this.edge.get(),
+                                                                                    other.edge.get())))
             {
                 return false;
             }
@@ -801,51 +805,86 @@ public class MeshCutter
 
     /**
      * Get the adjacent intersections(face/vertex) to the given intersection. Find the other
-     * intersection in the same face as the given intersection, which has vertex V2.
-     * Then, for each face adjacent to that intersection, if it has two intersections 
-     * then include the intersection on the other face which is for vertex V2.
+     * intersection in the same face as the given intersection, which has vertex V2. Then, for each
+     * face adjacent to that intersection, if it has two intersections then include the intersection
+     * on the other face which is for vertex V2.
      */
     static Set<Intersection> getAdjacentIntersections(Intersection intersection,
         TriangleMesh mesh,
         float cutHeight, BedToLocalConverter bedToLocalConverter,
         Map<Integer, Set<Integer>> facesWithVertices, boolean[] faceVisited)
     {
-        
-        Set<Intersection> intersectionsForThisFace = getFaceIntersections(intersection.faceIndex, mesh, cutHeight,
+
+        Set<Intersection> intersectionsForThisFace = getFaceIntersections(intersection.faceIndex,
+                                                                          mesh, cutHeight,
                                                                           bedToLocalConverter);
+        assert intersectionsForThisFace.size() == 2 : "num intersections for face "
+            + intersectionsForThisFace.size();
         assert intersectionsForThisFace.contains(intersection);
         intersectionsForThisFace.remove(intersection);
+        assert intersectionsForThisFace.size() == 1;
         Intersection nextIntersectionSameFace = intersectionsForThisFace.iterator().next();
+
         System.out.println("nexy intersection same face is " + nextIntersectionSameFace);
+
+        int previousVertexIndex = intersection.vertexIndex;
+        int nextVertexIndex = nextIntersectionSameFace.vertexIndex;
 
         Set<Intersection> possibleIntersections = new HashSet<>();
 
         if (nextIntersectionSameFace.edge.isPresent())
         {
             int oppositeFaceIndex = getFaceOppositeEdge(nextIntersectionSameFace.faceIndex,
-                                                        nextIntersectionSameFace.edge.get(), facesWithVertices);
-            System.out.println("opposite face to face,edge " + nextIntersectionSameFace.faceIndex + " " + nextIntersectionSameFace.edge.get() + " is " + oppositeFaceIndex);
+                                                        nextIntersectionSameFace.edge.get(),
+                                                        facesWithVertices);
             faceVisited[oppositeFaceIndex] = true;
-            Set<Intersection> intersections = getFaceIntersections(oppositeFaceIndex, mesh, cutHeight, bedToLocalConverter);
+            Set<Intersection> intersections = getFaceIntersections(oppositeFaceIndex, mesh,
+                                                                   cutHeight, bedToLocalConverter);
             for (Intersection oppositeFaceIntersection : intersections)
             {
-                if (oppositeFaceIntersection.vertexIndex == nextIntersectionSameFace.vertexIndex) {
-                    System.out.println("opposite edge inter " + oppositeFaceIntersection);
+                if (oppositeFaceIntersection.vertexIndex == nextVertexIndex)
+                {
                     possibleIntersections.add(oppositeFaceIntersection);
                     break;
                 }
             }
         } else
         {
-            for (Integer otherFaceIndex : facesWithVertices.get(nextIntersectionSameFace.vertexIndex))
+            for (Integer otherFaceIndex : facesWithVertices.get(nextVertexIndex))
             {
-                if (otherFaceIndex == intersection.faceIndex)
+                if (otherFaceIndex == nextIntersectionSameFace.faceIndex)
                 {
                     continue;
                 }
                 faceVisited[otherFaceIndex] = true;
-                possibleIntersections.addAll(
-                    getFaceIntersections(otherFaceIndex, mesh, cutHeight, bedToLocalConverter));
+                Set<Intersection> otherFaceIntersections = getFaceIntersections(otherFaceIndex, mesh,
+                                                                                cutHeight,
+                                                                                bedToLocalConverter);
+                System.out.println("other face intersections for " + otherFaceIndex + "are "
+                    + otherFaceIntersections);
+                if (otherFaceIntersections.size() > 1)
+                {
+                    boolean intersectionBacktracks = false;
+                    for (Intersection otherFaceIntersection : otherFaceIntersections)
+                    {
+                        if (otherFaceIntersection.vertexIndex == previousVertexIndex)
+                        {
+                            intersectionBacktracks = true;
+                        }
+                    }
+                    if (intersectionBacktracks)
+                    {
+                        continue;
+                    }
+                    for (Intersection otherFaceIntersection : otherFaceIntersections)
+                    {
+                        if (otherFaceIntersection.vertexIndex == nextVertexIndex)
+                        {
+                            possibleIntersections.add(otherFaceIntersection);
+                        }
+                    }
+
+                }
             }
         }
 
@@ -871,13 +910,15 @@ public class MeshCutter
      * Get the next LoopOfVerticesAndCutFaces for faces that have not yet been visited.
      */
     private static Optional<LoopOfVerticesAndCutFaces> getNextLoopOfVertices(
-        boolean[] faceVisited, TriangleMesh mesh,
+        boolean[] faceVisited, boolean[] perimeterVertex, TriangleMesh mesh,
         float cutHeight, Map<Integer, Set<Integer>> facesWithVertices,
         BedToLocalConverter bedToLocalConverter)
     {
         LoopOfVerticesAndCutFaces loopOfFacesAndVertices = new LoopOfVerticesAndCutFaces();
 
-        int firstFaceIndex = getFirstUnvisitedIntersectingOrTouchingFace(faceVisited, mesh,
+        int firstFaceIndex = getFirstUnvisitedIntersectingOrTouchingFace(faceVisited,
+                                                                         perimeterVertex,
+                                                                         mesh,
                                                                          cutHeight,
                                                                          bedToLocalConverter);
         if (firstFaceIndex == -1)
@@ -892,6 +933,8 @@ public class MeshCutter
         Intersection lastIntersection = firstIntersection;
 
         System.out.println("first intersection is " + firstIntersection);
+
+        perimeterVertex[firstIntersection.vertexIndex] = true;
         loopOfFacesAndVertices.loopOfVertices.add(firstIntersection.vertexIndex);
 
         List<Integer> faceIndices = new ArrayList<>();
@@ -906,10 +949,10 @@ public class MeshCutter
             System.out.println("faces so far: " + faceIndices);
             System.out.println("vertices so far: " + loopOfFacesAndVertices.loopOfVertices);
             Set<Intersection> possibleIntersections = getAdjacentIntersections(lastIntersection,
-                                                                                   mesh, cutHeight,
-                                                                                   bedToLocalConverter,
-                                                                                   facesWithVertices,
-                                                                                   faceVisited);
+                                                                               mesh, cutHeight,
+                                                                               bedToLocalConverter,
+                                                                               facesWithVertices,
+                                                                               faceVisited);
 
             Intersection nextIntersection = null;
             System.out.println("possible intersections: ");
@@ -919,7 +962,9 @@ public class MeshCutter
             }
             for (Intersection intersection : possibleIntersections)
             {
-                if (faceIndices.contains(intersection.faceIndex)) {
+                if (faceIndices.contains(intersection.faceIndex)
+                    || loopOfFacesAndVertices.loopOfVertices.contains(intersection.vertexIndex))
+                {
                     continue;
                 }
                 if (!intersections.contains(intersection))
@@ -956,6 +1001,7 @@ public class MeshCutter
                 loopOfFacesAndVertices.loopOfVertices.size() - 1))
             {
                 loopOfFacesAndVertices.loopOfVertices.add(vertexIndex);
+                perimeterVertex[vertexIndex] = true;
             }
             System.out.println("face index is " + faceIndex);
             faceIndices.add(faceIndex);
@@ -1357,16 +1403,27 @@ public class MeshCutter
     }
 
     private static int getFirstUnvisitedIntersectingOrTouchingFace(boolean[] faceVisited,
-        TriangleMesh mesh, float cutHeight, BedToLocalConverter bedToLocalConverter)
+        boolean[] perimeterVertex, TriangleMesh mesh, float cutHeight,
+        BedToLocalConverter bedToLocalConverter)
     {
         int faceIndex = findFirstUnvisitedFace(faceVisited);
         if (faceIndex != -1)
         {
             while (true)
             {
+
+                int v0 = mesh.getFaces().get(faceIndex * 6);
+                int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+                int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+                
+                if (perimeterVertex[v0] || perimeterVertex[v1] || perimeterVertex[v2]) {
+                    
+                }
+
                 int numIntersectingVertices = getIntersectingVertices(mesh, faceIndex, cutHeight,
                                                                       bedToLocalConverter).size();
-                if (numIntersectingVertices > 1)
+                if (!perimeterVertex[v0] && !perimeterVertex[v1] && !perimeterVertex[v2]
+                    && numIntersectingVertices > 1)
                 {
                     break;
                 }
@@ -1506,7 +1563,7 @@ final class Edge
     {
         return "Edge{" + "v0=" + v0 + ", v1=" + v1 + '}';
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {

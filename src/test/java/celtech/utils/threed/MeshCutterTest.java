@@ -83,50 +83,45 @@ public class MeshCutterTest
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
+    
+    @Test
+    public void testGetAdjacentIntersectionsForPointsOnCutPlane()
+    {
+        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        
+        boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+    
+        Intersection intersection = new Intersection(3, Optional.empty(), 4);
+        
+        Set<Intersection> intersections = getAdjacentIntersections(intersection, mesh,
+                        1, nullBedToLocalConverter, facesWithVertices,  faceVisited);
+        assertEquals(3, intersections.size());
+    }
+    
+    @Test
+    public void testGetAdjacentIntersectionsForPointsOnCutPlane2()
+    {
+        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        
+        boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+        
+        Intersection intersection = new Intersection(4, Optional.empty(), 6);
+        
+        Set<Intersection> intersections = getAdjacentIntersections(intersection, mesh,
+                        1, nullBedToLocalConverter, facesWithVertices,  faceVisited);
+        System.out.println("INTER " + intersections);
+    }
 
     @Test
     public void testMeshWithPointsOnCutPlane()
     {
-        TriangleMesh mesh = new TriangleMesh();
-        mesh.getPoints().addAll(0, 0, 0);
-        mesh.getPoints().addAll(0, 0, 1);
-        mesh.getPoints().addAll(1, 0, 1);
-        mesh.getPoints().addAll(1, 0, 0);
-
-        mesh.getPoints().addAll(0, 1, 0);
-        mesh.getPoints().addAll(0, 1, 1);
-        mesh.getPoints().addAll(1, 1, 1);
-        mesh.getPoints().addAll(1, 1, 0);
-
-        mesh.getPoints().addAll(0, 2, 0);
-        mesh.getPoints().addAll(0, 2, 1);
-        mesh.getPoints().addAll(1, 2, 1);
-        mesh.getPoints().addAll(1, 2, 0);
-
-        // one cube upon another
-        mesh.getFaces().addAll(0, 0, 2, 0, 1, 0);
-        mesh.getFaces().addAll(0, 0, 3, 0, 2, 0);
-
-        mesh.getFaces().addAll(0, 0, 1, 0, 5, 0);
-        mesh.getFaces().addAll(0, 0, 5, 0, 4, 0);
-        mesh.getFaces().addAll(1, 0, 6, 0, 5, 0);
-        mesh.getFaces().addAll(1, 0, 2, 0, 6, 0);
-        mesh.getFaces().addAll(2, 0, 7, 0, 6, 0);
-        mesh.getFaces().addAll(2, 0, 3, 0, 7, 0);
-        mesh.getFaces().addAll(3, 0, 4, 0, 7, 0);
-        mesh.getFaces().addAll(3, 0, 0, 0, 4, 0);
-
-        mesh.getFaces().addAll(4, 0, 5, 0, 9, 0);
-        mesh.getFaces().addAll(4, 0, 9, 0, 8, 0);
-        mesh.getFaces().addAll(5, 0, 10, 0, 9, 0);
-        mesh.getFaces().addAll(5, 0, 6, 0, 10, 0);
-        mesh.getFaces().addAll(6, 0, 11, 0, 10, 0);
-        mesh.getFaces().addAll(6, 0, 7, 0, 11, 0);
-        mesh.getFaces().addAll(7, 0, 8, 0, 11, 0);
-        mesh.getFaces().addAll(7, 0, 4, 0, 8, 0);
-
-        mesh.getFaces().addAll(11, 0, 8, 0, 10, 0);
-        mesh.getFaces().addAll(8, 0, 9, 0, 10, 0);
+        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
 
         Optional<MeshError> error = MeshUtils.validate(mesh);
         assertTrue(!error.isPresent());
@@ -141,6 +136,45 @@ public class MeshCutterTest
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
 
+    }
+
+    private TriangleMesh createNeshWithPointsOnCutPlane()
+    {
+        TriangleMesh mesh = new TriangleMesh();
+        mesh.getPoints().addAll(0, 0, 0);
+        mesh.getPoints().addAll(0, 0, 1);
+        mesh.getPoints().addAll(1, 0, 1);
+        mesh.getPoints().addAll(1, 0, 0);
+        mesh.getPoints().addAll(0, 1, 0);
+        mesh.getPoints().addAll(0, 1, 1);
+        mesh.getPoints().addAll(1, 1, 1);
+        mesh.getPoints().addAll(1, 1, 0);
+        mesh.getPoints().addAll(0, 2, 0);
+        mesh.getPoints().addAll(0, 2, 1);
+        mesh.getPoints().addAll(1, 2, 1);
+        mesh.getPoints().addAll(1, 2, 0);
+        // one cube upon another
+        mesh.getFaces().addAll(0, 0, 2, 0, 1, 0);
+        mesh.getFaces().addAll(0, 0, 3, 0, 2, 0);
+        mesh.getFaces().addAll(0, 0, 1, 0, 5, 0);
+        mesh.getFaces().addAll(0, 0, 5, 0, 4, 0);
+        mesh.getFaces().addAll(1, 0, 6, 0, 5, 0);
+        mesh.getFaces().addAll(1, 0, 2, 0, 6, 0);
+        mesh.getFaces().addAll(2, 0, 7, 0, 6, 0);
+        mesh.getFaces().addAll(2, 0, 3, 0, 7, 0);
+        mesh.getFaces().addAll(3, 0, 4, 0, 7, 0);
+        mesh.getFaces().addAll(3, 0, 0, 0, 4, 0);
+        mesh.getFaces().addAll(4, 0, 5, 0, 9, 0);
+        mesh.getFaces().addAll(4, 0, 9, 0, 8, 0);
+        mesh.getFaces().addAll(5, 0, 10, 0, 9, 0);
+        mesh.getFaces().addAll(5, 0, 6, 0, 10, 0);
+        mesh.getFaces().addAll(6, 0, 11, 0, 10, 0);
+        mesh.getFaces().addAll(6, 0, 7, 0, 11, 0);
+        mesh.getFaces().addAll(7, 0, 8, 0, 11, 0);
+        mesh.getFaces().addAll(7, 0, 4, 0, 8, 0);
+        mesh.getFaces().addAll(11, 0, 8, 0, 10, 0);
+        mesh.getFaces().addAll(8, 0, 9, 0, 10, 0);
+        return mesh;
     }
 
     @Test
