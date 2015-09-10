@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="rootPane" maxWidth="350.0" minWidth="350.0" prefWidth="350.0" styleClass="status_inner" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.OuterPanelController">
+<VBox fx:id="rootPane" maxWidth="350.0" minWidth="350.0" prefWidth="350.0" styleClass="status_inner" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.OuterPanelController">
    <children>
       <Pane id="cross_button" fx:id="crossButton" prefHeight="20.0" prefWidth="20.0" styleClass="cross_button" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="8.0">
          <children>
@@ -20,6 +20,5 @@
             <Label fx:id="title" styleClass="title" text="Title" />
          </children>
       </HBox>
-      <VBox fx:id="outerPanel" minWidth="100.0" AnchorPane.topAnchor="40.0" />
    </children>
-</AnchorPane>
+</VBox>

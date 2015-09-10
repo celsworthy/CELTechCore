@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
@@ -21,10 +22,7 @@ public class OuterPanelController implements Initializable
 {
 
     @FXML
-    private VBox outerPanel;
-    
-    @FXML
-    private AnchorPane rootPane;
+    private VBox rootPane;
 
     @FXML
     private Label title;
@@ -51,7 +49,8 @@ public class OuterPanelController implements Initializable
     
     public void setInnerPanel(Node insetPanel)
     {
-        outerPanel.getChildren().add(insetPanel);
+        rootPane.getChildren().add(insetPanel);
+        VBox.setVgrow(insetPanel, Priority.ALWAYS);
     }
 
     public void setTitle(String title)

@@ -7,25 +7,21 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox fx:id="gcodeEditParent" maxHeight="400.0" maxWidth="380.0" minWidth="-Infinity" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.GCodePanelController">
+<VBox fx:id="gcodeEditParent" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" spacing="5.0" styleClass="slideOutPanel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.GCodePanelController">
     <children>
-        <VBox minWidth="0.0" prefHeight="5000.0" spacing="5.0" VBox.vgrow="ALWAYS">
+        <TextArea fx:id="gcodeTranscript" maxHeight="1.7976931348623157E308" minWidth="0.0" prefColumnCount="10" VBox.vgrow="ALWAYS">
+            <font>
+                <Font size="12.0" />
+            </font>
+        </TextArea>
+        <HBox fx:id="gcodePanel" alignment="CENTER" spacing="5.0">
             <children>
-                <TextArea fx:id="gcodeTranscript" maxHeight="1.7976931348623157E308" minWidth="0.0" prefColumnCount="10" VBox.vgrow="ALWAYS">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </TextArea>
-                <HBox fx:id="gcodePanel" alignment="CENTER" spacing="5.0">
-                    <children>
-                        <RestrictedTextField fx:id="gcodeEntryField" forceUpperCase="true" maxLength="50" minWidth="0.0" onAction="#sendGCodeA" prefColumnCount="5" restrict="A-Z0-9?. \-_" HBox.hgrow="ALWAYS" />
-                        <Button fx:id="sendGCodeButton" minWidth="0.0" mnemonicParsing="false" onAction="#sendGCodeA" text="%gcodeEntry.sendGCode" />
-                    </children>
-                </HBox>
+                <RestrictedTextField fx:id="gcodeEntryField" forceUpperCase="true" maxLength="50" minWidth="0.0" onAction="#sendGCodeA" prefColumnCount="5" restrict="A-Z0-9?. \-_" HBox.hgrow="ALWAYS" />
+                <Button fx:id="sendGCodeButton" minWidth="0.0" mnemonicParsing="false" onAction="#sendGCodeA" text="%gcodeEntry.sendGCode" />
             </children>
-            <padding>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-            </padding>
-        </VBox>
+        </HBox>
     </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
 </VBox>
