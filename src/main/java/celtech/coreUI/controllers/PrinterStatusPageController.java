@@ -326,6 +326,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             baseReel1.setVisible(false);
             baseReel2.setVisible(false);
             baseReelBoth.setVisible(false);
+            bed.setVisible(false);
         } else
         {
             if (printerToUse.reelsProperty().containsKey(0)
@@ -335,24 +336,28 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(true);
+                bed.setVisible(true);
             } else if (printerToUse.reelsProperty().containsKey(0))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(true);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
+                bed.setVisible(true);
             } else if (printerToUse.reelsProperty().containsKey(1))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(true);
                 baseReelBoth.setVisible(false);
+                bed.setVisible(true);
             } else
             {
                 baseNoReels.setVisible(true);
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
+                bed.setVisible(true);
             }
         }
 
