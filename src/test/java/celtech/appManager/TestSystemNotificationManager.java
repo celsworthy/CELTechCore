@@ -7,6 +7,7 @@ import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -227,18 +228,17 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     @Override
     public void showFilamentMotionCheckBanner()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void hideFilamentMotionCheckBanner()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void informModelIsInvalid()
+    public boolean showModelIsInvalidDialog(Set<String> modelNames)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
+
 }

@@ -88,6 +88,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private BooleanProperty isSelected;
     private BooleanProperty isOffBed;
     private SimpleStringProperty modelName;
+    private boolean isInvalidMesh = false;
 
     ModelBounds originalModelBounds;
 

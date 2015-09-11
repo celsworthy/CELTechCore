@@ -123,11 +123,11 @@ public class MeshUtils
         }
 
         // quickly validate mesh is orientable (winding order correct for all faces)
-//        if (!testMeshIsOrientable(mesh))
-//        {
-//            return Optional.of(MeshError.MESH_NOT_ORIENTABLE);
-//        }
-//        
+        if (!testMeshIsOrientable(mesh))
+        {
+            return Optional.of(MeshError.MESH_NOT_ORIENTABLE);
+        }
+        
         System.out.println("check passed");
 
         return Optional.empty();

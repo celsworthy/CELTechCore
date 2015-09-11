@@ -167,6 +167,16 @@ public class Project implements Serializable
                 + ApplicationConfiguration.projectFileExtension;
     }
     
+    public Set<ModelContainer> getModelContainersWithInvalidMesh() {
+        Set<ModelContainer> invalidModelContainers = new HashSet<>();
+        getAllModels().stream().filter((modelContainer) 
+            -> (modelContainer.isInvalidMesh())).forEach((modelContainer) ->
+        {
+            invalidModelContainers.add(modelContainer);
+        });
+        return invalidModelContainers;
+    }
+    
     static Project loadProject(String basePath)
     {
         try
