@@ -22,18 +22,18 @@ public class CalibrationXAndYActions extends StateTransitionActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYActions.class.getName());
+            CalibrationXAndYActions.class.getName());
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;
     private int xOffset = 0;
     private int yOffset = 0;
     private final CalibrationPrinterErrorHandler printerErrorHandler;
-    
+
     private boolean failedActionPerformed = false;
 
     public CalibrationXAndYActions(Printer printer, Cancellable userCancellable,
-        Cancellable errorCancellable)
+            Cancellable errorCancellable)
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
@@ -61,12 +61,16 @@ public class CalibrationXAndYActions extends StateTransitionActions
 
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
-//        Thread.sleep(3000);
-        printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat(
-            "rbx_test_xy-offset-1_roboxised.gcode"), false);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat(
+                    "rbx_test_xy-offset-1_roboxised.gcode"), false);
+        } else
+        {
+            printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat(
+                    "rbx_test_xy-offset-1_dm_roboxised.gcode"), false);
+        }
         PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
-        // keep bed temp up to keep remaining part on the bed
-//        printer.goToTargetBedTemperature();
     }
 
     public void doSaveSettingsAndPrintCircle() throws PrinterException, InterruptedException, CalibrationException
@@ -76,10 +80,9 @@ public class CalibrationXAndYActions extends StateTransitionActions
         //TODO needs to be changed for DM head
         try
         {
-        printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE), false);
-        PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
-        }
-        catch (FileNotFoundException ex)
+            printer.executeGCodeFile(GCodeMacros.getFilename("rbx_test_xy-offset-2_roboxised", null, GCodeMacros.NozzleUseIndicator.DONT_CARE, GCodeMacros.SafetyIndicator.DONT_CARE), false);
+            PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable);
+        } catch (FileNotFoundException ex)
         {
             throw new PrinterException("Failed to access calibration macro");
         }
@@ -102,23 +105,23 @@ public class CalibrationXAndYActions extends StateTransitionActions
             {
                 steno.debug("Restore head data");
                 printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                savedHeadData.getUniqueID(),
-                                                savedHeadData.getMaximumTemperature(),
-                                                savedHeadData.getBeta(),
-                                                savedHeadData.getTCal(),
-                                                savedHeadData.getNozzle1XOffset(),
-                                                savedHeadData.getNozzle1YOffset(),
-                                                savedHeadData.getNozzle1ZOffset(),
-                                                savedHeadData.getNozzle1BOffset(),
-                                                savedHeadData.getFilamentID(0),
-                                                savedHeadData.getFilamentID(1),
-                                                savedHeadData.getNozzle2XOffset(),
-                                                savedHeadData.getNozzle2YOffset(),
-                                                savedHeadData.getNozzle2ZOffset(),
-                                                savedHeadData.getNozzle2BOffset(),
-                                                savedHeadData.getLastFilamentTemperature(0),
-                                                savedHeadData.getLastFilamentTemperature(1),
-                                                savedHeadData.getHeadHours());
+                        savedHeadData.getUniqueID(),
+                        savedHeadData.getMaximumTemperature(),
+                        savedHeadData.getBeta(),
+                        savedHeadData.getTCal(),
+                        savedHeadData.getNozzle1XOffset(),
+                        savedHeadData.getNozzle1YOffset(),
+                        savedHeadData.getNozzle1ZOffset(),
+                        savedHeadData.getNozzle1BOffset(),
+                        savedHeadData.getFilamentID(0),
+                        savedHeadData.getFilamentID(1),
+                        savedHeadData.getNozzle2XOffset(),
+                        savedHeadData.getNozzle2YOffset(),
+                        savedHeadData.getNozzle2ZOffset(),
+                        savedHeadData.getNozzle2BOffset(),
+                        savedHeadData.getLastFilamentTemperature(0),
+                        savedHeadData.getLastFilamentTemperature(1),
+                        savedHeadData.getHeadHours());
                 printer.readHeadEEPROM();
             } catch (RoboxCommsException ex)
             {
@@ -138,33 +141,33 @@ public class CalibrationXAndYActions extends StateTransitionActions
         float nozzle2YCorrection = -(yOffset - 6) * 0.025f;
 
         steno.info(String.format("Saving XY with correction %1.2f %1.2f %1.2f %1.2f ",
-                                 nozzle1XCorrection,
-                                 nozzle2XCorrection, nozzle1YCorrection, nozzle2YCorrection));
+                nozzle1XCorrection,
+                nozzle2XCorrection, nozzle1YCorrection, nozzle2YCorrection));
 
         try
         {
             printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                            savedHeadData.getUniqueID(),
-                                            savedHeadData.getMaximumTemperature(),
-                                            savedHeadData.getBeta(),
-                                            savedHeadData.getTCal(),
-                                            savedHeadData.getNozzle1XOffset()
-                                            + nozzle1XCorrection,
-                                            savedHeadData.getNozzle1YOffset()
-                                            + nozzle1YCorrection,
-                                            savedHeadData.getNozzle1ZOffset(),
-                                            savedHeadData.getNozzle1BOffset(),
-                                            savedHeadData.getFilamentID(0),
-                                            savedHeadData.getFilamentID(1),
-                                            savedHeadData.getNozzle2XOffset()
-                                            + nozzle2XCorrection,
-                                            savedHeadData.getNozzle2YOffset()
-                                            + nozzle2YCorrection,
-                                            savedHeadData.getNozzle2ZOffset(),
-                                            savedHeadData.getNozzle2BOffset(),
-                                            savedHeadData.getLastFilamentTemperature(0),
-                                            savedHeadData.getLastFilamentTemperature(1),
-                                            savedHeadData.getHeadHours());
+                    savedHeadData.getUniqueID(),
+                    savedHeadData.getMaximumTemperature(),
+                    savedHeadData.getBeta(),
+                    savedHeadData.getTCal(),
+                    savedHeadData.getNozzle1XOffset()
+                    + nozzle1XCorrection,
+                    savedHeadData.getNozzle1YOffset()
+                    + nozzle1YCorrection,
+                    savedHeadData.getNozzle1ZOffset(),
+                    savedHeadData.getNozzle1BOffset(),
+                    savedHeadData.getFilamentID(0),
+                    savedHeadData.getFilamentID(1),
+                    savedHeadData.getNozzle2XOffset()
+                    + nozzle2XCorrection,
+                    savedHeadData.getNozzle2YOffset()
+                    + nozzle2YCorrection,
+                    savedHeadData.getNozzle2ZOffset(),
+                    savedHeadData.getNozzle2BOffset(),
+                    savedHeadData.getLastFilamentTemperature(0),
+                    savedHeadData.getLastFilamentTemperature(1),
+                    savedHeadData.getHeadHours());
 
         } catch (RoboxCommsException ex)
         {
@@ -234,10 +237,11 @@ public class CalibrationXAndYActions extends StateTransitionActions
     public void doFailedAction()
     {
         // this can be called twice if an error occurs
-        if (failedActionPerformed) {
+        if (failedActionPerformed)
+        {
             return;
         }
-        
+
         failedActionPerformed = true;
         try
         {
@@ -288,7 +292,8 @@ public class CalibrationXAndYActions extends StateTransitionActions
             {
                 steno.debug("call cancel");
                 printer.cancel(null);
-            } else {
+            } else
+            {
                 steno.debug("can't cancel");
             }
         } catch (PrinterException ex)
