@@ -36,11 +36,11 @@ class CutResult
 
     TopBottom topBottom;
 
-    public CutResult(TriangleMesh mesh, Set<MeshCutter.LoopOfFacesAndVertices> cutFaces,
+    public CutResult(TriangleMesh mesh, Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces,
         MeshCutter.BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
         loopsOfVerticesOnOpenFace = new HashSet<>();
-        for (MeshCutter.LoopOfFacesAndVertices cutFace : cutFaces)
+        for (MeshCutter.LoopOfVerticesAndCutFaces cutFace : cutFaces)
         {
             loopsOfVerticesOnOpenFace.add(cutFace.loopOfVertices);
         }
@@ -263,7 +263,6 @@ class LoopSet
                 break;
             } else if (cutResult.contains(polygonIndices, innerLoopSet.outerLoop))
                 {
-                    System.out.println("INNER contains loop set " + innerLoopSet.outerLoop);
                     Set<LoopSet> innerInnerLoopSets = new HashSet<>();
                     innerInnerLoopSets.add(innerLoopSet);
                     LoopSet newLoopSet = new LoopSet(cutResult, polygonIndices, innerInnerLoopSets);

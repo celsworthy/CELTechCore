@@ -131,7 +131,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     @FXML
     void doCut(ActionEvent event)
     {
-        double cutHeightValue = -Double.valueOf(cutHeight.getText());
+        float cutHeightValue = -Float.valueOf(cutHeight.getText());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         ModelContainer modelContainer = modelContainers.iterator().next();
 
@@ -191,7 +191,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     }
 
     private ModelContainerPair cutModelContainerAtHeight(ModelContainer modelContainer,
-        double cutHeightValue)
+        float cutHeightValue)
     {
         ModelContainerPair modelContainerPair = null;
 
