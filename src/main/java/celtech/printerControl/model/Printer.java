@@ -254,6 +254,10 @@ public interface Printer extends RoboxResponseConsumer
      */
     public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
+    public void miniPurge_T0(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
+    public void miniPurge_T1(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;

@@ -72,19 +72,19 @@ public class GCodeConstants
     /**
      *
      */
-    protected static final String goToTargetFirstLayerNozzleHeaterTemperature0 = "M103";
+    protected static final String goToTargetFirstLayerNozzleHeaterTemperature0 = "M103 S";
     protected static final String goToTargetFirstLayerNozzleHeaterTemperature1 = "M103 T";
 
     /**
      *
      */
-    protected static final String goToTargetNozzleHeaterTemperature0 = "M104";
+    protected static final String goToTargetNozzleHeaterTemperature0 = "M104 S";
     protected static final String goToTargetNozzleHeaterTemperature1 = "M104 T";
 
     /**
      *
      */
-    protected static final String waitForNozzleHeaterTemperature0 = "M109";
+    protected static final String waitForNozzleHeaterTemperature0 = "M109 S";
     protected static final String waitForNozzleHeaterTemperature1 = "M109 T";
 
     /**

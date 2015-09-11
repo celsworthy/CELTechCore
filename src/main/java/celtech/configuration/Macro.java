@@ -32,6 +32,10 @@ public enum Macro
     EJECT_STUCK_MATERIAL_D("eject_stuck_material_d", "printerStatus.macro.ejectStuckMaterial", "M19"),
     
     REMOVE_HEAD("Remove_Head", "printerStatus.macro.removeHead", "M20"),
+    
+    MINI_PURGE_0("Short_Purge_T0", "printerStatus.macro.miniPurge", "M21"),
+    MINI_PURGE_1("Short_Purge_T1", "printerStatus.macro.miniPurge", "M22"),
+    
     // Commissionator macros
     COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
     COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),

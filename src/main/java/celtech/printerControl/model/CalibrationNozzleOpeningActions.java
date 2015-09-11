@@ -28,7 +28,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleOpeningActions.class.getName());
+            CalibrationNozzleOpeningActions.class.getName());
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;
@@ -40,24 +40,24 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     private final FloatProperty bPositionGUIT = new SimpleFloatProperty();
 
     private final CalibrationPrinterErrorHandler printerErrorHandler;
-    
+
     private boolean failedActionPerformed = false;
 
     public CalibrationNozzleOpeningActions(Printer printer, Cancellable userCancellable,
-        Cancellable errorCancellable)
+            Cancellable errorCancellable)
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
         nozzlePosition.addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        // bPositionGUIT mirrors nozzlePosition but is only changed on the GUI Thread
-                        steno.debug("set bPositionGUIT to " + nozzlePosition.get());
-                        bPositionGUIT.set(nozzlePosition.get());
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    Lookup.getTaskExecutor().runOnGUIThread(() ->
+                            {
+                                // bPositionGUIT mirrors nozzlePosition but is only changed on the GUI Thread
+                                steno.debug("set bPositionGUIT to " + nozzlePosition.get());
+                                bPositionGUIT.set(nozzlePosition.get());
+                    });
                 });
-            });
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
         PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
@@ -81,113 +81,144 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
         HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
 
-        if (headReferenceData != null)
-        {
-            steno.info("Setting B offsets to defaults ("
-                + headReferenceData.getNozzles().get(0).getMinBOffset()
-                + " - "
-                + headReferenceData.getNozzles().get(1).getMinBOffset()
-                + ")");
-            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                            savedHeadData.getUniqueID(),
-                                            savedHeadData.getMaximumTemperature(),
-                                            savedHeadData.getBeta(),
-                                            savedHeadData.getTCal(),
-                                            0,
-                                            0,
-                                            0,
-                                            headReferenceData.getNozzles().get(0).
-                                            getDefaultBOffset(),
-                                            savedHeadData.getFilamentID(0),
-                                            savedHeadData.getFilamentID(1),
-                                            0,
-                                            0,
-                                            0,
-                                            headReferenceData.getNozzles().get(1).
-                                            getDefaultBOffset(),
-                                            savedHeadData.getLastFilamentTemperature(0),
-                                            savedHeadData.getLastFilamentTemperature(1),
-                                            savedHeadData.getHeadHours());
-        } else
-        {
-            // We shouldn't ever get here, but just in case...
-            steno.info("Setting B offsets to safe values ("
-                + headReferenceData.getNozzles().get(0).getDefaultBOffset()
-                + " - "
-                + headReferenceData.getNozzles().get(1).getDefaultBOffset()
-                + ")");
-            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                            savedHeadData.getUniqueID(),
-                                            savedHeadData.getMaximumTemperature(),
-                                            savedHeadData.getBeta(),
-                                            savedHeadData.getTCal(),
-                                            0,
-                                            0,
-                                            0,
-                                            1,
-                                            savedHeadData.getFilamentID(0),
-                                            savedHeadData.getFilamentID(1),
-                                            0,
-                                            0,
-                                            0,
-                                            -1,
-                                            savedHeadData.getLastFilamentTemperature(0),
-                                            savedHeadData.getLastFilamentTemperature(1),
-                                            savedHeadData.getHeadHours());
-        }
-        printer.readHeadEEPROM();
-
-        printer.goToTargetNozzleHeaterTemperature(0);
-        if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
-        {
-            return;
-        }
         printer.homeAllAxes(true, userOrErrorCancellable);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;
         }
+
         printer.goToTargetNozzleHeaterTemperature(0);
-        miniPurge();
+        waitOnNozzleTemperature(0);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;
         }
+
+        printer.miniPurge_T0(true, userOrErrorCancellable);
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+        {
+            return;
+        }
+
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.goToTargetNozzleHeaterTemperature(1);
+            waitOnNozzleTemperature(1);
+            if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+            {
+                return;
+            }
+        }
+
+        printer.miniPurge_T1(true, userOrErrorCancellable);
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+        {
+            return;
+        }
+
+        if (headReferenceData != null)
+        {
+            steno.info("Setting B offsets to defaults ("
+                    + headReferenceData.getNozzles().get(0).getMinBOffset()
+                    + " - "
+                    + headReferenceData.getNozzles().get(1).getMinBOffset()
+                    + ")");
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                    savedHeadData.getUniqueID(),
+                    savedHeadData.getMaximumTemperature(),
+                    savedHeadData.getBeta(),
+                    savedHeadData.getTCal(),
+                    0,
+                    0,
+                    0,
+                    headReferenceData.getNozzles().get(0).
+                    getDefaultBOffset(),
+                    savedHeadData.getFilamentID(0),
+                    savedHeadData.getFilamentID(1),
+                    0,
+                    0,
+                    0,
+                    headReferenceData.getNozzles().get(1).
+                    getDefaultBOffset(),
+                    savedHeadData.getLastFilamentTemperature(0),
+                    savedHeadData.getLastFilamentTemperature(1),
+                    savedHeadData.getHeadHours());
+        } else
+        {
+            // We shouldn't ever get here, but just in case...
+            steno.info("Setting B offsets to safe values ("
+                    + headReferenceData.getNozzles().get(0).getDefaultBOffset()
+                    + " - "
+                    + headReferenceData.getNozzles().get(1).getDefaultBOffset()
+                    + ")");
+            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                    savedHeadData.getUniqueID(),
+                    savedHeadData.getMaximumTemperature(),
+                    savedHeadData.getBeta(),
+                    savedHeadData.getTCal(),
+                    0,
+                    0,
+                    0,
+                    1,
+                    savedHeadData.getFilamentID(0),
+                    savedHeadData.getFilamentID(1),
+                    0,
+                    0,
+                    0,
+                    -1,
+                    savedHeadData.getLastFilamentTemperature(0),
+                    savedHeadData.getLastFilamentTemperature(1),
+                    savedHeadData.getHeadHours());
+        }
+
+        printer.readHeadEEPROM();
+
         printer.goToXYZPosition(PrintBed.getPrintVolumeCentre().getX(),
-                                PrintBed.getPrintVolumeCentre().getZ(),
-                                -PrintBed.getPrintVolumeCentre().getY());
+                PrintBed.getPrintVolumeCentre().getZ(),
+                -PrintBed.getPrintVolumeCentre().getY());
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
         }
 
-        if (printer.headProperty().get()
-            .getNozzleHeaters().get(0)
-            .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
+        printer.goToTargetNozzleHeaterTemperature(0);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            NozzleHeater nozzleHeater = printer.headProperty().get()
-                .getNozzleHeaters().get(0);
-            PrinterUtils.waitUntilTemperatureIsReached(
-                nozzleHeater.nozzleTemperatureProperty(), null,
-                nozzleHeater
-                .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300,
-                userOrErrorCancellable);
-        } else
+            printer.goToTargetNozzleHeaterTemperature(1);
+        }
+
+        waitOnNozzleTemperature(0);
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
-            NozzleHeater nozzleHeater = printer.headProperty().get()
-                .getNozzleHeaters().get(0);
-            PrinterUtils.waitUntilTemperatureIsReached(
+            return;
+        }
+
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            waitOnNozzleTemperature(1);
+            if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+            {
+                return;
+            }
+        }
+
+        printer.switchOnHeadLEDs();
+    }
+
+    private void waitOnNozzleTemperature(int nozzleNumber) throws InterruptedException
+    {
+        NozzleHeater nozzleHeater = printer.headProperty().get()
+                .getNozzleHeaters().get(nozzleNumber);
+        PrinterUtils.waitUntilTemperatureIsReached(
                 nozzleHeater.nozzleTemperatureProperty(), null,
                 nozzleHeater
                 .nozzleTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
-        }
-        printer.switchOnHeadLEDs();
     }
 
     public void doNoMaterialCheckAction() throws CalibrationException, InterruptedException, PrinterException
     {
         extrudeUntilStall(0);
-        pressuriseSystem();
+        pressuriseSystem(0);
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 
@@ -198,7 +229,13 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         printer.selectNozzle(0);
         printer.openNozzleFullyExtra();
-        printer.sendRawGCode("G1 E15 F300", false);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.sendRawGCode("G1 D15 F300", false);
+        } else
+        {
+            printer.sendRawGCode("G1 E15 F300", false);
+        }
         PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.closeNozzleFully();
     }
@@ -207,7 +244,13 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         printer.selectNozzle(1);
         printer.openNozzleFullyExtra();
-        printer.sendRawGCode("G1 E45 F600", false);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.sendRawGCode("G1 E15 F300", false);
+        } else
+        {
+            printer.sendRawGCode("G1 E45 F600", false);
+        }
         PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
         printer.closeNozzleFully();
     }
@@ -217,31 +260,31 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         nozzlePosition.set(0);
 
         steno.info("Setting B offsets to calibration values ("
-            + bOffsetStartingValue
-            + " - "
-            + -bOffsetStartingValue
-            + ")");
+                + bOffsetStartingValue
+                + " - "
+                + -bOffsetStartingValue
+                + ")");
 
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        0,
-                                        0,
-                                        0,
-                                        bOffsetStartingValue,
-                                        savedHeadData.getFilamentID(0),
-                                        savedHeadData.getFilamentID(1),
-                                        0,
-                                        0,
-                                        0,
-                                        -bOffsetStartingValue,
-                                        savedHeadData.getLastFilamentTemperature(0),
-                                        savedHeadData.getLastFilamentTemperature(1),
-                                        savedHeadData.getHeadHours());
+                savedHeadData.getUniqueID(),
+                savedHeadData.getMaximumTemperature(),
+                savedHeadData.getBeta(),
+                savedHeadData.getTCal(),
+                0,
+                0,
+                0,
+                bOffsetStartingValue,
+                savedHeadData.getFilamentID(0),
+                savedHeadData.getFilamentID(1),
+                0,
+                0,
+                0,
+                -bOffsetStartingValue,
+                savedHeadData.getLastFilamentTemperature(0),
+                savedHeadData.getLastFilamentTemperature(1),
+                savedHeadData.getHeadHours());
         extrudeUntilStall(0);
-        pressuriseSystem();
+        pressuriseSystem(0);
     }
 
     public void doCalibrateFineNozzle() throws CalibrationException
@@ -277,7 +320,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         nozzlePosition.set(0);
         extrudeUntilStall(1);
-        pressuriseSystem();
+        pressuriseSystem(1);
     }
 
     public void doCalibrateFillNozzle() throws CalibrationException
@@ -308,7 +351,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         printer.closeNozzleFully();
         printer.selectNozzle(0);
         extrudeUntilStall(0);
-        pressuriseSystem();
+        pressuriseSystem(0);
+        pressuriseSystem(1);
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 
@@ -337,23 +381,23 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         steno.debug("save new head data");
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        savedHeadData.getNozzle1XOffset(),
-                                        savedHeadData.getNozzle1YOffset(),
-                                        savedHeadData.getNozzle1ZOffset(),
-                                        nozzle0BOffset,
-                                        savedHeadData.getFilamentID(0),
-                                        savedHeadData.getFilamentID(1),
-                                        savedHeadData.getNozzle2XOffset(),
-                                        savedHeadData.getNozzle2YOffset(),
-                                        savedHeadData.getNozzle2ZOffset(),
-                                        nozzle1BOffset,
-                                        savedHeadData.getLastFilamentTemperature(0),
-                                        savedHeadData.getLastFilamentTemperature(1),
-                                        savedHeadData.getHeadHours());
+                savedHeadData.getUniqueID(),
+                savedHeadData.getMaximumTemperature(),
+                savedHeadData.getBeta(),
+                savedHeadData.getTCal(),
+                savedHeadData.getNozzle1XOffset(),
+                savedHeadData.getNozzle1YOffset(),
+                savedHeadData.getNozzle1ZOffset(),
+                nozzle0BOffset,
+                savedHeadData.getFilamentID(0),
+                savedHeadData.getFilamentID(1),
+                savedHeadData.getNozzle2XOffset(),
+                savedHeadData.getNozzle2YOffset(),
+                savedHeadData.getNozzle2ZOffset(),
+                nozzle1BOffset,
+                savedHeadData.getLastFilamentTemperature(0),
+                savedHeadData.getLastFilamentTemperature(1),
+                savedHeadData.getHeadHours());
 
     }
 
@@ -365,23 +409,23 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             {
                 steno.debug("Restore head data");
                 printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                savedHeadData.getUniqueID(),
-                                                savedHeadData.getMaximumTemperature(),
-                                                savedHeadData.getBeta(),
-                                                savedHeadData.getTCal(),
-                                                savedHeadData.getNozzle1XOffset(),
-                                                savedHeadData.getNozzle1YOffset(),
-                                                savedHeadData.getNozzle1ZOffset(),
-                                                savedHeadData.getNozzle1BOffset(),
-                                                savedHeadData.getFilamentID(0),
-                                                savedHeadData.getFilamentID(1),
-                                                savedHeadData.getNozzle2XOffset(),
-                                                savedHeadData.getNozzle2YOffset(),
-                                                savedHeadData.getNozzle2ZOffset(),
-                                                savedHeadData.getNozzle2BOffset(),
-                                                savedHeadData.getLastFilamentTemperature(0),
-                                                savedHeadData.getLastFilamentTemperature(1),
-                                                savedHeadData.getHeadHours());
+                        savedHeadData.getUniqueID(),
+                        savedHeadData.getMaximumTemperature(),
+                        savedHeadData.getBeta(),
+                        savedHeadData.getTCal(),
+                        savedHeadData.getNozzle1XOffset(),
+                        savedHeadData.getNozzle1YOffset(),
+                        savedHeadData.getNozzle1ZOffset(),
+                        savedHeadData.getNozzle1BOffset(),
+                        savedHeadData.getFilamentID(0),
+                        savedHeadData.getFilamentID(1),
+                        savedHeadData.getNozzle2XOffset(),
+                        savedHeadData.getNozzle2YOffset(),
+                        savedHeadData.getNozzle2ZOffset(),
+                        savedHeadData.getNozzle2BOffset(),
+                        savedHeadData.getLastFilamentTemperature(0),
+                        savedHeadData.getLastFilamentTemperature(1),
+                        savedHeadData.getHeadHours());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Unable to restore head! " + ex);
@@ -397,7 +441,14 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             printer.selectNozzle(nozzleNumber);
             // G36 = extrude until stall E700 = top extruder F2000 = feed rate mm/min (?)
             // extrude either requested volume or until filament slips
-            printer.sendRawGCode("G36 E100 F800", false);
+            if (nozzleNumber == 0
+                    && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                printer.sendRawGCode("G36 D100 F800", false);
+            } else
+            {
+                printer.sendRawGCode("G36 E100 F800", false);
+            }
             PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
 
         } catch (PrinterException ex)
@@ -406,50 +457,22 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         }
     }
 
-    private void miniPurge()
-    {
-        try
-        {
-            printer.sendRawGCode("M109", false);
-            printer.sendRawGCode("G90", false);
-            printer.sendRawGCode("G0 Y-1 X29 Z10", false);
-            printer.selectNozzle(0);
-            printer.sendRawGCode("G0 Z3", false);
-            printer.sendRawGCode("G1 Y1 F400", false);
-            printer.sendRawGCode("G36 E500 F400", false);
-            printer.sendRawGCode("G0 B2", false);
-            printer.sendRawGCode("G1 E2 F250", false);
-            printer.sendRawGCode("G1 E30 X51 F250", false);
-            printer.sendRawGCode("G0 B0", false);
-            printer.sendRawGCode("G0 Z5", false);
-            printer.sendRawGCode("G0 Y8", false);
-
-            printer.sendRawGCode("G0 Y-1 X36 Z8", false);
-            printer.selectNozzle(1);
-            printer.sendRawGCode("G0 Z4", false);
-            printer.sendRawGCode("G1 Y1 F400", false);
-            printer.sendRawGCode("G36 E500 F400", false);
-            printer.sendRawGCode("G0 B2", false);
-            printer.sendRawGCode("G1 E4 F300", false);
-            printer.sendRawGCode("G1 E35 X14 F300", false);
-            printer.sendRawGCode("G0 B0", false);
-            printer.sendRawGCode("G0 Z5", false);
-            printer.sendRawGCode("G0 Y8", false);
-
-        } catch (PrinterException ex)
-        {
-            steno.error("Error in calibration mini purge");
-        }
-    }
-
     public ReadOnlyFloatProperty getBPositionGUITProperty()
     {
         return bPositionGUIT;
     }
 
-    private void pressuriseSystem()
+    private void pressuriseSystem(int nozzleNumber)
     {
-        printer.sendRawGCode("G1 E4 F400", false);
+        if (nozzleNumber == 0
+                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.sendRawGCode("G1 D4 F400", false);
+        } else
+        {
+            printer.sendRawGCode("G1 E4 F400", false);
+        }
+        PrinterUtils.waitOnBusy(printer, userOrErrorCancellable);
     }
 
     public void doFinishedAction()
@@ -469,10 +492,11 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     public void doFailedAction()
     {
         // this can be called twice if an error occurs
-        if (failedActionPerformed) {
+        if (failedActionPerformed)
+        {
             return;
         }
-        
+
         failedActionPerformed = true;
         try
         {

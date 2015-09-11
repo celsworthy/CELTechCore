@@ -23,6 +23,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
     private static final double EJECT_TEMPERATURE = 140.0;
 
     private NozzleHeater heater = null;
+    private int nozzleNumber = -1;
     private static final double showBarIfMoreThanXDegreesOut = 3;
 
     private ChangeListener<Number> numberChangeListener = (ObservableValue<? extends Number> ov, Number lastState, Number newState) ->
@@ -35,10 +36,11 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
         reassessStatus();
     };
 
-    public NozzleHeaterStatusBar(NozzleHeater heater)
+    public NozzleHeaterStatusBar(NozzleHeater heater, int nozzleNumber)
     {
         super();
         this.heater = heater;
+        this.nozzleNumber = nozzleNumber;
 
         heater.nozzleTemperatureProperty().addListener(numberChangeListener);
         heater.nozzleTargetTemperatureProperty().addListener(numberChangeListener);
@@ -72,7 +74,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleFirstLayerTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + nozzleNumber);
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d").get()
@@ -100,7 +102,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + nozzleNumber);
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleTargetTemperatureProperty().asString("%d").get()

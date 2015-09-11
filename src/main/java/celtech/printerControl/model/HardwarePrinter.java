@@ -966,6 +966,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable);
     }
+    @Override
+    public void miniPurge_T0(boolean blockUntilFinished,
+            Cancellable cancellable) throws PrinterException
+    {
+        Macro macro = Macro.MINI_PURGE_0;
+
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
+                blockUntilFinished, cancellable);
+    }
+    
+    public void miniPurge_T1(boolean blockUntilFinished,
+            Cancellable cancellable) throws PrinterException
+    {
+        Macro macro = Macro.MINI_PURGE_1;
+
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
+                blockUntilFinished, cancellable);
+    }    
 
     @Override
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException

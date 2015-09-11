@@ -1216,8 +1216,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     {
         boolean closeAtEndOfPath = false;
 
-        Map<EventType, Integer> eventIndices = new EnumMap<EventType, Integer>(EventType.class
-        );
+        Map<EventType, Integer> eventIndices = new EnumMap<EventType, Integer>(EventType.class);
 
         double nozzleStartPosition = 1.0;
         double nozzleCloseOverVolume = 1;

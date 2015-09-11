@@ -68,13 +68,13 @@ public class ProgressDisplay extends VBox
     {
         if (head.getNozzleHeaters().size() > 0)
         {
-            nozzle1TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(0));
+            nozzle1TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(0), 0);
             getChildren().add(0, nozzle1TemperatureDisplayBar);
         }
         
         if (head.getNozzleHeaters().size() == 2)
         {
-            nozzle2TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(1));
+            nozzle2TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(1), 1);
             getChildren().add(0, nozzle2TemperatureDisplayBar);
         }
     }
