@@ -91,16 +91,16 @@ public class GCodeMacros
      * @param macroName - this can include the macro execution directive at the
      * start of the line
      * @param headTypeCode
-     * @param useNozzle0
-     * @param useNozzle1
+     * @param requireNozzle0
+     * @param requireNozzle1
      * @return
      * @throws java.io.IOException
      * @throws celtech.printerControl.comms.commands.MacroLoadException
      */
     public static ArrayList<String> getMacroContents(String macroName,
             String headTypeCode,
-            boolean useNozzle0,
-            boolean useNozzle1) throws IOException, MacroLoadException
+            boolean requireNozzle0,
+            boolean requireNozzle1) throws IOException, MacroLoadException
     {
         ArrayList<String> contents = new ArrayList<>();
         ArrayList<String> parentMacros = new ArrayList<>();
@@ -121,13 +121,13 @@ public class GCodeMacros
             nozzleUse = NozzleUseIndicator.DONT_CARE;
         } else
         {
-            if (!useNozzle0 && !useNozzle1)
+            if (!requireNozzle0 && !requireNozzle1)
             {
                 nozzleUse = NozzleUseIndicator.DONT_CARE;
-            } else if (useNozzle0 && !useNozzle1)
+            } else if (requireNozzle0 && !requireNozzle1)
             {
                 nozzleUse = NozzleUseIndicator.NOZZLE_0;
-            } else if (!useNozzle0 && useNozzle1)
+            } else if (!requireNozzle0 && requireNozzle1)
             {
                 nozzleUse = NozzleUseIndicator.NOZZLE_1;
             } else

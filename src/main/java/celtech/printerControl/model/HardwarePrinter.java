@@ -905,6 +905,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(macro, blockUntilFinished, cancellable, false, false);
+    }
+
+    private void executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro macro,
+            boolean blockUntilFinished,
+            Cancellable cancellable,
+            boolean requireNozzle0, boolean requireNozzle1) throws PrinterException
+    {
         if (canRunMacro.get())
         {
             if (blockUntilFinished)
@@ -944,28 +952,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
-        Macro macro = null;
-        if (head.get().nozzleHeaters.size() == 1)
-        {
-            macro = Macro.PURGE_MATERIAL_SINGLE;
-        } else
-        {
-            switch (nozzleHeaters)
-            {
-                case NOZZLE_HEATER_0:
-                    macro = Macro.PURGE_MATERIAL_DUAL_0;
-                    break;
-                case NOZZLE_HEATER_1:
-                    macro = Macro.PURGE_MATERIAL_DUAL_1;
-                    break;
-                case NOZZLE_HEATER_BOTH:
-                    macro = Macro.PURGE_MATERIAL_DUAL_BOTH;
-                    break;
-            }
-        }
+        Macro macro = Macro.PURGE_MATERIAL;
+
+        boolean requireNozzle0 = (nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_0
+                || nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_BOTH);
+        boolean requireNozzle1 = (nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_1
+                || nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_BOTH);
+
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
-                blockUntilFinished, cancellable);
+                blockUntilFinished, cancellable, requireNozzle0, requireNozzle1);
     }
+
     @Override
     public void miniPurge_T0(boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
@@ -975,7 +972,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable);
     }
-    
+
     public void miniPurge_T1(boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
@@ -983,7 +980,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable);
-    }    
+    }
 
     @Override
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
@@ -1071,11 +1068,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private void executeMacroWithoutPurgeCheck(Macro macro) throws PrinterException
     {
+        executeMacroWithoutPurgeCheck(macro, false, false);
+    }
+
+    private void executeMacroWithoutPurgeCheck(Macro macro,
+            boolean requireNozzle0, boolean requireNozzle1) throws PrinterException
+    {
         boolean jobAccepted = false;
 
         try
         {
-            jobAccepted = printEngine.runMacroPrintJob(macro, true);
+            jobAccepted = printEngine.runMacroPrintJob(macro, requireNozzle0, requireNozzle1);
         } catch (MacroPrintException ex)
         {
             steno.error("Failed to macro: " + macro.name() + " reason:" + ex.getMessage());

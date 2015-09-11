@@ -23,10 +23,7 @@ public enum Macro
     CLEAN_NOZZLE_0("T0_nozzle_clean", "printerStatus.macro.cleanNozzle0", "M11"),
     CLEAN_NOZZLE_1("T1_nozzle_clean", "printerStatus.macro.cleanNozzle1", "M12"),
     
-    PURGE_MATERIAL_SINGLE("PurgeMaterialSingle", "printerStatus.purging", "M13"),
-    PURGE_MATERIAL_DUAL_0("PurgeMaterialDual0", "printerStatus.purging", "M14"),
-    PURGE_MATERIAL_DUAL_1("PurgeMaterialDual1", "printerStatus.purging", "M15"),
-    PURGE_MATERIAL_DUAL_BOTH("PurgeMaterialDualBoth", "printerStatus.purging", "M16"),
+    PURGE_MATERIAL("PurgeMaterial", "printerStatus.purging", "M13"),
     
     EJECT_STUCK_MATERIAL_E("eject_stuck_material_e", "printerStatus.macro.ejectStuckMaterial", "M18"),
     EJECT_STUCK_MATERIAL_D("eject_stuck_material_d", "printerStatus.macro.ejectStuckMaterial", "M19"),
