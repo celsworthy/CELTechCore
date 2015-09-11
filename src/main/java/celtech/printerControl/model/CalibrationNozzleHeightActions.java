@@ -30,7 +30,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleHeightActions.class.getName());
+            CalibrationNozzleHeightActions.class.getName());
 
     private final Printer printer;
     private HeadEEPROMDataResponse savedHeadData;
@@ -38,24 +38,24 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     private final DoubleProperty zcoGUIT = new SimpleDoubleProperty();
     private double zDifference;
     private final CalibrationPrinterErrorHandler printerErrorHandler;
-    
+
     private boolean failedActionPerformed = false;
 
     public CalibrationNozzleHeightActions(Printer printer, Cancellable userCancellable,
-        Cancellable errorCancellable)
+            Cancellable errorCancellable)
     {
         super(userCancellable, errorCancellable);
         this.printer = printer;
         zco.addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        // zcoGUIT mirrors zco but is only changed on the GUI Thread
-                        steno.debug("set zcoGUIT to " + zco.get());
-                        zcoGUIT.set(zco.get());
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    Lookup.getTaskExecutor().runOnGUIThread(() ->
+                            {
+                                // zcoGUIT mirrors zco but is only changed on the GUI Thread
+                                steno.debug("set zcoGUIT to " + zco.get());
+                                zcoGUIT.set(zco.get());
+                    });
                 });
-            });
         printerErrorHandler = new CalibrationPrinterErrorHandler(printer, errorCancellable);
         printerErrorHandler.registerForPrinterErrors();
         PrinterUtils.setCancelledIfPrinterDisconnected(printer, errorCancellable);
@@ -88,58 +88,54 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         NozzleData nozzle2Data = headDataFile.getNozzles().get(1);
 
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        nozzle1Data.getDefaultXOffset(),
-                                        nozzle1Data.getDefaultYOffset(),
-                                        0,
-                                        savedHeadData.getNozzle1BOffset(),
-                                        savedHeadData.getFilamentID(0),
-                                        savedHeadData.getFilamentID(1),
-                                        nozzle2Data.getDefaultXOffset(),
-                                        nozzle2Data.getDefaultYOffset(),
-                                        0,
-                                        savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(0),
-                                        savedHeadData.getLastFilamentTemperature(1),
-                                        savedHeadData.getHeadHours());
+                savedHeadData.getUniqueID(),
+                savedHeadData.getMaximumTemperature(),
+                savedHeadData.getBeta(),
+                savedHeadData.getTCal(),
+                nozzle1Data.getDefaultXOffset(),
+                nozzle1Data.getDefaultYOffset(),
+                0,
+                savedHeadData.getNozzle1BOffset(),
+                savedHeadData.getFilamentID(0),
+                savedHeadData.getFilamentID(1),
+                nozzle2Data.getDefaultXOffset(),
+                nozzle2Data.getDefaultYOffset(),
+                0,
+                savedHeadData.getNozzle2BOffset(),
+                savedHeadData.getLastFilamentTemperature(0),
+                savedHeadData.getLastFilamentTemperature(1),
+                savedHeadData.getHeadHours());
         printer.readHeadEEPROM();
     }
 
     private void heatNozzle() throws InterruptedException, PrinterException
     {
-        printer.goToTargetNozzleHeaterTemperature(0);
         printer.homeAllAxes(true, userOrErrorCancellable);
-        if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
+
+        printer.goToTargetNozzleHeaterTemperature(0);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.goToTargetNozzleHeaterTemperature(1);
+        }
+        
+        waitOnNozzleTemperature(0);
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;
         }
 
-        printer.goToTargetNozzleHeaterTemperature(0);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            waitOnNozzleTemperature(1);
+            if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+            {
+                return;
+            }
+        }
+
         printer.goToZPosition(50);
         printer.goToXYPosition(PrintBed.getPrintVolumeCentre().getX(),
-                               PrintBed.getPrintVolumeCentre().getZ());
-        if (printer.headProperty().get().getNozzleHeaters().get(0)
-            .heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
-        {
-            NozzleHeater nozzleHeater = printer.headProperty().get()
-                .getNozzleHeaters().get(0);
-            PrinterUtils.waitUntilTemperatureIsReached(
-                nozzleHeater.nozzleTemperatureProperty(), null,
-                nozzleHeater
-                .nozzleFirstLayerTargetTemperatureProperty().get(), 5, 300,
-                userOrErrorCancellable);
-        } else
-        {
-            NozzleHeater nozzleHeater = printer.headProperty().get()
-                .getNozzleHeaters().get(0);
-            PrinterUtils.waitUntilTemperatureIsReached(
-                nozzleHeater.nozzleTemperatureProperty(), null,
-                nozzleHeater
-                .nozzleTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
-        }
+                PrintBed.getPrintVolumeCentre().getZ());
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
@@ -147,6 +143,16 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         printer.switchOnHeadLEDs();
     }
 
+    private void waitOnNozzleTemperature(int nozzleNumber) throws InterruptedException
+    {
+        NozzleHeater nozzleHeater = printer.headProperty().get()
+                .getNozzleHeaters().get(nozzleNumber);
+        PrinterUtils.waitUntilTemperatureIsReached(
+                nozzleHeater.nozzleTemperatureProperty(), null,
+                nozzleHeater
+                .nozzleTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
+    }
+    
     public void doHomeZAction() throws CalibrationException
     {
         printer.homeZ();
@@ -309,14 +315,15 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 
     public void doFailedAction()
     {
-        
+
         // this can be called twice if an error occurs
-        if (failedActionPerformed) {
+        if (failedActionPerformed)
+        {
             return;
         }
-        
+
         failedActionPerformed = true;
-        
+
         try
         {
             restoreHeadData();
@@ -350,23 +357,23 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
             {
                 steno.debug("Restore head data");
                 printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                                savedHeadData.getUniqueID(),
-                                                savedHeadData.getMaximumTemperature(),
-                                                savedHeadData.getBeta(),
-                                                savedHeadData.getTCal(),
-                                                savedHeadData.getNozzle1XOffset(),
-                                                savedHeadData.getNozzle1YOffset(),
-                                                savedHeadData.getNozzle1ZOffset(),
-                                                savedHeadData.getNozzle1BOffset(),
-                                                savedHeadData.getFilamentID(0),
-                                                savedHeadData.getFilamentID(1),
-                                                savedHeadData.getNozzle2XOffset(),
-                                                savedHeadData.getNozzle2YOffset(),
-                                                savedHeadData.getNozzle2ZOffset(),
-                                                savedHeadData.getNozzle2BOffset(),
-                                                savedHeadData.getLastFilamentTemperature(0),
-                                                savedHeadData.getLastFilamentTemperature(1),
-                                                savedHeadData.getHeadHours());
+                        savedHeadData.getUniqueID(),
+                        savedHeadData.getMaximumTemperature(),
+                        savedHeadData.getBeta(),
+                        savedHeadData.getTCal(),
+                        savedHeadData.getNozzle1XOffset(),
+                        savedHeadData.getNozzle1YOffset(),
+                        savedHeadData.getNozzle1ZOffset(),
+                        savedHeadData.getNozzle1BOffset(),
+                        savedHeadData.getFilamentID(0),
+                        savedHeadData.getFilamentID(1),
+                        savedHeadData.getNozzle2XOffset(),
+                        savedHeadData.getNozzle2YOffset(),
+                        savedHeadData.getNozzle2ZOffset(),
+                        savedHeadData.getNozzle2BOffset(),
+                        savedHeadData.getLastFilamentTemperature(0),
+                        savedHeadData.getLastFilamentTemperature(1),
+                        savedHeadData.getHeadHours());
             } catch (RoboxCommsException ex)
             {
                 steno.error("Unable to restore head! " + ex);
@@ -379,23 +386,23 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         steno.info("zDifference is " + zDifference);
         steno.info("zco is " + zDifference);
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
-                                        savedHeadData.getUniqueID(),
-                                        savedHeadData.getMaximumTemperature(),
-                                        savedHeadData.getBeta(),
-                                        savedHeadData.getTCal(),
-                                        savedHeadData.getNozzle1XOffset(),
-                                        savedHeadData.getNozzle1YOffset(),
-                                        (float) (-zco.get() - (0.5 * zDifference)),
-                                        savedHeadData.getNozzle1BOffset(),
-                                        savedHeadData.getFilamentID(0),
-                                        savedHeadData.getFilamentID(1),
-                                        savedHeadData.getNozzle2XOffset(),
-                                        savedHeadData.getNozzle2YOffset(),
-                                        (float) (-zco.get() + (0.5 * zDifference)),
-                                        savedHeadData.getNozzle2BOffset(),
-                                        savedHeadData.getLastFilamentTemperature(0),
-                                        savedHeadData.getLastFilamentTemperature(1),
-                                        savedHeadData.getHeadHours());
+                savedHeadData.getUniqueID(),
+                savedHeadData.getMaximumTemperature(),
+                savedHeadData.getBeta(),
+                savedHeadData.getTCal(),
+                savedHeadData.getNozzle1XOffset(),
+                savedHeadData.getNozzle1YOffset(),
+                (float) (-zco.get() - (0.5 * zDifference)),
+                savedHeadData.getNozzle1BOffset(),
+                savedHeadData.getFilamentID(0),
+                savedHeadData.getFilamentID(1),
+                savedHeadData.getNozzle2XOffset(),
+                savedHeadData.getNozzle2YOffset(),
+                (float) (-zco.get() + (0.5 * zDifference)),
+                savedHeadData.getNozzle2BOffset(),
+                savedHeadData.getLastFilamentTemperature(0),
+                savedHeadData.getLastFilamentTemperature(1),
+                savedHeadData.getHeadHours());
     }
 
     public ReadOnlyDoubleProperty getZcoGUITProperty()

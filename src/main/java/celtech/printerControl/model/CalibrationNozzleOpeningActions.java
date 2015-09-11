@@ -88,13 +88,12 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         }
 
         printer.goToTargetNozzleHeaterTemperature(0);
-        waitOnNozzleTemperature(0);
-        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            return;
+            printer.goToTargetNozzleHeaterTemperature(1);
         }
 
-        printer.miniPurge_T0(true, userOrErrorCancellable);
+        waitOnNozzleTemperature(0);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;
@@ -102,12 +101,17 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
         if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            printer.goToTargetNozzleHeaterTemperature(1);
             waitOnNozzleTemperature(1);
             if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
             {
                 return;
             }
+        }
+
+        printer.miniPurge_T0(true, userOrErrorCancellable);
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+        {
+            return;
         }
 
         printer.miniPurge_T1(true, userOrErrorCancellable);
