@@ -122,7 +122,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
         if (headReferenceData != null)
         {
-            steno.info("Setting B offsets to defaults ("
+            steno.debug("Setting B offsets to defaults ("
                     + headReferenceData.getNozzles().get(0).getMinBOffset()
                     + " - "
                     + headReferenceData.getNozzles().get(1).getMinBOffset()
@@ -150,7 +150,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         } else
         {
             // We shouldn't ever get here, but just in case...
-            steno.info("Setting B offsets to safe values ("
+            steno.debug("Setting B offsets to safe values ("
                     + headReferenceData.getNozzles().get(0).getDefaultBOffset()
                     + " - "
                     + headReferenceData.getNozzles().get(1).getDefaultBOffset()
@@ -263,7 +263,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         nozzlePosition.set(0);
 
-        steno.info("Setting B offsets to calibration values ("
+        steno.debug("Setting B offsets to calibration values ("
                 + bOffsetStartingValue
                 + " - "
                 + -bOffsetStartingValue
@@ -299,7 +299,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     public void doIncrementFineNozzlePosition() throws CalibrationException, InterruptedException
     {
         nozzlePosition.set(nozzlePosition.get() + 0.05f);
-        steno.info("(FINE) nozzle position set to " + nozzlePosition.get());
+        steno.debug("(FINE) nozzle position set to " + nozzlePosition.get());
         if (nozzlePosition.get() >= 2f)
         {
             throw new CalibrationException("Nozzle position beyond limit");
@@ -311,7 +311,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     public void doIncrementFillNozzlePosition() throws CalibrationException, InterruptedException
     {
         nozzlePosition.set(nozzlePosition.get() + 0.05f);
-        steno.info("(FILL) nozzle position set to " + nozzlePosition);
+        steno.debug("(FILL) nozzle position set to " + nozzlePosition);
         if (nozzlePosition.get() >= 2f)
         {
             throw new CalibrationException("Nozzle position beyond limit");
@@ -336,7 +336,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         printer.closeNozzleFully();
         // calculate offset
-        steno.info("(FINE) finalise nozzle position set at " + nozzlePosition.get());
+        steno.debug("(FINE) finalise nozzle position set at " + nozzlePosition.get());
         nozzle0BOffset = bOffsetStartingValue - 0.1f + nozzlePosition.get();
     }
 
@@ -344,7 +344,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     {
         printer.closeNozzleFully();
         // calculate offset
-        steno.info("(FILL) finalise nozzle position set at " + nozzlePosition);
+        steno.debug("(FILL) finalise nozzle position set at " + nozzlePosition);
         nozzle1BOffset = -bOffsetStartingValue + 0.1f - nozzlePosition.get();
     }
 

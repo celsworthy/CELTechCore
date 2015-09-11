@@ -170,7 +170,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 
         final int numberOfNozzleHeightDifferenceTests = 11;
 
-        steno.info("Nozzle height difference test");
+        steno.debug("Nozzle height difference test");
         printer.selectNozzle(0);
 
         // Level the gantry - manual rather than using the macro
@@ -254,7 +254,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
             {
                 t1Deltas.add(deltaValue);
             }
-            steno.info("Delta from " + nozzleFrom + " to " + nozzleTo + " -> " + deltaValue);
+            steno.debug("Delta from " + nozzleFrom + " to " + nozzleTo + " -> " + deltaValue);
             flipFlop = !flipFlop;
         }
 
@@ -270,7 +270,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 
         zDifference = sumOfDeltas / numberOfSamples;
         success = true;
-        steno.info("Average Z Offset was " + zDifference);
+        steno.debug("Average Z Offset was " + zDifference);
 
         printer.selectNozzle(0);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
@@ -383,8 +383,8 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 
     public void saveSettings() throws RoboxCommsException
     {
-        steno.info("zDifference is " + zDifference);
-        steno.info("zco is " + zDifference);
+        steno.debug("zDifference is " + zDifference);
+        steno.debug("zco is " + zDifference);
         printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
                 savedHeadData.getUniqueID(),
                 savedHeadData.getMaximumTemperature(),
