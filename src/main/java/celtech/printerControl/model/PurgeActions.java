@@ -163,13 +163,13 @@ public class PurgeActions extends StateTransitionActions
 
         for (int i = 0; i < getNumNozzleHeaters(); i++)
         {
-            boolean extruderHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
+            boolean nozzleHeatFailed = PrinterUtils.waitUntilTemperatureIsReached(
                 printer.headProperty().get().getNozzleHeaters().get(i).nozzleTemperatureProperty(),
                 null, purgeTemperature.get(i).get(), 5, 300, userOrErrorCancellable);
 
-            if (extruderHeatFailed)
+            if (nozzleHeatFailed)
             {
-                throw new PurgeException("Extruder heat failed");
+                throw new PurgeException("Nozzle heat failed");
             }
         }
 

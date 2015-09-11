@@ -895,10 +895,16 @@ public class PrintEngine implements ControllableService
 
     protected boolean runMacroPrintJob(Macro macro) throws MacroPrintException
     {
-        return runMacroPrintJob(macro, true);
+        return runMacroPrintJob(macro, true, false, false);
     }
 
-    protected boolean runMacroPrintJob(Macro macro, boolean useSDCard) throws MacroPrintException
+    protected boolean runMacroPrintJob(Macro macro, boolean requireNozzle0, boolean requireNozzle1) throws MacroPrintException
+    {
+        return runMacroPrintJob(macro, true, requireNozzle0, requireNozzle1);
+    }
+
+    protected boolean runMacroPrintJob(Macro macro, boolean useSDCard,
+            boolean requireNozzle0, boolean requireNozzle1) throws MacroPrintException
     {
         macroBeingRun.set(macro);
 
@@ -922,7 +928,7 @@ public class PrintEngine implements ControllableService
         try
         {
             ArrayList<String> macroContents = GCodeMacros.getMacroContents(macro.getMacroFileName(), associatedPrinter.headProperty().get().typeCodeProperty().get(),
-                    false, false);
+                    requireNozzle0, requireNozzle1);
             // Write the contents of the macro file to the print area
             FileUtils.writeLines(printjobFile, macroContents, false);
         } catch (IOException ex)
