@@ -2008,4 +2008,16 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return modelId;
     }
 
+    public boolean isInvalidMesh()
+    {
+        return isInvalidMesh;
+    }
+
+    public void setIsInvalidMesh(boolean isInvalidMesh)
+    {
+        this.isInvalidMesh = isInvalidMesh;
+    }
+    
+    
+
 }
