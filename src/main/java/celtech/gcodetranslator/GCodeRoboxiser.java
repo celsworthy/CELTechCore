@@ -1038,9 +1038,11 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         boundsContainingInitialExtrusion,
                         boundsContainingFinalExtrusion,
                         boundsContainingExtrusionCloseMustStartFrom,
-                        "Perimeter close",
+                        "Close towards perimeter",
                         lastInwardMoveEvent,
-                        currentNozzle.getNozzleParameters().getEjectionVolume());
+                        currentNozzle.getNozzleParameters().getEjectionVolume(),
+                        closeFromEndOfPerimeter
+                );
 
                 eventIndices.put(EventType.NOZZLE_CLOSE_START, startOfClose);
 
@@ -1787,21 +1789,17 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             final ExtrusionBounds boundsContainingExtrusionToCloseFrom,
             final String originalComment,
             TravelEvent lastInwardsMoveEvent,
-            double targetVolume) throws PostProcessingError, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException
+            double targetVolume,
+            boolean intersectOrthogonally) throws PostProcessingError, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException
     {
         boolean reverseWipePath = false;
 
         int indexOfFirstCopiedEvent = boundsContainingExtrusionToCloseFrom.getEndIndex() + 1;
-
         int startOfClose = -1;
-//
-//        Vector2D endOfExtrusion = new Vector2D(finalExtrusionEvent.getX(), finalExtrusionEvent.
-//                getY());
-
         int closestEventIndex = -1;
 
-        Segment orthogonalSegment = null;
-        Vector2D orthogonalSegmentMidpoint = null;
+        Segment segmentToIntersectWith = null;
+        Vector2D segmentToIntersectWithMeasurementPoint = null;
         Vector2D lastPointConsidered = null;
 
         TreeMap<Double, Integer> intersectedPointDistances = new TreeMap<>();
@@ -1824,8 +1822,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             Vector2D inwardsMoveEndPoint = new Vector2D(lastInwardsMoveEvent.getX(),
                     lastInwardsMoveEvent.getY());
             inwardsMoveEndPoint.scalarMultiply(4);
-            orthogonalSegment = new Segment(endOfExtrusion, inwardsMoveEndPoint, new Line(
+            segmentToIntersectWith = new Segment(endOfExtrusion, inwardsMoveEndPoint, new Line(
                     endOfExtrusion, inwardsMoveEndPoint, 1e-12));
+
+            segmentToIntersectWithMeasurementPoint = inwardsMoveEndPoint;
         } else
         {
             int absolutelyTheLastMovementEventIndexEver = extrusionBuffer.
@@ -1836,12 +1836,41 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     absolutelyTheLastMovementEventEver.getX(),
                     absolutelyTheLastMovementEventEver.getY());
 
-            orthogonalSegment = MathUtils.getOrthogonalLineToLinePoints(
-                    maxDistanceFromEndPoint, absolutelyTheLastMovementVectorEver, endOfExtrusion);
-        }
+            if (intersectOrthogonally)
+            {
+                segmentToIntersectWith = MathUtils.getOrthogonalLineToLinePoints(
+                        maxDistanceFromEndPoint, absolutelyTheLastMovementVectorEver, endOfExtrusion);
 
-        orthogonalSegmentMidpoint = MathUtils.findMidPoint(orthogonalSegment.getStart(),
-                orthogonalSegment.getEnd());
+                segmentToIntersectWithMeasurementPoint = MathUtils.findMidPoint(segmentToIntersectWith.getStart(),
+                        segmentToIntersectWith.getEnd());
+            } else
+            {
+                int ultimateMovementEventIndex = closeFromThisEventIndex;
+                MovementEvent ultimateMovementEvent = (MovementEvent) extrusionBuffer.
+                        get(ultimateMovementEventIndex);
+                Vector2D ultimateMovementVector = new Vector2D(
+                        ultimateMovementEvent.getX(),
+                        ultimateMovementEvent.getY());
+
+                int penultimateMovementEventIndex = extrusionBuffer.
+                        getPreviousMovementEventIndex(ultimateMovementEventIndex);
+                MovementEvent penultimateMovementEvent = (MovementEvent) extrusionBuffer.
+                        get(penultimateMovementEventIndex);
+                Vector2D penultimateMovementVector = new Vector2D(
+                        penultimateMovementEvent.getX(),
+                        penultimateMovementEvent.getY());
+                
+                Vector2D normalisedVectorToEndOfExtrusion = ultimateMovementVector.subtract(penultimateMovementVector).normalize();
+                Vector2D scaledVectorToEndOfExtrusion = normalisedVectorToEndOfExtrusion.scalarMultiply(maxDistanceFromEndPoint);
+                
+                Vector2D segmentEndPoint = ultimateMovementVector.add(scaledVectorToEndOfExtrusion);
+
+                Line intersectionLine = new Line(ultimateMovementVector, segmentEndPoint, 1e-12);
+                segmentToIntersectWith = new Segment(ultimateMovementVector, segmentEndPoint, intersectionLine);
+
+                segmentToIntersectWithMeasurementPoint = ultimateMovementVector;
+            }
+        }
 
         //Prime the last movement if we can...
         int indexToBeginSearchAt = initialExtrusionBounds.getStartIndex();
@@ -1891,11 +1920,11 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                     lastPointConsidered,
                                     thisMovement, 1e-12));
                     Vector2D intersectionPoint = MathUtils.getSegmentIntersection(
-                            orthogonalSegment, segmentUnderConsideration);
+                            segmentToIntersectWith, segmentUnderConsideration);
                     if (intersectionPoint != null)
                     {
                         double distanceFromMidPoint = intersectionPoint.distance(
-                                orthogonalSegmentMidpoint);
+                                segmentToIntersectWithMeasurementPoint);
 
 //                                if (distanceFromEndPoint <= maxDistanceFromEndPoint)
 //                                {
@@ -1911,8 +1940,18 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         if (intersectedPointDistances.size() > 0)
         {
-            //TreeMaps are sorted, so always use the first one 
-            closestEventIndex = (int) intersectedPointDistances.values().toArray()[0];
+            //TreeMaps are sorted
+            // Use the farthest point if we're intersecting orthogonally (which should yield the innermost point)
+            // Use the nearest point if we're intersecting extending from the end of the extrusion
+            
+            if (intersectOrthogonally)
+            {
+                closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
+            }
+            else
+            {
+                closestEventIndex = (int) intersectedPointDistances.values().toArray()[0];
+            }
         }
 
         if (closestEventIndex < 0)
