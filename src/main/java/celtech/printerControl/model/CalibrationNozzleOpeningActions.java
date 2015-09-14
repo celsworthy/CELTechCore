@@ -86,16 +86,12 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             return;
         }
 
-        for (int heaterNumber = 0; heaterNumber < printer.headProperty().get().nozzleHeaters.size(); heaterNumber++)
+        printer.goToTargetNozzleHeaterTemperature(0);
+
+        waitOnNozzleTemperature(0);
+        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
-            printer.goToTargetNozzleHeaterTemperature(heaterNumber);
-
-            waitOnNozzleTemperature(heaterNumber);
-            if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
-            {
-                return;
-            }
-
+            return;
         }
 
         printer.miniPurge(true, userOrErrorCancellable, 0);
@@ -103,18 +99,26 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         {
             return;
         }
-        
-        if (printer.headProperty().get()..headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-                    printer.miniPurge(true, userOrErrorCancellable, 2);
+            printer.goToTargetNozzleHeaterTemperature(1);
+
+            waitOnNozzleTemperature(1);
+            if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+            {
+                return;
+            }
+        }
+
+        printer.miniPurge(true, userOrErrorCancellable, 1);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;
         }
-        
 
-        }
-        if (headReferenceData != null)
+        if (headReferenceData
+                != null)
         {
             steno.debug("Setting B offsets to defaults ("
                     + headReferenceData.getNozzles().get(0).getMinBOffset()
@@ -179,19 +183,23 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             return;
         }
 
-        printer.goToTargetNozzleHeaterTemperature(0);
-        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        printer.goToTargetNozzleHeaterTemperature(
+                0);
+        if (printer.headProperty()
+                .get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
             printer.goToTargetNozzleHeaterTemperature(1);
         }
 
-        waitOnNozzleTemperature(0);
+        waitOnNozzleTemperature(
+                0);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
             return;
         }
 
-        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        if (printer.headProperty()
+                .get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
             waitOnNozzleTemperature(1);
             if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
@@ -215,11 +223,13 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
     public void doNoMaterialCheckAction() throws CalibrationException, InterruptedException, PrinterException
     {
-        if (printer.headProperty().get().)
-        {
-            extrudeUntilStall(0);
-        }
+        extrudeUntilStall(0);
         pressuriseSystem(0);
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            extrudeUntilStall(1);
+            pressuriseSystem(1);
+        }
         Thread.sleep(3000);
         printer.selectNozzle(1);
         // 
