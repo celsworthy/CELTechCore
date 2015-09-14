@@ -849,7 +849,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     }
 
     // If we're here then the last extrusion bounds will not be a perimeter.
-    private Optional<CloseResult> closeToEndOfExtrusion(List<ExtrusionBounds> extrusionBoundaries, String comment, Map<EventType, Integer> eventIndices)
+    private Optional<CloseResult> closeToEndOfExtrusion(List<ExtrusionBounds> extrusionBoundaries,
+            String comment,
+            Map<EventType, Integer> eventIndices,
+            boolean allowCloseOverPerimeter)
     {
         Optional<CloseResult> closeResult = Optional.empty();
         double nozzleStartPosition = 0;
@@ -860,8 +863,9 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         {
             ExtrusionBounds extrusionBounds = extrusionBoundaries.get(extrusionBoundsCount);
 
-            if (extrusionBounds.getExtrusionTask() == ExtrusionTask.ExternalPerimeter
+            if ((extrusionBounds.getExtrusionTask() == ExtrusionTask.ExternalPerimeter
                     || extrusionBounds.getExtrusionTask() == ExtrusionTask.Perimeter)
+                    && !allowCloseOverPerimeter)
             {
                 break;
             }
@@ -1064,6 +1068,12 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             extrusionForCompletePath += extrusionBounds.getEExtrusion();
         }
 
+        // We shouldn't have been asked to partial open - there is more than the ejection volume of material available
+        if (extrusionForCompletePath > currentNozzle.getNozzleParameters().getEjectionVolume())
+        {
+            return closeResult;
+        }
+
         double bValue = Math.min(1, extrusionForCompletePath
                 / currentNozzle.getNozzleParameters().
                 getEjectionVolume());
@@ -1098,23 +1108,24 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         ExtrusionBounds boundsContainingFinalExtrusion = null;
         ExtrusionBounds boundsContainingExtrusionCloseMustStartFrom = null;
 
-        for (ExtrusionBounds extrusionBounds : extrusionBoundaries)
+        for (int extrusionBoundCounter = extrusionBoundaries.size() - 1; extrusionBoundCounter >= 0; extrusionBoundCounter--)
         {
+            ExtrusionBounds extrusionBounds = extrusionBoundaries.get(extrusionBoundCounter);
             if (lastLayerIndex >= 0
-                    && (lastLayerIndex < extrusionBounds.getStartIndex()
-                    || lastLayerIndex < extrusionBounds.getEndIndex()))
+                    && lastLayerIndex >= extrusionBounds.getStartIndex()
+                    && lastLayerIndex <= extrusionBounds.getEndIndex())
             {
                 break;
             }
 
             availableExtrusion += extrusionBounds.getEExtrusion();
 
-            if (boundsContainingInitialExtrusion == null)
+            if (boundsContainingFinalExtrusion == null)
             {
-                boundsContainingInitialExtrusion = extrusionBounds;
+                boundsContainingFinalExtrusion = extrusionBounds;
             }
 
-            boundsContainingFinalExtrusion = extrusionBounds;
+            boundsContainingInitialExtrusion = extrusionBounds;
         }
 
         boundsContainingExtrusionCloseMustStartFrom = boundsContainingFinalExtrusion;
@@ -1212,7 +1223,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         && lastExtrusionBounds.getExtrusionTask() != ExtrusionTask.Perimeter)
                 {
                     //Try closing towards the end of the extrusion
-                    closeResult = closeToEndOfExtrusion(extrusionBoundaries, comment, eventIndices);
+                    closeResult = closeToEndOfExtrusion(extrusionBoundaries, comment, eventIndices, false);
                     failedToCloseOverNonPerimeter = !closeResult.isPresent();
                 }
 
@@ -1239,6 +1250,12 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     } catch (NotEnoughAvailableExtrusionException ex)
                     {
                         closeResult = partialOpenAndCloseAtEndOfExtrusion(extrusionBoundaries, eventIndices);
+
+                        if (!closeResult.isPresent())
+                        {
+                            //Fallback to close to end
+                            closeResult = closeToEndOfExtrusion(extrusionBoundaries, comment, eventIndices, true);
+                        }
                     } catch (NoPerimeterToCloseOverException ex)
                     {
                         try
