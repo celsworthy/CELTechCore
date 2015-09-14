@@ -1041,7 +1041,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         "Close towards perimeter",
                         lastInwardMoveEvent,
                         currentNozzle.getNozzleParameters().getEjectionVolume(),
-                        closeFromEndOfPerimeter
+                        closeFromEndOfPerimeter,
+                        !closeFromEndOfPerimeter
                 );
 
                 eventIndices.put(EventType.NOZZLE_CLOSE_START, startOfClose);
@@ -1790,7 +1791,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             final String originalComment,
             TravelEvent lastInwardsMoveEvent,
             double targetVolume,
-            boolean intersectOrthogonally) throws PostProcessingError, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException
+            boolean intersectOrthogonally,
+            boolean closeOverLastExtrusionBoundary) throws PostProcessingError, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException
     {
         boolean reverseWipePath = false;
 
@@ -1859,10 +1861,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 Vector2D penultimateMovementVector = new Vector2D(
                         penultimateMovementEvent.getX(),
                         penultimateMovementEvent.getY());
-                
+
                 Vector2D normalisedVectorToEndOfExtrusion = ultimateMovementVector.subtract(penultimateMovementVector).normalize();
                 Vector2D scaledVectorToEndOfExtrusion = normalisedVectorToEndOfExtrusion.scalarMultiply(maxDistanceFromEndPoint);
-                
+
                 Vector2D segmentEndPoint = ultimateMovementVector.add(scaledVectorToEndOfExtrusion);
 
                 Line intersectionLine = new Line(ultimateMovementVector, segmentEndPoint, 1e-12);
@@ -1943,12 +1945,11 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             //TreeMaps are sorted
             // Use the farthest point if we're intersecting orthogonally (which should yield the innermost point)
             // Use the nearest point if we're intersecting extending from the end of the extrusion
-            
+
             if (intersectOrthogonally)
             {
                 closestEventIndex = (int) intersectedPointDistances.values().toArray()[intersectedPointDistances.size() - 1];
-            }
-            else
+            } else
             {
                 closestEventIndex = (int) intersectedPointDistances.values().toArray()[0];
             }
@@ -2087,16 +2088,25 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
         if (lowestIndexToCopyFrom >= 0)
         {
-            copyExtrusionEvents(targetVolume,
-                    closestEventIndex,
-                    lowestIndexToCopyFrom,
-                    finalExtrusionBounds.getEndIndex(),
-                    boundsContainingExtrusionToCloseFrom.getEndIndex(),
-                    travelToClosestPoint,
-                    originalComment,
-                    additionalComment,
-                    indexOfFirstCopiedEvent,
-                    indexDelta);
+            if (closeOverLastExtrusionBoundary)
+            {
+                startOfClose = boundsContainingExtrusionToCloseFrom.getStartIndex();
+                targetVolume -= boundsContainingExtrusionToCloseFrom.getEExtrusion();
+            }
+
+            if (targetVolume > 0)
+            {
+                copyExtrusionEvents(targetVolume,
+                        closestEventIndex,
+                        lowestIndexToCopyFrom,
+                        finalExtrusionBounds.getEndIndex(),
+                        boundsContainingExtrusionToCloseFrom.getEndIndex(),
+                        travelToClosestPoint,
+                        originalComment,
+                        additionalComment,
+                        indexOfFirstCopiedEvent,
+                        indexDelta);
+            }
         } else
         {
             throw new CannotCloseFromPerimeterException("Failed to close nozzle correctly - minimum index <= 0");
