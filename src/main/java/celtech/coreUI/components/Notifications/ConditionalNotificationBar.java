@@ -19,6 +19,7 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
         public void changed(
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
         {
+            System.out.println("A " + notificationDescription.getText());
             calculateVisibility();
         }
     };
@@ -59,9 +60,11 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
     {
         if (appearanceCondition.getValue())
         {
+            System.out.println("B " + notificationDescription.getText());
             show();
         } else
         {
+            System.out.println("C " + notificationDescription.getText());
             startSlidingOutOfView();
         }
     }

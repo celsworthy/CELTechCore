@@ -13,8 +13,6 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
-import celtech.utils.threed.MeshSeparator;
-import celtech.utils.threed.MeshSeparatorRunner;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,8 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -89,6 +86,7 @@ public class Project implements Serializable
     private BooleanProperty modelColourChanged;
     private BooleanProperty canPrint;
     private BooleanProperty customSettingsNotChosen;
+    private BooleanBinding hasInvalidMeshes;
     
     private final PrinterSettings printerSettings;
     
@@ -129,6 +127,25 @@ public class Project implements Serializable
                 {
                     projectModified();
                 });
+        
+        hasInvalidMeshes = new BooleanBinding()
+        {
+            {
+                super.bind(topLevelModels);
+            }
+
+            @Override
+            protected boolean computeValue()
+            {
+                if (getModelContainersWithInvalidMesh().isEmpty()) {
+                    System.out.println("XXX does not have invalid meshes");
+                    return false;
+                } else {
+                    System.out.println("XXX has invalid meshes");
+                    return true;
+                }
+            }
+        };
     }
     
     private void initialise()
@@ -174,7 +191,12 @@ public class Project implements Serializable
         {
             invalidModelContainers.add(modelContainer);
         });
+        System.out.println("INVALID: " + invalidModelContainers);
         return invalidModelContainers;
+    }
+    
+    public BooleanBinding hasInvalidMeshes() {
+        return hasInvalidMeshes;
     }
     
     static Project loadProject(String basePath)
