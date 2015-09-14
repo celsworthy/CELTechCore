@@ -964,22 +964,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void miniPurge_T0(boolean blockUntilFinished,
-            Cancellable cancellable) throws PrinterException
+    public void miniPurge(boolean blockUntilFinished,
+            Cancellable cancellable,
+            int nozzleNumber) throws PrinterException
     {
-        Macro macro = Macro.MINI_PURGE_0;
+        Macro macro = Macro.MINI_PURGE;
+        boolean requireNozzle0 = nozzleNumber == 0;
+        boolean requireNozzle1 = nozzleNumber == 1;
 
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
-                blockUntilFinished, cancellable);
-    }
-
-    public void miniPurge_T1(boolean blockUntilFinished,
-            Cancellable cancellable) throws PrinterException
-    {
-        Macro macro = Macro.MINI_PURGE_1;
-
-        executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
-                blockUntilFinished, cancellable);
+                blockUntilFinished, cancellable,
+                requireNozzle0, requireNozzle1);
     }
 
     @Override
