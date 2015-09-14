@@ -29,13 +29,10 @@ import static celtech.utils.Math.MathUtils.compareDouble;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.TreeMap;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -95,77 +92,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
     private int closeCounter = 0;
 
-//    /**
-//     *
-//     * @param inputFilename
-//     * @param outputFilename
-//     * @param settings
-//     * @param percentProgress
-//     * @return
-//     */
-//    public RoboxiserResult roboxiseFile(String inputFilename,
-//        String outputFilename,
-//        SlicerParametersFile settings, DoubleProperty percentProgress)
-//    {
-//        RoboxiserResult result = new RoboxiserResult();
-//        result.setSuccess(false);
-//
-//        if (initialise(settings, outputFilename))
-//        {
-//            boolean success = false;
-//
-//            try
-//            {
-//                SimpleDateFormat formatter = new SimpleDateFormat("EEE d MMM y HH:mm:ss", Locale.UK);
-//                outputWriter.writeOutput("; File post-processed by the CEL Tech Roboxiser on "
-//                    + formatter.format(new Date()) + "\n");
-//                outputWriter.
-//                    writeOutput("; " + ApplicationConfiguration.getTitleAndVersion() + "\n");
-//
-//                outputWriter.writeOutput(";\n; Pre print gcode\n");
-//                for (String macroLine : GCodeMacros.getMacroContents("before_print"))
-//                {
-//                    outputWriter.writeOutput(macroLine + "\n");
-//                }
-//                outputWriter.writeOutput("; End of Pre print gcode\n");
-//
-//                gcodeParser.parse(inputFilename, percentProgress);
-//
-//                outputWriter.close();
-//
-//                steno.info("Finished roboxising " + inputFilename);
-//                steno.info("Total extrusion volume " + totalExtrudedVolume + " mm3");
-//                steno.info("Total XY movement distance " + totalXYMovement + " mm");
-//
-//                success = true;
-//            } catch (IOException ex)
-//            {
-//                steno.error("Error roboxising file " + inputFilename);
-//            } catch (MacroLoadException ex)
-//            {
-//                steno.error(
-//                    "Error roboxising file - couldn't add before print header due to circular macro reference "
-//                    + inputFilename);
-//            }
-//
-//            result.setSuccess(success);
-//            /**
-//             * TODO: layerNumberToLineNumber uses lines numbers from the GCode file so are a little
-//             * less than the line numbers for each layer after roboxisation. As a quick fix for now
-//             * set the line number of the last layer to the actual maximum line number.
-//             */
-//            layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1, outputWriter.
-//                                        getNumberOfLinesOutput());
-//            PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-//                outputWriter.getNumberOfLinesOutput(),
-//                volumeUsed, lineNumberOfFirstExtrusion,
-//                layerNumberToLineNumber, layerNumberToPredictedDuration);
-//
-//            result.setRoboxisedStatistics(roboxisedStatistics);
-//        }
-//
-//        return result;
-//    }
     /**
      *
      * @param line
@@ -232,7 +158,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             nozzleChangeEvent.setNozzleNumber(POINT_3MM_NOZZLE);
             nozzleChangeEvent.setComment("Initialise using nozzle 0");
             extrusionBuffer.add(nozzleChangeEvent);
-            currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
+            setCurrentNozzle(POINT_3MM_NOZZLE);
             lastNozzle = currentNozzle;
         }
 
@@ -257,7 +183,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     extrusionBuffer.add(nozzleChangeEvent);
                     closeCounter = 0;
 
-                    currentNozzle = nozzleProxies.get(nozzleToUse);
+                    setCurrentNozzle(nozzleToUse);
                 } else
                 {
                     steno.warning("Couldn't derive required nozzle to return to...");
@@ -282,7 +208,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     nozzleChangeEvent.setNozzleNumber(requiredNozzle);
                     extrusionBuffer.add(nozzleChangeEvent);
 
-                    currentNozzle = nozzleProxies.get(requiredNozzle);
+                    setCurrentNozzle(requiredNozzle);
                 }
             }
 
@@ -443,7 +369,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         + " - force to nozzle " + forcedNozzleOnFirstLayer + " on first layer");
                 extrusionBuffer.add(nozzleChangeEvent);
                 nozzleInUse = forcedNozzleOnFirstLayer;
-                currentNozzle = nozzleProxies.get(nozzleInUse);
+                setCurrentNozzle(nozzleInUse);
             } else if (layer < 1)
             {
                 tempNozzleMemory = nozzleChangeEvent.getNozzleNumber();
@@ -451,7 +377,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             {
                 extrusionBuffer.add(nozzleChangeEvent);
                 nozzleInUse = nozzleChangeEvent.getNozzleNumber();
-                currentNozzle = nozzleProxies.get(nozzleInUse);
+                setCurrentNozzle(nozzleInUse);
             }
 
             // Reset the nozzle close counter
@@ -558,6 +484,12 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
         }
     }
 
+    private void setCurrentNozzle(int nozzleToUse)
+    {
+        lastNozzle = currentNozzle;
+        currentNozzle = nozzleProxies.get(nozzleToUse);
+    }
+
     private void insertTemperatureCommandsIfRequired()
     {
         if (((slicerType == SlicerType.Slic3r && layer == 1)
@@ -623,7 +555,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             tempNozzleMemory = 0;
             extrusionBuffer.add(nozzleChangeEvent);
             nozzleInUse = forcedNozzleOnFirstLayer;
-            currentNozzle = nozzleProxies.get(nozzleInUse);
+            setCurrentNozzle(nozzleInUse);
         }
 
         if (((slicerType == SlicerType.Slic3r && layer == 1) || (slicerType == SlicerType.Cura
@@ -1330,17 +1262,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
             if (eventIndices.containsKey(EventType.NOZZLE_CLOSE_START) || closeAtEndOfPath)
             {
-
-                if (MathUtils.compareDouble(nozzleCloseOverVolume,
-                        currentNozzle.getNozzleParameters().getEjectionVolume()
-                        + currentNozzle.getNozzleParameters().getWipeVolume(),
-                        0.01) == MathUtils.MORE_THAN)
-                {
-                    GCodeParseEvent startEvent =  extrusionBuffer.get(eventIndices.get(EventType.NOZZLE_CLOSE_START));
-                    steno.error("E value exceeds maximum - layer " + layerIndex);
-                    startEvent.setComment(startEvent.getComment().concat(" - E exceeds maximum"));
-                }
-
                 int foundRetractDuringExtrusion = -1;
                 int foundNozzleChange = -1;
                 double currentNozzlePosition = nozzleStartPosition;
@@ -1424,8 +1345,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     GCodeParseEvent candidateevent = extrusionBuffer.get(
                             eventWriteIndex);
 
-                        //TEMPORARY
-                    // Sometimes the replenish is too big
+                    // Check that the replenish is not too big
                     if (candidateevent instanceof NozzleOpenFullyEvent)
                     {
                         NozzleOpenFullyEvent event = ((NozzleOpenFullyEvent) candidateevent);
@@ -1434,9 +1354,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                 + lastNozzle.getNozzleParameters().getWipeVolume(),
                                 0.01) == MathUtils.MORE_THAN)
                         {
-                            steno.warning("A) E value exceeds maximum " + event.getE() + " - reducing - layer " + layerIndex);
+                            steno.warning("E value exceeds maximum on full open " + event.getE() + " - layer " + layerIndex);
                             event.setComment(event.getComment().concat(" - E exceeds maximum"));
-//                                event.setE(lastNozzle.getNozzleParameters().getEjectionVolume());
                         }
                     }
 
@@ -1448,9 +1367,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                 + lastNozzle.getNozzleParameters().getWipeVolume(),
                                 0.01) == MathUtils.MORE_THAN)
                         {
-                            steno.warning("B) E value exceeds maximum " + event.getE() + " - reducing - layer " + layerIndex);
+                            steno.warning("E value exceeds maximum on nozzle position change " + event.getE() + " - layer " + layerIndex);
                             event.setComment(event.getComment().concat(" - E exceeds maximum"));
-//                                event.setE(lastNozzle.getNozzleParameters().getEjectionVolume());
                         }
                     }
 
@@ -1462,12 +1380,10 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                 + lastNozzle.getNozzleParameters().getWipeVolume(),
                                 0.01) == MathUtils.MORE_THAN)
                         {
-                            steno.warning("C) E value exceeds maximum " + event.getE() + " - reducing - layer " + layerIndex);
+                            steno.warning("E value exceeds maximum on unretract " + event.getE() + " - layer " + layerIndex);
                             event.setComment(event.getComment().concat(" - E exceeds maximum"));
-//                                event.setE(lastNozzle.getNozzleParameters().getEjectionVolume());
                         }
                     }
-                    //TEMPORARY
 
                     if (candidateevent.getFeedRate() > 0)
                     {
@@ -1563,7 +1479,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         if (eventWriteIndex == wipeIndex
                                 && eventWriteIndex == nozzleCloseStartIndex)
                         {
-                                // No extrusion
+                            // No extrusion
                             // Proportional B value
                             NozzlePositionChangeEvent nozzleEvent = new NozzlePositionChangeEvent();
                             nozzleEvent.setX(event.getX());
@@ -1594,7 +1510,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         } else if (eventWriteIndex <= nozzleOpenEndIndex
                                 && nozzleOpenEndIndex != -1)
                         {
-                                // Normal extrusion plus auto unretract
+                            // Normal extrusion plus auto unretract
                             // Proportional B value
                             NozzlePositionChangeEvent nozzleEvent = new NozzlePositionChangeEvent();
                             nozzleEvent.setX(event.getX());
@@ -1625,7 +1541,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                                 && (nozzleCloseMidpointIndex == -1
                                 || eventWriteIndex < nozzleCloseMidpointIndex))
                         {
-                                // No extrusion
+                            // No extrusion
                             // Proportional B value
                             NozzlePositionChangeEvent nozzleEvent = new NozzlePositionChangeEvent();
                             nozzleEvent.setX(event.getX());
@@ -1681,7 +1597,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         } else if (nozzleCloseMidpointIndex != -1
                                 && eventWriteIndex >= nozzleCloseMidpointIndex)
                         {
-                                // No extrusion
+                            // No extrusion
                             // Proportional B value
                             NozzlePositionChangeEvent nozzleEvent = new NozzlePositionChangeEvent();
                             nozzleEvent.setX(event.getX());
@@ -1738,10 +1654,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         writeEventToFile(candidateevent);
                         if (candidateevent instanceof NozzleChangeEvent)
                         {
-                            NozzleProxy newNozzle = nozzleProxies.get(
-                                    ((NozzleChangeEvent) candidateevent).getNozzleNumber());
-                            lastNozzle = currentNozzle;
-                            currentNozzle = newNozzle;
+                            setCurrentNozzle(((NozzleChangeEvent) candidateevent).getNozzleNumber());
                             closeCounter = 0;
                         } else if (candidateevent instanceof NozzleChangeBValueEvent)
                         {
@@ -1791,9 +1704,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     writeEventToFile(event);
                     if (event instanceof NozzleChangeEvent)
                     {
-                        NozzleProxy newNozzle = nozzleProxies.get(
-                                ((NozzleChangeEvent) event).getNozzleNumber());
-                        currentNozzle = newNozzle;
+                        setCurrentNozzle(((NozzleChangeEvent) event).getNozzleNumber());
                     }
                 }
             }
