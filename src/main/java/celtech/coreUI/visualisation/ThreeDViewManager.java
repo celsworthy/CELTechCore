@@ -575,6 +575,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         overheadLight.setTranslateX(105);
         overheadLight.setTranslateY(-400);
         overheadLight.setTranslateZ(75);
+        
+        overheadLight.setColor(Color.WHITE.darker().darker().darker());
 
         bedTranslateXform.getChildren().addAll(overheadLight, bed, models, translationDragPlane,
                                                scaleDragPlane);
