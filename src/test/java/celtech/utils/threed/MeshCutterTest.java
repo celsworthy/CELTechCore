@@ -87,7 +87,7 @@ public class MeshCutterTest
     @Test
     public void testGetAdjacentIntersectionsForPointsOnCutPlane()
     {
-        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
         
         BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
         
@@ -104,7 +104,7 @@ public class MeshCutterTest
     @Test
     public void testGetAdjacentIntersectionsForPointsOnCutPlane2()
     {
-        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
         
         BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
         
@@ -121,7 +121,7 @@ public class MeshCutterTest
     @Test
     public void testMeshWithPointsOnCutPlane()
     {
-        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
 
         Optional<MeshError> error = MeshUtils.validate(mesh);
         assertTrue(!error.isPresent());
@@ -138,7 +138,7 @@ public class MeshCutterTest
 
     }
 
-    private TriangleMesh createNeshWithPointsOnCutPlane()
+    private TriangleMesh createMeshWithPointsOnCutPlane()
     {
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().addAll(0, 0, 0);

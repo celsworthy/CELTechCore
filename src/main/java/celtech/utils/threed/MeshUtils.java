@@ -7,6 +7,7 @@ package celtech.utils.threed;
 
 import static celtech.utils.threed.MeshCutter.getFaceEdges;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
+import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class MeshUtils
         Map<Vertex, Integer> vertexToVertex = new HashMap<>();
         for (int vertexIndex = 0; vertexIndex < mesh.getPoints().size() / 3; vertexIndex++)
         {
-            Vertex vertex = MeshCutter.getVertex(mesh, vertexIndex);
+            Vertex vertex = TriangleCutter.getVertex(mesh, vertexIndex);
 
             if (vertexToVertex.containsKey(vertex))
             {
@@ -84,6 +85,15 @@ public class MeshUtils
             }
         }
         replaceVertices(mesh, vertexReplacements);
+    }
+    
+    static TriangleMesh copyMesh(TriangleMesh mesh)
+    {
+        TriangleMesh childMesh = new TriangleMesh();
+        childMesh.getPoints().addAll(mesh.getPoints());
+        childMesh.getFaces().addAll(mesh.getFaces());
+        setTextureAndSmoothing(childMesh, childMesh.getFaces().size() / 6);
+        return childMesh;
     }
 
     /**
