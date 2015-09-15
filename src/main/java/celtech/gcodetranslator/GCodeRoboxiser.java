@@ -158,7 +158,7 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             nozzleChangeEvent.setNozzleNumber(POINT_3MM_NOZZLE);
             nozzleChangeEvent.setComment("Initialise using nozzle 0");
             extrusionBuffer.add(nozzleChangeEvent);
-            setCurrentNozzle(POINT_3MM_NOZZLE);
+            currentNozzle = nozzleProxies.get(POINT_3MM_NOZZLE);
             lastNozzle = currentNozzle;
         }
 
@@ -486,7 +486,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
 
     private void setCurrentNozzle(int nozzleToUse)
     {
-        lastNozzle = currentNozzle;
         currentNozzle = nozzleProxies.get(nozzleToUse);
     }
 
@@ -724,7 +723,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
     private ExtrusionBufferDigest getExtrusionBufferDigest(ExtrusionBuffer buffer)
     {
         List<ExtrusionBounds> extrusionBoundaries = new ArrayList<>();
-        List<Integer> inwardsMoveIndexList = new ArrayList<>();
         int firstNozzleEvent = -1;
         int lastLayerIndex = -1;
 
@@ -759,21 +757,6 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                 extrusionBoundary.setEExtrusion(extrusionBoundary.getEExtrusion() + extrusionEvent.getE());
                 extrusionBoundary.setDExtrusion(extrusionBoundary.getDExtrusion() + extrusionEvent.getD());
                 indexOfLastDetectedExtrusionEvent = extrusionBufferIndex;
-            } else if (event instanceof TravelEvent)
-            {
-                switch (slicerType)
-                {
-                    case Slic3r:
-                        String eventComment = event.getComment();
-                        if (eventComment != null)
-                        {
-                            //TODO Slic3r specific code!
-                            if (eventComment.contains("move inwards"))
-                            {
-                                inwardsMoveIndexList.add(0, extrusionBufferIndex);
-                            }
-                        }
-                }
             } else if (event instanceof NozzleChangeBValueEvent
                     || event instanceof NozzleOpenFullyEvent)
             {
@@ -785,6 +768,14 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
             {
                 //Record the last layer event - we need this for perimeter checks
                 lastLayerIndex = extrusionBufferIndex;
+                if (extrusionBoundary != null)
+                {
+                    // Populate the end event in the last boundary
+                    extrusionBoundary.setStartIndex(indexOfLastDetectedExtrusionEvent);
+                    extrusionBoundaries.add(0, extrusionBoundary);
+                    extrusionBoundary = null;
+                    lastDetectedExtrusionTask = null;
+                }
             }
         }
 
@@ -1682,6 +1673,8 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                         }
                     }
                 }
+
+                lastNozzle = currentNozzle;
 
                 extrusionBuffer.clear();
 
