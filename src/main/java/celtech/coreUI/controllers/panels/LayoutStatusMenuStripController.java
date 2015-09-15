@@ -666,7 +666,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         printButton.getTag().addConditionalText("dialogs.chooseACustomProfile",
                 project.customSettingsNotChosenProperty());
-        
+
         printButton.getTag().addConditionalText("dialogs.printHeadPowerOff",
                 printer.headPowerOnFlagProperty().not());
 
@@ -687,6 +687,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         noFilament0Selected));
         printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentMessage",
                 printer.extrudersProperty().get(0).filamentLoadedProperty().not());
+        printButton.getTag().addConditionalText("dialogs.cantPrintNoFilamentSelectedMessage0",
+                twoExtruderPrinter.and(filament0Reqd).and(
+                        noFilament0Selected));
+        printButton.getTag().addConditionalText("dialogs.cantPrintNoHeadMessage",
+                printer.headProperty().isNull());
 
         /* Inhibit DMH related functionality
          printButton.getTag().addConditionalText("dialogs.filamentMismatchMessage",
@@ -951,7 +956,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(extruderNumber).
                                 filamentLoadedProperty()
-                        .and(printer.headPowerOnFlagProperty()))
+                                .and(printer.headPowerOnFlagProperty()))
                 );
             } else // both extruders are required
             {
@@ -964,7 +969,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                         .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
-                        .and(printer.headPowerOnFlagProperty()))
+                                .and(printer.headPowerOnFlagProperty()))
                 );
 
             }
