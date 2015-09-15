@@ -71,7 +71,7 @@ public class TriangleCutter
         
         mesh.getPoints().addAll((float) intersectingVertex.x, (float) intersectingVertex.y,
                                 (float) intersectingVertex.z);
-        System.out.println("add new vertex " + (mesh.getPoints().size() / 3 - 1) + " at " + intersectingVertex);
+        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at " + intersectingVertex);
         return mesh.getPoints().size() / 3 - 1;
     }
 

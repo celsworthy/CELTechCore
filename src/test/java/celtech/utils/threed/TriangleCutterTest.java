@@ -3,6 +3,7 @@
  */
 package celtech.utils.threed;
 
+import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.TriangleCutter.splitFaceAndAddLowerFacesToMesh;
 import javafx.geometry.Point3D;
@@ -270,5 +271,105 @@ public class TriangleCutterTest
         assertEquals(4, v2);
 
     }    
+    
+    @Test
+    public void testTriangulateRegularTriangleForFaceWithTwoEdgesCutByPlaneBottomBedConverterLateral()
+    {
+        BedToLocalConverter bedToLocalConverter = makeLateralConverter();
+        
+        TriangleMesh mesh = createSimpleCube();
+
+        TriangleMesh childMesh = copyMesh(mesh);
+
+        float cutHeight = 1f;
+        int faceIndex = 2;
+        splitFaceAndAddLowerFacesToMesh(childMesh,
+                                        faceIndex, cutHeight, bedToLocalConverter,
+                                        MeshCutter.TopBottom.BOTTOM);
+
+        assertEquals(13, childMesh.getFaces().size() / 6);
+
+        int newFaceIndex = 12;
+        int v0 = childMesh.getFaces().get(newFaceIndex * 6);
+        int v1 = childMesh.getFaces().get(newFaceIndex * 6 + 2);
+        int v2 = childMesh.getFaces().get(newFaceIndex * 6 + 4);
+
+        assertEquals(5, v0);
+        assertEquals(8, v1);
+        assertEquals(9, v2);
+        
+        // test new points
+        Vertex v8 = TriangleCutter.getVertex(childMesh, 8);
+        assertEquals(0, v8.x, 0.0001);
+        assertEquals(1, v8.y, 0.0001);
+        assertEquals(1, v8.z, 0.0001);
+        
+        Vertex v9 = TriangleCutter.getVertex(childMesh, 9);
+        assertEquals(0, v9.x, 0.0001);
+        assertEquals(1, v9.y, 0.0001);
+        assertEquals(2, v9.z, 0.0001);
+
+
+    }
+
+    @Test
+    public void testTriangulateRegularTriangleForFaceWithTwoEdgesCutByPlaneTopBedConverterLateral()
+    {
+        
+        BedToLocalConverter bedToLocalConverter = makeLateralConverter();
+        
+        TriangleMesh mesh = createSimpleCube();
+
+        TriangleMesh childMesh = copyMesh(mesh);
+
+        float cutHeight = 1f;
+        int faceIndex = 2;
+        splitFaceAndAddLowerFacesToMesh(childMesh,
+                                        faceIndex, cutHeight, bedToLocalConverter,
+                                        MeshCutter.TopBottom.TOP);
+
+        assertEquals(14, childMesh.getFaces().size() / 6);
+
+        int newFaceIndex1 = 12;
+        int v0 = childMesh.getFaces().get(newFaceIndex1 * 6);
+        int v1 = childMesh.getFaces().get(newFaceIndex1 * 6 + 2);
+        int v2 = childMesh.getFaces().get(newFaceIndex1 * 6 + 4);
+
+        assertEquals(0, v0);
+        assertEquals(1, v1);
+        assertEquals(9, v2);
+
+        int newFaceIndex2 = 13;
+        v0 = childMesh.getFaces().get(newFaceIndex2 * 6);
+        v1 = childMesh.getFaces().get(newFaceIndex2 * 6 + 2);
+        v2 = childMesh.getFaces().get(newFaceIndex2 * 6 + 4);
+
+        assertEquals(0, v0);
+        assertEquals(9, v1);
+        assertEquals(8, v2);
+
+    }
+
+    private BedToLocalConverter makeLateralConverter()
+    {
+        MeshCutter.BedToLocalConverter bedToLocalConverter = new MeshCutter.BedToLocalConverter()
+        {
+            
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return new Point3D(point.getX() + 1, point.getY(), point.getZ() + 2);
+            }
+            
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return new Point3D(point.getX() - 1, point.getY(), point.getZ() - 2);
+            }
+        };
+        return bedToLocalConverter;
+    }
+
+    
 
 }
