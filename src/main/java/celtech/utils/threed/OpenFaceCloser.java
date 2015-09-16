@@ -84,7 +84,8 @@ public class OpenFaceCloser
                     for (PolygonIndices innerPolygonIndices : region.innerLoops) {
                         System.out.println("inner loop is " + innerPolygonIndices);
                     }
-                    throw new RuntimeException("Unable to triangulate");
+//                    throw new RuntimeException("Unable to triangulate");
+                    System.out.println("Unable to triangulate");
                 }
             }
         }

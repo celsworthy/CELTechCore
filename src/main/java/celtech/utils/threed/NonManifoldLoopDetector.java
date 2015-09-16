@@ -26,29 +26,35 @@ public class NonManifoldLoopDetector
     {
 
         Set<Edge> edges = getNonManifoldEdges(mesh);
+        Map<Integer, Set<Edge>> edgesWithVertex = makeEdgesWithVertex(edges);
 
         Set<List<Edge>> loops = new HashSet<>();
 
         Optional<List<Edge>> loopEdges;
         do
         {
-            loopEdges = getNextNonManifoldLoop(edges);
-            if (loopEdges.isPresent())
+            try
             {
-                loops.add(loopEdges.get());
+                loopEdges = getNextNonManifoldLoop(edges, edgesWithVertex);
+                if (loopEdges.isPresent())
+                {
+                    loops.add(loopEdges.get());
+                }
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
             }
-        } while (loopEdges.isPresent());
+        } while (!edges.isEmpty());
 
         return loops;
 
     }
 
-    static Optional<List<Edge>> getNextNonManifoldLoop(Set<Edge> edges)
+    static Optional<List<Edge>> getNextNonManifoldLoop(Set<Edge> edges,
+        Map<Integer, Set<Edge>> edgesWithVertex)
     {
 
         assert !edges.isEmpty();
-
-        Map<Integer, Set<Edge>> edgesWithVertex = makeEdgesWithVertex(edges);
 
         List<Edge> loop = new ArrayList<>();
 
@@ -75,6 +81,7 @@ public class NonManifoldLoopDetector
             //XXX is it possible to have multiple non-manifold edges connecting to same vertex?
             assert edgesWithPreviousVertex.size() == 1;
             Edge nextEdge = edgesWithPreviousVertex.iterator().next();
+            assert edges.contains(nextEdge);
             loop.add(nextEdge);
             edges.remove(nextEdge);
             int nextVertex;
@@ -96,7 +103,7 @@ public class NonManifoldLoopDetector
         return Optional.of(loop);
     }
 
-    private static Map<Integer, Set<Edge>> makeEdgesWithVertex(Set<Edge> edges)
+    static Map<Integer, Set<Edge>> makeEdgesWithVertex(Set<Edge> edges)
     {
         Map<Integer, Set<Edge>> edgesWithVertex = new HashMap<>();
         for (Edge edge : edges)

@@ -7,9 +7,11 @@ import static celtech.utils.threed.MeshCutter.makePoint3D;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.NonManifoldLoopDetector.identifyNonManifoldLoops;
+import static celtech.utils.threed.OpenFaceCloser.closeOpenFace;
 import com.sun.javafx.scene.shape.ObservableFaceArrayImpl;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
@@ -21,19 +23,60 @@ import javafx.scene.shape.TriangleMesh;
  */
 public class MeshCutter2
 {
+    /**
+     * Cut the given mesh into two, at the given height.
+     */
+    public static MeshCutter.MeshPair cut(TriangleMesh mesh, float cutHeight,
+        MeshCutter.BedToLocalConverter bedToLocalConverter)
+    {
+
+        System.out.println("cut at " + cutHeight);
+
+        CutResult cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.TOP);
+
+        TriangleMesh topMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
+        MeshUtils.removeUnusedAndDuplicateVertices(topMesh);
+        setTextureAndSmoothing(topMesh, topMesh.getFaces().size() / 6);
+
+        Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
+        if (error.isPresent())
+        {
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
+        }
+        
+        cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
+
+        TriangleMesh bottomMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
+        MeshUtils.removeUnusedAndDuplicateVertices(bottomMesh);
+        setTextureAndSmoothing(bottomMesh, bottomMesh.getFaces().size() / 6);
+
+        error = MeshUtils.validate(bottomMesh);
+        if (error.isPresent())
+        {
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
+        }
+
+
+        return new MeshCutter.MeshPair(topMesh, bottomMesh);
+    }
+
     
-    static CutResult getUncoveredUpperMesh(TriangleMesh mesh,
-        float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter)
+    
+    static CutResult getUncoveredMesh(TriangleMesh mesh,
+        float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter,
+        MeshCutter.TopBottom topBottom)
     {
 
         TriangleMesh childMesh = makeSplitMesh(mesh,
-                                         cutHeight, bedToLocalConverter, MeshCutter.TopBottom.TOP);
+                                         cutHeight, bedToLocalConverter, topBottom);
         
-        Set<List<Edge>> polygonIndices = identifyNonManifoldLoops(childMesh);
-//        CutResult cutResultUpper = new CutResult(childMesh, polygonIndices,
-//                                                 bedToLocalConverter, MeshCutter.TopBottom.TOP);
-//        return cutResultUpper;
-        return null;
+        Set<List<Edge>> loops = identifyNonManifoldLoops(childMesh);
+        
+        Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
+        
+        CutResult cutResultUpper = new CutResult(childMesh, polygonIndices,
+                                                 bedToLocalConverter, topBottom);
+        return cutResultUpper;
     }
     
     /**
@@ -118,6 +161,28 @@ public class MeshCutter2
         }
         mesh.getFaces().setAll(newFaceArray);
         setTextureAndSmoothing(mesh, mesh.getFaces().size() / 6);
+    }
+
+    private static Set<PolygonIndices> convertEdgesToVertices(Set<List<Edge>> loops)
+    {
+        Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
+        for (List<Edge> loop : loops)
+        {
+            PolygonIndices polygonIndices = convertEdgesToPolygonIndices(loop);
+            polygonIndicesSet.add(polygonIndices);
+        }
+        return polygonIndicesSet;
+    }
+
+    private static PolygonIndices convertEdgesToPolygonIndices(List<Edge> loop)
+    {
+        PolygonIndices polygonIndices = new PolygonIndices();
+        for (Edge edge : loop)
+        {
+            polygonIndices.add(edge.v0);
+        }
+        polygonIndices.add(loop.get(loop.size() - 1).v1);
+        return polygonIndices;
     }
 
 

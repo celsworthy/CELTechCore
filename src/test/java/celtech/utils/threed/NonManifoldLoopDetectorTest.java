@@ -6,6 +6,7 @@ package celtech.utils.threed;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
@@ -70,17 +71,20 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(new Edge(1, 2));
         manifoldEdges.add(new Edge(0, 2));
 
-        Optional<List<Edge>> loop = NonManifoldLoopDetector.getNextNonManifoldLoop(manifoldEdges);
-        
+        Map<Integer, Set<Edge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+            manifoldEdges);
+        Optional<List<Edge>> loop = NonManifoldLoopDetector.getNextNonManifoldLoop(manifoldEdges,
+                                                                                   edgesWithVertex);
+
         List<Edge> expectedLoop = new ArrayList<>();
         expectedLoop.add(new Edge(0, 1));
         expectedLoop.add(new Edge(1, 2));
         expectedLoop.add(new Edge(2, 0));
-        
+
         assertEquals(expectedLoop, loop.get());
-        
+
     }
-    
+
     @Test
     public void testGetNextNonManifoldLoopTwoLoops()
     {
@@ -88,18 +92,40 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(new Edge(0, 1));
         manifoldEdges.add(new Edge(1, 2));
         manifoldEdges.add(new Edge(0, 2));
-        
+
         manifoldEdges.add(new Edge(10, 11));
         manifoldEdges.add(new Edge(11, 12));
         manifoldEdges.add(new Edge(10, 12));
 
-        Optional<List<Edge>> loop1 = NonManifoldLoopDetector.getNextNonManifoldLoop(manifoldEdges);
-        Optional<List<Edge>> loop2 = NonManifoldLoopDetector.getNextNonManifoldLoop(manifoldEdges);
-        
+        Map<Integer, Set<Edge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+            manifoldEdges);
+
+        Optional<List<Edge>> loop1 = NonManifoldLoopDetector.getNextNonManifoldLoop(manifoldEdges,
+                                                                                    edgesWithVertex);
+        Optional<List<Edge>> loop2 = NonManifoldLoopDetector.getNextNonManifoldLoop(manifoldEdges,
+                                                                                    edgesWithVertex);
+
         assertEquals(3, loop1.get().size());
         assertEquals(3, loop2.get().size());
         assertTrue(manifoldEdges.isEmpty());
+
+    }
+    
+    @Test
+    public void testIdentifyNonManifoldLoops() {
         
-    }    
+        TriangleMesh mesh = createSimpleCubeWithMissingFace();
+        
+        Set<List<Edge>> loops = NonManifoldLoopDetector.identifyNonManifoldLoops(mesh);
+        System.out.println(loops);
+        assertEquals(1, loops.size());
+        
+        List<Edge> expectedLoop = new ArrayList<>();
+        expectedLoop.add(new Edge(0, 1));
+        expectedLoop.add(new Edge(1, 2));
+        expectedLoop.add(new Edge(2, 0));
+
+        assertEquals(expectedLoop, loops.iterator().next());
+    }
 
 }
