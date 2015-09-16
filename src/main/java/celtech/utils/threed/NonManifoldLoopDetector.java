@@ -26,6 +26,7 @@ public class NonManifoldLoopDetector
     {
 
         Set<Edge> edges = getNonManifoldEdges(mesh);
+        System.out.println("non manifold edges " + edges);
         Map<Integer, Set<Edge>> edgesWithVertex = makeEdgesWithVertex(edges);
 
         Set<List<Edge>> loops = new HashSet<>();
@@ -79,7 +80,14 @@ public class NonManifoldLoopDetector
             Set<Edge> edgesWithPreviousVertex = edgesWithVertex.get(previousVertex);
             edgesWithPreviousVertex.remove(previousEdge);
             //XXX is it possible to have multiple non-manifold edges connecting to same vertex?
-            assert edgesWithPreviousVertex.size() == 1;
+            if (edgesWithPreviousVertex.size() != 1) {
+                
+                for (Edge edge : edgesWithPreviousVertex)
+                {
+                    System.out.println("connecting edge: "  + edge);
+                }
+            }
+            assert edgesWithPreviousVertex.size() == 1: edgesWithPreviousVertex.size() + " other edges connect to vertex";
             Edge nextEdge = edgesWithPreviousVertex.iterator().next();
             assert edges.contains(nextEdge);
             loop.add(nextEdge);

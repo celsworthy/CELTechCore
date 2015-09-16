@@ -6,8 +6,16 @@ package celtech.utils.threed;
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.TriangleCutter.splitFaceAndAddLowerFacesToMesh;
+import celtech.utils.threed.importers.stl.STLFileParsingException;
+import celtech.utils.threed.importers.stl.STLImporter;
+import java.io.File;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -141,6 +149,25 @@ public class TriangleCutterTest
     }
 
     @Test
+    public void testTriangulateForFaceWithVertexVeryCloseToCutPlane()
+    {
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
+
+        TriangleMesh childMesh = copyMesh(mesh);
+
+        for (float cutHeight = 0.999f; cutHeight < 1f; cutHeight += 0.000001f)
+        {
+            int faceIndex = 2;
+            Set<Integer> facesToRemove = new HashSet<>();
+            splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
+                                            faceIndex, cutHeight, makeNullConverter(),
+                                            MeshCutter.TopBottom.BOTTOM);
+
+        }
+
+    }
+
+    @Test
     public void testTriangulateRegularTriangleForFaceNotCutByPlane()
     {
         TriangleMesh mesh = createSimpleCube();
@@ -149,7 +176,8 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 0;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -166,7 +194,8 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -178,8 +207,8 @@ public class TriangleCutterTest
         int v2 = childMesh.getFaces().get(newFaceIndex * 6 + 4);
 
         assertEquals(5, v0);
-        assertEquals(8, v1);
-        assertEquals(9, v2);
+        assertEquals(9, v1);
+        assertEquals(8, v2);
 
     }
 
@@ -192,7 +221,8 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.TOP);
 
@@ -205,7 +235,7 @@ public class TriangleCutterTest
 
         assertEquals(0, v0);
         assertEquals(1, v1);
-        assertEquals(9, v2);
+        assertEquals(8, v2);
 
         int newFaceIndex2 = 13;
         v0 = childMesh.getFaces().get(newFaceIndex2 * 6);
@@ -213,8 +243,8 @@ public class TriangleCutterTest
         v2 = childMesh.getFaces().get(newFaceIndex2 * 6 + 4);
 
         assertEquals(0, v0);
-        assertEquals(9, v1);
-        assertEquals(8, v2);
+        assertEquals(8, v1);
+        assertEquals(9, v2);
 
     }
 
@@ -228,7 +258,8 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -238,13 +269,13 @@ public class TriangleCutterTest
         int v0 = childMesh.getFaces().get(newFaceIndex * 6);
         int v1 = childMesh.getFaces().get(newFaceIndex * 6 + 2);
         int v2 = childMesh.getFaces().get(newFaceIndex * 6 + 4);
-
-        assertEquals(4, v0);
+        
+        assertEquals(12, v0);
         assertEquals(7, v1);
         assertEquals(8, v2);
 
     }
-    
+
     @Test
     public void testTriangulateForFaceWithOneVertexOnPlaneTop()
     {
@@ -255,7 +286,8 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.TOP);
 
@@ -268,22 +300,23 @@ public class TriangleCutterTest
 
         assertEquals(0, v0);
         assertEquals(7, v1);
-        assertEquals(4, v2);
+        assertEquals(12, v2);
 
-    }    
-    
+    }
+
     @Test
     public void testTriangulateRegularTriangleForFaceWithTwoEdgesCutByPlaneBottomBedConverterLateral()
     {
         BedToLocalConverter bedToLocalConverter = makeLateralConverter();
-        
+
         TriangleMesh mesh = createSimpleCube();
 
         TriangleMesh childMesh = copyMesh(mesh);
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, bedToLocalConverter,
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -295,36 +328,36 @@ public class TriangleCutterTest
         int v2 = childMesh.getFaces().get(newFaceIndex * 6 + 4);
 
         assertEquals(5, v0);
-        assertEquals(8, v1);
-        assertEquals(9, v2);
-        
+        assertEquals(9, v1);
+        assertEquals(8, v2);
+
         // test new points
         Vertex v8 = TriangleCutter.getVertex(childMesh, 8);
         assertEquals(0, v8.x, 0.0001);
         assertEquals(1, v8.y, 0.0001);
-        assertEquals(1, v8.z, 0.0001);
-        
+        assertEquals(2, v8.z, 0.0001);
+
         Vertex v9 = TriangleCutter.getVertex(childMesh, 9);
         assertEquals(0, v9.x, 0.0001);
         assertEquals(1, v9.y, 0.0001);
-        assertEquals(2, v9.z, 0.0001);
-
+        assertEquals(1, v9.z, 0.0001);
 
     }
 
     @Test
     public void testTriangulateRegularTriangleForFaceWithTwoEdgesCutByPlaneTopBedConverterLateral()
     {
-        
+
         BedToLocalConverter bedToLocalConverter = makeLateralConverter();
-        
+
         TriangleMesh mesh = createSimpleCube();
 
         TriangleMesh childMesh = copyMesh(mesh);
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, bedToLocalConverter,
                                         MeshCutter.TopBottom.TOP);
 
@@ -337,7 +370,7 @@ public class TriangleCutterTest
 
         assertEquals(0, v0);
         assertEquals(1, v1);
-        assertEquals(9, v2);
+        assertEquals(8, v2);
 
         int newFaceIndex2 = 13;
         v0 = childMesh.getFaces().get(newFaceIndex2 * 6);
@@ -345,22 +378,44 @@ public class TriangleCutterTest
         v2 = childMesh.getFaces().get(newFaceIndex2 * 6 + 4);
 
         assertEquals(0, v0);
-        assertEquals(9, v1);
-        assertEquals(8, v2);
+        assertEquals(8, v1);
+        assertEquals(9, v2);
 
+    }
+    
+        @Test
+    public void testEnricoSTLAt1Face1612DuplicateVerticesCreated() throws STLFileParsingException
+    {
+
+        URL stlURL = this.getClass().getResource("/enrico.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshUtils.MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
+
+        MeshCutter.BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+
+        TriangleMesh childMesh = copyMesh(mesh);
+
+        float cutHeight = 1f;
+        int faceIndex = 1612;
+        Set<Integer> facesToRemove = new HashSet<>();
+        splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
+                                        faceIndex, cutHeight, nullBedToLocalConverter,
+                                        MeshCutter.TopBottom.TOP);
     }
 
     private BedToLocalConverter makeLateralConverter()
     {
         MeshCutter.BedToLocalConverter bedToLocalConverter = new MeshCutter.BedToLocalConverter()
         {
-            
+
             @Override
             public Point3D localToBed(Point3D point)
             {
                 return new Point3D(point.getX() + 1, point.getY(), point.getZ() + 2);
             }
-            
+
             @Override
             public Point3D bedToLocal(Point3D point)
             {
@@ -369,7 +424,5 @@ public class TriangleCutterTest
         };
         return bedToLocalConverter;
     }
-
-    
 
 }
