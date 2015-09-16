@@ -84,7 +84,6 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             String printJobDirectory, Project project, PrintQualityEnumeration printQuality,
             Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno)
     {
-        boolean succeeded = false;
 
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         if (settings.getSlicerOverride() != null)
@@ -92,31 +91,32 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             slicerType = settings.getSlicerOverride();
         }
 
-        String tempModelFilename;
         MeshFileOutputConverter outputConverter = null;
 
-//        if (slicerType == SlicerType.Cura)
-//        {
-//            tempModelFilename = printJobUUID + ApplicationConfiguration.amfTempFileExtension;
-//            outputConverter = new AMFOutputConverter();
-//        } else
-        {
-            tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-            outputConverter = new STLOutputConverter();
-        }
+        outputConverter = new STLOutputConverter();
 
         List<String> createdMeshFiles = null;
 
-        // Output multiple files if we are using Cura
-//        if (slicerType == SlicerType.Cura)
-//        {
-//            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-//                                                          false);
-//        } else
-        {
-            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-                    true);
-        }
+        createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+                true);
+
+        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
+
+        boolean succeeded = sliceFile(printJobUUID, printJobDirectory, slicerType, createdMeshFiles, centreOfPrintedObject, progressReceiver, steno);
+
+        return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
+                succeeded);
+    }
+
+    public static boolean sliceFile(String printJobUUID,
+            String printJobDirectory,
+            SlicerType slicerType,
+            List<String> createdMeshFiles,
+            Vector3D centreOfPrintedObject,
+            ProgressReceiver progressReceiver,
+            Stenographer steno)
+    {
+        boolean succeeded = false;
 
         String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
 
@@ -207,7 +207,6 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 if (!printCenterCommand.equals(""))
                 {
                     windowsPrintCommand += " " + printCenterCommand;
-                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
                     windowsPrintCommand += " "
                             + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
                             + ","
@@ -241,7 +240,6 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 if (!printCenterCommand.equals(""))
                 {
                     commands.add(printCenterCommand);
-                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
                     commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
                             + ","
                             + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
@@ -270,7 +268,6 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 if (!printCenterCommand.equals(""))
                 {
                     commands.add(printCenterCommand);
-                    Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getLoadedModels());
                     commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
                             + ","
                             + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
@@ -338,11 +335,10 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             }
         } else
         {
-            steno.error("Couldn't run autoupdate - no commands for OS ");
+            steno.error("Couldn't run slicer - no commands for OS ");
         }
 
-        return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
-                succeeded);
+        return succeeded;
     }
 
     @Override
