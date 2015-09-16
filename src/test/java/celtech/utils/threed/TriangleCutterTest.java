@@ -19,7 +19,7 @@ import org.junit.Test;
 public class TriangleCutterTest
 {
 
-    private TriangleMesh createSimpleCube()
+    public static TriangleMesh createSimpleCube()
     {
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().addAll(0, 0, 0);
@@ -46,7 +46,7 @@ public class TriangleCutterTest
         return mesh;
     }
 
-    private TriangleMesh createMeshWithPointsOnCutPlane()
+    public static TriangleMesh createMeshWithPointsOnCutPlane()
     {
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().addAll(0, 0, 0);
@@ -85,7 +85,7 @@ public class TriangleCutterTest
         return mesh;
     }
 
-    private TriangleMesh createMeshWithOneVertexOnPlane()
+    public static TriangleMesh createMeshWithOneVertexOnPlane()
     {
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().addAll(0, 0, 0);
@@ -120,7 +120,7 @@ public class TriangleCutterTest
         return mesh;
     }
 
-    private MeshCutter.BedToLocalConverter makeNullConverter()
+    public static MeshCutter.BedToLocalConverter makeNullConverter()
     {
         MeshCutter.BedToLocalConverter nullBedToLocalConverter = new MeshCutter.BedToLocalConverter()
         {
@@ -149,7 +149,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 0;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -166,7 +166,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -192,7 +192,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.TOP);
 
@@ -228,7 +228,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -255,7 +255,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, makeNullConverter(),
                                         MeshCutter.TopBottom.TOP);
 
@@ -283,7 +283,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, bedToLocalConverter,
                                         MeshCutter.TopBottom.BOTTOM);
 
@@ -324,7 +324,7 @@ public class TriangleCutterTest
 
         float cutHeight = 1f;
         int faceIndex = 2;
-        splitFaceAndAddLowerFacesToMesh(childMesh,
+        splitFaceAndAddLowerFacesToMesh(mesh, childMesh,
                                         faceIndex, cutHeight, bedToLocalConverter,
                                         MeshCutter.TopBottom.TOP);
 

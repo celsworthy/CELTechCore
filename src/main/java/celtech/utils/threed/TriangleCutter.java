@@ -117,18 +117,18 @@ public class TriangleCutter
     /**
      * If the plane cuts the face then add the lower face(s) of the cut to the child mesh.
      */
-    public static void splitFaceAndAddLowerFacesToMesh(TriangleMesh mesh,
+    public static void splitFaceAndAddLowerFacesToMesh(TriangleMesh parentMesh, TriangleMesh mesh,
         int faceIndex, float cutHeight,
         MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom)
     {
 
-        int v0 = mesh.getFaces().get(faceIndex * 6);
-        int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
-        int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+        int v0 = parentMesh.getFaces().get(faceIndex * 6);
+        int v1 = parentMesh.getFaces().get(faceIndex * 6 + 2);
+        int v2 = parentMesh.getFaces().get(faceIndex * 6 + 4);
         
-        float v0Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v0)).getY();
-        float v1Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v1)).getY();
-        float v2Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v2)).getY();
+        float v0Height = (float) bedToLocalConverter.localToBed(makePoint3D(parentMesh, v0)).getY();
+        float v1Height = (float) bedToLocalConverter.localToBed(makePoint3D(parentMesh, v1)).getY();
+        float v2Height = (float) bedToLocalConverter.localToBed(makePoint3D(parentMesh, v2)).getY();
         
 
         // are points below/above cut?
@@ -162,11 +162,9 @@ public class TriangleCutter
         boolean b02 = (v0belowCut && v2aboveCut) || (v2belowCut && v0aboveCut);
         
         if (!b01 && !b12 && !b02) {
-            //this face does is not cut by the mesh
+            //this face is not cut by the mesh
             return;
         }
-
-        
 
         if (v0 == v1 || v1 == v2 || v0 == v2)
         {
@@ -175,7 +173,7 @@ public class TriangleCutter
 
         // check for special case where one vertex of face is on cutting plane
         Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
-            mesh, faceIndex, cutHeight, bedToLocalConverter);
+            parentMesh, faceIndex, cutHeight, bedToLocalConverter);
         
         if (vertexIndices.size() == 1)
         {
@@ -190,7 +188,7 @@ public class TriangleCutter
 
 
         List<Integer> verticesIndices = new ArrayList<>();
-        Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight,
+        Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(parentMesh, faceIndex, cutHeight,
                                                             bedToLocalConverter);
 
         for (Edge edge : edges)
@@ -213,7 +211,7 @@ public class TriangleCutter
         // get vertex index for intersections v01, v12, v02
         if (b01)
         {
-            Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), mesh, cutHeight,
+            Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), parentMesh, cutHeight,
                                                     bedToLocalConverter);
             if (vertex01.equals(getVertex(mesh, vertexIntersect0)))
             {
@@ -227,7 +225,7 @@ public class TriangleCutter
 
         if (b12)
         {
-            Vertex vertex12 = getIntersectingVertex(new Edge(v1, v2), mesh, cutHeight,
+            Vertex vertex12 = getIntersectingVertex(new Edge(v1, v2), parentMesh, cutHeight,
                                                     bedToLocalConverter);
             if (vertex12.equals(getVertex(mesh, vertexIntersect0)))
             {
@@ -235,14 +233,14 @@ public class TriangleCutter
             } else
             {
                 assert (vertex12.equals(getVertex(mesh, vertexIntersect1))) : vertex12 + " "
-                    + getVertex(mesh, vertexIntersect1);
+                    + getVertex(parentMesh, vertexIntersect1);
                 v12 = vertexIntersect1;
             }
         }
 
         if (b02)
         {
-            Vertex vertex20 = getIntersectingVertex(new Edge(v0, v2), mesh, cutHeight,
+            Vertex vertex20 = getIntersectingVertex(new Edge(v0, v2), parentMesh, cutHeight,
                                                     bedToLocalConverter);
             if (vertex20.equals(getVertex(mesh, vertexIntersect0)))
             {

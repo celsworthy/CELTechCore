@@ -3,12 +3,13 @@
  */
 package celtech.utils.threed;
 
-import static celtech.utils.threed.MeshCutter.getLoopsOfVertices;
 import static celtech.utils.threed.MeshCutter.makePoint3D;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshUtils.copyMesh;
+import static celtech.utils.threed.NonManifoldLoopDetector.identifyNonManifoldLoops;
 import com.sun.javafx.scene.shape.ObservableFaceArrayImpl;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
@@ -27,18 +28,20 @@ public class MeshCutter2
 
         TriangleMesh childMesh = makeSplitMesh(mesh,
                                          cutHeight, bedToLocalConverter, MeshCutter.TopBottom.TOP);
-//        CutResult cutResultUpper = new CutResult(childMesh, 
+        
+        Set<List<Edge>> polygonIndices = identifyNonManifoldLoops(childMesh);
+//        CutResult cutResultUpper = new CutResult(childMesh, polygonIndices,
 //                                                 bedToLocalConverter, MeshCutter.TopBottom.TOP);
 //        return cutResultUpper;
         return null;
     }
     
     /**
-     * Given the mesh, cut faces and intersection points, create the lower child mesh. Copy the
+     * Given the mesh, cut faces and intersection points, create the child mesh. Copy the
      * original mesh, remove all the cut faces and replace with a new set of faces using the new
      * intersection points. Remove all the faces from above the cut faces.
      */
-    private static TriangleMesh makeSplitMesh(TriangleMesh mesh,
+    static TriangleMesh makeSplitMesh(TriangleMesh mesh,
          float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter, 
          MeshCutter.TopBottom topBottom)
     {
@@ -47,14 +50,12 @@ public class MeshCutter2
         removeCutFacesAndFacesAboveCutPlane(childMesh, cutHeight,
                                             bedToLocalConverter, topBottom);
         
-        for (int i = 0; i < childMesh.getFaces().size() / 6; i++) {
-            TriangleCutter.splitFaceAndAddLowerFacesToMesh(childMesh, i, cutHeight,
+        for (int i = 0; i < mesh.getFaces().size() / 6; i++) {
+            TriangleCutter.splitFaceAndAddLowerFacesToMesh(mesh, childMesh, i, cutHeight,
                                                       bedToLocalConverter, topBottom);
         }
 
-        
-
-        MeshDebug.showFace(mesh, 0);
+//        MeshDebug.showFace(mesh, 0);
 
         return childMesh;
     }

@@ -36,14 +36,10 @@ class CutResult
 
     TopBottom topBottom;
 
-    public CutResult(TriangleMesh mesh, Set<MeshCutter.LoopOfVerticesAndCutFaces> cutFaces,
+    public CutResult(TriangleMesh mesh, Set<PolygonIndices> loops,
         MeshCutter.BedToLocalConverter bedToLocalConverter, TopBottom topBottom)
     {
-        loopsOfVerticesOnOpenFace = new HashSet<>();
-        for (MeshCutter.LoopOfVerticesAndCutFaces cutFace : cutFaces)
-        {
-            loopsOfVerticesOnOpenFace.add(cutFace.loopOfVertices);
-        }
+        loopsOfVerticesOnOpenFace = loops;
         this.mesh = mesh;
         this.bedToLocalConverter = bedToLocalConverter;
         this.topBottom = topBottom;

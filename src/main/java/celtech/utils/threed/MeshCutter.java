@@ -181,7 +181,7 @@ public class MeshCutter
 
         TriangleMesh upperMesh = makeSplitMesh(mesh, cutFaces,
                                                cutHeight, bedToLocalConverter, TopBottom.TOP);
-        CutResult cutResultUpper = new CutResult(upperMesh, cutFaces,
+        CutResult cutResultUpper = new CutResult(upperMesh, null,
                                                  bedToLocalConverter, TopBottom.TOP);
         return cutResultUpper;
     }
@@ -194,7 +194,7 @@ public class MeshCutter
 
         TriangleMesh lowerMesh = makeSplitMesh(mesh, cutFaces,
                                                cutHeight, bedToLocalConverter, TopBottom.BOTTOM);
-        CutResult cutResultLower = new CutResult(lowerMesh, cutFaces,
+        CutResult cutResultLower = new CutResult(lowerMesh, null,
                                                  bedToLocalConverter, TopBottom.BOTTOM);
 
         return cutResultLower;
@@ -1014,6 +1014,7 @@ final class Edge
     @Override
     public int hashCode()
     {
+        // hash code must be symmetrical in v0/v1 
         return v0 + v1;
     }
 }
