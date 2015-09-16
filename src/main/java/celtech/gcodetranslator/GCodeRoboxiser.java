@@ -754,8 +754,11 @@ public class GCodeRoboxiser extends GCodeRoboxisingEngine
                     lastDetectedExtrusionTask = extrusionEvent.getExtrusionTask();
                 }
 
-                extrusionBoundary.setEExtrusion(extrusionBoundary.getEExtrusion() + extrusionEvent.getE());
-                extrusionBoundary.setDExtrusion(extrusionBoundary.getDExtrusion() + extrusionEvent.getD());
+                if (extrusionBoundary != null)
+                {
+                    extrusionBoundary.setEExtrusion(extrusionBoundary.getEExtrusion() + extrusionEvent.getE());
+                    extrusionBoundary.setDExtrusion(extrusionBoundary.getDExtrusion() + extrusionEvent.getD());
+                }
                 indexOfLastDetectedExtrusionEvent = extrusionBufferIndex;
             } else if (event instanceof NozzleChangeBValueEvent
                     || event instanceof NozzleOpenFullyEvent)
