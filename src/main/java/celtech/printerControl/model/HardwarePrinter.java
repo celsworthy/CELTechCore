@@ -1309,6 +1309,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public AckResponse formatHeadEEPROM() throws PrinterException
     {
+        head.set(null);
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         AckResponse response = null;
@@ -3719,6 +3720,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         break;
                     case NOT_PROGRAMMED:
                         steno.error("Unformatted head detected - no action taken");
+                        head.set(null);
 //                        try
 //                        {
 //                            formatHeadEEPROM();

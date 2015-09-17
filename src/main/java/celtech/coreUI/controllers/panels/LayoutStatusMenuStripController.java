@@ -180,6 +180,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar doorOpenConditionalNotificationBar;
     private ConditionalNotificationBar chooseACustomProfileNotificationBar;
     private ConditionalNotificationBar printHeadPowerOffNotificationBar;
+    private ConditionalNotificationBar noHeadNotificationBar;
 
     @FXML
     void forwardPressed(ActionEvent event)
@@ -647,6 +648,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         doorOpenConditionalNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintDoorIsOpenMessage", NotificationDisplay.NotificationType.CAUTION);
         chooseACustomProfileNotificationBar = new ConditionalNotificationBar("dialogs.chooseACustomProfile", NotificationDisplay.NotificationType.CAUTION);
         printHeadPowerOffNotificationBar = new ConditionalNotificationBar("dialogs.printHeadPowerOff", NotificationDisplay.NotificationType.CAUTION);
+        noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationDisplay.NotificationType.CAUTION);
 
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
@@ -769,6 +771,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         chooseACustomProfileNotificationBar.setAppearanceCondition(project.customSettingsNotChosenProperty()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         printHeadPowerOffNotificationBar.setAppearanceCondition(printer.headPowerOnFlagProperty().not()
+                .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+        .and(printer.headProperty().isNotNull()));
+        noHeadNotificationBar.setAppearanceCondition(printer.headProperty().isNull()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         
         CanPrintConditionalTextBindings conditionalTextBindings
@@ -903,6 +908,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         doorOpenConditionalNotificationBar.clearAppearanceCondition();
         chooseACustomProfileNotificationBar.clearAppearanceCondition();
         printHeadPowerOffNotificationBar.clearAppearanceCondition();
+        noHeadNotificationBar.clearAppearanceCondition();
     }
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
@@ -1082,7 +1088,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
                                     .and(printer.headPowerOnFlagProperty()))
                     );
-
                 }
             }
             printButton.disableProperty().bind(canPrintProject.not());

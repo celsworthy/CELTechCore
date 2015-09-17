@@ -68,6 +68,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
 
     protected ArrayList<NozzleProxy> nozzleProxies = null;
     protected NozzleProxy currentNozzle = null;
+    protected NozzleProxy lastNozzle = null;
     // This counter is used to determine when to reselect the nozzle in use
     // When printing with a single nozzle it is possible for the home to be lost after many closes
     protected int triggerNozzleReselectAfterNCloses = 0;
