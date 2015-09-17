@@ -270,7 +270,7 @@ public class TriangleCutterTest
         int v1 = childMesh.getFaces().get(newFaceIndex * 6 + 2);
         int v2 = childMesh.getFaces().get(newFaceIndex * 6 + 4);
         
-        assertEquals(12, v0);
+        assertEquals(4, v0);
         assertEquals(7, v1);
         assertEquals(8, v2);
 
@@ -300,7 +300,7 @@ public class TriangleCutterTest
 
         assertEquals(0, v0);
         assertEquals(7, v1);
-        assertEquals(12, v2);
+        assertEquals(4, v2);
 
     }
 

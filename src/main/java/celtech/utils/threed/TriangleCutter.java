@@ -63,15 +63,15 @@ public class TriangleCutter
      */
     static int addNewOrGetVertex(TriangleMesh mesh, Vertex intersectingVertex)
     {
-//        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
-//        {
-//            Vertex vertex = getVertex(mesh, i);
-//            if (vertex.equals(intersectingVertex))
-//            {
-//                System.out.println("vertex already exists at " + i);
-//                return i;
-//            }
-//        }
+        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
+        {
+            Vertex vertex = getVertex(mesh, i);
+            if (vertex.equals(intersectingVertex))
+            {
+                System.out.println("vertex already exists at " + i);
+                return i;
+            }
+        }
 
         mesh.getPoints().addAll((float) intersectingVertex.x, (float) intersectingVertex.y,
                                 (float) intersectingVertex.z);
@@ -127,7 +127,7 @@ public class TriangleCutter
         MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom)
     {
 
-        System.out.println("face " + faceIndex + " TB " + topBottom);
+//        System.out.println("face " + faceIndex + " TB " + topBottom);
 
         int v0 = mesh.getFaces().get(faceIndex * 6);
         int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
@@ -177,7 +177,7 @@ public class TriangleCutter
 //            v1aboveCut+ " " +
 //            v2aboveCut
 //            );
-        if (topBottom == MeshCutter.TopBottom.BOTTOM)
+        if (topBottom == MeshCutter.TopBottom.TOP)
         {
             if (v0aboveCut || v1aboveCut || v2aboveCut)
             {

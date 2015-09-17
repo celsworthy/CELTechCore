@@ -71,6 +71,8 @@ public class MeshCutter2
         TriangleMesh childMesh = makeSplitMesh(mesh,
                                          cutHeight, bedToLocalConverter, topBottom);
         
+        // XXX remove duplicate vertices before trying to identify non-manifold edges ??
+        
         Set<List<Edge>> loops = identifyNonManifoldLoops(childMesh);
         System.out.println("non manifold loops: " + loops);
         
