@@ -13,8 +13,7 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
-import celtech.utils.threed.MeshSeparator;
-import celtech.utils.threed.MeshSeparatorRunner;
+import celtech.utils.threed.MeshUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,8 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -48,10 +46,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+
 
 /**
  *
@@ -59,8 +59,9 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class Project implements Serializable
 {
-    
+
     private static final long serialVersionUID = 1L;
+
 
     public static class ProjectLoadException extends Exception
     {
@@ -73,13 +74,13 @@ public class Project implements Serializable
     }
 
     private Filament DEFAULT_FILAMENT;
-    
+
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
-    
+
     private static final Stenographer steno = StenographerFactory.getStenographer(
-            Project.class.getName());
+        Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
-    
+
     Set<ProjectChangesListener> projectChangesListeners;
 
     private ObservableList<ModelContainer> topLevelModels;
@@ -89,51 +90,71 @@ public class Project implements Serializable
     private BooleanProperty modelColourChanged;
     private BooleanProperty canPrint;
     private BooleanProperty customSettingsNotChosen;
-    
+    private BooleanBinding hasInvalidMeshes;
+
     private final PrinterSettings printerSettings;
-    
+
     private final StringProperty projectNameProperty;
     private ObjectProperty<Date> lastModifiedDate;
     private FilamentContainer filamentContainer;
-    
+
     private boolean suppressProjectChanged = false;
-    
+
     public Project()
     {
         initialise();
-        
+
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
-                + formatter.format(now));
+            + formatter.format(now));
         lastModifiedDate.set(now);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        
+
         customSettingsNotChosen.bind(
-                printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
-                .and(printerSettings.getSettingsNameProperty().isEmpty()));
+            printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
+            .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
-        
+
         printerSettings.getDataChanged().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    projectModified();
-                    fireWhenPrinterSettingsChanged(printerSettings);
-                });
-        
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                projectModified();
+                fireWhenPrinterSettingsChanged(printerSettings);
+            });
+
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(
-                (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-                {
-                    projectModified();
-                });
+            (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
+            {
+                projectModified();
+            });
+
     }
-    
+
     private void initialise()
     {
         topLevelModels = FXCollections.observableArrayList();
+        hasInvalidMeshes = new BooleanBinding()
+        {
+            {
+                super.bind(topLevelModels);
+            }
+
+            @Override
+            protected boolean computeValue()
+            {
+                if (getModelContainersWithInvalidMesh().isEmpty())
+                {
+                    return false;
+                } else
+                {
+                    return true;
+                }
+            }
+        };
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
         modelColourChanged = new SimpleBooleanProperty();
@@ -144,29 +165,45 @@ public class Project implements Serializable
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
         projectChangesListeners = new HashSet<>();
     }
-    
+
     public final void setProjectName(String value)
     {
         projectNameProperty.set(value);
     }
-    
+
     public final String getProjectName()
     {
         return projectNameProperty.get();
     }
-    
+
     public final StringProperty projectNameProperty()
     {
         return projectNameProperty;
     }
-    
+
     public final String getAbsolutePath()
     {
         return ApplicationConfiguration.getProjectDirectory() + File.separator
-                + projectNameProperty.get()
-                + ApplicationConfiguration.projectFileExtension;
+            + projectNameProperty.get()
+            + ApplicationConfiguration.projectFileExtension;
     }
-    
+
+    public Set<ModelContainer> getModelContainersWithInvalidMesh()
+    {
+        Set<ModelContainer> invalidModelContainers = new HashSet<>();
+        getAllModels().stream().filter((modelContainer)
+            -> (modelContainer.isInvalidMesh())).forEach((modelContainer) ->
+                {
+                    invalidModelContainers.add(modelContainer);
+            });
+        return invalidModelContainers;
+    }
+
+    public BooleanBinding hasInvalidMeshes()
+    {
+        return hasInvalidMeshes;
+    }
+
     static Project loadProject(String basePath)
     {
         try
@@ -196,9 +233,9 @@ public class Project implements Serializable
         try
         {
             FileInputStream projectFileStream = new FileInputStream(basePath
-                    + ApplicationConfiguration.projectFileExtension);
+                + ApplicationConfiguration.projectFileExtension);
             ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(
-                    projectFileStream));
+                projectFileStream));
             Project loadedProject = (Project) reader.readObject();
             reader.close();
             for (ModelContainer modelContainer : loadedProject.topLevelModels)
@@ -215,13 +252,13 @@ public class Project implements Serializable
     }
 
     /**
-     * Get the first non-whitespace character in a file. If there is no
-     * non-whitespace character then return a space.
+     * Get the first non-whitespace character in a file. If there is no non-whitespace character
+     * then return a space.
      */
     private static char getFirstNonWhitespaceCharacter(String basePath) throws FileNotFoundException, IOException
     {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath
-                + ApplicationConfiguration.projectFileExtension));
+            + ApplicationConfiguration.projectFileExtension));
         String line;
         while ((line = bufferedReader.readLine()) != null)
         {
@@ -239,17 +276,17 @@ public class Project implements Serializable
     private void load(String basePath) throws ProjectLoadException
     {
         suppressProjectChanged = true;
-        
+
         File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
-        
+
         try
         {
             ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
-            
+
             projectNameProperty.set(projectFile.getProjectName());
             lastModifiedDate.set(projectFile.getLastModifiedDate());
             lastPrintJobID = projectFile.getLastPrintJobID();
-            
+
             String filamentID0 = projectFile.getExtruder0FilamentID();
             String filamentID1 = projectFile.getExtruder1FilamentID();
             if (!filamentID0.equals("NULL"))
@@ -268,14 +305,14 @@ public class Project implements Serializable
                     extruder1Filament.set(filament1);
                 }
             }
-            
+
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
             printerSettings.setFillDensityOverride(projectFile.getFillDensityOverride());
             printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
             printerSettings.setRaftOverride(projectFile.getPrintRaft());
-            
+
             loadModels(basePath);
 
             recreateGroups(projectFile.getGroupStructure(), projectFile.getGroupState());
@@ -289,7 +326,7 @@ public class Project implements Serializable
         }
         suppressProjectChanged = false;
     }
-    
+
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
         FileInputStream fileInputStream = new FileInputStream(basePath
@@ -300,17 +337,23 @@ public class Project implements Serializable
         for (int i = 0; i < numModels; i++)
         {
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
+            Optional<MeshUtils.MeshError> error = MeshUtils.validate(
+                (TriangleMesh) modelContainer.getMeshView().getMesh());
+            if (error.isPresent())
+            {
+                modelContainer.setIsInvalidMesh(true);
+            }
             addModel(modelContainer);
         }
     }
-    
+
     public static void saveProject(Project project)
     {
         String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-                + project.getProjectName();
+            + project.getProjectName();
         project.save(basePath);
     }
-    
+
     private void saveModels(String path) throws IOException
     {
         ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
@@ -323,7 +366,7 @@ public class Project implements Serializable
             modelsOutput.writeObject(modelsHoldingMeshView);
         }
     }
-    
+
     private void save(String basePath)
     {
         if (topLevelModels.size() > 0)
@@ -370,8 +413,7 @@ public class Project implements Serializable
     }
 
     /**
-     * Return which extruders are used by the project, as a set of the extruder
-     * numbers
+     * Return which extruders are used by the project, as a set of the extruder numbers
      *
      * @return
      */
@@ -386,16 +428,16 @@ public class Project implements Serializable
     }
 
     /**
-     * This is the Project file reader for version 1.01.04 and is used for
-     * reading old project files.
+     * This is the Project file reader for version 1.01.04 and is used for reading old project
+     * files.
      */
     private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+        throws IOException, ClassNotFoundException
     {
         initialise();
-        
+
         ProjectHeader projectHeader = (ProjectHeader) in.readObject();
-        
+
         int numberOfModels = in.readInt();
         for (int counter = 0; counter < numberOfModels; counter++)
         {
@@ -425,13 +467,13 @@ public class Project implements Serializable
         }
         return allModelContainers;
     }
-    
+
     @Override
     public String toString()
     {
         return projectNameProperty.get();
     }
-    
+
     public void setLastPrintJobID(String printJobID)
     {
         lastPrintJobID = printJobID;
@@ -445,22 +487,22 @@ public class Project implements Serializable
             lastModifiedDate.set(new Date());
         }
     }
-    
+
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
     }
-    
+
     public ReadOnlyBooleanProperty getModelColourChanged()
     {
         return modelColourChanged;
     }
-    
+
     public PrintQualityEnumeration getPrintQuality()
     {
         return printerSettings.getPrintQuality();
     }
-    
+
     public void setPrintQuality(PrintQualityEnumeration printQuality)
     {
         if (printerSettings.getPrintQuality() != printQuality)
@@ -469,30 +511,30 @@ public class Project implements Serializable
             printerSettings.setPrintQuality(printQuality);
         }
     }
-    
+
     public void setExtruder0Filament(Filament filament)
     {
         extruder0Filament.set(filament);
     }
-    
+
     public void setExtruder1Filament(Filament filament)
     {
         extruder1Filament.set(filament);
     }
-    
+
     public ObjectProperty<Filament> getExtruder0FilamentProperty()
     {
         return extruder0Filament;
     }
-    
+
     public ObjectProperty<Filament> getExtruder1FilamentProperty()
     {
         return extruder1Filament;
     }
 
     /**
-     * For new projects this should be called to initialise the extruder
-     * filaments according to the currently selected printer.
+     * For new projects this should be called to initialise the extruder filaments according to the
+     * currently selected printer.
      */
     private void initialiseExtruderFilaments()
     {
@@ -515,19 +557,19 @@ public class Project implements Serializable
             }
         }
     }
-    
+
     public PrinterSettings getPrinterSettings()
     {
         return printerSettings;
     }
-    
+
     public void copyModel(ModelContainer modelContainer)
     {
         ModelContainer copy = modelContainer.makeCopy();
         addModel(copy);
         copy.translateBy(20, 20);
     }
-    
+
     public void addModel(ModelContainer modelContainer)
     {
         topLevelModels.add(modelContainer);
@@ -540,7 +582,7 @@ public class Project implements Serializable
         }
 
     }
-    
+
     private void fireWhenModelAdded(ModelContainer modelContainer)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -548,7 +590,7 @@ public class Project implements Serializable
             projectChangesListener.whenModelAdded(modelContainer);
         }
     }
-    
+
     private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -580,24 +622,24 @@ public class Project implements Serializable
             projectChangesListener.whenModelsRemoved(modelContainers);
         }
     }
-    
+
     public void addProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
         projectChangesListeners.add(projectChangesListener);
     }
-    
+
     public void removeProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
         projectChangesListeners.remove(projectChangesListener);
     }
-    
+
     public ObjectProperty<Date> getLastModifiedDate()
     {
         return lastModifiedDate;
     }
-    
+
     private ChangeListener<Number> modelExtruderNumberListener;
-    
+
     private void addModelListeners(ModelContainer modelContainer)
     {
         // XXX this is a bug, modelExtruderNumberListener is being overridden for each model
@@ -608,20 +650,20 @@ public class Project implements Serializable
                 modelColourChanged.set(!modelColourChanged.get());
             };
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
-                modelExtruderNumberListener);
+            modelExtruderNumberListener);
     }
-    
+
     private void removeModelListeners(ModelContainer modelContainer)
     {
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
-                modelExtruderNumberListener);
+            modelExtruderNumberListener);
     }
-    
+
     public BooleanProperty canPrintProperty()
     {
         return canPrint;
     }
-    
+
     public BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
@@ -636,10 +678,10 @@ public class Project implements Serializable
         modelGroup.checkOffBed();
         return modelGroup;
     }
-    
+
     /**
-     * Create a new group from models that are not yet in the project, and add model listeners
-     * to all descendent children.
+     * Create a new group from models that are not yet in the project, and add model listeners to
+     * all descendent children.
      */
     public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
     {
@@ -651,7 +693,7 @@ public class Project implements Serializable
         }
         modelGroup.checkOffBed();
         return modelGroup;
-    }    
+    }
 
     /**
      * Create a new group from models that are not yet in the project.
@@ -748,9 +790,9 @@ public class Project implements Serializable
     }
 
     /**
-     * Using the group function, reapply the groupings as given by the groupStructure. The
-     * first groups to be created must be those containing only non-groups, and then each level of
-     * the group hierarchy.<p>
+     * Using the group function, reapply the groupings as given by the groupStructure. The first
+     * groups to be created must be those containing only non-groups, and then each level of the
+     * group hierarchy.<p>
      * First create new groups where all children are already instantiated. Then repeat until no new
      * groups are created.
      * </p>
@@ -855,9 +897,10 @@ public class Project implements Serializable
         group.checkOffBed();
     }
 
+
     /**
-     * ProjectChangesListener allows other objects to observe when models are
-     * added or removed etc to the project.
+     * ProjectChangesListener allows other objects to observe when models are added or removed etc
+     * to the project.
      */
     public interface ProjectChangesListener
     {
@@ -878,27 +921,25 @@ public class Project implements Serializable
         void whenAutoLaidOut();
 
         /**
-         * This should be fired when one or more models have been moved, rotated
-         * or scaled etc. If possible try to fire just once for any given group
-         * change.
+         * This should be fired when one or more models have been moved, rotated or scaled etc. If
+         * possible try to fire just once for any given group change.
          */
         void whenModelsTransformed(Set<ModelContainer> modelContainers);
 
         /**
-         * This should be fired when certain details of the model change.
-         * Currently this is only: - associatedExtruder
+         * This should be fired when certain details of the model change. Currently this is only: -
+         * associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
 
         /**
-         * This should be fired whenever the PrinterSettings of the project
-         * changes.
+         * This should be fired whenever the PrinterSettings of the project changes.
          *
          * @param printerSettings
          */
         void whenPrinterSettingsChanged(PrinterSettings printerSettings);
     }
-    
+
     public void autoLayout()
     {
         Collections.sort(topLevelModels);
@@ -908,11 +949,11 @@ public class Project implements Serializable
         thing.reference(topLevelModels, 10);
         thing.pack();
         thing.relocateBlocks();
-        
+
         projectModified();
         fireWhenAutoLaidOut();
     }
-    
+
     private void fireWhenAutoLaidOut()
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -922,9 +963,9 @@ public class Project implements Serializable
     }
 
     /**
-     * Scale X, Y and Z by the given factor, apply the given ratio to the given
-     * scale. I.e. the ratio is not an absolute figure to be applied to the
-     * models but a ratio to be applied to the current scale.
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
+     * ratio is not an absolute figure to be applied to the models but a ratio to be applied to the
+     * current scale.
      */
     public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
     {
@@ -937,9 +978,9 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
-            boolean preserveAspectRatio)
+        boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -960,9 +1001,9 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
-            boolean preserveAspectRatio)
+        boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -983,9 +1024,9 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
-            boolean preserveAspectRatio)
+        boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -1018,7 +1059,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)
@@ -1030,7 +1071,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)
@@ -1042,7 +1083,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void dropToBed(Set<ModelContainer> modelContainers)
     {
         for (ModelContainer model : modelContainers)
@@ -1054,7 +1095,7 @@ public class Project implements Serializable
         }
         projectModified();
         fireWhenModelsTransformed(modelContainers);
-    }    
+    }
 
     public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
@@ -1064,7 +1105,7 @@ public class Project implements Serializable
         modelContainers.add(modelContainer);
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
     {
         for (ModelContainer model : modelContainers)
@@ -1076,7 +1117,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
     {
         for (ModelContainer model : modelContainers)
@@ -1088,7 +1129,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
     {
         for (ModelContainer model : modelContainers)
@@ -1100,7 +1141,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z)
     {
         for (ModelContainer model : modelContainers)
@@ -1112,7 +1153,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -1120,7 +1161,7 @@ public class Project implements Serializable
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
     }
-    
+
     private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -1128,7 +1169,7 @@ public class Project implements Serializable
             projectChangesListener.whenModelChanged(modelContainer, propertyName);
         }
     }
-    
+
     public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
     {
         for (ModelContainer model : modelContainers)
@@ -1140,7 +1181,7 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
     {
         for (ModelContainer model : modelContainers)
@@ -1152,13 +1193,13 @@ public class Project implements Serializable
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-    
+
     public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
         modelContainer.setUseExtruder0(useExtruder0);
         projectModified();
     }
-    
+
     public Set<ModelContainer.State> getModelStates()
     {
         Set<ModelContainer.State> modelStates = new HashSet<>();
@@ -1168,7 +1209,7 @@ public class Project implements Serializable
         }
         return modelStates;
     }
-    
+
     public void setModelStates(Set<ModelContainer.State> modelStates)
     {
         Set<ModelContainer> modelContainers = new HashSet<>();

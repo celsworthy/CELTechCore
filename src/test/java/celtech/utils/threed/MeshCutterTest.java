@@ -87,7 +87,7 @@ public class MeshCutterTest
     @Test
     public void testGetAdjacentIntersectionsForPointsOnCutPlane()
     {
-        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
         
         BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
         
@@ -104,7 +104,7 @@ public class MeshCutterTest
     @Test
     public void testGetAdjacentIntersectionsForPointsOnCutPlane2()
     {
-        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
         
         BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
         
@@ -121,7 +121,7 @@ public class MeshCutterTest
     @Test
     public void testMeshWithPointsOnCutPlane()
     {
-        TriangleMesh mesh = createNeshWithPointsOnCutPlane();
+        TriangleMesh mesh = createMeshWithPointsOnCutPlane();
 
         Optional<MeshError> error = MeshUtils.validate(mesh);
         assertTrue(!error.isPresent());
@@ -138,7 +138,7 @@ public class MeshCutterTest
 
     }
 
-    private TriangleMesh createNeshWithPointsOnCutPlane()
+    private TriangleMesh createMeshWithPointsOnCutPlane()
     {
         TriangleMesh mesh = new TriangleMesh();
         mesh.getPoints().addAll(0, 0, 0);
@@ -421,5 +421,37 @@ public class MeshCutterTest
         Assert.assertNotNull(meshes.bottomMesh);
         Assert.assertNotNull(meshes.topMesh);
     }
+    
+    @Test
+    public void testEnricoSTLAt3() throws STLFileParsingException
+    {
+
+        URL stlURL = this.getClass().getResource("/enrico.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
+
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+
+        MeshPair meshes = MeshCutter.cut(mesh, -3f, nullBedToLocalConverter);
+        Assert.assertNotNull(meshes.bottomMesh);
+        Assert.assertNotNull(meshes.topMesh);
+    }      
+    
+    @Test
+    public void testEnricoFaceIntersectionsFace1600at3() throws STLFileParsingException
+    {
+
+        URL stlURL = this.getClass().getResource("/enrico.stl");
+        File singleObjectSTLFile = new File(stlURL.getFile());
+        TriangleMesh mesh = new STLImporter().processBinarySTLData(singleObjectSTLFile);
+        Optional<MeshError> error = MeshUtils.validate(mesh);
+        Assert.assertFalse(error.isPresent());
+
+        BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+
+        MeshCutter.getFaceIntersections(1600, mesh, -3f, nullBedToLocalConverter);
+    }      
 
 }

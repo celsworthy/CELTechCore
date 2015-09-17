@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.ListView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -1239,12 +1241,50 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
 
     @Override
-    public void informModelIsInvalid()
+    public boolean showModelIsInvalidDialog(Set<String> modelNames)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+       Callable<Boolean> askUserWhetherToLoadModel = new Callable()
         {
-            showInformationNotification("Bad Model",
-                    "The model is not valid");
-        });
+            @Override
+            public Boolean call() throws Exception
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.modelInvalidTitle"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n(
+                        "dialogs.modelInvalidDescription"));
+                
+                ListView problemModels = new ListView();
+                problemModels.getItems().addAll(modelNames);
+                choiceLinkDialogBox.addControl(problemModels);
+                
+                problemModels.setMaxHeight(200);
+                
+                ChoiceLinkButton loadChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.loadModel"));
+                choiceLinkDialogBox.addChoiceLink(Lookup.i18n("dialogs.dontLoadModel"));
+
+                Optional<ChoiceLinkButton> loadResponse = choiceLinkDialogBox.getUserInput();
+
+                boolean loadModel = false;
+
+                if (loadResponse.isPresent())
+                {
+                    loadModel = loadResponse.get() == loadChoice;
+                }
+
+                return loadModel;
+            }
+        };
+
+        FutureTask<Boolean> askInvalidModelTask = new FutureTask<>(askUserWhetherToLoadModel);
+        Lookup.getTaskExecutor().runOnGUIThread(askInvalidModelTask);
+        try
+        {
+            return askInvalidModelTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during model invalid query");
+            return false;
+        }
     }
 }

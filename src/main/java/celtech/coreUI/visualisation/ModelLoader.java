@@ -51,14 +51,24 @@ public class ModelLoader
         // validate incoming meshes
         for (ModelLoadResult loadResult : loadResults.getResults()) {
             Set<ModelContainer> modelContainers = loadResult.getModelContainers();
+            Set<String> invalidModelNames = new HashSet<>();
             for (ModelContainer modelContainer : modelContainers)
             {
+                
                 Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
                 if (error.isPresent()) {
-                    Lookup.getSystemNotificationHandler().informModelIsInvalid();
+                    invalidModelNames.add(modelContainer.getModelName());
+                    modelContainer.setIsInvalidMesh(true);
+                }
+            }
+            if (!invalidModelNames.isEmpty()) {
+                boolean load = 
+                    Lookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
+                if (! load) {
                     return;
                 }
             }
+            
         }
         
         boolean projectIsEmpty = project.getTopLevelModels().isEmpty();

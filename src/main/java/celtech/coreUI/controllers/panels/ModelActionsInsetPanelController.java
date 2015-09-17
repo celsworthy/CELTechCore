@@ -24,6 +24,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point3D;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -202,11 +203,32 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         //these transforms must be cleared so that bedToLocal conversions work properly in the cutter.
         modelContainer.saveAndClearBedTransform();
         modelContainer.saveAndClearDropToBedYTransform();
+        
+        MeshCutter.BedToLocalConverter nullBedToLocalConverter = new MeshCutter.BedToLocalConverter()
+        {
+
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                return point;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                return point;
+            }
+        };
+        
         try
         {
+//            MeshPair meshPair = MeshCutter.cut(
+//                (TriangleMesh) modelContainer.getMeshView().getMesh(),
+//                cutHeightValue, modelContainer.getBedToLocalConverter());
+            
             MeshPair meshPair = MeshCutter.cut(
                 (TriangleMesh) modelContainer.getMeshView().getMesh(),
-                cutHeightValue, modelContainer.getBedToLocalConverter());
+                cutHeightValue, nullBedToLocalConverter);
 
             String modelName = modelContainer.getModelName();
 

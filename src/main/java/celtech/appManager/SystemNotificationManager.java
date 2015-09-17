@@ -7,6 +7,7 @@ import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -116,5 +117,5 @@ public interface SystemNotificationManager
 
     public void showLoadFilamentNowMessage();
     
-    public void informModelIsInvalid();
+    public boolean showModelIsInvalidDialog(Set<String> modelNames);
 }

@@ -178,6 +178,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar twoExtrudersFilament1MismatchNotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1NotificationBar;
     private ConditionalNotificationBar doorOpenConditionalNotificationBar;
+    private ConditionalNotificationBar invalidMeshInProjectNotificationBar;
     private ConditionalNotificationBar chooseACustomProfileNotificationBar;
     private ConditionalNotificationBar printHeadPowerOffNotificationBar;
     private ConditionalNotificationBar noHeadNotificationBar;
@@ -646,6 +647,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         twoExtrudersFilament1MismatchNotificationBar = new ConditionalNotificationBar("dialogs.filament1MismatchMessage", NotificationDisplay.NotificationType.NOTE);
         twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationDisplay.NotificationType.CAUTION);
         doorOpenConditionalNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintDoorIsOpenMessage", NotificationDisplay.NotificationType.CAUTION);
+        invalidMeshInProjectNotificationBar = new ConditionalNotificationBar("dialogs.invalidMeshInProjectMessage", NotificationDisplay.NotificationType.NOTE);
         chooseACustomProfileNotificationBar = new ConditionalNotificationBar("dialogs.chooseACustomProfile", NotificationDisplay.NotificationType.CAUTION);
         printHeadPowerOffNotificationBar = new ConditionalNotificationBar("dialogs.printHeadPowerOff", NotificationDisplay.NotificationType.CAUTION);
         noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationDisplay.NotificationType.CAUTION);
@@ -815,6 +817,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         twoExtrudersFilament1MismatchNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(filament1Reqd).and(
                 extruder1FilamentMismatch).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+        
+        invalidMeshInProjectNotificationBar.setAppearanceCondition(project.hasInvalidMeshes().
+            and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
     }
 
     /**
@@ -903,9 +908,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         twoExtrudersFilament1MismatchNotificationBar.clearAppearanceCondition();
         twoExtrudersNoFilament1NotificationBar.clearAppearanceCondition();
         doorOpenConditionalNotificationBar.clearAppearanceCondition();
-        chooseACustomProfileNotificationBar.clearAppearanceCondition();
-        printHeadPowerOffNotificationBar.clearAppearanceCondition();
-        doorOpenConditionalNotificationBar.clearAppearanceCondition();
+        invalidMeshInProjectNotificationBar.clearAppearanceCondition();
         chooseACustomProfileNotificationBar.clearAppearanceCondition();
         printHeadPowerOffNotificationBar.clearAppearanceCondition();
         noHeadNotificationBar.clearAppearanceCondition();
