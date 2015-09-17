@@ -21,7 +21,7 @@ import javafx.scene.shape.TriangleMesh;
 public class TriangleCutter
 {
 
-    static final float epsilon = 0.000f;
+    static final float epsilon = 0.0001f;
 
     static Vertex getVertex(TriangleMesh mesh, int vertexIndex)
     {
@@ -68,15 +68,15 @@ public class TriangleCutter
             Vertex vertex = getVertex(mesh, i);
             if (vertex.equals(intersectingVertex))
             {
-                System.out.println("vertex already exists at " + i);
+//                System.out.println("vertex already exists at " + i);
                 return i;
             }
         }
 
         mesh.getPoints().addAll((float) intersectingVertex.x, (float) intersectingVertex.y,
                                 (float) intersectingVertex.z);
-        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
-            + intersectingVertex);
+//        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
+//            + intersectingVertex);
         return mesh.getPoints().size() / 3 - 1;
     }
 

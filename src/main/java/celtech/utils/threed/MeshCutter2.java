@@ -73,7 +73,7 @@ public class MeshCutter2
         
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
         
-        Set<List<Edge>> loops = identifyNonManifoldLoops(childMesh);
+        Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh);
         System.out.println("non manifold loops: " + loops);
         
         Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
@@ -135,10 +135,10 @@ public class MeshCutter2
         setTextureAndSmoothing(mesh, mesh.getFaces().size() / 6);
     }
 
-    private static Set<PolygonIndices> convertEdgesToVertices(Set<List<Edge>> loops)
+    private static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops)
     {
         Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
-        for (List<Edge> loop : loops)
+        for (List<ManifoldEdge> loop : loops)
         {
             PolygonIndices polygonIndices = convertEdgesToPolygonIndices(loop);
             polygonIndicesSet.add(polygonIndices);
@@ -146,10 +146,10 @@ public class MeshCutter2
         return polygonIndicesSet;
     }
 
-    private static PolygonIndices convertEdgesToPolygonIndices(List<Edge> loop)
+    private static PolygonIndices convertEdgesToPolygonIndices(List<ManifoldEdge> loop)
     {
         PolygonIndices polygonIndices = new PolygonIndices();
-        for (Edge edge : loop)
+        for (ManifoldEdge edge : loop)
         {
             polygonIndices.add(edge.v0);
         }
