@@ -31,8 +31,6 @@
  */
 package celtech.utils.threed.importers.obj;
 
-import celtech.appManager.Project;
-import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
@@ -49,11 +47,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.paint.Material;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -86,7 +82,7 @@ public class ObjImporter
 
     private final Map<String, TriangleMesh> meshes = new HashMap<>();
     private final Map<String, Integer> materialsForObjects = new HashMap<>();
-    private final Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
+    private Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
     private String objFileUrl;
 
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad)
@@ -272,14 +268,7 @@ public class ObjImporter
                     String materialFilename = line.substring("mtllib ".length()).trim();
                     MtlReader mtlReader = new MtlReader(materialFilename, filePath);
 
-                    Map<String, Material> mtlMap = mtlReader.getMaterials();
-
-                    int materialCount = 0;
-                    for (Entry<String, Material> entry : mtlMap.entrySet())
-                    {
-                        materialNameAgainstIndex.put(entry.getKey(), materialCount);
-                        materialCount++;
-                    }
+                   materialNameAgainstIndex = mtlReader.getMaterials();
                 } else if (line.startsWith("usemtl "))
                 {
                     // setting new material for next mesh
@@ -374,6 +363,12 @@ public class ObjImporter
         mesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
         meshes.put(key, mesh);
+        
+        //Just in case the material number wasn't specified (mentioning no names Microsoft)
+        if (materialNumber < 0)
+        {
+            materialNumber = 0;
+        }
         materialsForObjects.put(key, materialNumber);
 
 //        steno.info(
