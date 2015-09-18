@@ -176,7 +176,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private EEPROMState lastHeadEEPROMState = null;
     private final int maxNumberOfReels = 2;
-    private EEPROMState[] lastReelEEPROMState = new EEPROMState[maxNumberOfReels];
+    private ObservableList<EEPROMState> lastReelEEPROMState = FXCollections.observableArrayList(EEPROMState.NOT_PRESENT, EEPROMState.NOT_PRESENT);
 
     /*
      * Temperature-related data
@@ -3773,11 +3773,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             for (int reelNumber = 0; reelNumber < maxNumberOfReels; reelNumber++)
             {
-                if (lastReelEEPROMState[reelNumber] != statusResponse.getReelEEPROMState(
+                if (lastReelEEPROMState.get(reelNumber) != statusResponse.getReelEEPROMState(
                         reelNumber))
                 {
-                    lastReelEEPROMState[reelNumber] = statusResponse.getReelEEPROMState(
-                            reelNumber);
+                    lastReelEEPROMState.set(reelNumber, statusResponse.getReelEEPROMState(
+                            reelNumber));
                     switch (statusResponse.getReelEEPROMState(reelNumber))
                     {
                         case NOT_PRESENT:
@@ -3952,6 +3952,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void loadFirmware(String firmwareFilePath)
     {
         commandInterface.loadFirmware(firmwareFilePath);
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public ObservableList<EEPROMState> getReelEEPROMStateProperty()
+    {
+        return lastReelEEPROMState;
     }
 
     @Override
