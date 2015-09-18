@@ -682,16 +682,11 @@ public class Project implements Serializable
     /**
      * Create a new group from models that are not yet in the project, and add model listeners to
      * all descendent children.
+     * @param modelContainers
+     * @return 
      */
     public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
     {
-        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
-        
-//        if (selectedPrinter != null)
-//        {
-//            int numExtruders = selectedPrinter.extrudersProperty().size();
-//        }
-//        
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         addModelListeners(modelGroup);
         for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
