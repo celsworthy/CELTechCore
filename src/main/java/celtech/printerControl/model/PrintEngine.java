@@ -118,6 +118,7 @@ public class PrintEngine implements ControllableService
     public final ObjectProperty<Macro> macroBeingRun = new SimpleObjectProperty<>();
 
     private ObjectProperty<PrintQueueStatus> printQueueStatus = new SimpleObjectProperty<>(PrintQueueStatus.IDLE);
+    private ObjectProperty<PrintJob> printJob = new SimpleObjectProperty<>(null);
 
     /*
      * 
@@ -196,8 +197,8 @@ public class PrintEngine implements ControllableService
                         result.getPrinterToUse());
                 postProcessorService.setProject(result.getProject());
                 postProcessorService.setSettings(
-                    result.getProject().getPrinterSettings().getSettings(
-                        associatedPrinter.headProperty().get().typeCode.get()));
+                        result.getProject().getPrinterSettings().getSettings(
+                                associatedPrinter.headProperty().get().typeCode.get()));
                 postProcessorService.start();
 
                 if (raiseProgressNotifications)
@@ -437,6 +438,21 @@ public class PrintEngine implements ControllableService
         associatedPrinter.printJobLineNumberProperty().addListener(printLineNumberListener);
         associatedPrinter.printJobIDProperty().addListener(printJobIDListener);
 
+        printQueueStatus.addListener(new ChangeListener<PrintQueueStatus>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends PrintQueueStatus> ov, PrintQueueStatus t, PrintQueueStatus t1)
+            {
+                if (t1 == PrintQueueStatus.PRINTING)
+                {
+                    printJob.set(PrintJob.readJobFromDirectory(associatedPrinter.printJobIDProperty().get()));
+                }
+                else
+                {
+                    printJob.set(null);
+                }
+            }
+        });
         detectAlreadyPrinting();
     }
 
@@ -481,10 +497,10 @@ public class PrintEngine implements ControllableService
 
     public void makeETCCalculatorForJobOfUUID(String printJobID)
     {
-        PrintJob printJob = PrintJob.readJobFromDirectory(printJobID);
+        PrintJob localPrintJob = PrintJob.readJobFromDirectory(printJobID);
         try
         {
-            makeETCCalculator(printJob.getStatistics(), associatedPrinter);
+            makeETCCalculator(localPrintJob.getStatistics(), associatedPrinter);
         } catch (IOException ex)
         {
             etcAvailable.set(false);
@@ -1179,5 +1195,10 @@ public class PrintEngine implements ControllableService
     public ReadOnlyObjectProperty<PrintQueueStatus> printQueueStatusProperty()
     {
         return printQueueStatus;
+    }
+
+    public ReadOnlyObjectProperty<PrintJob> printJobProperty()
+    {
+        return printJob;
     }
 }

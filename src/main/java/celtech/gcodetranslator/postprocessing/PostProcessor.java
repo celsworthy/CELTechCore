@@ -292,6 +292,7 @@ public class PostProcessor
             int numLines = writer.getNumberOfLinesOutput();
 
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
+                    project.getProjectName(),
                     numLines,
                     finalEVolume,
                     finalDVolume,

@@ -27,6 +27,7 @@
             <Button fx:id="applyMaterial0" mnemonicParsing="false" onAction="#doApplyMaterial0" text="Material 1" />
             <Button fx:id="applyMaterial1" mnemonicParsing="false" onAction="#doApplyMaterial1" text="Material 2" />
             <Button fx:id="dropToBed" mnemonicParsing="false" onAction="#doDropToBed" text="Drop To Bed" />
+            <Button fx:id="selectSameMaterial" mnemonicParsing="false" onAction="#doSelectSameMaterial" text="Select same material" />
          </children>
       </VBox>
    </children>
