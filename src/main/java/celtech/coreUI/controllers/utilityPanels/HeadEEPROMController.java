@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
@@ -35,7 +36,7 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class HeadEEPROMController implements Initializable, PrinterListChangesListener,
-    ExtrasMenuInnerPanel
+        ExtrasMenuInnerPanel
 {
 
     Stenographer steno = StenographerFactory.getStenographer(HeadEEPROMController.class.getName());
@@ -93,7 +94,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     @FXML
     private GridPane headEEPROMOffsets;
-    
+
     @FXML
     private VBox headFullContainer;
 
@@ -102,21 +103,24 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
 
     private Printer selectedPrinter;
-    
+
     void whenResetToDefaultsPressed()
     {
         try
         {
-            selectedPrinter.resetHeadToDefaults();
-        } catch (PrinterException ex)
+            selectedPrinter.formatHeadEEPROM();
+            Head singleMaterialHead = new Head(HeadContainer.getHeadByID(HeadContainer.defaultHeadID));
+            selectedPrinter.writeHeadEEPROM(singleMaterialHead);
+            Lookup.getSystemNotificationHandler().showCalibrationDialogue();
+        } catch (PrinterException | RoboxCommsException ex)
         {
-            steno.error("Unable to repair head");
+            steno.error("Unable to format and write head");
         }
     }
 
     /**
-     * Write the values from the text fields onto the actual head. If the unique id is already
-     * stored on the head then do not overwrite it.
+     * Write the values from the text fields onto the actual head. If the unique
+     * id is already stored on the head then do not overwrite it.
      */
     void whenSavePressed()
     {
@@ -137,9 +141,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             Float headHourCounterVal = headHourCounter.getFloatValue();
 
             float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
-                nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
+                    nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
             float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
-                nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
+                    nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
 
             // N.B. this call must come after reading the data in the fields because
             // reading the head eeprom results in the fields being updated with current head
@@ -152,21 +156,22 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             }
 
             selectedPrinter.transmitWriteHeadEEPROM(
-                headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
-                headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
-                nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
-                "", "",
-                nozzle2XOffsetVal, nozzle2YOffsetVal,
-                nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
-                lastFilamentTemperatureVal0, lastFilamentTemperatureVal1, headHourCounterVal);
+                    headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
+                    headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
+                    nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
+                    "", "",
+                    nozzle2XOffsetVal, nozzle2YOffsetVal,
+                    nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
+                    lastFilamentTemperatureVal0, lastFilamentTemperatureVal1, headHourCounterVal);
+
+            updateHeadUniqueId();
+
             offsetFieldsDirty.set(false);
-//            selectedPrinter.readHeadEEPROM();
-//            updateFieldsFromAttachedHead(selectedPrinter.headProperty().get());
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing head EEPROM");
             eepromCommsError.setMessage(Lookup.i18n(
-                "eeprom.headWriteError"));
+                    "eeprom.headWriteError"));
             eepromCommsError.show();
         } catch (ParseException ex)
         {
@@ -200,23 +205,23 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             setUpWriteEnabledAfterEdits();
 
             Lookup.getSelectedPrinterProperty().addListener(
-                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    if (newValue != oldValue)
+                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                     {
-                        setSelectedPrinter(newValue);
+                        if (newValue != oldValue)
+                        {
+                            setSelectedPrinter(newValue);
 
-                    }
-                });
+                        }
+                    });
 
             Lookup.getPrinterListChangesNotifier().addListener(this);
 
             if (Lookup.getSelectedPrinterProperty().get() != null)
             {
                 setSelectedPrinter(
-                    Lookup.getSelectedPrinterProperty().get());
+                        Lookup.getSelectedPrinterProperty().get());
             }
-            
+
             addColonsToLabels(headFullContainer);
 
         } catch (Exception ex)
@@ -242,6 +247,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         nozzle2YOffset.textProperty().addListener(offsetsChangedListener);
         nozzle2ZOverrun.textProperty().addListener(offsetsChangedListener);
 
+        headUniqueID.textProperty().addListener(offsetsChangedListener);
     }
 
     private void updateFieldsFromAttachedHead(Head head)
@@ -250,42 +256,42 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headType.setText(head.nameProperty().get().trim());
         headUniqueID.setText(head.uniqueIDProperty().get().trim());
         lastFilamentTemperature0.setText(String.format("%.0f",
-                                                       head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
+                head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
         if (head.getNozzleHeaters().size() > 1)
         {
             lastFilamentTemperature1.setText(String.format("%.0f",
-                                                           head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get()));
+                    head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get()));
         }
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
         //TODO modify to work with multiple heaters
         headMaxTemperature.setText(String.format("%.0f",
-                                                 head.getNozzleHeaters().get(0).maximumTemperatureProperty().get()));
+                head.getNozzleHeaters().get(0).maximumTemperatureProperty().get()));
         //TODO modify to work with multiple heaters
         headThermistorBeta.setText(String.format("%.2f",
-                                                 head.getNozzleHeaters().get(0).betaProperty().get()));
+                head.getNozzleHeaters().get(0).betaProperty().get()));
         //TODO modify to work with multiple heaters
         headThermistorTCal.setText(String.format("%.2f",
-                                                 head.getNozzleHeaters().get(0).tCalProperty().get()));
+                head.getNozzleHeaters().get(0).tCalProperty().get()));
         nozzle1BOffset.setText(String.format("%.2f",
-                                             head.getNozzles().get(0).bOffsetProperty().get()));
+                head.getNozzles().get(0).bOffsetProperty().get()));
         nozzle1XOffset.setText(String.format("%.2f",
-                                             head.getNozzles().get(0).xOffsetProperty().get()));
+                head.getNozzles().get(0).xOffsetProperty().get()));
         nozzle1YOffset.setText(String.format("%.2f",
-                                             head.getNozzles().get(0).yOffsetProperty().get()));
+                head.getNozzles().get(0).yOffsetProperty().get()));
         nozzle2BOffset.setText(String.format("%.2f",
-                                             head.getNozzles().get(1).bOffsetProperty().get()));
+                head.getNozzles().get(1).bOffsetProperty().get()));
         nozzle2XOffset.setText(String.format("%.2f",
-                                             head.getNozzles().get(1).xOffsetProperty().get()));
+                head.getNozzles().get(1).xOffsetProperty().get()));
         nozzle2YOffset.setText(String.format("%.2f",
-                                             head.getNozzles().get(1).yOffsetProperty().get()));
+                head.getNozzles().get(1).yOffsetProperty().get()));
 
         //TODO modify to deal with variable numbers of nozzle
         float nozzle1Offset = head.getNozzles().get(0).zOffsetProperty().get();
         float nozzle2Offset = head.getNozzles().get(1).zOffsetProperty().get();
         float nozzle1ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
-                                                                                  nozzle2Offset);
+                nozzle2Offset);
         float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(nozzle1Offset,
-                                                                                  nozzle2Offset);
+                nozzle2Offset);
 
         nozzle1ZOverrun.setText(String.format("%.2f", nozzle1ZOverrunValue));
         nozzle2ZOverrun.setText(String.format("%.2f", nozzle2ZOverrunValue));
@@ -351,7 +357,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public void whenPrinterAdded(Printer printer)
     {
         headEEPROMOffsets.disableProperty().bind(
-            Lookup.getUserPreferences().advancedModeProperty().not());
+                Lookup.getUserPreferences().advancedModeProperty().not());
     }
 
     @Override
@@ -426,11 +432,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         head.getNozzles().get(1).bOffsetProperty().addListener(headChangeListener);
 
         head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(
-            headChangeListener);
+                headChangeListener);
         if (head.getNozzleHeaters().size() > 1)
         {
             head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(
-                headChangeListener);
+                    headChangeListener);
         }
     }
 
@@ -493,7 +499,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
         };
         operationButtons.add(saveButton);
-        
+
         ExtrasMenuInnerPanel.OperationButton resetToDefaultsButton = new ExtrasMenuInnerPanel.OperationButton()
         {
             @Override

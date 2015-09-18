@@ -441,6 +441,11 @@ public class GCodeFileParser
                 if (eventToOutput != null)
                 {
                     eventToOutput.setLinesSoFar(linesSoFar);
+                    if (eventToOutput instanceof ExtrusionEvent
+                            && ((ExtrusionEvent)eventToOutput).getExtrusionTask() == null)
+                    {
+                        throw new PostProcessingError("Unable to determine extrusion task type");
+                    }
                     for (GCodeTranslationEventHandler listener : listeners)
                     {
                         listener.processEvent(eventToOutput);

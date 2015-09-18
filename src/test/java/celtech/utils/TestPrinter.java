@@ -1067,13 +1067,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void miniPurge_T0(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void miniPurge_T1(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void miniPurge(boolean blockUntilFinished, Cancellable cancellable, int nozzleNumber) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

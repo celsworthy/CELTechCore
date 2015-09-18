@@ -7,7 +7,7 @@ package celtech.gcodetranslator.events;
  */
 public abstract class GCodeParseEvent
 {
-    private String comment = null;
+    private String comment = "";
     private double feedRate = -1;
     private double length = 0;
     /**
