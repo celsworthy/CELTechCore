@@ -12,11 +12,11 @@ import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.utils.threed.MeshCutter;
-import celtech.utils.threed.MeshCutter.MeshPair;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshDebug;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -247,7 +247,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
         try
         {
-            MeshPair meshPair = MeshCutter2.cut(
+            List<TriangleMesh> meshPair = MeshCutter2.cut(
                 (TriangleMesh) modelContainer.getMeshView().getMesh(),
                 cutHeightValue, modelContainer.getBedToLocalConverter());
             
@@ -260,7 +260,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             ModelContainer topModelContainer = null;
             ModelContainer bottomModelContainer = null;
             int ix = 1;
-            for (TriangleMesh subMesh : meshPair.getMeshes())
+            for (TriangleMesh subMesh : meshPair)
             {
                 MeshView meshView = new MeshView(subMesh);
                 meshView.cullFaceProperty().set(CullFace.NONE);
