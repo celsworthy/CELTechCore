@@ -7,12 +7,25 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.modelcontrol.ModelContainer;
 import static celtech.utils.threed.MeshSeparator.addPointToMesh;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.event.ActionEvent;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 
 /**
@@ -21,9 +34,10 @@ import javafx.scene.text.Text;
  */
 public class MeshDebug
 {
-    private static ModelContainer node;
 
-    private static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh)
+    static ModelContainer node;
+
+    static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh)
     {
         for (Integer faceIndex : cutFaces)
         {
@@ -87,7 +101,7 @@ public class MeshDebug
         }
     }
 
-    private static void showSphere(double x, double y, double z)
+    static void showSphere(double x, double y, double z)
     {
         Sphere sphere = new Sphere(0.5);
         sphere.translateXProperty().set(x);
@@ -105,7 +119,7 @@ public class MeshDebug
         MeshDebug.node = node;
     }
 
-    private static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
+    static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
     {
         if (node != null)
         {
@@ -121,23 +135,123 @@ public class MeshDebug
         }
     }
 
-    private static void showIncomingMesh(TriangleMesh mesh)
+    static void showIncomingMesh(TriangleMesh mesh)
     {
         System.out.println(mesh.getVertexFormat());
         System.out.println(mesh.getVertexFormat().getVertexIndexSize());
         System.out.println(mesh.getVertexFormat().getPointIndexOffset());
         for (int i = 0; i < mesh.getPoints().size() / 3; i++)
         {
-            System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " " +
-                mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
+            System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " "
+                + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
             showSphere(mesh.getPoints().get(i * 3), mesh.getPoints().get(i * 3 + 1),
                        mesh.getPoints().get(i * 3 + 2));
         }
         for (int i = 0; i < mesh.getFaces().size() / 6; i++)
         {
-            System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " " +
-                mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
+            System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " "
+                + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
         }
     }
+
+    static boolean close = false;
+
+    static void close()
+    {
+        close = true;
+    }
+
+    static void visualiseEdgeLoops(Set<List<ManifoldEdge>> loops)
+    {
+
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                JFrame f = new JFrame("Edge Loops");
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                MyPanel panel = new MyPanel();
+                f.add(panel);
+                JButton button = new JButton("Quit");
+                panel.add(button);
+                panel.showLoops(loops);
+                button.addActionListener(new ActionListener()
+                {
+
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e)
+                    {
+                        close();
+                    }
+
+                });
+                f.pack();
+                f.setSize(300, 300);
+                f.setVisible(true);
+            }
+
+        });
+        while (true)
+        {
+            if (close)
+            {
+                break;
+            }
+            try
+            {
+                Thread.sleep(200);
+            } catch (InterruptedException ex)
+            {
+                Logger.getLogger(MeshDebug.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+}
+
+
+class MyPanel extends JPanel
+{
     
+    Set<List<ManifoldEdge>> loops;
+
+    public MyPanel()
+    {
+        setBorder(BorderFactory.createLineBorder(Color.black));
+    }
+
+    public Dimension getPreferredSize()
+    {
+        return new Dimension(250, 200);
+    }
+
+    public void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+
+        // Draw Text
+        g.drawString("This is my custom Panel!", 10, 20);
+        int scale = 20;
+        int xOffset = 100;
+        int yOffset = 100;
+        
+        if (loops != null) {
+            for (List<ManifoldEdge> loop : loops)
+            {
+                for (ManifoldEdge edge : loop)
+                {
+                    g.drawLine(xOffset + (int) edge.vertex0.x * scale,
+                               yOffset + (int) edge.vertex0.y * scale,
+                               xOffset + (int)edge.vertex1.x * scale, 
+                               yOffset + (int) edge.vertex1.y * scale);
+                }
+            }
+        }
+        
+    }
+
+    void showLoops(Set<List<ManifoldEdge>> loops)
+    {
+        this.loops = loops;
+    }
 }

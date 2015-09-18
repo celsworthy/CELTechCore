@@ -3,13 +3,13 @@
  */
 package celtech.utils.threed;
 
-import static celtech.utils.threed.MeshCutter.makePoint3D;
+import static celtech.utils.threed.MeshDebug.visualiseEdgeLoops;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.NonManifoldLoopDetector.identifyNonManifoldLoops;
 import static celtech.utils.threed.OpenFaceCloser.closeOpenFace;
-import static celtech.utils.threed.TriangleCutter.epsilon;
 import com.sun.javafx.scene.shape.ObservableFaceArrayImpl;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +27,7 @@ public class MeshCutter2
     /**
      * Cut the given mesh into two, at the given height.
      */
-    public static MeshCutter.MeshPair cut(TriangleMesh mesh, float cutHeight,
+    public static List<TriangleMesh> cut(TriangleMesh mesh, float cutHeight,
         MeshCutter.BedToLocalConverter bedToLocalConverter)
     {
 
@@ -42,7 +42,7 @@ public class MeshCutter2
         Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
         if (error.isPresent())
         {
-//            throw new RuntimeException("Invalid mesh: " + error.toString());
+            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
         
         cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
@@ -54,11 +54,14 @@ public class MeshCutter2
         error = MeshUtils.validate(bottomMesh);
         if (error.isPresent())
         {
-//            throw new RuntimeException("Invalid mesh: " + error.toString());
+            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
+        List<TriangleMesh> meshes = new ArrayList<>();
+        meshes.add(topMesh);
+        meshes.add(bottomMesh);
 
-        return new MeshCutter.MeshPair(topMesh, bottomMesh);
+        return meshes;
     }
 
     
@@ -75,6 +78,8 @@ public class MeshCutter2
         
         Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh);
         System.out.println("non manifold loops: " + loops);
+        
+//        visualiseEdgeLoops(loops);
         
         Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
         
