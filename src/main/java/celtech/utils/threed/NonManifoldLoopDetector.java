@@ -15,7 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.TriangleMesh;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 
 /**
@@ -71,7 +70,6 @@ public class NonManifoldLoopDetector
 
         ManifoldEdge firstEdge = edge;
         ManifoldEdge previousEdge = edge;
-        Direction previousDirection = direction;
         int previousVertexId;
         if (direction == Direction.FORWARDS)
         {
@@ -83,26 +81,33 @@ public class NonManifoldLoopDetector
 
         while (true)
         {
+            System.out.println("edge is " + previousEdge);
             loop.add(previousEdge);
 
-            Set<ManifoldEdge> availableEdges = edgesWithVertex.get(previousVertexId);
-            assert availableEdges.contains(previousEdge);
+            Set<ManifoldEdge> availableEdges = new HashSet<>(edgesWithVertex.get(previousVertexId));
+            if (availableEdges.isEmpty())
+            {
+                return Optional.empty();
+            }
+            assert availableEdges.contains(previousEdge) :
+                "available edges for  " + previousVertexId + ": " + availableEdges;
             availableEdges.remove(previousEdge);
             ManifoldEdge nextEdge;
             if (availableEdges.size() == 1)
             {
                 nextEdge = availableEdges.iterator().next();
-            } else if (availableEdges.isEmpty())
-            {
-                return Optional.empty();
             } else
             {
-                nextEdge = getRightmostEdge(previousVertexId, previousEdge, previousDirection,
-                                            availableEdges);
+                nextEdge = getRightmostEdge(previousVertexId, previousEdge, availableEdges);
             }
             if (nextEdge.equals(firstEdge))
             {
                 break;
+            }
+            if (loop.contains(nextEdge))
+            {
+                assert false;
+                return Optional.empty();
             }
             Direction nextDirection;
             int nextVertexId;
@@ -120,42 +125,76 @@ public class NonManifoldLoopDetector
             {
                 // already have explored this possible loop
 //                return Optional.empty();
-            } 
+            }
             nextEdge.setVisited(nextDirection);
             previousEdge = nextEdge;
-            previousDirection = nextDirection;
             previousVertexId = nextVertexId;
         }
 
         return Optional.of(loop);
     }
 
-    private static ManifoldEdge getRightmostEdge(int previousVertexId,
-        ManifoldEdge previousEdge, Direction previousDirection, Set<ManifoldEdge> availableEdges)
+    static ManifoldEdge getRightmostEdge(int previousVertexId,
+        ManifoldEdge previousEdge, Set<ManifoldEdge> availableEdges)
     {
         assert availableEdges.size() > 0;
         assert !availableEdges.contains(previousEdge);
-        double smallestAngle = Double.MAX_VALUE;
-
-        Direction nextDirection;
+        double largestAngle = -Double.MAX_VALUE;
 
         ManifoldEdge rightmostEdge = null;
-        Point2D previousVector = previousEdge.getVectorForDirection(previousDirection);
+
+        int vStart;
+        Vertex vertexStart;
+        int vMiddle = previousVertexId;
+        Vertex vertexMiddle;
+        if (previousEdge.v0 == previousVertexId)
+        {
+            vertexStart = previousEdge.vertex1;
+            vertexMiddle = previousEdge.vertex0;
+            vStart = previousEdge.v1;
+        } else
+        {
+            vertexStart = previousEdge.vertex0;
+            vertexMiddle = previousEdge.vertex1;
+            vStart = previousEdge.v0;
+        }
+        int vEnd;
+        Vertex vertexEnd;
+        // make incoming vector middle -> start
+//        System.out.println("vstart, vmiddle " + vStart + " " + vMiddle);
+        Point2D incoming = new Point2D(vertexStart.x - vertexMiddle.x,
+                                                         vertexStart.z - vertexMiddle.z);
+//        System.out.println("incoming vector: " + (vertexMiddle.x - vertexStart.x)
+//            + " " + (vertexMiddle.z - vertexStart.z));
+
         for (ManifoldEdge edge : availableEdges)
         {
-            if (edge.v0 == previousVertexId)
+            if (edge.v0 == vMiddle)
             {
-                nextDirection = Direction.FORWARDS;
+                vEnd = edge.v1;
+                vertexEnd = edge.vertex1;
             } else
             {
-                nextDirection = Direction.BACKWARDS;
+                vEnd = edge.v0;
+                vertexEnd = edge.vertex0;
             }
-
-            Point2D followingVector = edge.getVectorForDirection(nextDirection);
-            double angle = previousVector.angle(followingVector);
-            if (angle < smallestAngle)
+//            System.out.println("vend " + vEnd);
+            
+            Point2D outgoing = new Point2D(vertexEnd.x - vertexMiddle.x,
+                                                             vertexEnd.z - vertexMiddle.z);
+            
+            // get clockwise angle between the two vectors
+            // http://stackoverflow.com/questions/14066933/direct-way-of-computing-clockwise-angle-between-2-vectors
+            double dot = incoming.getX()*outgoing.getX() + incoming.getY()*outgoing.getY();      // dot product
+            double det = incoming.getX()*outgoing.getY() - incoming.getY()*outgoing.getX();      // determinant
+            double ccwAngle = Math.atan2(det, dot) % (2*Math.PI);
+            
+            double cwAngle = (2*Math.PI - ccwAngle) % (2*Math.PI);
+//            System.out.println("CW angle " + cwAngle + " " + edge);
+            
+            if (cwAngle > largestAngle)
             {
-                smallestAngle = angle;
+                largestAngle = cwAngle;
                 rightmostEdge = edge;
             }
         }
