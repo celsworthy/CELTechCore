@@ -61,10 +61,10 @@ public class CutResultTest
         triangleMesh.getPoints().addAll(3, Y, 8);
         triangleMesh.getPoints().addAll(8, Y, 8);
         triangleMesh.getPoints().addAll(8, Y, 3);
-        
+
         triangleMesh.getPoints().addAll(2, Y, 9);
         triangleMesh.getPoints().addAll(9, Y, 9);
-        triangleMesh.getPoints().addAll(9, Y, 2);        
+        triangleMesh.getPoints().addAll(9, Y, 2);
 
         return triangleMesh;
     }
@@ -123,7 +123,7 @@ public class CutResultTest
         outerLoop.setName("3_8");
         return outerLoop;
     }
-    
+
     private PolygonIndices makeLoop2_9()
     {
         PolygonIndices outerLoop = new PolygonIndices();
@@ -133,19 +133,18 @@ public class CutResultTest
         outerLoop.add(21);
         outerLoop.setName("2_9");
         return outerLoop;
-    }    
+    }
 
     @Test
     public void testGetNestedPolygonSetsSingleLoop()
     {
         TriangleMesh triangleMesh = makeTriangleMesh();
         PolygonIndices outerLoop = makeLoop0_3();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
@@ -158,14 +157,12 @@ public class CutResultTest
 
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop2 = makeLoop4_7();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        loopsOfFacesAndVertices.add(cutFaces2);
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop1);
+        loops.add(outerLoop2);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, nestedPolygonSets.size());
@@ -178,14 +175,12 @@ public class CutResultTest
 
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop3 = makeLoop1_2();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        loopsOfFacesAndVertices.add(cutFaces2);        
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop1);
+        loops.add(outerLoop3);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedLoopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedLoopSets.size());
@@ -200,14 +195,12 @@ public class CutResultTest
 
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop3 = makeLoop1_2();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        loopsOfFacesAndVertices.add(cutFaces2);        
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop1);
+        loops.add(outerLoop3);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedPolygonSets.size());
@@ -220,12 +213,11 @@ public class CutResultTest
     {
         TriangleMesh triangleMesh = makeTriangleMesh();
         PolygonIndices outerLoop = makeLoop0_3();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
@@ -242,14 +234,12 @@ public class CutResultTest
 
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop3 = makeLoop1_2();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        loopsOfFacesAndVertices.add(cutFaces2);  
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop1);
+        loops.add(outerLoop3);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
@@ -267,14 +257,12 @@ public class CutResultTest
 
         PolygonIndices outerLoop1 = makeLoop0_3();
         PolygonIndices outerLoop2 = makeLoop4_7();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        loopsOfFacesAndVertices.add(cutFaces2);          
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop1);
+        loops.add(outerLoop2);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, loopSets.size());
@@ -297,18 +285,14 @@ public class CutResultTest
         PolygonIndices outerLoop2 = makeLoop4_7();
         PolygonIndices outerLoop3 = makeLoop1_2();
         PolygonIndices outerLoop4 = makeLoop5_6();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop1);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces3 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop3);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces4 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop4);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces);  
-        loopsOfFacesAndVertices.add(cutFaces2);          
-        loopsOfFacesAndVertices.add(cutFaces3); 
-        loopsOfFacesAndVertices.add(cutFaces4); 
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop1);
+        loops.add(outerLoop2);
+        loops.add(outerLoop3);
+        loops.add(outerLoop4);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, loopSets.size());
@@ -330,16 +314,13 @@ public class CutResultTest
         PolygonIndices outerLoop2 = makeLoop4_7();
         PolygonIndices outerLoop4 = makeLoop5_6();
         PolygonIndices outerLoop5 = makeLoop3_8();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces4 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop4);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces5 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop5);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces2);          
-        loopsOfFacesAndVertices.add(cutFaces4); 
-        loopsOfFacesAndVertices.add(cutFaces5);         
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop2);
+        loops.add(outerLoop4);
+        loops.add(outerLoop5);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
@@ -347,7 +328,7 @@ public class CutResultTest
         Set<Region> regions = loopSet.getRegions();
         assertEquals(2, regions.size());
     }
-    
+
     @Test
     public void testGetRegionsforOneOuterLoopWithInnerLoopWhichHasInnerLoopThatAlsoHasInnerLoop()
     {
@@ -357,18 +338,14 @@ public class CutResultTest
         PolygonIndices outerLoop4 = makeLoop5_6();
         PolygonIndices outerLoop5 = makeLoop3_8();
         PolygonIndices outerLoop6 = makeLoop2_9();
-        
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces2 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop2);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces4 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop4);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces5 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop5);
-        MeshCutter.LoopOfVerticesAndCutFaces cutFaces6 = new MeshCutter.LoopOfVerticesAndCutFaces(null, outerLoop6);
-        Set<MeshCutter.LoopOfVerticesAndCutFaces> loopsOfFacesAndVertices = new HashSet<>();
-        loopsOfFacesAndVertices.add(cutFaces2);          
-        loopsOfFacesAndVertices.add(cutFaces4); 
-        loopsOfFacesAndVertices.add(cutFaces5);             
-        loopsOfFacesAndVertices.add(cutFaces6); 
-        
-        CutResult cutResult = new CutResult(triangleMesh, loopsOfFacesAndVertices, nullConverter,
+
+        Set<PolygonIndices> loops = new HashSet<>();
+        loops.add(outerLoop2);
+        loops.add(outerLoop4);
+        loops.add(outerLoop5);
+        loops.add(outerLoop6);
+
+        CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
                                             MeshCutter.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
@@ -379,18 +356,20 @@ public class CutResultTest
         {
             System.out.println("region outer:" + region.outerLoop);
             System.out.println("region inner:" + region.innerLoops);
-            if (region.outerLoop.name.equals("3_8")) {
+            if (region.outerLoop.name.equals("3_8"))
+            {
                 assertEquals(1, region.innerLoops.size());
                 assertEquals("4_7", region.innerLoops.iterator().next().name);
             }
-            if (region.outerLoop.name.equals("4_7")) {
+            if (region.outerLoop.name.equals("4_7"))
+            {
                 assertEquals(1, region.innerLoops.size());
                 assertEquals("5_6", region.innerLoops.iterator().next().name);
             }
         }
-        
+
         assertEquals(2, regions.size());
 
     }
-    
+
 }

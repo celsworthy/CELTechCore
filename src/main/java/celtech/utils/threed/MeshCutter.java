@@ -7,7 +7,6 @@ import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.OpenFaceCloser.closeOpenFace;
-import static celtech.utils.threed.TriangleCutter.splitFaceAndAddLowerFacesToMesh;
 import static celtech.utils.threed.TriangleCutter.getFaceVerticesIntersectingPlane;
 import static celtech.utils.threed.TriangleCutter.getIntersectingVertex;
 import static celtech.utils.threed.TriangleCutter.getVertex;
@@ -181,7 +180,7 @@ public class MeshCutter
 
         TriangleMesh upperMesh = makeSplitMesh(mesh, cutFaces,
                                                cutHeight, bedToLocalConverter, TopBottom.TOP);
-        CutResult cutResultUpper = new CutResult(upperMesh, cutFaces,
+        CutResult cutResultUpper = new CutResult(upperMesh, null,
                                                  bedToLocalConverter, TopBottom.TOP);
         return cutResultUpper;
     }
@@ -194,7 +193,7 @@ public class MeshCutter
 
         TriangleMesh lowerMesh = makeSplitMesh(mesh, cutFaces,
                                                cutHeight, bedToLocalConverter, TopBottom.BOTTOM);
-        CutResult cutResultLower = new CutResult(lowerMesh, cutFaces,
+        CutResult cutResultLower = new CutResult(lowerMesh, null,
                                                  bedToLocalConverter, TopBottom.BOTTOM);
 
         return cutResultLower;
@@ -973,49 +972,5 @@ public class MeshCutter
 }
 
 
-final class Edge
-{
-
-    final int v0;
-    final int v1;
-
-    public Edge(int v0, int v1)
-    {
-        this.v0 = v0;
-        this.v1 = v1;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "Edge{" + "v0=" + v0 + ", v1=" + v1 + '}';
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (!(obj instanceof Edge))
-        {
-            return false;
-        }
-        if (obj == this)
-        {
-            return true;
-        }
-
-        Edge other = (Edge) obj;
-        if ((other.v0 == v0 && other.v1 == v1) || (other.v1 == v0 && other.v0 == v1))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return v0 + v1;
-    }
-}
 
 

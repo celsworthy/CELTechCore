@@ -290,7 +290,7 @@ public class MeshUtils
         return false;
     }
 
-    static int countFacesAdjacentToVertices(TriangleMesh mesh,
+    public static int countFacesAdjacentToVertices(TriangleMesh mesh,
         Map<Integer, Set<Integer>> facesWithVertices,
         int faceIndex, int vertexIndexOffset0, int vertexIndexOffset1)
     {

@@ -3,6 +3,8 @@
  */
 package celtech.utils.threed;
 
+import celtech.utils.Math.MathUtils;
+import static celtech.utils.Math.MathUtils.EQUAL;
 import static celtech.utils.threed.MeshCutter.makePoint3D;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,6 +20,8 @@ import javafx.scene.shape.TriangleMesh;
  */
 public class TriangleCutter
 {
+
+    static final float epsilon = 0.000f;
 
     static Vertex getVertex(TriangleMesh mesh, int vertexIndex)
     {
@@ -64,14 +68,15 @@ public class TriangleCutter
             Vertex vertex = getVertex(mesh, i);
             if (vertex.equals(intersectingVertex))
             {
-                System.out.println("vertex already exists at " + i);
+//                System.out.println("vertex already exists at " + i);
                 return i;
             }
         }
-        
+
         mesh.getPoints().addAll((float) intersectingVertex.x, (float) intersectingVertex.y,
                                 (float) intersectingVertex.z);
-        System.out.println("add new vertex " + (mesh.getPoints().size() / 3 - 1) + " at " + intersectingVertex);
+//        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
+//            + intersectingVertex);
         return mesh.getPoints().size() / 3 - 1;
     }
 
@@ -117,20 +122,27 @@ public class TriangleCutter
     /**
      * If the plane cuts the face then add the lower face(s) of the cut to the child mesh.
      */
-    public static void splitFaceAndAddLowerFacesToMesh(TriangleMesh mesh,
+    public static void splitFaceAndAddLowerFacesToMesh(TriangleMesh mesh, Set<Integer> facesToRemove,
         int faceIndex, float cutHeight,
         MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom)
     {
 
+//        System.out.println("face " + faceIndex + " TB " + topBottom);
+
         int v0 = mesh.getFaces().get(faceIndex * 6);
         int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
         int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-        
+
+//        System.out.println("v0 " + getVertex(mesh, v0));
+//        System.out.println("v1 " + getVertex(mesh, v1));
+//        System.out.println("v2 " + getVertex(mesh, v2));
         float v0Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v0)).getY();
         float v1Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v1)).getY();
         float v2Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v2)).getY();
-        
 
+//        System.out.println("v0height " + v0Height);
+//        System.out.println("v1height " + v1Height);
+//        System.out.println("v2height " + v2Height);
         // are points below/above cut?
         boolean v0belowCut;
         boolean v1belowCut;
@@ -141,32 +153,54 @@ public class TriangleCutter
 
         if (topBottom == MeshCutter.TopBottom.BOTTOM)
         {
-            v0belowCut = v0Height > cutHeight;
-            v1belowCut = v1Height > cutHeight;
-            v2belowCut = v2Height > cutHeight;
-            v0aboveCut = v0Height < cutHeight;
-            v1aboveCut = v1Height < cutHeight;
-            v2aboveCut = v2Height < cutHeight;
+            v0belowCut = v0Height > cutHeight + epsilon;
+            v1belowCut = v1Height > cutHeight + epsilon;
+            v2belowCut = v2Height > cutHeight + epsilon;
+            v0aboveCut = v0Height < cutHeight - epsilon;
+            v1aboveCut = v1Height < cutHeight - epsilon;
+            v2aboveCut = v2Height < cutHeight - epsilon;
         } else
         {
-            v0belowCut = v0Height < cutHeight;
-            v1belowCut = v1Height < cutHeight;
-            v2belowCut = v2Height < cutHeight;
-            v0aboveCut = v0Height > cutHeight;
-            v1aboveCut = v1Height > cutHeight;
-            v2aboveCut = v2Height > cutHeight;
+            v0belowCut = v0Height < cutHeight - epsilon;
+            v1belowCut = v1Height < cutHeight - epsilon;
+            v2belowCut = v2Height < cutHeight - epsilon;
+            v0aboveCut = v0Height > cutHeight + epsilon;
+            v1aboveCut = v1Height > cutHeight + epsilon;
+            v2aboveCut = v2Height > cutHeight + epsilon;
         }
-        
+
+//        System.out.println(
+//            v0belowCut + " " +
+//            v1belowCut + " " +
+//            v2belowCut + " " +
+//            v0aboveCut+ " " +
+//            v1aboveCut+ " " +
+//            v2aboveCut
+//            );
+        if (topBottom == MeshCutter.TopBottom.TOP)
+        {
+            if (v0aboveCut || v1aboveCut || v2aboveCut)
+            {
+                facesToRemove.add(faceIndex);
+            }
+        } else 
+        {
+            if (v0belowCut || v1belowCut || v2belowCut)
+            {
+                facesToRemove.add(faceIndex);
+            }
+        }
+
         boolean b01 = (v0belowCut && v1aboveCut) || (v1belowCut && v0aboveCut);
         boolean b12 = (v1belowCut && v2aboveCut) || (v2belowCut && v1aboveCut);
         boolean b02 = (v0belowCut && v2aboveCut) || (v2belowCut && v0aboveCut);
-        
-        if (!b01 && !b12 && !b02) {
-            //this face does is not cut by the mesh
+
+//        System.out.println("b01 b12 b02 " + b01 + " " + b12 + " " + b02);
+        if (!b01 && !b12 && !b02)
+        {
+            //this face is not cut by the mesh
             return;
         }
-
-        
 
         if (v0 == v1 || v1 == v2 || v0 == v2)
         {
@@ -176,11 +210,11 @@ public class TriangleCutter
         // check for special case where one vertex of face is on cutting plane
         Set<Integer> vertexIndices = getFaceVerticesIntersectingPlane(
             mesh, faceIndex, cutHeight, bedToLocalConverter);
-        
+
         if (vertexIndices.size() == 1)
         {
-            cutWithOneVertexOnPlane(vertexIndices, 
-                                    v0belowCut, v1, v0, v1belowCut, v2belowCut, v2,
+            cutWithOneVertexOnPlane(vertexIndices, v0, v1, v2,
+                                    v0belowCut, v1belowCut, v2belowCut,
                                     mesh, faceIndex, cutHeight, bedToLocalConverter);
             return;
         } else
@@ -188,23 +222,6 @@ public class TriangleCutter
             assert vertexIndices.isEmpty();
         }
 
-
-        List<Integer> verticesIndices = new ArrayList<>();
-        Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight,
-                                                            bedToLocalConverter);
-
-        for (Edge edge : edges)
-        {
-            int vertexIndex = makeIntersectingVertex(mesh, edge, cutHeight,
-                                                     bedToLocalConverter);
-
-            verticesIndices.add(vertexIndex);
-        }
-        assert verticesIndices.size() == 2;
-        int vertexIntersect0 = verticesIndices.get(0);
-        int vertexIntersect1 = verticesIndices.get(1);
-
-        
         // indices of intersecting vertices between v0->v1 etc
         int v01 = -1;
         int v12 = -1;
@@ -215,43 +232,21 @@ public class TriangleCutter
         {
             Vertex vertex01 = getIntersectingVertex(new Edge(v0, v1), mesh, cutHeight,
                                                     bedToLocalConverter);
-            if (vertex01.equals(getVertex(mesh, vertexIntersect0)))
-            {
-                v01 = vertexIntersect0;
-            } else
-            {
-                assert (vertex01.equals(getVertex(mesh, vertexIntersect1)));
-                v01 = vertexIntersect1;
-            }
+            v01 = addNewOrGetVertex(mesh, vertex01);
         }
 
         if (b12)
         {
             Vertex vertex12 = getIntersectingVertex(new Edge(v1, v2), mesh, cutHeight,
                                                     bedToLocalConverter);
-            if (vertex12.equals(getVertex(mesh, vertexIntersect0)))
-            {
-                v12 = vertexIntersect0;
-            } else
-            {
-                assert (vertex12.equals(getVertex(mesh, vertexIntersect1))) : vertex12 + " "
-                    + getVertex(mesh, vertexIntersect1);
-                v12 = vertexIntersect1;
-            }
+            v12 = addNewOrGetVertex(mesh, vertex12);
         }
 
         if (b02)
         {
-            Vertex vertex20 = getIntersectingVertex(new Edge(v0, v2), mesh, cutHeight,
+            Vertex vertex02 = getIntersectingVertex(new Edge(v0, v2), mesh, cutHeight,
                                                     bedToLocalConverter);
-            if (vertex20.equals(getVertex(mesh, vertexIntersect0)))
-            {
-                v02 = vertexIntersect0;
-            } else
-            {
-                assert (vertex20.equals(getVertex(mesh, vertexIntersect1)));
-                v02 = vertexIntersect1;
-            }
+            v02 = addNewOrGetVertex(mesh, vertex02);
         }
 
         int numPointsBelowCut = 0;
@@ -334,14 +329,15 @@ public class TriangleCutter
             }
 
             assert (c0 != -1 && c1 != -1 && c2 != -1 && c3 != -1 && c4 != -1 && c5 != -1);
-            assert (c0 != c1 && c1 != c2 && c2 != c0) : c0 + " " + c1 + " " + c2;
-            assert (c3 != c4 && c4 != c5 && c5 != c3) : c3 + " " + c4 + " " + c5;
+            assert (c0 != c1 && c1 != c2 && c2 != c0) : faceIndex + " " + c0 + " " + c1 + " " + c2;
 
             int[] vertices = new int[6];
             vertices[0] = c0;
             vertices[2] = c1;
             vertices[4] = c2;
             mesh.getFaces().addAll(vertices);
+
+            assert (c3 != c4 && c4 != c5 && c5 != c3) : faceIndex + " " + c3 + " " + c4 + " " + c5;
             vertices[0] = c3;
             vertices[2] = c4;
             vertices[4] = c5;
@@ -350,13 +346,14 @@ public class TriangleCutter
 
     }
 
-    private static void cutWithOneVertexOnPlane(Set<Integer> vertexIndices, 
-        boolean v0belowCut, int v1, int v0, boolean v1belowCut,
-        boolean v2belowCut, int v2, TriangleMesh mesh,int faceIndex,
+    private static void cutWithOneVertexOnPlane(Set<Integer> vertexIndices,
+        int v0, int v1, int v2,
+        boolean v0belowCut, boolean v1belowCut, boolean v2belowCut,
+        TriangleMesh mesh, int faceIndex,
         float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter)
     {
-        
-        List<Integer> verticesIndices = new ArrayList<>();
+
+        List<Integer> edgeVerticesIndices = new ArrayList<>();
         Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight,
                                                             bedToLocalConverter);
 
@@ -365,13 +362,25 @@ public class TriangleCutter
             int vertexIndex = makeIntersectingVertex(mesh, edge, cutHeight,
                                                      bedToLocalConverter);
 
-            verticesIndices.add(vertexIndex);
+            edgeVerticesIndices.add(vertexIndex);
         }
-        assert verticesIndices.size() == 1;
-        
+        if (edgeVerticesIndices.size() != 1)
+        {
+            System.out.println("vertices are ");
+            v0 = mesh.getFaces().get(faceIndex * 6);
+            v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+            v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+            System.out.println("v0A " + getVertex(mesh, v0));
+            System.out.println("v1A " + getVertex(mesh, v1));
+            System.out.println("v2A " + getVertex(mesh, v2));
+
+        }
+        assert edgeVerticesIndices.size() == 1 : "edges vertices size is "
+            + edgeVerticesIndices.size();
+
         int vertexIndexOnPlane = vertexIndices.iterator().next();
-        int vertexIndexCutting = verticesIndices.get(0);
-        
+        int vertexIndexCutting = edgeVerticesIndices.get(0);
+
         int c0 = -1;
         int c1 = -1;
         int c2 = -1;
@@ -477,8 +486,8 @@ public class TriangleCutter
         float y0 = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0)).getY();
         float y1 = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1)).getY();
 
-        if (((y0 < cutHeight) && (cutHeight < y1))
-            || ((y1 < cutHeight) && (cutHeight < y0)))
+        if (((y0 < cutHeight - epsilon) && (cutHeight + epsilon < y1))
+            || ((y1 < cutHeight - epsilon) && (cutHeight + epsilon < y0)))
         {
             return true;
         }
@@ -496,15 +505,15 @@ public class TriangleCutter
         Point3D point0InBed = bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0));
         Point3D point1InBed = bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1));
         Point3D point2InBed = bedToLocalConverter.localToBed(makePoint3D(mesh, vertex2));
-        if (point0InBed.getY() == cutHeight)
+        if (MathUtils.compareFloat((float) point0InBed.getY(), cutHeight, epsilon) == EQUAL)
         {
             vertexIndices.add(vertex0);
         }
-        if (point1InBed.getY() == cutHeight)
+        if (MathUtils.compareFloat((float) point1InBed.getY(), cutHeight, epsilon) == EQUAL)
         {
             vertexIndices.add(vertex1);
         }
-        if (point2InBed.getY() == cutHeight)
+        if (MathUtils.compareFloat((float) point2InBed.getY(), cutHeight, epsilon) == EQUAL)
         {
             vertexIndices.add(vertex2);
         }
@@ -512,4 +521,3 @@ public class TriangleCutter
     }
 
 }
-

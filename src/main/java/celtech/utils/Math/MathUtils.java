@@ -416,11 +416,28 @@ public class MathUtils
     public static final int MORE_THAN = 1;
     public static final int LESS_THAN = -1;
 
+
     public static int compareDouble(double a, double b, double epsilon)
     {
         double result = a - b;
 
         if (Math.abs(result) < epsilon)
+        {
+            return EQUAL;
+        } else if (result > 0)
+        {
+            return MORE_THAN;
+        } else
+        {
+            return LESS_THAN;
+        }
+    }
+    
+    public static int compareFloat(float a, float b, float epsilon)
+    {
+        float result = a - b;
+
+        if (Math.abs(result) <= epsilon)
         {
             return EQUAL;
         } else if (result > 0)

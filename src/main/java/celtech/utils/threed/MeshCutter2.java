@@ -3,12 +3,16 @@
  */
 package celtech.utils.threed;
 
-import static celtech.utils.threed.MeshCutter.getLoopsOfVertices;
 import static celtech.utils.threed.MeshCutter.makePoint3D;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshUtils.copyMesh;
+import static celtech.utils.threed.NonManifoldLoopDetector.identifyNonManifoldLoops;
+import static celtech.utils.threed.OpenFaceCloser.closeOpenFace;
+import static celtech.utils.threed.TriangleCutter.epsilon;
 import com.sun.javafx.scene.shape.ObservableFaceArrayImpl;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
@@ -20,92 +24,104 @@ import javafx.scene.shape.TriangleMesh;
  */
 public class MeshCutter2
 {
+    /**
+     * Cut the given mesh into two, at the given height.
+     */
+    public static MeshCutter.MeshPair cut(TriangleMesh mesh, float cutHeight,
+        MeshCutter.BedToLocalConverter bedToLocalConverter)
+    {
+
+        System.out.println("cut at " + cutHeight);
+
+        CutResult cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.TOP);
+
+        TriangleMesh topMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
+        MeshUtils.removeUnusedAndDuplicateVertices(topMesh);
+        setTextureAndSmoothing(topMesh, topMesh.getFaces().size() / 6);
+
+        Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
+        if (error.isPresent())
+        {
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
+        }
+        
+        cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
+
+        TriangleMesh bottomMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
+        MeshUtils.removeUnusedAndDuplicateVertices(bottomMesh);
+        setTextureAndSmoothing(bottomMesh, bottomMesh.getFaces().size() / 6);
+
+        error = MeshUtils.validate(bottomMesh);
+        if (error.isPresent())
+        {
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
+        }
+
+
+        return new MeshCutter.MeshPair(topMesh, bottomMesh);
+    }
+
     
-    static CutResult getUncoveredUpperMesh(TriangleMesh mesh,
-        float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter)
+    
+    static CutResult getUncoveredMesh(TriangleMesh mesh,
+        float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter,
+        MeshCutter.TopBottom topBottom)
     {
 
         TriangleMesh childMesh = makeSplitMesh(mesh,
-                                         cutHeight, bedToLocalConverter, MeshCutter.TopBottom.TOP);
-//        CutResult cutResultUpper = new CutResult(childMesh, 
-//                                                 bedToLocalConverter, MeshCutter.TopBottom.TOP);
-//        return cutResultUpper;
-        return null;
+                                         cutHeight, bedToLocalConverter, topBottom);
+        
+        // XXX remove duplicate vertices before trying to identify non-manifold edges ??
+        
+        Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh);
+        System.out.println("non manifold loops: " + loops);
+        
+        Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
+        
+        polygonIndices = removeSequentialDuplicateVertices(polygonIndices);
+        
+        CutResult cutResultUpper = new CutResult(childMesh, polygonIndices,
+                                                 bedToLocalConverter, topBottom);
+        return cutResultUpper;
     }
     
     /**
-     * Given the mesh, cut faces and intersection points, create the lower child mesh. Copy the
+     * Given the mesh, cut faces and intersection points, create the child mesh. Copy the
      * original mesh, remove all the cut faces and replace with a new set of faces using the new
      * intersection points. Remove all the faces from above the cut faces.
      */
-    private static TriangleMesh makeSplitMesh(TriangleMesh mesh,
+    static TriangleMesh makeSplitMesh(TriangleMesh mesh,
          float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter, 
          MeshCutter.TopBottom topBottom)
     {
         TriangleMesh childMesh = copyMesh(mesh);
 
-        removeCutFacesAndFacesAboveCutPlane(childMesh, cutHeight,
-                                            bedToLocalConverter, topBottom);
+        Set<Integer> facesToRemove = new HashSet<>();
         
-        for (int i = 0; i < childMesh.getFaces().size() / 6; i++) {
-            TriangleCutter.splitFaceAndAddLowerFacesToMesh(childMesh, i, cutHeight,
+        for (int i = 0; i < mesh.getFaces().size() / 6; i++) {
+            TriangleCutter.splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove, i, cutHeight,
                                                       bedToLocalConverter, topBottom);
         }
-
+        System.out.println("faces to remove " + topBottom + " " + facesToRemove);
         
+        removeFaces(childMesh, facesToRemove);
 
-        MeshDebug.showFace(mesh, 0);
+//        MeshDebug.showFace(mesh, 0);
 
         return childMesh;
     }
     
+    
     /**
-     * Remove the cut faces and any other faces above cut height from the mesh.
+     * Remove the given faces from the mesh.
      */
-    private static void removeCutFacesAndFacesAboveCutPlane(TriangleMesh mesh,
-        float cutHeight,
-        MeshCutter.BedToLocalConverter bedToLocalConverter,
-        MeshCutter.TopBottom topBottom)
+    private static void removeFaces(TriangleMesh mesh, Set<Integer> facesToRemove)
     {
-        Set<Integer> facesAboveBelowCut = new HashSet<>();
-
-        // compare vertices' -Y to cutHeight
-        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
-        {
-            int vertex0 = mesh.getFaces().get(faceIndex * 6);
-            float vertex0YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0)).getY();
-
-            // for BOTTOM we want vY is "above" the cut
-            // if a vertex is on the line then ignore it, one of the other vertices will be
-            // above or below the line.
-            if (topBottom == MeshCutter.TopBottom.BOTTOM && vertex0YInBed < cutHeight || topBottom
-                == MeshCutter.TopBottom.TOP && vertex0YInBed > cutHeight)
-            {
-                facesAboveBelowCut.add(faceIndex);
-                continue;
-            }
-            int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
-            float vertex1YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1)).getY();
-            if (topBottom == MeshCutter.TopBottom.BOTTOM && vertex1YInBed < cutHeight || topBottom
-                == MeshCutter.TopBottom.TOP && vertex1YInBed > cutHeight)
-            {
-                facesAboveBelowCut.add(faceIndex);
-                continue;
-            }
-            int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            float vertex2YInBed = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex2)).getY();
-            if (topBottom == MeshCutter.TopBottom.BOTTOM && vertex2YInBed < cutHeight || topBottom
-                == MeshCutter.TopBottom.TOP && vertex2YInBed > cutHeight)
-            {
-                facesAboveBelowCut.add(faceIndex);
-                continue;
-            }
-        }
-
+        
         ObservableFaceArray newFaceArray = new ObservableFaceArrayImpl();
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
-            if (facesAboveBelowCut.contains(faceIndex))
+            if (facesToRemove.contains(faceIndex))
             {
                 continue;
             }
@@ -117,6 +133,47 @@ public class MeshCutter2
         }
         mesh.getFaces().setAll(newFaceArray);
         setTextureAndSmoothing(mesh, mesh.getFaces().size() / 6);
+    }
+
+    static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops)
+    {
+        Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
+        for (List<ManifoldEdge> loop : loops)
+        {
+            PolygonIndices polygonIndices = convertEdgesToPolygonIndices(loop);
+            polygonIndicesSet.add(polygonIndices);
+        }
+        return polygonIndicesSet;
+    }
+
+    static PolygonIndices convertEdgesToPolygonIndices(List<ManifoldEdge> loop)
+    {
+        PolygonIndices polygonIndices = new PolygonIndices();
+        for (ManifoldEdge edge : loop)
+        {
+            polygonIndices.add(edge.v0);
+        }
+        polygonIndices.add(loop.get(loop.size() - 1).v1);
+        return polygonIndices;
+    }
+
+    private static Set<PolygonIndices> removeSequentialDuplicateVertices(Set<PolygonIndices> polygonIndices)
+    {
+        Set<PolygonIndices> polygonIndicesClean = new HashSet<>();
+        for (PolygonIndices loop : polygonIndices)
+        {
+            PolygonIndices cleanLoop = new PolygonIndices();
+            int previousVertexIndex = -1;
+            for (Integer vertexIndex : loop)
+            {
+                if (vertexIndex != previousVertexIndex) {
+                    cleanLoop.add(vertexIndex);
+                } 
+                previousVertexIndex = vertexIndex;
+            }
+            polygonIndicesClean.add(cleanLoop);
+        }
+        return polygonIndicesClean;
     }
 
 

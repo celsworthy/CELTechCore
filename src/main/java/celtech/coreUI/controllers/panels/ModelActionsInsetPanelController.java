@@ -13,6 +13,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.utils.threed.MeshCutter;
 import celtech.utils.threed.MeshCutter.MeshPair;
+import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshDebug;
 import java.net.URL;
 import java.util.HashSet;
@@ -246,13 +247,13 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
         try
         {
-//            MeshPair meshPair = MeshCutter.cut(
+            MeshPair meshPair = MeshCutter2.cut(
+                (TriangleMesh) modelContainer.getMeshView().getMesh(),
+                cutHeightValue, modelContainer.getBedToLocalConverter());
+            
+//            MeshPair meshPair = MeshCutter2.cut(
 //                (TriangleMesh) modelContainer.getMeshView().getMesh(),
-//                cutHeightValue, modelContainer.getBedToLocalConverter());
-
-            MeshPair meshPair = MeshCutter.cut(
-                    (TriangleMesh) modelContainer.getMeshView().getMesh(),
-                    cutHeightValue, nullBedToLocalConverter);
+//                cutHeightValue, nullBedToLocalConverter);
 
             String modelName = modelContainer.getModelName();
 
