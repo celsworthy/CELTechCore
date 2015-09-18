@@ -135,7 +135,7 @@ public class MeshCutter2
         setTextureAndSmoothing(mesh, mesh.getFaces().size() / 6);
     }
 
-    private static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops)
+    static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops)
     {
         Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
         for (List<ManifoldEdge> loop : loops)
@@ -146,7 +146,7 @@ public class MeshCutter2
         return polygonIndicesSet;
     }
 
-    private static PolygonIndices convertEdgesToPolygonIndices(List<ManifoldEdge> loop)
+    static PolygonIndices convertEdgesToPolygonIndices(List<ManifoldEdge> loop)
     {
         PolygonIndices polygonIndices = new PolygonIndices();
         for (ManifoldEdge edge : loop)

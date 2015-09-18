@@ -59,13 +59,23 @@ public class NonManifoldLoopDetector
                 loops.add(loop.get());
             }
         }
-
+        
+        loops = removeIdenticalLoops(loops);
+        
         return loops;
     }
 
     static Optional<List<ManifoldEdge>> getLoopForEdgeInDirection(
         ManifoldEdge edge, Map<Integer, Set<ManifoldEdge>> edgesWithVertex, Direction direction)
     {
+        
+        if (edge.isVisited(direction))
+            {
+                // already have explored this possible loop
+                return Optional.empty();
+            }
+        edge.setVisited(direction);
+        
         List<ManifoldEdge> loop = new ArrayList<>();
 
         ManifoldEdge firstEdge = edge;
@@ -124,7 +134,7 @@ public class NonManifoldLoopDetector
             if (nextEdge.isVisited(nextDirection))
             {
                 // already have explored this possible loop
-//                return Optional.empty();
+                return Optional.empty();
             }
             nextEdge.setVisited(nextDirection);
             previousEdge = nextEdge;
@@ -219,6 +229,25 @@ public class NonManifoldLoopDetector
         }
         return edgesWithVertex;
     }
+    
+
+    static Set<List<ManifoldEdge>> removeIdenticalLoops(Set<List<ManifoldEdge>> loops)
+    {
+        Set<Set<Integer>> seenVertexSets = new HashSet<>();
+        Set<List<ManifoldEdge>> uniqueLoops = new HashSet<>();
+        for (List<ManifoldEdge> loop : loops)
+        {
+             PolygonIndices vertices = MeshCutter2.convertEdgesToPolygonIndices(loop);
+             Set<Integer> vertexSet = new HashSet<>(vertices);
+             if (seenVertexSets.contains(vertexSet)) {
+                 continue;
+             } else {
+                 seenVertexSets.add(vertexSet);
+                 uniqueLoops.add(loop);
+             }
+        }
+        return uniqueLoops;
+    }    
 
     static Set<ManifoldEdge> getNonManifoldEdges(TriangleMesh mesh)
     {

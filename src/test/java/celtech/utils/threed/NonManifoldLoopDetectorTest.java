@@ -100,7 +100,7 @@ public class NonManifoldLoopDetectorTest
     }
 
     @Test
-    public void testGetLoopForEdgeInDirectionTwoLoops()
+    public void testGetLoopForEdgeInDirectionTwoAdjacentLoops()
     {
 
         Vertex vertex0 = new Vertex(1, 0, 0);
@@ -140,7 +140,7 @@ public class NonManifoldLoopDetectorTest
         Optional<List<ManifoldEdge>> loop2 = NonManifoldLoopDetector.getLoopForEdgeInDirection(edge1,
                                                                                                edgesWithVertex,
                                                                                                NonManifoldLoopDetector.Direction.FORWARDS);
-        assertEquals(3, loop2.get().size());
+        assertEquals(6, loop2.get().size());
 
     }
 
@@ -151,13 +151,20 @@ public class NonManifoldLoopDetectorTest
         TriangleMesh mesh = createSimpleCubeWithMissingFace();
 
         Set<List<ManifoldEdge>> loops = NonManifoldLoopDetector.identifyNonManifoldLoops(mesh);
-        System.out.println(loops);
+        for (List<ManifoldEdge> loop : loops)
+        {
+            System.out.println("XXXX");
+            for (ManifoldEdge edge : loop)
+            {
+                System.out.println(edge.v0 + "->" + edge.v1);
+            }
+        }
         assertEquals(1, loops.size());
 
         List<ManifoldEdge> expectedLoop = new ArrayList<>();
         expectedLoop.add(new ManifoldEdge(0, 1, null, null));
-        expectedLoop.add(new ManifoldEdge(1, 2, null, null));
-        expectedLoop.add(new ManifoldEdge(2, 0, null, null));
+        expectedLoop.add(new ManifoldEdge(0, 2, null, null));
+        expectedLoop.add(new ManifoldEdge(2, 1, null, null));
 
         assertEquals(expectedLoop, loops.iterator().next());
     }
