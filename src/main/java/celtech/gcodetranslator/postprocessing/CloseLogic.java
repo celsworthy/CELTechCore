@@ -3,6 +3,7 @@ package celtech.gcodetranslator.postprocessing;
 import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.NozzleParameters;
+import celtech.gcodetranslator.GCodeRoboxiser;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
@@ -84,13 +85,33 @@ public class CloseLogic
 
         double requiredEjectionVolume = nozzleInUse.getNozzleParameters().getEjectionVolume();
 
+        
+        // If not a perimeter then attempt to close to the end of the extrusion
+        boolean failedToCloseOverNonPerimeter = false;
+        
         if (nodeToAppendClosesTo.getParent().isPresent()
-                && nodeToAppendClosesTo.getParent().get() instanceof FillSectionNode)
+                && !(nodeToAppendClosesTo.getParent().get() instanceof OuterPerimeterSectionNode)
+                && !(nodeToAppendClosesTo.getParent().get() instanceof InnerPerimeterSectionNode))
         {
             closeResult = closeToEndOfSection(nodeToAppendClosesTo, nozzleInUse);
-        } else if (nodeToAppendClosesTo.getParent().isPresent()
-                && nodeToAppendClosesTo.getParent().get() instanceof OuterPerimeterSectionNode)
+            failedToCloseOverNonPerimeter = !closeResult.hasSucceeded();
+        }
+        
+        if (failedToCloseOverNonPerimeter)
         {
+            // Attempt an inward close from the end of the non-perimeter extrusion
+            close
+        }
+        else if (closeResult == null)
+        {
+            // We must be looking at a perimeter - clo
+        }
+        
+        
+        
+//        else if (nodeToAppendClosesTo.getParent().isPresent()
+//                && nodeToAppendClosesTo.getParent().get() instanceof OuterPerimeterSectionNode)
+//        {
             //We're closing from an outer perimeter
 
             // If our outer perimeter has a smaller extrusion volume than the specified ejection volume
@@ -110,102 +131,112 @@ public class CloseLogic
 //            } else
             {
                 // If we have an available fill section to close over and we can close in the required volume then do it
-                Optional<GCodeEventNode> fillSection = nodeToAppendClosesTo.getParent().get().getSiblingAfter();
-                if (fillSection.isPresent())
-                {
-                    if (fillSection.get() instanceof FillSectionNode)
-                    {
-                        closeResult = closeUsingSectionTemplate(((SectionNode) fillSection.get()),
-                                (ExtrusionNode) nodeToAppendClosesTo,
-                                nozzleInUse);
-                    }
-                }
-
-                // If we didn't close in fill
-                if (closeResult == null
-                        || !closeResult.hasSucceeded())
-                {
-                    // If we have an available inner section to close over and we can close in the required volume then do it
-                    Optional<GCodeEventNode> innerSection = nodeToAppendClosesTo.getParent().get().getSiblingBefore();
-                    if (innerSection.isPresent())
-                    {
-                        if (innerSection.get() instanceof InnerPerimeterSectionNode)
-                        {
-                            closeResult = closeUsingSectionTemplate(((SectionNode) innerSection.get()),
-                                    (ExtrusionNode) nodeToAppendClosesTo,
-                                    nozzleInUse);
-                        }
-                    }
-                }
-
-                if (closeResult == null
-                        || !closeResult.hasSucceeded())
-                {
-                    GCodeEventNode lastNodeConsidered = null;
-                    GCodeEventNode limitNode = null;
-
-                    IteratorWithOrigin<GCodeEventNode> nodeIterator = nodeToAppendClosesTo.siblingsBackwardsIterator();
-
-                    while (nodeIterator.hasNext())
-                    {
-                        GCodeEventNode potentialExtrusionNode = nodeIterator.next();
-
-                        if (potentialExtrusionNode instanceof ExtrusionNode)
-                        {
-                            if (((ExtrusionNode) potentialExtrusionNode).getElidedExtrusion() > 0)
-                            {
-                                limitNode = lastNodeConsidered;
-                                break;
-                            }
-                            lastNodeConsidered = potentialExtrusionNode;
-                        }
-                    }
-
-                    if (limitNode == null && lastNodeConsidered != null)
-                    {
-                        //No problem - we just didn't find a prior close in this section
-                        limitNode = lastNodeConsidered;
-                    }
-
-                    if (limitNode != null)
-                    {
-                        closeResult = closeFromEreToEre(limitNode, nodeToAppendClosesTo, nozzleInUse, true);
-                    } else
-                    {
-                        throw new RuntimeException("Couldn't find limit to for close from ere to ere");
-                    }
-                }
-
-                if (closeResult != null
-                        && closeResult.hasSucceeded()
-                        && closeResult.getClosestNode().isPresent())
-                {
-                    //Add a travel to the closest node
-                    Movement movement = ((MovementProvider) closeResult.getClosestNode().get()).getMovement();
-                    TravelNode travelToClosestNode = new TravelNode();
-                    travelToClosestNode.getFeedrate().setFeedRate_mmPerMin(400);
-                    travelToClosestNode.getMovement().setX(movement.getX());
-                    travelToClosestNode.getMovement().setY(movement.getY());
-                    nodeToAppendClosesTo.addSiblingAfter(travelToClosestNode);
-                } else
-                {
-                    //Failed to add a close
-                    String outputMessage;
-                    if (nodeToAppendClosesTo instanceof Renderable)
-                    {
-                        Renderable renderableNode = (Renderable) nodeToAppendClosesTo;
-                        outputMessage = "Couldn't find closest node when looking for close trajectory from outer perimeter " + renderableNode.renderForOutput();
-                    } else
-                    {
-                        outputMessage = "Couldn't find closest node when looking for close trajectory from outer perimeter " + nodeToAppendClosesTo.toString();
-                    }
-                    steno.debug(outputMessage);
-//                    throw new RuntimeException(outputMessage);
-                }
-            }
+//                Optional<GCodeEventNode> fillSection = nodeToAppendClosesTo.getParent().get().getSiblingAfter();
+//                if (fillSection.isPresent())
+//                {
+//                    if (fillSection.get() instanceof FillSectionNode)
+//                    {
+//                        closeResult = closeUsingSectionTemplate(((SectionNode) fillSection.get()),
+//                                (ExtrusionNode) nodeToAppendClosesTo,
+//                                nozzleInUse);
+//                    }
+//                }
+//
+//                // If we didn't close in fill
+//                if (closeResult == null
+//                        || !closeResult.hasSucceeded())
+//                {
+//                    // If we have an available inner section to close over and we can close in the required volume then do it
+//                    Optional<GCodeEventNode> innerSection = nodeToAppendClosesTo.getParent().get().getSiblingBefore();
+//                    if (innerSection.isPresent())
+//                    {
+//                        if (innerSection.get() instanceof InnerPerimeterSectionNode)
+//                        {
+//                            closeResult = closeUsingSectionTemplate(((SectionNode) innerSection.get()),
+//                                    (ExtrusionNode) nodeToAppendClosesTo,
+//                                    nozzleInUse);
+//                        }
+//                    }
+//                }
+//
+//                if (closeResult == null
+//                        || !closeResult.hasSucceeded())
+//                {
+//                    GCodeEventNode lastNodeConsidered = null;
+//                    GCodeEventNode limitNode = null;
+//
+//                    IteratorWithOrigin<GCodeEventNode> nodeIterator = nodeToAppendClosesTo.siblingsBackwardsIterator();
+//
+//                    while (nodeIterator.hasNext())
+//                    {
+//                        GCodeEventNode potentialExtrusionNode = nodeIterator.next();
+//
+//                        if (potentialExtrusionNode instanceof ExtrusionNode)
+//                        {
+//                            if (((ExtrusionNode) potentialExtrusionNode).getElidedExtrusion() > 0)
+//                            {
+//                                limitNode = lastNodeConsidered;
+//                                break;
+//                            }
+//                            lastNodeConsidered = potentialExtrusionNode;
+//                        }
+//                    }
+//
+//                    if (limitNode == null && lastNodeConsidered != null)
+//                    {
+//                        //No problem - we just didn't find a prior close in this section
+//                        limitNode = lastNodeConsidered;
+//                    }
+//
+//                    if (limitNode != null)
+//                    {
+//                        closeResult = closeFromEreToEre(limitNode, nodeToAppendClosesTo, nozzleInUse, true);
+//                    } else
+//                    {
+//                        throw new RuntimeException("Couldn't find limit to for close from ere to ere");
+//                    }
+//                }
+//
+//                if (closeResult != null
+//                        && closeResult.hasSucceeded()
+//                        && closeResult.getClosestNode().isPresent())
+//                {
+//                    //Add a travel to the closest node
+//                    Movement movement = ((MovementProvider) closeResult.getClosestNode().get()).getMovement();
+//                    TravelNode travelToClosestNode = new TravelNode();
+//                    travelToClosestNode.getFeedrate().setFeedRate_mmPerMin(400);
+//                    travelToClosestNode.getMovement().setX(movement.getX());
+//                    travelToClosestNode.getMovement().setY(movement.getY());
+//                    nodeToAppendClosesTo.addSiblingAfter(travelToClosestNode);
+//                } else
+//                {
+//                    //Failed to add a close
+//                    String outputMessage;
+//                    if (nodeToAppendClosesTo instanceof Renderable)
+//                    {
+//                        Renderable renderableNode = (Renderable) nodeToAppendClosesTo;
+//                        outputMessage = "Couldn't find closest node when looking for close trajectory from outer perimeter " + renderableNode.renderForOutput();
+//                    } else
+//                    {
+//                        outputMessage = "Couldn't find closest node when looking for close trajectory from outer perimeter " + nodeToAppendClosesTo.toString();
+//                    }
+//                    steno.debug(outputMessage);
+////                    throw new RuntimeException(outputMessage);
+//                }
+//            }
         }
 
         return closeResult;
+    }
+    
+    private Optional<GCodeRoboxiser.CloseResult> closeInwardsFromEndOfLastExtrusion(final ExtrusionNode nodeToAppendClosesTo, final NozzleProxy nozzleInUse)
+    {
+        
+    }
+
+    private Optional<GCodeRoboxiser.CloseResult> closeInwardsFromEndOfPerimeter(final ExtrusionNode nodeToAppendClosesTo, final NozzleProxy nozzleInUse)
+    {
+        
     }
 
     /**

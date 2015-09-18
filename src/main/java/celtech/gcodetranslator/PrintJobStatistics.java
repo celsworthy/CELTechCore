@@ -74,7 +74,7 @@ public class PrintJobStatistics
     /**
      * @return the volumeUsed for Extruder E
      */
-    public double getEVolumeUsed()
+    public double geteVolumeUsed()
     {
         return eVolumeUsed;
     }
@@ -82,7 +82,7 @@ public class PrintJobStatistics
     /**
      * @return the volumeUsed for Extruder D
      */
-    public double getDVolumeUsed()
+    public double getdVolumeUsed()
     {
         return dVolumeUsed;
     }
