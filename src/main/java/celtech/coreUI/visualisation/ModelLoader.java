@@ -11,6 +11,7 @@ import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.printerControl.model.Printer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import celtech.utils.threed.MeshUtils;
@@ -34,7 +35,7 @@ public class ModelLoader
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        ModelLoader.class.getName());
+            ModelLoader.class.getName());
     /*
      * Mesh Model loading
      */
@@ -47,30 +48,55 @@ public class ModelLoader
         {
             return;
         }
-        
+
         // validate incoming meshes
-        for (ModelLoadResult loadResult : loadResults.getResults()) {
+        // Associate the loaded meshes with extruders in turn, respecting the original groups / model files
+        int numExtruders = 1;
+
+        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
+        if (selectedPrinter != null)
+        {
+            numExtruders = selectedPrinter.extrudersProperty().size();
+        }
+
+        int currentExtruder = 0;
+
+        for (ModelLoadResult loadResult : loadResults.getResults())
+        {
             Set<ModelContainer> modelContainers = loadResult.getModelContainers();
             Set<String> invalidModelNames = new HashSet<>();
             for (ModelContainer modelContainer : modelContainers)
             {
-                
                 Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
-                if (error.isPresent()) {
+                if (error.isPresent())
+                {
                     invalidModelNames.add(modelContainer.getModelName());
                     modelContainer.setIsInvalidMesh(true);
                 }
+
+                //Assign the models incrementally to the extruders
+                modelContainer.getAssociateWithExtruderNumberProperty().set(currentExtruder);
             }
-            if (!invalidModelNames.isEmpty()) {
-                boolean load = 
-                    Lookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
-                if (! load) {
+
+            if (currentExtruder < numExtruders - 1)
+            {
+                currentExtruder++;
+            } else
+            {
+                currentExtruder = 0;
+            }
+
+            if (!invalidModelNames.isEmpty())
+            {
+                boolean load
+                        = Lookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
+                if (!load)
+                {
                     return;
                 }
             }
-            
         }
-        
+
         boolean projectIsEmpty = project.getTopLevelModels().isEmpty();
         Set<ModelContainer> allModelContainers = new HashSet<>();
         for (ModelLoadResult loadResult : loadResults.getResults())
@@ -105,8 +131,9 @@ public class ModelLoader
     }
 
     /**
-     * Load each model in modelsToLoad and relayout if requested. If there are already models
-     * loaded in the project then do not relayout even if relayout=true;
+     * Load each model in modelsToLoad and relayout if requested. If there are
+     * already models loaded in the project then do not relayout even if
+     * relayout=true;
      */
     public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
     {
@@ -120,8 +147,9 @@ public class ModelLoader
     }
 
     /**
-     * Add the given ModelContainers to the project. Some may be ModelGroups. If there is more than
-     * one ModelContainer/Group then put them in one overarching group.
+     * Add the given ModelContainers to the project. Some may be ModelGroups. If
+     * there is more than one ModelContainer/Group then put them in one
+     * overarching group.
      */
     private void addToProject(Project project, Set<ModelContainer> modelContainers)
     {
@@ -150,7 +178,7 @@ public class ModelLoader
         if (modelIsTooLarge)
         {
             shrinkModel = Lookup.getSystemNotificationHandler().
-                showModelTooBigDialog(modelContainer.getModelName());
+                    showModelTooBigDialog(modelContainer.getModelName());
         }
         if (shrinkModel)
         {
@@ -163,10 +191,12 @@ public class ModelLoader
         Set<ModelContainer> splitModelContainers = new HashSet<>();
         for (ModelContainer modelContainer : modelContainers)
         {
-            try {
+            try
+            {
                 ModelContainer splitContainerOrGroup = modelContainer.splitIntoParts();
                 splitModelContainers.add(splitContainerOrGroup);
-            } catch (StackOverflowError ex) {
+            } catch (StackOverflowError ex)
+            {
                 splitModelContainers.add(modelContainer);
             }
         }

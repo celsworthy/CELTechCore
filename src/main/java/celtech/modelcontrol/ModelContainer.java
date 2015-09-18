@@ -1380,6 +1380,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 ModelContainer newModelContainer = new ModelContainer(
                     getModelFile(), meshView);
                 newModelContainer.setState(state);
+                newModelContainer.associateWithExtruderNumber.set(associateWithExtruderNumber.get());
                 parts.add(newModelContainer);
 
                 newModelContainer.setModelName(modelName + " " + ix);
