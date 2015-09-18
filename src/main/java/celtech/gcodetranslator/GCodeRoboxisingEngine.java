@@ -143,6 +143,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
                                     Double::doubleValue).sum();
 
                     PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
+                            "?",
                             numLines,
                             volumeUsed,
                             0,

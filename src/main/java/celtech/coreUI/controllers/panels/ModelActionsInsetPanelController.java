@@ -35,7 +35,6 @@ import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
-
 /**
  *
  * @author tony
@@ -44,7 +43,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        ModelActionsInsetPanelController.class.getName());
+            ModelActionsInsetPanelController.class.getName());
 
     @FXML
     private HBox modelActionsInsetRoot;
@@ -57,6 +56,9 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 
     @FXML
     private Button cut;
+
+    @FXML
+    private Button selectSameMaterial;
 
     @FXML
     private TextField cutHeight;
@@ -74,17 +76,17 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
 //                whenProjectChanged(newValue);
 //            });
         ApplicationStatus.getInstance().modeProperty().addListener(
-            (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-            {
-                if (newValue == ApplicationMode.SETTINGS)
+                (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
                 {
-                    modelActionsInsetRoot.setVisible(false);
-                } else
-                {
-                    modelActionsInsetRoot.setVisible(true);
-                }
+                    if (newValue == ApplicationMode.SETTINGS)
+                    {
+                        modelActionsInsetRoot.setVisible(false);
+                    } else
+                    {
+                        modelActionsInsetRoot.setVisible(true);
+                    }
 
-            });
+                });
     }
 
     private void whenProjectChanged(Project project)
@@ -108,17 +110,17 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     void doGroup(ActionEvent event)
     {
         Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(
-            mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
+                mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
         Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
-            mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
+                mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1)
         {
             Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
-                changedModelGroups.iterator().next());
+                    changedModelGroups.iterator().next());
         }
     }
 
@@ -128,6 +130,29 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.ungroup(modelContainers);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
+    }
+
+    @FXML
+    void doSelectSameMaterial(ActionEvent event)
+    {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        if (modelContainers.size() > 0)
+        {
+            ModelContainer firstModelContainer = modelContainers.iterator().next();
+            int associatedExtruder = firstModelContainer.getAssociateWithExtruderNumberProperty().get();
+            Set<ModelContainer> allModels = currentProject.getAllModels();
+
+            allModels.forEach(candidateModel ->
+            {
+                if (candidateModel.getAssociateWithExtruderNumberProperty().get()
+                        == associatedExtruder)
+                {
+                    Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(candidateModel);
+                }
+            });
+            
+            
+        }
     }
 
     @FXML
@@ -145,14 +170,14 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             for (ModelContainer descendentModelContainer : modelGroup.getModelsHoldingMeshViews())
             {
                 ModelContainerPair modelContainerPair = cutModelContainerAtHeight(
-                    descendentModelContainer, cutHeightValue);
+                        descendentModelContainer, cutHeightValue);
                 topModelContainers.add(modelContainerPair.topModelContainer);
                 bottomModelContainers.add(modelContainerPair.bottomModelContainer);
             }
             ModelGroup topGroup = currentProject.createNewGroupAndAddModelListeners(
-                topModelContainers);
+                    topModelContainers);
             ModelGroup bottomGroup = currentProject.createNewGroupAndAddModelListeners(
-                bottomModelContainers);
+                    bottomModelContainers);
             topGroup.setState(modelGroup.getState());
             topGroup.moveToCentre();
             topGroup.dropToBed();
@@ -160,13 +185,13 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
             bottomGroup.moveToCentre();
             bottomGroup.dropToBed();
             bottomGroup.translateBy(20, 20);
-            
+
             currentProject.addModel(topGroup);
             currentProject.addModel(bottomGroup);
         } else
         {
             ModelContainerPair modelContainerPair = cutModelContainerAtHeight(modelContainer,
-                                                                              cutHeightValue);
+                    cutHeightValue);
             modelContainerPair.bottomModelContainer.moveToCentre();
             modelContainerPair.bottomModelContainer.dropToBed();
             undoableProject.addModel(modelContainerPair.bottomModelContainer);
@@ -177,7 +202,6 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         }
     }
 
-
     class ModelContainerPair
     {
 
@@ -185,7 +209,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         final ModelContainer bottomModelContainer;
 
         public ModelContainerPair(ModelContainer topModelContainer,
-            ModelContainer bottomModelContainer)
+                ModelContainer bottomModelContainer)
         {
             this.topModelContainer = topModelContainer;
             this.bottomModelContainer = bottomModelContainer;
@@ -193,7 +217,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     }
 
     private ModelContainerPair cutModelContainerAtHeight(ModelContainer modelContainer,
-        float cutHeightValue)
+            float cutHeightValue)
     {
         ModelContainerPair modelContainerPair = null;
 
@@ -204,7 +228,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         //these transforms must be cleared so that bedToLocal conversions work properly in the cutter.
         modelContainer.saveAndClearBedTransform();
         modelContainer.saveAndClearDropToBedYTransform();
-        
+
         MeshCutter.BedToLocalConverter nullBedToLocalConverter = new MeshCutter.BedToLocalConverter()
         {
 
@@ -220,7 +244,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                 return point;
             }
         };
-        
+
         try
         {
             MeshPair meshPair = MeshCutter2.cut(
@@ -241,11 +265,11 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                 MeshView meshView = new MeshView(subMesh);
                 meshView.cullFaceProperty().set(CullFace.NONE);
                 ModelContainer newModelContainer = new ModelContainer(
-                    modelContainer.getModelFile(), meshView);
+                        modelContainer.getModelFile(), meshView);
                 newModelContainer.setModelName(modelName + " " + ix);
                 newModelContainer.setState(modelContainer.getState());
                 newModelContainer.getAssociateWithExtruderNumberProperty().set(
-                    modelContainer.getAssociateWithExtruderNumberProperty().get());
+                        modelContainer.getAssociateWithExtruderNumberProperty().get());
                 if (ix == 1)
                 {
                     topModelContainer = newModelContainer;

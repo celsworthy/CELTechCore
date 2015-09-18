@@ -10,23 +10,27 @@
 
 <VBox fx:id="rootPane" maxWidth="350.0" minWidth="350.0" prefWidth="350.0" styleClass="status_inner" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.utilityPanels.OuterPanelController">
    <children>
-      <HBox alignment="CENTER_RIGHT" prefHeight="20.0" prefWidth="20.0">
+      <StackPane>
          <children>
-            <StackPane id="cross_button" fx:id="crossButton" styleClass="cross_button">
+            <HBox alignment="CENTER_RIGHT" prefHeight="20.0" prefWidth="20.0">
                <children>
-                  <Line endX="10.0" endY="10.0" mouseTransparent="true" stroke="#fffdfd" strokeWidth="2.0" />
-                  <Line endY="10.0" mouseTransparent="true" startX="10.0" stroke="#f5f3f3" strokeWidth="2.0" />
+                  <StackPane id="cross_button" fx:id="crossButton" styleClass="cross_button">
+                     <children>
+                        <Line endX="10.0" endY="10.0" mouseTransparent="true" stroke="#fffdfd" strokeWidth="2.0" />
+                        <Line endY="10.0" mouseTransparent="true" startX="10.0" stroke="#f5f3f3" strokeWidth="2.0" />
+                     </children>
+                  </StackPane>
                </children>
-            </StackPane>
+               <padding>
+                  <Insets right="3.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER" maxWidth="350.0" minWidth="350.0" mouseTransparent="true" prefWidth="350.0">
+               <children>
+                  <Label fx:id="title" styleClass="title" text="Title" />
+               </children>
+            </HBox>
          </children>
-         <padding>
-            <Insets right="3.0" />
-         </padding>
-      </HBox>
-      <HBox alignment="CENTER" maxWidth="350.0" minWidth="350.0" mouseTransparent="true" prefWidth="350.0" AnchorPane.topAnchor="5.0">
-         <children>
-            <Label fx:id="title" styleClass="title" text="Title" />
-         </children>
-      </HBox>
+      </StackPane>
    </children>
 </VBox>
