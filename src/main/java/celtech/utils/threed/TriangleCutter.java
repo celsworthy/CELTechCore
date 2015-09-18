@@ -21,7 +21,7 @@ import javafx.scene.shape.TriangleMesh;
 public class TriangleCutter
 {
 
-    static final float epsilon = 0.0001f;
+    static final float epsilon = 0.000f;
 
     static Vertex getVertex(TriangleMesh mesh, int vertexIndex)
     {
