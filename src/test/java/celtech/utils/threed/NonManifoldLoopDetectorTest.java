@@ -3,6 +3,7 @@
  */
 package celtech.utils.threed;
 
+import static celtech.utils.threed.NonManifoldLoopDetector.validateLoop;
 import static celtech.utils.threed.TriangleCutter.getVertex;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -228,6 +230,21 @@ public class NonManifoldLoopDetectorTest
                                                                 availableEdges);
         assertEquals(edge2, rightmostEdge);
         
+    }
+    
+    @Test
+    public void testValidateLoop()
+    {
+        List<ManifoldEdge> loop = new ArrayList<>();
+        loop.add(new ManifoldEdge(1, 2, null, null));
+        loop.add(new ManifoldEdge(2, 3, null, null));
+        loop.add(new ManifoldEdge(3, 4, null, null));
+        loop.add(new ManifoldEdge(4, 5, null, null));
+        loop.add(new ManifoldEdge(5, 6, null, null));
+        assertTrue(validateLoop(loop));
+        
+        loop.add(new ManifoldEdge(6, 2, null, null));
+        assertFalse(validateLoop(loop));
     }
 
 }

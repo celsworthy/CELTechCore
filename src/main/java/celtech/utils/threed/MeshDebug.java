@@ -10,12 +10,12 @@ import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.event.ActionEvent;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
@@ -27,20 +27,16 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-
 /**
  *
  * @author tony
  */
-public class MeshDebug
-{
+public class MeshDebug {
 
     static ModelContainer node;
 
-    static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh)
-    {
-        for (Integer faceIndex : cutFaces)
-        {
+    static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh) {
+        for (Integer faceIndex : cutFaces) {
             int v0 = mesh.getFaces().get(faceIndex * 6);
             int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
             int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
@@ -73,16 +69,14 @@ public class MeshDebug
             text.translateZProperty().set((z0 + z1 + z2) / 3.0);
             Font font = new Font("Source Sans Pro Regular", 8);
             text.setFont(font);
-            if (node != null)
-            {
+            if (node != null) {
                 node.addChildNode(sphere);
                 node.addChildNode(text);
             }
         }
     }
 
-    static void showFace(TriangleMesh mesh, int faceIndex)
-    {
+    static void showFace(TriangleMesh mesh, int faceIndex) {
         TriangleMesh triangle = new TriangleMesh();
         int[] vertices = new int[6];
         vertices[0] = mesh.getFaces().get(faceIndex * 6);
@@ -95,36 +89,29 @@ public class MeshDebug
         setTextureAndSmoothing(triangle, triangle.getFaces().size() / 6);
         MeshView meshView = new MeshView(triangle);
         meshView.setMaterial(ApplicationMaterials.pickedGCodeMaterial);
-        if (node != null)
-        {
+        if (node != null) {
             node.addChildNode(meshView);
         }
     }
 
-    static void showSphere(double x, double y, double z)
-    {
+    static void showSphere(double x, double y, double z) {
         Sphere sphere = new Sphere(0.5);
         sphere.translateXProperty().set(x);
         sphere.translateYProperty().set(y);
         sphere.translateZProperty().set(z);
         sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-        if (node != null)
-        {
+        if (node != null) {
             node.addChildNode(sphere);
         }
     }
 
-    public static void setDebuggingNode(ModelContainer node)
-    {
+    public static void setDebuggingNode(ModelContainer node) {
         MeshDebug.node = node;
     }
 
-    static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh)
-    {
-        if (node != null)
-        {
-            for (Integer newVertex : newVertices)
-            {
+    static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh) {
+        if (node != null) {
+            for (Integer newVertex : newVertices) {
                 Sphere sphere = new Sphere(0.5);
                 sphere.translateXProperty().set(mesh.getPoints().get(newVertex * 3));
                 sphere.translateYProperty().set(mesh.getPoints().get(newVertex * 3 + 1));
@@ -135,39 +122,32 @@ public class MeshDebug
         }
     }
 
-    static void showIncomingMesh(TriangleMesh mesh)
-    {
+    static void showIncomingMesh(TriangleMesh mesh) {
         System.out.println(mesh.getVertexFormat());
         System.out.println(mesh.getVertexFormat().getVertexIndexSize());
         System.out.println(mesh.getVertexFormat().getPointIndexOffset());
-        for (int i = 0; i < mesh.getPoints().size() / 3; i++)
-        {
+        for (int i = 0; i < mesh.getPoints().size() / 3; i++) {
             System.out.println("point " + i + " is " + mesh.getPoints().get(i * 3) + " "
-                + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
+                    + mesh.getPoints().get(i * 3 + 1) + " " + mesh.getPoints().get(i * 3 + 2));
             showSphere(mesh.getPoints().get(i * 3), mesh.getPoints().get(i * 3 + 1),
-                       mesh.getPoints().get(i * 3 + 2));
+                    mesh.getPoints().get(i * 3 + 2));
         }
-        for (int i = 0; i < mesh.getFaces().size() / 6; i++)
-        {
+        for (int i = 0; i < mesh.getFaces().size() / 6; i++) {
             System.out.println("face " + i + " is " + mesh.getFaces().get(i * 6) + " "
-                + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
+                    + mesh.getFaces().get(i * 6 + 2) + " " + mesh.getFaces().get(i * 6 + 4));
         }
     }
 
     static boolean close = false;
 
-    static void close()
-    {
+    static void close() {
         close = true;
     }
 
-    static void visualiseEdgeLoops(Set<List<ManifoldEdge>> loops)
-    {
+    static void visualiseEdgeLoops(Set<ManifoldEdge> nonManifoldEdges, Set<List<ManifoldEdge>> loops) {
 
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
                 JFrame f = new JFrame("Edge Loops");
                 f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 MyPanel panel = new MyPanel();
@@ -175,33 +155,28 @@ public class MeshDebug
                 JButton button = new JButton("Quit");
                 panel.add(button);
                 panel.showLoops(loops);
-                button.addActionListener(new ActionListener()
-                {
+                panel.showNonManifoldEdges(nonManifoldEdges);
+                button.addActionListener(new ActionListener() {
 
                     @Override
-                    public void actionPerformed(java.awt.event.ActionEvent e)
-                    {
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
                         close();
                     }
 
                 });
                 f.pack();
-                f.setSize(300, 300);
+                f.setSize(1200, 1200);
                 f.setVisible(true);
             }
 
         });
-        while (true)
-        {
-            if (close)
-            {
+        while (true) {
+            if (close) {
                 break;
             }
-            try
-            {
+            try {
                 Thread.sleep(200);
-            } catch (InterruptedException ex)
-            {
+            } catch (InterruptedException ex) {
                 Logger.getLogger(MeshDebug.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -209,49 +184,104 @@ public class MeshDebug
 
 }
 
+class MyPanel extends JPanel {
 
-class MyPanel extends JPanel
-{
-    
     Set<List<ManifoldEdge>> loops;
+    private Set<ManifoldEdge> nonManifoldEdges;
 
-    public MyPanel()
-    {
+    public MyPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
     }
 
-    public Dimension getPreferredSize()
-    {
+    public Dimension getPreferredSize() {
         return new Dimension(250, 200);
     }
 
-    public void paintComponent(Graphics g)
-    {
+    public void paintComponent(Graphics g1) {
+        final Graphics2D g = (Graphics2D) g1.create();
         super.paintComponent(g);
 
-        // Draw Text
-        g.drawString("This is my custom Panel!", 10, 20);
-        int scale = 20;
+        double scale = 30;
         int xOffset = 100;
         int yOffset = 100;
         
+        g.drawOval(xOffset - 15, yOffset - 15, 30, 30);
+
+        if (nonManifoldEdges != null) {
+            
+            double minX = Double.MAX_VALUE;
+            double maxX = - Double.MAX_VALUE;
+            double minZ = Double.MAX_VALUE;
+            double maxZ = - Double.MAX_VALUE;
+            for (ManifoldEdge edge : nonManifoldEdges) {
+                if (edge.vertex0.x < minX) {
+                    minX = edge.vertex0.x;
+                } 
+                if (edge.vertex0.x > maxX) {
+                    maxX = edge.vertex0.x;
+                } 
+                if (edge.vertex1.x < minX) {
+                    minX = edge.vertex1.x;
+                } 
+                if (edge.vertex1.x > maxX) {
+                    maxX = edge.vertex1.x;
+                } 
+                if (edge.vertex0.z < minZ) {
+                    minZ = edge.vertex0.z;
+                } 
+                if (edge.vertex0.z > maxZ) {
+                    maxZ = edge.vertex0.z;
+                } 
+                if (edge.vertex1.z < minZ) {
+                    minZ = edge.vertex1.z;
+                } 
+                if (edge.vertex1.z > maxZ) {
+                    maxZ = edge.vertex1.z;
+                } 
+            }
+            
+            double width = getWidth();
+            scale = width / (maxX - minX);
+            scale /= 1.5;
+            System.out.println("scale is " + scale);
+            
+            xOffset -= minX * scale;
+            yOffset -= minZ * scale;
+            
+            g.setColor(Color.green);
+            for (ManifoldEdge edge : nonManifoldEdges) {
+                g.drawLine(xOffset + (int) (edge.vertex0.x * scale),
+                        yOffset + (int) (edge.vertex0.z * scale),
+                        xOffset + (int) (edge.vertex1.x * scale),
+                        yOffset + (int) (edge.vertex1.z * scale));
+                g.drawOval(xOffset - 5 + (int) ((edge.vertex0.x + edge.vertex1.x) / 2d * scale),
+                        yOffset  - 5 + (int) ((edge.vertex0.z + edge.vertex1.z) / 2d * scale),
+                        10, 10);
+            }
+        }
+
         if (loops != null) {
-            for (List<ManifoldEdge> loop : loops)
-            {
-                for (ManifoldEdge edge : loop)
-                {
-                    g.drawLine(xOffset + (int) edge.vertex0.x * scale,
-                               yOffset + (int) edge.vertex0.y * scale,
-                               xOffset + (int)edge.vertex1.x * scale, 
-                               yOffset + (int) edge.vertex1.y * scale);
+            g.setColor(Color.red);
+            for (List<ManifoldEdge> loop : loops) {
+                System.out.println("draw loop");
+                for (ManifoldEdge edge : loop) {
+                    System.out.println("draw edge " + edge);
+                    System.out.println(edge.vertex0.x + "," + edge.vertex0.z);
+                    g.drawLine(xOffset + (int) (edge.vertex0.x * scale),
+                        yOffset + (int) (edge.vertex0.z * scale),
+                        xOffset + (int) (edge.vertex1.x * scale),
+                        yOffset + (int) (edge.vertex1.z * scale));
                 }
             }
         }
-        
+
     }
 
-    void showLoops(Set<List<ManifoldEdge>> loops)
-    {
+    void showLoops(Set<List<ManifoldEdge>> loops) {
         this.loops = loops;
+    }
+
+    void showNonManifoldEdges(Set<ManifoldEdge> nonManifoldEdges) {
+        this.nonManifoldEdges = nonManifoldEdges;
     }
 }
