@@ -58,6 +58,18 @@ public class NonManifoldLoopDetector {
         loops = removeIdenticalLoops(loops);
 
         validateLoops(loops);
+        
+        Set<ManifoldEdge> usedEdges = new HashSet<>();
+        for (List<ManifoldEdge> loop : loops) {
+            for (ManifoldEdge edge : loop) {
+                usedEdges.add(edge);
+            }
+        }
+        edges.removeAll(usedEdges);
+        System.out.println("unused edges: " + edges.size());
+        for (ManifoldEdge unusedEdge : edges) {
+            System.out.println(unusedEdge);
+        }
 
         return loops;
     }

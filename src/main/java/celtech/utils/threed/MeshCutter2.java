@@ -40,7 +40,7 @@ public class MeshCutter2 {
         Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
         if (error.isPresent()) {
             System.out.println("Error in TOP mesh: " + error.toString());
-//            throw new RuntimeException("Invalid mesh: " + error.toString());
+            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
         cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
@@ -52,7 +52,7 @@ public class MeshCutter2 {
         error = MeshUtils.validate(bottomMesh);
         if (error.isPresent()) {
             System.out.println("Error in BOTTOM mesh: " + error.toString());
-//            throw new RuntimeException("Invalid mesh: " + error.toString());
+            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
         List<TriangleMesh> meshes = new ArrayList<>();
@@ -76,6 +76,7 @@ public class MeshCutter2 {
 
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
         Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh);
+        System.out.println(loops.size() + " non manifold loops identified");
 //
 //        Set<ManifoldEdge> nonManifoldEdges = NonManifoldLoopDetector.getNonManifoldEdges(childMesh);
 //        visualiseEdgeLoops(nonManifoldEdges, loops);
@@ -105,7 +106,6 @@ public class MeshCutter2 {
             TriangleCutter.splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove, i, cutHeight,
                     bedToLocalConverter, topBottom);
         }
-        System.out.println("faces to remove " + topBottom + " " + facesToRemove);
 
         removeFaces(childMesh, facesToRemove);
 

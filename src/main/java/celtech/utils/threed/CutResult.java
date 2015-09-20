@@ -51,6 +51,7 @@ class CutResult {
     public Set<LoopSet> identifyOuterLoopsAndInnerLoops() {
         Set<LoopSet> topLevelLoopSets = new HashSet<>();
         for (PolygonIndices polygonIndices : loopsOfVerticesOnOpenFace) {
+            System.out.println("treat loop of size " + polygonIndices.size());
             boolean added = false;
             for (LoopSet loopSet : topLevelLoopSets) {
                 if (loopSet.contains(polygonIndices)) {
@@ -76,7 +77,6 @@ class CutResult {
                     topLevelLoopSets.removeAll(innerLoopSets);
                     validateLoopSets(topLevelLoopSets);
                     added = true;
-                    break;
                 }
             }
             if (!added) {
