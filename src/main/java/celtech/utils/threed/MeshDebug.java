@@ -26,6 +26,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.poly2tri.geometry.polygon.Polygon;
+import org.poly2tri.triangulation.TriangulationPoint;
 
 /**
  *
@@ -182,12 +184,49 @@ public class MeshDebug {
         }
     }
 
+    static void visualiseDLPolygon(Polygon outerPolygon) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JFrame f = new JFrame("Edge Loops");
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                MyPanel panel = new MyPanel();
+                f.add(panel);
+                JButton button = new JButton("Quit");
+                panel.add(button);
+                panel.showPolygon(outerPolygon);
+                button.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        close();
+                    }
+
+                });
+                f.pack();
+                f.setSize(1200, 1200);
+                f.setVisible(true);
+            }
+
+        });
+        while (true) {
+            if (close) {
+                break;
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MeshDebug.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
 }
 
 class MyPanel extends JPanel {
 
     Set<List<ManifoldEdge>> loops;
     private Set<ManifoldEdge> nonManifoldEdges;
+    private Polygon outerPolygon;
 
     public MyPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
@@ -204,50 +243,50 @@ class MyPanel extends JPanel {
         double scale = 30;
         int xOffset = 100;
         int yOffset = 100;
-        
+
         g.drawOval(xOffset - 15, yOffset - 15, 30, 30);
 
         if (nonManifoldEdges != null) {
-            
+
             double minX = Double.MAX_VALUE;
-            double maxX = - Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE;
             double minZ = Double.MAX_VALUE;
-            double maxZ = - Double.MAX_VALUE;
+            double maxZ = -Double.MAX_VALUE;
             for (ManifoldEdge edge : nonManifoldEdges) {
                 if (edge.vertex0.x < minX) {
                     minX = edge.vertex0.x;
-                } 
+                }
                 if (edge.vertex0.x > maxX) {
                     maxX = edge.vertex0.x;
-                } 
+                }
                 if (edge.vertex1.x < minX) {
                     minX = edge.vertex1.x;
-                } 
+                }
                 if (edge.vertex1.x > maxX) {
                     maxX = edge.vertex1.x;
-                } 
+                }
                 if (edge.vertex0.z < minZ) {
                     minZ = edge.vertex0.z;
-                } 
+                }
                 if (edge.vertex0.z > maxZ) {
                     maxZ = edge.vertex0.z;
-                } 
+                }
                 if (edge.vertex1.z < minZ) {
                     minZ = edge.vertex1.z;
-                } 
+                }
                 if (edge.vertex1.z > maxZ) {
                     maxZ = edge.vertex1.z;
-                } 
+                }
             }
-            
+
             double width = getWidth();
             scale = width / (maxX - minX);
             scale /= 1.5;
             System.out.println("scale is " + scale);
-            
+
             xOffset -= minX * scale;
             yOffset -= minZ * scale;
-            
+
             g.setColor(Color.green);
             for (ManifoldEdge edge : nonManifoldEdges) {
                 g.drawLine(xOffset + (int) (edge.vertex0.x * scale),
@@ -255,7 +294,7 @@ class MyPanel extends JPanel {
                         xOffset + (int) (edge.vertex1.x * scale),
                         yOffset + (int) (edge.vertex1.z * scale));
                 g.drawOval(xOffset - 5 + (int) ((edge.vertex0.x + edge.vertex1.x) / 2d * scale),
-                        yOffset  - 5 + (int) ((edge.vertex0.z + edge.vertex1.z) / 2d * scale),
+                        yOffset - 5 + (int) ((edge.vertex0.z + edge.vertex1.z) / 2d * scale),
                         10, 10);
             }
         }
@@ -263,18 +302,80 @@ class MyPanel extends JPanel {
         if (loops != null) {
             g.setColor(Color.red);
             for (List<ManifoldEdge> loop : loops) {
-                System.out.println("draw loop");
+//                System.out.println("draw loop");
                 for (ManifoldEdge edge : loop) {
-                    System.out.println("draw edge " + edge);
-                    System.out.println(edge.vertex0.x + "," + edge.vertex0.z);
+//                    System.out.println("draw edge " + edge);
+//                    System.out.println(edge.vertex0.x + "," + edge.vertex0.z);
                     g.drawLine(xOffset + (int) (edge.vertex0.x * scale),
-                        yOffset + (int) (edge.vertex0.z * scale),
-                        xOffset + (int) (edge.vertex1.x * scale),
-                        yOffset + (int) (edge.vertex1.z * scale));
+                            yOffset + (int) (edge.vertex0.z * scale),
+                            xOffset + (int) (edge.vertex1.x * scale),
+                            yOffset + (int) (edge.vertex1.z * scale));
                 }
             }
         }
 
+        if (outerPolygon != null) {
+            g.setColor(Color.blue);
+            double minX = Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE;
+            double minZ = Double.MAX_VALUE;
+            double maxZ = -Double.MAX_VALUE;
+            for (TriangulationPoint point : outerPolygon.getPoints()) {
+                double x = point.getX();
+                double z = point.getY();
+                if (x < minX) {
+                    minX = x;
+                }
+                if (x > maxX) {
+                    maxX = x;
+                }
+                if (z < minZ) {
+                    minZ = z;
+                }
+                if (z > maxZ) {
+                    maxZ = z;
+                }
+            }
+            double width = getWidth();
+            scale = width / (maxX - minX);
+            scale /= 1.5;
+//            System.out.println("scale is " + scale);
+
+            xOffset -= minX * scale;
+            yOffset -= minZ * scale;
+//            System.out.println("offsets " + xOffset + "," + yOffset);
+            drawPolygon(outerPolygon, g, xOffset, yOffset, scale);
+        }
+    }
+
+    private void drawPolygon(Polygon polygon, final Graphics2D g,
+            int xOffset, int yOffset, double scale) {
+        TriangulationPoint startPoint = outerPolygon.getPoints().get(0);
+        double startX = startPoint.getX() * scale;
+        double startY = startPoint.getY() * scale;
+        double beginX = startX;
+        double beginY = startY;
+        double endX = 0, endY = 0;
+        for (TriangulationPoint point : polygon.getPoints()) {
+            endX = point.getX() * scale;
+            endY = point.getY() * scale;
+            g.drawLine(xOffset + (int) (startX),
+                    yOffset + (int) (startY),
+                    xOffset + (int) (endX),
+                    yOffset + (int) (endY));
+//            System.out.println("draw " + startX + "," + startY + " " + endX + "," + endY);
+            startX = endX;
+            startY = endY;
+        }
+        g.drawLine(xOffset + (int) (endX),
+                yOffset + (int) (endY),
+                xOffset + (int) (beginX),
+                yOffset + (int) (beginY));
+        if (polygon.getHoles() != null) {
+            for (Polygon hole : polygon.getHoles()) {
+                drawPolygon(hole, g, xOffset, yOffset, scale);
+            }
+        }
     }
 
     void showLoops(Set<List<ManifoldEdge>> loops) {
@@ -283,5 +384,9 @@ class MyPanel extends JPanel {
 
     void showNonManifoldEdges(Set<ManifoldEdge> nonManifoldEdges) {
         this.nonManifoldEdges = nonManifoldEdges;
+    }
+
+    void showPolygon(Polygon outerPolygon) {
+        this.outerPolygon = outerPolygon;
     }
 }

@@ -57,6 +57,7 @@ public class OpenFaceCloser {
                             outerPolygon.addHole(innerPolygon);
                         }
 
+//                        MeshDebug.visualiseDLPolygon(outerPolygon);
                         Poly2Tri.triangulate(outerPolygon);
                         succeeded = true;
                         addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
