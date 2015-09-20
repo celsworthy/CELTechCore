@@ -77,7 +77,7 @@ public class MeshCutter2 {
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
         Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh);
         System.out.println(loops.size() + " non manifold loops identified");
-//
+
 //        Set<ManifoldEdge> nonManifoldEdges = NonManifoldLoopDetector.getNonManifoldEdges(childMesh);
 //        visualiseEdgeLoops(nonManifoldEdges, loops);
         Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);

@@ -59,13 +59,13 @@ public class OpenFaceCloser {
                             outerPolygon.addHole(innerPolygon);
                         }
 
-                        MeshDebug.visualiseDLPolygon(outerPolygon);
+//                        MeshDebug.visualiseDLPolygon(outerPolygon);
                         Poly2Tri.triangulate(outerPolygon);
                         succeeded = true;
                         addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
                                 cutHeight, bedToLocalConverter,
                                 cutResult.topBottom, facesAdded);
-                    } catch (Exception ex) {
+                    } catch (Exception | Error ex) {
                         System.out.println("attempts = " + attempts);
                         attempts++;
                     }
@@ -204,6 +204,7 @@ public class OpenFaceCloser {
         vertices[2] = meshVertexIndex1;
         vertices[4] = meshVertexIndex2;
         mesh.getFaces().addAll(vertices);
+        System.out.println("make face " + (mesh.getFaces().size() / 6 - 1));
         return mesh.getFaces().size() / 6 - 1;
     }
 
