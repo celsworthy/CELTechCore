@@ -5,6 +5,8 @@ package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.BedToLocalConverter;
 import static celtech.utils.threed.MeshUtils.copyMesh;
+import static celtech.utils.threed.TriangleCutter.getFaceNormal;
+import static celtech.utils.threed.TriangleCutter.reverseLastFaceNormal;
 import static celtech.utils.threed.TriangleCutter.splitFaceAndAddLowerFacesToMesh;
 import celtech.utils.threed.importers.stl.STLFileParsingException;
 import celtech.utils.threed.importers.stl.STLImporter;
@@ -185,6 +187,16 @@ public class TriangleCutterTest
 
     }
 
+    @Test
+    public void testReverseLastFaceNormal() {
+        TriangleMesh mesh = createSimpleCube();
+        Point3D normal = getFaceNormal(mesh, mesh.getFaces().size() / 6 - 1);
+        reverseLastFaceNormal(mesh);
+        Point3D newNormal = getFaceNormal(mesh, mesh.getFaces().size() / 6 - 1);
+        System.out.println(normal);
+        System.out.println(newNormal);
+    }
+    
     @Test
     public void testTriangulateRegularTriangleForFaceWithTwoEdgesCutByPlaneBottom()
     {

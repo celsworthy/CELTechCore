@@ -4,6 +4,7 @@
 package celtech.utils.threed;
 
 import celtech.utils.threed.MeshCutter.TopBottom;
+import static celtech.utils.threed.MeshCutter.makePoint3D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -88,7 +89,7 @@ class CutResult
 
     private Point getPointAt(PolygonIndices loop, int index)
     {
-        Point3D point = MeshCutter.makePoint3D(mesh, loop.get(index));
+        Point3D point = makePoint3D(mesh, loop.get(index));
         Point3D pointInBed = bedToLocalConverter.localToBed(point);
         return new Point(pointInBed.getX(), pointInBed.getZ());
     }

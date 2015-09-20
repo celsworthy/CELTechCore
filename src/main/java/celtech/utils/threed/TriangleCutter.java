@@ -51,35 +51,51 @@ public class TriangleCutter {
     }
 
     /**
-     * Add the vertex if it does not already exist in the mesh, and return its
-     * index. This is inefficient and could easily be improved by caching
-     * vertices.
+     * Add the vertex if it does not already exist in the mesh, and return its index. This is
+     * inefficient and could easily be improved by caching vertices.
      */
     static int addNewOrGetVertex(TriangleMesh mesh, Vertex intersectingVertex) {
         for (int i = 0; i < mesh.getPoints().size() / 3; i++) {
             Vertex vertex = getVertex(mesh, i);
             if (vertex.equals(intersectingVertex)) {
-                System.out.println("vertex already exists at " + i);
+//                System.out.println("vertex already exists at " + i);
                 return i;
             }
         }
 
         mesh.getPoints().addAll((float) intersectingVertex.x, (float) intersectingVertex.y,
                 (float) intersectingVertex.z);
-        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
-                + intersectingVertex);
+//        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
+//                + intersectingVertex);
         return mesh.getPoints().size() / 3 - 1;
     }
 
     /**
-     * Calculate the coordinates of the intersection with the edge, add a new
-     * vertex at that point and return the index of the new vertex.
+     * Calculate the coordinates of the intersection with the edge, add a new vertex at that point
+     * and return the index of the new vertex.
      */
     static Integer makeIntersectingVertex(TriangleMesh mesh, Edge edge, float cutHeight,
             MeshCutter.BedToLocalConverter bedToLocalConverter) {
         Vertex vertex = getIntersectingVertex(edge, mesh, cutHeight, bedToLocalConverter);
         int vertexIndex = addNewOrGetVertex(mesh, vertex);
         return vertexIndex;
+    }
+
+    static Point3D getFaceNormal(TriangleMesh mesh, int faceIndex) {
+        int v0 = mesh.getFaces().get(faceIndex * 6);
+        int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+        int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+
+        Point3D point0 = makePoint3D(mesh, v0);
+        Point3D point1 = makePoint3D(mesh, v1);
+        Point3D point2 = makePoint3D(mesh, v2);
+
+        point0 = point0.normalize();
+        point1 = point1.normalize();
+        point2 = point2.normalize();
+
+        return (point2.subtract(point0).crossProduct(point1.subtract(point0))).normalize();
+
     }
 
     /**
@@ -107,12 +123,13 @@ public class TriangleCutter {
     }
 
     /**
-     * If the plane cuts the face then add the lower face(s) of the cut to the
-     * child mesh.
+     * If the plane cuts the face then add the lower face(s) of the cut to the child mesh.
      */
     public static void splitFaceAndAddLowerFacesToMesh(TriangleMesh mesh, Set<Integer> facesToRemove,
             int faceIndex, float cutHeight,
             MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom) {
+
+        Point3D initialNormal = getFaceNormal(mesh, faceIndex);
 
 //        System.out.println("face " + faceIndex + " TB " + topBottom);
         int v0 = mesh.getFaces().get(faceIndex * 6);
@@ -184,13 +201,16 @@ public class TriangleCutter {
                 mesh, faceIndex, cutHeight, bedToLocalConverter);
 
         if (vertexIndices.size() == 1) {
+            System.out.println("one vertex on plane");
             cutWithOneVertexOnPlane(vertexIndices, v0, v1, v2,
                     v0belowCut, v1belowCut, v2belowCut,
-                    mesh, faceIndex, cutHeight, bedToLocalConverter);
+                    mesh, faceIndex, cutHeight, bedToLocalConverter,
+                    initialNormal);
             return;
         } else {
             assert vertexIndices.isEmpty();
         }
+        System.out.println("no vertex on plane");
 
         // indices of intersecting vertices between v0->v1 etc
         int v01 = -1;
@@ -255,6 +275,7 @@ public class TriangleCutter {
                 vertices[2] = c1;
                 vertices[4] = c2;
                 mesh.getFaces().addAll(vertices);
+                compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
             }
 
         } else {
@@ -292,21 +313,58 @@ public class TriangleCutter {
             vertices[2] = c1;
             vertices[4] = c2;
             mesh.getFaces().addAll(vertices);
+            compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
 
             assert (c3 != c4 && c4 != c5 && c5 != c3) : faceIndex + " " + c3 + " " + c4 + " " + c5;
             vertices[0] = c3;
             vertices[2] = c4;
             vertices[4] = c5;
             mesh.getFaces().addAll(vertices);
+            compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
         }
 
+    }
+
+    static void compareLastFaceNormals(TriangleMesh mesh, int[] vertices, Point3D initialNormal, int c0, int c1, int c2) {
+        return;
+//        mesh.getFaces().addAll(vertices);
+//        int newFaceIndex = mesh.getFaces().size() / 6 - 1;
+//        Point3D newNormal = getFaceNormal(mesh, newFaceIndex);
+//        
+//        if (newNormal.dotProduct(initialNormal) < 0.99f) {
+//            System.out.println("reverse normal");
+//            reverseLastFaceNormal(mesh);
+//            newNormal = getFaceNormal(mesh, newFaceIndex);
+//        }
+//        
+//        if (newNormal.dotProduct(initialNormal) < 0.99f) {
+//                System.out.println(newNormal + " is not the same as initial normal: ");
+//                System.out.println(initialNormal + " for new face vertices " + c0 + " " + c1 + " " + c2);
+//                System.out.println(getVertex(mesh, c0));
+//                System.out.println(getVertex(mesh, c1));
+//                System.out.println(getVertex(mesh, c2));
+//                assert false;
+//        }        
+//        System.out.println("normals are equal for face " + newFaceIndex);
+    }
+
+    static void reverseLastFaceNormal(TriangleMesh mesh) {
+        reverseFaceNormal(mesh, mesh.getFaces().size()/6 - 1);
+    }
+
+    static void reverseFaceNormal(TriangleMesh mesh, int faceIndex) {
+        int v0 = mesh.getFaces().get(faceIndex * 6);
+        int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+        mesh.getFaces().set(faceIndex * 6, v1);
+        mesh.getFaces().set(faceIndex * 6 + 2, v0);
     }
 
     private static void cutWithOneVertexOnPlane(Set<Integer> vertexIndices,
             int v0, int v1, int v2,
             boolean v0belowCut, boolean v1belowCut, boolean v2belowCut,
             TriangleMesh mesh, int faceIndex,
-            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter,
+            Point3D initialNormal) {
 
         List<Integer> edgeVerticesIndices = new ArrayList<>();
         Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight,
@@ -380,6 +438,8 @@ public class TriangleCutter {
         vertices[2] = c1;
         vertices[4] = c2;
         mesh.getFaces().addAll(vertices);
+        compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
+
         return;
     }
 

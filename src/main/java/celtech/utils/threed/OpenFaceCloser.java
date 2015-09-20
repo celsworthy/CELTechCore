@@ -4,8 +4,10 @@
 package celtech.utils.threed;
 
 import static celtech.utils.threed.MeshCutter.makePoint3D;
+import static celtech.utils.threed.TriangleCutter.reverseFaceNormal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,18 +20,17 @@ import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 
 /**
- * OpenFaceCloser takes a cut mesh, which therefore has an open face) and closes
- * the open face by triangulating the perimeters of the cut walls. It must
- * identify which perimeters are inside which, thereby identifying holes which
- * must be present in the closing face.
+ * OpenFaceCloser takes a cut mesh, which therefore has an open face) and closes the open face by
+ * triangulating the perimeters of the cut walls. It must identify which perimeters are inside
+ * which, thereby identifying holes which must be present in the closing face.
  *
  * @author tony
  */
 public class OpenFaceCloser {
 
     /**
-     * Take the given mesh and vertices of the open face, close the face and add
-     * the new face to the mesh and return it.
+     * Take the given mesh and vertices of the open face, close the face and add the new face to the
+     * mesh and return it.
      */
     static TriangleMesh closeOpenFace(CutResult cutResult, double cutHeight,
             MeshCutter.BedToLocalConverter bedToLocalConverter) {
@@ -39,6 +40,7 @@ public class OpenFaceCloser {
         for (LoopSet loopSet : loopSets) {
 
             for (Region region : loopSet.getRegions()) {
+                Set<Integer> facesAdded = new HashSet<>();
                 int attempts = 0;
                 boolean succeeded = false;
                 while (!succeeded && attempts < MAX_ATTEMPTS) {
@@ -57,12 +59,12 @@ public class OpenFaceCloser {
                             outerPolygon.addHole(innerPolygon);
                         }
 
-//                        MeshDebug.visualiseDLPolygon(outerPolygon);
+                        MeshDebug.visualiseDLPolygon(outerPolygon);
                         Poly2Tri.triangulate(outerPolygon);
                         succeeded = true;
                         addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
                                 cutHeight, bedToLocalConverter,
-                                cutResult.topBottom);
+                                cutResult.topBottom, facesAdded);
                     } catch (Exception ex) {
                         System.out.println("attempts = " + attempts);
                         attempts++;
@@ -73,19 +75,31 @@ public class OpenFaceCloser {
                     for (PolygonIndices innerPolygonIndices : region.innerLoops) {
                         System.out.println("inner loop is " + innerPolygonIndices);
                     }
-//                    throw new RuntimeException("Unable to triangulate");
                     System.out.println("Unable to triangulate");
+                    throw new RuntimeException("Unable to triangulate");
+
+                }
+                boolean orientable = MeshUtils.testMeshIsOrientable(mesh);
+                if (!orientable) {
+                    System.out.println("reverse covering face normals for region");
+                    for (Integer faceIndex : facesAdded) {
+                        reverseFaceNormal(mesh, faceIndex);
+                    }
+                    orientable = MeshUtils.testMeshIsOrientable(mesh);
+                    if (!orientable) {
+                        throw new RuntimeException("mesh is not orientable after triangulating last region!");
+                    }
                 }
             }
+
         }
 
         return mesh;
     }
 
     /**
-     * We need to capture the vertex id of perimeter points so that when we get
-     * the point back after triangulation we know which point it was (after eg
-     * it was perturbed).
+     * We need to capture the vertex id of perimeter points so that when we get the point back after
+     * triangulation we know which point it was (after eg it was perturbed).
      */
     static class PolygonPointWithVertexId extends PolygonPoint {
 
@@ -99,9 +113,8 @@ public class OpenFaceCloser {
     }
 
     /**
-     * Make a Polygon for the given vertices. 3D points should be in bed
-     * coordinates so that only X and Z are required (Y being a constant at the
-     * cut height in bed coordinates).
+     * Make a Polygon for the given vertices. 3D points should be in bed coordinates so that only X
+     * and Z are required (Y being a constant at the cut height in bed coordinates).
      */
     private static Polygon makePolygon(List<Integer> vertices, TriangleMesh mesh,
             MeshCutter.BedToLocalConverter bedToLocalConverter) {
@@ -121,13 +134,13 @@ public class OpenFaceCloser {
     }
 
     /**
-     * For each triangle in the polygon add a face to the mesh. If any point in
-     * any triangle is not one of the outerVertices then also add that point to
-     * the mesh.
+     * For each triangle in the polygon add a face to the mesh. If any point in any triangle is not
+     * one of the outerVertices then also add that point to the mesh.
      */
     private static void addTriangulatedFacesToMesh(TriangleMesh mesh, Polygon outerPolygon,
             List<Integer> outerVertices, double cutHeight,
-            MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom) {
+            MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom,
+            Set<Integer> facesAdded) {
         // vertexToVertex allows us to identify equal vertices (but different instances) and then
         // get the definitive instance of that vertex, to avoid superfluous vertices in the mesh.
         Map<Vertex, Vertex> vertexToVertex = new HashMap<>();
@@ -173,28 +186,30 @@ public class OpenFaceCloser {
                 vertex2Index = vertex2.meshVertexIndex;
             }
             if (topBottom == MeshCutter.TopBottom.BOTTOM) {
-                makeFace(mesh, vertex0Index, vertex1Index,
+                int addedFaceIndex = makeFace(mesh, vertex0Index, vertex1Index,
                         vertex2Index);
+                facesAdded.add(addedFaceIndex);
             } else {
-                makeFace(mesh, vertex0Index, vertex2Index,
+                int addedFaceIndex = makeFace(mesh, vertex0Index, vertex2Index,
                         vertex1Index);
+                facesAdded.add(addedFaceIndex);
             }
         }
     }
 
-    private static void makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
+    private static int makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
             int meshVertexIndex2) {
         int[] vertices = new int[6];
         vertices[0] = meshVertexIndex0;
         vertices[2] = meshVertexIndex1;
         vertices[4] = meshVertexIndex2;
         mesh.getFaces().addAll(vertices);
+        return mesh.getFaces().size() / 6 - 1;
     }
 
     /**
-     * Make a Vertex for the point, in bed coordinates (so that equality
-     * comparisons are all in bed coordinates), and add the points to the mesh
-     * in local coordinates.
+     * Make a Vertex for the point, in bed coordinates (so that equality comparisons are all in bed
+     * coordinates), and add the points to the mesh in local coordinates.
      */
     private static Vertex getOrMakeVertexForPoint(TriangleMesh mesh, TriangulationPoint point,
             Map<Vertex, Vertex> vertexToVertex, double cutHeight,
@@ -216,8 +231,8 @@ public class OpenFaceCloser {
     }
 
     /**
-     * Introduce a tiny bit of noise (maximum 1 micron) into the XZ position of
-     * each perimeter vertex, to avoid problems in the Delauney triangulation.
+     * Introduce a tiny bit of noise (maximum 1 micron) into the XZ position of each perimeter
+     * vertex, to avoid problems in the Delauney triangulation.
      */
     private static void perturbVertices(TriangleMesh mesh, PolygonIndices vertices) {
         for (Integer vertexIndex : vertices) {

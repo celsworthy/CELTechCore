@@ -9,6 +9,7 @@ import static celtech.utils.threed.MeshSeparator.addPointToMesh;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
@@ -19,7 +20,6 @@ import java.util.logging.Logger;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -69,8 +69,7 @@ public class MeshDebug {
             text.translateXProperty().set((x0 + x1 + x2) / 3.0);
             text.translateYProperty().set((y0 + y1 + y2) / 3.0);
             text.translateZProperty().set((z0 + z1 + z2) / 3.0);
-            Font font = new Font("Source Sans Pro Regular", 8);
-            text.setFont(font);
+            
             if (node != null) {
                 node.addChildNode(sphere);
                 node.addChildNode(text);
@@ -303,6 +302,7 @@ class MyPanel extends JPanel {
             g.setColor(Color.red);
             for (List<ManifoldEdge> loop : loops) {
 //                System.out.println("draw loop");
+                int i = 0;
                 for (ManifoldEdge edge : loop) {
 //                    System.out.println("draw edge " + edge);
 //                    System.out.println(edge.vertex0.x + "," + edge.vertex0.z);
@@ -310,12 +310,17 @@ class MyPanel extends JPanel {
                             yOffset + (int) (edge.vertex0.z * scale),
                             xOffset + (int) (edge.vertex1.x * scale),
                             yOffset + (int) (edge.vertex1.z * scale));
+                    g.setFont(new Font("Verdana", Font.BOLD, 7));
+                    g.drawString("" + i, 
+                            xOffset + (int) (edge.vertex0.x * scale) + 10, 
+                            yOffset + (int) (edge.vertex0.z * scale) + 10);
+                    i++;
                 }
             }
         }
 
         if (outerPolygon != null) {
-            g.setColor(Color.blue);
+            
             double minX = Double.MAX_VALUE;
             double maxX = -Double.MAX_VALUE;
             double minZ = Double.MAX_VALUE;
@@ -344,13 +349,14 @@ class MyPanel extends JPanel {
             xOffset -= minX * scale;
             yOffset -= minZ * scale;
 //            System.out.println("offsets " + xOffset + "," + yOffset);
-            drawPolygon(outerPolygon, g, xOffset, yOffset, scale);
+            drawPolygon(outerPolygon, g, xOffset, yOffset, scale, Color.BLUE);
         }
     }
 
     private void drawPolygon(Polygon polygon, final Graphics2D g,
-            int xOffset, int yOffset, double scale) {
-        TriangulationPoint startPoint = outerPolygon.getPoints().get(0);
+            int xOffset, int yOffset, double scale, Color color) {
+        g.setColor(color);
+        TriangulationPoint startPoint = polygon.getPoints().get(0);
         double startX = startPoint.getX() * scale;
         double startY = startPoint.getY() * scale;
         double beginX = startX;
@@ -373,7 +379,7 @@ class MyPanel extends JPanel {
                 yOffset + (int) (beginY));
         if (polygon.getHoles() != null) {
             for (Polygon hole : polygon.getHoles()) {
-                drawPolygon(hole, g, xOffset, yOffset, scale);
+                drawPolygon(hole, g, xOffset, yOffset, scale, Color.ORANGE);
             }
         }
     }

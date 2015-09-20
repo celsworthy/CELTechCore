@@ -40,7 +40,7 @@ public class MeshCutter2 {
         Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
         if (error.isPresent()) {
             System.out.println("Error in TOP mesh: " + error.toString());
-            throw new RuntimeException("Invalid mesh: " + error.toString());
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
         cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
@@ -52,7 +52,7 @@ public class MeshCutter2 {
         error = MeshUtils.validate(bottomMesh);
         if (error.isPresent()) {
             System.out.println("Error in BOTTOM mesh: " + error.toString());
-            throw new RuntimeException("Invalid mesh: " + error.toString());
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
         List<TriangleMesh> meshes = new ArrayList<>();
@@ -68,22 +68,16 @@ public class MeshCutter2 {
 
         TriangleMesh childMesh = makeSplitMesh(mesh,
                 cutHeight, bedToLocalConverter, topBottom);
+        
+        boolean orientable = MeshUtils.testMeshIsOrientable(childMesh);
+        if (! orientable) {
+            throw new RuntimeException("uncovered cut mesh is not orientable!");
+        }
 
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
         Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh);
-        System.out.println(loops.size() + " non-manifold loop(s) found:");
-        for (List<ManifoldEdge> loop : loops) {
-            System.out.println("Non-manifold loop found:");
-            for (ManifoldEdge edge : loop) {
-                System.out.println(edge);
-            }
-        }
-
+//
 //        Set<ManifoldEdge> nonManifoldEdges = NonManifoldLoopDetector.getNonManifoldEdges(childMesh);
-//        System.out.println("Non manifold edges that were found: ");
-//        for (ManifoldEdge nonManifoldEdge : nonManifoldEdges) {
-//            System.out.println(nonManifoldEdge);
-//        }
 //        visualiseEdgeLoops(nonManifoldEdges, loops);
         Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
 

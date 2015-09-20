@@ -191,7 +191,8 @@ public class MeshUtils
                 facesWithv0.remove(faceIndex);
                 if (facesWithv0.size() != 1) {
                     steno.error("Invalid topology while checking orientability");
-                    return false;
+                    continue;
+//                    return false;
                 }
                 // we should now have the face on other side of the edge
                 int opposingFaceIndex = facesWithv0.iterator().next();
