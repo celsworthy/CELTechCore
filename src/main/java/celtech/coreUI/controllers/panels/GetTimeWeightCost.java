@@ -151,8 +151,8 @@ public class GetTimeWeightCost
     {
         String formattedDuration = formatDuration(printJobStatistics.getPredictedDuration());
 
-        double eVolumeUsed = printJobStatistics.getEVolumeUsed();
-        double dVolumeUsed = printJobStatistics.getDVolumeUsed();
+        double eVolumeUsed = printJobStatistics.geteVolumeUsed();
+        double dVolumeUsed = printJobStatistics.getdVolumeUsed();
 
         Filament filament0 = project.getPrinterSettings().getFilament0();
         Filament filament1 = project.getPrinterSettings().getFilament1();

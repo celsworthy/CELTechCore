@@ -17,13 +17,13 @@ import jssc.SerialPortException;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class HardwareCommandInterface extends CommandInterface
+public class RoboxRemoteCommandInterface extends CommandInterface
 {
 
     private boolean stillWaitingForStatus = false;
     private final SerialPortManager serialPortManager;
 
-    public HardwareCommandInterface(PrinterStatusConsumer controlInterface, String portName,
+    public RoboxRemoteCommandInterface(PrinterStatusConsumer controlInterface, String portName,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);

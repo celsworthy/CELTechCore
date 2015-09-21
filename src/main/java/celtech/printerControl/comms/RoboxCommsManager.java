@@ -28,8 +28,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private Stenographer steno = null;
     private final List<Printer> dummyPrinters = new ArrayList<>();
-    private final HashMap<String, Printer> pendingPrinters = new HashMap<>();
-    private final HashMap<String, Printer> activePrinters = new HashMap<>();
+    private final HashMap<DeviceDetector.DetectedPrinter, Printer> pendingPrinters = new HashMap<>();
+    private final HashMap<DeviceDetector.DetectedPrinter, Printer> activePrinters = new HashMap<>();
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecksMS = 1000;
 
@@ -37,7 +37,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private int dummyPrinterCounter = 0;
 
-    private final DeviceDetector deviceDetector;
+    private final SerialDeviceDetector usbSerialDeviceDetector;
+    private final RoboxRemoteDeviceDetector roboxRemoteDeviceDetector;
 
     private boolean doNotCheckForPresenceOfHead = false;
 
@@ -48,7 +49,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
         this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
 
-        deviceDetector = new DeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
+        usbSerialDeviceDetector = new SerialDeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
+        roboxRemoteDeviceDetector = new RoboxRemoteDeviceDetector(1442);
 
         this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
@@ -102,41 +104,12 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         while (keepRunning)
         {
-//            steno.info("Looking for printers");
-            String[] activePorts = deviceDetector.searchForDevice();
+            List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
+            assessCandidatePrinters(serialPrinters);
 
-            if (activePorts != null)
-            {
-                String port = activePorts[0];
-                //Multiple printer support disabled - ROB-334
-//                for (String port : activePorts)
-                {
-//                    steno.info("Found printer on " + port);
-                    if (pendingPrinters.containsKey(port))
-                    {
-                        //A connection to this printer is pending...
-//                        System.out.println("PENDING FOUND");
-                    } else if (activePrinters.containsKey(port))
-                    {
-                        //We're already connected to this printer
-//                        System.out.println("ACTIVE FOUND");
-                    } else
-                    {
-                        // We need to connect!
-                        if(keepRunning)
-                        {
-                        steno.info("Adding new printer on " + port);
+            List<DeviceDetector.DetectedPrinter> remotePrinters = roboxRemoteDeviceDetector.searchForDevices();
+            assessCandidatePrinters(remotePrinters);
 
-                        Printer newPrinter = makeHardwarePrinter(port);
-                        pendingPrinters.put(port, newPrinter);
-                        }
-                        else
-                        {
-                            steno.info("Aborted add of printer as we are shutting down");
-                        }
-                    }
-                }
-            }
             try
             {
                 this.sleep(500);
@@ -145,10 +118,42 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 steno.error("Interrupted");
             }
         }
-
     }
 
-    private Printer makeHardwarePrinter(String port)
+    private void assessCandidatePrinters(List<DeviceDetector.DetectedPrinter> connnectionHandles)
+    {
+        if (connnectionHandles != null)
+        {
+            for (DeviceDetector.DetectedPrinter detectedPrinter : connnectionHandles)
+            {
+//                    steno.info("Found printer on " + port);
+                if (pendingPrinters.containsKey(detectedPrinter))
+                {
+                    //A connection to this printer is pending...
+//                        System.out.println("PENDING FOUND");
+                } else if (activePrinters.containsKey(detectedPrinter))
+                {
+                    //We're already connected to this printer
+//                        System.out.println("ACTIVE FOUND");
+                } else
+                {
+                    // We need to connect!
+                    if (keepRunning)
+                    {
+                        steno.info("Adding new printer " + detectedPrinter);
+
+                        Printer newPrinter = makePrinter(detectedPrinter);
+                        pendingPrinters.put(detectedPrinter, newPrinter);
+                    } else
+                    {
+                        steno.info("Aborted add of printer as we are shutting down");
+                    }
+                }
+            }
+        }
+    }
+
+    private Printer makePrinter(DeviceDetector.DetectedPrinter detectedPrinter)
     {
         final UserPreferences userPreferences = Lookup.getUserPreferences();
         HardwarePrinter.FilamentLoadedGetter filamentLoadedGetter
@@ -170,10 +175,26 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                         }
                     }
                 };
-        Printer newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
-                this, port, suppressPrinterIDChecks,
-                sleepBetweenStatusChecksMS), filamentLoadedGetter,
-                doNotCheckForPresenceOfHead);
+        Printer newPrinter = null;
+
+        switch (detectedPrinter.getConnectionType())
+        {
+            case SERIAL:
+                newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
+                        this, detectedPrinter.getConnectionHandle(), suppressPrinterIDChecks,
+                        sleepBetweenStatusChecksMS), filamentLoadedGetter,
+                        doNotCheckForPresenceOfHead);
+                break;
+            case ROBOX_REMOTE:
+                newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
+                        this, detectedPrinter.getConnectionHandle(), suppressPrinterIDChecks,
+                        sleepBetweenStatusChecksMS), filamentLoadedGetter,
+                        doNotCheckForPresenceOfHead);
+                break;
+            default:
+                steno.error("Don't know how to handle connected printer: " + detectedPrinter);
+                break;
+        }
         return newPrinter;
     }
 

@@ -92,14 +92,14 @@ public abstract class CommandInterface extends Thread
         {
             FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
             Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            disconnectSerialPort();
+            disconnectPrinter();
         });
 
         firmwareLoadService.setOnFailed((WorkerStateEvent t) ->
         {
             FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
             Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            disconnectSerialPort();
+            disconnectPrinter();
         });
 
         Lookup.getSystemNotificationHandler().configureFirmwareProgressDialog(firmwareLoadService);
@@ -174,7 +174,7 @@ public abstract class CommandInterface extends Thread
                     } catch (PrinterException ex)
                     {
                         steno.error("Exception whilst checking firmware version: " + ex);
-                        disconnectSerialPort();
+                        disconnectPrinter();
                     }
                     break;
 
@@ -232,7 +232,7 @@ public abstract class CommandInterface extends Thread
                         {
                             steno.error("Failed to determine printer status on unknown printer");
                         }
-                        disconnectSerialPort();
+                        disconnectPrinter();
                     }
 
                     break;
@@ -305,7 +305,7 @@ public abstract class CommandInterface extends Thread
         }
         steno.debug("set state to disconnected");
         commsState = RoboxCommsState.DISCONNECTED;
-        disconnectSerialPort();
+        disconnectPrinter();
         steno.info("Shutdown command interface complete");
         keepRunning = false;
     }
@@ -353,7 +353,7 @@ public abstract class CommandInterface extends Thread
     /**
      *
      */
-    protected abstract void disconnectSerialPort();
+    protected abstract void disconnectPrinter();
 
     private void determinePrinterStatus(StatusResponse statusResponse)
     {

@@ -238,7 +238,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     }
 
     @Override
-    protected void disconnectSerialPort()
+    protected void disconnectPrinter()
     {
         steno.info("Dummy printer disconnected");
     }
