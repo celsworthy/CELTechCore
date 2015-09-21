@@ -137,6 +137,10 @@ public abstract class GCodeEventNode
         return it;
     }
 
+    /**
+     * 
+     * @return 
+     */
     public IteratorWithOrigin<GCodeEventNode> siblingsBackwardsIterator()
     {
         IteratorWithOrigin<GCodeEventNode> it = new IteratorWithOrigin<GCodeEventNode>()

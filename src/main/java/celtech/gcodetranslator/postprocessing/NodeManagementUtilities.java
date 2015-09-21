@@ -55,6 +55,27 @@ public class NodeManagementUtilities
         }
     }
 
+    protected Optional<SectionNode> lookForParentSectionNode(GCodeEventNode eventNode)
+    {
+        Optional<SectionNode> sectionNode = Optional.empty();
+
+        GCodeEventNode nodeUnderConsideration = eventNode;
+
+        while (nodeUnderConsideration.hasParent())
+        {
+            GCodeEventNode parent = nodeUnderConsideration.getParent().get();
+            if (parent instanceof SectionNode)
+            {
+                sectionNode = Optional.of((SectionNode) parent);
+                break;
+            }
+
+            nodeUnderConsideration = parent;
+        }
+
+        return sectionNode;
+    }
+
     protected void calculatePerRetractExtrusionAndNode(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
@@ -62,18 +83,29 @@ public class NodeManagementUtilities
         ExtrusionNode lastExtrusionNode = null;
         double extrusionInRetract = 0;
 
+        List<SectionNode> sectionNodes = new ArrayList<>();
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode node = layerIterator.next();
             if (node instanceof ExtrusionNode)
             {
+                Optional<SectionNode> parentSection = lookForParentSectionNode(node);
+                if (parentSection.isPresent())
+                {
+                    sectionNodes.add(parentSection.get());
+                }
+
                 ExtrusionNode extrusionNode = (ExtrusionNode) node;
                 extrusionInRetract += extrusionNode.getExtrusion().getE();
+                extrusionInRetract += extrusionNode.getExtrusion().getD();
                 lastExtrusionNode = extrusionNode;
             } else if (node instanceof RetractNode)
             {
                 RetractNode retractNode = (RetractNode) node;
                 retractNode.setExtrusionSinceLastRetract(extrusionInRetract);
+                retractNode.setSectionsToConsider(sectionNodes);
+                sectionNodes = new ArrayList<>();
                 extrusionInRetract = 0;
 
                 if (lastExtrusionNode != null)
@@ -243,7 +275,7 @@ public class NodeManagementUtilities
             GCodeEventNode childNode = childIterator.next();
             if (childNode instanceof ExtrusionNode)
             {
-                priorExtrusion = Optional.of((ExtrusionNode)childNode);
+                priorExtrusion = Optional.of((ExtrusionNode) childNode);
                 break;
             }
         }

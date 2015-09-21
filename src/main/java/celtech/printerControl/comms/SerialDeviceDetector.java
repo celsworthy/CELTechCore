@@ -112,4 +112,9 @@ public class SerialDeviceDetector implements DeviceDetector
 
         return detectedPrinters;
     }
+
+    @Override
+    public void shutdownDetector()
+    {
+    }
 }

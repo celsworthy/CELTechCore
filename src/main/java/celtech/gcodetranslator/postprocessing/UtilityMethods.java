@@ -10,6 +10,7 @@ import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
+import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
@@ -84,7 +85,7 @@ public class UtilityMethods
 
                     if (lastEvent instanceof ExtrusionNode)
                     {
-                        lastExtrusion = Optional.of((ExtrusionNode)lastEvent);
+                        lastExtrusion = Optional.of((ExtrusionNode) lastEvent);
                     } else
                     {
                         lastExtrusion = nodeManagementUtilities.findPriorExtrusion(lastEvent);
@@ -98,7 +99,7 @@ public class UtilityMethods
                             //We need to close
                             double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusion.get(), false);
 
-                            closeLogic.insertNozzleCloses(availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
+                            closeLogic.insertNozzleCloses(layerNode, availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
                         }
                     }
                 } catch (NodeProcessingException ex)
@@ -237,5 +238,19 @@ public class UtilityMethods
         }
 
         return predictedDuration;
+    }
+
+    public void recalculatePerSectionExtrusion(LayerNode layerNode)
+    {
+        Iterator<GCodeEventNode> childrenOfTheLayer = layerNode.childIterator();
+        while (childrenOfTheLayer.hasNext())
+        {
+            GCodeEventNode potentialSectionNode = childrenOfTheLayer.next();
+
+            if (potentialSectionNode instanceof SectionNode)
+            {
+                ((SectionNode) potentialSectionNode).recalculateExtrusion();
+            }
+        }
     }
 }

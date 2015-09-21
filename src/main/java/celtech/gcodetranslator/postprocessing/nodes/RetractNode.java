@@ -5,6 +5,8 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Feedrate;
 import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -16,6 +18,7 @@ public class RetractNode extends GCodeEventNode implements ExtrusionProvider, Fe
     private final Extrusion extrusion = new Extrusion();
     private double extrusionSinceLastRetract = 0;
     private ExtrusionNode priorExtrusion = null;
+    private List<SectionNode> sectionsToConsider = new ArrayList<>();
 
     @Override
     public Extrusion getExtrusion()
@@ -47,6 +50,16 @@ public class RetractNode extends GCodeEventNode implements ExtrusionProvider, Fe
     public ExtrusionNode getPriorExtrusionNode()
     {
         return priorExtrusion;
+    }
+    
+    public void setSectionsToConsider(List<SectionNode> sectionNodes)
+    {
+        sectionsToConsider = sectionNodes;
+    }
+    
+    public List<SectionNode> getSectionsToConsider()
+    {
+        return sectionsToConsider;
     }
 
     @Override

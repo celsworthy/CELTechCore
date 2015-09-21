@@ -1,6 +1,9 @@
 package celtech.printerControl.comms;
 
 import celtech.Lookup;
+import celtech.comms.DiscoveryAgentClientEnd;
+import celtech.comms.RemoteHostListener;
+import celtech.comms.RemotePrinterHost;
 import celtech.configuration.UserPreferences;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.HardwarePrinter;
@@ -16,7 +19,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
+public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, RemoteHostListener
 {
 
     private static RoboxCommsManager instance = null;
@@ -38,7 +41,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private int dummyPrinterCounter = 0;
 
     private final SerialDeviceDetector usbSerialDeviceDetector;
-    private final RoboxRemoteDeviceDetector roboxRemoteDeviceDetector;
+    private Thread remoteHostDiscoveryThread;
+    private final DiscoveryAgentClientEnd remoteHostDiscoveryClient = new DiscoveryAgentClientEnd(this);
 
     private boolean doNotCheckForPresenceOfHead = false;
 
@@ -50,7 +54,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
 
         usbSerialDeviceDetector = new SerialDeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
-        roboxRemoteDeviceDetector = new RoboxRemoteDeviceDetector(1442);
 
         this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
@@ -102,13 +105,16 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void run()
     {
+        remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
+        remoteHostDiscoveryThread.start();
+        
         while (keepRunning)
         {
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
             assessCandidatePrinters(serialPrinters);
 
-            List<DeviceDetector.DetectedPrinter> remotePrinters = roboxRemoteDeviceDetector.searchForDevices();
-            assessCandidatePrinters(remotePrinters);
+//            List<DeviceDetector.DetectedPrinter> remotePrinters = roboxRemoteDeviceDetector.searchForDevices();
+//            assessCandidatePrinters(remotePrinters);
 
             try
             {
@@ -204,6 +210,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public void shutdown()
     {
         keepRunning = false;
+        remoteHostDiscoveryClient.shutdown();
 
         for (Printer printer : Lookup.getConnectedPrinters())
         {
@@ -215,7 +222,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
             {
                 steno.error("Error shutting down printer");
             }
-        }
+        }        
     }
 
     /**
@@ -298,5 +305,17 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public void setSleepBetweenStatusChecks(int milliseconds)
     {
         sleepBetweenStatusChecksMS = milliseconds;
+    }
+
+    @Override
+    public void hostAdded(RemotePrinterHost host)
+    {
+        steno.info("Remote host at " + host.getHostAddress() + " added");
+    }
+
+    @Override
+    public void hostRemoved(RemotePrinterHost host)
+    {
+        steno.info("Remote host at " + host.getHostAddress() + " removed");
     }
 }

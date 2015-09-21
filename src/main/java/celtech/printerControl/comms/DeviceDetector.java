@@ -14,6 +14,8 @@ public interface DeviceDetector
      * @return
      */
     public List<DetectedPrinter> searchForDevices();
+    
+    public void shutdownDetector();
 
     public enum PrinterConnectionType
     {

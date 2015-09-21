@@ -10,42 +10,22 @@ import java.util.Optional;
 public class CloseResult
 {
 
-    private final boolean succeeded;
-    private final double elidedExtrusion;
-    private Optional<GCodeEventNode> closestNode = Optional.empty();
+    private final double nozzleStartPosition;
+    private final double nozzleCloseOverVolume;
 
-    public CloseResult(boolean succeeded, double elidedExtrusion)
+    public CloseResult(double nozzleStartPosition, double nozzleCloseOverVolume)
     {
-        this.succeeded = succeeded;
-        this.elidedExtrusion = elidedExtrusion;
+        this.nozzleStartPosition = nozzleStartPosition;
+        this.nozzleCloseOverVolume = nozzleCloseOverVolume;
     }
 
-    public CloseResult(boolean succeeded,
-            double elidedExtrusion,
-            GCodeEventNode closestNode)
+    public double getNozzleStartPosition()
     {
-        this.succeeded = succeeded;
-        this.elidedExtrusion = elidedExtrusion;
-        this.closestNode = Optional.of(closestNode);
+        return nozzleStartPosition;
     }
 
-    public boolean hasSucceeded()
+    public double getNozzleCloseOverVolume()
     {
-        return succeeded;
-    }
-
-    public double getElidedExtrusion()
-    {
-        return elidedExtrusion;
-    }
-
-    public void setClosestNode(Optional<GCodeEventNode> closestNode)
-    {
-        this.closestNode = closestNode;
-    }
-
-    public Optional<GCodeEventNode> getClosestNode()
-    {
-        return closestNode;
+        return nozzleCloseOverVolume;
     }
 }

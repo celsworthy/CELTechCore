@@ -79,6 +79,7 @@ public class PostProcessor
     private final NozzleAssignmentUtilities nozzleControlUtilities;
     private final CloseLogic closeLogic;
     private final NozzleManagementUtilities nozzleUtilities;
+    private final UtilityMethods utilities;
 
     private final TimeUtils timeUtils = new TimeUtils();
 
@@ -137,6 +138,7 @@ public class PostProcessor
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, project, postProcessingMode);
         closeLogic = new CloseLogic(project, slicerParametersFile, featureSet, headType);
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
+        utilities = new UtilityMethods(featureSet, project, settings, headType);
     }
 
     public RoboxiserResult processInput()
@@ -420,6 +422,7 @@ public class PostProcessor
         timeUtils.timerStop(this, perRetractTimerName);
 
         timeUtils.timerStart(this, closeTimerName);
+        utilities.recalculatePerSectionExtrusion(layerNode);
         closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, closeTimerName);
 
