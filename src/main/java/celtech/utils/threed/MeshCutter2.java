@@ -3,6 +3,7 @@
  */
 package celtech.utils.threed;
 
+import static celtech.utils.threed.MeshDebug.visualiseEdgeLoops;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.NonManifoldLoopDetector.identifyNonManifoldLoops;
@@ -38,27 +39,27 @@ public class MeshCutter2 {
         MeshUtils.removeUnusedAndDuplicateVertices(topMesh);
         setTextureAndSmoothing(topMesh, topMesh.getFaces().size() / 6);
 
-        Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
+        Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh, bedToLocalConverter);
         if (error.isPresent()) {
             System.out.println("Error in TOP mesh: " + error.toString());
-            throw new RuntimeException("Invalid mesh: " + error.toString());
+//            throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
-        cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
-
-        TriangleMesh bottomMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
-        MeshUtils.removeUnusedAndDuplicateVertices(bottomMesh);
-        setTextureAndSmoothing(bottomMesh, bottomMesh.getFaces().size() / 6);
-
-        error = MeshUtils.validate(bottomMesh);
-        if (error.isPresent()) {
-            System.out.println("Error in BOTTOM mesh: " + error.toString());
-            throw new RuntimeException("Invalid mesh: " + error.toString());
-        }
+//        cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter, MeshCutter.TopBottom.BOTTOM);
+//
+//        TriangleMesh bottomMesh = closeOpenFace(cutResult, cutHeight, bedToLocalConverter);
+//        MeshUtils.removeUnusedAndDuplicateVertices(bottomMesh);
+//        setTextureAndSmoothing(bottomMesh, bottomMesh.getFaces().size() / 6);
+//
+//        error = MeshUtils.validate(bottomMesh, bedToLocalConverter);
+//        if (error.isPresent()) {
+//            System.out.println("Error in BOTTOM mesh: " + error.toString());
+////            throw new RuntimeException("Invalid mesh: " + error.toString());
+//        }
 
         List<TriangleMesh> meshes = new ArrayList<>();
         meshes.add(topMesh);
-        meshes.add(bottomMesh);
+        meshes.add(topMesh);
 
         return meshes;
     }
@@ -78,13 +79,14 @@ public class MeshCutter2 {
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
         Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh, bedToLocalConverter);
         System.out.println(loops.size() + " non manifold loops identified");
-
-//        Set<ManifoldEdge> nonManifoldEdges = NonManifoldLoopDetector.getNonManifoldEdges(childMesh);
-//        visualiseEdgeLoops(nonManifoldEdges, loops);
+ 
+//        visualiseEdgeLoops(
+//            NonManifoldLoopDetector.getNonManifoldEdges(childMesh, bedToLocalConverter), loops);
         
         Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
 
         polygonIndices = removeSequentialDuplicateVertices(polygonIndices);
+        
 
         CutResult cutResultUpper = new CutResult(childMesh, polygonIndices,
                 bedToLocalConverter, topBottom);
@@ -139,14 +141,15 @@ public class MeshCutter2 {
         Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
         for (List<ManifoldEdge> loop : loops) {
             PolygonIndices polygonIndices = convertEdgesToPolygonIndices(loop).getFirst();
+            System.out.println("loop of " + loop.size() + " edges converted to PI of size " + polygonIndices.size());
             polygonIndicesSet.add(polygonIndices);
         }
         return polygonIndicesSet;
     }
 
     /**
-     * Convert the edges to a list of vertex indices. The edges may be going
-     * forwards or backwards, we can't assume a given direction.
+     * Convert the edges to a list of vertex indices. Each edge may be going
+     * forwards or backwards, we can't assume a given direction or any consistency in direction.
      *
      * @param loop
      * @return
@@ -204,7 +207,9 @@ public class MeshCutter2 {
                 cleanLoop.remove(cleanLoop.size() - 1);
             }
             polygonIndicesClean.add(cleanLoop);
+            System.out.println("polygon indices simplified to size " + cleanLoop.size());
         }
+        
         return polygonIndicesClean;
     }
 
