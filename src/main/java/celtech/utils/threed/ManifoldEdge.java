@@ -5,6 +5,7 @@ package celtech.utils.threed;
 
 import celtech.utils.threed.NonManifoldLoopDetector.Direction;
 import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
 
 
 final class ManifoldEdge
@@ -12,17 +13,17 @@ final class ManifoldEdge
 
     final int v0;
     final int v1;
-    final Vertex vertex0;
-    final Vertex vertex1;
+    final Point3D point0;
+    final Point3D point1;
     boolean visitedForwards = false;
     boolean visitedBackwards = false;
 
-    public ManifoldEdge(int v0, int v1, Vertex vertex0, Vertex vertex1)
+    public ManifoldEdge(int v0, int v1, Point3D vertex0, Point3D vertex1)
     {
         this.v0 = v0;
         this.v1 = v1;
-        this.vertex0 = vertex0;
-        this.vertex1 =vertex1;
+        this.point0 = vertex0;
+        this.point1 =vertex1;
     }
     
     public boolean isVisited(Direction direction) {
@@ -42,8 +43,8 @@ final class ManifoldEdge
     }
     
     public Point2D getVectorForDirection(Direction direction) {
-        double x = vertex1.x - vertex0.x;
-        double z = vertex1.z - vertex0.z;
+        double x = point1.getX() - point0.getX();
+        double z = point1.getZ() - point0.getZ();
         if (direction == Direction.FORWARDS) {
             return new Point2D(x, z);
         } else {
@@ -70,15 +71,14 @@ final class ManifoldEdge
     {
         this.visitedBackwards = visitedBackwards;
     }
-    
-    
 
     @Override
     public String toString()
     {
-        return "ManifoldEdge{" + "v0=" + v0 + ", v1=" + v1 + ", vertex0=" + vertex0 + ", vertex1=" +
-            vertex1 + '}';
+        return "ManifoldEdge{" + "v1=" + v1 + ", point0=" + point0 + ", point1=" + point1 + '}';
     }
+    
+
 
     @Override
     public boolean equals(Object obj)

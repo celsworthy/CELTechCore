@@ -252,35 +252,36 @@ class MyPanel extends JPanel {
             double minZ = Double.MAX_VALUE;
             double maxZ = -Double.MAX_VALUE;
             for (ManifoldEdge edge : nonManifoldEdges) {
-                if (edge.vertex0.x < minX) {
-                    minX = edge.vertex0.x;
+                if (edge.point0.getX() < minX) {
+                    minX = edge.point0.getX();
                 }
-                if (edge.vertex0.x > maxX) {
-                    maxX = edge.vertex0.x;
+                if (edge.point0.getX() > maxX) {
+                    maxX = edge.point0.getX();
                 }
-                if (edge.vertex1.x < minX) {
-                    minX = edge.vertex1.x;
+                if (edge.point1.getX() < minX) {
+                    minX = edge.point1.getX();
                 }
-                if (edge.vertex1.x > maxX) {
-                    maxX = edge.vertex1.x;
+                if (edge.point1.getX() > maxX) {
+                    maxX = edge.point1.getX();
                 }
-                if (edge.vertex0.z < minZ) {
-                    minZ = edge.vertex0.z;
+                if (edge.point0.getZ() < minZ) {
+                    minZ = edge.point0.getZ();
                 }
-                if (edge.vertex0.z > maxZ) {
-                    maxZ = edge.vertex0.z;
+                if (edge.point0.getZ() > maxZ) {
+                    maxZ = edge.point0.getZ();
                 }
-                if (edge.vertex1.z < minZ) {
-                    minZ = edge.vertex1.z;
+                if (edge.point1.getZ() < minZ) {
+                    minZ = edge.point1.getZ();
                 }
-                if (edge.vertex1.z > maxZ) {
-                    maxZ = edge.vertex1.z;
+                if (edge.point1.getZ() > maxZ) {
+                    maxZ = edge.point1.getZ();
                 }
             }
 
             double width = getWidth();
-            scale = width / (maxX - minX);
-            scale /= 1.5;
+            double scaleX = width / (maxX - minX);
+            double scaleZ = getHeight() / (maxZ - minZ);
+            scale = Math.min(scaleX, scaleZ) / 1.5d;
             System.out.println("scale is " + scale);
 
             xOffset -= minX * scale;
@@ -288,12 +289,12 @@ class MyPanel extends JPanel {
 
             g.setColor(Color.green);
             for (ManifoldEdge edge : nonManifoldEdges) {
-                g.drawLine(xOffset + (int) (edge.vertex0.x * scale),
-                        yOffset + (int) (edge.vertex0.z * scale),
-                        xOffset + (int) (edge.vertex1.x * scale),
-                        yOffset + (int) (edge.vertex1.z * scale));
-                g.drawOval(xOffset - 5 + (int) ((edge.vertex0.x + edge.vertex1.x) / 2d * scale),
-                        yOffset - 5 + (int) ((edge.vertex0.z + edge.vertex1.z) / 2d * scale),
+                g.drawLine(xOffset + (int) (edge.point0.getX() * scale),
+                        yOffset + (int) (edge.point0.getZ() * scale),
+                        xOffset + (int) (edge.point1.getX() * scale),
+                        yOffset + (int) (edge.point1.getZ() * scale));
+                g.drawOval(xOffset - 5 + (int) ((edge.point0.getX() + edge.point1.getX()) / 2d * scale),
+                        yOffset - 5 + (int) ((edge.point0.getZ() + edge.point1.getZ()) / 2d * scale),
                         10, 10);
             }
         }
@@ -306,14 +307,14 @@ class MyPanel extends JPanel {
                 for (ManifoldEdge edge : loop) {
 //                    System.out.println("draw edge " + edge);
 //                    System.out.println(edge.vertex0.x + "," + edge.vertex0.z);
-                    g.drawLine(xOffset + (int) (edge.vertex0.x * scale),
-                            yOffset + (int) (edge.vertex0.z * scale),
-                            xOffset + (int) (edge.vertex1.x * scale),
-                            yOffset + (int) (edge.vertex1.z * scale));
+                    g.drawLine(xOffset + (int) (edge.point0.getX() * scale),
+                            yOffset + (int) (edge.point0.getZ() * scale),
+                            xOffset + (int) (edge.point1.getX() * scale),
+                            yOffset + (int) (edge.point1.getZ() * scale));
                     g.setFont(new Font("Verdana", Font.BOLD, 7));
                     g.drawString("" + i, 
-                            xOffset + (int) (edge.vertex0.x * scale) + 10, 
-                            yOffset + (int) (edge.vertex0.z * scale) + 10);
+                            xOffset + (int) (edge.point0.getX() * scale) + 10, 
+                            yOffset + (int) (edge.point0.getZ() * scale) + 10);
                     i++;
                 }
             }

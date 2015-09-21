@@ -3,18 +3,16 @@
  */
 package celtech.utils.threed;
 
-import static celtech.utils.threed.NonManifoldLoopDetector.validateLoop;
-import static celtech.utils.threed.TriangleCutter.getVertex;
+import static celtech.utils.threed.TriangleCutterTest.makeNullConverter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 
@@ -55,13 +53,19 @@ public class NonManifoldLoopDetectorTest
     @Test
     public void testGetNonManifoldEdges()
     {
+        MeshCutter.BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
         TriangleMesh mesh = createSimpleCubeWithMissingFace();
-        Set<ManifoldEdge> edges = NonManifoldLoopDetector.getNonManifoldEdges(mesh);
+        Set<ManifoldEdge> edges = NonManifoldLoopDetector.getNonManifoldEdges(mesh,
+                                                                          nullBedToLocalConverter);
 
         Set<ManifoldEdge> expectedEdges = new HashSet<>();
-        expectedEdges.add(new ManifoldEdge(0, 1, getVertex(mesh, 0), getVertex(mesh, 1)));
-        expectedEdges.add(new ManifoldEdge(1, 2, getVertex(mesh, 1), getVertex(mesh, 2)));
-        expectedEdges.add(new ManifoldEdge(0, 2, getVertex(mesh, 0), getVertex(mesh, 2)));
+        Point3D point0InBed = MeshCutter.makePoint3D(mesh, 0);
+        Point3D point1InBed = MeshCutter.makePoint3D(mesh, 1);
+        Point3D point2InBed = MeshCutter.makePoint3D(mesh, 2);
+        
+        expectedEdges.add(new ManifoldEdge(0, 1, point0InBed, point1InBed));
+        expectedEdges.add(new ManifoldEdge(1, 2, point1InBed, point2InBed));
+        expectedEdges.add(new ManifoldEdge(0, 2, point0InBed, point2InBed));
 
         assertEquals(expectedEdges, edges);
     }
@@ -69,16 +73,16 @@ public class NonManifoldLoopDetectorTest
     @Test
     public void testLoopForEdgeInDirectionSimple()
     {
-        Vertex vertex0 = new Vertex(1, 0, 0);
-        Vertex vertex1 = new Vertex(2, 0, 0);
-        Vertex vertex2 = new Vertex(1, 0, 1);
-        Vertex vertex3 = new Vertex(2, 0, 1);
-        Vertex vertex4 = new Vertex(3, 0, 1);
-        Vertex vertex5 = new Vertex(4, 0, 1);
-        Vertex vertex6 = new Vertex(1, 0, 3);
-        Vertex vertex7 = new Vertex(2, 0, 3);
-        Vertex vertex8 = new Vertex(0, 0, 2);
-        Vertex vertex9 = new Vertex(0, 0, 4);
+        Point3D vertex0 = new Point3D(1, 0, 0);
+        Point3D vertex1 = new Point3D(2, 0, 0);
+        Point3D vertex2 = new Point3D(1, 0, 1);
+        Point3D vertex3 = new Point3D(2, 0, 1);
+        Point3D vertex4 = new Point3D(3, 0, 1);
+        Point3D vertex5 = new Point3D(4, 0, 1);
+        Point3D vertex6 = new Point3D(1, 0, 3);
+        Point3D vertex7 = new Point3D(2, 0, 3);
+        Point3D vertex8 = new Point3D(0, 0, 2);
+        Point3D vertex9 = new Point3D(0, 0, 4);
 
         Set<ManifoldEdge> manifoldEdges = new HashSet<>();
         ManifoldEdge edge0 = new ManifoldEdge(0, 1, vertex0, vertex1);
@@ -86,10 +90,10 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(new ManifoldEdge(1, 2, vertex1, vertex2));
         manifoldEdges.add(new ManifoldEdge(0, 2, vertex0, vertex2));
 
-        Map<Integer, Set<ManifoldEdge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+        Map<Integer, Set<ManifoldEdge>> edgesWithPoint3D = NonManifoldLoopDetector.makeEdgesWithVertex(
             manifoldEdges);
         Optional<List<ManifoldEdge>> loop = NonManifoldLoopDetector.getLoopForEdgeInDirection(edge0,
-                                                                                              edgesWithVertex,
+                                                                                              edgesWithPoint3D,
                                                                                               NonManifoldLoopDetector.Direction.FORWARDS);
 
         List<ManifoldEdge> expectedLoop = new ArrayList<>();
@@ -105,16 +109,16 @@ public class NonManifoldLoopDetectorTest
     public void testGetLoopForEdgeInDirectionTwoAdjacentLoops()
     {
 
-        Vertex vertex0 = new Vertex(1, 0, 0);
-        Vertex vertex1 = new Vertex(2, 0, 0);
-        Vertex vertex2 = new Vertex(1, 0, 1);
-        Vertex vertex3 = new Vertex(2, 0, 1);
-        Vertex vertex4 = new Vertex(3, 0, 1);
-        Vertex vertex5 = new Vertex(4, 0, 1);
-        Vertex vertex6 = new Vertex(1, 0, 3);
-        Vertex vertex7 = new Vertex(2, 0, 3);
-        Vertex vertex8 = new Vertex(0, 0, 2);
-        Vertex vertex9 = new Vertex(0, 0, 4);
+        Point3D vertex0 = new Point3D(1, 0, 0);
+        Point3D vertex1 = new Point3D(2, 0, 0);
+        Point3D vertex2 = new Point3D(1, 0, 1);
+        Point3D vertex3 = new Point3D(2, 0, 1);
+        Point3D vertex4 = new Point3D(3, 0, 1);
+        Point3D vertex5 = new Point3D(4, 0, 1);
+        Point3D vertex6 = new Point3D(1, 0, 3);
+        Point3D vertex7 = new Point3D(2, 0, 3);
+        Point3D vertex8 = new Point3D(0, 0, 2);
+        Point3D vertex9 = new Point3D(0, 0, 4);
 
         Set<ManifoldEdge> manifoldEdges = new HashSet<>();
         ManifoldEdge edge0 = new ManifoldEdge(0, 1, vertex0, vertex1);
@@ -127,11 +131,11 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(new ManifoldEdge(7, 6, vertex7, vertex6));
         manifoldEdges.add(new ManifoldEdge(6, 2, vertex6, vertex2));
 
-        Map<Integer, Set<ManifoldEdge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+        Map<Integer, Set<ManifoldEdge>> edgesWithPoint3D = NonManifoldLoopDetector.makeEdgesWithVertex(
             manifoldEdges);
 
         Optional<List<ManifoldEdge>> loop1 = NonManifoldLoopDetector.getLoopForEdgeInDirection(edge0,
-                                                                                               edgesWithVertex,
+                                                                                               edgesWithPoint3D,
                                                                                                NonManifoldLoopDetector.Direction.BACKWARDS);
         for (ManifoldEdge manifoldEdge : loop1.get())
         {
@@ -140,8 +144,16 @@ public class NonManifoldLoopDetectorTest
         assertEquals(4, loop1.get().size());
 
         Optional<List<ManifoldEdge>> loop2 = NonManifoldLoopDetector.getLoopForEdgeInDirection(edge1,
-                                                                                               edgesWithVertex,
+                                                                                               edgesWithPoint3D,
                                                                                                NonManifoldLoopDetector.Direction.FORWARDS);
+        for (ManifoldEdge manifoldEdge : loop2.get())
+        {
+            System.out.println(manifoldEdge);
+        }
+        Set<List<ManifoldEdge>> loops = new HashSet<>();
+        loops.add(loop2.get());
+        
+//        MeshDebug.visualiseEdgeLoops(manifoldEdges, loops);
         assertEquals(6, loop2.get().size());
 
     }
@@ -152,7 +164,10 @@ public class NonManifoldLoopDetectorTest
 
         TriangleMesh mesh = createSimpleCubeWithMissingFace();
 
-        Set<List<ManifoldEdge>> loops = NonManifoldLoopDetector.identifyNonManifoldLoops(mesh);
+        MeshCutter.BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        
+        Set<List<ManifoldEdge>> loops = NonManifoldLoopDetector.identifyNonManifoldLoops(mesh,
+                                                                          nullBedToLocalConverter);
         for (List<ManifoldEdge> loop : loops)
         {
             System.out.println("XXXX");
@@ -175,16 +190,16 @@ public class NonManifoldLoopDetectorTest
     public void testGetRightmostEdge()
     {
 
-        Vertex vertex0 = new Vertex(1, 0, 0);
-        Vertex vertex1 = new Vertex(2, 0, 0);
-        Vertex vertex2 = new Vertex(1, 0, 1);
-        Vertex vertex3 = new Vertex(2, 0, 1);
-        Vertex vertex4 = new Vertex(3, 0, 1);
-        Vertex vertex5 = new Vertex(4, 0, 1);
-        Vertex vertex6 = new Vertex(1, 0, 3);
-        Vertex vertex7 = new Vertex(2, 0, 3);
-        Vertex vertex8 = new Vertex(0, 0, 2);
-        Vertex vertex9 = new Vertex(0, 0, 4);
+        Point3D vertex0 = new Point3D(1, 0, 0);
+        Point3D vertex1 = new Point3D(2, 0, 0);
+        Point3D vertex2 = new Point3D(1, 0, 1);
+        Point3D vertex3 = new Point3D(2, 0, 1);
+        Point3D vertex4 = new Point3D(3, 0, 1);
+        Point3D vertex5 = new Point3D(4, 0, 1);
+        Point3D vertex6 = new Point3D(1, 0, 3);
+        Point3D vertex7 = new Point3D(2, 0, 3);
+        Point3D vertex8 = new Point3D(0, 0, 2);
+        Point3D vertex9 = new Point3D(0, 0, 4);
 
         Set<ManifoldEdge> manifoldEdges = new HashSet<>();
         ManifoldEdge edge0 = new ManifoldEdge(0, 1, vertex0, vertex1);
@@ -202,11 +217,11 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(edge5);
         manifoldEdges.add(edge6);
 
-        Map<Integer, Set<ManifoldEdge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+        Map<Integer, Set<ManifoldEdge>> edgesWithPoint3D = NonManifoldLoopDetector.makeEdgesWithVertex(
             manifoldEdges);
         
         int vertexId = 2;
-        Set<ManifoldEdge> availableEdges = new HashSet<>(edgesWithVertex.get(vertexId));
+        Set<ManifoldEdge> availableEdges = new HashSet<>(edgesWithPoint3D.get(vertexId));
         availableEdges.remove(edge3);
         
         ManifoldEdge rightmostEdge = NonManifoldLoopDetector.getRightmostEdge(vertexId, edge3,
@@ -215,7 +230,7 @@ public class NonManifoldLoopDetectorTest
 
         
         vertexId = 3;
-        availableEdges = new HashSet<>(edgesWithVertex.get(vertexId));
+        availableEdges = new HashSet<>(edgesWithPoint3D.get(vertexId));
         availableEdges.remove(edge1);
         
         rightmostEdge = NonManifoldLoopDetector.getRightmostEdge(vertexId, edge1,
@@ -223,7 +238,7 @@ public class NonManifoldLoopDetectorTest
         assertEquals(edge4, rightmostEdge);
         
         vertexId = 3;
-        availableEdges = new HashSet<>(edgesWithVertex.get(vertexId));
+        availableEdges = new HashSet<>(edgesWithPoint3D.get(vertexId));
         availableEdges.remove(edge4);
         
         rightmostEdge = NonManifoldLoopDetector.getRightmostEdge(vertexId, edge4,
@@ -235,14 +250,14 @@ public class NonManifoldLoopDetectorTest
     @Test
     public void testGetLoop() {
         
-        Vertex vertex9 = new Vertex(-6.999998f, -9.999f, -14.001001f);
-        Vertex vertex8 = new Vertex(-16.999998f, -9.999f, -14.001001f);
-        Vertex vertex10 = new Vertex(3.000002f, -9.999f, -14.001001f);
-        Vertex vertex11 = new Vertex(3.000002f, -9.999f, -4.0005016f);
-        Vertex vertex14 = new Vertex(-16.999998f, -9.999f, -4.0005016f);
-        Vertex vertex13 = new Vertex(-16.999998f, -9.999f, 6.0f);
-        Vertex vertex12 = new Vertex(3.000002f, -9.999f, 6.0f);
-        Vertex vertex15 = new Vertex(-7.000002f, -9.999f, 6.0f);
+        Point3D vertex9 = new Point3D(-6.999998f, -9.999f, -14.001001f);
+        Point3D vertex8 = new Point3D(-16.999998f, -9.999f, -14.001001f);
+        Point3D vertex10 = new Point3D(3.000002f, -9.999f, -14.001001f);
+        Point3D vertex11 = new Point3D(3.000002f, -9.999f, -4.0005016f);
+        Point3D vertex14 = new Point3D(-16.999998f, -9.999f, -4.0005016f);
+        Point3D vertex13 = new Point3D(-16.999998f, -9.999f, 6.0f);
+        Point3D vertex12 = new Point3D(3.000002f, -9.999f, 6.0f);
+        Point3D vertex15 = new Point3D(-7.000002f, -9.999f, 6.0f);
         
         Set<ManifoldEdge> manifoldEdges = new HashSet<>();
         ManifoldEdge edge0 = new ManifoldEdge(9, 8, vertex9, vertex8); 
@@ -263,20 +278,11 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(edge6);
         manifoldEdges.add(edge7);
         
-        Map<Integer, Set<ManifoldEdge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+        Map<Integer, Set<ManifoldEdge>> edgesWithPoint3D = NonManifoldLoopDetector.makeEdgesWithVertex(
             manifoldEdges);
-        
-//        int vertexId = 13;
-//        Set<ManifoldEdge> availableEdges = new HashSet<>(edgesWithVertex.get(vertexId));
-//        availableEdges.remove(edge5);
-//        
-//        ManifoldEdge rightmostEdge = NonManifoldLoopDetector.getRightmostEdge(vertexId, edge5,
-//                                                                availableEdges);
-//        assertEquals(edge2, rightmostEdge);
-        
 
         Optional<List<ManifoldEdge>> loop = NonManifoldLoopDetector.getLoopForEdgeInDirection(
-                edge0, edgesWithVertex, NonManifoldLoopDetector.Direction.FORWARDS);
+                edge0, edgesWithPoint3D, NonManifoldLoopDetector.Direction.FORWARDS);
         for (ManifoldEdge manifoldEdge : loop.get())
         {
             System.out.println(manifoldEdge);
@@ -286,24 +292,9 @@ public class NonManifoldLoopDetectorTest
         Set<List<ManifoldEdge>> loops = new HashSet<>();
         loops.add(loop.get());
         
-        MeshDebug.visualiseEdgeLoops(manifoldEdges, loops);
+//        MeshDebug.visualiseEdgeLoops(manifoldEdges, loops);
         
         
        }
-    
-//    @Test
-//    public void testValidateLoop()
-//    {
-//        List<ManifoldEdge> loop = new ArrayList<>();
-//        loop.add(new ManifoldEdge(1, 2, null, null));
-//        loop.add(new ManifoldEdge(2, 3, null, null));
-//        loop.add(new ManifoldEdge(3, 4, null, null));
-//        loop.add(new ManifoldEdge(4, 5, null, null));
-//        loop.add(new ManifoldEdge(5, 6, null, null));
-//        assertTrue(validateLoop(loop));
-//        
-//        loop.add(new ManifoldEdge(6, 2, null, null));
-//        assertFalse(validateLoop(loop));
-//    }
 
 }
