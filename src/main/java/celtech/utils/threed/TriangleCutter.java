@@ -181,6 +181,12 @@ public class TriangleCutter {
         if (v0aboveCut || v1aboveCut || v2aboveCut) {
             facesToRemove.add(faceIndex);
         }
+        
+        if (!v0aboveCut && !v1aboveCut && !v2aboveCut &&
+            !v0belowCut && !v1belowCut && !v2belowCut) {
+            // face lies on cutting plane
+            facesToRemove.add(faceIndex);
+        }
 
         boolean b01 = (v0belowCut && v1aboveCut) || (v1belowCut && v0aboveCut);
         boolean b12 = (v1belowCut && v2aboveCut) || (v2belowCut && v1aboveCut);

@@ -3,6 +3,9 @@
  */
 package celtech.utils.threed;
 
+import celtech.utils.Math.MathUtils;
+import static celtech.utils.threed.TriangleCutter.epsilon;
+
 
 /**
  * @author tony
@@ -70,6 +73,40 @@ final class Vertex
     {
         return (int) (x * 1237f + y * 107f + 23 * z);
     }
+
+//    @Override
+//    public boolean equals(Object obj)
+//    {
+//        if (!(obj instanceof Vertex))
+//        {
+//            return false;
+//        }
+//        if (obj == this)
+//        {
+//            return true;
+//        }
+//
+//        Vertex other = (Vertex) obj;
+//        if (MathUtils.compareFloat(other.x, x, epsilon) != MathUtils.EQUAL)
+//        {
+//            return false;
+//        }
+//        if (MathUtils.compareFloat(other.y, y, epsilon) != MathUtils.EQUAL)
+//        {
+//            return false;
+//        }
+//        if (MathUtils.compareFloat(other.z, z, epsilon) != MathUtils.EQUAL)
+//        {
+//            return false;
+//        }
+//        return true;
+//    }
+//
+//    @Override
+//    public int hashCode()
+//    {
+//        // use sqr(distance from origin) / 10
+//        // e.g. 100.001 * 100.001 = 10,000.2 
+//        return (int) ((x * x + y * y + z * z) / 10);
+//    }
 }
-
-

@@ -8,6 +8,7 @@ package celtech.utils.threed;
 import static celtech.utils.threed.MeshCutter.getFaceEdges;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
+import static celtech.utils.threed.TriangleCutter.getVertex;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -244,18 +245,30 @@ public class MeshUtils {
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++) {
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1) {
                 System.out.println("problem 01 for face " + faceIndex);
+                printFace(mesh, faceIndex);
                 return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1) {
                 System.out.println("problem 12 for face " + faceIndex);
+                printFace(mesh, faceIndex);
                 return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1) {
                 System.out.println("problem 02 for face " + faceIndex);
+                printFace(mesh, faceIndex);
                 return true;
             }
         }
         return false;
+    }
+    
+    public static void printFace(TriangleMesh mesh, int faceIndex) {
+        int v0 = mesh.getFaces().get(faceIndex * 6);
+        int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+        int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+        System.out.println("v0 " + getVertex(mesh, v0));
+        System.out.println("v1 " + getVertex(mesh, v1));
+        System.out.println("v2 " + getVertex(mesh, v2));
     }
 
     public static int countFacesAdjacentToVertices(TriangleMesh mesh,
