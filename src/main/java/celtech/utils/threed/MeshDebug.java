@@ -13,10 +13,12 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
@@ -36,6 +38,12 @@ import org.poly2tri.triangulation.TriangulationPoint;
 public class MeshDebug {
 
     static ModelContainer node;
+    
+    static Set<Node> nodesToShow = new HashSet<>();
+    
+    static void clearNodesToShow() {
+        nodesToShow.clear();
+    }
 
     static void showFaceCentres(List<Integer> cutFaces, TriangleMesh mesh) {
         for (Integer faceIndex : cutFaces) {
@@ -96,18 +104,28 @@ public class MeshDebug {
     }
 
     static void showSphere(double x, double y, double z) {
-        Sphere sphere = new Sphere(0.5);
+        Sphere sphere = new Sphere(0.05);
         sphere.translateXProperty().set(x);
         sphere.translateYProperty().set(y);
         sphere.translateZProperty().set(z);
         sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
         if (node != null) {
+            System.out.println("show sphere now");
             node.addChildNode(sphere);
+        } else {
+            System.out.println("show sphere later");
+            nodesToShow.add(sphere);
         }
     }
 
     public static void setDebuggingNode(ModelContainer node) {
         MeshDebug.node = node;
+        for (Node nodeToShow : nodesToShow)
+        {
+            System.out.println("show sphere now");
+            node.addChildNode(nodeToShow);
+        }
+        nodesToShow.clear();
     }
 
     static void showNewVertices(List<Integer> newVertices, TriangleMesh mesh) {
@@ -198,6 +216,7 @@ public class MeshDebug {
                     @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         close();
+                        f.setVisible(false);
                     }
 
                 });

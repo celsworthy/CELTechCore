@@ -46,9 +46,9 @@ public class OpenFaceCloser {
                 while (!succeeded && attempts < MAX_ATTEMPTS) {
                     try {
                         PolygonIndices vertices = region.outerLoop;
-                        if (attempts != 0) {
+//                        if (attempts != 0) {
                             perturbVertices(mesh, vertices);
-                        }
+//                        }
                         Polygon outerPolygon = makePolygon(vertices, mesh, bedToLocalConverter);
                         for (PolygonIndices innerPolygonIndices : region.innerLoops) {
                             if (attempts != 0) {
@@ -60,6 +60,7 @@ public class OpenFaceCloser {
                         }
 
 //                        MeshDebug.visualiseDLPolygon(outerPolygon);
+                        System.out.println("outer polygon has vertices: " + outerPolygon.getPoints().size());
                         Poly2Tri.triangulate(outerPolygon);
                         succeeded = true;
                         addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
@@ -76,7 +77,7 @@ public class OpenFaceCloser {
                         System.out.println("inner loop is " + innerPolygonIndices);
                     }
                     System.out.println("Unable to triangulate");
-                    throw new RuntimeException("Unable to triangulate");
+//                    throw new RuntimeException("Unable to triangulate");
 
                 }
                 boolean orientable = MeshUtils.testMeshIsOrientable(mesh);
@@ -155,6 +156,7 @@ public class OpenFaceCloser {
         }
 
         System.out.println("add " + outerPolygon.getTriangles().size() + " delauney triangles to mesh");
+        Set<Integer> outerVerticesUsed = new HashSet<>();
         for (DelaunayTriangle triangle : outerPolygon.getTriangles()) {
             TriangulationPoint[] points = triangle.points;
 
@@ -162,6 +164,7 @@ public class OpenFaceCloser {
             int vertex0Index = -1;
             if (points[0] instanceof PolygonPointWithVertexId) {
                 vertex0Index = ((PolygonPointWithVertexId) points[0]).vertexId;
+                outerVerticesUsed.add(vertex0Index);
             } else {
                 vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight,
                         bedToLocalConverter);
@@ -171,6 +174,7 @@ public class OpenFaceCloser {
             int vertex1Index = -1;
             if (points[1] instanceof PolygonPointWithVertexId) {
                 vertex1Index = ((PolygonPointWithVertexId) points[1]).vertexId;
+                outerVerticesUsed.add(vertex1Index);
             } else {
                 vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight,
                         bedToLocalConverter);
@@ -180,6 +184,7 @@ public class OpenFaceCloser {
             int vertex2Index = -1;
             if (points[2] instanceof PolygonPointWithVertexId) {
                 vertex2Index = ((PolygonPointWithVertexId) points[2]).vertexId;
+                outerVerticesUsed.add(vertex1Index);
             } else {
                 vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight,
                         bedToLocalConverter);
@@ -195,6 +200,7 @@ public class OpenFaceCloser {
                 facesAdded.add(addedFaceIndex);
             }
         }
+        System.out.println("Num outer vertices used in triangulation: " + outerVerticesUsed.size());
     }
 
     private static int makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
@@ -204,7 +210,7 @@ public class OpenFaceCloser {
         vertices[2] = meshVertexIndex1;
         vertices[4] = meshVertexIndex2;
         mesh.getFaces().addAll(vertices);
-        System.out.println("make face " + (mesh.getFaces().size() / 6 - 1));
+//        System.out.println("make face " + (mesh.getFaces().size() / 6 - 1));
         return mesh.getFaces().size() / 6 - 1;
     }
 
@@ -219,7 +225,6 @@ public class OpenFaceCloser {
         Vertex vertex = new Vertex((float) pointInBed.getX(), (float) pointInBed.getY(),
                 (float) pointInBed.getZ());
 
-        Point3D pointInLocal = bedToLocalConverter.bedToLocal(pointInBed);
         if (!vertexToVertex.containsKey(vertex)) {
             int vertexIndex = TriangleCutter.addNewOrGetVertex(mesh, vertex);
             vertex.meshVertexIndex = vertexIndex;
@@ -232,22 +237,27 @@ public class OpenFaceCloser {
     }
 
     /**
-     * Introduce a tiny bit of noise (maximum 1 micron) into the XZ position of each perimeter
+     * Introduce a tiny bit of noise into the XZ position of each perimeter
      * vertex, to avoid problems in the Delauney triangulation.
      */
     private static void perturbVertices(TriangleMesh mesh, PolygonIndices vertices) {
         for (Integer vertexIndex : vertices) {
-            float perturbationX = (float) (Math.random() / 1e3);
-            float perturbationY = (float) (Math.random() / 1e3);
-            float perturbationZ = (float) (Math.random() / 1e3);
-
-            mesh.getPoints().set(vertexIndex * 3, mesh.getPoints().get(vertexIndex * 3)
-                    + perturbationX);
-            // we add a perturbation in Y to introduce some noise into rotated models 
-            mesh.getPoints().set(vertexIndex * 3 + 1, mesh.getPoints().get(vertexIndex * 3 + 1)
-                    + perturbationY);
-            mesh.getPoints().set(vertexIndex * 3 + 2, mesh.getPoints().get(vertexIndex * 3 + 2)
-                    + perturbationZ);
+            
+            float xValue = mesh.getPoints().get(vertexIndex * 3);
+            float zValue = mesh.getPoints().get(vertexIndex * 3 + 2);
+            
+            int rawBitsX = Float.floatToIntBits(xValue);
+            int rawBitsZ = Float.floatToIntBits(zValue);
+            
+            // twiddle the last few bits (out of 22) of the mantissa of the floating point value
+            rawBitsX += Math.random() * 10;
+            rawBitsZ += Math.random() * 10;
+            
+            float newXValue = Float.intBitsToFloat(rawBitsX);
+            float newZValue = Float.intBitsToFloat(rawBitsZ);
+            
+            mesh.getPoints().set(vertexIndex * 3, newXValue);
+            mesh.getPoints().set(vertexIndex * 3 + 2, newZValue);
         }
     }
 

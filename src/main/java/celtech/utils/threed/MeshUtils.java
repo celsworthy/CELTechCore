@@ -296,12 +296,29 @@ public class MeshUtils
             {
                 System.out.println("problem 01 for face " + faceIndex);
                 printFace(mesh, faceIndex, bedToLocalConverter);
+                int v0 = mesh.getFaces().get(faceIndex * 6);
+                int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+                Vertex vertex0 = getVertex(mesh, v0);
+                Vertex vertex1 = getVertex(mesh, v1);
+                MeshDebug.clearNodesToShow();
+                MeshDebug.showSphere(vertex0.x, vertex0.y, vertex0.z);
+                MeshDebug.showSphere(vertex1.x, vertex1.y, vertex1.z);
+                
                 return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
             {
                 System.out.println("problem 12 for face " + faceIndex);
                 printFace(mesh, faceIndex, bedToLocalConverter);
+                int v0 = mesh.getFaces().get(faceIndex * 6);
+                int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
+                int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
+                Vertex vertex0 = getVertex(mesh, v0);
+                Vertex vertex1 = getVertex(mesh, v1);
+                Vertex vertex2 = getVertex(mesh, v2);
+                MeshDebug.clearNodesToShow();
+                MeshDebug.showSphere(vertex2.x, vertex2.y, vertex2.z);
+                MeshDebug.showSphere(vertex1.x, vertex1.y, vertex1.z);
                 return true;
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
@@ -323,6 +340,7 @@ public class MeshUtils
         System.out.println("v0Local " + getVertex(mesh, v0));
         System.out.println("v1Local " + getVertex(mesh, v1));
         System.out.println("v2Local " + getVertex(mesh, v2));
+        
         if (bedToLocalConverter != null)
         {
             System.out.println("v0 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v0)));

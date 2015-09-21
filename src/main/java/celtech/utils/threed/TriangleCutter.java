@@ -216,7 +216,6 @@ public class TriangleCutter {
         } else {
             assert vertexIndices.isEmpty();
         }
-        System.out.println("no vertex on plane");
 
         // indices of intersecting vertices between v0->v1 etc
         int v01 = -1;

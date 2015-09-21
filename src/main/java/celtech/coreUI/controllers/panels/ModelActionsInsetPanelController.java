@@ -30,6 +30,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.CullFace;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -221,8 +222,6 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     {
         ModelContainerPair modelContainerPair = null;
 
-        MeshDebug.setDebuggingNode(modelContainer);
-
         cutHeightValue -= modelContainer.getYAdjust();
 
         //these transforms must be cleared so that bedToLocal conversions work properly in the cutter.
@@ -266,6 +265,7 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                 meshView.cullFaceProperty().set(CullFace.NONE);
                 ModelContainer newModelContainer = new ModelContainer(
                         modelContainer.getModelFile(), meshView);
+                MeshDebug.setDebuggingNode(newModelContainer);
                 newModelContainer.setModelName(modelName + " " + ix);
                 newModelContainer.setState(modelContainer.getState());
                 newModelContainer.getAssociateWithExtruderNumberProperty().set(
@@ -277,6 +277,9 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                 {
                     bottomModelContainer = newModelContainer;
                 }
+                
+//                newModelContainer.getMeshView().setDrawMode(DrawMode.LINE);
+                
                 ix++;
             }
 
