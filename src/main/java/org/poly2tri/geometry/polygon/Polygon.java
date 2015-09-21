@@ -205,6 +205,10 @@ public class Polygon implements Triangulatable
     {
         return _points;
     }
+    
+    public List<Polygon> getHoles() {
+        return _holes;
+    }
 
     public List<DelaunayTriangle> getTriangles()
     {

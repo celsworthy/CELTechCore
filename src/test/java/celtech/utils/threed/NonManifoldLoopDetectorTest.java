@@ -3,6 +3,7 @@
  */
 package celtech.utils.threed;
 
+import static celtech.utils.threed.NonManifoldLoopDetector.validateLoop;
 import static celtech.utils.threed.TriangleCutter.getVertex;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.TriangleMesh;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -229,5 +231,79 @@ public class NonManifoldLoopDetectorTest
         assertEquals(edge2, rightmostEdge);
         
     }
+    
+    @Test
+    public void testGetLoop() {
+        
+        Vertex vertex9 = new Vertex(-6.999998f, -9.999f, -14.001001f);
+        Vertex vertex8 = new Vertex(-16.999998f, -9.999f, -14.001001f);
+        Vertex vertex10 = new Vertex(3.000002f, -9.999f, -14.001001f);
+        Vertex vertex11 = new Vertex(3.000002f, -9.999f, -4.0005016f);
+        Vertex vertex14 = new Vertex(-16.999998f, -9.999f, -4.0005016f);
+        Vertex vertex13 = new Vertex(-16.999998f, -9.999f, 6.0f);
+        Vertex vertex12 = new Vertex(3.000002f, -9.999f, 6.0f);
+        Vertex vertex15 = new Vertex(-7.000002f, -9.999f, 6.0f);
+        
+        Set<ManifoldEdge> manifoldEdges = new HashSet<>();
+        ManifoldEdge edge0 = new ManifoldEdge(9, 8, vertex9, vertex8); 
+        ManifoldEdge edge1 = new ManifoldEdge(10, 9, vertex10, vertex9); 
+        ManifoldEdge edge2 = new ManifoldEdge(11, 10, vertex11, vertex10); 
+        ManifoldEdge edge3 = new ManifoldEdge(8, 14, vertex8, vertex14); 
+        ManifoldEdge edge4 = new ManifoldEdge(12, 11, vertex12, vertex11); 
+        ManifoldEdge edge5 = new ManifoldEdge(14, 13, vertex14, vertex13); 
+        ManifoldEdge edge6 = new ManifoldEdge(15, 12, vertex15, vertex12); 
+        ManifoldEdge edge7 = new ManifoldEdge(13, 15, vertex13, vertex15); 
+        
+        manifoldEdges.add(edge0);
+        manifoldEdges.add(edge1);
+        manifoldEdges.add(edge2);
+        manifoldEdges.add(edge3);
+        manifoldEdges.add(edge4);
+        manifoldEdges.add(edge5);
+        manifoldEdges.add(edge6);
+        manifoldEdges.add(edge7);
+        
+        Map<Integer, Set<ManifoldEdge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
+            manifoldEdges);
+        
+//        int vertexId = 13;
+//        Set<ManifoldEdge> availableEdges = new HashSet<>(edgesWithVertex.get(vertexId));
+//        availableEdges.remove(edge5);
+//        
+//        ManifoldEdge rightmostEdge = NonManifoldLoopDetector.getRightmostEdge(vertexId, edge5,
+//                                                                availableEdges);
+//        assertEquals(edge2, rightmostEdge);
+        
+
+        Optional<List<ManifoldEdge>> loop = NonManifoldLoopDetector.getLoopForEdgeInDirection(
+                edge0, edgesWithVertex, NonManifoldLoopDetector.Direction.FORWARDS);
+        for (ManifoldEdge manifoldEdge : loop.get())
+        {
+            System.out.println(manifoldEdge);
+        }
+        assertEquals(8, loop.get().size());
+        
+        Set<List<ManifoldEdge>> loops = new HashSet<>();
+        loops.add(loop.get());
+        
+        MeshDebug.visualiseEdgeLoops(manifoldEdges, loops);
+        
+        
+       }
+    
+//    @Test
+//    public void testValidateLoop()
+//    {
+//        List<ManifoldEdge> loop = new ArrayList<>();
+//        loop.add(new ManifoldEdge(1, 2, null, null));
+//        loop.add(new ManifoldEdge(2, 3, null, null));
+//        loop.add(new ManifoldEdge(3, 4, null, null));
+//        loop.add(new ManifoldEdge(4, 5, null, null));
+//        loop.add(new ManifoldEdge(5, 6, null, null));
+//        assertTrue(validateLoop(loop));
+//        
+//        loop.add(new ManifoldEdge(6, 2, null, null));
+//        assertFalse(validateLoop(loop));
+//    }
 
 }
