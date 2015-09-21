@@ -1,6 +1,7 @@
 package celtech.printerControl;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -24,6 +25,7 @@ import org.junit.rules.TemporaryFolder;
  */
 public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusConsumer
 {
+    private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
 
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
@@ -42,7 +44,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
     public void setUpConsumer()
     {
         statusConsumer = new StatusConsumer();
-        testCommandInterface = new TestCommandInterface(statusConsumer, "Test Printer", false,
+        testCommandInterface = new TestCommandInterface(statusConsumer, printerHandle, false,
                 statusTimer);
         printer = new HardwarePrinter(null, testCommandInterface);
 
@@ -161,19 +163,19 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
     }
 
     @Override
-    public void printerConnected(String portName)
+    public void printerConnected(DeviceDetector.DetectedPrinter printerHandle)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void failedToConnect(String portName)
+    public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void disconnected(String portName)
+    public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -182,18 +184,18 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
     {
 
         @Override
-        public void printerConnected(String portName)
+        public void printerConnected(DeviceDetector.DetectedPrinter printerHandle)
         {
             printerIsConnected = true;
         }
 
         @Override
-        public void failedToConnect(String portName)
+        public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
         {
         }
 
         @Override
-        public void disconnected(String portName)
+        public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
         {
             printerIsConnected = false;
         }

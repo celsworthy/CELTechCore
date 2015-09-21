@@ -96,20 +96,22 @@ public class DummyPrinterCommandInterface extends CommandInterface
     protected int currentBedTemperature = ROOM_TEMPERATURE;
     protected int bedTargetTemperature = 30;
 
-    public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
+    public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface,
+            DeviceDetector.DetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
     {
-        super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
+        super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName(printerName);
         this.printerName = printerName;
 
         currentStatus.setSdCardPresent(true);
     }
 
-    public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface, String portName,
+    public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface,
+            DeviceDetector.DetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
-        this(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks,
+        this(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks,
                 "Dummy Printer");
     }
 
@@ -231,7 +233,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     }
 
     @Override
-    protected boolean connectToPrinter(String commsPortName)
+    protected boolean connectToPrinter()
     {
         steno.info("Dummy printer connected");
         return true;
@@ -463,7 +465,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 currentStatus.setHeadPowerOn(false);
             } else if (messageData.equalsIgnoreCase(detachPrinterCommand))
             {
-                RoboxCommsManager.getInstance().removeDummyPrinter(portName);
+                RoboxCommsManager.getInstance().removeDummyPrinter(printerHandle);
             } else if (messageData.startsWith(attachReelCommand))
             {
                 boolean attachSuccess = false;

@@ -52,10 +52,11 @@ public class TestCommandInterface extends CommandInterface
     private HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) RoboxRxPacketFactory.createPacket(
             RxPacketTypeEnum.HEAD_EEPROM_DATA);
 
-    public TestCommandInterface(PrinterStatusConsumer controlInterface, String portName,
+    public TestCommandInterface(PrinterStatusConsumer controlInterface,
+            DeviceDetector.DetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
-        super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
+        super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName("Dummy Printer");
 
         preTestInitialisation();
@@ -184,7 +185,7 @@ public class TestCommandInterface extends CommandInterface
     }
 
     @Override
-    protected boolean connectToPrinter(String commsPortName)
+    protected boolean connectToPrinter()
     {
         steno.info("Dummy printer connected");
         return true;

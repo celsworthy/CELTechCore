@@ -181,13 +181,13 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         {
             case SERIAL:
                 newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
-                        this, detectedPrinter.getConnectionHandle(), suppressPrinterIDChecks,
+                        this, detectedPrinter, suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS), filamentLoadedGetter,
                         doNotCheckForPresenceOfHead);
                 break;
             case ROBOX_REMOTE:
                 newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
-                        this, detectedPrinter.getConnectionHandle(), suppressPrinterIDChecks,
+                        this, detectedPrinter, suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS), filamentLoadedGetter,
                         doNotCheckForPresenceOfHead);
                 break;
@@ -220,13 +220,13 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     /**
      *
-     * @param portName
+     * @param detectedPrinter
      */
     @Override
-    public void printerConnected(String portName)
+    public void printerConnected(DeviceDetector.DetectedPrinter detectedPrinter)
     {
-        Printer printer = pendingPrinters.get(portName);
-        activePrinters.put(portName, printer);
+        Printer printer = pendingPrinters.get(detectedPrinter);
+        activePrinters.put(detectedPrinter, printer);
         printer.connectionEstablished();
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
@@ -237,29 +237,27 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     /**
      *
-     * @param portName
      */
     @Override
-    public void failedToConnect(String portName)
+    public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
     {
-        pendingPrinters.remove(portName);
+        pendingPrinters.remove(printerHandle);
     }
 
     /**
      *
-     * @param portName
      */
     @Override
-    public void disconnected(String portName)
+    public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
     {
-        pendingPrinters.remove(portName);
+        pendingPrinters.remove(printerHandle);
 
-        final Printer printerToRemove = activePrinters.get(portName);
+        final Printer printerToRemove = activePrinters.get(printerHandle);
         if (printerToRemove != null)
         {
             printerToRemove.shutdown(false);
         }
-        activePrinters.remove(portName);
+        activePrinters.remove(printerHandle);
 
         Platform.runLater(() ->
         {
@@ -271,20 +269,21 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         dummyPrinterCounter++;
         String actualPrinterPort = dummyPrinterPort + " " + dummyPrinterCounter;
+        DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, actualPrinterPort);
         Printer nullPrinter = new HardwarePrinter(this,
                 new DummyPrinterCommandInterface(this,
-                        actualPrinterPort,
+                        printerHandle,
                         suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS,
                         "DP "
                         + dummyPrinterCounter));
-        pendingPrinters.put(actualPrinterPort, nullPrinter);
+        pendingPrinters.put(printerHandle, nullPrinter);
         dummyPrinters.add(nullPrinter);
     }
 
-    public void removeDummyPrinter(String portName)
+    public void removeDummyPrinter(DeviceDetector.DetectedPrinter printerHandle)
     {
-        disconnected(portName);
+        disconnected(printerHandle);
     }
 
     public List<Printer> getDummyPrinters()

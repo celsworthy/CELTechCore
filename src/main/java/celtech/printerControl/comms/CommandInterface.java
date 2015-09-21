@@ -37,7 +37,7 @@ public abstract class CommandInterface extends Thread
     protected Stenographer steno = StenographerFactory.getStenographer(
             HardwareCommandInterface.class.getName());
     protected PrinterStatusConsumer controlInterface = null;
-    protected String portName = null;
+    protected DeviceDetector.DetectedPrinter printerHandle = null;
     protected Printer printerToUse = null;
     protected String printerFriendlyName = "Robox";
     protected RoboxCommsState commsState = RoboxCommsState.FOUND;
@@ -58,15 +58,16 @@ public abstract class CommandInterface extends Thread
     /**
      *
      * @param controlInterface
-     * @param portName
+     * @param printerHandle
      * @param suppressPrinterIDChecks
      * @param sleepBetweenStatusChecks
      */
-    public CommandInterface(PrinterStatusConsumer controlInterface, String portName,
+    public CommandInterface(PrinterStatusConsumer controlInterface,
+            DeviceDetector.DetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         this.controlInterface = controlInterface;
-        this.portName = portName;
+        this.printerHandle = printerHandle;
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
         this.sleepBetweenStatusChecks = sleepBetweenStatusChecks;
 
@@ -114,23 +115,23 @@ public abstract class CommandInterface extends Thread
             switch (commsState)
             {
                 case FOUND:
-                    steno.debug("Trying to connect to printer in " + portName);
+                    steno.debug("Trying to connect to printer in " + printerHandle);
 
-                    boolean printerCommsOpen = connectToPrinter(portName);
+                    boolean printerCommsOpen = connectToPrinter();
                     if (printerCommsOpen)
                     {
-                        steno.debug("Connected to Robox on " + portName);
+                        steno.debug("Connected to Robox on " + printerHandle);
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } else
                     {
-                        steno.debug("Failed to connect to Robox on " + portName);
-                        controlInterface.failedToConnect(portName);
+                        steno.debug("Failed to connect to Robox on " + printerHandle);
+                        controlInterface.failedToConnect(printerHandle);
                         keepRunning = false;
                     }
                     break;
 
                 case CHECKING_FIRMWARE:
-                    steno.debug("Check firmware " + portName);
+                    steno.debug("Check firmware " + printerHandle);
                     if (loadingFirmware)
                     {
                         try
@@ -179,7 +180,7 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case CHECKING_ID:
-                    steno.debug("Check id " + portName);
+                    steno.debug("Check id " + printerHandle);
 
                     PrinterIDResponse lastPrinterIDResponse = null;
 
@@ -210,7 +211,7 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case DETERMINING_PRINTER_STATUS:
-                    steno.debug("Determining printer status on port " + portName);
+                    steno.debug("Determining printer status on port " + printerHandle);
 
                     try
                     {
@@ -220,7 +221,7 @@ public abstract class CommandInterface extends Thread
 
                         determinePrinterStatus(statusResponse);
 
-                        controlInterface.printerConnected(portName);
+                        controlInterface.printerConnected(printerHandle);
                         commsState = RoboxCommsState.CONNECTED;
                     } catch (RoboxCommsException ex)
                     {
@@ -269,7 +270,7 @@ public abstract class CommandInterface extends Thread
             }
         }
         steno.info(
-                "Handler for " + portName + " exiting");
+                "Handler for " + printerHandle + " exiting");
     }
 
     private void moveOnFromFirmwareCheck(FirmwareResponse firmwareResponse)
@@ -345,10 +346,9 @@ public abstract class CommandInterface extends Thread
 
     /**
      *
-     * @param commsPortName
      * @return
      */
-    protected abstract boolean connectToPrinter(String commsPortName);
+    protected abstract boolean connectToPrinter();
 
     /**
      *

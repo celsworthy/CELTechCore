@@ -23,16 +23,17 @@ public class RoboxRemoteCommandInterface extends CommandInterface
     private boolean stillWaitingForStatus = false;
     private final SerialPortManager serialPortManager;
 
-    public RoboxRemoteCommandInterface(PrinterStatusConsumer controlInterface, String portName,
+    public RoboxRemoteCommandInterface(PrinterStatusConsumer controlInterface,
+            DeviceDetector.DetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
-        super(controlInterface, portName, suppressPrinterIDChecks, sleepBetweenStatusChecks);
-        this.setName("HCI:" + portName + " " + this.toString());
-        serialPortManager = new SerialPortManager(portName);
+        super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
+        this.setName("HCI:" + printerHandle + " " + this.toString());
+        serialPortManager = new SerialPortManager(printerHandle.getConnectionHandle());
     }
 
     @Override
-    protected boolean connectToPrinter(String commsPortName)
+    protected boolean connectToPrinter()
     {
         return serialPortManager.connect(115200);
     }
@@ -51,7 +52,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
             }
         }
 
-        controlInterface.disconnected(portName);
+        controlInterface.disconnected(printerHandle);
         keepRunning = false;
     }
 

@@ -18,6 +18,8 @@ import org.junit.rules.TemporaryFolder;
 public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
 {
 
+    private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
+
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
 
@@ -26,66 +28,65 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
     {
         StatusConsumer statusConsumer = new StatusConsumer();
         DummyPrinterCommandInterface commandInterface = new DummyPrinterCommandInterface(
-            statusConsumer, "Test Printer", false, 500);
+                statusConsumer, printerHandle, false, 500);
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
-        
+
         hardwarePrinter.sendRawGCode("ATTACH HEAD RBX01-DM", true);
-        
+
         hardwarePrinter.setNozzleHeaterTargetTemperature(0, 200);
 
         assertEquals(200, commandInterface.nozzleTargetTemperatureS);
-        
+
 //        NozzleHeater nozzleHeater = hardwarePrinter.headProperty().get().getNozzleHeaters().get(0);
 //        assertEquals(200, nozzleHeater.nozzleTargetTemperatureProperty().get());
-
     }
-    
+
     @Test
     public void testGotoTargetNozzleTemperature() throws Exception
     {
         StatusConsumer statusConsumer = new StatusConsumer();
         DummyPrinterCommandInterface commandInterface = new DummyPrinterCommandInterface(
-            statusConsumer, "Test Printer", false, 500);
+                statusConsumer, printerHandle, false, 500);
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
         hardwarePrinter.goToTargetNozzleHeaterTemperature(0);
 
         assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterModeS);
 
-    }  
-    
+    }
+
     @Test
     public void testSwitchAllNozzleHeatersOff() throws Exception
     {
         StatusConsumer statusConsumer = new StatusConsumer();
         DummyPrinterCommandInterface commandInterface = new DummyPrinterCommandInterface(
-            statusConsumer, "Test Printer", false, 500);
+                statusConsumer, printerHandle, false, 500);
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
-        
+
         hardwarePrinter.goToTargetNozzleHeaterTemperature(0);
         assertEquals(HeaterMode.NORMAL, commandInterface.nozzleHeaterModeS);
         hardwarePrinter.switchAllNozzleHeatersOff();
         assertEquals(HeaterMode.OFF, commandInterface.nozzleHeaterModeS);
 
-    }     
+    }
 
     class StatusConsumer implements PrinterStatusConsumer
     {
 
         @Override
-        public void printerConnected(String portName)
+        public void printerConnected(DeviceDetector.DetectedPrinter printerHandle)
         {
         }
 
         @Override
-        public void failedToConnect(String portName)
+        public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
         {
         }
 
         @Override
-        public void disconnected(String portName)
+        public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
         {
         }
     }
