@@ -3,7 +3,6 @@
  */
 package celtech.utils.threed;
 
-import static celtech.utils.threed.MeshDebug.visualiseEdgeLoops;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.NonManifoldLoopDetector.identifyNonManifoldLoops;
@@ -14,8 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javafx.geometry.Point3D;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import org.apache.commons.math3.util.Pair;
 
 /**
  *
@@ -137,7 +138,7 @@ public class MeshCutter2 {
     static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops) {
         Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
         for (List<ManifoldEdge> loop : loops) {
-            PolygonIndices polygonIndices = convertEdgesToPolygonIndices(loop);
+            PolygonIndices polygonIndices = convertEdgesToPolygonIndices(loop).getFirst();
             polygonIndicesSet.add(polygonIndices);
         }
         return polygonIndicesSet;
@@ -145,13 +146,14 @@ public class MeshCutter2 {
 
     /**
      * Convert the edges to a list of vertex indices. The edges may be going
-     * forwards or backwards we cant assume a given direction.
+     * forwards or backwards, we can't assume a given direction.
      *
      * @param loop
      * @return
      */
-    static PolygonIndices convertEdgesToPolygonIndices(List<ManifoldEdge> loop) {
+    static Pair<PolygonIndices, List<Point3D>> convertEdgesToPolygonIndices(List<ManifoldEdge> loop) {
         PolygonIndices polygonIndices = new PolygonIndices();
+        List<Point3D> points = new ArrayList<>();
 
         int previousVertexId = -1;
         int firstVertexId = -1;
@@ -161,10 +163,12 @@ public class MeshCutter2 {
             // second vertex is edge0.v0
             firstVertexId = edge0.v1;
             polygonIndices.add(firstVertexId);
+            points.add(edge0.point1);
         } else {
             // second vertex is edge0.v1
             firstVertexId = edge0.v0;
             polygonIndices.add(firstVertexId);
+            points.add(edge0.point0);
         }
 
         for (ManifoldEdge edge : loop) {
@@ -174,13 +178,15 @@ public class MeshCutter2 {
             }
             if (edge.v0 == previousVertexId) {
                 polygonIndices.add(edge.v1);
+                points.add(edge.point1);
                 previousVertexId = edge.v1;
             } else {
                 polygonIndices.add(edge.v0);
+                points.add(edge.point0);
                 previousVertexId = edge.v0;
             }
         }
-        return polygonIndices;
+        return new Pair<>(polygonIndices, points);
     }
 
     private static Set<PolygonIndices> removeSequentialDuplicateVertices(Set<PolygonIndices> polygonIndices) {

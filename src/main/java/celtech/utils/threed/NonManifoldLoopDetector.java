@@ -15,6 +15,7 @@ import java.util.Set;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import org.apache.commons.math3.util.Pair;
 
 
 /**
@@ -129,10 +130,14 @@ public class NonManifoldLoopDetector
             previousVertexId = previousEdge.v0;
             firstVertexId = previousEdge.v1;
         }
+        
+        Set<Integer> vertexIndices = new HashSet<>();
+        vertexIndices.add(firstVertexId);
 
         while (true)
         {
             loop.add(previousEdge);
+            vertexIndices.add(previousVertexId);
 
             Set<ManifoldEdge> availableEdges = new HashSet<>(edgesWithVertex.get(previousVertexId));
             if (availableEdges.isEmpty())
@@ -175,6 +180,9 @@ public class NonManifoldLoopDetector
             if (loop.contains(nextEdge))
             {
                 assert false;
+                return Optional.empty();
+            }
+            if (vertexIndices.contains(nextVertexId)) {
                 return Optional.empty();
             }
             if (nextEdge.isVisited(nextDirection))
@@ -282,7 +290,7 @@ public class NonManifoldLoopDetector
         Set<List<ManifoldEdge>> uniqueLoops = new HashSet<>();
         for (List<ManifoldEdge> loop : loops)
         {
-            PolygonIndices vertices = MeshCutter2.convertEdgesToPolygonIndices(loop);
+            PolygonIndices vertices = MeshCutter2.convertEdgesToPolygonIndices(loop).getFirst();
             Set<Integer> vertexSet = new HashSet<>(vertices);
             if (seenVertexSets.contains(vertexSet))
             {
@@ -311,7 +319,7 @@ public class NonManifoldLoopDetector
         return loopsWithChords;
     }
 
-    private static boolean loopHasChord(List<ManifoldEdge> loop,
+    static boolean loopHasChord(List<ManifoldEdge> loop,
         Map<Integer, Set<ManifoldEdge>> edgesWithVertex)
     {
         /**
@@ -319,14 +327,29 @@ public class NonManifoldLoopDetector
          * loop. If the centre-point of the edge is contained by the loop then this edge is on a
          * chord.
          */
-        PolygonIndices vertexIndices = MeshCutter2.convertEdgesToPolygonIndices(loop);
+        Pair<PolygonIndices,List<Point3D>> pair = MeshCutter2.convertEdgesToPolygonIndices(loop);
+        PolygonIndices vertexIndices = pair.getFirst();
+        List<Point3D> points3D = pair.getSecond();
+        Point[] points = new Point[points3D.size()];
+        for (int k = 0; k < points.length; k++) {
+            points[k] = new Point(points3D.get(k).getX(), points3D.get(k).getZ());
+        }
         for (Integer vertexIndex : vertexIndices)
         {
             Set<ManifoldEdge> edgesIntoVertex = new HashSet(edgesWithVertex.get(vertexIndex));
             edgesIntoVertex.removeAll(loop);
             if (!edgesIntoVertex.isEmpty()) {
+                
                 for (ManifoldEdge edge : edgesIntoVertex)
                 {
+                    Point3D point0 = edge.point0;
+                    Point3D point1 = edge.point1;
+                    Point edgeCentrePoint = new Point(
+                        (point0.getX() + point1.getX()) / 2d,
+                        (point0.getZ() + point1.getZ()) / 2d);
+                    if (CutResult.contains(edgeCentrePoint, points)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -334,7 +357,7 @@ public class NonManifoldLoopDetector
         return false;
 
     }
-
+    
     static Set<ManifoldEdge> getNonManifoldEdges(TriangleMesh mesh,
         MeshCutter.BedToLocalConverter bedToLocalConverter)
     {

@@ -114,6 +114,10 @@ class CutResult {
         for (int k = 0; k < points.length; k++) {
             points[k] = getPointAt(loop, k);
         }
+        return contains(test, points);
+    }
+    
+    public static boolean contains(Point test, Point[] points) {
         int i;
         int j;
         boolean result = false;

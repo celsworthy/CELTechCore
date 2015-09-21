@@ -253,7 +253,7 @@ public class MeshCutter2Test {
         loop.add(edge6);
         loop.add(edge7);
         
-        PolygonIndices polygonIndices = MeshCutter2.convertEdgesToPolygonIndices(loop);
+        PolygonIndices polygonIndices = MeshCutter2.convertEdgesToPolygonIndices(loop).getFirst();
         System.out.println(polygonIndices) ;
         PolygonIndices expectedPolygonIndices = new PolygonIndices();
         expectedPolygonIndices.add(8);

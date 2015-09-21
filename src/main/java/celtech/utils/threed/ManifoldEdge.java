@@ -18,12 +18,12 @@ final class ManifoldEdge
     boolean visitedForwards = false;
     boolean visitedBackwards = false;
 
-    public ManifoldEdge(int v0, int v1, Point3D vertex0, Point3D vertex1)
+    public ManifoldEdge(int v0, int v1, Point3D point0, Point3D point1)
     {
         this.v0 = v0;
         this.v1 = v1;
-        this.point0 = vertex0;
-        this.point1 =vertex1;
+        this.point0 = point0;
+        this.point1 = point1;
     }
     
     public boolean isVisited(Direction direction) {

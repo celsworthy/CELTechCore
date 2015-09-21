@@ -13,6 +13,8 @@ import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 
@@ -131,11 +133,11 @@ public class NonManifoldLoopDetectorTest
         manifoldEdges.add(new ManifoldEdge(7, 6, vertex7, vertex6));
         manifoldEdges.add(new ManifoldEdge(6, 2, vertex6, vertex2));
 
-        Map<Integer, Set<ManifoldEdge>> edgesWithPoint3D = NonManifoldLoopDetector.makeEdgesWithVertex(
+        Map<Integer, Set<ManifoldEdge>> edgesWithVertex = NonManifoldLoopDetector.makeEdgesWithVertex(
             manifoldEdges);
 
         Optional<List<ManifoldEdge>> loop1 = NonManifoldLoopDetector.getLoopForEdgeInDirection(edge0,
-                                                                                               edgesWithPoint3D,
+                                                                                               edgesWithVertex,
                                                                                                NonManifoldLoopDetector.Direction.BACKWARDS);
         for (ManifoldEdge manifoldEdge : loop1.get())
         {
@@ -144,17 +146,22 @@ public class NonManifoldLoopDetectorTest
         assertEquals(4, loop1.get().size());
 
         Optional<List<ManifoldEdge>> loop2 = NonManifoldLoopDetector.getLoopForEdgeInDirection(edge1,
-                                                                                               edgesWithPoint3D,
+                                                                                               edgesWithVertex,
                                                                                                NonManifoldLoopDetector.Direction.FORWARDS);
-        for (ManifoldEdge manifoldEdge : loop2.get())
-        {
-            System.out.println(manifoldEdge);
-        }
+        assertEquals(6, loop2.get().size());
+        
         Set<List<ManifoldEdge>> loops = new HashSet<>();
+        loops.add(loop1.get());
         loops.add(loop2.get());
         
 //        MeshDebug.visualiseEdgeLoops(manifoldEdges, loops);
-        assertEquals(6, loop2.get().size());
+        
+        assertFalse(NonManifoldLoopDetector.loopHasChord(loop1.get(), edgesWithVertex));
+        assertTrue(NonManifoldLoopDetector.loopHasChord(loop2.get(), edgesWithVertex));
+        
+        loops = NonManifoldLoopDetector.removeLoopsWithChords(loops, edgesWithVertex);
+        assertEquals(1, loops.size());
+        
 
     }
 

@@ -343,8 +343,9 @@ class MyPanel extends JPanel {
                 }
             }
             double width = getWidth();
-            scale = width / (maxX - minX);
-            scale /= 1.5;
+            double scaleX = width / (maxX - minX);
+            double scaleZ = getHeight() / (maxZ - minZ);
+            scale = Math.min(scaleX, scaleZ) / 1.5d;
 //            System.out.println("scale is " + scale);
 
             xOffset -= minX * scale;
