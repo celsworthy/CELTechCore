@@ -38,7 +38,7 @@ public class MeshCutter2 {
         MeshUtils.removeUnusedAndDuplicateVertices(topMesh);
         setTextureAndSmoothing(topMesh, topMesh.getFaces().size() / 6);
 
-        Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh);
+        Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh, bedToLocalConverter);
         if (error.isPresent()) {
             System.out.println("Error in TOP mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
@@ -50,7 +50,7 @@ public class MeshCutter2 {
         MeshUtils.removeUnusedAndDuplicateVertices(bottomMesh);
         setTextureAndSmoothing(bottomMesh, bottomMesh.getFaces().size() / 6);
 
-        error = MeshUtils.validate(bottomMesh);
+        error = MeshUtils.validate(bottomMesh, bedToLocalConverter);
         if (error.isPresent()) {
             System.out.println("Error in BOTTOM mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
