@@ -95,6 +95,9 @@ public class MeshCutter2
         return meshes;
     }
 
+    /**
+     * Cut the mesh at the given height and return it, without covering the holes created by the cut.
+     */
     static CutResult getUncoveredMesh(TriangleMesh mesh,
         float cutHeight, BedToLocalConverter bedToLocalConverter,
         TopBottom topBottom)
@@ -176,6 +179,11 @@ public class MeshCutter2
 
     static Map<PolygonIndices, List<ManifoldEdge>> debugLoopToEdges = new HashMap<>();
 
+    /**
+     * Convert the edges to vertices, these are later used to determine which loops are holes within
+     * others, and to triangulate the open loops of edges.
+     * 
+     */
     static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops)
     {
         Set<PolygonIndices> polygonIndicesSet = new HashSet<>();
@@ -191,9 +199,6 @@ public class MeshCutter2
     /**
      * Convert the edges to a list of vertex indices. Each edge may be going forwards or backwards,
      * we can't assume a given direction or any consistency in direction.
-     *
-     * @param loop
-     * @return
      */
     static Pair<PolygonIndices, List<Point3D>> convertEdgesToPolygonIndices(List<ManifoldEdge> loop)
     {
@@ -240,41 +245,6 @@ public class MeshCutter2
         return new Pair<>(polygonIndices, points);
     }
     
-//    /**
-//     * Get all loops of faces and their matching vertices along the cutting plane. Each loop of
-//     * vertices must be ordered according to adjacency, so that we can get a correct perimeter for
-//     * forming the cover surface. Any new vertices that are required must be added to the mesh.
-//     */
-//    static Set<LoopOfVerticesAndCutFaces> getLoopsOfVertices(TriangleMesh mesh, float cutHeight,
-//        BedToLocalConverter bedToLocalConverter)
-//    {
-//        boolean[] faceVisited = new boolean[mesh.getFaces().size() / 6];
-//        boolean[] perimeterVertex = new boolean[mesh.getPoints().size()];
-//        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
-//
-//        Set<LoopOfVerticesAndCutFaces> loopsOfFaces = new HashSet<>();
-//
-//        while (true)
-//        {
-//            Optional<LoopOfVerticesAndCutFaces> loopOfFaces
-//                = getNextLoopOfVertices(faceVisited, perimeterVertex, mesh, cutHeight,
-//                                        facesWithVertices, bedToLocalConverter);
-//            if (loopOfFaces.isPresent() && loopOfFaces.get().loopOfVertices.size() > 2)
-//            {
-//                loopsOfFaces.add(loopOfFaces.get());
-//            } else
-//            {
-//                if (!loopOfFaces.isPresent())
-//                {
-//                    break;
-//                }
-//            }
-//        }
-//
-//        return loopsOfFaces;
-//    }
-//    
-
     private static Set<PolygonIndices> removeSequentialDuplicateVertices(
         Set<PolygonIndices> polygonIndices)
     {

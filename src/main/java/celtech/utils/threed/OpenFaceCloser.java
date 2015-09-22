@@ -86,8 +86,10 @@ public class OpenFaceCloser
                 if (attempts == MAX_ATTEMPTS)
                 {
                     System.out.println("Unable to triangulate");
+                    //                    throw new RuntimeException("Unable to triangulate");
                     
-                    // debugging code follows (visualise & output test code to reproduce)
+                    // debugging code follows (visualise & also output test code to reproduce
+                    // problem in unit test)
 
 //                    System.out.println("outer loop is " + region.outerLoop);
 //                    System.out.println("there are inner loops: " + region.innerLoops.size());
@@ -98,7 +100,7 @@ public class OpenFaceCloser
 //                    polygonIndices.add(region.outerLoop);
 //                    MeshDebug.visualisePolygonIndices(mesh, polygonIndices, region.innerLoops,
 //                                  bedToLocalConverter, java.awt.Color.BLUE, java.awt.Color.RED);
-//                    throw new RuntimeException("Unable to triangulate");
+
                     // get edge data for failing loop (debug only)
 //                    List<ManifoldEdge> edges = MeshCutter2.debugLoopToEdges.get(region.outerLoop);
 //                    debugOutputEdges(cutResult, edges);
@@ -125,6 +127,11 @@ public class OpenFaceCloser
         return mesh;
     }
 
+    /**
+     * The code produced by this method can be easily used in NonManifoldLoopDetectorTest class.
+     * @param cutResult
+     * @param edges 
+     */
     private static void debugOutputEdges(CutResult cutResult, List<ManifoldEdge> edges)
     {
         Set<Integer> vertexIndices = new HashSet<>();

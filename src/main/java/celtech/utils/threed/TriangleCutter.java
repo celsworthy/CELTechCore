@@ -280,7 +280,6 @@ public class TriangleCutter {
                 vertices[2] = c1;
                 vertices[4] = c2;
                 mesh.getFaces().addAll(vertices);
-                compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
             }
 
         } else {
@@ -318,39 +317,14 @@ public class TriangleCutter {
             vertices[2] = c1;
             vertices[4] = c2;
             mesh.getFaces().addAll(vertices);
-            compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
 
             assert (c3 != c4 && c4 != c5 && c5 != c3) : faceIndex + " " + c3 + " " + c4 + " " + c5;
             vertices[0] = c3;
             vertices[2] = c4;
             vertices[4] = c5;
             mesh.getFaces().addAll(vertices);
-            compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
         }
 
-    }
-
-    static void compareLastFaceNormals(TriangleMesh mesh, int[] vertices, Point3D initialNormal, int c0, int c1, int c2) {
-        return;
-//        mesh.getFaces().addAll(vertices);
-//        int newFaceIndex = mesh.getFaces().size() / 6 - 1;
-//        Point3D newNormal = getFaceNormal(mesh, newFaceIndex);
-//        
-//        if (newNormal.dotProduct(initialNormal) < 0.99f) {
-//            System.out.println("reverse normal");
-//            reverseLastFaceNormal(mesh);
-//            newNormal = getFaceNormal(mesh, newFaceIndex);
-//        }
-//        
-//        if (newNormal.dotProduct(initialNormal) < 0.99f) {
-//                System.out.println(newNormal + " is not the same as initial normal: ");
-//                System.out.println(initialNormal + " for new face vertices " + c0 + " " + c1 + " " + c2);
-//                System.out.println(getVertex(mesh, c0));
-//                System.out.println(getVertex(mesh, c1));
-//                System.out.println(getVertex(mesh, c2));
-//                assert false;
-//        }        
-//        System.out.println("normals are equal for face " + newFaceIndex);
     }
 
     static void reverseLastFaceNormal(TriangleMesh mesh) {
@@ -443,7 +417,6 @@ public class TriangleCutter {
         vertices[2] = c1;
         vertices[4] = c2;
         mesh.getFaces().addAll(vertices);
-        compareLastFaceNormals(mesh, vertices, initialNormal, c0, c1, c2);
 
         return;
     }

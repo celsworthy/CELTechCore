@@ -218,7 +218,7 @@ public class MeshUtils
                 {
                     if (!warningEmitted)
                     {
-                        steno.error("Invalid topology while checking orientability");
+                        steno.warning("Invalid topology while checking orientability");
                         warningEmitted = true;
                     }
                     continue;
@@ -288,20 +288,7 @@ public class MeshUtils
     private static boolean testMeshIsOpen(TriangleMesh mesh,
         MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
-//        System.out.println("check " + mesh.getPoints().size() / 3 + " vertices");
-//        for (int vertex = 0; vertex < mesh.getPoints().size() / 3; vertex++)
-//        {
-//            System.out.println(vertex + ": "
-//                + mesh.getFaces().get(vertex * 3) + " " + mesh.getFaces().get(vertex * 3 + 1) + " "
-//                + mesh.getFaces().get(vertex * 3 + 2));
-//        }
-
-//        for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
-//        {
-//            System.out.println(faceIndex + ": "
-//                + mesh.getFaces().get(faceIndex * 6) + " " + mesh.getFaces().get(faceIndex * 6 + 2)
-//                + " " + mesh.getFaces().get(faceIndex * 6 + 4));
-//        }        
+      
         Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
@@ -324,10 +311,8 @@ public class MeshUtils
             {
                 System.out.println("problem 12 for face " + faceIndex);
                 printFace(mesh, faceIndex, bedToLocalConverter);
-                int v0 = mesh.getFaces().get(faceIndex * 6);
                 int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
                 int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-                Vertex vertex0 = getVertex(mesh, v0);
                 Vertex vertex1 = getVertex(mesh, v1);
                 Vertex vertex2 = getVertex(mesh, v2);
                 MeshDebug.clearNodesToShow();
