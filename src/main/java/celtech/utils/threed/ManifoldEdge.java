@@ -15,15 +15,17 @@ final class ManifoldEdge
     final int v1;
     final Point3D point0;
     final Point3D point1;
+    final int faceIndex;
     boolean visitedForwards = false;
     boolean visitedBackwards = false;
 
-    public ManifoldEdge(int v0, int v1, Point3D point0, Point3D point1)
+    public ManifoldEdge(int v0, int v1, Point3D point0, Point3D point1, int faceIndex)
     {
         this.v0 = v0;
         this.v1 = v1;
         this.point0 = point0;
         this.point1 = point1;
+        this.faceIndex = faceIndex;
     }
     
     public boolean isVisited(Direction direction) {
@@ -77,8 +79,6 @@ final class ManifoldEdge
     {
         return "ManifoldEdge{" + "v1=" + v1 + ", point0=" + point0 + ", point1=" + point1 + '}';
     }
-    
-
 
     @Override
     public boolean equals(Object obj)
@@ -93,7 +93,8 @@ final class ManifoldEdge
         }
 
         ManifoldEdge other = (ManifoldEdge) obj;
-        if ((other.v0 == v0 && other.v1 == v1) || (other.v1 == v0 && other.v0 == v1))
+        if (other.faceIndex == faceIndex && 
+            ((other.v0 == v0 && other.v1 == v1) || (other.v1 == v0 && other.v0 == v1)))
         {
             return true;
         }

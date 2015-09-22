@@ -5,8 +5,7 @@
  */
 package celtech.utils.threed;
 
-import static celtech.utils.threed.MeshCutter.getFaceEdges;
-import static celtech.utils.threed.MeshCutter.makePoint3D;
+import static celtech.utils.threed.MeshCutter2.makePoint3D;
 import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import static celtech.utils.threed.MeshSeparator.setTextureAndSmoothing;
 import static celtech.utils.threed.TriangleCutter.getVertex;
@@ -129,7 +128,7 @@ public class MeshUtils
      * Validate the mesh.
      */
     public static Optional<MeshError> validate(TriangleMesh mesh,
-        MeshCutter.BedToLocalConverter bedToLocalConverter)
+        MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
         if (testVerticesNotValid(mesh))
         {
@@ -165,6 +164,21 @@ public class MeshUtils
             }
         }
         return false;
+    }
+    
+        static Set<Edge> getFaceEdges(TriangleMesh mesh, int faceIndex)
+    {
+        int vertex0 = mesh.getFaces().get(faceIndex * 6);
+        int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
+        int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
+        Edge edge1 = new Edge(vertex0, vertex1);
+        Edge edge2 = new Edge(vertex1, vertex2);
+        Edge edge3 = new Edge(vertex0, vertex2);
+        Set<Edge> edges = new HashSet<>();
+        edges.add(edge1);
+        edges.add(edge2);
+        edges.add(edge3);
+        return edges;
     }
 
     /**
@@ -272,7 +286,7 @@ public class MeshUtils
      * Check if mesh is open (not all edges are incident to two faces).
      */
     private static boolean testMeshIsOpen(TriangleMesh mesh,
-        MeshCutter.BedToLocalConverter bedToLocalConverter)
+        MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
 //        System.out.println("check " + mesh.getPoints().size() / 3 + " vertices");
 //        for (int vertex = 0; vertex < mesh.getPoints().size() / 3; vertex++)
@@ -332,7 +346,7 @@ public class MeshUtils
     }
 
     public static void printFace(TriangleMesh mesh, int faceIndex,
-        MeshCutter.BedToLocalConverter bedToLocalConverter)
+        MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
         int v0 = mesh.getFaces().get(faceIndex * 6);
         int v1 = mesh.getFaces().get(faceIndex * 6 + 2);

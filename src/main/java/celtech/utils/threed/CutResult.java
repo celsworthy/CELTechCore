@@ -3,10 +3,11 @@
  */
 package celtech.utils.threed;
 
-import celtech.utils.threed.MeshCutter.TopBottom;
-import static celtech.utils.threed.MeshCutter.makePoint3D;
+import celtech.utils.threed.MeshCutter2.TopBottom;
+import static celtech.utils.threed.MeshCutter2.makePoint3D;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
@@ -31,12 +32,12 @@ class CutResult {
      */
     final Set<PolygonIndices> loopsOfVerticesOnOpenFace;
 
-    final MeshCutter.BedToLocalConverter bedToLocalConverter;
+    final MeshCutter2.BedToLocalConverter bedToLocalConverter;
 
     TopBottom topBottom;
 
     public CutResult(TriangleMesh mesh, Set<PolygonIndices> loops,
-            MeshCutter.BedToLocalConverter bedToLocalConverter, TopBottom topBottom) {
+            MeshCutter2.BedToLocalConverter bedToLocalConverter, TopBottom topBottom) {
         loopsOfVerticesOnOpenFace = loops;
         this.mesh = mesh;
         this.bedToLocalConverter = bedToLocalConverter;
@@ -100,9 +101,28 @@ class CutResult {
     }
 
     public boolean contains(PolygonIndices outerPolygon, PolygonIndices innerPolygon) {
-        // TODO: will not work for some overlapping polygons
-        Point point = getPointAt(innerPolygon, 0);
-        return contains(point, outerPolygon);
+        
+        List<Integer> sharedIndices = new ArrayList(outerPolygon);
+        sharedIndices.retainAll(innerPolygon);
+        if (! sharedIndices.isEmpty()) {
+            throw new RuntimeException("Inner and outer polygon share a vertex");
+        }
+        
+        int numContained = 0;
+        for (int i = 0; i < innerPolygon.size(); i++)
+        {
+            Point point = getPointAt(innerPolygon, i);
+            if (contains(point, outerPolygon)) {
+                numContained++;
+            }
+        }
+        
+        if (numContained > 0 && numContained != innerPolygon.size()) {
+            throw new RuntimeException("Overlapping polygons detected");
+        }
+        
+        return numContained > 0;
+        
     }
 
     /**
@@ -130,27 +150,6 @@ class CutResult {
         return result;
     }
 
-//    double getPolygonArea(PolygonIndices loop)
-//    {
-//        int N = loop.size();
-//        Point[] polygon = new Point[N];
-//        for (int k = 0; k < polygon.length; k++)
-//        {
-//            polygon[k] = getPointAt(loop, k);
-//        }
-//
-//        int i;
-//        int j;
-//        double area = 0;
-//        for (i = 0; i < N; i++)
-//        {
-//            j = (i + 1) % N;
-//            area += polygon[i].x * polygon[j].y;
-//            area -= polygon[i].y * polygon[j].x;
-//        }
-//        area /= 2;
-//        return area < 0 ? -area : area;
-//    }
     private void validateLoopSets(Set<LoopSet> loopSets) {
         validateLoopSetsAreExclusive(loopSets);
         for (LoopSet loopSet : loopSets) {

@@ -5,7 +5,7 @@ package celtech.utils.threed;
 
 import celtech.utils.Math.MathUtils;
 import static celtech.utils.Math.MathUtils.EQUAL;
-import static celtech.utils.threed.MeshCutter.makePoint3D;
+import static celtech.utils.threed.MeshCutter2.makePoint3D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +32,7 @@ public class TriangleCutter {
      * Return the edges that the plane intersects (not touches).
      */
     static Set<Edge> getEdgesOfFaceThatPlaneIntersects(TriangleMesh mesh, int faceIndex,
-            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            float cutHeight, MeshCutter2.BedToLocalConverter bedToLocalConverter) {
         Set<Edge> edges = new HashSet<>();
         int vertex0 = mesh.getFaces().get(faceIndex * 6);
         int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
@@ -75,7 +75,7 @@ public class TriangleCutter {
      * and return the index of the new vertex.
      */
     static Integer makeIntersectingVertex(TriangleMesh mesh, Edge edge, float cutHeight,
-            MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            MeshCutter2.BedToLocalConverter bedToLocalConverter) {
         Vertex vertex = getIntersectingVertex(edge, mesh, cutHeight, bedToLocalConverter);
         int vertexIndex = addNewOrGetVertex(mesh, vertex);
         return vertexIndex;
@@ -102,7 +102,7 @@ public class TriangleCutter {
      * Return the intersecting vertices of the face.
      */
     static Set<Vertex> getIntersectingEdgeVertices(TriangleMesh mesh, int faceIndex,
-            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            float cutHeight, MeshCutter2.BedToLocalConverter bedToLocalConverter) {
         Set<Vertex> vertices = new HashSet<>();
         Set<Edge> edges = getEdgesOfFaceThatPlaneIntersects(mesh, faceIndex, cutHeight,
                 bedToLocalConverter);
@@ -127,7 +127,7 @@ public class TriangleCutter {
      */
     public static void splitFaceAndAddLowerFacesToMesh(TriangleMesh mesh, Set<Integer> facesToRemove,
             int faceIndex, float cutHeight,
-            MeshCutter.BedToLocalConverter bedToLocalConverter, MeshCutter.TopBottom topBottom) {
+            MeshCutter2.BedToLocalConverter bedToLocalConverter, MeshCutter2.TopBottom topBottom) {
 
         Point3D initialNormal = getFaceNormal(mesh, faceIndex);
 
@@ -154,7 +154,7 @@ public class TriangleCutter {
         boolean v1aboveCut;
         boolean v2aboveCut;
 
-        if (topBottom == MeshCutter.TopBottom.BOTTOM) {
+        if (topBottom == MeshCutter2.TopBottom.BOTTOM) {
             v0belowCut = v0Height > cutHeight + epsilon;
             v1belowCut = v1Height > cutHeight + epsilon;
             v2belowCut = v2Height > cutHeight + epsilon;
@@ -368,7 +368,7 @@ public class TriangleCutter {
             int v0, int v1, int v2,
             boolean v0belowCut, boolean v1belowCut, boolean v2belowCut,
             TriangleMesh mesh, int faceIndex,
-            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter,
+            float cutHeight, MeshCutter2.BedToLocalConverter bedToLocalConverter,
             Point3D initialNormal) {
 
         List<Integer> edgeVerticesIndices = new ArrayList<>();
@@ -449,7 +449,7 @@ public class TriangleCutter {
     }
 
     static Vertex getIntersectingVertex(Edge edge, TriangleMesh mesh, float cutHeight,
-            MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            MeshCutter2.BedToLocalConverter bedToLocalConverter) {
         int v0 = edge.v0;
         int v1 = edge.v1;
 
@@ -486,7 +486,7 @@ public class TriangleCutter {
      * Does the line intersect the plane (not just touch).
      */
     static boolean lineIntersectsPlane(TriangleMesh mesh, int vertex0, int vertex1,
-            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            float cutHeight, MeshCutter2.BedToLocalConverter bedToLocalConverter) {
 
         float y0 = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex0)).getY();
         float y1 = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, vertex1)).getY();
@@ -499,7 +499,7 @@ public class TriangleCutter {
     }
 
     static Set<Integer> getFaceVerticesIntersectingPlane(TriangleMesh mesh, int faceIndex,
-            float cutHeight, MeshCutter.BedToLocalConverter bedToLocalConverter) {
+            float cutHeight, MeshCutter2.BedToLocalConverter bedToLocalConverter) {
         Set<Integer> vertexIndices = new HashSet<>();
 
         int vertex0 = mesh.getFaces().get(faceIndex * 6);

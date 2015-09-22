@@ -11,7 +11,6 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.utils.threed.MeshCutter;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshDebug;
 import java.net.URL;
@@ -228,31 +227,11 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         modelContainer.saveAndClearBedTransform();
         modelContainer.saveAndClearDropToBedYTransform();
 
-        MeshCutter.BedToLocalConverter nullBedToLocalConverter = new MeshCutter.BedToLocalConverter()
-        {
-
-            @Override
-            public Point3D localToBed(Point3D point)
-            {
-                return point;
-            }
-
-            @Override
-            public Point3D bedToLocal(Point3D point)
-            {
-                return point;
-            }
-        };
-
         try
         {
             List<TriangleMesh> meshPair = MeshCutter2.cut(
                 (TriangleMesh) modelContainer.getMeshView().getMesh(),
                 cutHeightValue, modelContainer.getBedToLocalConverter());
-            
-//            MeshPair meshPair = MeshCutter2.cut(
-//                (TriangleMesh) modelContainer.getMeshView().getMesh(),
-//                cutHeightValue, nullBedToLocalConverter);
 
             String modelName = modelContainer.getModelName();
 
