@@ -29,9 +29,10 @@ import org.apache.commons.math3.util.Pair;
  */
 public class MeshCutter2
 {
-    
+
     private final static Stenographer steno = StenographerFactory.getStenographer(
         MeshCutter2.class.getName());
+
 
     public enum TopBottom
     {
@@ -59,11 +60,13 @@ public class MeshCutter2
     /**
      * Cut the given mesh into two, at the given height.
      */
-    public static List<TriangleMesh> cut(TriangleMesh mesh, float cutHeight,
+    public static List<Optional<TriangleMesh>> cut(TriangleMesh mesh, float cutHeight,
         BedToLocalConverter bedToLocalConverter)
     {
 
         steno.debug("cut at " + cutHeight);
+
+        List<Optional<TriangleMesh>> meshes = new ArrayList<>();
 
         CutResult cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter,
                                                TopBottom.TOP);
@@ -78,6 +81,7 @@ public class MeshCutter2
             steno.warning("Error in TOP mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
         }
+        meshes.add(Optional.of(topMesh));
 
         cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter,
                                      TopBottom.BOTTOM);
@@ -92,24 +96,21 @@ public class MeshCutter2
             steno.warning("Error in BOTTOM mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
         }
-
-        List<TriangleMesh> meshes = new ArrayList<>();
-        meshes.add(topMesh);
-        meshes.add(bottomMesh);
+        meshes.add(Optional.of(bottomMesh));
 
         return meshes;
     }
 
     /**
-     * Cut the mesh at the given height and return it, without covering the holes created by the cut.
+     * Cut the mesh at the given height and return it, without covering the holes created by the
+     * cut.
      */
     static CutResult getUncoveredMesh(TriangleMesh mesh,
         float cutHeight, BedToLocalConverter bedToLocalConverter,
         TopBottom topBottom)
     {
 
-        TriangleMesh childMesh = makeSplitMesh(mesh,
-                                               cutHeight, bedToLocalConverter, topBottom);
+        TriangleMesh childMesh = makeSplitMesh(mesh, cutHeight, bedToLocalConverter, topBottom);
 
         boolean orientable = MeshUtils.testMeshIsOrientable(childMesh);
         if (!orientable)
@@ -118,20 +119,20 @@ public class MeshCutter2
         }
 
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
-        Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh, bedToLocalConverter);
+        Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh,
+                                                                 bedToLocalConverter);
         steno.debug(loops.size() + " non manifold loops identified");
 
         // debugging code to visualise non manifold edges and loops that were found
 //        visualiseEdgeLoops(
 //            NonManifoldLoopDetector.getNonManifoldEdges(childMesh, bedToLocalConverter), loops);
-        
         Set<PolygonIndices> polygonIndices = convertEdgesToVertices(loops);
 
         polygonIndices = removeSequentialDuplicateVertices(polygonIndices);
 
-        CutResult cutResultUpper = new CutResult(childMesh, polygonIndices,
-                                                 bedToLocalConverter, topBottom);
-        return cutResultUpper;
+        CutResult cutResult = new CutResult(childMesh, polygonIndices,
+                                            bedToLocalConverter, topBottom);
+        return cutResult;
     }
 
     /**
@@ -155,7 +156,6 @@ public class MeshCutter2
 
         removeFaces(childMesh, facesToRemove);
 
-//        MeshDebug.showFace(mesh, 0);
         return childMesh;
     }
 
@@ -187,7 +187,7 @@ public class MeshCutter2
     /**
      * Convert the edges to vertices, these are later used to determine which loops are holes within
      * others, and to triangulate the open loops of edges.
-     * 
+     *
      */
     static Set<PolygonIndices> convertEdgesToVertices(Set<List<ManifoldEdge>> loops)
     {
@@ -249,7 +249,7 @@ public class MeshCutter2
         }
         return new Pair<>(polygonIndices, points);
     }
-    
+
     private static Set<PolygonIndices> removeSequentialDuplicateVertices(
         Set<PolygonIndices> polygonIndices)
     {

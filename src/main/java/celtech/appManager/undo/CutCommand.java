@@ -12,6 +12,7 @@ import celtech.utils.threed.MeshDebug;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
@@ -104,7 +105,7 @@ public class CutCommand extends Command
         } catch (Exception ex)
         {
             cutWorked = false;
-            steno.debug("an error occurred during cutting");
+            steno.exception("an error occurred during cutting ", ex);
             Lookup.getSystemNotificationHandler().showErrorNotification(
                 Lookup.i18n("cutOperation.title"), Lookup.i18n("cutOperation.message"));
         }
@@ -116,52 +117,76 @@ public class CutCommand extends Command
 
         if (modelContainer instanceof ModelGroup)
         {
-            ModelGroup modelGroup = (ModelGroup) modelContainer;
-            Set<ModelContainer> topModelContainers = new HashSet<>();
-            Set<ModelContainer> bottomModelContainers = new HashSet<>();
-            for (ModelContainer descendentModelContainer : modelGroup.getModelsHoldingMeshViews())
-            {
-                List<ModelContainer> modelContainerPair = cutModelContainerAtHeight(
-                    descendentModelContainer, cutHeightValue);
-                topModelContainers.add(modelContainerPair.get(0));
-                bottomModelContainers.add(modelContainerPair.get(1));
-            }
-            ModelGroup topGroup = project.createNewGroupAndAddModelListeners(
-                topModelContainers);
-            ModelGroup bottomGroup = project.createNewGroupAndAddModelListeners(
-                bottomModelContainers);
-            topGroup.setState(modelGroup.getState());
-            topGroup.moveToCentre();
-            topGroup.dropToBed();
-            bottomGroup.translateBy(-20, -20);
-            bottomGroup.setState(modelGroup.getState());
-            bottomGroup.moveToCentre();
-            bottomGroup.dropToBed();
-            bottomGroup.translateBy(20, 20);
-
-            childModelContainers.add(topGroup);
-            childModelContainers.add(bottomGroup);
+            cutGroup(modelContainer, cutHeightValue, childModelContainers);
         } else
         {
-            List<ModelContainer> modelContainerPair = cutModelContainerAtHeight(modelContainer,
-                                                                                cutHeightValue);
-            ModelContainer topModelContainer = modelContainerPair.get(0);
-            ModelContainer bottomModelContainer = modelContainerPair.get(1);
-            bottomModelContainer.moveToCentre();
-            bottomModelContainer.dropToBed();
-            childModelContainers.add(bottomModelContainer);
-            topModelContainer.moveToCentre();
-            topModelContainer.dropToBed();
-            topModelContainer.translateBy(20, 20);
-            childModelContainers.add(topModelContainer);
+            cutSingleModel(modelContainer, cutHeightValue, childModelContainers);
         }
         return childModelContainers;
     }
 
-    private List<ModelContainer> cutModelContainerAtHeight(ModelContainer modelContainer,
+    private void cutSingleModel(ModelContainer modelContainer, float cutHeightValue,
+        List<ModelContainer> childModelContainers)
+    {
+        List<Optional<ModelContainer>> modelContainerPair = cutModelContainerAtHeight(modelContainer,
+                                                                                      cutHeightValue);
+        Optional<ModelContainer> topModelContainer = modelContainerPair.get(0);
+        Optional<ModelContainer> bottomModelContainer = modelContainerPair.get(1);
+        if (bottomModelContainer.isPresent())
+        {
+            bottomModelContainer.get().moveToCentre();
+            bottomModelContainer.get().dropToBed();
+            topModelContainer.get().translateBy(-20, -20);
+            childModelContainers.add(bottomModelContainer.get());
+        } 
+        if (topModelContainer.isPresent())
+        {
+            topModelContainer.get().moveToCentre();
+            topModelContainer.get().dropToBed();
+            topModelContainer.get().translateBy(20, 20);
+            childModelContainers.add(topModelContainer.get());
+        }
+    }
+
+    private void cutGroup(ModelContainer modelContainer, float cutHeightValue,
+        List<ModelContainer> childModelContainers)
+    {
+        ModelGroup modelGroup = (ModelGroup) modelContainer;
+        Set<ModelContainer> topModelContainers = new HashSet<>();
+        Set<ModelContainer> bottomModelContainers = new HashSet<>();
+        for (ModelContainer descendentModelContainer : modelGroup.getModelsHoldingMeshViews())
+        {
+            List<Optional<ModelContainer>> modelContainerPair = cutModelContainerAtHeight(descendentModelContainer,
+                                                                                          cutHeightValue);
+            if (modelContainerPair.get(0).isPresent())
+            {
+                topModelContainers.add(modelContainerPair.get(0).get());
+            }
+            if (modelContainerPair.get(1).isPresent())
+            {
+                bottomModelContainers.add(modelContainerPair.get(1).get());
+            }
+        }
+        ModelGroup topGroup = project.createNewGroupAndAddModelListeners(
+            topModelContainers);
+        ModelGroup bottomGroup = project.createNewGroupAndAddModelListeners(
+            bottomModelContainers);
+        topGroup.setState(modelGroup.getState());
+        topGroup.moveToCentre();
+        topGroup.dropToBed();
+        bottomGroup.translateBy(-20, -20);
+        bottomGroup.setState(modelGroup.getState());
+        bottomGroup.moveToCentre();
+        bottomGroup.dropToBed();
+        bottomGroup.translateBy(20, 20);
+        childModelContainers.add(topGroup);
+        childModelContainers.add(bottomGroup);
+    }
+
+    private List<Optional<ModelContainer>> cutModelContainerAtHeight(ModelContainer modelContainer,
         float cutHeightValue)
     {
-        List<ModelContainer> modelContainerPair = new ArrayList<>();
+        List<Optional<ModelContainer>> modelContainerPair = new ArrayList<>();
 
         cutHeightValue -= modelContainer.getYAdjust();
 
@@ -171,25 +196,32 @@ public class CutCommand extends Command
 
         try
         {
-            List<TriangleMesh> meshPair = MeshCutter2.cut(
+            
+            List<Optional<TriangleMesh>> meshPair = MeshCutter2.cut(
                 (TriangleMesh) modelContainer.getMeshView().getMesh(),
                 cutHeightValue, modelContainer.getBedToLocalConverter());
 
             String modelName = modelContainer.getModelName();
 
             int ix = 1;
-            for (TriangleMesh subMesh : meshPair)
+            for (Optional<TriangleMesh> subMesh : meshPair)
             {
-                MeshView meshView = new MeshView(subMesh);
-                meshView.cullFaceProperty().set(CullFace.NONE);
-                ModelContainer newModelContainer = new ModelContainer(
-                    modelContainer.getModelFile(), meshView);
-                MeshDebug.setDebuggingNode(newModelContainer);
-                newModelContainer.setModelName(modelName + " " + ix);
-                newModelContainer.setState(modelContainer.getState());
-                newModelContainer.getAssociateWithExtruderNumberProperty().set(
-                    modelContainer.getAssociateWithExtruderNumberProperty().get());
-                modelContainerPair.add(newModelContainer);
+                if (subMesh.isPresent())
+                {
+                    MeshView meshView = new MeshView(subMesh.get());
+                    meshView.cullFaceProperty().set(CullFace.NONE);
+                    ModelContainer newModelContainer = new ModelContainer(
+                        modelContainer.getModelFile(), meshView);
+                    MeshDebug.setDebuggingNode(newModelContainer);
+                    newModelContainer.setModelName(modelName + " " + ix);
+                    newModelContainer.setState(modelContainer.getState());
+                    newModelContainer.getAssociateWithExtruderNumberProperty().set(
+                        modelContainer.getAssociateWithExtruderNumberProperty().get());
+                    modelContainerPair.add(Optional.of(newModelContainer));
+                } else
+                {
+                    modelContainerPair.add(Optional.empty());
+                }
 
 //                newModelContainer.getMeshView().setDrawMode(DrawMode.LINE);
                 ix++;

@@ -4,6 +4,7 @@
 package celtech.utils.threed;
 
 import static celtech.utils.threed.MeshCutter2.makePoint3D;
+import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import static celtech.utils.threed.TriangleCutter.reverseFaceNormal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,8 @@ public class OpenFaceCloser
         MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
         TriangleMesh mesh = cutResult.mesh;
+        
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 
 //        MeshDebug.visualiseEdgeLoops(mesh, cutResult.loopsOfVerticesOnOpenFace,
 //                                           bedToLocalConverter);
@@ -110,7 +113,10 @@ public class OpenFaceCloser
 //                    List<ManifoldEdge> edges = MeshCutter2.debugLoopToEdges.get(region.outerLoop);
 //                    debugOutputEdges(cutResult, edges);
                 }
-                boolean orientable = MeshUtils.testMeshIsOrientable(mesh);
+                
+                // speed of test here could be greatly increased by only testing a single face
+                // which is on the border of the new face
+                boolean orientable = MeshUtils.testMeshIsOrientable(mesh, facesWithVertices);
                 if (!orientable)
                 {
                     steno.debug("reverse covering face normals for region");
@@ -118,7 +124,7 @@ public class OpenFaceCloser
                     {
                         reverseFaceNormal(mesh, faceIndex);
                     }
-                    orientable = MeshUtils.testMeshIsOrientable(mesh);
+                    orientable = MeshUtils.testMeshIsOrientable(mesh, facesWithVertices);
                     if (!orientable)
                     {
                         throw new RuntimeException(

@@ -180,17 +180,26 @@ public class MeshUtils
         edges.add(edge3);
         return edges;
     }
+        
+        
+    /**
+     * Test that the mesh is orientable. This means that the winding order for each face is
+     * consistent with its neighbouring faces.
+     */
+    static boolean testMeshIsOrientable(TriangleMesh mesh) {
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
+        return testMeshIsOrientable(mesh, facesWithVertices);
+    }    
 
     /**
      * Test that the mesh is orientable. This means that the winding order for each face is
      * consistent with its neighbouring faces.
      */
-    static boolean testMeshIsOrientable(TriangleMesh mesh)
+    static boolean testMeshIsOrientable(TriangleMesh mesh, Map<Integer, Set<Integer>> facesWithVertices)
     {
         /**
          * Check that for every edge the opposing faces are oriented correctly.
          */
-        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 
         Set<Edge> processedEdges = new HashSet<>();
 
