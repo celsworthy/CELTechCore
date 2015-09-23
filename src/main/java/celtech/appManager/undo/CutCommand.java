@@ -133,6 +133,7 @@ public class CutCommand extends Command
             topGroup.setState(modelGroup.getState());
             topGroup.moveToCentre();
             topGroup.dropToBed();
+            bottomGroup.translateBy(-20, -20);
             bottomGroup.setState(modelGroup.getState());
             bottomGroup.moveToCentre();
             bottomGroup.dropToBed();

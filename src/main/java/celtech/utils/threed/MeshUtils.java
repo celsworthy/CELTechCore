@@ -146,7 +146,7 @@ public class MeshUtils
             return Optional.of(MeshError.MESH_NOT_ORIENTABLE);
         }
 
-        System.out.println("check passed");
+        steno.debug("check passed");
 
         return Optional.empty();
     }
@@ -201,7 +201,6 @@ public class MeshUtils
             int v0 = mesh.getFaces().get(faceIndex * 6);
             int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
             int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-//            System.out.println("check face " + faceIndex + " " + v0 + " " + v1 + " " + v2);
             Set<Edge> edges = getFaceEdges(mesh, faceIndex);
             for (Edge edge : edges)
             {
@@ -229,7 +228,7 @@ public class MeshUtils
                 assert facesWithv0.size() == 1;
                 if (!checkOrientationCompatible(mesh, faceIndex, opposingFaceIndex, edge))
                 {
-                    System.out.println("fails for faces " + faceIndex + " " + opposingFaceIndex
+                    steno.debug("fails for faces " + faceIndex + " " + opposingFaceIndex
                         + " edge " + edge.v0 + " " + edge.v1);
                     return false;
                 }
@@ -295,7 +294,7 @@ public class MeshUtils
         {
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1)
             {
-                System.out.println("problem 01 for face " + faceIndex);
+                steno.debug("problem 01 for face " + faceIndex);
                 printFace(mesh, faceIndex, bedToLocalConverter);
                 int v0 = mesh.getFaces().get(faceIndex * 6);
                 int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
@@ -309,7 +308,7 @@ public class MeshUtils
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
             {
-                System.out.println("problem 12 for face " + faceIndex);
+                steno.debug("problem 12 for face " + faceIndex);
                 printFace(mesh, faceIndex, bedToLocalConverter);
                 int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
                 int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
@@ -322,7 +321,7 @@ public class MeshUtils
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
             {
-                System.out.println("problem 02 for face " + faceIndex);
+                steno.debug("problem 02 for face " + faceIndex);
                 printFace(mesh, faceIndex, bedToLocalConverter);
                 return true;
             }
@@ -336,15 +335,15 @@ public class MeshUtils
         int v0 = mesh.getFaces().get(faceIndex * 6);
         int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
         int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-        System.out.println("v0Local " + getVertex(mesh, v0));
-        System.out.println("v1Local " + getVertex(mesh, v1));
-        System.out.println("v2Local " + getVertex(mesh, v2));
+        steno.debug("v0Local " + getVertex(mesh, v0));
+        steno.debug("v1Local " + getVertex(mesh, v1));
+        steno.debug("v2Local " + getVertex(mesh, v2));
         
         if (bedToLocalConverter != null)
         {
-            System.out.println("v0 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v0)));
-            System.out.println("v1 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v1)));
-            System.out.println("v2 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v2)));
+            steno.debug("v0 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v0)));
+            steno.debug("v1 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v1)));
+            steno.debug("v2 " + bedToLocalConverter.localToBed(makePoint3D(mesh, v2)));
         }
     }
 

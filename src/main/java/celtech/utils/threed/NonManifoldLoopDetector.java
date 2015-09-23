@@ -15,6 +15,8 @@ import java.util.Set;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.util.Pair;
 
 
@@ -25,6 +27,8 @@ import org.apache.commons.math3.util.Pair;
  */
 public class NonManifoldLoopDetector
 {
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        NonManifoldLoopDetector.class.getName());
 
     static enum Direction
     {
@@ -41,7 +45,7 @@ public class NonManifoldLoopDetector
     {
 
         Set<ManifoldEdge> edges = getNonManifoldEdges(mesh, bedToLocalConverter);
-        System.out.println("non manifold edges " + edges.size() + " " + edges);
+//        steno.debug("non manifold edges " + edges.size() + " " + edges);
         Map<Integer, Set<ManifoldEdge>> edgesWithVertex = makeEdgesWithVertex(edges);
 
         Set<List<ManifoldEdge>> loops = new HashSet<>();
@@ -87,10 +91,10 @@ public class NonManifoldLoopDetector
          * some of them do not form a loop. Continuing from this point with unused edges will cause
          * a child model to be an open mesh.
          */
-        System.out.println("unused edges: " + edges.size());
+        steno.debug("unused edges: " + edges.size());
         for (ManifoldEdge unusedEdge : edges)
         {
-            System.out.println(unusedEdge);
+            steno.debug("" + unusedEdge);
         }
 
         return loops;

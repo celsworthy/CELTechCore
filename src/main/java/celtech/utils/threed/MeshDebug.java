@@ -125,11 +125,9 @@ public class MeshDebug
         sphere.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
         if (node != null)
         {
-            System.out.println("show sphere now");
             node.addChildNode(sphere);
         } else
         {
-            System.out.println("show sphere later");
             nodesToShow.add(sphere);
         }
     }
@@ -139,7 +137,6 @@ public class MeshDebug
         MeshDebug.node = node;
         for (Node nodeToShow : nodesToShow)
         {
-            System.out.println("show sphere now");
             node.addChildNode(nodeToShow);
         }
         nodesToShow.clear();
