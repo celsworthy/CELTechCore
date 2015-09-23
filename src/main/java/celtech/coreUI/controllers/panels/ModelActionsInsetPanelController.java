@@ -11,11 +11,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.utils.threed.MeshCutter2;
-import celtech.utils.threed.MeshDebug;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,10 +23,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.shape.CullFace;
-import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -149,8 +141,6 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
                     Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(candidateModel);
                 }
             });
-            
-            
         }
     }
 
@@ -159,120 +149,11 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
     {
         float cutHeightValue = -Float.valueOf(cutHeight.getText());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        ModelContainer modelContainer = modelContainers.iterator().next();
-
-        if (modelContainer instanceof ModelGroup)
-        {
-            ModelGroup modelGroup = (ModelGroup) modelContainer;
-            Set<ModelContainer> topModelContainers = new HashSet<>();
-            Set<ModelContainer> bottomModelContainers = new HashSet<>();
-            for (ModelContainer descendentModelContainer : modelGroup.getModelsHoldingMeshViews())
-            {
-                ModelContainerPair modelContainerPair = cutModelContainerAtHeight(
-                        descendentModelContainer, cutHeightValue);
-                topModelContainers.add(modelContainerPair.topModelContainer);
-                bottomModelContainers.add(modelContainerPair.bottomModelContainer);
-            }
-            ModelGroup topGroup = currentProject.createNewGroupAndAddModelListeners(
-                    topModelContainers);
-            ModelGroup bottomGroup = currentProject.createNewGroupAndAddModelListeners(
-                    bottomModelContainers);
-            topGroup.setState(modelGroup.getState());
-            topGroup.moveToCentre();
-            topGroup.dropToBed();
-            bottomGroup.setState(modelGroup.getState());
-            bottomGroup.moveToCentre();
-            bottomGroup.dropToBed();
-            bottomGroup.translateBy(20, 20);
-
-            currentProject.addModel(topGroup);
-            currentProject.addModel(bottomGroup);
-        } else
-        {
-            ModelContainerPair modelContainerPair = cutModelContainerAtHeight(modelContainer,
-                    cutHeightValue);
-            modelContainerPair.bottomModelContainer.moveToCentre();
-            modelContainerPair.bottomModelContainer.dropToBed();
-            undoableProject.addModel(modelContainerPair.bottomModelContainer);
-            modelContainerPair.topModelContainer.moveToCentre();
-            modelContainerPair.topModelContainer.dropToBed();
-            modelContainerPair.topModelContainer.translateBy(20, 20);
-            undoableProject.addModel(modelContainerPair.topModelContainer);
-        }
+        
+        undoableProject.cut(modelContainers, cutHeightValue);
     }
 
-    class ModelContainerPair
-    {
-
-        final ModelContainer topModelContainer;
-        final ModelContainer bottomModelContainer;
-
-        public ModelContainerPair(ModelContainer topModelContainer,
-                ModelContainer bottomModelContainer)
-        {
-            this.topModelContainer = topModelContainer;
-            this.bottomModelContainer = bottomModelContainer;
-        }
-    }
-
-    private ModelContainerPair cutModelContainerAtHeight(ModelContainer modelContainer,
-            float cutHeightValue)
-    {
-        ModelContainerPair modelContainerPair = null;
-
-        cutHeightValue -= modelContainer.getYAdjust();
-
-        //these transforms must be cleared so that bedToLocal conversions work properly in the cutter.
-        modelContainer.saveAndClearBedTransform();
-        modelContainer.saveAndClearDropToBedYTransform();
-
-        try
-        {
-            List<TriangleMesh> meshPair = MeshCutter2.cut(
-                (TriangleMesh) modelContainer.getMeshView().getMesh(),
-                cutHeightValue, modelContainer.getBedToLocalConverter());
-
-            String modelName = modelContainer.getModelName();
-
-            ModelContainer topModelContainer = null;
-            ModelContainer bottomModelContainer = null;
-            int ix = 1;
-            for (TriangleMesh subMesh : meshPair)
-            {
-                MeshView meshView = new MeshView(subMesh);
-                meshView.cullFaceProperty().set(CullFace.NONE);
-                ModelContainer newModelContainer = new ModelContainer(
-                        modelContainer.getModelFile(), meshView);
-                MeshDebug.setDebuggingNode(newModelContainer);
-                newModelContainer.setModelName(modelName + " " + ix);
-                newModelContainer.setState(modelContainer.getState());
-                newModelContainer.getAssociateWithExtruderNumberProperty().set(
-                        modelContainer.getAssociateWithExtruderNumberProperty().get());
-                if (ix == 1)
-                {
-                    topModelContainer = newModelContainer;
-                } else
-                {
-                    bottomModelContainer = newModelContainer;
-                }
-                
-//                newModelContainer.getMeshView().setDrawMode(DrawMode.LINE);
-                
-                ix++;
-            }
-
-            modelContainerPair = new ModelContainerPair(topModelContainer, bottomModelContainer);
-
-//            undoableProject.deleteModels(modelContainers);
-        } finally
-        {
-            modelContainer.restoreBedTransform();
-            modelContainer.restoreDropToBedYTransform();
-        }
-
-        return modelContainerPair;
-    }
-
+    
     @FXML
     void doApplyMaterial0(ActionEvent event)
     {

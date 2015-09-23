@@ -246,6 +246,13 @@ public class UndoableProject
     {
         Command ungroupCommand = new UngroupCommand(project, modelContainers);
         commandStack.do_(ungroupCommand);
-    }    
+    }   
+    
+    
+    public void cut(Set<ModelContainer> modelContainers, float cutHeightValue)
+    {
+        Command cutCommand = new CutCommand(project, modelContainers, cutHeightValue);
+        commandStack.do_(cutCommand);
+    }
 
 }
