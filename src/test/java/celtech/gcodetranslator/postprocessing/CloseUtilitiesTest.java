@@ -4,12 +4,15 @@ import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
 import celtech.configuration.slicer.NozzleParameters;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
+import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.services.slicer.PrintQualityEnumeration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -20,6 +23,7 @@ import static org.junit.Assert.*;
  */
 public class CloseUtilitiesTest extends JavaFXConfiguredTest
 {
+
     @Test
     public void testFindClosestMovementNode()
     {
@@ -31,13 +35,53 @@ public class CloseUtilitiesTest extends JavaFXConfiguredTest
         Project testProject = new Project();
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-        
-        CloseUtilities closeUtilities = new CloseUtilities(testProject, 
-            testProject.getPrinterSettings().getSettings("RBX01-SM"),
-            "RBX01-SM");
+
+        CloseUtilities closeUtilities = new CloseUtilities(testProject,
+                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+                "RBX01-SM");
+
+        List<SectionNode> sectionsToConsider = new ArrayList<>();
+        sectionsToConsider.add((SectionNode) tool1.getChildren().get(0));
 
         Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
-                ((SectionNode) tool1.getChildren().get(0)));
+                sectionsToConsider);
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
+        assertTrue(result.isPresent());
+        assertSame(tool1.getChildren().get(0).getChildren().get(4), result.get().getClosestNode());
+        assertEquals(1, result.get().getIntersectionPoint().getX(), 0.01);
+        assertEquals(2.5, result.get().getIntersectionPoint().getY(), 0.01);
+    }
+
+    @Test
+    public void testFindClosestMovementNode_multiSection()
+    {
+        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare();
+
+        NozzleParameters nozzleParams = new NozzleParameters();
+        nozzleParams.setEjectionVolume(0.003f);
+
+        Project testProject = new Project();
+        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+
+        CloseUtilities closeUtilities = new CloseUtilities(testProject,
+                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+                "RBX01-SM");
+
+        FillSectionNode fill1 = new FillSectionNode();
+        ExtrusionNode node1 = new ExtrusionNode();
+        node1.getMovement().setX(100);
+        node1.getMovement().setY(100);
+        node1.getExtrusion().setE(3);
+        tool1.addChildAtEnd(fill1);
+
+        List<SectionNode> sectionsToConsider = new ArrayList<>();
+        sectionsToConsider.add((SectionNode) tool1.getChildren().get(0));
+        sectionsToConsider.add(fill1);
+
+        Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4)),
+                sectionsToConsider);
         OutputUtilities output = new OutputUtilities();
         output.outputNodes(tool1, 0);
         assertTrue(result.isPresent());
