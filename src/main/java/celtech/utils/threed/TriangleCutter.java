@@ -12,12 +12,17 @@ import java.util.List;
 import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
  * @author tony
  */
 public class TriangleCutter {
+    
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        TriangleCutter.class.getName());
 
     static final float epsilon = 0.0001f;
 
@@ -58,14 +63,14 @@ public class TriangleCutter {
         for (int i = 0; i < mesh.getPoints().size() / 3; i++) {
             Vertex vertex = getVertex(mesh, i);
             if (vertex.equals(intersectingVertex)) {
-//                System.out.println("vertex already exists at " + i);
+//                steno.debug("vertex already exists at " + i);
                 return i;
             }
         }
 
         mesh.getPoints().addAll((float) intersectingVertex.x, (float) intersectingVertex.y,
                 (float) intersectingVertex.z);
-//        System.out.println("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
+//        steno.debug("add new vertex at index " + (mesh.getPoints().size() / 3 - 1) + " at "
 //                + intersectingVertex);
         return mesh.getPoints().size() / 3 - 1;
     }
@@ -131,21 +136,21 @@ public class TriangleCutter {
 
         Point3D initialNormal = getFaceNormal(mesh, faceIndex);
 
-//        System.out.println("face " + faceIndex + " TB " + topBottom);
+//        steno.debug("face " + faceIndex + " TB " + topBottom);
         int v0 = mesh.getFaces().get(faceIndex * 6);
         int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
         int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
 
-//        System.out.println("v0 " + getVertex(mesh, v0));
-//        System.out.println("v1 " + getVertex(mesh, v1));
-//        System.out.println("v2 " + getVertex(mesh, v2));
+//        steno.debug("v0 " + getVertex(mesh, v0));
+//        steno.debug("v1 " + getVertex(mesh, v1));
+//        steno.debug("v2 " + getVertex(mesh, v2));
         float v0Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v0)).getY();
         float v1Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v1)).getY();
         float v2Height = (float) bedToLocalConverter.localToBed(makePoint3D(mesh, v2)).getY();
 
-//        System.out.println("v0height " + v0Height);
-//        System.out.println("v1height " + v1Height);
-//        System.out.println("v2height " + v2Height);
+//        steno.debug("v0height " + v0Height);
+//        steno.debug("v1height " + v1Height);
+//        steno.debug("v2height " + v2Height);
         // are points below/above cut?
         boolean v0belowCut;
         boolean v1belowCut;
@@ -170,7 +175,7 @@ public class TriangleCutter {
             v2aboveCut = v2Height > cutHeight + epsilon;
         }
 
-//        System.out.println(
+//        steno.debug(
 //            v0belowCut + " " +
 //            v1belowCut + " " +
 //            v2belowCut + " " +
@@ -192,7 +197,7 @@ public class TriangleCutter {
         boolean b12 = (v1belowCut && v2aboveCut) || (v2belowCut && v1aboveCut);
         boolean b02 = (v0belowCut && v2aboveCut) || (v2belowCut && v0aboveCut);
 
-//        System.out.println("b01 b12 b02 " + b01 + " " + b12 + " " + b02);
+//       steno.debug("b01 b12 b02 " + b01 + " " + b12 + " " + b02);
         if (!b01 && !b12 && !b02) {
             //this face is not cut by the mesh
             return;
@@ -207,7 +212,7 @@ public class TriangleCutter {
                 mesh, faceIndex, cutHeight, bedToLocalConverter);
 
         if (vertexIndices.size() == 1) {
-            System.out.println("one vertex on plane");
+            steno.debug("one vertex on plane");
             cutWithOneVertexOnPlane(vertexIndices, v0, v1, v2,
                     v0belowCut, v1belowCut, v2belowCut,
                     mesh, faceIndex, cutHeight, bedToLocalConverter,
@@ -356,13 +361,13 @@ public class TriangleCutter {
             edgeVerticesIndices.add(vertexIndex);
         }
         if (edgeVerticesIndices.size() != 1) {
-            System.out.println("vertices are ");
+            steno.debug("vertices are ");
             v0 = mesh.getFaces().get(faceIndex * 6);
             v1 = mesh.getFaces().get(faceIndex * 6 + 2);
             v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            System.out.println("v0A " + getVertex(mesh, v0));
-            System.out.println("v1A " + getVertex(mesh, v1));
-            System.out.println("v2A " + getVertex(mesh, v2));
+            steno.debug("v0A " + getVertex(mesh, v0));
+            steno.debug("v1A " + getVertex(mesh, v1));
+            steno.debug("v2A " + getVertex(mesh, v2));
 
         }
         assert edgeVerticesIndices.size() == 1 : "edges vertices size is "
@@ -379,40 +384,33 @@ public class TriangleCutter {
                 c0 = v0;
                 c1 = vertexIndexOnPlane;
                 c2 = vertexIndexCutting;
-                System.out.println("A add new face " + c0 + " " + c1 + " " + c2);
             } else {
                 c0 = v0;
                 c1 = vertexIndexCutting;
                 c2 = vertexIndexOnPlane;
-                System.out.println("B add new face " + c0 + " " + c1 + " " + c2);
             }
         } else if (v1belowCut) {
             if (vertexIndexOnPlane == v0) {
                 c0 = vertexIndexOnPlane;
                 c1 = v1;
                 c2 = vertexIndexCutting;
-                System.out.println("C add new face " + c0 + " " + c1 + " " + c2);
             } else {
                 c0 = vertexIndexCutting;
                 c1 = v1;
                 c2 = vertexIndexOnPlane;
-                System.out.println("D add new face " + c0 + " " + c1 + " " + c2);
             }
         } else if (v2belowCut) {
             if (vertexIndexOnPlane == v0) {
                 c0 = vertexIndexOnPlane;
                 c1 = vertexIndexCutting;
                 c2 = v2;
-                System.out.println("E add new face " + c0 + " " + c1 + " " + c2);
             } else {
                 c0 = vertexIndexCutting;
                 c1 = vertexIndexOnPlane;
                 c2 = v2;
-                System.out.println("F add new face " + c0 + " " + c1 + " " + c2);
             }
         }
         int[] vertices = new int[6];
-        System.out.println("add new face " + c0 + " " + c1 + " " + c2);
         vertices[0] = c0;
         vertices[2] = c1;
         vertices[4] = c2;
@@ -442,7 +440,6 @@ public class TriangleCutter {
         } else {
             proportionAlongEdge = (cutHeight - v0Y) / (v1Y - v0Y);
         }
-//        System.out.println("proportion is " + proportionAlongEdge);
         float interX = (float) (v0X + (v1X - v0X) * proportionAlongEdge);
         float interZ = (float) (v0Z + (v1Z - v0Z) * proportionAlongEdge);
 

@@ -18,6 +18,8 @@ import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.util.Pair;
 
 
@@ -27,6 +29,9 @@ import org.apache.commons.math3.util.Pair;
  */
 public class MeshCutter2
 {
+    
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        MeshCutter2.class.getName());
 
     public enum TopBottom
     {
@@ -58,7 +63,7 @@ public class MeshCutter2
         BedToLocalConverter bedToLocalConverter)
     {
 
-        System.out.println("cut at " + cutHeight);
+        steno.debug("cut at " + cutHeight);
 
         CutResult cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter,
                                                TopBottom.TOP);
@@ -70,7 +75,7 @@ public class MeshCutter2
         Optional<MeshUtils.MeshError> error = MeshUtils.validate(topMesh, bedToLocalConverter);
         if (error.isPresent())
         {
-            System.out.println("Error in TOP mesh: " + error.toString());
+            steno.warning("Error in TOP mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
@@ -84,7 +89,7 @@ public class MeshCutter2
         error = MeshUtils.validate(bottomMesh, bedToLocalConverter);
         if (error.isPresent())
         {
-            System.out.println("Error in BOTTOM mesh: " + error.toString());
+            steno.warning("Error in BOTTOM mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
         }
 
@@ -114,7 +119,7 @@ public class MeshCutter2
 
         // XXX remove duplicate vertices before trying to identify non-manifold edges ??
         Set<List<ManifoldEdge>> loops = identifyNonManifoldLoops(childMesh, bedToLocalConverter);
-        System.out.println(loops.size() + " non manifold loops identified");
+        steno.debug(loops.size() + " non manifold loops identified");
 
         // debugging code to visualise non manifold edges and loops that were found
 //        visualiseEdgeLoops(

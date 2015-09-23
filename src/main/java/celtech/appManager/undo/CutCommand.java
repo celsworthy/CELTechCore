@@ -28,7 +28,7 @@ public class CutCommand extends Command
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        UngroupCommand.class.getName());
+        CutCommand.class.getName());
 
     final Project project;
     final float cutHeightValue;

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * CutResult represents one of the two parts of the cut mesh. It is also responsible for identifying
@@ -20,6 +22,9 @@ import javafx.scene.shape.TriangleMesh;
  * @author tony
  */
 class CutResult {
+    
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        CutResult.class.getName());
 
     /**
      * The child mesh that was created by the split.
@@ -52,7 +57,6 @@ class CutResult {
     public Set<LoopSet> identifyOuterLoopsAndInnerLoops() {
         Set<LoopSet> topLevelLoopSets = new HashSet<>();
         for (PolygonIndices polygonIndices : loopsOfVerticesOnOpenFace) {
-            System.out.println("treat loop of size " + polygonIndices.size());
             boolean added = false;
             for (LoopSet loopSet : topLevelLoopSets) {
                 if (loopSet.contains(polygonIndices)) {
@@ -73,7 +77,7 @@ class CutResult {
                 }
                 if (!innerLoopSets.isEmpty()) {
                     LoopSet newLoopSet = new LoopSet(this, polygonIndices, innerLoopSets);
-                    System.out.println("new loop set " + newLoopSet.id + " contains previous top level loopsets " + ids);
+                    steno.debug("new loop set " + newLoopSet.id + " contains previous top level loopsets " + ids);
                     topLevelLoopSets.add(newLoopSet);
                     topLevelLoopSets.removeAll(innerLoopSets);
                     validateLoopSets(topLevelLoopSets);
@@ -81,7 +85,7 @@ class CutResult {
                 }
             }
             if (!added) {
-                System.out.println("new top level");
+                steno.debug("new top level");
                 // polygonIndices is neither in a topLevelLoopSet nor contains a topLevelLoopSet
                 // so create a new toplevelLoopSet.
                 LoopSet newLoopSet = new LoopSet(this, polygonIndices, new HashSet<>());
@@ -225,6 +229,9 @@ class Region {
  * A LoopSet is an outer polygon and a set of contained inner LoopSets.
  */
 class LoopSet {
+    
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        LoopSet.class.getName());
 
     static int nextId = 0;
     int id;
@@ -238,7 +245,7 @@ class LoopSet {
         this.outerLoop = outerLoop;
         this.innerLoopSets = innerLoopSets;
         id = nextId;
-        System.out.println("created loopset " + id);
+        steno.debug("created loopset " + id);
         nextId++;
     }
 
@@ -294,7 +301,7 @@ class LoopSet {
             }
             if (!innerInnerLoopSets.isEmpty()) {
                 LoopSet newLoopSet = new LoopSet(cutResult, polygonIndices, innerInnerLoopSets);
-                System.out.println("new loop set " + newLoopSet.id + " contains previous inner loopsets " + ids + " of loopsets " + id);
+                steno.debug("new loop set " + newLoopSet.id + " contains previous inner loopsets " + ids + " of loopsets " + id);
                 innerLoopSets.add(newLoopSet);
                 innerLoopSets.removeAll(innerInnerLoopSets);
                 added = true;
@@ -304,7 +311,7 @@ class LoopSet {
             // add given polygonIndices as a new inner LoopSet.
             LoopSet newLoopSet = new LoopSet(cutResult, polygonIndices, new HashSet<>());
             innerLoopSets.add(newLoopSet);
-            System.out.println("loopset " + id + " has new inner loop set " + newLoopSet.id);
+            steno.debug("loopset " + id + " has new inner loop set " + newLoopSet.id);
         }
     }
 }

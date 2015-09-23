@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 import org.poly2tri.Poly2Tri;
 import org.poly2tri.geometry.polygon.Polygon;
 import org.poly2tri.geometry.polygon.PolygonPoint;
@@ -29,6 +31,9 @@ import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
  */
 public class OpenFaceCloser
 {
+    
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        OpenFaceCloser.class.getName());
 
     /**
      * Take the given mesh and vertices of the open face, close the face and add the new face to the
@@ -79,13 +84,13 @@ public class OpenFaceCloser
                                                    cutResult.topBottom, facesAdded);
                     } catch (Exception | Error ex)
                     {
-                        System.out.println("attempts = " + attempts);
+                        steno.debug("attempts = " + attempts);
                         attempts++;
                     }
                 }
                 if (attempts == MAX_ATTEMPTS)
                 {
-                    System.out.println("Unable to triangulate");
+                    steno.debug("Unable to triangulate");
                     //                    throw new RuntimeException("Unable to triangulate");
                     
                     // debugging code follows (visualise & also output test code to reproduce
@@ -108,7 +113,7 @@ public class OpenFaceCloser
                 boolean orientable = MeshUtils.testMeshIsOrientable(mesh);
                 if (!orientable)
                 {
-                    System.out.println("reverse covering face normals for region");
+                    steno.debug("reverse covering face normals for region");
                     for (Integer faceIndex : facesAdded)
                     {
                         reverseFaceNormal(mesh, faceIndex);
@@ -225,7 +230,7 @@ public class OpenFaceCloser
             vertexToVertex.put(vertex, vertex);
         }
 
-        System.out.println("add " + outerPolygon.getTriangles().size()
+       steno.debug("add " + outerPolygon.getTriangles().size()
             + " delauney triangles to mesh");
         Set<Integer> outerVerticesUsed = new HashSet<>();
         for (DelaunayTriangle triangle : outerPolygon.getTriangles())
@@ -280,7 +285,7 @@ public class OpenFaceCloser
                 facesAdded.add(addedFaceIndex);
             }
         }
-        System.out.println("Num outer vertices used in triangulation: " + outerVerticesUsed.size());
+        steno.debug("Num outer vertices used in triangulation: " + outerVerticesUsed.size());
     }
 
     private static int makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
@@ -291,7 +296,7 @@ public class OpenFaceCloser
         vertices[2] = meshVertexIndex1;
         vertices[4] = meshVertexIndex2;
         mesh.getFaces().addAll(vertices);
-//        System.out.println("make face " + (mesh.getFaces().size() / 6 - 1));
+//        steno.debug("make face " + (mesh.getFaces().size() / 6 - 1));
         return mesh.getFaces().size() / 6 - 1;
     }
 
@@ -313,7 +318,7 @@ public class OpenFaceCloser
         if (!vertexToVertex.containsKey(vertex))
         {
             int vertexIndex = TriangleCutter.addNewOrGetVertex(mesh, localVertex);
-            System.out.println("XXXX new V");
+            steno.debug("triangulation new Vertex");
             vertex.meshVertexIndex = vertexIndex;
             vertexToVertex.put(vertex, vertex);
             return vertex;
