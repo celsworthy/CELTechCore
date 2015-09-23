@@ -100,7 +100,7 @@ public class SerialDeviceDetector implements DeviceDetector
             steno.error("Error " + ex);
         }
 
-        ArrayList<DetectedPrinter> detectedPrinters = null;
+        List<DetectedPrinter> detectedPrinters = new ArrayList<>();
 
         if (outputBuffer.length() > 0)
         {

@@ -3,6 +3,7 @@
  */
 package celtech.appManager.undo;
 
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
@@ -33,6 +34,7 @@ public class CutCommand extends Command
     final float cutHeightValue;
     final Set<ModelContainer> modelContainers;
     final Set<ModelContainer> childModelContainers = new HashSet<>();
+    boolean cutWorked = false;
 
     public CutCommand(Project project, Set<ModelContainer> modelContainers, float cutHeightValue)
     {
@@ -50,21 +52,27 @@ public class CutCommand extends Command
     @Override
     public void undo()
     {
-        for (ModelContainer modelContainer : modelContainers)
+        if (cutWorked)
         {
-            project.addModel(modelContainer);
+            for (ModelContainer modelContainer : modelContainers)
+            {
+                project.addModel(modelContainer);
+            }
+            project.removeModels(childModelContainers);
         }
-        project.removeModels(childModelContainers);
     }
 
     @Override
     public void redo()
     {
-        for (ModelContainer modelContainer : childModelContainers)
+        if (cutWorked)
         {
-            project.addModel(modelContainer);
+            for (ModelContainer modelContainer : childModelContainers)
+            {
+                project.addModel(modelContainer);
+            }
+            project.removeModels(modelContainers);
         }
-        project.removeModels(modelContainers);
     }
 
     @Override
@@ -92,9 +100,13 @@ public class CutCommand extends Command
                 project.addModel(childModelContainer);
             }
             project.removeModels(modelContainers);
-        } catch (Error | Exception ex)
+            cutWorked = true;
+        } catch (Exception ex)
         {
-            System.out.println("an error occurred during cutting");
+            cutWorked = false;
+            steno.debug("an error occurred during cutting");
+            Lookup.getSystemNotificationHandler().showErrorNotification(
+                Lookup.i18n("cutOperation.title"), Lookup.i18n("cutOperation.message"));
         }
     }
 

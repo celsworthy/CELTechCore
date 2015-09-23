@@ -37,6 +37,7 @@ public class CopyModelsCommand extends Command
         for (ModelContainer modelContainer : modelContainers)
         {
             ModelContainer newModel = modelContainer.makeCopy();
+            newModel.translateBy(20, 20);
             newModelContainers.add(newModel);
         }
         redo();
