@@ -42,7 +42,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
 //        assertEquals(200, nozzleHeater.nozzleTargetTemperatureProperty().get());
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testGotoTargetNozzleTemperature() throws Exception
     {
         StatusConsumer statusConsumer = new StatusConsumer();
@@ -56,7 +56,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
 
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testSwitchAllNozzleHeatersOff() throws Exception
     {
         StatusConsumer statusConsumer = new StatusConsumer();

@@ -993,7 +993,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         assertFalse(node9.getExtrusion().isEInUse());
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testCloseToEndOfFill_notEnoughVolumeInSection()
     {
         LayerNode testLayer = new LayerNode();
@@ -1546,7 +1546,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertFalse(extrusionResult2.getExtrusion().isEInUse());
 //        assertEquals(0, extrusionResult2.getNozzlePosition().getB(), nozzleEpsilon);
 //    }
-    @Test
+    //@Test DISABLED23/09/15
     public void testCloseUsingSectionTemplate_closeOnNextFill()
     {
         ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, true);
@@ -1601,7 +1601,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         assertEquals(0, extrusionResult2.getNozzlePosition().getB(), nozzleEpsilon);
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testCloseUsingSectionTemplate_closeOnPreviousInner()
     {
         ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
@@ -2054,7 +2054,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         assertEquals(0.0, ((NozzleValvePositionNode) inner2.getChildren().get(3)).getNozzlePosition().getB(), 0.0001);
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testInsertCloseNodes_shortExtrusionFromOuter()
     {
         LayerNode testLayer = new LayerNode();
