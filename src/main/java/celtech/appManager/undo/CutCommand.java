@@ -29,9 +29,10 @@ public class CutCommand extends Command
     private final Stenographer steno = StenographerFactory.getStenographer(
         UngroupCommand.class.getName());
 
-    Project project;
-    private final float cutHeightValue;
-    Set<ModelContainer> modelContainers;
+    final Project project;
+    final float cutHeightValue;
+    final Set<ModelContainer> modelContainers;
+    final Set<ModelContainer> childModelContainers = new HashSet<>();
 
     public CutCommand(Project project, Set<ModelContainer> modelContainers, float cutHeightValue)
     {
@@ -43,19 +44,27 @@ public class CutCommand extends Command
     @Override
     public void do_()
     {
-        redo();
+        multiCut(modelContainers, cutHeightValue);
     }
 
     @Override
     public void undo()
     {
-
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            project.addModel(modelContainer);
+        }
+        project.removeModels(childModelContainers);
     }
 
     @Override
     public void redo()
     {
-        multiCut(modelContainers, cutHeightValue);
+        for (ModelContainer modelContainer : childModelContainers)
+        {
+            project.addModel(modelContainer);
+        }
+        project.removeModels(modelContainers);
     }
 
     @Override
@@ -72,14 +81,13 @@ public class CutCommand extends Command
 
     private void multiCut(Set<ModelContainer> modelContainers, float cutHeightValue)
     {
-        List<ModelContainer> allChildModelContainers = new ArrayList<>();
         try
         {
             for (ModelContainer modelContainer : modelContainers)
             {
-                allChildModelContainers.addAll(cut(modelContainer, cutHeightValue));
+                childModelContainers.addAll(cut(modelContainer, cutHeightValue));
             }
-            for (ModelContainer childModelContainer : allChildModelContainers)
+            for (ModelContainer childModelContainer : childModelContainers)
             {
                 project.addModel(childModelContainer);
             }
@@ -182,19 +190,4 @@ public class CutCommand extends Command
         return modelContainerPair;
     }
 
-}
-
-
-class ModelContainerPair
-{
-
-    final ModelContainer topModelContainer;
-    final ModelContainer bottomModelContainer;
-
-    public ModelContainerPair(ModelContainer topModelContainer,
-        ModelContainer bottomModelContainer)
-    {
-        this.topModelContainer = topModelContainer;
-        this.bottomModelContainer = bottomModelContainer;
-    }
 }

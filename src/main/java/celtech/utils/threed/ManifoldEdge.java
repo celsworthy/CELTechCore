@@ -77,7 +77,7 @@ final class ManifoldEdge
     @Override
     public String toString()
     {
-        return "ManifoldEdge{" + "v1=" + v1 + ", point0=" + point0 + ", point1=" + point1 + '}';
+        return "ManifoldEdge{faceIndex " + faceIndex + ",v0=" + v0 + ",v1=" + v1 + ", point0=" + point0 + ", point1=" + point1 + '}';
     }
 
     @Override

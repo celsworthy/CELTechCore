@@ -59,15 +59,15 @@ public class NonManifoldLoopDetectorTest
         TriangleMesh mesh = createSimpleCubeWithMissingFace();
         Set<ManifoldEdge> edges = NonManifoldLoopDetector.getNonManifoldEdges(mesh,
                                                                               nullBedToLocalConverter);
-
+        
         Set<ManifoldEdge> expectedEdges = new HashSet<>();
         Point3D point0InBed = MeshCutter2.makePoint3D(mesh, 0);
         Point3D point1InBed = MeshCutter2.makePoint3D(mesh, 1);
         Point3D point2InBed = MeshCutter2.makePoint3D(mesh, 2);
 
-        expectedEdges.add(new ManifoldEdge(0, 1, point0InBed, point1InBed, 3));
-        expectedEdges.add(new ManifoldEdge(1, 2, point1InBed, point2InBed, 3));
-        expectedEdges.add(new ManifoldEdge(0, 2, point0InBed, point2InBed, 3));
+        expectedEdges.add(new ManifoldEdge(0, 1, point0InBed, point1InBed, 1));
+        expectedEdges.add(new ManifoldEdge(1, 2, point1InBed, point2InBed, 4));
+        expectedEdges.add(new ManifoldEdge(0, 2, point0InBed, point2InBed, 0));
 
         assertEquals(expectedEdges, edges);
     }
@@ -178,15 +178,15 @@ public class NonManifoldLoopDetectorTest
             System.out.println("XXXX");
             for (ManifoldEdge edge : loop)
             {
-                System.out.println(edge.v0 + "->" + edge.v1);
+                System.out.println(edge);
             }
         }
         assertEquals(1, loops.size());
 
         List<ManifoldEdge> expectedLoop = new ArrayList<>();
-        expectedLoop.add(new ManifoldEdge(0, 1, null, null, 3));
-        expectedLoop.add(new ManifoldEdge(0, 2, null, null, 3));
-        expectedLoop.add(new ManifoldEdge(2, 1, null, null, 3));
+        expectedLoop.add(new ManifoldEdge(0, 1, null, null, 1));
+        expectedLoop.add(new ManifoldEdge(0, 2, null, null, 0));
+        expectedLoop.add(new ManifoldEdge(2, 1, null, null, 4));
 
         assertEquals(expectedLoop, loops.iterator().next());
     }
@@ -301,7 +301,7 @@ public class NonManifoldLoopDetectorTest
     }
 
     /**
-     * This test was taken from cutting the eiffel tower (at 45 degree lean) at 51. It shows
+     * This test was taken from cutting the repaired Eiffel tower (at 45 degree lean) at 51. It shows
      * some strangely ordered vertices, which prevent triangulation.
      */
     @Test
