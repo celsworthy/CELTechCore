@@ -3,7 +3,7 @@
  */
 package celtech.utils.threed;
 
-import celtech.utils.threed.MeshCutter.BedToLocalConverter;
+import celtech.utils.threed.MeshCutter2.BedToLocalConverter;
 import static celtech.utils.threed.MeshUtils.copyMesh;
 import static celtech.utils.threed.TriangleCutter.getFaceNormal;
 import static celtech.utils.threed.TriangleCutter.reverseLastFaceNormal;
@@ -130,9 +130,9 @@ public class TriangleCutterTest
         return mesh;
     }
 
-    public static MeshCutter.BedToLocalConverter makeNullConverter()
+    public static MeshCutter2.BedToLocalConverter makeNullConverter()
     {
-        MeshCutter.BedToLocalConverter nullBedToLocalConverter = new MeshCutter.BedToLocalConverter()
+        MeshCutter2.BedToLocalConverter nullBedToLocalConverter = new MeshCutter2.BedToLocalConverter()
         {
 
             @Override
@@ -163,7 +163,7 @@ public class TriangleCutterTest
             Set<Integer> facesToRemove = new HashSet<>();
             splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                             faceIndex, cutHeight, makeNullConverter(),
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
 
         }
 
@@ -181,7 +181,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
-                                        MeshCutter.TopBottom.BOTTOM);
+                                        MeshCutter2.TopBottom.BOTTOM);
 
         assertEquals(12, childMesh.getFaces().size() / 6);
 
@@ -209,7 +209,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
-                                        MeshCutter.TopBottom.BOTTOM);
+                                        MeshCutter2.TopBottom.BOTTOM);
 
         assertEquals(13, childMesh.getFaces().size() / 6);
 
@@ -236,7 +236,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
-                                        MeshCutter.TopBottom.TOP);
+                                        MeshCutter2.TopBottom.TOP);
 
         assertEquals(14, childMesh.getFaces().size() / 6);
 
@@ -273,7 +273,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
-                                        MeshCutter.TopBottom.BOTTOM);
+                                        MeshCutter2.TopBottom.BOTTOM);
 
         assertEquals(17, childMesh.getFaces().size() / 6);
 
@@ -301,7 +301,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, makeNullConverter(),
-                                        MeshCutter.TopBottom.TOP);
+                                        MeshCutter2.TopBottom.TOP);
 
         assertEquals(17, childMesh.getFaces().size() / 6);
 
@@ -330,7 +330,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, bedToLocalConverter,
-                                        MeshCutter.TopBottom.BOTTOM);
+                                        MeshCutter2.TopBottom.BOTTOM);
 
         assertEquals(13, childMesh.getFaces().size() / 6);
 
@@ -371,7 +371,7 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, bedToLocalConverter,
-                                        MeshCutter.TopBottom.TOP);
+                                        MeshCutter2.TopBottom.TOP);
 
         assertEquals(14, childMesh.getFaces().size() / 6);
 
@@ -405,7 +405,7 @@ public class TriangleCutterTest
         Optional<MeshUtils.MeshError> error = MeshUtils.validate(mesh);
         Assert.assertFalse(error.isPresent());
 
-        MeshCutter.BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
+        MeshCutter2.BedToLocalConverter nullBedToLocalConverter = makeNullConverter();
 
         TriangleMesh childMesh = copyMesh(mesh);
 
@@ -414,12 +414,12 @@ public class TriangleCutterTest
         Set<Integer> facesToRemove = new HashSet<>();
         splitFaceAndAddLowerFacesToMesh(childMesh, facesToRemove,
                                         faceIndex, cutHeight, nullBedToLocalConverter,
-                                        MeshCutter.TopBottom.TOP);
+                                        MeshCutter2.TopBottom.TOP);
     }
 
     private BedToLocalConverter makeLateralConverter()
     {
-        MeshCutter.BedToLocalConverter bedToLocalConverter = new MeshCutter.BedToLocalConverter()
+        MeshCutter2.BedToLocalConverter bedToLocalConverter = new MeshCutter2.BedToLocalConverter()
         {
 
             @Override

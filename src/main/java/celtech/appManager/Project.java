@@ -563,13 +563,6 @@ public class Project implements Serializable
         return printerSettings;
     }
 
-    public void copyModel(ModelContainer modelContainer)
-    {
-        ModelContainer copy = modelContainer.makeCopy();
-        addModel(copy);
-        copy.translateBy(20, 20);
-    }
-
     public void addModel(ModelContainer modelContainer)
     {
         topLevelModels.add(modelContainer);
@@ -580,7 +573,6 @@ public class Project implements Serializable
         {
             addModelListeners(childModelContainer);
         }
-
     }
 
     private void fireWhenModelAdded(ModelContainer modelContainer)

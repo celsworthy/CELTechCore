@@ -15,6 +15,8 @@ import java.util.Set;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.shape.TriangleMesh;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.util.Pair;
 
 
@@ -25,6 +27,8 @@ import org.apache.commons.math3.util.Pair;
  */
 public class NonManifoldLoopDetector
 {
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+        NonManifoldLoopDetector.class.getName());
 
     static enum Direction
     {
@@ -32,12 +36,16 @@ public class NonManifoldLoopDetector
         FORWARDS, BACKWARDS;
     }
 
+    /**
+     * For the given mesh, identify the non-manifold edges and then determine the 
+     * topological loops of edges based on shared vertices, returning to the start vertex.
+     */
     public static Set<List<ManifoldEdge>> identifyNonManifoldLoops(TriangleMesh mesh,
-        MeshCutter.BedToLocalConverter bedToLocalConverter)
+        MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
 
         Set<ManifoldEdge> edges = getNonManifoldEdges(mesh, bedToLocalConverter);
-        System.out.println("non manifold edges " + edges.size() + " " + edges);
+//        steno.debug("non manifold edges " + edges.size() + " " + edges);
         Map<Integer, Set<ManifoldEdge>> edgesWithVertex = makeEdgesWithVertex(edges);
 
         Set<List<ManifoldEdge>> loops = new HashSet<>();
@@ -65,6 +73,7 @@ public class NonManifoldLoopDetector
 
         loops = removeIdenticalLoops(loops);
         loops = removeLoopsWithChords(loops, edgesWithVertex);
+        loops = removeLoopsWithZeroArea(loops);
 
         validateLoops(loops);
 
@@ -77,10 +86,15 @@ public class NonManifoldLoopDetector
             }
         }
         edges.removeAll(usedEdges);
-        System.out.println("unused edges: " + edges.size());
+        /**
+         * Debugging: unused edges indicate a problem in the topology of the non-manifold edges:
+         * some of them do not form a loop. Continuing from this point with unused edges will cause
+         * a child model to be an open mesh.
+         */
+        steno.debug("unused edges: " + edges.size());
         for (ManifoldEdge unusedEdge : edges)
         {
-            System.out.println(unusedEdge);
+            steno.debug("" + unusedEdge);
         }
 
         return loops;
@@ -104,6 +118,10 @@ public class NonManifoldLoopDetector
         return true;
     }
 
+    /**
+     * For the given direction along the edge(forwards or backwards) try walking the connected edges
+     * and if it returns to the starting vertex then return the list of edges as a loop.
+     */
     static Optional<List<ManifoldEdge>> getLoopForEdgeInDirection(
         ManifoldEdge edge, Map<Integer, Set<ManifoldEdge>> edgesWithVertex, Direction direction)
     {
@@ -117,7 +135,6 @@ public class NonManifoldLoopDetector
 
         List<ManifoldEdge> loop = new ArrayList<>();
 
-        ManifoldEdge firstEdge = edge;
         ManifoldEdge previousEdge = edge;
         int previousVertexId;
         int firstVertexId;
@@ -130,7 +147,7 @@ public class NonManifoldLoopDetector
             previousVertexId = previousEdge.v0;
             firstVertexId = previousEdge.v1;
         }
-        
+
         Set<Integer> vertexIndices = new HashSet<>();
         vertexIndices.add(firstVertexId);
 
@@ -182,7 +199,8 @@ public class NonManifoldLoopDetector
                 assert false;
                 return Optional.empty();
             }
-            if (vertexIndices.contains(nextVertexId)) {
+            if (vertexIndices.contains(nextVertexId))
+            {
                 return Optional.empty();
             }
             if (nextEdge.isVisited(nextDirection))
@@ -198,6 +216,10 @@ public class NonManifoldLoopDetector
         return Optional.of(loop);
     }
 
+    /**
+     * For the edges that come into this vertex, other than the previous edge, return the edge that
+     * is most clockwise to the previous edge.
+     */
     static ManifoldEdge getRightmostEdge(int previousVertexId,
         ManifoldEdge previousEdge, Set<ManifoldEdge> availableEdges)
     {
@@ -265,6 +287,9 @@ public class NonManifoldLoopDetector
         return rightmostEdge;
     }
 
+    /**
+     * Make the map of vertexIndex to the edges that connect to it.
+     */
     static Map<Integer, Set<ManifoldEdge>> makeEdgesWithVertex(Set<ManifoldEdge> edges)
     {
         Map<Integer, Set<ManifoldEdge>> edgesWithVertex = new HashMap<>();
@@ -304,6 +329,10 @@ public class NonManifoldLoopDetector
         return uniqueLoops;
     }
 
+    /**
+     * Remove loops that have a chord (another edge) cutting across them. These occur as a
+     * consequence of the maze-walk algorithm going around the outside perimeter of a chorded loop.
+     */
     static Set<List<ManifoldEdge>> removeLoopsWithChords(Set<List<ManifoldEdge>> loops,
         Map<Integer, Set<ManifoldEdge>> edgesWithVertex)
     {
@@ -319,6 +348,49 @@ public class NonManifoldLoopDetector
         return loopsWithChords;
     }
 
+    static Set<List<ManifoldEdge>> removeLoopsWithZeroArea(Set<List<ManifoldEdge>> loops)
+    {
+        Set<List<ManifoldEdge>> loopsWithZeroArea = new HashSet<>();
+        for (List<ManifoldEdge> loop : loops)
+        {
+            if (loopHasZeroArea(loop))
+            {
+                continue;
+            }
+            loopsWithZeroArea.add(loop);
+        }
+        return loopsWithZeroArea;
+    }
+
+    private static boolean loopHasZeroArea(List<ManifoldEdge> loop)
+    {
+        Pair<PolygonIndices, List<Point3D>> pair = MeshCutter2.convertEdgesToPolygonIndices(loop);
+        List<Point3D> points3D = pair.getSecond();
+        Point[] points = new Point[points3D.size()];
+        for (int k = 0; k < points.length; k++)
+        {
+            points[k] = new Point(points3D.get(k).getX(), points3D.get(k).getZ());
+        }
+        return (getPolygonArea(points) == 0);
+    }
+
+    static double getPolygonArea(Point[] polygon)
+    {
+        int N = polygon.length;
+
+        int i;
+        int j;
+        double area = 0;
+        for (i = 0; i < N; i++)
+        {
+            j = (i + 1) % N;
+            area += polygon[i].x * polygon[j].y;
+            area -= polygon[i].y * polygon[j].x;
+        }
+        area /= 2;
+        return area < 0 ? -area : area;
+    }
+
     static boolean loopHasChord(List<ManifoldEdge> loop,
         Map<Integer, Set<ManifoldEdge>> edgesWithVertex)
     {
@@ -327,19 +399,21 @@ public class NonManifoldLoopDetector
          * loop. If the centre-point of the edge is contained by the loop then this edge is on a
          * chord.
          */
-        Pair<PolygonIndices,List<Point3D>> pair = MeshCutter2.convertEdgesToPolygonIndices(loop);
+        Pair<PolygonIndices, List<Point3D>> pair = MeshCutter2.convertEdgesToPolygonIndices(loop);
         PolygonIndices vertexIndices = pair.getFirst();
         List<Point3D> points3D = pair.getSecond();
         Point[] points = new Point[points3D.size()];
-        for (int k = 0; k < points.length; k++) {
+        for (int k = 0; k < points.length; k++)
+        {
             points[k] = new Point(points3D.get(k).getX(), points3D.get(k).getZ());
         }
         for (Integer vertexIndex : vertexIndices)
         {
             Set<ManifoldEdge> edgesIntoVertex = new HashSet(edgesWithVertex.get(vertexIndex));
             edgesIntoVertex.removeAll(loop);
-            if (!edgesIntoVertex.isEmpty()) {
-                
+            if (!edgesIntoVertex.isEmpty())
+            {
+
                 for (ManifoldEdge edge : edgesIntoVertex)
                 {
                     Point3D point0 = edge.point0;
@@ -347,19 +421,20 @@ public class NonManifoldLoopDetector
                     Point edgeCentrePoint = new Point(
                         (point0.getX() + point1.getX()) / 2d,
                         (point0.getZ() + point1.getZ()) / 2d);
-                    if (CutResult.contains(edgeCentrePoint, points)) {
+                    if (CutResult.contains(edgeCentrePoint, points))
+                    {
                         return true;
                     }
                 }
             }
         }
-        
+
         return false;
 
     }
-    
+
     static Set<ManifoldEdge> getNonManifoldEdges(TriangleMesh mesh,
-        MeshCutter.BedToLocalConverter bedToLocalConverter)
+        MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
         Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
         Set<ManifoldEdge> nonManifoldEdges = new HashSet<>();
@@ -368,22 +443,22 @@ public class NonManifoldLoopDetector
             int v0 = mesh.getFaces().get(faceIndex * 6);
             int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
             int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            
-            Point3D point0InBed = bedToLocalConverter.localToBed(MeshCutter.makePoint3D(mesh, v0));
-            Point3D point1InBed = bedToLocalConverter.localToBed(MeshCutter.makePoint3D(mesh, v1));
-            Point3D point2InBed = bedToLocalConverter.localToBed(MeshCutter.makePoint3D(mesh, v2));
-            
+
+            Point3D point0InBed = bedToLocalConverter.localToBed(MeshCutter2.makePoint3D(mesh, v0));
+            Point3D point1InBed = bedToLocalConverter.localToBed(MeshCutter2.makePoint3D(mesh, v1));
+            Point3D point2InBed = bedToLocalConverter.localToBed(MeshCutter2.makePoint3D(mesh, v2));
+
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 1) != 1)
             {
-                nonManifoldEdges.add(new ManifoldEdge(v0, v1, point0InBed, point1InBed));
+                nonManifoldEdges.add(new ManifoldEdge(v0, v1, point0InBed, point1InBed, faceIndex));
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 1, 2) != 1)
             {
-                nonManifoldEdges.add(new ManifoldEdge(v1, v2, point1InBed, point2InBed));
+                nonManifoldEdges.add(new ManifoldEdge(v1, v2, point1InBed, point2InBed, faceIndex));
             }
             if (countFacesAdjacentToVertices(mesh, facesWithVertices, faceIndex, 0, 2) != 1)
             {
-                nonManifoldEdges.add(new ManifoldEdge(v0, v2, point0InBed, point2InBed));
+                nonManifoldEdges.add(new ManifoldEdge(v0, v2, point0InBed, point2InBed, faceIndex));
             }
         }
 

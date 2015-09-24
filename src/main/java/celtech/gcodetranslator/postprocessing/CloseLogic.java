@@ -93,11 +93,11 @@ public class CloseLogic
         if (!(sectionContainingNodeToAppendClosesTo instanceof OuterPerimeterSectionNode)
                 && !(sectionContainingNodeToAppendClosesTo instanceof InnerPerimeterSectionNode))
         {
-            closeResult = closeToEndOfExtrusion(sectionsToConsider, nodeToAppendClosesTo, nozzleInUse, false);
+            closeResult = closeToEndOfExtrusion(sectionsToConsider, nozzleInUse, false);
             failedToCloseOverNonPerimeter = !closeResult.isPresent();
         }
 
-        if (closeResult == null)
+        if (!closeResult.isPresent())
         {
             if (failedToCloseOverNonPerimeter)
             {
@@ -532,19 +532,14 @@ public class CloseLogic
      */
     protected Optional<CloseResult> closeToEndOfExtrusion(
             final List<SectionNode> sectionsToConsider,
-            final GCodeEventNode node,
             final NozzleProxy nozzleInUse,
             final boolean allowCloseOverPerimeter)
     {
         Optional<CloseResult> closeResult = Optional.empty();
 
-        SectionNode thisSection = (SectionNode) (node.getParent().get());
-
         float extrusionInSection = 0;
 
-        extrusionInSection += thisSection.getTotalExtrusion();
-
-        //Now go back through my sibling sections looking for more extrusion...
+        //Go back through the sections looking for extrusion...
         for (int sectionCounter = sectionsToConsider.size() - 1; sectionCounter >= 0; sectionCounter--)
         {
             SectionNode sectionNode = sectionsToConsider.get(sectionCounter);
@@ -1032,7 +1027,7 @@ public class CloseLogic
     }
 
     protected Optional<CloseResult> insertNozzleCloses(RetractNode retractNode, final NozzleProxy nozzleInUse)
-            throws NodeProcessingException
+            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException
     {
         Optional<CloseResult> closeResult = null;
 
@@ -1040,7 +1035,7 @@ public class CloseLogic
         nozzleInUse.setCurrentPosition(1.0);
         if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
         {
-//            closeResult = insertProgressiveNozzleClose(retractNode.getSectionsToConsider(), retractNode.getPriorExtrusionNode(), nozzleInUse);
+            closeResult = insertProgressiveNozzleClose(retractNode.getSectionsToConsider(), retractNode.getPriorExtrusionNode(), nozzleInUse);
         } else
         {
             closeResult = insertNozzleCloseFullyAfterEvent(retractNode.getPriorExtrusionNode(), nozzleInUse);

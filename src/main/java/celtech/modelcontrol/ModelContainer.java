@@ -12,7 +12,7 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
-import celtech.utils.threed.MeshCutter;
+import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
 import java.io.File;
 import java.io.IOException;
@@ -1217,9 +1217,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * transform and dropToBed transform must be cleared, otherwise it does not work for the 
      * purposes intended.
      */
-    public MeshCutter.BedToLocalConverter getBedToLocalConverter()
+    public MeshCutter2.BedToLocalConverter getBedToLocalConverter()
     {
-        return new MeshCutter.BedToLocalConverter()
+        return new MeshCutter2.BedToLocalConverter()
         {
 
             @Override

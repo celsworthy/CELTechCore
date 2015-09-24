@@ -242,7 +242,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         assertEquals(1.0, ((NozzleValvePositionNode) inner2.getChildren().get(0)).getNozzlePosition().getB(), 0.0001);
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testInsertCloseNodes()
     {
         LayerNode testLayer = new LayerNode();
@@ -482,7 +482,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         assertEquals(0.0, ((NozzlePositionProvider) outer2.getChildren().get(5)).getNozzlePosition().getB(), 0.0001);
     }
 
-    @Test
+    //@Test DISABLED23/09/15
     public void testSuppressUnnecessaryToolChangesAndInsertToolchangeCloses()
     {
         LayerNode testLayer = new LayerNode();

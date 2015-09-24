@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class CutResultTest
 {
 
-    MeshCutter.BedToLocalConverter nullConverter = new MeshCutter.BedToLocalConverter()
+    MeshCutter2.BedToLocalConverter nullConverter = new MeshCutter2.BedToLocalConverter()
     {
 
         @Override
@@ -145,7 +145,7 @@ public class CutResultTest
         loops.add(outerLoop);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
     }
@@ -163,7 +163,7 @@ public class CutResultTest
         loops.add(outerLoop2);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, nestedPolygonSets.size());
     }
@@ -181,7 +181,7 @@ public class CutResultTest
         loops.add(outerLoop3);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> nestedLoopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedLoopSets.size());
         LoopSet nestedLoopSet = nestedLoopSets.iterator().next();
@@ -201,7 +201,7 @@ public class CutResultTest
         loops.add(outerLoop3);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> nestedPolygonSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, nestedPolygonSets.size());
         LoopSet loopSet = nestedPolygonSets.iterator().next();
@@ -218,7 +218,7 @@ public class CutResultTest
         loops.add(outerLoop);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
         Set<Region> regions = loopSets.iterator().next().getRegions();
@@ -240,7 +240,7 @@ public class CutResultTest
         loops.add(outerLoop3);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
         LoopSet loopSet = loopSets.iterator().next();
@@ -263,7 +263,7 @@ public class CutResultTest
         loops.add(outerLoop2);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, loopSets.size());
         for (LoopSet loopSet : loopSets)
@@ -293,7 +293,7 @@ public class CutResultTest
         loops.add(outerLoop4);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(2, loopSets.size());
         for (LoopSet loopSet : loopSets)
@@ -321,7 +321,7 @@ public class CutResultTest
         loops.add(outerLoop5);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
         LoopSet loopSet = loopSets.iterator().next();
@@ -346,7 +346,7 @@ public class CutResultTest
         loops.add(outerLoop6);
 
         CutResult cutResult = new CutResult(triangleMesh, loops, nullConverter,
-                                            MeshCutter.TopBottom.BOTTOM);
+                                            MeshCutter2.TopBottom.BOTTOM);
         Set<LoopSet> loopSets = cutResult.identifyOuterLoopsAndInnerLoops();
         assertEquals(1, loopSets.size());
         LoopSet loopSet = loopSets.iterator().next();
