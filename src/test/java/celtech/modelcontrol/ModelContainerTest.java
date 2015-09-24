@@ -5,6 +5,7 @@ package celtech.modelcontrol;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.TestUtils;
+import celtech.appManager.Project;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
@@ -465,5 +466,27 @@ public class ModelContainerTest extends JavaFXConfiguredTest
         assertEquals(0, point3D.getX(), 0.0001);
         assertEquals(0, point3D.getZ(), 0.0001);
     }    
+    
+    @Test
+    public void testGetMaxAndMinYInBedCoords() throws InterruptedException, ExecutionException {
+        ModelContainer pyramidModel = loadSTL("/pyramid1.stl");
+        List<Float> maxMin = pyramidModel.getMaxAndMinYInBedCoords();
+        assertEquals(0, maxMin.get(0), 0.001);
+        assertEquals(-20, maxMin.get(1), 0.001);
+        
+        Project project = new Project();
+        project.addModel(pyramidModel);
+        
+        Set<ModelContainer> modelContainers  = new HashSet<>();
+        modelContainers.add(pyramidModel);
+        ModelGroup group = project.group(modelContainers);
+        group.setXScale(1.5);
+        group.setYScale(1.5);
+        group.setZScale(1.5);
+        
+        maxMin = pyramidModel.getMaxAndMinYInBedCoords();
+        assertEquals(0, maxMin.get(0), 0.001);
+        assertEquals(-30, maxMin.get(1), 0.001);
+    }
 
 }

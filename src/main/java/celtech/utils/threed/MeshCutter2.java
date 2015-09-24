@@ -60,13 +60,13 @@ public class MeshCutter2
     /**
      * Cut the given mesh into two, at the given height.
      */
-    public static List<Optional<TriangleMesh>> cut(TriangleMesh mesh, float cutHeight,
+    public static List<TriangleMesh> cut(TriangleMesh mesh, float cutHeight,
         BedToLocalConverter bedToLocalConverter)
     {
 
         steno.debug("cut at " + cutHeight);
 
-        List<Optional<TriangleMesh>> meshes = new ArrayList<>();
+        List<TriangleMesh> meshes = new ArrayList<>();
 
         CutResult cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter,
                                                TopBottom.TOP);
@@ -81,7 +81,7 @@ public class MeshCutter2
             steno.warning("Error in TOP mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
         }
-        meshes.add(Optional.of(topMesh));
+        meshes.add(topMesh);
 
         cutResult = getUncoveredMesh(mesh, cutHeight, bedToLocalConverter,
                                      TopBottom.BOTTOM);
@@ -96,7 +96,7 @@ public class MeshCutter2
             steno.warning("Error in BOTTOM mesh: " + error.toString());
             throw new RuntimeException("Invalid mesh: " + error.toString());
         }
-        meshes.add(Optional.of(bottomMesh));
+        meshes.add(bottomMesh);
 
         return meshes;
     }
