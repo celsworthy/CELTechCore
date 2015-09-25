@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javafx.scene.shape.CullFace;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -178,10 +179,9 @@ public class CutCommand extends Command
         Set<ModelContainer> topModelContainers = new HashSet<>();
         Set<ModelContainer> bottomModelContainers = new HashSet<>();
         
-        Set<ModelGroup> modelGroups = new HashSet<>();
-        modelGroups.add(modelGroup);
-        
-        for (ModelContainer descendentModelContainer : modelGroup.getModelsHoldingMeshViews())
+        Set<ModelContainer> allMeshViews = modelGroup.getModelsHoldingMeshViews();
+        ungroupAllDescendentModelGroups(modelGroup);
+        for (ModelContainer descendentModelContainer : allMeshViews)
         {
             List<Optional<ModelContainer>> modelContainerPair = cutModelContainerAtHeight(
                 descendentModelContainer,
@@ -196,7 +196,7 @@ public class CutCommand extends Command
             }
         }
         
-        project.ungroup(modelGroups);
+        
         ModelGroup topGroup = project.createNewGroupAndAddModelListeners(
             topModelContainers);
         ModelGroup bottomGroup = project.createNewGroupAndAddModelListeners(
@@ -226,13 +226,15 @@ public class CutCommand extends Command
         float minHeight = limits.get(1);
         if (cutHeight <= minHeight)
         {
-            modelContainerPair.add(Optional.of(modelContainer));
             modelContainerPair.add(Optional.empty());
+            modelContainerPair.add(Optional.of(modelContainer));
+            
             return modelContainerPair;
         } else if (cutHeight >= maxHeight)
         {
-            modelContainerPair.add(Optional.empty());
             modelContainerPair.add(Optional.of(modelContainer));
+            modelContainerPair.add(Optional.empty());
+            
             return modelContainerPair;
         }
 
@@ -274,6 +276,23 @@ public class CutCommand extends Command
         }
 
         return modelContainerPair;
+    }
+
+    /**
+     * Ungroup this model group and any descendent model groups.
+     */
+    private void ungroupAllDescendentModelGroups(ModelGroup modelGroup)
+    {
+        Set<ModelContainer> groupChildren = modelGroup.getChildModelContainers();
+        Set<ModelContainer> modelGroups = new HashSet<>();
+        modelGroups.add(modelGroup);
+        project.ungroup(modelGroups);
+        for (ModelContainer childModel : groupChildren)
+        {
+            if (childModel instanceof ModelGroup) {
+                ungroupAllDescendentModelGroups((ModelGroup) childModel);
+            }
+        }
     }
 
 }

@@ -200,16 +200,13 @@ public class MeshUtils
         /**
          * Check that for every edge the opposing faces are oriented correctly.
          */
-
+        
         Set<Edge> processedEdges = new HashSet<>();
 
         boolean warningEmitted = false;
 
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++)
         {
-            int v0 = mesh.getFaces().get(faceIndex * 6);
-            int v1 = mesh.getFaces().get(faceIndex * 6 + 2);
-            int v2 = mesh.getFaces().get(faceIndex * 6 + 4);
             Set<Edge> edges = getFaceEdges(mesh, faceIndex);
             for (Edge edge : edges)
             {
@@ -218,7 +215,8 @@ public class MeshUtils
                     continue;
                 }
                 processedEdges.add(edge);
-                Set<Integer> facesWithv0 = new HashSet<>(facesWithVertices.get(edge.v0));
+                Set<Integer> facesForVertex0 = facesWithVertices.get(edge.v0);
+                Set<Integer> facesWithv0 = new HashSet<>(facesForVertex0);
                 Set<Integer> facesWithv1 = facesWithVertices.get(edge.v1);
                 facesWithv0.retainAll(facesWithv1);
                 facesWithv0.remove(faceIndex);

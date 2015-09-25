@@ -118,7 +118,7 @@ public class MeshDebug
 
     static void showSphere(double x, double y, double z)
     {
-        Sphere sphere = new Sphere(0.05);
+        Sphere sphere = new Sphere(0.5);
         sphere.translateXProperty().set(x);
         sphere.translateYProperty().set(y);
         sphere.translateZProperty().set(z);
