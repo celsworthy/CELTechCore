@@ -666,9 +666,22 @@ public class Project implements Serializable
      */
     public ModelGroup createNewGroup(Set<ModelContainer> modelContainers)
     {
+        checkNotAlreadyInGroup(modelContainers);
+        
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         modelGroup.checkOffBed();
         return modelGroup;
+    }
+
+    private void checkNotAlreadyInGroup(Set<ModelContainer> modelContainers)
+    {
+        Set<ModelContainer> modelsAlreadyInGroups = getDescendentModelsInAllGroups();
+        for (ModelContainer model : modelContainers)
+        {
+            if (modelsAlreadyInGroups.contains(model)) {
+                throw new RuntimeException("Model " + model + " is already in a group");
+            }
+        }
     }
 
     /**
@@ -679,6 +692,7 @@ public class Project implements Serializable
      */
     public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
     {
+        checkNotAlreadyInGroup(modelContainers);
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         addModelListeners(modelGroup);
         for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
@@ -694,6 +708,7 @@ public class Project implements Serializable
      */
     public ModelGroup createNewGroup(Set<ModelContainer> modelContainers, int groupModelId)
     {
+        checkNotAlreadyInGroup(modelContainers);
         ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
         modelGroup.checkOffBed();
         return modelGroup;
@@ -729,7 +744,7 @@ public class Project implements Serializable
                 {
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
-                    childModelContainer.applyGroupTransformToThis(modelGroup);
+//                    childModelContainer.applyGroupTransformToThis(modelGroup);
                     childModelContainer.checkOffBed();
                 }
             }
@@ -754,6 +769,40 @@ public class Project implements Serializable
             modelsHoldingMeshViews.addAll(model.getModelsHoldingModels());
         }
         return modelsHoldingMeshViews;
+    }
+    
+    /**
+     * Return the set of those ModelContainers which are in any group.
+     */
+    private Set<ModelContainer> getDescendentModelsInAllGroups()
+    {
+        Set<ModelContainer> modelsInGroups = new HashSet<>();
+        for (ModelContainer model : topLevelModels)
+        {
+            if (model instanceof ModelGroup) {
+                modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
+            } 
+        }
+        return modelsInGroups;
+    }
+    
+    /**
+     * Return the set of those ModelContainers which are in any group descending from the
+     * given group.
+     */
+    private Set<ModelContainer> getDescendentModelsInGroup(ModelGroup modelGroup)
+    {
+        Set<ModelContainer> modelsInGroups = new HashSet<>();
+        for (ModelContainer model : modelGroup.getChildModelContainers())
+        {
+            if (model instanceof ModelGroup) {
+                modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
+            } else {
+                modelsInGroups.add(model);
+//                System.out.println("model " + model + " is in group " + modelGroup);
+            }
+        }
+        return modelsInGroups;
     }
 
     /**

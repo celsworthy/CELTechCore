@@ -4,6 +4,7 @@
 package celtech.utils.threed;
 
 import static celtech.utils.threed.MeshCutter2.makePoint3D;
+import static celtech.utils.threed.MeshSeparator.makeFacesWithVertex;
 import static celtech.utils.threed.TriangleCutter.reverseFaceNormal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
  */
 public class OpenFaceCloser
 {
-    
+
     private final static Stenographer steno = StenographerFactory.getStenographer(
         OpenFaceCloser.class.getName());
 
@@ -39,10 +40,12 @@ public class OpenFaceCloser
      * Take the given mesh and vertices of the open face, close the face and add the new face to the
      * mesh and return it.
      */
-    static TriangleMesh closeOpenFace(CutResult cutResult, double cutHeight,
+    static TriangleMesh closeOpenFace(CutResult cutResult, float cutHeight,
         MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
         TriangleMesh mesh = cutResult.mesh;
+
+        Map<Integer, Set<Integer>> facesWithVertices = makeFacesWithVertex(mesh);
 
 //        MeshDebug.visualiseEdgeLoops(mesh, cutResult.loopsOfVerticesOnOpenFace,
 //                                           bedToLocalConverter);
@@ -79,9 +82,11 @@ public class OpenFaceCloser
 //                        System.out.println("outer polygon has vertices: " + outerPolygon.getPoints().size());
                         Poly2Tri.triangulate(outerPolygon);
                         succeeded = true;
-                        addTriangulatedFacesToMesh(mesh, outerPolygon, vertices,
+                        Set<Integer> knownVertexIndices = getKnownVertexIndices(region);
+                        addTriangulatedFacesToMesh(mesh, outerPolygon, knownVertexIndices,
                                                    cutHeight, bedToLocalConverter,
-                                                   cutResult.topBottom, facesAdded);
+                                                   cutResult.topBottom, facesAdded,
+                                                   facesWithVertices);
                     } catch (Exception | Error ex)
                     {
                         steno.debug("attempts = " + attempts);
@@ -91,11 +96,10 @@ public class OpenFaceCloser
                 if (attempts == MAX_ATTEMPTS)
                 {
                     steno.debug("Unable to triangulate");
-                    //                    throw new RuntimeException("Unable to triangulate");
-                    
+                    throw new RuntimeException("Unable to triangulate");
+
                     // debugging code follows (visualise & also output test code to reproduce
                     // problem in unit test)
-
 //                    System.out.println("outer loop is " + region.outerLoop);
 //                    System.out.println("there are inner loops: " + region.innerLoops.size());
 //                    for (PolygonIndices innerPolygonIndices : region.innerLoops) {
@@ -105,12 +109,15 @@ public class OpenFaceCloser
 //                    polygonIndices.add(region.outerLoop);
 //                    MeshDebug.visualisePolygonIndices(mesh, polygonIndices, region.innerLoops,
 //                                  bedToLocalConverter, java.awt.Color.BLUE, java.awt.Color.RED);
-
                     // get edge data for failing loop (debug only)
 //                    List<ManifoldEdge> edges = MeshCutter2.debugLoopToEdges.get(region.outerLoop);
 //                    debugOutputEdges(cutResult, edges);
                 }
-                boolean orientable = MeshUtils.testMeshIsOrientable(mesh);
+
+                // speed of test here could be greatly increased by only testing a single face
+                // which is on the border of the new face
+                facesWithVertices = makeFacesWithVertex(mesh);
+                boolean orientable = MeshUtils.testMeshIsOrientable(mesh, facesWithVertices);
                 if (!orientable)
                 {
                     steno.debug("reverse covering face normals for region");
@@ -118,7 +125,7 @@ public class OpenFaceCloser
                     {
                         reverseFaceNormal(mesh, faceIndex);
                     }
-                    orientable = MeshUtils.testMeshIsOrientable(mesh);
+                    orientable = MeshUtils.testMeshIsOrientable(mesh, facesWithVertices);
                     if (!orientable)
                     {
                         throw new RuntimeException(
@@ -134,8 +141,9 @@ public class OpenFaceCloser
 
     /**
      * The code produced by this method can be easily used in NonManifoldLoopDetectorTest class.
+     *
      * @param cutResult
-     * @param edges 
+     * @param edges
      */
     private static void debugOutputEdges(CutResult cutResult, List<ManifoldEdge> edges)
     {
@@ -163,6 +171,17 @@ public class OpenFaceCloser
                 i, edge.v0, edge.v1, edge.v0, edge.v1, edge.faceIndex));
             i++;
         }
+    }
+
+    private static Set<Integer> getKnownVertexIndices(Region region)
+    {
+        Set<Integer> vertexIndices = new HashSet<>();
+        vertexIndices.addAll(region.outerLoop);
+        for (PolygonIndices polygonIndices : region.innerLoops)
+        {
+            vertexIndices.addAll(polygonIndices);
+        }
+        return vertexIndices;
     }
 
 
@@ -209,28 +228,30 @@ public class OpenFaceCloser
 
     /**
      * For each triangle in the polygon add a face to the mesh. If any point in any triangle is not
-     * one of the outerVertices then also add that point to the mesh.
+     * one of the outerVertices then also add that point to the mesh. Only add new vertices
+     * to the mesh if they are not one of the (already existing)
+     * vertices on the outer or inner polygons.
      */
     private static void addTriangulatedFacesToMesh(TriangleMesh mesh, Polygon outerPolygon,
-        List<Integer> outerVertices, double cutHeight,
+        Set<Integer> existingVertices, float cutHeight,
         MeshCutter2.BedToLocalConverter bedToLocalConverter, MeshCutter2.TopBottom topBottom,
-        Set<Integer> facesAdded)
+        Set<Integer> facesAdded, Map<Integer, Set<Integer>> facesWithVertices)
     {
         // vertexToVertex allows us to identify equal vertices (but different instances) and then
         // get the definitive instance of that vertex, to avoid superfluous vertices in the mesh.
         Map<Vertex, Vertex> vertexToVertex = new HashMap<>();
         // first add already existing vertices for outer perimeter of polygon to vertexToVertex
-        for (Integer vertexIndex : outerVertices)
+        for (Integer vertexIndex : existingVertices)
         {
             Point3D point = makePoint3D(mesh, vertexIndex);
             Point3D pointInBed = bedToLocalConverter.localToBed(point);
             Vertex vertex = new Vertex(vertexIndex,
-                                       (float) pointInBed.getX(), (float) pointInBed.getY(),
+                                       (float) pointInBed.getX(), cutHeight,
                                        (float) pointInBed.getZ());
             vertexToVertex.put(vertex, vertex);
         }
 
-       steno.debug("add " + outerPolygon.getTriangles().size()
+        steno.debug("add " + outerPolygon.getTriangles().size()
             + " delauney triangles to mesh");
         Set<Integer> outerVerticesUsed = new HashSet<>();
         for (DelaunayTriangle triangle : outerPolygon.getTriangles())
@@ -276,12 +297,12 @@ public class OpenFaceCloser
             if (topBottom == MeshCutter2.TopBottom.BOTTOM)
             {
                 int addedFaceIndex = makeFace(mesh, vertex0Index, vertex1Index,
-                                              vertex2Index);
+                                              vertex2Index, facesWithVertices);
                 facesAdded.add(addedFaceIndex);
             } else
             {
                 int addedFaceIndex = makeFace(mesh, vertex0Index, vertex2Index,
-                                              vertex1Index);
+                                              vertex1Index, facesWithVertices);
                 facesAdded.add(addedFaceIndex);
             }
         }
@@ -289,15 +310,16 @@ public class OpenFaceCloser
     }
 
     private static int makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
-        int meshVertexIndex2)
+        int meshVertexIndex2, Map<Integer, Set<Integer>> facesWithVertices)
     {
         int[] vertices = new int[6];
         vertices[0] = meshVertexIndex0;
         vertices[2] = meshVertexIndex1;
         vertices[4] = meshVertexIndex2;
         mesh.getFaces().addAll(vertices);
+        int newFaceIndex = mesh.getFaces().size() / 6 - 1;
 //        steno.debug("make face " + (mesh.getFaces().size() / 6 - 1));
-        return mesh.getFaces().size() / 6 - 1;
+        return newFaceIndex;
     }
 
     /**
@@ -305,18 +327,19 @@ public class OpenFaceCloser
      * coordinates), and add the points to the mesh in local coordinates.
      */
     private static Vertex getOrMakeVertexForPoint(TriangleMesh mesh, TriangulationPoint point,
-        Map<Vertex, Vertex> vertexToVertex, double cutHeight,
+        Map<Vertex, Vertex> vertexToVertex, float cutHeight,
         MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
-        Point3D pointInBed = new Point3D(point.getX(), cutHeight, point.getY());
-        Vertex vertex = new Vertex((float) pointInBed.getX(), (float) pointInBed.getY(),
-                                   (float) pointInBed.getZ());
+        
+        Vertex vertex = new Vertex((float) point.getX(), cutHeight,
+                                   (float) point.getZ());
 
-        Point3D localPoint = bedToLocalConverter.bedToLocal(pointInBed);
-        Vertex localVertex = new Vertex((float) localPoint.getX(), (float) localPoint.getY(),
-                                        (float) localPoint.getZ());
         if (!vertexToVertex.containsKey(vertex))
         {
+            Point3D pointInBed = new Point3D(point.getX(), cutHeight, point.getY());
+            Point3D localPoint = bedToLocalConverter.bedToLocal(pointInBed);
+            Vertex localVertex = new Vertex((float) localPoint.getX(), (float) localPoint.getY(),
+                                            (float) localPoint.getZ());
             int vertexIndex = TriangleCutter.addNewOrGetVertex(mesh, localVertex);
             steno.debug("triangulation new Vertex");
             vertex.meshVertexIndex = vertexIndex;

@@ -3,8 +3,7 @@
  */
 package celtech.utils.threed;
 
-import celtech.utils.Math.MathUtils;
-import static celtech.utils.threed.TriangleCutter.epsilon;
+import javafx.scene.shape.TriangleMesh;
 
 
 /**
@@ -74,39 +73,23 @@ final class Vertex
         return (int) (x * 1237f + y * 107f + 23 * z);
     }
 
-//    @Override
-//    public boolean equals(Object obj)
+//    boolean almostEquals(TriangleMesh mesh, Vertex otherVertex)
 //    {
-//        if (!(obj instanceof Vertex))
-//        {
-//            return false;
-//        }
-//        if (obj == this)
-//        {
+//
+//        int rawBitsX = Float.floatToIntBits(x);
+//        int rawBitsY = Float.floatToIntBits(y);
+//        int rawBitsZ = Float.floatToIntBits(z);
+//        
+//        int rawBitsXOther = Float.floatToIntBits(otherVertex.x);
+//        int rawBitsYOther = Float.floatToIntBits(otherVertex.y);
+//        int rawBitsZOther = Float.floatToIntBits(otherVertex.z);
+//        
+//        if (Math.abs(rawBitsX - rawBitsXOther) < 3
+//            && Math.abs(rawBitsY - rawBitsYOther) < 3
+//            && Math.abs(rawBitsZ - rawBitsZOther) < 3) {
 //            return true;
 //        }
-//
-//        Vertex other = (Vertex) obj;
-//        if (MathUtils.compareFloat(other.x, x, epsilon) != MathUtils.EQUAL)
-//        {
-//            return false;
-//        }
-//        if (MathUtils.compareFloat(other.y, y, epsilon) != MathUtils.EQUAL)
-//        {
-//            return false;
-//        }
-//        if (MathUtils.compareFloat(other.z, z, epsilon) != MathUtils.EQUAL)
-//        {
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    @Override
-//    public int hashCode()
-//    {
-//        // use sqr(distance from origin) / 10
-//        // e.g. 100.001 * 100.001 = 10,000.2 
-//        return (int) ((x * x + y * y + z * z) / 10);
+//        return false;
+//        
 //    }
 }

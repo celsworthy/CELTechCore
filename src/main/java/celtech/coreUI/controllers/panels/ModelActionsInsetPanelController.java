@@ -91,7 +91,6 @@ public class ModelActionsInsetPanelController implements Initializable, ProjectA
         cut.disableProperty().bind(numModelsSelected.lessThan(1));
         ungroup.disableProperty().bind(numGroupsSelected.lessThan(1));
 
-        ungroup.setVisible(false);
     }
 
     /**

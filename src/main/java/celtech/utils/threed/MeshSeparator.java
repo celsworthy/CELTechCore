@@ -230,25 +230,31 @@ public class MeshSeparator
         
         for (int faceIndex = 0; faceIndex < mesh.getFaces().size() / 6; faceIndex++) {
 
-            int vertex0 = mesh.getFaces().get(faceIndex * 6);
-            if (! facesWithVertex.containsKey(vertex0)) {
-                facesWithVertex.put(vertex0, new HashSet<>());
-            }
-            facesWithVertex.get(vertex0).add(faceIndex);
-            
-            int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
-            if (! facesWithVertex.containsKey(vertex1)) {
-                facesWithVertex.put(vertex1, new HashSet<>());
-            }
-            facesWithVertex.get(vertex1).add(faceIndex);
-            
-            int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
-            if (! facesWithVertex.containsKey(vertex2)) {
-                facesWithVertex.put(vertex2, new HashSet<>());
-            }
-            facesWithVertex.get(vertex2).add(faceIndex);            
+            updateFacesWithVertices(mesh, faceIndex, facesWithVertex);            
         }
         return facesWithVertex;
+    }
+
+    public static void updateFacesWithVertices(TriangleMesh mesh, int faceIndex,
+        Map<Integer, Set<Integer>> facesWithVertex)
+    {
+        int vertex0 = mesh.getFaces().get(faceIndex * 6);
+        if (! facesWithVertex.containsKey(vertex0)) {
+            facesWithVertex.put(vertex0, new HashSet<>());
+        }
+        facesWithVertex.get(vertex0).add(faceIndex);
+        
+        int vertex1 = mesh.getFaces().get(faceIndex * 6 + 2);
+        if (! facesWithVertex.containsKey(vertex1)) {
+            facesWithVertex.put(vertex1, new HashSet<>());
+        }
+        facesWithVertex.get(vertex1).add(faceIndex);
+        
+        int vertex2 = mesh.getFaces().get(faceIndex * 6 + 4);
+        if (! facesWithVertex.containsKey(vertex2)) {
+            facesWithVertex.put(vertex2, new HashSet<>());
+        }
+        facesWithVertex.get(vertex2).add(faceIndex);
     }
 
 }

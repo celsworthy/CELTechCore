@@ -642,6 +642,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return new Point3D(vector.getX(), vector.getY(), vector.getZ());
     }
 
+    /**
+     * Return the maximum and minimum y values of the coordinates of this model in bed coords.
+     */
+    public List<Float> getMaxAndMinYInBedCoords()
+    {
+        List<Float> maxMin = new ArrayList<>();
+        ModelBounds modelBounds = calculateBoundsInBedCoordinateSystem();
+        maxMin.add((float) modelBounds.getMaxY());
+        maxMin.add((float) modelBounds.getMinY());
+        return maxMin;
+    }
+
 
     private class ApplyTwist implements UnivariateFunction
     {
@@ -1214,7 +1226,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * Return a BedToLocal converter for this ModelContainer. N.B. Before using this the bed centre
-     * transform and dropToBed transform must be cleared, otherwise it does not work for the 
+     * transform and dropToBed transform must be cleared, otherwise it does not work for the
      * purposes intended.
      */
     public MeshCutter2.BedToLocalConverter getBedToLocalConverter()
@@ -2018,7 +2030,5 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         this.isInvalidMesh = isInvalidMesh;
     }
-    
-    
 
 }
