@@ -387,12 +387,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
         copy.setUseExtruder0(associateWithExtruderNumber.get() == 0);
-//        copy.setXScale(this.getXScale());
-//        copy.setYScale(this.getYScale());
-//        copy.setZScale(this.getZScale());
-//        copy.setRotationLean(this.getRotationLean());
-//        copy.setRotationTwist(this.getRotationTwist());
-//        copy.setRotationTurn(this.getRotationTurn());
         copy.setState(this.getState());
         return copy;
     }

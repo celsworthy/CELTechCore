@@ -413,9 +413,7 @@ public class Project implements Serializable
     }
 
     /**
-     * Return which extruders are used by the project, as a set of the extruder numbers
-     *
-     * @return
+     * Return which extruders are used by the project, as a set of the extruder numbers.
      */
     public Set<Integer> getUsedExtruders()
     {
@@ -565,6 +563,7 @@ public class Project implements Serializable
 
     public void addModel(ModelContainer modelContainer)
     {
+        System.out.println("add model container " + modelContainer);
         topLevelModels.add(modelContainer);
         projectModified();
         fireWhenModelAdded(modelContainer);
@@ -593,6 +592,13 @@ public class Project implements Serializable
 
     public void removeModels(Set<ModelContainer> modelContainers)
     {
+        
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            System.out.println("remove model " + modelContainer);
+            assert modelContainer != null;
+        }    
+        
         topLevelModels.removeAll(modelContainers);
 
         for (ModelContainer modelContainer : modelContainers)
@@ -687,8 +693,6 @@ public class Project implements Serializable
     /**
      * Create a new group from models that are not yet in the project, and add model listeners to
      * all descendent children.
-     * @param modelContainers
-     * @return 
      */
     public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
     {
@@ -716,22 +720,27 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
+        System.out.println("start group operation");
         removeModels(modelContainers);
         ModelGroup modelGroup = createNewGroup(modelContainers);
         addModel(modelGroup);
+        System.out.println("end group operation");
         return modelGroup;
     }
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
+        System.out.println("start group operation");
         removeModels(modelContainers);
         ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
         addModel(modelGroup);
+        System.out.println("end group operation");
         return modelGroup;
     }
 
     public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
+        System.out.println("start ungroup operation");
         for (ModelContainer modelContainer : modelContainers)
         {
             if (modelContainer instanceof ModelGroup)
@@ -749,6 +758,7 @@ public class Project implements Serializable
                 }
             }
         }
+        System.out.println("end ungroup operation");
     }
 
     private Set<ModelContainer> getModelsHoldingMeshViews()
@@ -840,7 +850,7 @@ public class Project implements Serializable
      * groups are created.
      * </p>
      */
-    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
+    public void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
         Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
@@ -851,7 +861,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Create groups where all the children are already instantiated.
+     * Create groups where all the children are already instantiated, based on the structure
+     * and state given in the parameters.
      *
      * @return the number of groups created
      */
