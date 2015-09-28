@@ -563,7 +563,6 @@ public class Project implements Serializable
 
     public void addModel(ModelContainer modelContainer)
     {
-        System.out.println("add model container " + modelContainer);
         topLevelModels.add(modelContainer);
         projectModified();
         fireWhenModelAdded(modelContainer);
@@ -595,7 +594,6 @@ public class Project implements Serializable
         
         for (ModelContainer modelContainer : modelContainers)
         {
-            System.out.println("remove model " + modelContainer);
             assert modelContainer != null;
         }    
         
@@ -720,27 +718,22 @@ public class Project implements Serializable
 
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
-        System.out.println("start group operation");
         removeModels(modelContainers);
         ModelGroup modelGroup = createNewGroup(modelContainers);
         addModel(modelGroup);
-        System.out.println("end group operation");
         return modelGroup;
     }
 
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
-        System.out.println("start group operation");
         removeModels(modelContainers);
         ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
         addModel(modelGroup);
-        System.out.println("end group operation");
         return modelGroup;
     }
 
     public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
-        System.out.println("start ungroup operation");
         for (ModelContainer modelContainer : modelContainers)
         {
             if (modelContainer instanceof ModelGroup)
@@ -758,7 +751,6 @@ public class Project implements Serializable
                 }
             }
         }
-        System.out.println("end ungroup operation");
     }
 
     private Set<ModelContainer> getModelsHoldingMeshViews()
@@ -809,7 +801,6 @@ public class Project implements Serializable
                 modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
             } else {
                 modelsInGroups.add(model);
-//                System.out.println("model " + model + " is in group " + modelGroup);
             }
         }
         return modelsInGroups;

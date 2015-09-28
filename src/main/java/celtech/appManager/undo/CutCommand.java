@@ -57,51 +57,61 @@ public class CutCommand extends Command
 
         void undo()
         {
-            
-            System.out.println("add models that were removed");
+
             for (ModelContainer modelContainer : modelsToRemoveFromProject)
             {
                 project.addModel(modelContainer);
             }
 
             Set<ModelGroup> groups = new HashSet<>();
-            
-            groups.add(topGroup);
-            groups.add(bottomGroup);
-            System.out.println("ungroup bottom and top group");
+
+            if (topGroup != null)
+            {
+                groups.add(topGroup);
+            }
+            if (bottomGroup != null)
+            {
+                groups.add(bottomGroup);
+            }
             project.ungroup(groups);
-            
-            System.out.println("remove models that were added");
+
             project.removeModels(modelsToAddToProject);
         }
 
         void redo()
         {
 
-            System.out.println("ungroup all groups");
             ungroupAllDescendentModelGroups(originalGroup);
 
-            System.out.println("remove models to remove");
             project.removeModels(modelsToRemoveFromProject);
-            System.out.println("add models to add");
             for (ModelContainer modelContainer : modelsToAddToProject)
             {
                 project.addModel(modelContainer);
             }
 
-            System.out.println("make top group");
-            topGroup = project.group(modelsForTopGroup);
-            System.out.println("make bottom group");
-            bottomGroup = project.group(modelsForBottomGroup);
+            if (!modelsForTopGroup.isEmpty())
+            {
+                topGroup = project.group(modelsForTopGroup);
+                topGroup.setState(originalGroup.getState());
+                topGroup.moveToCentre();
+                topGroup.dropToBed();
+                topGroup.translateBy(-10, -10);
+            } else
+            {
+                topGroup = null;
+            }
 
-            topGroup.setState(originalGroup.getState());
-            topGroup.moveToCentre();
-            topGroup.dropToBed();
-            bottomGroup.translateBy(-10, -10);
-            bottomGroup.setState(originalGroup.getState());
-            bottomGroup.moveToCentre();
-            bottomGroup.dropToBed();
-            bottomGroup.translateBy(10, 10);
+            if (!modelsForBottomGroup.isEmpty())
+            {
+                bottomGroup = project.group(modelsForBottomGroup);
+                bottomGroup.setState(originalGroup.getState());
+                bottomGroup.moveToCentre();
+                bottomGroup.dropToBed();
+                bottomGroup.translateBy(10, 10);
+            } else
+            {
+                bottomGroup = null;
+            }
         }
 
     }
