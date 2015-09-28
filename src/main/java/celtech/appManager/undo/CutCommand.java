@@ -35,7 +35,7 @@ public class CutCommand extends Command
     final Project project;
     final float cutHeightValue;
     final Set<ModelContainer> modelContainers;
-    final Set<ModelContainer> childModelContainers = new HashSet<>();
+    final Set<ModelContainer> createdModelContainers = new HashSet<>();
     Set<ModelContainer> modelsToRemoveFromProject = new HashSet<>();
     boolean cutWorked = false;
 
@@ -61,7 +61,7 @@ public class CutCommand extends Command
             {
                 project.addModel(modelContainer);
             }
-            project.removeModels(childModelContainers);
+            project.removeModels(createdModelContainers);
         }
     }
 
@@ -70,7 +70,7 @@ public class CutCommand extends Command
     {
         if (cutWorked)
         {
-            for (ModelContainer modelContainer : childModelContainers)
+            for (ModelContainer modelContainer : createdModelContainers)
             {
                 project.addModel(modelContainer);
             }
@@ -97,7 +97,7 @@ public class CutCommand extends Command
         {
             for (ModelContainer modelContainer : modelContainers)
             {
-                List<ModelContainer> cutModels = cut(modelContainer, cutHeightValue);
+                cut(modelContainer, cutHeightValue);
             }
 
         } catch (Exception ex)
@@ -113,32 +113,22 @@ public class CutCommand extends Command
 
     }
 
-    private List<ModelContainer> cut(ModelContainer modelContainer, float cutHeightValue)
+    private void cut(ModelContainer modelContainer, float cutHeightValue)
+    {
+        if (modelContainer instanceof ModelGroup)
+        {
+            cutGroup((ModelGroup) modelContainer, cutHeightValue);
+        } else
+        {
+            cutSingleModel(modelContainer, cutHeightValue);
+        }
+        return;
+    }
+
+    private void cutSingleModel(ModelContainer modelContainer, float cutHeightValue)
     {
         List<ModelContainer> childModelContainers = new ArrayList<>();
 
-        if (modelContainer instanceof ModelGroup)
-        {
-            cutGroup((ModelGroup) modelContainer, cutHeightValue, childModelContainers);
-        } else
-        {
-            cutSingleModel(modelContainer, cutHeightValue, childModelContainers);
-            /**
-             * The cut can just be the original model, we don't add to childModelContainers in that
-             * case.
-             */
-            if (!childModelContainers.contains(modelContainer))
-            {
-                this.childModelContainers.addAll(childModelContainers);
-                modelsToRemoveFromProject.add(modelContainer);
-            }
-        }
-        return childModelContainers;
-    }
-
-    private void cutSingleModel(ModelContainer modelContainer, float cutHeightValue,
-        List<ModelContainer> childModelContainers)
-    {
         List<Optional<ModelContainer>> modelContainerPair = cutModelContainerAtHeight(modelContainer,
                                                                                       cutHeightValue);
         Optional<ModelContainer> topModelContainer = modelContainerPair.get(0);
@@ -170,11 +160,20 @@ public class CutCommand extends Command
             }
             childModelContainers.add(topModelContainer.get());
         }
+        /**
+         * The cut can just be the original model, we don't add to childModelContainers in that
+         * case.
+         */
+        if (!childModelContainers.contains(modelContainer))
+        {
+            createdModelContainers.addAll(childModelContainers);
+            modelsToRemoveFromProject.add(modelContainer);
+        }
     }
 
-    private void cutGroup(ModelGroup modelGroup, float cutHeightValue,
-        List<ModelContainer> childModelContainers)
+    private void cutGroup(ModelGroup modelGroup, float cutHeightValue)
     {
+
         Set<ModelContainer> topModelContainers = new HashSet<>();
         Set<ModelContainer> bottomModelContainers = new HashSet<>();
 
@@ -209,8 +208,6 @@ public class CutCommand extends Command
         bottomGroup.moveToCentre();
         bottomGroup.dropToBed();
         bottomGroup.translateBy(10, 10);
-        childModelContainers.add(topGroup);
-        childModelContainers.add(bottomGroup);
     }
 
     private List<Optional<ModelContainer>> cutModelContainerAtHeight(ModelContainer modelContainer,
