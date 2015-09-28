@@ -917,7 +917,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             if (blockUntilFinished)
             {
-                executeMacroWithoutPurgeCheck(macro);
+                executeMacroWithoutPurgeCheck(macro, requireNozzle0, requireNozzle1);
                 PrinterUtils.waitOnMacroFinished(this, cancellable);
             } else
             {
@@ -925,7 +925,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 {
                     try
                     {
-                        executeMacroWithoutPurgeCheck(macro);
+                        executeMacroWithoutPurgeCheck(macro, requireNozzle0, requireNozzle1);
                         PrinterUtils.waitOnMacroFinished(this, cancellable);
                     } catch (PrinterException ex)
                     {
