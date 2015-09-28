@@ -9,6 +9,8 @@ import celtech.gcodetranslator.NoPerimeterToCloseOverException;
 import celtech.gcodetranslator.NotEnoughAvailableExtrusionException;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PostProcessingError;
+import celtech.gcodetranslator.events.NozzleChangeBValueEvent;
+import celtech.gcodetranslator.events.NozzleOpenFullyEvent;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
@@ -19,6 +21,7 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
@@ -76,7 +79,7 @@ public class CloseLogic
 
     protected Optional<CloseResult> insertProgressiveNozzleClose(List<SectionNode> sectionsToConsider,
             ExtrusionNode nodeToAppendClosesTo,
-            final NozzleProxy nozzleInUse) throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException
+            final NozzleProxy nozzleInUse) throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException, PostProcessingError
     {
         Optional<CloseResult> closeResult = Optional.empty();
         boolean failedToCloseOverNonPerimeter = false;
@@ -99,12 +102,36 @@ public class CloseLogic
 
         if (!closeResult.isPresent())
         {
-            if (failedToCloseOverNonPerimeter)
+            try
             {
-                closeResult = closeInwardsOntoPerimeter(sectionsToConsider, nodeToAppendClosesTo, nozzleInUse, false);
-            } else
+                if (failedToCloseOverNonPerimeter)
+                {
+                    closeResult = closeInwardsOntoPerimeter(sectionsToConsider, nodeToAppendClosesTo, nozzleInUse, false);
+                } else
+                {
+                    closeResult = closeInwardsOntoPerimeter(sectionsToConsider, nodeToAppendClosesTo, nozzleInUse, true);
+                }
+            } catch (CannotCloseFromPerimeterException ex)
             {
-                closeResult = closeInwardsOntoPerimeter(sectionsToConsider, nodeToAppendClosesTo, nozzleInUse, true);
+                steno.warning("Close failed: " + ex.getMessage());
+            } catch (NotEnoughAvailableExtrusionException ex)
+            {
+                closeResult = partialOpenAndCloseAtEndOfExtrusion(sectionsToConsider, nozzleInUse);
+
+                if (!closeResult.isPresent())
+                {
+                    //Fallback to close to end
+                    closeResult = closeToEndOfExtrusion(sectionsToConsider, nozzleInUse, false);
+                }
+            } catch (NoPerimeterToCloseOverException ex)
+            {
+                try
+                {
+                    closeResult = reverseCloseFromEndOfExtrusion(sectionsToConsider, nozzleInUse);
+                } catch (NotEnoughAvailableExtrusionException ex2)
+                {
+                    closeResult = partialOpenAndCloseAtEndOfExtrusion(sectionsToConsider, nozzleInUse);
+                }
             }
         }
 
@@ -230,6 +257,260 @@ public class CloseLogic
 //                }
 //            }
 //        }
+        return closeResult;
+    }
+
+    private boolean replaceOpenNozzleWithPartialOpen(List<SectionNode> sectionsToConsider,
+            double partialOpenValue)
+    {
+        boolean success = false;
+
+        for (SectionNode sectionNode : sectionsToConsider)
+        {
+            Iterator<GCodeEventNode> childIterator = sectionNode.childIterator();
+
+            while (childIterator.hasNext())
+            {
+                GCodeEventNode eventNode = childIterator.next();
+                if (eventNode instanceof NozzleValvePositionNode)
+                {
+                    NozzleValvePositionNode nozzlePosition = (NozzleValvePositionNode) eventNode;
+                    nozzlePosition.setCommentText("Partial open");
+                    nozzlePosition.getNozzlePosition().setB(partialOpenValue);
+                    success = true;
+                    break;
+                }
+            }
+
+            if (success)
+            {
+                break;
+            }
+        }
+
+        return success;
+    }
+
+    private Optional<CloseResult> partialOpenAndCloseAtEndOfExtrusion(List<SectionNode> sectionsToConsider,
+            NozzleProxy nozzleInUse)
+    {
+        Optional<CloseResult> closeResult = Optional.empty();
+        double nozzleStartPosition = 0;
+        double nozzleCloseOverVolume = 0;
+
+        double extrusionForCompletePath = 0;
+
+        for (SectionNode sectionNode : sectionsToConsider)
+        {
+            extrusionForCompletePath += sectionNode.getTotalExtrusion();
+        }
+
+        // We shouldn't have been asked to partial open - there is more than the ejection volume of material available
+        if (extrusionForCompletePath > nozzleInUse.getNozzleParameters().getEjectionVolume())
+        {
+            return closeResult;
+        }
+
+        double bValue = Math.min(1, extrusionForCompletePath
+                / nozzleInUse.getNozzleParameters().
+                getEjectionVolume());
+
+        bValue = Math.max(bValue, nozzleInUse.getNozzleParameters().getPartialBMinimum());
+
+        nozzleStartPosition = bValue;
+        nozzleCloseOverVolume = extrusionForCompletePath;
+
+        replaceOpenNozzleWithPartialOpen(sectionsToConsider, bValue);
+
+        closeResult = Optional.of(new CloseResult(nozzleStartPosition, nozzleCloseOverVolume));
+
+        return closeResult;
+    }
+
+    private void copyExtrusionEvents(double targetVolume,
+            List<SectionNode> sectionsToConsider,
+            GCodeEventNode startNode,
+            boolean forwards) throws PostProcessingError
+    {
+        int closeExtrusionFeedRate_mmPerMin = 400;
+
+        //TODO reinstate extrusion rate
+//        //Find the last extrusion rate used in this buffer
+//        for (int feedRateIndex = finalExtrusionEventIndex;
+//                feedRateIndex > 0; feedRateIndex--)
+//        {
+//            if (extrusionBuffer.get(feedRateIndex) instanceof ExtrusionEvent)
+//            {
+//                ExtrusionEvent eventToExamine = (ExtrusionEvent) extrusionBuffer.get(feedRateIndex);
+//                if (eventToExamine.getFeedRate() > 0)
+//                {
+//                    closeExtrusionFeedRate_mmPerMin = (int) eventToExamine.getFeedRate();
+//                    break;
+//                }
+//            }
+//        }
+        double cumulativeExtrusionVolume = 0;
+
+        boolean startMessageOutput = false;
+
+        SectionNode sectionToAppendTo = sectionsToConsider.get(sectionsToConsider.size() - 1);
+
+        for (SectionNode sectionNode : sectionsToConsider)
+        {
+            Iterator<GCodeEventNode> sectionIterator = sectionNode.childrenAndMeBackwardsIterator();
+            while (sectionIterator.hasNext()
+                    && cumulativeExtrusionVolume < targetVolume)
+            {
+                GCodeEventNode node = sectionIterator.next();
+                if (node instanceof ExtrusionNode)
+                {
+                    ExtrusionNode eventToCopy = (ExtrusionNode) node;
+
+                    double segmentVolume = eventToCopy.getExtrusion().getE() + eventToCopy.getExtrusion().getD();
+                    double volumeDifference = targetVolume - cumulativeExtrusionVolume
+                            - segmentVolume;
+
+                    if (volumeDifference < 0)
+                    {
+                        double requiredSegmentVolume = segmentVolume + volumeDifference;
+                        double segmentAlterationRatio = requiredSegmentVolume / segmentVolume;
+
+                        ExtrusionNode eventToInsert = new ExtrusionNode();
+                        eventToInsert.getExtrusion().setE(eventToCopy.getExtrusion().getE() * (float) segmentAlterationRatio);
+                        eventToInsert.getExtrusion().setD(eventToCopy.getExtrusion().getD() * (float) segmentAlterationRatio);
+                        eventToInsert.getFeedrate().setFeedRate_mmPerMin(closeExtrusionFeedRate_mmPerMin);
+
+                        Vector2D fromPosition = null;
+
+                        Vector2D fromReferencePosition = null;
+
+                        // Prevent the extrusion being output for the events we've copied from
+                        eventToCopy.getExtrusion().eNotInUse();
+                        eventToCopy.getExtrusion().dNotInUse();
+
+                        if (!forwards)
+                        {
+                            //TODO WARNING - this will find the next movement BEYOND the sections we're considering - need a more restrictive method
+                            try
+                            {
+                                Optional<MovementProvider> nextMovement = nodeManagementUtilities.findNextMovement(node);
+                                if (nextMovement.isPresent())
+                                {
+                                    fromReferencePosition = nextMovement.get().getMovement().toVector2D();
+                                }
+                            } catch (NodeProcessingException ex)
+                            {
+                                steno.warning("Exception when finding next movement for reverse");
+                            }
+                        } else
+                        {
+                            //TODO WARNING - this will find the prior movement BEYOND the sections we're considering - need a more restrictive method
+                            try
+                            {
+                                Optional<MovementProvider> priorMovement = nodeManagementUtilities.findPriorMovement(node);
+                                if (priorMovement.isPresent())
+                                {
+                                    fromReferencePosition = priorMovement.get().getMovement().toVector2D();
+                                }
+                            } catch (NodeProcessingException ex)
+                            {
+                                steno.warning("Exception when finding next movement for reverse");
+                            }
+                        }
+
+                        if (fromReferencePosition != null)
+                        {
+                            fromPosition = fromReferencePosition;
+                        } else
+                        {
+                            throw new PostProcessingError(
+                                    "Couldn't locate from position for auto wipe");
+                        }
+
+                        Vector2D toPosition = new Vector2D(eventToCopy.getMovement().getX(),
+                                eventToCopy.getMovement().getY());
+
+                        Vector2D actualVector = toPosition.subtract(fromPosition);
+                        Vector2D firstSegment = fromPosition.add(segmentAlterationRatio,
+                                actualVector);
+
+                        eventToInsert.getMovement().setX(firstSegment.getX());
+                        eventToInsert.getMovement().setY(firstSegment.getY());
+                        eventToInsert.setCommentText(" - end -");
+
+                        sectionToAppendTo.addChildAtEnd(eventToInsert);
+                        cumulativeExtrusionVolume += requiredSegmentVolume;
+                    } else
+                    {
+                        ExtrusionNode eventToInsert = new ExtrusionNode();
+                        eventToInsert.getExtrusion().setE(eventToCopy.getExtrusion().getE());
+                        eventToInsert.getExtrusion().setD(eventToCopy.getExtrusion().getD());
+                        eventToInsert.getMovement().setX(eventToCopy.getMovement().getX());
+                        eventToInsert.getMovement().setY(eventToCopy.getMovement().getY());
+                        eventToInsert.setCommentText(((startMessageOutput == false) ? " - start -" : " - in progress -"));
+                        startMessageOutput = true;
+                        eventToInsert.getFeedrate().setFeedRate_mmPerMin(closeExtrusionFeedRate_mmPerMin);
+
+                        sectionToAppendTo.addChildAtEnd(eventToInsert);
+                        cumulativeExtrusionVolume += eventToCopy.getExtrusion().getE() + eventToCopy.getExtrusion().getD();
+
+                        // Prevent the extrusion being output for the events we've copied from
+                        eventToCopy.getExtrusion().eNotInUse();
+                        eventToCopy.getExtrusion().dNotInUse();
+                    }
+
+                } else
+                {
+                    if (node instanceof TravelNode)
+                    {
+                        TravelNode eventToCopy = (TravelNode) node;
+                        TravelNode eventToInsert = new TravelNode();
+                        eventToInsert.getMovement().setX(eventToCopy.getMovement().getX());
+                        eventToInsert.getMovement().setY(eventToCopy.getMovement().getY());
+                        eventToInsert.setCommentText(eventToCopy.getCommentText());
+                        eventToInsert.getFeedrate().setFeedRate_mmPerMin(closeExtrusionFeedRate_mmPerMin);
+                        sectionToAppendTo.addChildAtEnd(eventToInsert);
+                    }
+                }
+            }
+
+            if (cumulativeExtrusionVolume >= targetVolume)
+            {
+                break;
+            }
+        }
+    }
+
+    private Optional<CloseResult> reverseCloseFromEndOfExtrusion(List<SectionNode> sectionsToConsider,
+            NozzleProxy nozzleInUse) throws PostProcessingError, NotEnoughAvailableExtrusionException
+    {
+        Optional<CloseResult> closeResult = Optional.empty();
+        double nozzleStartPosition = 0;
+        double nozzleCloseOverVolume = 0;
+
+        double availableExtrusion = 0;
+
+        for (SectionNode sectionNode : sectionsToConsider)
+        {
+            availableExtrusion += sectionNode.getTotalExtrusion();
+        }
+
+        if (availableExtrusion >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+        {
+            nozzleStartPosition = 1.0;
+            nozzleCloseOverVolume = nozzleInUse.getNozzleParameters().getEjectionVolume();
+
+            copyExtrusionEvents(nozzleCloseOverVolume,
+                    sectionsToConsider,
+                    sectionsToConsider.get(sectionsToConsider.size() - 1).getAbsolutelyTheLastEvent(),
+                    false);
+
+            closeResult = Optional.of(new CloseResult(nozzleStartPosition, nozzleCloseOverVolume));
+        } else
+        {
+            throw new NotEnoughAvailableExtrusionException("Not enough extrusion when attempting to reverse close");
+        }
+
         return closeResult;
     }
 
@@ -1027,7 +1308,7 @@ public class CloseLogic
     }
 
     protected Optional<CloseResult> insertNozzleCloses(RetractNode retractNode, final NozzleProxy nozzleInUse)
-            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException
+            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException, PostProcessingError
     {
         Optional<CloseResult> closeResult = null;
 
@@ -1060,7 +1341,7 @@ public class CloseLogic
      */
     protected Optional<CloseResult> insertNozzleCloses(LayerNode layerNode,
             double extrusionUpToClose, ExtrusionNode lastExtrusionNodeBeforeClose, final NozzleProxy nozzleInUse)
-            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException
+            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException, PostProcessingError
     {
         Optional<CloseResult> closeResult = Optional.empty();
 
@@ -1076,14 +1357,17 @@ public class CloseLogic
             }
         }
 
-        //Assume the nozzle is always fully open...
-        nozzleInUse.setCurrentPosition(1.0);
-        if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
+        if (sectionsToConsider.size() > 0)
         {
-            closeResult = insertProgressiveNozzleClose(sectionsToConsider, lastExtrusionNodeBeforeClose, nozzleInUse);
-        } else
-        {
-            closeResult = insertNozzleCloseFullyAfterEvent(lastExtrusionNodeBeforeClose, nozzleInUse);
+            //Assume the nozzle is always fully open...
+            nozzleInUse.setCurrentPosition(1.0);
+            if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
+            {
+                closeResult = insertProgressiveNozzleClose(sectionsToConsider, lastExtrusionNodeBeforeClose, nozzleInUse);
+            } else
+            {
+                closeResult = insertNozzleCloseFullyAfterEvent(lastExtrusionNodeBeforeClose, nozzleInUse);
+            }
         }
 
         return closeResult;
@@ -1211,7 +1495,7 @@ public class CloseLogic
                                 }
                             }
 
-                        } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException ex)
+                        } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
                         {
                             throw new RuntimeException("Failed to process retract on layer " + layerNode.getLayerNumber() + " this will affect open and close", ex);
                         }
