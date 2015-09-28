@@ -105,9 +105,9 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     @Override
     public void run()
     {
-        remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
-        remoteHostDiscoveryThread.start();
-        
+//        remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
+//        remoteHostDiscoveryThread.start();
+
         while (keepRunning)
         {
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
@@ -115,7 +115,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
 
 //            List<DeviceDetector.DetectedPrinter> remotePrinters = roboxRemoteDeviceDetector.searchForDevices();
 //            assessCandidatePrinters(remotePrinters);
-
             try
             {
                 this.sleep(500);
@@ -130,18 +129,36 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     {
         if (connnectionHandles != null)
         {
+            boolean noNeedToAddPrinter = false;
+
             for (DeviceDetector.DetectedPrinter detectedPrinter : connnectionHandles)
             {
-//                    steno.info("Found printer on " + port);
-                if (pendingPrinters.containsKey(detectedPrinter))
+//                steno.info("Found printer on " + detectedPrinter);
+
+                for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
                 {
-                    //A connection to this printer is pending...
-//                        System.out.println("PENDING FOUND");
-                } else if (activePrinters.containsKey(detectedPrinter))
+                    if (detectedPrinter.equals(pendingPrinterToCheck))
+                    {
+//                        steno.info("Found already pending printer " + detectedPrinter);
+                        noNeedToAddPrinter = true;
+                        break;
+                    }
+                }
+
+                if (!noNeedToAddPrinter)
                 {
-                    //We're already connected to this printer
-//                        System.out.println("ACTIVE FOUND");
-                } else
+                    for (DeviceDetector.DetectedPrinter activePrinterToCheck : activePrinters.keySet())
+                    {
+                        if (detectedPrinter.equals(activePrinterToCheck))
+                        {
+//                            steno.info("Found already active printer " + detectedPrinter);
+                            noNeedToAddPrinter = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!noNeedToAddPrinter)
                 {
                     // We need to connect!
                     if (keepRunning)
@@ -222,7 +239,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
             {
                 steno.error("Error shutting down printer");
             }
-        }        
+        }
     }
 
     /**

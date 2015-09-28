@@ -9,6 +9,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.utils.Math.MathUtils;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
@@ -34,7 +35,7 @@ public class CloseUtilities
                 * 1.01f * maxNumberOfIntersectionsToConsider;
     }
 
-    protected Optional<IntersectionResult> findClosestMovementNode(ExtrusionNode node, SectionNode priorSection)
+    protected Optional<IntersectionResult> findClosestMovementNode(ExtrusionNode node, List<SectionNode> sectionsToSearch)
     {
         GCodeEventNode closestNode = null;
         Vector2D intersectionPoint = null;
@@ -69,50 +70,53 @@ public class CloseUtilities
 
             double closestDistanceSoFar = 999;
 
-            Iterator<GCodeEventNode> priorSectionTreeIterator = priorSection.treeSpanningIterator(null);
-
-            while (priorSectionTreeIterator.hasNext())
+            for (SectionNode sectionToExamine : sectionsToSearch)
             {
-                GCodeEventNode priorSectionChild = priorSectionTreeIterator.next();
+                Iterator<GCodeEventNode> sectionUnderExaminationTreeIterator = sectionToExamine.treeSpanningIterator(null);
 
-                if (priorSectionChild instanceof MovementProvider)
+                while (sectionUnderExaminationTreeIterator.hasNext())
                 {
-                    MovementProvider movementProvider = (MovementProvider) priorSectionChild;
-                    Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
+                    GCodeEventNode priorSectionChild = sectionUnderExaminationTreeIterator.next();
 
-                    if (lastNodeConsidered != null)
+                    if (priorSectionChild instanceof MovementProvider)
                     {
-                        Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
-                        Segment segmentUnderConsideration = new Segment(lastPoint,
-                                extrusionPoint,
-                                new Line(lastPoint, extrusionPoint, 1e-12));
+                        MovementProvider movementProvider = (MovementProvider) priorSectionChild;
+                        Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
 
-                        Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
-                                orthogonalSegment, segmentUnderConsideration);
-
-                        if (tempIntersectionPoint != null)
+                        if (lastNodeConsidered != null)
                         {
-                            double distanceFromMidPoint = tempIntersectionPoint.distance(
-                                    orthogonalSegmentMidpoint);
+                            Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
+                            Segment segmentUnderConsideration = new Segment(lastPoint,
+                                    extrusionPoint,
+                                    new Line(lastPoint, extrusionPoint, 1e-12));
 
-                            if (distanceFromMidPoint < closestDistanceSoFar)
+                            Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
+                                    orthogonalSegment, segmentUnderConsideration);
+
+                            if (tempIntersectionPoint != null)
                             {
-                                //Which node was closest - the last one or this one?
-                                if (tempIntersectionPoint.distance(lastPoint)
-                                        < tempIntersectionPoint.distance(extrusionPoint))
+                                double distanceFromMidPoint = tempIntersectionPoint.distance(
+                                        orthogonalSegmentMidpoint);
+
+                                if (distanceFromMidPoint < closestDistanceSoFar)
                                 {
-                                    closestNode = lastNodeConsidered;
-                                } else
-                                {
-                                    closestNode = priorSectionChild;
+                                    //Which node was closest - the last one or this one?
+                                    if (tempIntersectionPoint.distance(lastPoint)
+                                            < tempIntersectionPoint.distance(extrusionPoint))
+                                    {
+                                        closestNode = lastNodeConsidered;
+                                    } else
+                                    {
+                                        closestNode = priorSectionChild;
+                                    }
+                                    closestDistanceSoFar = distanceFromMidPoint;
+                                    intersectionPoint = tempIntersectionPoint;
                                 }
-                                closestDistanceSoFar = distanceFromMidPoint;
-                                intersectionPoint = tempIntersectionPoint;
                             }
                         }
-                    }
 
-                    lastNodeConsidered = priorSectionChild;
+                        lastNodeConsidered = priorSectionChild;
+                    }
                 }
             }
         } else

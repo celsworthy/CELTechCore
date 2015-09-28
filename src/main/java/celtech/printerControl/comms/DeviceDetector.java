@@ -52,5 +52,20 @@ public interface DeviceDetector
         {
             return connectionType.name() + ":" + connectionHandle;
         }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            boolean equal = false;
+            
+            if (obj instanceof DetectedPrinter
+                    && ((DetectedPrinter)obj).getConnectionHandle().equals(connectionHandle)
+                    && ((DetectedPrinter)obj).getConnectionType() == connectionType)
+            {
+                equal = true;
+            }
+            
+            return equal;
+        }
     }
 }

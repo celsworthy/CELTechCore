@@ -2,8 +2,12 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.gcodetranslator.CannotCloseFromPerimeterException;
 import celtech.gcodetranslator.GCodeOutputWriter;
+import celtech.gcodetranslator.NoPerimeterToCloseOverException;
+import celtech.gcodetranslator.NotEnoughAvailableExtrusionException;
 import celtech.gcodetranslator.NozzleProxy;
+import celtech.gcodetranslator.PostProcessingError;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
@@ -102,7 +106,7 @@ public class UtilityMethods
                             closeLogic.insertNozzleCloses(layerNode, availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
                         }
                     }
-                } catch (NodeProcessingException ex)
+                } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
                 {
                     throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
                 }
