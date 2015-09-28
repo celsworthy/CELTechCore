@@ -128,7 +128,7 @@ public class CutCommand extends Command
 
         if (modelContainer instanceof ModelGroup)
         {
-            cutGroup(modelContainer, cutHeightValue, childModelContainers);
+            cutGroup((ModelGroup) modelContainer, cutHeightValue, childModelContainers);
         } else
         {
             cutSingleModel(modelContainer, cutHeightValue, childModelContainers);
@@ -172,15 +172,14 @@ public class CutCommand extends Command
         }
     }
 
-    private void cutGroup(ModelContainer modelContainer, float cutHeightValue,
+    private void cutGroup(ModelGroup modelGroup, float cutHeightValue,
         List<ModelContainer> childModelContainers)
     {
-        ModelGroup modelGroup = (ModelGroup) modelContainer;
         Set<ModelContainer> topModelContainers = new HashSet<>();
         Set<ModelContainer> bottomModelContainers = new HashSet<>();
         
         Set<ModelContainer> allMeshViews = modelGroup.getModelsHoldingMeshViews();
-        ungroupAllDescendentModelGroups(modelGroup);
+        
         for (ModelContainer descendentModelContainer : allMeshViews)
         {
             List<Optional<ModelContainer>> modelContainerPair = cutModelContainerAtHeight(
@@ -196,6 +195,7 @@ public class CutCommand extends Command
             }
         }
         
+        ungroupAllDescendentModelGroups(modelGroup);
         
         ModelGroup topGroup = project.createNewGroupAndAddModelListeners(
             topModelContainers);
@@ -287,6 +287,7 @@ public class CutCommand extends Command
         Set<ModelContainer> modelGroups = new HashSet<>();
         modelGroups.add(modelGroup);
         project.ungroup(modelGroups);
+        
         for (ModelContainer childModel : groupChildren)
         {
             if (childModel instanceof ModelGroup) {
@@ -294,5 +295,4 @@ public class CutCommand extends Command
             }
         }
     }
-
 }
