@@ -98,15 +98,6 @@ public class CutCommand extends Command
             for (ModelContainer modelContainer : modelContainers)
             {
                 List<ModelContainer> cutModels = cut(modelContainer, cutHeightValue);
-                /**
-                 * The cut can just be the original model, we don't add to childModelContainers in
-                 * that case.
-                 */
-                if (!cutModels.contains(modelContainer))
-                {
-                    childModelContainers.addAll(cutModels);
-                    modelsToRemoveFromProject.add(modelContainer);
-                }
             }
 
         } catch (Exception ex)
@@ -132,6 +123,15 @@ public class CutCommand extends Command
         } else
         {
             cutSingleModel(modelContainer, cutHeightValue, childModelContainers);
+            /**
+             * The cut can just be the original model, we don't add to childModelContainers in that
+             * case.
+             */
+            if (!childModelContainers.contains(modelContainer))
+            {
+                this.childModelContainers.addAll(childModelContainers);
+                modelsToRemoveFromProject.add(modelContainer);
+            }
         }
         return childModelContainers;
     }
@@ -177,9 +177,9 @@ public class CutCommand extends Command
     {
         Set<ModelContainer> topModelContainers = new HashSet<>();
         Set<ModelContainer> bottomModelContainers = new HashSet<>();
-        
+
         Set<ModelContainer> allMeshViews = modelGroup.getModelsHoldingMeshViews();
-        
+
         for (ModelContainer descendentModelContainer : allMeshViews)
         {
             List<Optional<ModelContainer>> modelContainerPair = cutModelContainerAtHeight(
@@ -194,9 +194,9 @@ public class CutCommand extends Command
                 bottomModelContainers.add(modelContainerPair.get(1).get());
             }
         }
-        
+
         ungroupAllDescendentModelGroups(modelGroup);
-        
+
         ModelGroup topGroup = project.createNewGroupAndAddModelListeners(
             topModelContainers);
         ModelGroup bottomGroup = project.createNewGroupAndAddModelListeners(
@@ -228,13 +228,13 @@ public class CutCommand extends Command
         {
             modelContainerPair.add(Optional.empty());
             modelContainerPair.add(Optional.of(modelContainer));
-            
+
             return modelContainerPair;
         } else if (cutHeight >= maxHeight)
         {
             modelContainerPair.add(Optional.of(modelContainer));
             modelContainerPair.add(Optional.empty());
-            
+
             return modelContainerPair;
         }
 
@@ -287,10 +287,11 @@ public class CutCommand extends Command
         Set<ModelContainer> modelGroups = new HashSet<>();
         modelGroups.add(modelGroup);
         project.ungroup(modelGroups);
-        
+
         for (ModelContainer childModel : groupChildren)
         {
-            if (childModel instanceof ModelGroup) {
+            if (childModel instanceof ModelGroup)
+            {
                 ungroupAllDescendentModelGroups((ModelGroup) childModel);
             }
         }
