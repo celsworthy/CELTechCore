@@ -9,7 +9,7 @@ import celtech.configuration.SlicerType;
 public enum ExtrusionTask
 {
 
-    Skirt("skirt", "skirt", "TYPE:SKIRT"),
+    Skirt("skirt", "brim", "TYPE:SKIRT"),
     Perimeter("perimeter", "perimeter", "TYPE:WALL-INNER"),
     ExternalPerimeter("externalPerimeter", "N/A-not-included-in-slic3r", "TYPE:WALL-OUTER"),
     Skin("skin", "N/A-not-included-in-slic3r", "TYPE:SKIN"),
