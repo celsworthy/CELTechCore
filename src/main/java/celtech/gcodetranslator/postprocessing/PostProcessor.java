@@ -179,9 +179,15 @@ public class PostProcessor
 
             writer = Lookup.getPostProcessorOutputWriterFactory().create(gcodeOutputFile);
 
+            boolean nozzle0Required = project.getUsedExtruders().contains(0)
+                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
+                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
+            boolean nozzle1Required = project.getUsedExtruders().contains(1)
+                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
+                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
             outputUtilities.prependPrePrintHeader(writer, headFile.getTypeCode(),
-                    project.getUsedExtruders().contains(0),
-                    project.getUsedExtruders().contains(1));
+                    nozzle0Required,
+                    nozzle1Required);
 
             StringBuilder layerBuffer = new StringBuilder();
             LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1);
