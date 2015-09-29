@@ -101,6 +101,15 @@ public class OutputUtilities
     {
         if (layerNode != null)
         {
+            try
+            {
+                writer.writeOutput(layerNode.renderForOutput());
+                writer.newLine();
+            } catch (IOException ex)
+            {
+                throw new RuntimeException("Error outputting post processed data at node " + layerNode.renderForOutput(), ex);
+            }
+            
             Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
             while (layerIterator.hasNext())
