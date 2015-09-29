@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javafx.geometry.Point3D;
@@ -266,7 +267,7 @@ public class MeshCutter2
                 }
                 previousVertexIndex = vertexIndex;
             }
-            if (cleanLoop.get(0) == cleanLoop.get(cleanLoop.size() - 1))
+            if (Objects.equals(cleanLoop.get(0), cleanLoop.get(cleanLoop.size() - 1)))
             {
                 cleanLoop.remove(cleanLoop.size() - 1);
             }

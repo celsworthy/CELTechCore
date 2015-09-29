@@ -97,21 +97,7 @@ public class OpenFaceCloser
                 {
                     steno.debug("Unable to triangulate");
                     throw new RuntimeException("Unable to triangulate");
-
-                    // debugging code follows (visualise & also output test code to reproduce
-                    // problem in unit test)
-//                    System.out.println("outer loop is " + region.outerLoop);
-//                    System.out.println("there are inner loops: " + region.innerLoops.size());
-//                    for (PolygonIndices innerPolygonIndices : region.innerLoops) {
-//                        System.out.println("inner loop is " + innerPolygonIndices);
-//                    }
-//                    Set<PolygonIndices> polygonIndices = new HashSet<>();
-//                    polygonIndices.add(region.outerLoop);
-//                    MeshDebug.visualisePolygonIndices(mesh, polygonIndices, region.innerLoops,
-//                                  bedToLocalConverter, java.awt.Color.BLUE, java.awt.Color.RED);
-                    // get edge data for failing loop (debug only)
-//                    List<ManifoldEdge> edges = MeshCutter2.debugLoopToEdges.get(region.outerLoop);
-//                    debugOutputEdges(cutResult, edges);
+//                    visualiseRegion(region, mesh, bedToLocalConverter, cutResult);
                 }
 
                 // speed of test here could be greatly increased by only testing a single face
@@ -128,6 +114,7 @@ public class OpenFaceCloser
                     orientable = MeshUtils.testMeshIsOrientable(mesh, facesWithVertices);
                     if (!orientable)
                     {
+//                        visualiseRegion(region, mesh, bedToLocalConverter, cutResult);
                         throw new RuntimeException(
                             "mesh is not orientable after triangulating last region!");
                     }
@@ -137,6 +124,25 @@ public class OpenFaceCloser
         }
 
         return mesh;
+    }
+
+    private static void visualiseRegion(Region region, TriangleMesh mesh,
+        MeshCutter2.BedToLocalConverter bedToLocalConverter, CutResult cutResult)
+    {
+        // debugging code follows (visualise & also output test code to reproduce
+        // problem in unit test)
+        System.out.println("outer loop is " + region.outerLoop);
+        System.out.println("there are inner loops: " + region.innerLoops.size());
+        for (PolygonIndices innerPolygonIndices : region.innerLoops) {
+            System.out.println("inner loop is " + innerPolygonIndices);
+        }
+        Set<PolygonIndices> polygonIndices = new HashSet<>();
+        polygonIndices.add(region.outerLoop);
+        MeshDebug.visualisePolygonIndices(mesh, polygonIndices, region.innerLoops,
+                                                                            bedToLocalConverter, java.awt.Color.BLUE, java.awt.Color.RED);
+//                     get edge data for failing loop (debug only)
+        List<ManifoldEdge> edges = MeshCutter2.debugLoopToEdges.get(region.outerLoop);
+        debugOutputEdges(cutResult, edges);
     }
 
     /**

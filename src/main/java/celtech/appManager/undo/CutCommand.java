@@ -33,6 +33,10 @@ public class CutCommand extends Command
         CutCommand.class.getName());
 
 
+    /**
+     * Cuts for groups have to be treated differently to cuts of single models due to the requirement
+     * that Undo must reconstitute any previous hierarchy of grouping that existed before the cut.
+     */
     class GroupingOperation
     {
 
