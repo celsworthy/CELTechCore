@@ -243,9 +243,8 @@ public class OpenFaceCloser
         MeshCutter2.BedToLocalConverter bedToLocalConverter, MeshCutter2.TopBottom topBottom,
         Set<Integer> facesAdded, Map<Integer, Set<Integer>> facesWithVertices)
     {
-        // vertexToVertex allows us to identify equal vertices (but different instances) and then
-        // get the definitive instance of that vertex, to avoid superfluous vertices in the mesh.
-        Map<Vertex, Vertex> vertexToVertex = new HashMap<>();
+
+        Set<Vertex> knownVertices = new HashSet<>();
         // first add already existing vertices for outer perimeter of polygon to vertexToVertex
         for (Integer vertexIndex : existingVertices)
         {
@@ -254,7 +253,7 @@ public class OpenFaceCloser
             Vertex vertex = new Vertex(vertexIndex,
                                        (float) pointInBed.getX(), cutHeight,
                                        (float) pointInBed.getZ());
-            vertexToVertex.put(vertex, vertex);
+            knownVertices.add(vertex);
         }
 
         steno.debug("add " + outerPolygon.getTriangles().size()
@@ -272,7 +271,7 @@ public class OpenFaceCloser
                 outerVerticesUsed.add(vertex0Index);
             } else
             {
-                vertex0 = getOrMakeVertexForPoint(mesh, points[0], vertexToVertex, cutHeight,
+                vertex0 = getOrMakeVertexForPoint(mesh, points[0], knownVertices, cutHeight,
                                                   bedToLocalConverter);
                 vertex0Index = vertex0.meshVertexIndex;
             }
@@ -284,7 +283,7 @@ public class OpenFaceCloser
                 outerVerticesUsed.add(vertex1Index);
             } else
             {
-                vertex1 = getOrMakeVertexForPoint(mesh, points[1], vertexToVertex, cutHeight,
+                vertex1 = getOrMakeVertexForPoint(mesh, points[1], knownVertices, cutHeight,
                                                   bedToLocalConverter);
                 vertex1Index = vertex1.meshVertexIndex;
             }
@@ -296,7 +295,7 @@ public class OpenFaceCloser
                 outerVerticesUsed.add(vertex1Index);
             } else
             {
-                vertex2 = getOrMakeVertexForPoint(mesh, points[2], vertexToVertex, cutHeight,
+                vertex2 = getOrMakeVertexForPoint(mesh, points[2], knownVertices, cutHeight,
                                                   bedToLocalConverter);
                 vertex2Index = vertex2.meshVertexIndex;
             }
@@ -318,6 +317,9 @@ public class OpenFaceCloser
     private static int makeFace(TriangleMesh mesh, int meshVertexIndex0, int meshVertexIndex1,
         int meshVertexIndex2, Map<Integer, Set<Integer>> facesWithVertices)
     {
+        assert meshVertexIndex0 != -1;
+        assert meshVertexIndex1 != -1;
+        assert meshVertexIndex2 != -1;
         int[] vertices = new int[6];
         vertices[0] = meshVertexIndex0;
         vertices[2] = meshVertexIndex1;
@@ -333,14 +335,14 @@ public class OpenFaceCloser
      * coordinates), and add the points to the mesh in local coordinates.
      */
     private static Vertex getOrMakeVertexForPoint(TriangleMesh mesh, TriangulationPoint point,
-        Map<Vertex, Vertex> vertexToVertex, float cutHeight,
+        Set<Vertex> knownVertices, float cutHeight,
         MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {
         
         Vertex vertex = new Vertex((float) point.getX(), cutHeight,
                                    (float) point.getZ());
 
-        if (!vertexToVertex.containsKey(vertex))
+        if (!knownVertices.contains(vertex))
         {
             Point3D pointInBed = new Point3D(point.getX(), cutHeight, point.getY());
             Point3D localPoint = bedToLocalConverter.bedToLocal(pointInBed);
@@ -349,11 +351,17 @@ public class OpenFaceCloser
             int vertexIndex = TriangleCutter.addNewOrGetVertex(mesh, localVertex);
             steno.debug("triangulation new Vertex");
             vertex.meshVertexIndex = vertexIndex;
-            vertexToVertex.put(vertex, vertex);
+            knownVertices.add(vertex);
             return vertex;
         } else
         {
-            return vertexToVertex.get(vertex);
+            for (Vertex knownVertex : knownVertices)
+            {
+                if (knownVertex.equals(vertex)) {
+                    return knownVertex;
+                }
+            }
+            throw new RuntimeException("Should not get here");
         }
 
     }

@@ -30,6 +30,7 @@ final class Vertex
         this.x = x;
         this.y = y;
         this.z = z;
+        meshVertexIndex = -1;
     }
 
     @Override
