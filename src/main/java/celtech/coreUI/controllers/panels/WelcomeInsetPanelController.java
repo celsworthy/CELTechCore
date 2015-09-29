@@ -1,19 +1,16 @@
 package celtech.coreUI.controllers.panels;
 
-import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+import javafx.scene.web.WebView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -25,16 +22,10 @@ public class WelcomeInsetPanelController implements Initializable
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationInsetPanelController.class.getName());
+            WelcomeInsetPanelController.class.getName());
 
     @FXML
-    private TextFlow titleTextFlow;
-
-    @FXML
-    private Label intro;
-
-    @FXML
-    private TextFlow textFlow;
+    private WebView textContainer;
 
     @FXML
     void backToStatusAction(ActionEvent event)
@@ -45,52 +36,27 @@ public class WelcomeInsetPanelController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        Text appNameBoldPart = new Text();
-        appNameBoldPart.setText(Lookup.i18n("aboutPanel.applicationNamePart1"));
-        appNameBoldPart.getStyleClass().add("welcome-title-bold");
+        String readmeURL = "file:///" + ApplicationConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
 
-        Text appNameLightPart = new Text();
-        appNameLightPart.setText(Lookup.i18n("aboutPanel.applicationNamePart2")
-        + "\n");
-        appNameLightPart.getStyleClass().add("welcome-title-light");
-
-        Text version = new Text();
-        version.setText(Lookup.i18n("aboutPanel.version")
-            + " "
-            + ApplicationConfiguration.getApplicationVersion());
-        version.getStyleClass().add("welcome-version");
-
-        titleTextFlow.getChildren().addAll(appNameBoldPart, appNameLightPart, version);
-
-        intro.setText(Lookup.i18n("versionWelcomeBoilerplateIntro"));
-
-        boolean subTitlesToProcess = true;
-
-        String versionWelcomeSubtitleBase = "versionWelcomeSubtitle";
-        String versionWelcomeBodyBase = "versionWelcomeBody";
-
-        int lineCounter = 1;
-
-        while (subTitlesToProcess)
-        {
-            try
-            {
-                Text welcomeSubtitle = new Text();
-                String subTitleString = Lookup.i18n(versionWelcomeSubtitleBase + lineCounter)
-                    + "\n";
-                welcomeSubtitle.setText(subTitleString);
-                welcomeSubtitle.getStyleClass().add("welcome-subtitle");
-
-                Text welcomeBody = new Text();
-                welcomeBody.setText(Lookup.i18n(versionWelcomeBodyBase + lineCounter) + "\n");
-                welcomeBody.getStyleClass().add("welcome-body");
-                textFlow.getChildren().addAll(welcomeSubtitle, welcomeBody);
-
-                lineCounter++;
-            } catch (Exception e)
-            {
-                subTitlesToProcess = false;
-            }
-        }
+        textContainer.getEngine().getLoadWorker().stateProperty().addListener(
+                (ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) ->
+                {
+                    switch (newState)
+                    {
+                        case RUNNING:
+                            steno.info("Running");
+                            break;
+                        case SUCCEEDED:
+                            steno.info("Succeeded");
+                            break;
+                        case CANCELLED:
+                            steno.info("Cancelled");
+                            break;
+                        case FAILED:
+                            steno.info("Failed");
+                            break;
+                    }
+                });
+        textContainer.getEngine().load(readmeURL);
     }
 }
