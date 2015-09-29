@@ -407,7 +407,9 @@ public class PostProcessor
         switch (postProcessingMode)
         {
             case TASK_BASED_NOZZLE_SELECTION:
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode, lastLayerParseResult);
+            case SUPPORT_IN_FIRST_MATERIAL:
+            case SUPPORT_IN_SECOND_MATERIAL:
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode, lastLayerParseResult, postProcessingMode);
                 break;
             case USE_OBJECT_MATERIAL:
                 lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);

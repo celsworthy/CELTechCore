@@ -41,11 +41,11 @@ public class NozzleAssignmentUtilities
     private final Map<Integer, Integer> nozzleToExtruderMap;
 
     public NozzleAssignmentUtilities(List<NozzleProxy> nozzleProxies,
-        SlicerParametersFile slicerParametersFile,
-        HeadFile headFile,
-        PostProcessorFeatureSet featureSet,
-        Project project,
-        PostProcessingMode postProcessingMode)
+            SlicerParametersFile slicerParametersFile,
+            HeadFile headFile,
+            PostProcessorFeatureSet featureSet,
+            Project project,
+            PostProcessingMode postProcessingMode)
     {
         this.nozzleProxies = nozzleProxies;
         this.slicerParametersFile = slicerParametersFile;
@@ -55,14 +55,14 @@ public class NozzleAssignmentUtilities
         this.postProcessingMode = postProcessingMode;
 
         nozzleControlUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile,
-                                                               headFile);
+                headFile);
 
         extruderToNozzleMap = new HashMap<>();
         nozzleToExtruderMap = new HashMap<>();
         for (int extruderNumber = 0; extruderNumber < 2; extruderNumber++)
         {
             Optional<NozzleProxy> proxy = nozzleControlUtilities.chooseNozzleProxyByExtruderNumber(
-                extruderNumber);
+                    extruderNumber);
             if (proxy.isPresent())
             {
                 extruderToNozzleMap.put(extruderNumber, proxy.get().getNozzleReferenceNumber());
@@ -99,7 +99,7 @@ public class NozzleAssignmentUtilities
                     ToolSelectNode toolSelectNode = (ToolSelectNode) potentialToolSelectNode;
 
                     Iterator<GCodeEventNode> toolSelectNodeIterator = toolSelectNode.treeSpanningIterator(
-                        null);
+                            null);
 
                     while (toolSelectNodeIterator.hasNext())
                     {
@@ -128,10 +128,13 @@ public class NozzleAssignmentUtilities
     /**
      *
      * @param layerNode
+     * @param lastLayerResult
+     * @param postProcessingMode
      * @return The reference number of the last object in the layer
      */
     protected int insertNozzleControlSectionsByTask(LayerNode layerNode,
-        LayerPostProcessResult lastLayerResult)
+            LayerPostProcessResult lastLayerResult,
+            PostProcessingMode postProcessingMode)
     {
         int lastObjectReferenceNumber = -1;
 
@@ -168,13 +171,13 @@ public class NozzleAssignmentUtilities
                 {
                     Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
                     if (potentialLastSection.isPresent()
-                        && potentialLastSection.get() instanceof SectionNode)
+                            && potentialLastSection.get() instanceof SectionNode)
                     {
                         lastSectionNode = (SectionNode) potentialLastSection.get();
 
                         Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
                         if (potentialToolSelectNode.isPresent()
-                            && potentialToolSelectNode.get() instanceof ToolSelectNode)
+                                && potentialToolSelectNode.get() instanceof ToolSelectNode)
                         {
                             toolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
                         }
@@ -202,7 +205,7 @@ public class NozzleAssignmentUtilities
                 lastObjectReferenceNumber = objectNode.getObjectNumber();
 
                 List<GCodeEventNode> childNodes = objectNode.getChildren().stream().collect(
-                    Collectors.toList());
+                        Collectors.toList());
 
                 for (GCodeEventNode childNode : childNodes)
                 {
@@ -219,13 +222,21 @@ public class NozzleAssignmentUtilities
                                 if (lastSectionNode == null)
                                 {
                                     throw new RuntimeException(
-                                        "Failed to process orphan section on layer "
-                                        + layerNode.getLayerNumber()
-                                        + " as last section didn't exist");
+                                            "Failed to process orphan section on layer "
+                                            + layerNode.getLayerNumber()
+                                            + " as last section didn't exist");
                                 }
 
-                                requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
-                                    lastSectionNode);
+                                if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+                                {
+                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
+                                            lastSectionNode);
+                                } else
+                                {
+                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(lastSectionNode,
+                                            (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+                                }
+
                                 try
                                 {
                                     SectionNode replacementSection = lastSectionNode.getClass().newInstance();
@@ -245,23 +256,30 @@ public class NozzleAssignmentUtilities
                                 } catch (InstantiationException | IllegalAccessException ex)
                                 {
                                     throw new RuntimeException(
-                                        "Failed to process orphan section on layer "
-                                        + layerNode.getLayerNumber(), ex);
+                                            "Failed to process orphan section on layer "
+                                            + layerNode.getLayerNumber(), ex);
                                 }
                             } else
                             {
-                                requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
-                                    sectionNodeBeingExamined);
+                                if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+                                {
+                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
+                                            sectionNodeBeingExamined);
+                                } else
+                                {
+                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(sectionNodeBeingExamined,
+                                            (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+                                }
                             }
 
                             if (toolSelectNode == null
-                                || toolSelectNode.getToolNumber()
-                                != requiredNozzle.getNozzleReferenceNumber())
+                                    || toolSelectNode.getToolNumber()
+                                    != requiredNozzle.getNozzleReferenceNumber())
                             {
                                 //Need to create a new Tool Select Node
                                 toolSelectNode = new ToolSelectNode();
                                 toolSelectNode.setToolNumber(
-                                    requiredNozzle.getNozzleReferenceNumber());
+                                        requiredNozzle.getNozzleReferenceNumber());
                                 layerNode.addChildAtEnd(toolSelectNode);
                             }
 
@@ -271,8 +289,8 @@ public class NozzleAssignmentUtilities
                         } catch (UnableToFindSectionNodeException ex)
                         {
                             throw new RuntimeException(
-                                "Error attempting to insert nozzle control sections by task - "
-                                + ex.getMessage(), ex);
+                                    "Error attempting to insert nozzle control sections by task - "
+                                    + ex.getMessage(), ex);
                         }
 
                         lastSectionNode = sectionNodeBeingExamined;
@@ -292,7 +310,7 @@ public class NozzleAssignmentUtilities
                 if (!objectNode.getChildren().isEmpty())
                 {
                     throw new RuntimeException("Transfer of children from object "
-                        + objectNode.getObjectNumber() + " failed");
+                            + objectNode.getObjectNumber() + " failed");
                 }
                 objectNode.removeFromParent();
             }
@@ -301,7 +319,7 @@ public class NozzleAssignmentUtilities
     }
 
     protected int insertNozzleControlSectionsByObject(LayerNode layerNode,
-        LayerPostProcessResult lastLayerResult)
+            LayerPostProcessResult lastLayerResult)
     {
         int lastObjectReferenceNumber = -1;
         //We'll need at least one of these per layer
@@ -329,10 +347,10 @@ public class NozzleAssignmentUtilities
             ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
 
             NozzleProxy requiredNozzle = nozzleProxies.get(objectToNozzleNumberMap.get(
-                objectNodeBeingExamined.getObjectNumber()));
+                    objectNodeBeingExamined.getObjectNumber()));
 
             if (toolSelectNode == null
-                || toolSelectNode.getToolNumber() != requiredNozzle.getNozzleReferenceNumber())
+                    || toolSelectNode.getToolNumber() != requiredNozzle.getNozzleReferenceNumber())
             {
                 //Need to create a new Tool Select Node
                 toolSelectNode = new ToolSelectNode();
@@ -342,7 +360,7 @@ public class NozzleAssignmentUtilities
 
             objectNodeBeingExamined.removeFromParent();
             List<GCodeEventNode> sectionNodes = objectNodeBeingExamined.getChildren().stream().collect(
-                Collectors.toList());
+                    Collectors.toList());
 
             for (GCodeEventNode childNode : sectionNodes)
             {
@@ -362,7 +380,7 @@ public class NozzleAssignmentUtilities
                                 {
                                     Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
                                     if (potentialLastSection.isPresent()
-                                        && potentialLastSection.get() instanceof SectionNode)
+                                            && potentialLastSection.get() instanceof SectionNode)
                                     {
                                         lastSectionNode = (SectionNode) potentialLastSection.get();
                                     }
@@ -372,21 +390,21 @@ public class NozzleAssignmentUtilities
                             if (lastSectionNode == null)
                             {
                                 throw new RuntimeException(
-                                    "Failed to process orphan section on layer "
-                                    + layerNode.getLayerNumber() + " as last section didn't exist");
+                                        "Failed to process orphan section on layer "
+                                        + layerNode.getLayerNumber() + " as last section didn't exist");
                             }
                         }
 
                         try
                         {
                             requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
-                                lastSectionNode);
+                                    lastSectionNode);
 
                             SectionNode replacementSection = lastSectionNode.getClass().newInstance();
 
                             // Move the child nodes to the replacement section
                             List<GCodeEventNode> sectionChildren = sectionNodes.stream().collect(
-                                Collectors.toList());
+                                    Collectors.toList());
                             for (GCodeEventNode child : sectionChildren)
                             {
                                 child.removeFromParent();
@@ -399,7 +417,7 @@ public class NozzleAssignmentUtilities
                         } catch (InstantiationException | IllegalAccessException | UnableToFindSectionNodeException ex)
                         {
                             throw new RuntimeException("Failed to process orphan section on layer "
-                                + layerNode.getLayerNumber(), ex);
+                                    + layerNode.getLayerNumber(), ex);
                         }
                     }
 

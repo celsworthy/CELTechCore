@@ -526,7 +526,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByTask(testLayer, lastLayerParseResult);
+        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByTask(testLayer, lastLayerParseResult, PostProcessingMode.TASK_BASED_NOZZLE_SELECTION);
 
         assertEquals(22, lastObjectNumber);
         assertEquals(3, testLayer.getChildren().size());

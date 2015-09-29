@@ -40,6 +40,55 @@ public class NozzleManagementUtilities
         this.headFile = headFile;
     }
 
+    protected NozzleProxy chooseNozzleProxyForDifferentialSupportMaterial(final GCodeEventNode node,
+            final int nozzleToUseForObject) throws UnableToFindSectionNodeException
+    {
+        NozzleProxy nozzleProxy = null;
+
+        //Go up through the parents until we either reach the top or find a section node
+        GCodeEventNode foundNode = null;
+        GCodeEventNode searchNode = node;
+
+        do
+        {
+            if (searchNode instanceof SectionNode)
+            {
+                foundNode = searchNode;
+                break;
+            } else
+            {
+                if (searchNode.hasParent())
+                {
+                    searchNode = searchNode.getParent().get();
+                }
+            }
+        } while (searchNode.hasParent());
+
+        if (foundNode == null)
+        {
+            String outputMessage;
+            if (node instanceof Renderable)
+            {
+                outputMessage = "Unable to find section parent of " + ((Renderable) node).renderForOutput();
+            } else
+            {
+                outputMessage = "Unable to find section parent of " + node.toString();
+            }
+            throw new UnableToFindSectionNodeException(outputMessage);
+        }
+
+        if (foundNode instanceof SupportSectionNode
+                || foundNode instanceof SupportInterfaceSectionNode)
+        {
+            nozzleProxy = nozzleProxies.get((nozzleToUseForObject == 0)?1:0);
+        } else
+        {
+            nozzleProxy = nozzleProxies.get(nozzleToUseForObject);
+        }
+
+        return nozzleProxy;
+    }
+
     protected NozzleProxy chooseNozzleProxyByTask(final GCodeEventNode node) throws UnableToFindSectionNodeException
     {
         NozzleProxy nozzleProxy = null;
@@ -98,6 +147,7 @@ public class NozzleManagementUtilities
         {
             nozzleProxy = nozzleProxies.get(slicerParametersFile.getFillNozzle());
         }
+
         return nozzleProxy;
     }
 
