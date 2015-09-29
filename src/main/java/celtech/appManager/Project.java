@@ -413,9 +413,7 @@ public class Project implements Serializable
     }
 
     /**
-     * Return which extruders are used by the project, as a set of the extruder numbers
-     *
-     * @return
+     * Return which extruders are used by the project, as a set of the extruder numbers.
      */
     public Set<Integer> getUsedExtruders()
     {
@@ -593,6 +591,12 @@ public class Project implements Serializable
 
     public void removeModels(Set<ModelContainer> modelContainers)
     {
+        
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            assert modelContainer != null;
+        }    
+        
         topLevelModels.removeAll(modelContainers);
 
         for (ModelContainer modelContainer : modelContainers)
@@ -687,8 +691,6 @@ public class Project implements Serializable
     /**
      * Create a new group from models that are not yet in the project, and add model listeners to
      * all descendent children.
-     * @param modelContainers
-     * @return 
      */
     public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
     {
@@ -799,7 +801,6 @@ public class Project implements Serializable
                 modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
             } else {
                 modelsInGroups.add(model);
-//                System.out.println("model " + model + " is in group " + modelGroup);
             }
         }
         return modelsInGroups;
@@ -840,7 +841,7 @@ public class Project implements Serializable
      * groups are created.
      * </p>
      */
-    private void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
+    public void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
         Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
@@ -851,7 +852,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Create groups where all the children are already instantiated.
+     * Create groups where all the children are already instantiated, based on the structure
+     * and state given in the parameters.
      *
      * @return the number of groups created
      */
