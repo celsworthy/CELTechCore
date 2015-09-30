@@ -57,6 +57,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
         targetValueRequired(true);
         currentValueRequired(true);
         progressRequired(true);
+        layerDataRequired(false);
     }
 
     private void reassessStatus()

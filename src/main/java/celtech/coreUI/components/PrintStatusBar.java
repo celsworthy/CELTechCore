@@ -99,6 +99,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         printer.getPrintEngine().printQueueStatusProperty().addListener(printQueueStatusChangeListener);
         printer.getPrintEngine().progressETCProperty().addListener(printerNumberElementListener);
         printer.getPrintEngine().progressProperty().addListener(printerNumberElementListener);
+        printer.getPrintEngine().progressNumLayersProperty().addListener(printerNumberElementListener);
 
         pauseButton.visibleProperty().bind(printer.canPauseProperty().and(buttonsAllowed));
         pauseButton.setOnAction(pauseEventHandler);
@@ -133,6 +134,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 targetLegendRequired(false);
                 targetValueRequired(false);
                 currentValueRequired(false);
+                layerDataRequired(false);
                 buttonsAllowed.set(false);
                 break;
             default:
@@ -156,6 +158,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     targetLegendRequired(false);
                     targetValueRequired(false);
                     currentValueRequired(false);
+                    layerDataRequired(false);
                     buttonsAllowed.set(true);
                     break;
                 default:
@@ -190,14 +193,19 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                         }
 
                         largeTargetLegend.setText(Lookup.i18n("dialogs.progressETCLabel"));
+                        
+                        layerN.setText(String.format("%d",printer.getPrintEngine().progressCurrentLayerProperty().get()));
+                        layerTotal.setText(String.format("%d",printer.getPrintEngine().progressNumLayersProperty().get()));
                         targetLegendRequired(true);
                         targetValueRequired(false);
                         currentValueRequired(true);
+                        layerDataRequired(true);
                     } else
                     {
                         targetLegendRequired(false);
                         targetValueRequired(false);
                         currentValueRequired(false);
+                        layerDataRequired(false);
                     }
 
                     if (progressBar.progressProperty().isBound())
@@ -217,6 +225,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     targetLegendRequired(false);
                     targetValueRequired(false);
                     currentValueRequired(false);
+                    layerDataRequired(false);
 
                     if (progressBar.progressProperty().isBound())
                     {
@@ -247,6 +256,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     targetLegendRequired(false);
                     targetValueRequired(false);
                     currentValueRequired(false);
+                    layerDataRequired(false);
 
                     if (progressBar.progressProperty().isBound())
                     {
@@ -277,6 +287,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     targetLegendRequired(false);
                     targetValueRequired(false);
                     currentValueRequired(false);
+                    layerDataRequired(false);
 
                     if (progressBar.progressProperty().isBound())
                     {
@@ -306,6 +317,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                     targetValueRequired(false);
                     currentValueRequired(false);
                     progressRequired(false);
+                    layerDataRequired(false);
                     largeProgressDescription.setText(printer.printerStatusProperty().get().getI18nString());
                     buttonsAllowed.set(false);
                     break;
@@ -339,6 +351,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             printer.getPrintEngine().printQueueStatusProperty().removeListener(printQueueStatusChangeListener);
             printer.getPrintEngine().progressETCProperty().removeListener(printerNumberElementListener);
             printer.getPrintEngine().progressProperty().removeListener(printerNumberElementListener);
+            printer.getPrintEngine().progressNumLayersProperty().removeListener(printerNumberElementListener);
             pauseButton.visibleProperty().unbind();
             pauseButton.setOnAction(null);
             resumeButton.visibleProperty().unbind();

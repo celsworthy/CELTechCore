@@ -81,7 +81,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         targetValueRequired(false);
         currentValueRequired(false);
         progressRequired(true);
-
+        layerDataRequired(false);
     }
 
     private void reassessStatus()

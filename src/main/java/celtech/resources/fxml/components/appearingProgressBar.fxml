@@ -8,7 +8,7 @@
 <?import javafx.scene.*?>
 <?import celtech.coreUI.components.buttons.*?>
 
-<fx:root fx:id="statusBar" maxHeight="60.0" maxWidth="1.7976931348623157E308" prefHeight="60.0" prefWidth="400.0" styleClass="statusBar" type="StackPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root fx:id="statusBar" maxHeight="60.0" maxWidth="1.7976931348623157E308" prefHeight="60.0" prefWidth="400.0" styleClass="statusBar" type="StackPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <VBox fillWidth="false" maxHeight="60.0" mouseTransparent="true" prefHeight="60.0" StackPane.alignment="TOP_LEFT">
             <children>
@@ -33,7 +33,22 @@
         </VBox>
         <HBox alignment="TOP_RIGHT" fillHeight="false" maxHeight="60.0" prefHeight="60.0" StackPane.alignment="TOP_RIGHT">
             <children>
-                <VBox alignment="TOP_CENTER" mouseTransparent="true" prefWidth="200.0" styleClass="statusBarTargetContainer">
+                <VBox fx:id="layerData" alignment="TOP_CENTER" mouseTransparent="true" prefWidth="100" styleClass="statusBarTargetContainer">
+                    <children>
+                        <Label fx:id="layerTitle" alignment="CENTER" contentDisplay="TEXT_ONLY" textAlignment="CENTER" />
+                        <HBox spacing="0.0" alignment="CENTER">
+                            <children>
+                                <Label fx:id="layerN" alignment="CENTER" contentDisplay="TEXT_ONLY" text="" textAlignment="CENTER" />
+                                <Label fx:id="layerOf" alignment="CENTER" contentDisplay="TEXT_ONLY" text="/" textAlignment="CENTER" />
+                                <Label fx:id="layerTotal" alignment="CENTER" contentDisplay="TEXT_ONLY" text="" textAlignment="CENTER" />
+                            </children>
+                        </HBox>
+                    </children>
+                    <HBox.margin>
+                        <Insets top="8.0" />
+                    </HBox.margin>  
+                </VBox>
+                <VBox alignment="TOP_CENTER" mouseTransparent="true" prefWidth="180.0" styleClass="statusBarTargetContainer">
                     <children>
                         <HBox spacing="5.0" alignment="CENTER">
                             <children>
