@@ -37,6 +37,12 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     private Label version;
 
     @FXML
+    private void viewREADME(ActionEvent event)
+    {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.WELCOME);
+    }
+
+    @FXML
     private void okPressed(ActionEvent event)
     {
         ApplicationStatus.getInstance().returnToLastMode();

@@ -66,6 +66,7 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
         targetValueRequired(true);
         currentValueRequired(true);
         progressRequired(true);
+        layerDataRequired(false);
     }
 
     private void reassessStatus()

@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.components.Notifications;
 
+import celtech.Lookup;
 import celtech.coreUI.components.buttons.GraphicButton;
 import celtech.utils.Math.MathUtils;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -53,6 +55,18 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
 
     @FXML
     protected GraphicButton cancelButton;
+    
+    @FXML
+    private VBox layerData;
+
+    @FXML
+    protected Label layerN;
+
+    @FXML
+    protected Label layerTotal;
+
+    @FXML
+    protected Label layerTitle;
 
     private static final Duration transitionLengthMillis = Duration.millis(200);
 
@@ -123,6 +137,7 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
             slidOutOfView = true;
             setVisible(false);
         });
+        layerTitle.setText(Lookup.i18n("dialogs.progressLayerLabel"));
     }
 
     /**
@@ -268,5 +283,10 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
     {
         progressBar.setVisible(required);
         progressBar.progressProperty().unbind();
+    }
+
+    public void layerDataRequired(boolean required)
+    {
+        layerData.setVisible(required);
     }
 }

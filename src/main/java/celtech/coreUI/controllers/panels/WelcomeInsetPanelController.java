@@ -1,21 +1,29 @@
 package celtech.coreUI.controllers.panels;
 
-import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+import javafx.scene.web.WebView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.html.HTMLAnchorElement;
 
 /**
  *
@@ -25,16 +33,10 @@ public class WelcomeInsetPanelController implements Initializable
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationInsetPanelController.class.getName());
+            WelcomeInsetPanelController.class.getName());
 
     @FXML
-    private TextFlow titleTextFlow;
-
-    @FXML
-    private Label intro;
-
-    @FXML
-    private TextFlow textFlow;
+    private WebView textContainer;
 
     @FXML
     void backToStatusAction(ActionEvent event)
@@ -45,52 +47,50 @@ public class WelcomeInsetPanelController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        Text appNameBoldPart = new Text();
-        appNameBoldPart.setText(Lookup.i18n("aboutPanel.applicationNamePart1"));
-        appNameBoldPart.getStyleClass().add("welcome-title-bold");
+        String readmeURL = "file:///" + ApplicationConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
 
-        Text appNameLightPart = new Text();
-        appNameLightPart.setText(Lookup.i18n("aboutPanel.applicationNamePart2")
-        + "\n");
-        appNameLightPart.getStyleClass().add("welcome-title-light");
-
-        Text version = new Text();
-        version.setText(Lookup.i18n("aboutPanel.version")
-            + " "
-            + ApplicationConfiguration.getApplicationVersion());
-        version.getStyleClass().add("welcome-version");
-
-        titleTextFlow.getChildren().addAll(appNameBoldPart, appNameLightPart, version);
-
-        intro.setText(Lookup.i18n("versionWelcomeBoilerplateIntro"));
-
-        boolean subTitlesToProcess = true;
-
-        String versionWelcomeSubtitleBase = "versionWelcomeSubtitle";
-        String versionWelcomeBodyBase = "versionWelcomeBody";
-
-        int lineCounter = 1;
-
-        while (subTitlesToProcess)
+        textContainer.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>()
         {
-            try
-            {
-                Text welcomeSubtitle = new Text();
-                String subTitleString = Lookup.i18n(versionWelcomeSubtitleBase + lineCounter)
-                    + "\n";
-                welcomeSubtitle.setText(subTitleString);
-                welcomeSubtitle.getStyleClass().add("welcome-subtitle");
 
-                Text welcomeBody = new Text();
-                welcomeBody.setText(Lookup.i18n(versionWelcomeBodyBase + lineCounter) + "\n");
-                welcomeBody.getStyleClass().add("welcome-body");
-                textFlow.getChildren().addAll(welcomeSubtitle, welcomeBody);
-
-                lineCounter++;
-            } catch (Exception e)
+            @Override
+            public void changed(ObservableValue<? extends Worker.State> ov, Worker.State t, Worker.State newState)
             {
-                subTitlesToProcess = false;
+                if (newState == Worker.State.SUCCEEDED)
+                {
+                    NodeList nodeList = textContainer.getEngine().getDocument().getElementsByTagName("a");
+                    for (int i = 0; i < nodeList.getLength(); i++)
+                    {
+                        Node node = nodeList.item(i);
+                        EventTarget eventTarget = (EventTarget) node;
+                        eventTarget.addEventListener("click", new EventListener()
+                        {
+                            @Override
+                            public void handleEvent(Event evt)
+                            {
+                                EventTarget target = evt.getCurrentTarget();
+                                HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
+                                String href = anchorElement.getHref();
+                                evt.preventDefault();
+
+                                try
+                                {
+                                    URI outboundURI = new URI(href);
+                                    if (Desktop.isDesktopSupported()
+                                            && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+                                    {
+                                        Desktop.getDesktop().browse(outboundURI);
+                                    }
+                                } catch (URISyntaxException | IOException ex)
+                                {
+                                    steno.error("Unable to generate URI from " + href);
+                                }
+                            }
+                        }, false);
+                    }
+                }
             }
-        }
+        });
+        textContainer.getEngine().load(readmeURL);
+
     }
 }

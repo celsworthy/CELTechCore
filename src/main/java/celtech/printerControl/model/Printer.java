@@ -2,6 +2,7 @@ package celtech.printerControl.model;
 
 import celtech.appManager.Project;
 import celtech.configuration.BusyStatus;
+import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
@@ -510,6 +511,8 @@ public interface Printer extends RoboxResponseConsumer
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
 
     public void loadFirmware(String firmwareFilePath);
+    
+    public ObservableList<EEPROMState> getReelEEPROMStateProperty();
 
     public void startComms();
 

@@ -4,6 +4,7 @@
 package celtech.utils;
 
 import celtech.appManager.Project;
+import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
@@ -1080,6 +1081,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void stopComms()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ObservableList<EEPROMState> getReelEEPROMStateProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

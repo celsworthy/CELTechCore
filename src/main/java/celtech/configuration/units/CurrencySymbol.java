@@ -14,7 +14,8 @@ public enum CurrencySymbol
     KOREAN_WON("₩"),
     KRONA("kr"),
     INDIAN_RUPEE("₹"),
-    BAHT("฿");
+    BAHT("฿"),
+    RAND("R");
 
     private final String currencySymbol;
 

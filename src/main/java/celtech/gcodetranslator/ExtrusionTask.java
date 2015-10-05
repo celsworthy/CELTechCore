@@ -9,12 +9,12 @@ import celtech.configuration.SlicerType;
 public enum ExtrusionTask
 {
 
-    Skirt("skirt", "skirt", "TYPE:SKIRT"),
+    Skirt("skirt", "brim", "TYPE:SKIRT"),
     Perimeter("perimeter", "perimeter", "TYPE:WALL-INNER"),
     ExternalPerimeter("externalPerimeter", "N/A-not-included-in-slic3r", "TYPE:WALL-OUTER"),
     Skin("skin", "N/A-not-included-in-slic3r", "TYPE:SKIN"),
-    Support("support", "support", "TYPE:SUPPORT"),
-    Support_Interface("supportInterface", "N/A-not-included-in-slic3r", "N/A-not-included-in-cura"),
+    Support("support", "support material", "TYPE:SUPPORT"),
+    Support_Interface("supportInterface", "support material interface", "N/A-not-included-in-cura"),
     Fill("fill", "fill", "TYPE:FILL");
 
     private final String genericLabelInGCode;
