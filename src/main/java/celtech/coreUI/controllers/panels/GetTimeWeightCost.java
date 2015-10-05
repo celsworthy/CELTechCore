@@ -223,12 +223,19 @@ public class GetTimeWeightCost
                 temporaryDirectory
                 + settings.getProfileName()
                 + ApplicationConfiguration.printProfileFileExtension);
+        
+        Printer printerToUse = null;
+        
+        if (Lookup.getSelectedPrinterProperty().isNotNull().get())
+        {
+            printerToUse = Lookup.getSelectedPrinterProperty().get();
+        }    
 
         SliceResult sliceResult = SlicerTask.doSlicing(settings.getProfileName(), settings,
                 temporaryDirectory,
                 project,
                 PrintQualityEnumeration.DRAFT,
-                null, null, steno);
+                printerToUse, null, steno);
         return sliceResult.isSuccess();
     }
 

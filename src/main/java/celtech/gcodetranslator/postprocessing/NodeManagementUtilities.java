@@ -76,6 +76,20 @@ public class NodeManagementUtilities
         return sectionNode;
     }
 
+    protected void recalculateSectionExtrusion(LayerNode layerNode)
+    {
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
+
+        while (layerIterator.hasNext())
+        {
+            GCodeEventNode node = layerIterator.next();
+            if (node instanceof SectionNode)
+            {
+                ((SectionNode) node).recalculateExtrusion();
+            }
+        }
+    }
+
     protected void calculatePerRetractExtrusionAndNode(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
@@ -84,6 +98,7 @@ public class NodeManagementUtilities
         double extrusionInRetract = 0;
 
         List<SectionNode> sectionNodes = new ArrayList<>();
+        SectionNode lastSectionNode = null;
 
         while (layerIterator.hasNext())
         {
@@ -93,7 +108,11 @@ public class NodeManagementUtilities
                 Optional<SectionNode> parentSection = lookForParentSectionNode(node);
                 if (parentSection.isPresent())
                 {
-                    sectionNodes.add(parentSection.get());
+                    if (lastSectionNode != parentSection.get())
+                    {
+                        sectionNodes.add(parentSection.get());
+                        lastSectionNode = parentSection.get();
+                    }
                 }
 
                 ExtrusionNode extrusionNode = (ExtrusionNode) node;
@@ -106,6 +125,7 @@ public class NodeManagementUtilities
                 retractNode.setExtrusionSinceLastRetract(extrusionInRetract);
                 retractNode.setSectionsToConsider(sectionNodes);
                 sectionNodes = new ArrayList<>();
+                lastSectionNode = null;
                 extrusionInRetract = 0;
 
                 if (lastExtrusionNode != null)
@@ -346,6 +366,7 @@ public class NodeManagementUtilities
                 {
                     ExtrusionNode extrusionNode = (ExtrusionNode) node;
                     availableExtrusion += extrusionNode.getExtrusion().getE();
+                    availableExtrusion += extrusionNode.getExtrusion().getD();
                 }
             }
         }

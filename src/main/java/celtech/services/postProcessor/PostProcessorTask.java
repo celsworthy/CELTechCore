@@ -124,7 +124,6 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
             ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
             ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-            ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
             ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
             ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
             ppFeatures.enableFeature(PostProcessorFeature.REPLENISH_BEFORE_OPEN);

@@ -190,7 +190,8 @@ public class PostProcessor
                     nozzle1Required);
 
             StringBuilder layerBuffer = new StringBuilder();
-            LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1);
+            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1);
+            LayerPostProcessResult parseResultCycle2 = null;
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
             {
@@ -210,40 +211,50 @@ public class PostProcessor
                 {
                     if (layerCounter >= 0)
                     {
-                        //Parse anything that has gone before
-                        LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
-                        finalEVolume += parseResult.getEVolume();
-                        finalDVolume += parseResult.getDVolume();
-                        timeForPrint_secs += parseResult.getTimeForLayer();
-
-                        //Now output the LAST layer - it was held until now in case it needed to be modified before output
-                        timeUtils.timerStart(this, writeOutputTimerName);
-                        outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
-                        timeUtils.timerStop(this, writeOutputTimerName);
-                        postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
-                        predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
-
-                        if (parseResult.getNozzleStateAtEndOfLayer().isPresent())
+                        if (parseResultCycle2 != null
+                                && parseResultCycle2.getLayerData() != null)
                         {
-                            lastLayerParseResult = parseResult;
-                            if (lastLayerParseResult.getLayerData().getLayerNumber() == 1)
+                            timeUtils.timerStart(this, assignExtrusionTimerName);
+                            nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
+                            timeUtils.timerStop(this, assignExtrusionTimerName);
+
+                            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                            timeUtils.timerStart(this, writeOutputTimerName);
+                            outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
+                            timeUtils.timerStop(this, writeOutputTimerName);
+                            postProcessorUtilityMethods.updateLayerToLineNumber(parseResultCycle2, layerNumberToLineNumber, writer);
+                            predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle2, layerNumberToPredictedDuration, writer);
+
+                            finalEVolume += parseResultCycle2.getEVolume();
+                            finalDVolume += parseResultCycle2.getDVolume();
+                            timeForPrint_secs += parseResultCycle2.getTimeForLayer();
+                        }
+                        parseResultCycle2 = parseResultCycle1;
+
+                        //Parse anything that has gone before
+                        LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer);
+
+                        if (parseResultCycle0.getNozzleStateAtEndOfLayer().isPresent())
+                        {
+                            if (parseResultCycle0.getLayerData().getLayerNumber() == 1)
                             {
                                 boolean heatNozzle0 = project.getUsedExtruders().contains(0);
                                 boolean heatNozzle1 = project.getUsedExtruders().contains(1);
                                 outputUtilities.outputTemperatureCommands(writer, heatNozzle0, heatNozzle1);
                             }
+                            parseResultCycle1 = parseResultCycle0;
+                            parseResultCycle0 = null;
                         } else
                         {
-                            lastLayerParseResult = new LayerPostProcessResult(lastLayerParseResult.getNozzleStateAtEndOfLayer(),
-                                    parseResult.getLayerData(),
-                                    parseResult.getEVolume(),
-                                    parseResult.getDVolume(),
-                                    parseResult.getTimeForLayer(),
-                                    parseResult.getLastObjectNumber().orElse(-1),
+                            parseResultCycle1 = new LayerPostProcessResult(parseResultCycle1.getNozzleStateAtEndOfLayer(),
+                                    parseResultCycle0.getLayerData(),
+                                    parseResultCycle0.getEVolume(),
+                                    parseResultCycle0.getDVolume(),
+                                    parseResultCycle0.getTimeForLayer(),
+                                    parseResultCycle0.getLastObjectNumber().orElse(-1),
                                     null,
                                     null,
-                                    lastLayerParseResult.getLastFeedrateInForce());
-
+                                    parseResultCycle1.getLastFeedrateInForce());
                         }
                     }
 
@@ -262,25 +273,62 @@ public class PostProcessor
             }
 
             //This catches the last layer - if we had no data it won't do anything
-            LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastLayerParseResult, writer);
+            LayerPostProcessResult parseResult = parseLayer(layerBuffer, parseResultCycle1, writer);
 
             finalEVolume += parseResult.getEVolume();
             finalDVolume += parseResult.getDVolume();
             timeForPrint_secs += parseResult.getTimeForLayer();
 
-            //Now output the LAST layer - it was held until now in case it needed to be modified before output
-            timeUtils.timerStart(this, writeOutputTimerName);
-            outputUtilities.writeLayerToFile(lastLayerParseResult.getLayerData(), writer);
-            timeUtils.timerStop(this, writeOutputTimerName);
-            postProcessorUtilityMethods.updateLayerToLineNumber(lastLayerParseResult, layerNumberToLineNumber, writer);
-            predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
+            if (parseResultCycle2 != null)
+            {
+                timeUtils.timerStart(this, assignExtrusionTimerName);
+                nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
+                timeUtils.timerStop(this, assignExtrusionTimerName);
+
+                //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                timeUtils.timerStart(this, writeOutputTimerName);
+                outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
+                timeUtils.timerStop(this, writeOutputTimerName);
+                postProcessorUtilityMethods.updateLayerToLineNumber(parseResultCycle2, layerNumberToLineNumber, writer);
+                predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle2, layerNumberToPredictedDuration, writer);
+
+                finalEVolume += parseResultCycle2.getEVolume();
+                finalDVolume += parseResultCycle2.getDVolume();
+                timeForPrint_secs += parseResultCycle2.getTimeForLayer();
+            }
+
+            if (parseResultCycle1 != null)
+            {
+                timeUtils.timerStart(this, assignExtrusionTimerName);
+                nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
+                timeUtils.timerStop(this, assignExtrusionTimerName);
+
+                //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                timeUtils.timerStart(this, writeOutputTimerName);
+                outputUtilities.writeLayerToFile(parseResultCycle1.getLayerData(), writer);
+                timeUtils.timerStop(this, writeOutputTimerName);
+                postProcessorUtilityMethods.updateLayerToLineNumber(parseResultCycle1, layerNumberToLineNumber, writer);
+                predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle1, layerNumberToPredictedDuration, writer);
+
+                finalEVolume += parseResultCycle1.getEVolume();
+                finalDVolume += parseResultCycle1.getDVolume();
+                timeForPrint_secs += parseResultCycle1.getTimeForLayer();
+            }
 
             //Now output the final result
+            timeUtils.timerStart(this, assignExtrusionTimerName);
+            nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
+            timeUtils.timerStop(this, assignExtrusionTimerName);
+
             timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.writeLayerToFile(parseResult.getLayerData(), writer);
             timeUtils.timerStop(this, writeOutputTimerName);
             postProcessorUtilityMethods.updateLayerToLineNumber(parseResult, layerNumberToLineNumber, writer);
-            predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(lastLayerParseResult, layerNumberToPredictedDuration, writer);
+            predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle1, layerNumberToPredictedDuration, writer);
+
+            finalEVolume += parseResult.getEVolume();
+            finalDVolume += parseResult.getDVolume();
+            timeForPrint_secs += parseResult.getTimeForLayer();
 
             timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs,
@@ -425,12 +473,13 @@ public class PostProcessor
         }
         timeUtils.timerStop(this, nozzleControlTimerName);
 
+        nodeManagementUtilities.recalculateSectionExtrusion(layerNode);
+
         timeUtils.timerStart(this, perRetractTimerName);
         nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layerNode);
         timeUtils.timerStop(this, perRetractTimerName);
 
         timeUtils.timerStart(this, closeTimerName);
-        utilities.recalculatePerSectionExtrusion(layerNode);
         closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, closeTimerName);
 
@@ -442,10 +491,6 @@ public class PostProcessor
         timeUtils.timerStart(this, openTimerName);
         postProcessorUtilityMethods.insertOpenNodes(layerNode, lastLayerParseResult);
         timeUtils.timerStop(this, openTimerName);
-
-        timeUtils.timerStart(this, assignExtrusionTimerName);
-        nozzleControlUtilities.assignExtrusionToCorrectExtruder(layerNode);
-        timeUtils.timerStop(this, assignExtrusionTimerName);
 
         timeUtils.timerStart(this, layerResultTimerName);
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult);
@@ -515,7 +560,7 @@ public class PostProcessor
                 {
                     ((FeedrateProvider) lastMovementProvider).getFeedrate().setFeedRate_mmPerMin(lastLayerPostProcessResult.getLastFeedrateInForce());
                 }
-                lastFeedrate = ((FeedrateProvider)lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
+                lastFeedrate = ((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
             }
         }
 

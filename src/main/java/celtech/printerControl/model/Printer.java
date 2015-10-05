@@ -442,7 +442,7 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyStringProperty printJobIDProperty();
 
     public ReadOnlyObjectProperty<PauseStatus> pauseStatusProperty();
-    
+
     public ReadOnlyBooleanProperty headPowerOnFlagProperty();
 
     public void resetHeadToDefaults() throws PrinterException;
@@ -508,6 +508,10 @@ public interface Printer extends RoboxResponseConsumer
     public void suppressEEPROMErrorCorrection(boolean suppress);
 
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder responder);
-    
+
     public void loadFirmware(String firmwareFilePath);
+
+    public void startComms();
+
+    public void stopComms();
 }

@@ -2,14 +2,11 @@ package celtech.printerControl.comms;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
-import celtech.printerControl.comms.commands.tx.ReadSendFileReport;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;

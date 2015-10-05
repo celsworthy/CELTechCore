@@ -67,14 +67,35 @@ public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, 
         StringBuilder stringToOutput = new StringBuilder();
 
         stringToOutput.append("G1 ");
-        stringToOutput.append(feedrate.renderForOutput());
-        stringToOutput.append(' ');
-        stringToOutput.append(movement.renderForOutput());
-        stringToOutput.append(' ');
-        stringToOutput.append(extrusion.renderForOutput());
-        stringToOutput.append(' ');
-        stringToOutput.append(nozzlePosition.renderForOutput());
-        stringToOutput.append(' ');
+
+        String feedrateString = feedrate.renderForOutput();
+        stringToOutput.append(feedrateString);
+        if (feedrateString.length() > 0)
+        {
+            stringToOutput.append(' ');
+        }
+
+        String movementString = movement.renderForOutput();
+        stringToOutput.append(movementString);
+        if (movementString.length() > 0)
+        {
+            stringToOutput.append(' ');
+        }
+        
+        String extrusionString = extrusion.renderForOutput();
+        stringToOutput.append(extrusionString);
+        if (extrusionString.length() > 0)
+        {
+            stringToOutput.append(' ');
+        }
+        
+        String nozzlePositionString = nozzlePosition.renderForOutput();
+        stringToOutput.append(nozzlePositionString);
+        if (nozzlePositionString.length() > 0)
+        {
+            stringToOutput.append(' ');
+        }
+        
         stringToOutput.append(getCommentText());
         return stringToOutput.toString().trim();
     }
@@ -88,7 +109,7 @@ public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, 
         double distance = source.distance(destination);
 
         double time = distance / feedrate.getFeedRate_mmPerSec();
-        
+
         if (time < 0)
         {
             throw new DurationCalculationException(this, destinationNode);

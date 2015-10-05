@@ -16,6 +16,7 @@ public abstract class GCodeEventNode
 {
 
     private final Comment comment = new Comment();
+    private Optional<Integer> gCodeLineNumber = Optional.empty();
     private Optional<GCodeEventNode> parent = Optional.empty();
     protected final LinkedList<GCodeEventNode> children = new LinkedList<>();
 
@@ -872,5 +873,15 @@ public abstract class GCodeEventNode
     public void appendCommentText(String commentText)
     {
         comment.setComment(comment.getComment() + " " + commentText);
+    }
+
+    public Optional<Integer> getGCodeLineNumber()
+    {
+        return gCodeLineNumber;
+    }
+
+    public void setGCodeLineNumber(int gCodeLineNumber)
+    {
+        this.gCodeLineNumber = Optional.of(gCodeLineNumber);
     }
 }

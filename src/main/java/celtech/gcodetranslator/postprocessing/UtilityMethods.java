@@ -16,6 +16,7 @@ import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ReplenishNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import java.util.ArrayList;
@@ -81,35 +82,112 @@ public class UtilityMethods
                 // The tool number has changed
                 // Close the nozzle if it isn't already...
                 //Insert a close at the end if there isn't already a close following the last extrusion
-                GCodeEventNode lastEvent = toolSelectNode.getAbsolutelyTheLastEvent();
+                GCodeEventNode lastNodeOnLastLayer = toolSelectNode.getAbsolutelyTheLastEvent();
 
-                try
+                boolean needToClose = false;
+                ExtrusionNode extrusionToCloseFrom = null;
+
+                List<SectionNode> sectionsToConsider = new ArrayList<>();
+                IteratorWithOrigin<GCodeEventNode> layerBackwardsIterator = lastNodeOnLastLayer.treeSpanningBackwardsIterator();
+                SectionNode lastSectionNode = null;
+
+                if (lastNodeOnLastLayer instanceof ExtrusionNode)
                 {
-                    Optional<ExtrusionNode> lastExtrusion;
+                    extrusionToCloseFrom = (ExtrusionNode) lastNodeOnLastLayer;
+                }
 
-                    if (lastEvent instanceof ExtrusionNode)
-                    {
-                        lastExtrusion = Optional.of((ExtrusionNode) lastEvent);
-                    } else
-                    {
-                        lastExtrusion = nodeManagementUtilities.findPriorExtrusion(lastEvent);
-                    }
+                while (layerBackwardsIterator.hasNext())
+                {
+                    GCodeEventNode node = layerBackwardsIterator.next();
 
-                    if (lastExtrusion.isPresent())
+                    if (node instanceof NozzlePositionProvider)
                     {
-                        if (!lastExtrusion.get().getNozzlePosition().isBSet()
-                                || lastExtrusion.get().getNozzlePosition().getB() > 0)
+                        if (((NozzlePositionProvider) node).getNozzlePosition().isBSet()
+                                && ((NozzlePositionProvider) node).getNozzlePosition().getB() < 1.0)
                         {
-                            //We need to close
-                            double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusion.get(), false);
-
-                            closeLogic.insertNozzleCloses(layerNode, availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
+                            Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
+                            if (parentSection.isPresent())
+                            {
+                                //Exclude the section we're in just in case...
+                                sectionsToConsider.remove(parentSection.get());
+                            }
+                            break;
                         }
                     }
-                } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
-                {
-                    throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
+
+                    if (node instanceof ExtrusionNode)
+                    {
+                        if (extrusionToCloseFrom == null)
+                        {
+                            extrusionToCloseFrom = (ExtrusionNode) node;
+                            if (!extrusionToCloseFrom.getNozzlePosition().isBSet()
+                                    || extrusionToCloseFrom.getNozzlePosition().getB() > 0)
+                            {
+                                needToClose = true;
+                            } else
+                            {
+                                break;
+                            }
+
+                        }
+
+                        Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
+                        if (parentSection.isPresent())
+                        {
+                            if (lastSectionNode != parentSection.get())
+                            {
+                                sectionsToConsider.add(0, parentSection.get());
+                                lastSectionNode = parentSection.get();
+                            }
+                        }
+                    }
                 }
+
+                if (needToClose)
+                {
+                    if (sectionsToConsider.size() > 0)
+                    {
+                        try
+                        {
+                        closeLogic.insertProgressiveNozzleClose(sectionsToConsider, extrusionToCloseFrom, nozzleProxies.get(toolSelectNode.getToolNumber()));
+                        } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
+                        {
+                            throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
+                        }
+//                        if (closeResult.isPresent())
+//                        {
+//                            lastLayerParseResult.getNozzleStateAtEndOfLayer().get().closeNozzleFully();
+//                        }
+                    }
+                }
+
+//                try
+//                {
+//                    Optional<ExtrusionNode> lastExtrusion;
+//
+//                    if (extrusionToCloseFrom instanceof ExtrusionNode)
+//                    {
+//                        lastExtrusion = Optional.of((ExtrusionNode) extrusionToCloseFrom);
+//                    } else
+//                    {
+//                        lastExtrusion = nodeManagementUtilities.findPriorExtrusion(extrusionToCloseFrom);
+//                    }
+//
+//                    if (lastExtrusion.isPresent())
+//                    {
+//                        if (!lastExtrusion.get().getNozzlePosition().isBSet()
+//                                || lastExtrusion.get().getNozzlePosition().getB() > 0)
+//                        {
+//                            //We need to close
+//                            double availableExtrusion = nodeManagementUtilities.findAvailableExtrusion(lastExtrusion.get(), false);
+//
+//                            closeLogic.insertNozzleCloses(layerNode, availableExtrusion, lastExtrusion.get(), nozzleProxies.get(toolSelectNode.getToolNumber()));
+//                        }
+//                    }
+//                } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
+//                {
+//                    throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
+//                }
             }
 
             lastToolNumber = toolSelectNode.getToolNumber();

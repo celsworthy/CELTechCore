@@ -11,11 +11,11 @@ public class MCodeNode extends GCodeEventNode implements Renderable
 {
 
     private int mNumber;
+    private boolean sPresent = false;
     private boolean sNumberPresent = false;
-    private boolean sNumberOnly = false;
     private int sNumber;
+    private boolean tPresent = false;
     private boolean tNumberPresent = false;
-    private boolean tNumberOnly = false;
     private int tNumber;
 
     public MCodeNode()
@@ -60,21 +60,30 @@ public class MCodeNode extends GCodeEventNode implements Renderable
      */
     public void setSNumber(int value)
     {
-        sNumberOnly = false;
+        sPresent = true;
         sNumberPresent = true;
         this.sNumber = value;
     }
 
     /**
      *
-     * @param value
+     * @param sOnly
      */
     public void setSOnly(boolean sOnly)
     {
-        sNumberOnly = true;
-        sNumberPresent = false;
+        sPresent = sOnly;
     }
     
+    public boolean isSOnly()
+    {
+        return sPresent && !sNumberPresent;
+    }
+
+    public boolean isSAndNumber()
+    {
+        return sPresent && sNumberPresent;
+    }
+
     /**
      *
      * @return
@@ -90,19 +99,28 @@ public class MCodeNode extends GCodeEventNode implements Renderable
      */
     public void setTNumber(int value)
     {
-        tNumberOnly = false;
+        tPresent = true;
         tNumberPresent = true;
         this.tNumber = value;
     }
 
     /**
      *
-     * @param value
+     * @param tOnly
      */
     public void setTOnly(boolean tOnly)
     {
-        tNumberOnly = true;
-        tNumberPresent = false;
+        tPresent = tOnly;
+    }
+
+    public boolean isTOnly()
+    {
+        return tPresent && !tNumberPresent;
+    }
+
+    public boolean isTAndNumber()
+    {
+        return tPresent && tNumberPresent;
     }
 
     /**
@@ -117,27 +135,24 @@ public class MCodeNode extends GCodeEventNode implements Renderable
         stringToOutput.append("M");
         stringToOutput.append(getMNumber());
 
-        if (sNumberPresent)
+        if (sPresent)
         {
             stringToOutput.append(" S");
-            stringToOutput.append(sNumber);
-        }
-        else if (sNumberOnly)
-        {            
-            stringToOutput.append(" S");
+            if (sNumberPresent)
+            {
+                stringToOutput.append(sNumber);
+            }
         }
 
-        if (tNumberPresent)
+        if (tPresent)
         {
             stringToOutput.append(" T");
-            stringToOutput.append(tNumber);
-        }
-        else if (tNumberOnly)
-        {            
-            stringToOutput.append(" T");
+            if (tNumberPresent)
+            {
+                stringToOutput.append(tNumber);
+            }
         }
 
-        stringToOutput.append(' ');
         stringToOutput.append(getCommentText());
 
         return stringToOutput.toString().trim();

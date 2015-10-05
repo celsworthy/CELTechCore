@@ -280,7 +280,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         systemNotificationManager = Lookup.getSystemNotificationHandler();
 
         commandInterface.setPrinter(this);
-        commandInterface.start();
 
         registerErrorConsumerAllErrors(this);
     }
@@ -3926,6 +3925,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void loadFirmware(String firmwareFilePath)
     {
         commandInterface.loadFirmware(firmwareFilePath);
+    }
+
+    @Override
+    public void startComms()
+    {
+        commandInterface.start();
+    }
+
+    @Override
+    public void stopComms()
+    {
+        commandInterface.shutdown();
     }
 
     @Override

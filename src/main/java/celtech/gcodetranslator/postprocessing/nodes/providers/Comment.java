@@ -39,7 +39,7 @@ public final class Comment
         StringBuilder stringToReturn = new StringBuilder();
         if (getComment().length() > 0)
         {
-            stringToReturn.append("; ");
+            stringToReturn.append(";");
             stringToReturn.append(getComment());
         }
 

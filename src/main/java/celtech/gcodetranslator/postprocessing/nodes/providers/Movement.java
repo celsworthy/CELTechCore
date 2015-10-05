@@ -101,6 +101,7 @@ public final class Movement implements Renderable
     {
         NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
+        threeDPformatter.setMinimumFractionDigits(3);
         threeDPformatter.setGroupingUsed(false);
 
         StringBuilder stringToReturn = new StringBuilder();

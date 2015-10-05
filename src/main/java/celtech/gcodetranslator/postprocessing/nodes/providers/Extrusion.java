@@ -66,7 +66,6 @@ public final class Extrusion implements Renderable
      */
     public float getD()
     {
-        isDSet = true;
         return d;
     }
 
@@ -104,6 +103,7 @@ public final class Extrusion implements Renderable
     {
         NumberFormat fiveDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         fiveDPformatter.setMaximumFractionDigits(5);
+        fiveDPformatter.setMinimumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
         StringBuilder stringToReturn = new StringBuilder();
@@ -112,11 +112,14 @@ public final class Extrusion implements Renderable
         {
             stringToReturn.append('D');
             stringToReturn.append(fiveDPformatter.format(d));
-            stringToReturn.append(' ');
         }
 
         if (isESet)
         {
+            if (isDSet)
+            {
+                stringToReturn.append(' ');
+            }
             stringToReturn.append('E');
             stringToReturn.append(fiveDPformatter.format(e));
         }

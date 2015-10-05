@@ -127,7 +127,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
 
     private void assessCandidatePrinters(List<DeviceDetector.DetectedPrinter> connnectionHandles)
     {
-        if (connnectionHandles != null)
+         if (connnectionHandles != null)
         {
             boolean noNeedToAddPrinter = false;
 
@@ -167,6 +167,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
 
                         Printer newPrinter = makePrinter(detectedPrinter);
                         pendingPrinters.put(detectedPrinter, newPrinter);
+                        newPrinter.startComms();
                     } else
                     {
                         steno.info("Aborted add of printer as we are shutting down");

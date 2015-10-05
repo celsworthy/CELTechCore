@@ -63,7 +63,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -164,7 +163,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -288,7 +286,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -464,7 +461,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -612,7 +608,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -751,7 +746,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -900,7 +894,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -1080,7 +1073,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -1248,7 +1240,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -1349,7 +1340,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -1404,7 +1394,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -1456,7 +1445,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
@@ -1995,7 +1983,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSES_ON_RETRACT);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         assertEquals(3, testLayer.getChildren().size());
