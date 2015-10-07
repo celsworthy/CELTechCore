@@ -618,7 +618,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         Optional<CloseResult> closeResult = Optional.empty();
         try
         {
-            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
         } catch (NotEnoughAvailableExtrusionException ex)
         {
             fail();
@@ -764,7 +764,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 
         try
         {
-            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
         } catch (NotEnoughAvailableExtrusionException ex)
         {
             fail();
@@ -921,7 +921,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 
         try
         {
-            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
         } catch (NotEnoughAvailableExtrusionException ex)
         {
             fail();
@@ -1107,7 +1107,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 
         try
         {
-            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
         } catch (NotEnoughAvailableExtrusionException ex)
         {
             fail();
@@ -1285,7 +1285,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 
         try
         {
-            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
         } catch (NotEnoughAvailableExtrusionException ex)
         {
             fail();

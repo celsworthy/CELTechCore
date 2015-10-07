@@ -234,7 +234,7 @@ public class CloseLogic
             try
             {
                 InScopeEvents unprioritisedNoPerimeters = extractAvailableMovements(startingNode, sectionsToConsider, false, false);
-                closeResult = overwriteClose(unprioritisedNoPerimeters, nozzleInUse);
+                closeResult = overwriteClose(unprioritisedNoPerimeters, nozzleInUse, false);
             } catch (NotEnoughAvailableExtrusionException ex)
             {
                 try
@@ -317,7 +317,7 @@ public class CloseLogic
         double nozzleCloseOverVolume = 0;
 
         // We shouldn't have been asked to partial open - there is more than the ejection volume of material available
-        if (inScopeEvents.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
+        if (inScopeEvents.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
         {
             return closeResult;
         }
@@ -333,7 +333,8 @@ public class CloseLogic
 
         try
         {
-            closeResult = overwriteClose(inScopeEvents, nozzleInUse);
+            nozzleInUse.setCurrentPosition(nozzleStartPosition);
+            closeResult = overwriteClose(inScopeEvents, nozzleInUse, true);
             replaceOpenNozzleWithPartialOpen(inScopeEvents, bValue);
         } catch (NotEnoughAvailableExtrusionException ex)
         {
@@ -662,20 +663,24 @@ public class CloseLogic
      *
      * @param inScopeEvents
      * @param nozzleInUse
+     * @param useAvailableExtrusion
      * @return CloseResult
      * @throws celtech.gcodetranslator.NotEnoughAvailableExtrusionException
      */
     protected Optional<CloseResult> overwriteClose(
             final InScopeEvents inScopeEvents,
-            final NozzleProxy nozzleInUse) throws NotEnoughAvailableExtrusionException
+            final NozzleProxy nozzleInUse,
+            final boolean useAvailableExtrusion) throws NotEnoughAvailableExtrusionException
     {
         Optional<CloseResult> closeResult = Optional.empty();
 
         NozzleParameters nozzleParams = nozzleInUse.getNozzleParameters();
 
-        double volumeToCloseOver = nozzleParams.getEjectionVolume();
+        double volumeToCloseOver = (useAvailableExtrusion)?inScopeEvents.getAvailableExtrusion():nozzleParams.getEjectionVolume();
+        double nozzleStartingPosition = nozzleInUse.getCurrentPosition();
 
-        if (inScopeEvents.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+        if (useAvailableExtrusion
+                || inScopeEvents.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
         {
             double runningTotalOfExtrusion = 0;
 
@@ -692,7 +697,7 @@ public class CloseLogic
                     if (comparisonResult == MathUtils.LESS_THAN)
                     {
                         //One step along the way
-                        double bValue = runningTotalOfExtrusion / volumeToCloseOver;
+                        double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         //No extrusion during a close
@@ -701,7 +706,7 @@ public class CloseLogic
                     } else if (comparisonResult == MathUtils.EQUAL)
                     {
                         //All done
-                        double bValue = runningTotalOfExtrusion / volumeToCloseOver;
+                        double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         //No extrusion during a close
@@ -754,7 +759,7 @@ public class CloseLogic
 
                         extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
                         extrusionNodeBeingExamined.appendCommentText("Start of close towards end");
-                        double bValue = runningTotalOfExtrusion / volumeToCloseOver;
+                        double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
 
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
@@ -895,6 +900,7 @@ public class CloseLogic
                     {
                         MovementProvider priorMovement = null;
 
+                        //TODO needs to take account of direction
                         if (inScopeEventCounter == 0)
                         {
                             priorMovement = (MovementProvider) nodeToAddClosesTo;
@@ -929,8 +935,8 @@ public class CloseLogic
                         copy.getMovement().setY(firstSegment.getY());
                         copy.getExtrusion().setE(0);
                         copy.getExtrusion().setD(0);
-                        copy.appendCommentText("End of close segment");
-                        copy.getNozzlePosition().setB(0);
+                        copy.appendCommentText("Start of close segment");
+                        copy.getNozzlePosition().setB(runningTotalOfExtrusion / volumeToCloseOver);
 
                         runningTotalOfExtrusion += copy.getExtrusion().getE();
 
