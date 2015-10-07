@@ -397,34 +397,37 @@ public class NozzleAssignmentUtilities
 
                         try
                         {
-                            requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
-                                    lastSectionNode);
-
                             SectionNode replacementSection = lastSectionNode.getClass().newInstance();
 
-                            // Move the child nodes to the replacement section
-                            List<GCodeEventNode> sectionChildren = sectionNodes.stream().collect(
-                                    Collectors.toList());
-                            for (GCodeEventNode child : sectionChildren)
+                            List<GCodeEventNode> sectionChildren = new ArrayList<>();
+                            Iterator<GCodeEventNode> sectionChildrenIterator = sectionNodeUnderExamination.childIterator();
+
+                            while (sectionChildrenIterator.hasNext())
                             {
-                                child.removeFromParent();
-                                replacementSection.addChildAtEnd(child);
+                                GCodeEventNode sectionChildNode = sectionChildrenIterator.next();
+                                sectionChildren.add(sectionChildNode);
+                            }
+
+                            for (GCodeEventNode sectionChildNode : sectionChildren)
+                            {
+                                sectionChildNode.removeFromParent();
+                                replacementSection.addChildAtEnd(sectionChildNode);
                             }
 
                             sectionNodeUnderExamination.removeFromParent();
-                            lastSectionNode.addSiblingAfter(replacementSection);
-                            sectionNodeUnderExamination = replacementSection;
-                        } catch (InstantiationException | IllegalAccessException | UnableToFindSectionNodeException ex)
+                            toolSelectNode.addChildAtEnd(replacementSection);
+                            lastSectionNode = replacementSection;
+                        } catch (InstantiationException | IllegalAccessException ex)
                         {
                             throw new RuntimeException("Failed to process orphan section on layer "
                                     + layerNode.getLayerNumber(), ex);
                         }
+                    } else
+                    {
+                        sectionNodeUnderExamination.removeFromParent();
+                        toolSelectNode.addChildAtEnd(sectionNodeUnderExamination);
+                        lastSectionNode = sectionNodeUnderExamination;
                     }
-
-                    sectionNodeUnderExamination.removeFromParent();
-                    toolSelectNode.addChildAtEnd(sectionNodeUnderExamination);
-
-                    lastSectionNode = sectionNodeUnderExamination;
                 } else
                 {
                     //Probably a travel node - move it over without changing it
