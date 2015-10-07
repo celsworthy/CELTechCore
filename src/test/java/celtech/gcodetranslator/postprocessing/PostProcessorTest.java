@@ -49,38 +49,38 @@ public class PostProcessorTest extends JavaFXConfiguredTest
     /**
      * Test of processInput method, of class PostProcessor.
      */
-    @Test
-    public void testProcessInput()
-    {
-        System.out.println("processInput");
-        URL inputURL = this.getClass().getResource("/postprocessor/curaTwoObjects.gcode");
-        String inputFilename = inputURL.getFile();
-        String outputFilename = inputFilename + ".out";
-        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
-
-        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
-
-        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-
-        Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-
-        PostProcessor postProcessor = new PostProcessor(inputFilename,
-                outputFilename,
-                singleMaterialHead,
-                testProject,
-                testProject.getPrinterSettings().getSettings("RBX01-SM"),
-                ppFeatures,
-                "RBX01-SM",
-                null);
-
-        RoboxiserResult result = postProcessor.processInput();
-        assertTrue(result.isSuccess());
-    }
+//    @Test
+//    public void testProcessInput()
+//    {
+//        System.out.println("processInput");
+//        URL inputURL = this.getClass().getResource("/postprocessor/curaTwoObjects.gcode");
+//        String inputFilename = inputURL.getFile();
+//        String outputFilename = inputFilename + ".out";
+//        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+//
+//        setPostProcessorOutputWriterFactory(LiveGCodeOutputWriter::new);
+//
+//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+//
+//        Project testProject = new Project();
+//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+//
+//        PostProcessor postProcessor = new PostProcessor(inputFilename,
+//                outputFilename,
+//                singleMaterialHead,
+//                testProject,
+//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+//                ppFeatures,
+//                "RBX01-SM",
+//                null);
+//
+//        RoboxiserResult result = postProcessor.processInput();
+//        assertTrue(result.isSuccess());
+//    }
 
     /**
      * Test of processInput method, of class PostProcessor.
