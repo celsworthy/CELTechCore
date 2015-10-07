@@ -177,6 +177,13 @@ public class NodeManagementUtilities
                 {
                     throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
                 }
+                
+                if (potentialObjectNumber < 0)
+                {
+                    //Still not set!
+                    //Set it to 0
+                    potentialObjectNumber = 0;
+                }
             }
 
             newObjectNode.setObjectNumber(potentialObjectNumber);
@@ -338,40 +345,81 @@ public class NodeManagementUtilities
         return priorMovement;
     }
 
-    public double findAvailableExtrusion(GCodeEventNode lastExtrusionNode, boolean forwards) throws NodeProcessingException
-    {
-        double availableExtrusion = 0;
-
-        Iterator<GCodeEventNode> nozzlePositionCandidates;
-
-        if (forwards)
-        {
-            nozzlePositionCandidates = lastExtrusionNode.siblingsIterator();
-        } else
-        {
-            nozzlePositionCandidates = lastExtrusionNode.siblingsBackwardsIterator();
-        }
-
-        while (nozzlePositionCandidates.hasNext())
-        {
-            GCodeEventNode node = nozzlePositionCandidates.next();
-
-            if (node instanceof NozzlePositionProvider)
-            {
-                NozzlePositionProvider provider = (NozzlePositionProvider) node;
-                if (provider.getNozzlePosition().isBSet())
-                {
-                    break;
-                } else if (node instanceof ExtrusionNode)
-                {
-                    ExtrusionNode extrusionNode = (ExtrusionNode) node;
-                    availableExtrusion += extrusionNode.getExtrusion().getE();
-                    availableExtrusion += extrusionNode.getExtrusion().getD();
-                }
-            }
-        }
-
-        return availableExtrusion;
-    }
-
+//    public double findAvailableExtrusion(List<SectionNode> sectionsToConsider,
+//            GCodeEventNode startNode,
+//            boolean forwards) throws NodeProcessingException
+//    {
+//        double availableExtrusion = 0;
+//
+//        int sectionDelta = (forwards) ? 1 : -1;
+//        int sectionCounter = (forwards) ? 0 : sectionsToConsider.size() - 1;
+//        boolean haveConsumedStartNode = false;
+//
+//        //Work out which section to start in
+//        if (startNode.getParent().isPresent()
+//                && startNode.getParent().get() instanceof SectionNode)
+//        {
+//            for (int sectionSearch = 0; sectionSearch < sectionsToConsider.size(); sectionSearch++)
+//            {
+//                if (sectionsToConsider.get(sectionSearch) == startNode.getParent().get())
+//                {
+//                    sectionCounter = sectionSearch;
+//                    break;
+//                }
+//            }
+//        }
+//        
+//        boolean keepCounting = true;
+//
+//        while (sectionCounter >= 0
+//                && sectionCounter <= sectionsToConsider.size() - 1
+//                && keepCounting)
+//        {
+//            SectionNode sectionNode = sectionsToConsider.get(sectionCounter);
+//            sectionCounter += sectionDelta;
+//
+//            Iterator<GCodeEventNode> sectionIterator = null;
+//            if (!haveConsumedStartNode)
+//            {
+//                if (forwards)
+//                {
+//                    sectionIterator = startNode.siblingsIterator();
+//                } else
+//                {
+//                    sectionIterator = startNode.siblingsBackwardsIterator();
+//                }
+//                haveConsumedStartNode = true;
+//            } else
+//            {
+//                if (forwards)
+//                {
+//                    sectionIterator = sectionNode.childIterator();
+//                } else
+//                {
+//                    sectionIterator = sectionNode.childBackwardsIterator();
+//                }
+//            }
+//
+//            while (sectionIterator.hasNext())
+//            {
+//                GCodeEventNode node = sectionIterator.next();
+//
+//                if (node instanceof NozzlePositionProvider)
+//                {
+//                    NozzlePositionProvider provider = (NozzlePositionProvider) node;
+//                    if (provider.getNozzlePosition().isBSet())
+//                    {
+//                        keepCounting = false;
+//                        break;
+//                    } else if (node instanceof ExtrusionNode)
+//                    {
+//                        ExtrusionNode extrusionNode = (ExtrusionNode) node;
+//                        availableExtrusion += extrusionNode.getExtrusion().getE();
+//                        availableExtrusion += extrusionNode.getExtrusion().getD();
+//                    }
+//                }
+//            }
+//        }
+//        return availableExtrusion;
+//    }
 }

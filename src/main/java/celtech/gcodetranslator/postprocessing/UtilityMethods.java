@@ -149,7 +149,7 @@ public class UtilityMethods
                     {
                         try
                         {
-                        closeLogic.insertProgressiveNozzleClose(sectionsToConsider, extrusionToCloseFrom, nozzleProxies.get(toolSelectNode.getToolNumber()));
+                            closeLogic.insertProgressiveNozzleClose(extrusionToCloseFrom, sectionsToConsider, nozzleProxies.get(toolSelectNode.getToolNumber()));
                         } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
                         {
                             throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);

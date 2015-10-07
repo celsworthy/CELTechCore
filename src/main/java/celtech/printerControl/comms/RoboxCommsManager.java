@@ -304,6 +304,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
                         + dummyPrinterCounter));
         pendingPrinters.put(printerHandle, nullPrinter);
         dummyPrinters.add(nullPrinter);
+        nullPrinter.startComms();
     }
 
     public void removeDummyPrinter(DeviceDetector.DetectedPrinter printerHandle)

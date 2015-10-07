@@ -138,6 +138,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private File modelFile;
+    
+    private Node bed;
 
     public ModelContainer()
     {
@@ -652,6 +654,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         maxMin.add((float) modelBounds.getMaxY());
         maxMin.add((float) modelBounds.getMinY());
         return maxMin;
+    }
+
+    public void setBedReference(Node bed)
+    {
+        this.bed = bed;
     }
 
     private class ApplyTwist implements UnivariateFunction
@@ -1220,11 +1227,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return (ModelContainer) parentModelContainer;
     }
 
-    private Node getBed()
-    {
-        return getRootModelContainer().getParent().getParent();
-    }
-
     /**
      * Return a BedToLocal converter for this ModelContainer. N.B. Before using
      * this the bed centre transform and dropToBed transform must be cleared,
@@ -1239,7 +1241,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             public Point3D localToBed(Point3D point)
             {
                 Point3D pointScene = localToScene(point);
-                Node bed = getBed();
                 Point3D pointBed = bed.sceneToLocal(pointScene);
                 return pointBed;
             }
@@ -1247,7 +1248,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             @Override
             public Point3D bedToLocal(Point3D point)
             {
-                Node bed = getBed();
                 Point3D pointScene = bed.localToScene(point);
                 return sceneToLocal(pointScene);
             }
@@ -1749,8 +1749,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
-        ModelContainer rootModelContainer = getRootModelContainer(meshView);
-        Node bed = rootModelContainer.getParent();
         return bed.sceneToLocal(meshView.localToScene(vertexX, vertexY, vertexZ));
     }
 

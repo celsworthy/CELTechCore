@@ -143,6 +143,12 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
 
+        RetractNode retractNode = new RetractNode();
+        retractNode.setPriorExtrusionNode(extrusionNode9);
+        List<SectionNode> sectionsToConsider = new ArrayList<>();
+        sectionsToConsider.add(fill1);
+        retractNode.setSectionsToConsider(sectionsToConsider);
+
         fill1.addChildAtEnd(travel1);
         fill1.addChildAtEnd(extrusionNode1);
         fill1.addChildAtEnd(extrusionNode2);
@@ -153,6 +159,8 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         fill1.addChildAtEnd(extrusionNode7);
         fill1.addChildAtEnd(extrusionNode8);
         fill1.addChildAtEnd(extrusionNode9);
+        fill1.addChildAtEnd(retractNode);
+        fill1.recalculateExtrusion();
 
         NozzleParameters nozzleParams = new NozzleParameters();
 
@@ -164,6 +172,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+        ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
 
         Project testProject = new Project();
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
@@ -173,44 +182,41 @@ public class CloseLogicTest extends JavaFXConfiguredTest
                 testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 ppFeatures, "RBX01-SM");
 
-        List<SectionNode> sectionsToConsider = new ArrayList<>();
-        fill1.recalculateExtrusion();
-        sectionsToConsider.add(fill1);
+        Optional<CloseResult> closeResult = Optional.empty();
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
-
+        try
+        {
+            closeResult = closeLogic.insertProgressiveNozzleClose(retractNode, retractNode.getSectionsToConsider(), testProxy);
+        } catch (NotEnoughAvailableExtrusionException | NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | PostProcessingError ex)
+        {
+            fail();
+        }
         assertTrue(closeResult.isPresent());
 
         //Should have elided the same volume as the ejection volume
         assertEquals(2, closeResult.get().getNozzleCloseOverVolume(), 0.01);
 
-        assertEquals(10, fill1.getChildren().size());
+        assertEquals(11, fill1.getChildren().size());
 
-        assertTrue(fill1.getChildren().get(6) instanceof ExtrusionNode);
-        ExtrusionNode node0 = (ExtrusionNode) fill1.getChildren().get(6);
-        assertSame(extrusionNode6, node0);
+        assertTrue(fill1.getChildren().get(7) instanceof ExtrusionNode);
+        ExtrusionNode node0 = (ExtrusionNode) fill1.getChildren().get(7);
+        assertSame(extrusionNode7, node0);
         assertFalse(node0.getNozzlePosition().isBSet());
         assertEquals(1, node0.getExtrusion().getE(), movementEpsilon);
 
-        assertTrue(fill1.getChildren().get(7) instanceof ExtrusionNode);
-        ExtrusionNode node1 = (ExtrusionNode) fill1.getChildren().get(7);
-        assertSame(extrusionNode7, node1);
-        assertFalse(node1.getNozzlePosition().isBSet());
-        assertEquals(1, node1.getExtrusion().getE(), movementEpsilon);
-
         assertTrue(fill1.getChildren().get(8) instanceof ExtrusionNode);
-        ExtrusionNode node2 = (ExtrusionNode) fill1.getChildren().get(8);
-        assertSame(extrusionNode8, node2);
-        assertTrue(node2.getNozzlePosition().isBSet());
-        assertEquals(0.5, node2.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node2.getExtrusion().isEInUse());
+        ExtrusionNode node1 = (ExtrusionNode) fill1.getChildren().get(8);
+        assertSame(extrusionNode8, node1);
+        assertTrue(node1.getNozzlePosition().isBSet());
+        assertEquals(0.5, node1.getNozzlePosition().getB(), nozzleEpsilon);
+        assertFalse(node1.getExtrusion().isEInUse());
 
         assertTrue(fill1.getChildren().get(9) instanceof ExtrusionNode);
-        ExtrusionNode node3 = (ExtrusionNode) fill1.getChildren().get(9);
-        assertSame(extrusionNode9, node3);
-        assertTrue(node3.getNozzlePosition().isBSet());
-        assertEquals(0.0, node3.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node3.getExtrusion().isEInUse());
+        ExtrusionNode node2 = (ExtrusionNode) fill1.getChildren().get(9);
+        assertSame(extrusionNode9, node2);
+        assertTrue(node2.getNozzlePosition().isBSet());
+        assertEquals(0, node2.getNozzlePosition().getB(), nozzleEpsilon);
+        assertFalse(node2.getExtrusion().isEInUse());
     }
 
     @Test
@@ -263,9 +269,15 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode8.getMovement().setY(8);
 
         ExtrusionNode extrusionNode9 = new ExtrusionNode();
-        extrusionNode9.getExtrusion().setE(1f);
+        extrusionNode9.getExtrusion().setE(3f);
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
+
+        RetractNode retractNode = new RetractNode();
+        retractNode.setPriorExtrusionNode(extrusionNode9);
+        List<SectionNode> sectionsToConsider = new ArrayList<>();
+        sectionsToConsider.add(fill1);
+        retractNode.setSectionsToConsider(sectionsToConsider);
 
         fill1.addChildAtEnd(travel1);
         fill1.addChildAtEnd(extrusionNode1);
@@ -277,9 +289,12 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         fill1.addChildAtEnd(extrusionNode7);
         fill1.addChildAtEnd(extrusionNode8);
         fill1.addChildAtEnd(extrusionNode9);
+        fill1.addChildAtEnd(retractNode);
+        fill1.recalculateExtrusion();
 
         NozzleParameters nozzleParams = new NozzleParameters();
-        nozzleParams.setEjectionVolume(7.75f);
+
+        nozzleParams.setEjectionVolume(2);
 
         NozzleProxy testProxy = new NozzleProxy(nozzleParams);
 
@@ -287,6 +302,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+        ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
 
         Project testProject = new Project();
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
@@ -296,94 +312,50 @@ public class CloseLogicTest extends JavaFXConfiguredTest
                 testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 ppFeatures, "RBX01-SM");
 
-        List<SectionNode> sectionsToConsider = new ArrayList<>();
-        fill1.recalculateExtrusion();
-        sectionsToConsider.add(fill1);
+        Optional<CloseResult> closeResult = Optional.empty();
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
+        try
+        {
+            closeResult = closeLogic.insertProgressiveNozzleClose(retractNode, retractNode.getSectionsToConsider(), testProxy);
+        } catch (NotEnoughAvailableExtrusionException | NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | PostProcessingError ex)
+        {
+            fail();
+        }
 
         assertTrue(closeResult.isPresent());
 
         //Should have elided the same volume as the ejection volume
-        assertEquals(7.75, closeResult.get().getNozzleCloseOverVolume(), 0.01);
+        assertEquals(2, closeResult.get().getNozzleCloseOverVolume(), 0.01);
 
-        assertEquals(11, fill1.getChildren().size());
-
-        assertTrue(fill1.getChildren().get(0) instanceof TravelNode);
-        TravelNode tnode0 = (TravelNode) fill1.getChildren().get(0);
-        assertEquals(0, tnode0.getMovement().getX(), movementEpsilon);
-        assertEquals(0, tnode0.getMovement().getY(), movementEpsilon);
-
-        assertTrue(fill1.getChildren().get(1) instanceof ExtrusionNode);
-        ExtrusionNode node0 = (ExtrusionNode) fill1.getChildren().get(1);
-        assertFalse(node0.getNozzlePosition().isBSet());
-        assertEquals(1, node0.getExtrusion().getE(), movementEpsilon);
-        assertEquals(1, node0.getMovement().getX(), movementEpsilon);
-        assertEquals(1, node0.getMovement().getY(), movementEpsilon);
-
-        assertTrue(fill1.getChildren().get(2) instanceof ExtrusionNode);
-        ExtrusionNode node1 = (ExtrusionNode) fill1.getChildren().get(2);
-        assertFalse(node1.getNozzlePosition().isBSet());
-        assertEquals(0.25, node1.getExtrusion().getE(), movementEpsilon);
-        assertEquals(1.25, node1.getMovement().getX(), movementEpsilon);
-        assertEquals(1.25, node1.getMovement().getY(), movementEpsilon);
-
-        assertTrue(fill1.getChildren().get(3) instanceof ExtrusionNode);
-        ExtrusionNode node2 = (ExtrusionNode) fill1.getChildren().get(3);
-        assertTrue(node2.getNozzlePosition().isBSet());
-        assertEquals(0.9, node2.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node2.getExtrusion().isEInUse());
-
-        assertTrue(fill1.getChildren().get(4) instanceof ExtrusionNode);
-        ExtrusionNode node3 = (ExtrusionNode) fill1.getChildren().get(4);
-        assertTrue(node3.getNozzlePosition().isBSet());
-        assertEquals(0.77, node3.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node3.getExtrusion().isEInUse());
-
-        assertTrue(fill1.getChildren().get(5) instanceof ExtrusionNode);
-        ExtrusionNode node4 = (ExtrusionNode) fill1.getChildren().get(5);
-        assertTrue(node4.getNozzlePosition().isBSet());
-        assertEquals(0.65, node4.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node4.getExtrusion().isEInUse());
-
-        assertTrue(fill1.getChildren().get(6) instanceof ExtrusionNode);
-        ExtrusionNode node5 = (ExtrusionNode) fill1.getChildren().get(6);
-        assertTrue(node5.getNozzlePosition().isBSet());
-        assertEquals(0.52, node5.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node5.getExtrusion().isEInUse());
+        assertEquals(12, fill1.getChildren().size());
 
         assertTrue(fill1.getChildren().get(7) instanceof ExtrusionNode);
-        ExtrusionNode node6 = (ExtrusionNode) fill1.getChildren().get(7);
-        assertTrue(node6.getNozzlePosition().isBSet());
-        assertEquals(0.39, node6.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node6.getExtrusion().isEInUse());
-
-        assertTrue(fill1.getChildren().get(8) instanceof ExtrusionNode);
-        ExtrusionNode node7 = (ExtrusionNode) fill1.getChildren().get(8);
-        assertTrue(node7.getNozzlePosition().isBSet());
-        assertEquals(0.26, node7.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node7.getExtrusion().isEInUse());
+        ExtrusionNode node0 = (ExtrusionNode) fill1.getChildren().get(7);
+        assertSame(extrusionNode7, node0);
+        assertFalse(node0.getNozzlePosition().isBSet());
+        assertEquals(1, node0.getExtrusion().getE(), movementEpsilon);
 
         assertTrue(fill1.getChildren().get(9) instanceof ExtrusionNode);
-        ExtrusionNode node8 = (ExtrusionNode) fill1.getChildren().get(9);
-        assertTrue(node8.getNozzlePosition().isBSet());
-        assertEquals(0.13, node8.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node8.getExtrusion().isEInUse());
+        ExtrusionNode node1 = (ExtrusionNode) fill1.getChildren().get(9);
+        assertFalse(node1.getNozzlePosition().isBSet());
+        assertEquals(8.333, node1.getMovement().getX(), movementEpsilon);
+        assertEquals(8.333, node1.getMovement().getY(), movementEpsilon);
+        assertTrue(node1.getExtrusion().isEInUse());
 
         assertTrue(fill1.getChildren().get(10) instanceof ExtrusionNode);
-        ExtrusionNode node9 = (ExtrusionNode) fill1.getChildren().get(10);
-        assertTrue(node9.getNozzlePosition().isBSet());
-        assertEquals(0, node9.getNozzlePosition().getB(), nozzleEpsilon);
-        assertFalse(node9.getExtrusion().isEInUse());
-
+        ExtrusionNode node2 = (ExtrusionNode) fill1.getChildren().get(10);
+        assertSame(extrusionNode9, node2);
+        assertTrue(node2.getNozzlePosition().isBSet());
+        assertEquals(0, node2.getNozzlePosition().getB(), nozzleEpsilon);
+        assertFalse(node2.getExtrusion().isEInUse());
     }
 
     @Test
     public void testCloseToEndOfFill_checkUsesAllSections()
     {
+        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
         OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
         FillSectionNode fill1 = new FillSectionNode();
-        SupportSectionNode support1 = new SupportSectionNode();
         SkinSectionNode skin1 = new SkinSectionNode();
 
         TravelNode travel1 = new TravelNode();
@@ -435,26 +407,28 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         extrusionNode9.getMovement().setX(9);
         extrusionNode9.getMovement().setY(9);
 
-        outer1.addChildAtEnd(travel1);
-        outer1.addChildAtEnd(extrusionNode1);
-        skin1.addChildAtEnd(extrusionNode2);
-        skin1.addChildAtEnd(extrusionNode3);
-        skin1.addChildAtEnd(extrusionNode4);
-        support1.addChildAtEnd(extrusionNode5);
-        support1.addChildAtEnd(extrusionNode6);
-        support1.addChildAtEnd(extrusionNode7);
-        fill1.addChildAtEnd(extrusionNode8);
+        inner1.addChildAtEnd(travel1);
+        inner1.addChildAtEnd(extrusionNode1);
+        inner1.addChildAtEnd(extrusionNode2);
+        inner1.addChildAtEnd(extrusionNode3);
+        outer1.addChildAtEnd(extrusionNode4);
+        outer1.addChildAtEnd(extrusionNode5);
+        outer1.addChildAtEnd(extrusionNode6);
+        outer1.addChildAtEnd(extrusionNode7);
+        outer1.addChildAtEnd(extrusionNode8);
         fill1.addChildAtEnd(extrusionNode9);
 
+        RetractNode retractNode = new RetractNode();
+        fill1.addChildAtEnd(retractNode);
+
         ToolSelectNode tool1 = new ToolSelectNode();
+        tool1.addChildAtEnd(inner1);
         tool1.addChildAtEnd(outer1);
-        tool1.addChildAtEnd(skin1);
-        tool1.addChildAtEnd(support1);
         tool1.addChildAtEnd(fill1);
 
         NozzleParameters nozzleParams = new NozzleParameters();
 
-        nozzleParams.setEjectionVolume(3);
+        nozzleParams.setEjectionVolume(2.5f);
 
         NozzleProxy testProxy = new NozzleProxy(nozzleParams);
 
@@ -462,6 +436,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+        ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
 
         Project testProject = new Project();
         testProject.getPrinterSettings().setSettingsName("BothNozzles");
@@ -472,41 +447,53 @@ public class CloseLogicTest extends JavaFXConfiguredTest
                 ppFeatures, "RBX01-SM");
 
         List<SectionNode> sectionsToConsider = new ArrayList<>();
+        inner1.recalculateExtrusion();
+        sectionsToConsider.add(inner1);
         outer1.recalculateExtrusion();
         sectionsToConsider.add(outer1);
-        skin1.recalculateExtrusion();
-        sectionsToConsider.add(skin1);
-        support1.recalculateExtrusion();
-        sectionsToConsider.add(support1);
         fill1.recalculateExtrusion();
         sectionsToConsider.add(fill1);
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
+        retractNode.setPriorExtrusionNode(extrusionNode9);
+        retractNode.setSectionsToConsider(sectionsToConsider);
+
+        Optional<CloseResult> closeResult = Optional.empty();
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
+
+        try
+        {
+            closeResult = closeLogic.insertProgressiveNozzleClose(retractNode, retractNode.getSectionsToConsider(), testProxy);
+        } catch (NotEnoughAvailableExtrusionException | NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | PostProcessingError ex)
+        {
+            fail();
+        }
 
         assertTrue(closeResult.isPresent());
 
+        output.outputNodes(tool1, 0);
+
         //Should have elided the same volume as the ejection volume
-        assertEquals(3, closeResult.get().getNozzleCloseOverVolume(), 0.01);
+        assertEquals(2.5, closeResult.get().getNozzleCloseOverVolume(), 0.01);
 
+        assertEquals(3, inner1.getChildren().size());
         assertEquals(2, outer1.getChildren().size());
-        assertEquals(3, skin1.getChildren().size());
-        assertEquals(3, support1.getChildren().size());
-        assertEquals(2, fill1.getChildren().size());
+        assertEquals(3, fill1.getChildren().size());
 
-        assertTrue(support1.getChildren().get(0) instanceof ExtrusionNode);
-        ExtrusionNode node0 = (ExtrusionNode) support1.getChildren().get(0);
+        assertTrue(inner1.getChildren().get(0) instanceof ExtrusionNode);
+        ExtrusionNode node0 = (ExtrusionNode) inner1.getChildren().get(0);
         assertSame(extrusionNode5, node0);
         assertFalse(node0.getNozzlePosition().isBSet());
         assertEquals(1, node0.getExtrusion().getE(), movementEpsilon);
 
-        assertTrue(support1.getChildren().get(1) instanceof ExtrusionNode);
-        ExtrusionNode node1 = (ExtrusionNode) support1.getChildren().get(1);
+        assertTrue(inner1.getChildren().get(1) instanceof ExtrusionNode);
+        ExtrusionNode node1 = (ExtrusionNode) inner1.getChildren().get(1);
         assertSame(extrusionNode6, node1);
         assertFalse(node1.getNozzlePosition().isBSet());
         assertEquals(1, node1.getExtrusion().getE(), movementEpsilon);
 
-        assertTrue(support1.getChildren().get(2) instanceof ExtrusionNode);
-        ExtrusionNode node2 = (ExtrusionNode) support1.getChildren().get(2);
+        assertTrue(inner1.getChildren().get(2) instanceof ExtrusionNode);
+        ExtrusionNode node2 = (ExtrusionNode) inner1.getChildren().get(2);
         assertSame(extrusionNode7, node2);
         assertTrue(node2.getNozzlePosition().isBSet());
         assertEquals(0.66, node2.getNozzlePosition().getB(), nozzleEpsilon);
@@ -625,10 +612,18 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         sectionsToConsider.add(support1);
         fill1.recalculateExtrusion();
         sectionsToConsider.add(fill1);
+        
+        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
-
-        assertFalse(closeResult.isPresent());
+        Optional<CloseResult> closeResult = Optional.empty();
+        try
+        {
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+        } catch (NotEnoughAvailableExtrusionException ex)
+        {
+            fail();
+        }
+        assertTrue(closeResult.isPresent());
 
         assertEquals(8, outer1.getChildren().size());
         assertEquals(1, support1.getChildren().size());
@@ -764,10 +759,20 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         fill1.recalculateExtrusion();
         sectionsToConsider.add(fill1);
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, true);
+        Optional<CloseResult> closeResult = Optional.empty();
+        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
+
+        try
+        {
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+        } catch (NotEnoughAvailableExtrusionException ex)
+        {
+            fail();
+        }
+        OutputUtilities output = new OutputUtilities();
+        output.outputNodes(tool1, 0);
 
         assertTrue(closeResult.isPresent());
-
         //Should have elided the same volume as the ejection volume
         assertEquals(3, closeResult.get().getNozzleCloseOverVolume(), 0.01);
 
@@ -911,8 +916,16 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         fill1.recalculateExtrusion();
         sectionsToConsider.add(fill1);
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
+        Optional<CloseResult> closeResult = Optional.empty();
+        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
 
+        try
+        {
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+        } catch (NotEnoughAvailableExtrusionException ex)
+        {
+            fail();
+        }
         output.outputNodes(tool1, 0);
 
         assertTrue(closeResult.isPresent());
@@ -1089,9 +1102,17 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         outer1.recalculateExtrusion();
         sectionsToConsider.add(outer1);
 
-        Optional<CloseResult> closeResult = closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
+        Optional<CloseResult> closeResult = Optional.empty();
+        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
 
-        assertFalse(closeResult.isPresent());
+        try
+        {
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+        } catch (NotEnoughAvailableExtrusionException ex)
+        {
+            fail();
+        }
+        assertTrue(closeResult.isPresent());
 //        //Should have elided the volume in the fill section
 //        //We didn't have enough volume for the entire eject volume
 //        assertEquals(9, closeResult.get().getNozzleCloseOverVolume(), 0.01);
@@ -1259,7 +1280,17 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         fill1.recalculateExtrusion();
         sectionsToConsider.add(fill1);
 
-        closeLogic.closeToEndOfExtrusion(sectionsToConsider, testProxy, false);
+        Optional<CloseResult> closeResult = Optional.empty();
+        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
+
+        try
+        {
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy);
+        } catch (NotEnoughAvailableExtrusionException ex)
+        {
+            fail();
+        }
+        assertTrue(closeResult.isPresent());
 
         output.outputNodes(tool1, 0);
         assertEquals(10, fill1.getChildren().size());
@@ -1326,170 +1357,185 @@ public class CloseLogicTest extends JavaFXConfiguredTest
         assertFalse(node9.getExtrusion().isEInUse());
     }
 
-    @Test
-    public void testAddClosesUsingSpecifiedNode_backward()
-    {
-        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
+//    @Test
+//    public void testCloseOverSections()
+//    {
+//        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
+//
+//        NozzleParameters nozzleParams = new NozzleParameters();
+//        nozzleParams.setEjectionVolume(0.15f);
+//
+//        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+//        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
+//
+//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+//
+//        Project testProject = new Project();
+//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+//
+//        CloseLogic closeLogic = new CloseLogic(testProject,
+//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+//                ppFeatures, "RBX01-SM");
+//
+//        List<SectionNode> sectionsToCloseOver = new ArrayList<>();
+//        //Add fill, then inner, then external
+//        sectionsToCloseOver.add((SectionNode) tool1.getChildren().get(0));
+//        sectionsToCloseOver.add((SectionNode) tool1.getChildren().get(1));
+//        sectionsToCloseOver.add((SectionNode) tool1.getChildren().get(2));
+////        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(sectionsToCloseOver, sectionsToConsider, true, false);
+////
+////        Optional<CloseResult> closeResult = closeLogic.copyClose(tool1.getChildren().get(1).getChildren().get(4),
+////                sectionsToCloseOver,
+////                testProxy);
+//
+//        assertTrue(closeResult.isPresent());
+//
+//        //Should have elided the ejection volume
+//        assertEquals(0.15, closeResult.get().getNozzleCloseOverVolume(), 0.01);
+//
+//        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
+//        assertEquals(7, outerResult.getChildren().size());
+//
+//        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
+//        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
+//        assertEquals(1, extrusionResult1.getMovement().getX(), movementEpsilon);
+//        assertEquals(9, extrusionResult1.getMovement().getY(), movementEpsilon);
+//        assertFalse(extrusionResult1.getExtrusion().isEInUse());
+//        assertEquals(0.333, extrusionResult1.getNozzlePosition().getB(), movementEpsilon);
+//        assertEquals(20, extrusionResult1.getFeedrate().getFeedRate_mmPerMin(), 0.01);
+//
+//        assertTrue(outerResult.getChildren().get(6) instanceof ExtrusionNode);
+//        ExtrusionNode extrusionResult2 = (ExtrusionNode) outerResult.getChildren().get(6);
+//        assertEquals(5, extrusionResult2.getMovement().getX(), movementEpsilon);
+//        assertEquals(9, extrusionResult2.getMovement().getY(), movementEpsilon);
+//        assertFalse(extrusionResult2.getExtrusion().isEInUse());
+//        assertEquals(0, extrusionResult2.getNozzlePosition().getB(), movementEpsilon);
+//        assertEquals(20, extrusionResult2.getFeedrate().getFeedRate_mmPerMin(), 0.01);
+//    }
 
-        NozzleParameters nozzleParams = new NozzleParameters();
-        nozzleParams.setEjectionVolume(0.15f);
-
-        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
-        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
-
-        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-
-        Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-
-        CloseLogic closeLogic = new CloseLogic(testProject,
-                testProject.getPrinterSettings().getSettings("RBX01-SM"),
-                ppFeatures, "RBX01-SM");
-
-        Optional<CloseResult> closeResult = closeLogic.closeInwardsFromSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
-                tool1.getChildren().get(0).getChildren().get(4),
-                testProxy, false,
-                0, false);
-
-        assertTrue(closeResult.isPresent());
-
-        //Should have elided the ejection volume
-        assertEquals(0.15, closeResult.get().getNozzleCloseOverVolume(), 0.01);
-
-        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
-        assertEquals(7, outerResult.getChildren().size());
-
-        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
-        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
-        assertEquals(1, extrusionResult1.getMovement().getX(), movementEpsilon);
-        assertEquals(9, extrusionResult1.getMovement().getY(), movementEpsilon);
-        assertFalse(extrusionResult1.getExtrusion().isEInUse());
-        assertEquals(0.333, extrusionResult1.getNozzlePosition().getB(), movementEpsilon);
-        assertEquals(20, extrusionResult1.getFeedrate().getFeedRate_mmPerMin(), 0.01);
-
-        assertTrue(outerResult.getChildren().get(6) instanceof ExtrusionNode);
-        ExtrusionNode extrusionResult2 = (ExtrusionNode) outerResult.getChildren().get(6);
-        assertEquals(5, extrusionResult2.getMovement().getX(), movementEpsilon);
-        assertEquals(9, extrusionResult2.getMovement().getY(), movementEpsilon);
-        assertFalse(extrusionResult2.getExtrusion().isEInUse());
-        assertEquals(0, extrusionResult2.getNozzlePosition().getB(), movementEpsilon);
-        assertEquals(20, extrusionResult2.getFeedrate().getFeedRate_mmPerMin(), 0.01);
-    }
-
-    @Test
-    public void testAddClosesUsingSpecifiedNode_backwardInFirstSegment()
-    {
-        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
-
-        NozzleParameters nozzleParams = new NozzleParameters();
-        nozzleParams.setEjectionVolume(0.05f);
-
-        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
-        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
-
-        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-
-        Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-
-        OutputUtilities output = new OutputUtilities();
-        output.outputNodes(tool1, 0);
-
-        CloseLogic closeLogic = new CloseLogic(testProject,
-                testProject.getPrinterSettings().getSettings("RBX01-SM"),
-                ppFeatures, "RBX01-SM");
-
-        Optional<CloseResult> closeResult = closeLogic.closeInwardsFromSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
-                tool1.getChildren().get(0).getChildren().get(4),
-                testProxy, false,
-                0, false);
-
-        output.outputNodes(tool1, 0);
-
-        assertTrue(closeResult.isPresent());
-
-        //Should have elided the ejection volume
-        assertEquals(0.05, closeResult.get().getNozzleCloseOverVolume(), 0.01);
-
-        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
-        assertEquals(6, outerResult.getChildren().size());
-
-        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
-        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
-        assertEquals(1, extrusionResult1.getMovement().getX(), movementEpsilon);
-        assertEquals(5, extrusionResult1.getMovement().getY(), movementEpsilon);
-        assertFalse(extrusionResult1.getExtrusion().isEInUse());
-        assertEquals(0, extrusionResult1.getNozzlePosition().getB(), nozzleEpsilon);
-        assertEquals(20, extrusionResult1.getFeedrate().getFeedRate_mmPerMin(), 0.01);
-    }
-
-    @Test
-    public void testAddClosesUsingSpecifiedNode_overAvailableVolume()
-    {
-        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
-
-        NozzleParameters nozzleParams = new NozzleParameters();
-        nozzleParams.setEjectionVolume(4f);
-
-        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
-        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
-
-        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-
-        Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-
-        CloseLogic closeLogic = new CloseLogic(testProject,
-                testProject.getPrinterSettings().getSettings("RBX01-SM"),
-                ppFeatures, "RBX01-SM");
-
-        Optional<CloseResult> closeResult = closeLogic.closeInwardsFromSpecifiedNode((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
-                tool1.getChildren().get(0).getChildren().get(4),
-                testProxy, false,
-                0.3, true);
-
-        assertTrue(closeResult.isPresent());
-
-        //The elided volume should be equivalent to that of the nodes we copied (4 in this instance)
-        assertEquals(4, closeResult.get().getNozzleCloseOverVolume(), 0.01);
-
-        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
-        assertEquals(8, outerResult.getChildren().size());
-
-        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
-        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
-        assertEquals(1, extrusionResult1.getMovement().getX(), movementEpsilon);
-        assertEquals(9, extrusionResult1.getMovement().getY(), movementEpsilon);
-        assertFalse(extrusionResult1.getExtrusion().isEInUse());
-        assertEquals(0.67, extrusionResult1.getNozzlePosition().getB(), nozzleEpsilon);
-
-        assertTrue(outerResult.getChildren().get(6) instanceof ExtrusionNode);
-        ExtrusionNode extrusionResult2 = (ExtrusionNode) outerResult.getChildren().get(6);
-        assertEquals(9, extrusionResult2.getMovement().getX(), movementEpsilon);
-        assertEquals(9, extrusionResult2.getMovement().getY(), movementEpsilon);
-        assertFalse(extrusionResult2.getExtrusion().isEInUse());
-        assertEquals(0.33, extrusionResult2.getNozzlePosition().getB(), nozzleEpsilon);
-
-        assertTrue(outerResult.getChildren().get(7) instanceof ExtrusionNode);
-        ExtrusionNode extrusionResult3 = (ExtrusionNode) outerResult.getChildren().get(7);
-        assertEquals(9, extrusionResult3.getMovement().getX(), movementEpsilon);
-        assertEquals(1, extrusionResult3.getMovement().getY(), movementEpsilon);
-        assertFalse(extrusionResult3.getExtrusion().isEInUse());
-        assertEquals(0, extrusionResult3.getNozzlePosition().getB(), nozzleEpsilon);
-    }
-
+//    @Test
+//    public void testAddClosesUsingSpecifiedNode_backwardInFirstSegment()
+//    {
+//        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
+//
+//        NozzleParameters nozzleParams = new NozzleParameters();
+//        nozzleParams.setEjectionVolume(0.05f);
+//
+//        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+//        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
+//
+//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+//
+//        Project testProject = new Project();
+//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+//
+//        OutputUtilities output = new OutputUtilities();
+//        output.outputNodes(tool1, 0);
+//
+//        CloseLogic closeLogic = new CloseLogic(testProject,
+//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+//                ppFeatures, "RBX01-SM");
+//
+//        List<SectionNode> sectionsToCloseOver = new ArrayList<>();
+//        //Add fill, then inner, then external
+//        sectionsToCloseOver.add((SectionNode)tool1.getChildren().get(2));
+//        sectionsToCloseOver.add((SectionNode)tool1.getChildren().get(0));
+//        sectionsToCloseOver.add((SectionNode)tool1.getChildren().get(1));
+//
+//        Optional<CloseResult> closeResult = closeLogic.copyClose(tool1.getChildren().get(1).getChildren().get(4),
+//                sectionsToCloseOver,
+//                testProxy);
+//        
+//        Optional<CloseResult> closeResult = closeLogic.copyClose((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
+//                tool1.getChildren().get(0).getChildren().get(4),
+//                testProxy, false,
+//                0, false);
+//
+//        output.outputNodes(tool1, 0);
+//
+//        assertTrue(closeResult.isPresent());
+//
+//        //Should have elided the ejection volume
+//        assertEquals(0.05, closeResult.get().getNozzleCloseOverVolume(), 0.01);
+//
+//        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
+//        assertEquals(6, outerResult.getChildren().size());
+//
+//        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
+//        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
+//        assertEquals(1, extrusionResult1.getMovement().getX(), movementEpsilon);
+//        assertEquals(5, extrusionResult1.getMovement().getY(), movementEpsilon);
+//        assertFalse(extrusionResult1.getExtrusion().isEInUse());
+//        assertEquals(0, extrusionResult1.getNozzlePosition().getB(), nozzleEpsilon);
+//        assertEquals(20, extrusionResult1.getFeedrate().getFeedRate_mmPerMin(), 0.01);
+//    }
+//
+//    @Test
+//    public void testAddClosesUsingSpecifiedNode_overAvailableVolume()
+//    {
+//        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, false);
+//
+//        NozzleParameters nozzleParams = new NozzleParameters();
+//        nozzleParams.setEjectionVolume(4f);
+//
+//        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+//        testProxy.setCurrentPosition(1.0); // The nozzle starts fully open
+//
+//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+//
+//        Project testProject = new Project();
+//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+//
+//        CloseLogic closeLogic = new CloseLogic(testProject,
+//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+//                ppFeatures, "RBX01-SM");
+//
+//        Optional<CloseResult> closeResult = closeLogic.copyClose((ExtrusionNode) tool1.getChildren().get(1).getChildren().get(4),
+//                tool1.getChildren().get(0).getChildren().get(4),
+//                testProxy, false,
+//                0.3, true);
+//
+//        assertTrue(closeResult.isPresent());
+//
+//        //The elided volume should be equivalent to that of the nodes we copied (4 in this instance)
+//        assertEquals(4, closeResult.get().getNozzleCloseOverVolume(), 0.01);
+//
+//        OuterPerimeterSectionNode outerResult = (OuterPerimeterSectionNode) tool1.getChildren().get(1);
+//        assertEquals(8, outerResult.getChildren().size());
+//
+//        assertTrue(outerResult.getChildren().get(5) instanceof ExtrusionNode);
+//        ExtrusionNode extrusionResult1 = (ExtrusionNode) outerResult.getChildren().get(5);
+//        assertEquals(1, extrusionResult1.getMovement().getX(), movementEpsilon);
+//        assertEquals(9, extrusionResult1.getMovement().getY(), movementEpsilon);
+//        assertFalse(extrusionResult1.getExtrusion().isEInUse());
+//        assertEquals(0.67, extrusionResult1.getNozzlePosition().getB(), nozzleEpsilon);
+//
+//        assertTrue(outerResult.getChildren().get(6) instanceof ExtrusionNode);
+//        ExtrusionNode extrusionResult2 = (ExtrusionNode) outerResult.getChildren().get(6);
+//        assertEquals(9, extrusionResult2.getMovement().getX(), movementEpsilon);
+//        assertEquals(9, extrusionResult2.getMovement().getY(), movementEpsilon);
+//        assertFalse(extrusionResult2.getExtrusion().isEInUse());
+//        assertEquals(0.33, extrusionResult2.getNozzlePosition().getB(), nozzleEpsilon);
+//
+//        assertTrue(outerResult.getChildren().get(7) instanceof ExtrusionNode);
+//        ExtrusionNode extrusionResult3 = (ExtrusionNode) outerResult.getChildren().get(7);
+//        assertEquals(9, extrusionResult3.getMovement().getX(), movementEpsilon);
+//        assertEquals(1, extrusionResult3.getMovement().getY(), movementEpsilon);
+//        assertFalse(extrusionResult3.getExtrusion().isEInUse());
+//        assertEquals(0, extrusionResult3.getNozzlePosition().getB(), nozzleEpsilon);
+//    }
     //TODO reinstate
 //    @Test
 //    public void testCloseUsingSectionTemplate_ejectVolumeTooSmall_dontClose()
@@ -1546,7 +1592,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertEquals(6, tool1.getChildren().get(2).getChildren().size());
 //
 //    }
-
 //    @Test
 //    public void testCloseUsingSectionTemplate_closeOnNextFill()
 //    {
@@ -1601,7 +1646,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertFalse(extrusionResult2.getExtrusion().isEInUse());
 //        assertEquals(0, extrusionResult2.getNozzlePosition().getB(), nozzleEpsilon);
 //    }
-
 //    @Test
 //    public void testCloseUsingSectionTemplate_closeOnPreviousInner()
 //    {
@@ -1656,7 +1700,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertFalse(extrusionResult2.getExtrusion().isEInUse());
 //        assertEquals(0, extrusionResult2.getNozzlePosition().getB(), nozzleEpsilon);
 //    }
-
 //    @Test
 //    public void testCloseUsingSectionTemplate_multipleRetractsInSection()
 //    {
@@ -1709,6 +1752,13 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertFalse(extrusionResult2.getExtrusion().isEInUse());
 //        assertEquals(0, extrusionResult2.getNozzlePosition().getB(), movementEpsilon);
 //    }
+    /**
+     * Creates a test setup
+     *
+     * @param addInner
+     * @param addFill
+     * @return
+     */
     private ToolSelectNode setupToolNodeWithInnerAndOuterSquare(boolean addInner,
             boolean addFill)
     {
@@ -2159,7 +2209,6 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertTrue(outer1.getChildren().get(7) instanceof ExtrusionNode);
 //        assertEquals(0.0, ((ExtrusionNode) outer1.getChildren().get(7)).getNozzlePosition().getB(), nozzleEpsilon);
 //    }
-
 //    @Test
 //    public void testCloseFromEreToEre()
 //    {
@@ -2259,6 +2308,74 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertTrue(outer1.getChildren().get(7) instanceof ExtrusionNode);
 //        assertEquals(0.0, ((ExtrusionNode) outer1.getChildren().get(7)).getNozzlePosition().getB(), nozzleEpsilon);
 //    }
+//    @Test
+//    public void testCopyExtrusionEventsForwards()
+//    {
+//        ToolSelectNode tool1 = setupToolNodeWithInnerAndOuterSquare(true, true);
+//
+//        HeadFile singleMaterialHead = HeadContainer.getHeadByID("RBX01-SM");
+//
+//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+//        ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
+//
+//        Project testProject = new Project();
+//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+//
+//        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+//        for (int nozzleIndex = 0;
+//                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+//                .size(); nozzleIndex++)
+//        {
+//            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+//            proxy.setNozzleReferenceNumber(nozzleIndex);
+//            nozzleProxies.add(proxy);
+//        }
+//
+//        CloseLogic closeLogic = new CloseLogic(testProject,
+//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+//                ppFeatures, "RBX01-SM");
+//
+//        List<SectionNode> sections = new ArrayList<>();
+//        sections.add((SectionNode) tool1.getChildren().get(0));
+//        sections.add((SectionNode) tool1.getChildren().get(1));
+//        sections.add((SectionNode) tool1.getChildren().get(2));
+//
+//        Optional<CloseResult> closeResult = Optional.empty();
+//
+//        try
+//        {
+//            closeResult = closeLogic.copyClose(sections, (ExtrusionNode) tool1.getChildren().get(2).getChildren().get(5), nozzleProxies.get(0), false);
+//        } catch (NotEnoughAvailableExtrusionException | PostProcessingError ex)
+//        {
+//            fail();
+//        }
+//
+//        assertTrue(closeResult.isPresent());
+//
+//        OutputUtilities output = new OutputUtilities();
+//        output.outputNodes(tool1, 0);
+//
+////        assertEquals(1, testLayer.getChildren().size());
+////        assertTrue(testLayer.getChildren().get(0) instanceof ToolSelectNode);
+////
+////        assertEquals(8, outer1.getChildren().size());
+////        assertTrue(outer1.getChildren().get(4) instanceof ExtrusionNode);
+////        assertEquals(0.75, ((ExtrusionNode) outer1.getChildren().get(4)).getNozzlePosition().getB(), nozzleEpsilon);
+////
+////        assertTrue(outer1.getChildren().get(5) instanceof ExtrusionNode);
+////        assertEquals(0.5, ((ExtrusionNode) outer1.getChildren().get(5)).getNozzlePosition().getB(), nozzleEpsilon);
+////
+////        assertTrue(outer1.getChildren().get(6) instanceof ExtrusionNode);
+////        assertEquals(0.25, ((ExtrusionNode) outer1.getChildren().get(6)).getNozzlePosition().getB(), nozzleEpsilon);
+////
+////        assertTrue(outer1.getChildren().get(7) instanceof ExtrusionNode);
+////        assertEquals(0.0, ((ExtrusionNode) outer1.getChildren().get(7)).getNozzlePosition().getB(), nozzleEpsilon);
+//    }
+
     private ExtrusionNode generateExtrusionNode(float e, double x, double y)
     {
         ExtrusionNode node = new ExtrusionNode();
