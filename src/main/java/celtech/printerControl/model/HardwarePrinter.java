@@ -1779,33 +1779,98 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void printProject(Project project) throws PrinterException
     {
         //TODO modify for multiple reels
-        Filament filamentInUse = project.getPrinterSettings().getFilament0();
+        Filament filament0 = project.getPrinterSettings().getFilament0();
+        Filament filament1 = project.getPrinterSettings().getFilament1();
 
-        if (filamentInUse.isMutable())
+        double nozzle0FirstLayerTarget = 0;
+        double nozzle1FirstLayerTarget = 0;
+        double nozzle0Target = 0;
+        double nozzle1Target = 0;
+        double bedFirstLayerTarget = 0;
+        double bedTarget = 0;
+        double ambientTarget = 0;
+        double feedrateMultiplier = 1;
+
+        boolean needToSendTempsForReel0 = false;
+        if (filament0 != null)
+        {
+            if (!reels.containsKey(0)
+                    || (reels.containsKey(0) && !reels.get(0).isSameAs(filament0)))
+            {
+                needToSendTempsForReel0 = true;
+            }
+        }
+
+        boolean needToSendTempsForReel1 = false;
+        if (filament1 != null)
+        {
+            if (!reels.containsKey(1)
+                    || (reels.containsKey(1) && !reels.get(1).isSameAs(filament1)))
+            {
+                needToSendTempsForReel1 = true;
+                nozzle1FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
+                nozzle1Target = filament1.getNozzleTemperature();
+                bedFirstLayerTarget = filament1.getFirstLayerBedTemperature();
+                bedTarget = filament1.getBedTemperature();
+                ambientTarget = filament1.getAmbientTemperature();
+                feedrateMultiplier = filament1.getFeedRateMultiplier();
+
+                changeFilamentInfo("E", filament1.getDiameter(),
+                        filament1.getFilamentMultiplier());
+            } else
+            {
+                nozzle1FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
+                nozzle1Target = filament1.getNozzleTemperature();
+            }
+        }
+
+        if (needToSendTempsForReel0)
+        {
+            nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+            nozzle0Target = filament0.getNozzleTemperature();
+            bedFirstLayerTarget = filament0.getFirstLayerBedTemperature();
+            bedTarget = filament0.getBedTemperature();
+            ambientTarget = filament0.getAmbientTemperature();
+            feedrateMultiplier = filament0.getFeedRateMultiplier();
+
+            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                changeFilamentInfo("D", filament0.getDiameter(),
+                        filament0.getFilamentMultiplier());
+            } else
+            {
+                changeFilamentInfo("E", filament0.getDiameter(),
+                        filament0.getFilamentMultiplier());
+            }
+        } else if (needToSendTempsForReel1 && reels.containsKey(0))
+        {
+            nozzle0FirstLayerTarget = reels.get(0).firstLayerNozzleTemperatureProperty().get();
+            nozzle0Target = reels.get(0).nozzleTemperatureProperty().get();
+        }
+
+        if (needToSendTempsForReel0 || needToSendTempsForReel1)
         {
             try
             {
-                //TODO modify for multiple heaters
-                transmitSetTemperatures(filamentInUse.getFirstLayerNozzleTemperature(),
-                        filamentInUse.getNozzleTemperature(),
-                        filamentInUse.getFirstLayerNozzleTemperature(),
-                        filamentInUse.getNozzleTemperature(),
-                        filamentInUse.getFirstLayerBedTemperature(),
-                        filamentInUse.getBedTemperature(),
-                        filamentInUse.getAmbientTemperature());
+                transmitSetTemperatures(nozzle0FirstLayerTarget,
+                        nozzle0Target,
+                        nozzle1FirstLayerTarget,
+                        nozzle1Target,
+                        bedFirstLayerTarget,
+                        bedTarget,
+                        ambientTarget);
 
-                changeFeedRateMultiplier(filamentInUse.getFeedRateMultiplier());
-                //TODO modify for multiple extruders
-                changeFilamentInfo("E", filamentInUse.getDiameter(),
-                        filamentInUse.getFilamentMultiplier());
+                changeFeedRateMultiplier(feedrateMultiplier);
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
             }
         }
 
-        //TODO needs to be changed for DMH
-        extruders.get(0).lastFeedrateMultiplierInUse.set(filamentInUse.getFeedRateMultiplier());
+        for (Extruder extruder : extruders)
+        {
+            extruder.lastFeedrateMultiplierInUse.set((float) feedrateMultiplier);
+        }
 
         try
         {

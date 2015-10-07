@@ -457,7 +457,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (mode == Mode.SETTINGS)
         {
             filamentsList.add(UNKNOWN);
-            filamentsList.addAll(userFilaments);
+            filamentsList.addAll(allFilaments);
         } else
         {
             filamentsList.addAll(allFilaments);
