@@ -252,6 +252,47 @@ public class NodeManagementUtilities
 
         return nextExtrusion;
     }
+    
+    protected Optional<MovementProvider> findNextMovement(GCodeEventNode topLevelNode, GCodeEventNode node) throws NodeProcessingException
+    {
+        Optional<MovementProvider> nextMovement = Optional.empty();
+
+        LinkedList<GCodeEventNode> nodeHierarchy = new LinkedList<>();
+
+        boolean foundTopLevel = false;
+
+        GCodeEventNode currentNode = node;
+
+        nodeHierarchy.add(node);
+
+        while (currentNode.getParent().isPresent() && !foundTopLevel)
+        {
+            GCodeEventNode parent = currentNode.getParent().get();
+            if (parent == topLevelNode)
+            {
+                foundTopLevel = true;
+            } else
+            {
+                nodeHierarchy.addFirst(parent);
+            }
+
+            currentNode = parent;
+        }
+
+        Iterator<GCodeEventNode> childIterator = topLevelNode.treeSpanningIterator(nodeHierarchy);
+
+        while (childIterator.hasNext())
+        {
+            GCodeEventNode childNode = childIterator.next();
+            if (childNode instanceof MovementProvider)
+            {
+                nextMovement = Optional.of((MovementProvider) childNode);
+                break;
+            }
+        }
+
+        return nextMovement;
+    }
 
     protected Optional<MovementProvider> findNextMovement(GCodeEventNode node) throws NodeProcessingException
     {

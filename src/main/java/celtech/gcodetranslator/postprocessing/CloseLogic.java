@@ -599,7 +599,7 @@ public class CloseLogic
     protected Optional<CloseResult> closeInwardsOntoPerimeter(
             final InScopeEvents inScopeEvents,
             final NozzleProxy nozzleInUse
-    ) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException, DidntFindEventException
+    ) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException, DidntFindEventException, NodeProcessingException
     {
         Optional<CloseResult> closeResult = Optional.empty();
         Optional<GCodeEventNode> closestNode = Optional.empty();
@@ -721,7 +721,8 @@ public class CloseLogic
                         //We're splitting the last part of the line (we're just looking at it in reverse order as we consider the line from the end
                         MovementProvider priorMovement = null;
 
-                        if (movementNodeCounter == inScopeEvents.getInScopeEvents().size() - 1)
+                        if ((movementNodeCounter == inScopeEvents.getInScopeEvents().size() - 1
+                                || !(inScopeEvents.getInScopeEvents().get(movementNodeCounter + 1) instanceof MovementProvider)))
                         {
                             //We dont have anywhere to go!
                             try
@@ -796,7 +797,7 @@ public class CloseLogic
             final InScopeEvents extractedMovements,
             final GCodeEventNode nodeToAddClosesTo,
             final Optional<GCodeEventNode> nodeToStartCopyingFrom,
-            final NozzleProxy nozzleInUse) throws NotEnoughAvailableExtrusionException
+            final NozzleProxy nozzleInUse) throws NotEnoughAvailableExtrusionException, NodeProcessingException
     {
         NozzleParameters nozzleParams = nozzleInUse.getNozzleParameters();
 
@@ -907,8 +908,19 @@ public class CloseLogic
                             // Go backwards (-1)
                             if (inScopeEventCounter == 0)
                             {
-                                steno.error("Nowhere to go");
-                                throw new RuntimeException("Nowhere nowhere nowhere to go");
+                                Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(extrusionNodeBeingExamined);
+                                Optional<MovementProvider> movement = Optional.empty();
+
+                                if (parentSection.isPresent())
+                                {
+                                    movement = nodeManagementUtilities.findNextMovement(parentSection.get().getParent().get(), extrusionNodeBeingExamined);
+                                }
+                                if (!movement.isPresent())
+                                {
+                                    steno.error("Nowhere to go");
+                                    throw new RuntimeException("Nowhere nowhere nowhere to go");
+                                }
+                                priorMovement = movement.get();
                             } else
                             {
                                 priorMovement = (MovementProvider) extractedMovements.getInScopeEvents().get(inScopeEventCounter - 1);
@@ -916,10 +928,16 @@ public class CloseLogic
                         } else
                         {
                             // Go forwards (1)
-                            if (inScopeEventCounter == extractedMovements.getInScopeEvents().size() - 1)
+                            if (inScopeEventCounter == extractedMovements.getInScopeEvents().size() - 1
+                                    || !(extractedMovements.getInScopeEvents().get(inScopeEventCounter + 1) instanceof MovementProvider))
                             {
-                                steno.error("Nowhere to go");
-                                throw new RuntimeException("Nowhere nowhere nowhere to go");
+                                Optional<MovementProvider> movement = nodeManagementUtilities.findPriorMovement(extractedMovements.getInScopeEvents().get(inScopeEventCounter));
+                                if (!movement.isPresent())
+                                {
+                                    steno.error("Nowhere to go");
+                                    throw new RuntimeException("Nowhere nowhere nowhere to go");
+                                }
+                                priorMovement = movement.get();
                             } else
                             {
                                 priorMovement = (MovementProvider) extractedMovements.getInScopeEvents().get(inScopeEventCounter + 1);
@@ -1100,7 +1118,7 @@ public class CloseLogic
         Optional<ExtrusionNode> nextExtrusionNode = Optional.empty();
 
         boolean processedClose = false;
-        
+
         boolean succeeded = false;
 
         try
@@ -1215,14 +1233,13 @@ public class CloseLogic
                         //Add the elided extrusion to this node - the open routine will find it later
                         ((ExtrusionNode) nextExtrusionNode.get()).setElidedExtrusion(closeResult.get().getNozzleCloseOverVolume());
                     }
-                    
+
                     succeeded = true;
                 } else
                 {
                     throw new NodeProcessingException("Failed to close after retract", (Renderable) retractNode);
                 }
-            }
-            else
+            } else
             {
                 succeeded = true;
             }
