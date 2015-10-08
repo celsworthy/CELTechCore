@@ -300,7 +300,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null, -1, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, -1);
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
@@ -492,7 +492,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer1 = utils.makeModelContainer(true);
         testProject.addModel(modelContainer1);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(Optional.empty(), testLayer, 0, 0, 0, 0, null, null, -1, null);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, -1);
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
 

@@ -994,10 +994,6 @@ public class CloseLogic
                         if (sectionsToConsider.size() > 0)
                         {
                             closeResult = insertProgressiveNozzleClose(extrusionToCloseFrom, sectionsToConsider, nozzleInUse);
-                            if (closeResult.isPresent())
-                            {
-                                lastLayerParseResult.getNozzleStateAtEndOfLayer().get().closeNozzleFully();
-                            }
                         } else
                         {
                             //We only seem to have one extrusion to close over...
@@ -1005,22 +1001,6 @@ public class CloseLogic
                             {
                                 sectionsToConsider.add((SectionNode) extrusionToCloseFrom.getParent().get());
                                 closeResult = insertProgressiveNozzleClose(extrusionToCloseFrom, sectionsToConsider, nozzleInUse);
-                                if (closeResult.isPresent()
-                                        && closeResult.get().getNodeContainingFinalClose() != null
-                                        && lastLayerParseResult.getLastToolSelectInForce() != null
-                                        && lastLayerParseResult.getOpenResult() != null)
-                                {
-                                    //Stash the elided extrusion on the last layer
-                                    switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastLayerParseResult.getLastToolSelectInForce().getToolNumber()).getAssociatedExtruder())
-                                    {
-                                        case "E":
-                                            lastLayerParseResult.getOpenResult().setOutstandingEReplenish(closeResult.get().getNodeContainingFinalClose().getElidedExtrusion());
-                                            break;
-                                        case "D":
-                                            lastLayerParseResult.getOpenResult().setOutstandingDReplenish(closeResult.get().getNodeContainingFinalClose().getElidedExtrusion());
-                                            break;
-                                    }
-                                }
                             }
                         }
                     }

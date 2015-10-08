@@ -190,8 +190,9 @@ public class PostProcessor
                     nozzle1Required);
 
             StringBuilder layerBuffer = new StringBuilder();
-            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1, null);
+            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(null, 0, 0, 0, 0, null, null, -1);
             LayerPostProcessResult parseResultCycle2 = null;
+            OpenResult lastOpenResult = null;
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
             {
@@ -219,6 +220,14 @@ public class PostProcessor
                             timeUtils.timerStop(this, assignExtrusionTimerName);
 
                             //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                            //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
+                            //NOTE
+                            //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
+                            //NOTE
+                            timeUtils.timerStart(this, openTimerName);
+                            lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                            timeUtils.timerStop(this, openTimerName);
+
                             timeUtils.timerStart(this, writeOutputTimerName);
                             outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
                             timeUtils.timerStop(this, writeOutputTimerName);
@@ -266,6 +275,14 @@ public class PostProcessor
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
                 //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
+                //NOTE
+                //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
+                //NOTE
+                timeUtils.timerStart(this, openTimerName);
+                lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                timeUtils.timerStop(this, openTimerName);
+
                 timeUtils.timerStart(this, writeOutputTimerName);
                 outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
                 timeUtils.timerStop(this, writeOutputTimerName);
@@ -284,6 +301,14 @@ public class PostProcessor
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
                 //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
+                //NOTE
+                //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
+                //NOTE
+                timeUtils.timerStart(this, openTimerName);
+                lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle1.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                timeUtils.timerStop(this, openTimerName);
+
                 timeUtils.timerStart(this, writeOutputTimerName);
                 outputUtilities.writeLayerToFile(parseResultCycle1.getLayerData(), writer);
                 timeUtils.timerStop(this, writeOutputTimerName);
@@ -299,6 +324,14 @@ public class PostProcessor
             timeUtils.timerStart(this, assignExtrusionTimerName);
             nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
             timeUtils.timerStop(this, assignExtrusionTimerName);
+
+            //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
+            //NOTE
+            //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
+            //NOTE
+            timeUtils.timerStart(this, openTimerName);
+            lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResult.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+            timeUtils.timerStop(this, openTimerName);
 
             timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.writeLayerToFile(parseResult.getLayerData(), writer);
@@ -467,26 +500,17 @@ public class PostProcessor
         postProcessorUtilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, unnecessaryToolchangeTimerName);
 
-        //NOTE
-        //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
-        //NOTE
-        timeUtils.timerStart(this, openTimerName);
-        OpenResult openResult = postProcessorUtilityMethods.insertOpens(layerNode, lastLayerParseResult, nozzleProxies, headTypeCode);
-        timeUtils.timerStop(this, openTimerName);
-
         //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
         timeUtils.timerStart(this, layerResultTimerName);
-        LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult, openResult);
+        LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
         timeUtils.timerStop(this, layerResultTimerName);
 
         return postProcessResult;
     }
 
-    private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult, OpenResult openResult)
+    private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult)
     {
-        Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
-
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
         float eValue = 0;
@@ -567,8 +591,8 @@ public class PostProcessor
             lastToolSelectNode = lastLayerPostProcessResult.getLastToolSelectInForce();
         }
 
-        return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer, -1,
-                lastSectionNode, lastToolSelectNode, lastFeedrate, openResult);
+        return new LayerPostProcessResult(layerNode, eValue, dValue, timeForLayer, -1,
+                lastSectionNode, lastToolSelectNode, lastFeedrate);
     }
 
     private void outputPostProcessingTimerReport()

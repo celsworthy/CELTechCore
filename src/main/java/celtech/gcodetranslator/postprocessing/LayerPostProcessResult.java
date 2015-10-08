@@ -12,8 +12,6 @@ import java.util.Optional;
  */
 public class LayerPostProcessResult
 {
-
-    private final Optional<NozzleProxy> nozzleStateAtEndOfLayer;
     private final float eVolume;
     private final float dVolume;
     private final double timeForLayer_secs;
@@ -22,9 +20,8 @@ public class LayerPostProcessResult
     private int lastFeedrateInForce = -1;
     private final ToolSelectNode lastToolSelectInForce;
     private SectionNode lastSectionNodeInForce = null;
-    private final OpenResult openResult;
 
-    public LayerPostProcessResult(Optional<NozzleProxy> nozzleStateAtEndOfLayer,
+    public LayerPostProcessResult(
             LayerNode layerData,
             float eVolume,
             float dVolume,
@@ -32,10 +29,8 @@ public class LayerPostProcessResult
             int lastObjectNumber,
             SectionNode sectionNode,
             ToolSelectNode toolSelectNode,
-            int lastFeedrateInForce,
-            OpenResult openResult)
+            int lastFeedrateInForce)
     {
-        this.nozzleStateAtEndOfLayer = nozzleStateAtEndOfLayer;
         this.layerData = layerData;
         this.eVolume = eVolume;
         this.dVolume = dVolume;
@@ -44,12 +39,6 @@ public class LayerPostProcessResult
         this.lastSectionNodeInForce = sectionNode;
         this.lastToolSelectInForce = toolSelectNode;
         this.lastFeedrateInForce = lastFeedrateInForce;
-        this.openResult = openResult;
-    }
-
-    public Optional<NozzleProxy> getNozzleStateAtEndOfLayer()
-    {
-        return nozzleStateAtEndOfLayer;
     }
 
     public LayerNode getLayerData()
@@ -110,10 +99,5 @@ public class LayerPostProcessResult
     public SectionNode getLastSectionNodeInForce()
     {
         return lastSectionNodeInForce;
-    }
-
-    public OpenResult getOpenResult()
-    {
-        return openResult;
     }
 }

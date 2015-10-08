@@ -167,7 +167,7 @@ public class UtilityMethods
     }
 
     protected OpenResult insertOpens(LayerNode layerNode,
-            LayerPostProcessResult lastLayerPostProcessResult,
+            OpenResult lastOpenResult,
             List<NozzleProxy> nozzleProxies,
             String headTypeCode)
     {
@@ -177,19 +177,12 @@ public class UtilityMethods
         double replenishExtrusionE = 0;
         double replenishExtrusionD = 0;
         Map<ExtrusionNode, NozzleValvePositionNode> nodesToAdd = new HashMap<>();
-        if (lastLayerPostProcessResult != null)
+        if (lastOpenResult != null)
         {
-            if (lastLayerPostProcessResult.getOpenResult() != null)
-            {
-                nozzleOpen = lastLayerPostProcessResult.getOpenResult().isNozzleOpen();
-                replenishExtrusionE = lastLayerPostProcessResult.getOpenResult().getOutstandingEReplenish();
-                replenishExtrusionD = lastLayerPostProcessResult.getOpenResult().getOutstandingDReplenish();
-            }
-
-            if (lastLayerPostProcessResult.getLastToolSelectInForce() != null)
-            {
-                lastToolNumber = lastLayerPostProcessResult.getLastToolSelectInForce().getToolNumber();
-            }
+                nozzleOpen = lastOpenResult.isNozzleOpen();
+                replenishExtrusionE = lastOpenResult.getOutstandingEReplenish();
+                replenishExtrusionD = lastOpenResult.getOutstandingDReplenish();
+                lastToolNumber = lastOpenResult.getLastToolNumber();
         }
 
         while (layerIterator.hasNext())
@@ -259,12 +252,12 @@ public class UtilityMethods
             }
         }
 
-        for (Entry<ExtrusionNode, NozzleValvePositionNode> entryToUpdate : nodesToAdd.entrySet())
+        nodesToAdd.entrySet().stream().forEach((entryToUpdate) ->
         {
             entryToUpdate.getKey().addSiblingBefore(entryToUpdate.getValue());
-        }
+        });
 
-        return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen);
+        return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen, lastToolNumber);
     }
 
     protected void updateLayerToLineNumber(LayerPostProcessResult lastLayerParseResult,
