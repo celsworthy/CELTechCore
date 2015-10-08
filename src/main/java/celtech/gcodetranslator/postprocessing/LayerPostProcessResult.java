@@ -20,7 +20,7 @@ public class LayerPostProcessResult
     private final LayerNode layerData;
     private Optional<Integer> lastObjectNumber = Optional.empty();
     private int lastFeedrateInForce = -1;
-    private ToolSelectNode lastToolSelectInForce = null;
+    private final ToolSelectNode lastToolSelectInForce;
     private SectionNode lastSectionNodeInForce = null;
     private final OpenResult openResult;
 

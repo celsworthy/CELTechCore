@@ -234,23 +234,8 @@ public class PostProcessor
                         //Parse anything that has gone before
                         LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getTypeCode());
 
-                        if (parseResultCycle0.getNozzleStateAtEndOfLayer().isPresent())
-                        {
-                            parseResultCycle1 = parseResultCycle0;
-                            parseResultCycle0 = null;
-                        } else
-                        {
-                            parseResultCycle1 = new LayerPostProcessResult(parseResultCycle1.getNozzleStateAtEndOfLayer(),
-                                    parseResultCycle0.getLayerData(),
-                                    parseResultCycle0.getEVolume(),
-                                    parseResultCycle0.getDVolume(),
-                                    parseResultCycle0.getTimeForLayer(),
-                                    parseResultCycle0.getLastObjectNumber().orElse(-1),
-                                    null,
-                                    null,
-                                    parseResultCycle1.getLastFeedrateInForce(),
-                                    null);
-                        }
+                        parseResultCycle1 = parseResultCycle0;
+                        parseResultCycle0 = null;
                     }
 
                     layerCounter++;
@@ -562,14 +547,13 @@ public class PostProcessor
                 }
                 lastFeedrate = ((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
             }
-            
+
             if (foundNode instanceof ToolSelectNode)
             {
-                lastToolSelectNode = (ToolSelectNode)foundNode;
-            }
-            else if (foundNode instanceof SectionNode)
+                lastToolSelectNode = (ToolSelectNode) foundNode;
+            } else if (foundNode instanceof SectionNode)
             {
-                lastSectionNode = (SectionNode)foundNode;
+                lastSectionNode = (SectionNode) foundNode;
             }
         }
 

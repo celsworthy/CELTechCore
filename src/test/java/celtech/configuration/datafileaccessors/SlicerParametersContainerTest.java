@@ -40,7 +40,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
     public void testLoadProfiles()
     {
         SlicerParametersContainer.getInstance();
-        assertEquals(9, SlicerParametersContainer.getApplicationProfileList().size());
+        assertEquals(8, SlicerParametersContainer.getApplicationProfileList().size());
         assertEquals(0, SlicerParametersContainer.getUserProfileList().size());
     }
 
@@ -59,7 +59,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.saveProfile(draftCopy);
         assertEquals(1, userProfiles.size());
-        assertEquals(10, completeProfiles.size());
+        assertEquals(9, completeProfiles.size());
 
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(NEW_NAME, "RBX01-SM");
         assertEquals(retrievedProfile, draftCopy);
@@ -83,7 +83,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.deleteUserProfile(NEW_NAME, "RBX01-SM");
         assertEquals(0, userProfiles.size());
-        assertEquals(9, completeProfiles.size());
+        assertEquals(8, completeProfiles.size());
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(
             NEW_NAME, "RBX01-SM");
         Assert.assertNull(retrievedProfile);
@@ -137,7 +137,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.reload();
         assertEquals(1, userProfiles.size());
-        assertEquals(10, completeProfiles.size());        
+        assertEquals(9, completeProfiles.size());        
         SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(
             CHANGED_NAME, "RBX01-SM");
         assertEquals(5, newEditedProfile.getBrimWidth_mm());
