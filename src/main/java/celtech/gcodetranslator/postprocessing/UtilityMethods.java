@@ -177,7 +177,6 @@ public class UtilityMethods
         double replenishExtrusionE = 0;
         double replenishExtrusionD = 0;
         Map<ExtrusionNode, NozzleValvePositionNode> nodesToAdd = new HashMap<>();
-        steno.info("New layer");
         if (lastLayerPostProcessResult != null)
         {
             if (lastLayerPostProcessResult.getOpenResult() != null)
