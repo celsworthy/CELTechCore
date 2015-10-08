@@ -131,7 +131,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+        testProject.getPrinterSettings().setSettingsName("Draft");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
@@ -278,7 +278,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+        testProject.getPrinterSettings().setSettingsName("Draft");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         List<NozzleProxy> nozzleProxies = new ArrayList<>();
@@ -485,7 +485,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
 
         Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+        testProject.getPrinterSettings().setSettingsName("Draft");
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         TestUtils utils = new TestUtils();

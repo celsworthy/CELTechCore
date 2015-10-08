@@ -40,7 +40,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
     public void testLoadProfiles()
     {
         SlicerParametersContainer.getInstance();
-        assertEquals(8, SlicerParametersContainer.getApplicationProfileList().size());
+        assertEquals(6, SlicerParametersContainer.getApplicationProfileList().size());
         assertEquals(0, SlicerParametersContainer.getUserProfileList().size());
     }
 
@@ -59,7 +59,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.saveProfile(draftCopy);
         assertEquals(1, userProfiles.size());
-        assertEquals(9, completeProfiles.size());
+        assertEquals(7, completeProfiles.size());
 
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(NEW_NAME, "RBX01-SM");
         assertEquals(retrievedProfile, draftCopy);
@@ -83,7 +83,7 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
 
         SlicerParametersContainer.deleteUserProfile(NEW_NAME, "RBX01-SM");
         assertEquals(0, userProfiles.size());
-        assertEquals(8, completeProfiles.size());
+        assertEquals(6, completeProfiles.size());
         SlicerParametersFile retrievedProfile = SlicerParametersContainer.getSettings(
             NEW_NAME, "RBX01-SM");
         Assert.assertNull(retrievedProfile);
@@ -133,11 +133,11 @@ public class SlicerParametersContainerTest extends JavaFXConfiguredTest
         draftCopy.setProfileName(CHANGED_NAME);
         SlicerParametersContainer.saveProfile(draftCopy);
         assertEquals(1, userProfiles.size());
-        assertEquals(9, completeProfiles.size());
+        assertEquals(7, completeProfiles.size());
 
         SlicerParametersContainer.reload();
         assertEquals(1, userProfiles.size());
-        assertEquals(9, completeProfiles.size());        
+        assertEquals(7, completeProfiles.size());        
         SlicerParametersFile newEditedProfile = SlicerParametersContainer.getSettings(
             CHANGED_NAME, "RBX01-SM");
         assertEquals(5, newEditedProfile.getBrimWidth_mm());
