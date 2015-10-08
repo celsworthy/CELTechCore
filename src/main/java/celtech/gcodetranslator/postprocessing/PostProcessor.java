@@ -510,6 +510,8 @@ public class PostProcessor
         int lastFeedrate = -1;
 
         SupportsPrintTimeCalculation lastMovementProvider = null;
+        SectionNode lastSectionNode = null;
+        ToolSelectNode lastToolSelectNode = null;
 
         while (layerIterator.hasNext())
         {
@@ -560,27 +562,14 @@ public class PostProcessor
                 }
                 lastFeedrate = ((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
             }
-        }
-
-        SectionNode lastSectionNode = null;
-        ToolSelectNode lastToolSelectNode = null;
-
-        if (layerNode != null)
-        {
-            GCodeEventNode lastEventOnLastLayer = layerNode.getAbsolutelyTheLastEvent();
-            if (lastEventOnLastLayer != null)
+            
+            if (foundNode instanceof ToolSelectNode)
             {
-                Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
-                if (potentialLastSection.isPresent() && potentialLastSection.get() instanceof SectionNode)
-                {
-                    lastSectionNode = (SectionNode) potentialLastSection.get();
-
-                    Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
-                    if (potentialToolSelectNode.isPresent() && potentialToolSelectNode.get() instanceof ToolSelectNode)
-                    {
-                        lastToolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
-                    }
-                }
+                lastToolSelectNode = (ToolSelectNode)foundNode;
+            }
+            else if (foundNode instanceof SectionNode)
+            {
+                lastSectionNode = (SectionNode)foundNode;
             }
         }
 
