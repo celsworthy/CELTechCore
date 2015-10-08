@@ -69,33 +69,33 @@ public class OutputUtilities
         }
     }
 
-    protected void outputTemperatureCommands(GCodeOutputWriter writer, boolean useNozzle0, boolean useNozzle1)
-    {
-        try
-        {
-            MCodeNode nozzleTemp = new MCodeNode(104);
-            if (useNozzle0)
-            {
-                nozzleTemp.setSOnly(true);
-            }
-            if (useNozzle1)
-            {
-                nozzleTemp.setTOnly(true);
-            }
-
-            nozzleTemp.setCommentText("Go to nozzle temperature from loaded reel - don't wait");
-            writer.writeOutput(nozzleTemp.renderForOutput());
-            writer.newLine();
-
-            MCodeNode bedTemp = new MCodeNode(140);
-            bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
-            writer.writeOutput(bedTemp.renderForOutput());
-            writer.newLine();
-        } catch (IOException ex)
-        {
-            throw new RuntimeException("Failed to add post layer 1 temperature commands in post processor - " + ex.getMessage(), ex);
-        }
-    }
+//    protected void outputTemperatureCommands(GCodeOutputWriter writer, boolean useNozzle0, boolean useNozzle1)
+//    {
+//        try
+//        {
+//            MCodeNode nozzleTemp = new MCodeNode(104);
+//            if (useNozzle0)
+//            {
+//                nozzleTemp.setSOnly(true);
+//            }
+//            if (useNozzle1)
+//            {
+//                nozzleTemp.setTOnly(true);
+//            }
+//
+//            nozzleTemp.setCommentText("Go to nozzle temperature from loaded reel - don't wait");
+//            writer.writeOutput(nozzleTemp.renderForOutput());
+//            writer.newLine();
+//
+//            MCodeNode bedTemp = new MCodeNode(140);
+//            bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
+//            writer.writeOutput(bedTemp.renderForOutput());
+//            writer.newLine();
+//        } catch (IOException ex)
+//        {
+//            throw new RuntimeException("Failed to add post layer 1 temperature commands in post processor - " + ex.getMessage(), ex);
+//        }
+//    }
 
     protected void writeLayerToFile(LayerNode layerNode, GCodeOutputWriter writer)
     {

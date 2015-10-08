@@ -190,7 +190,7 @@ public class PostProcessor
                     nozzle1Required);
 
             StringBuilder layerBuffer = new StringBuilder();
-            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1);
+            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(Optional.empty(), null, 0, 0, 0, 0, null, null, -1, null);
             LayerPostProcessResult parseResultCycle2 = null;
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
@@ -232,16 +232,10 @@ public class PostProcessor
                         parseResultCycle2 = parseResultCycle1;
 
                         //Parse anything that has gone before
-                        LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer);
+                        LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getTypeCode());
 
                         if (parseResultCycle0.getNozzleStateAtEndOfLayer().isPresent())
                         {
-                            if (parseResultCycle0.getLayerData().getLayerNumber() == 1)
-                            {
-                                boolean heatNozzle0 = project.getUsedExtruders().contains(0);
-                                boolean heatNozzle1 = project.getUsedExtruders().contains(1);
-                                outputUtilities.outputTemperatureCommands(writer, heatNozzle0, heatNozzle1);
-                            }
                             parseResultCycle1 = parseResultCycle0;
                             parseResultCycle0 = null;
                         } else
@@ -254,7 +248,8 @@ public class PostProcessor
                                     parseResultCycle0.getLastObjectNumber().orElse(-1),
                                     null,
                                     null,
-                                    parseResultCycle1.getLastFeedrateInForce());
+                                    parseResultCycle1.getLastFeedrateInForce(),
+                                    null);
                         }
                     }
 
@@ -273,7 +268,7 @@ public class PostProcessor
             }
 
             //This catches the last layer - if we had no data it won't do anything
-            LayerPostProcessResult parseResult = parseLayer(layerBuffer, parseResultCycle1, writer);
+            LayerPostProcessResult parseResult = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getTypeCode());
 
             finalEVolume += parseResult.getEVolume();
             finalDVolume += parseResult.getDVolume();
@@ -406,7 +401,7 @@ public class PostProcessor
         return result;
     }
 
-    private LayerPostProcessResult parseLayer(StringBuilder layerBuffer, LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer)
+    private LayerPostProcessResult parseLayer(StringBuilder layerBuffer, LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer, String headTypeCode)
     {
         LayerPostProcessResult parseResultAtEndOfThisLayer = null;
 
@@ -433,7 +428,7 @@ public class PostProcessor
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
                 int lastFeedrate = gcodeParser.getFeedrateInForce();
-                parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult);
+                parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult, headTypeCode);
                 parseResultAtEndOfThisLayer.setLastFeedrateInForce(lastFeedrate);
             }
         } else
@@ -444,7 +439,7 @@ public class PostProcessor
         return parseResultAtEndOfThisLayer;
     }
 
-    private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult)
+    private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, String headTypeCode)
     {
         // We never want unretracts
         timeUtils.timerStart(this, unretractTimerName);
@@ -480,27 +475,30 @@ public class PostProcessor
         timeUtils.timerStop(this, perRetractTimerName);
 
         timeUtils.timerStart(this, closeTimerName);
-        closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies);
+        closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies, headTypeCode);
         timeUtils.timerStop(this, closeTimerName);
 
         timeUtils.timerStart(this, unnecessaryToolchangeTimerName);
         postProcessorUtilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, unnecessaryToolchangeTimerName);
 
-        //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
+        //NOTE
+        //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
+        //NOTE
         timeUtils.timerStart(this, openTimerName);
-        postProcessorUtilityMethods.insertOpenNodes(layerNode, lastLayerParseResult);
+        OpenResult openResult = postProcessorUtilityMethods.insertOpens(layerNode, lastLayerParseResult, nozzleProxies, headTypeCode);
         timeUtils.timerStop(this, openTimerName);
 
+        //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
         timeUtils.timerStart(this, layerResultTimerName);
-        LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult);
+        LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult, openResult);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
         timeUtils.timerStop(this, layerResultTimerName);
 
         return postProcessResult;
     }
 
-    private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult)
+    private LayerPostProcessResult determineLayerPostProcessResult(LayerNode layerNode, LayerPostProcessResult lastLayerPostProcessResult, OpenResult openResult)
     {
         Optional<NozzleProxy> lastNozzleInUse = nozzleUtilities.determineNozzleStateAtEndOfLayer(layerNode);
 
@@ -597,7 +595,7 @@ public class PostProcessor
         }
 
         return new LayerPostProcessResult(lastNozzleInUse, layerNode, eValue, dValue, timeForLayer, -1,
-                lastSectionNode, lastToolSelectNode, lastFeedrate);
+                lastSectionNode, lastToolSelectNode, lastFeedrate, openResult);
     }
 
     private void outputPostProcessingTimerReport()

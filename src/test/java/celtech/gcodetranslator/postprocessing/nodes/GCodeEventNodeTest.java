@@ -669,12 +669,12 @@ public class GCodeEventNodeTest
         }
 
         assertEquals(0, resultList4.size());
-        
-         // From A starting from B3,C7 should be D1, D2, D3, C8, C9
+
+        // From A starting from B3,C7 should be D1, D2, D3, C8, C9
         List<GCodeEventNode> startList1 = new ArrayList();
         startList1.add(nodeB3);
         startList1.add(nodeC7);
-        
+
         Iterator<GCodeEventNode> nodeA_B3C7Iterator = nodeA.treeSpanningIterator(startList1);
 
         ArrayList<GCodeEventNode> resultList5 = new ArrayList<>();
@@ -779,6 +779,26 @@ public class GCodeEventNodeTest
         assertSame(nodeB1, resultList2.get(8));
         assertSame(nodeA, resultList2.get(9));
 
+        // From A starting from B2,C6 should be C5, C4, C3, B2, C3, C2, C1, B2, A
+//        List<GCodeEventNode> startList1 = new ArrayList();
+//        startList1.add(nodeB2);
+//        startList1.add(nodeC6);
+//
+//        Iterator<GCodeEventNode> nodeA_B3C7Iterator = nodeA.treeSpanningBackwardsIterator(startList1);
+//
+//        ArrayList<GCodeEventNode> resultList5 = new ArrayList<>();
+//
+//        while (nodeA_B3C7Iterator.hasNext())
+//        {
+//            resultList5.add(nodeA_B3C7Iterator.next());
+//        }
+//
+//        assertEquals(5, resultList5.size());
+//        assertSame(nodeD1, resultList5.get(0));
+//        assertSame(nodeD2, resultList5.get(1));
+//        assertSame(nodeD3, resultList5.get(2));
+//        assertSame(nodeC8, resultList5.get(3));
+//        assertSame(nodeC9, resultList5.get(4));
 //        // From B3 should be C7, D1, D2, D3, C8, C9
 //        Iterator<GCodeEventNode> nodeB3Iterator = nodeB3.treeSpanningIterator();
 //
@@ -1613,7 +1633,7 @@ public class GCodeEventNodeTest
         Optional<GCodeEventNode> result2 = nodeB3.getSiblingAfter();
         assertFalse(result2.isPresent());
     }
-    
+
     /**
      * Test of getAbsolutelyTheLastEvent method, of class GCodeEventNode.
      */

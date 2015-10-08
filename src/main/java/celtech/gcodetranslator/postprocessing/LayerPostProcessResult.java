@@ -22,6 +22,7 @@ public class LayerPostProcessResult
     private int lastFeedrateInForce = -1;
     private ToolSelectNode lastToolSelectInForce = null;
     private SectionNode lastSectionNodeInForce = null;
+    private final OpenResult openResult;
 
     public LayerPostProcessResult(Optional<NozzleProxy> nozzleStateAtEndOfLayer,
             LayerNode layerData,
@@ -31,7 +32,8 @@ public class LayerPostProcessResult
             int lastObjectNumber,
             SectionNode sectionNode,
             ToolSelectNode toolSelectNode,
-            int lastFeedrateInForce)
+            int lastFeedrateInForce,
+            OpenResult openResult)
     {
         this.nozzleStateAtEndOfLayer = nozzleStateAtEndOfLayer;
         this.layerData = layerData;
@@ -42,6 +44,7 @@ public class LayerPostProcessResult
         this.lastSectionNodeInForce = sectionNode;
         this.lastToolSelectInForce = toolSelectNode;
         this.lastFeedrateInForce = lastFeedrateInForce;
+        this.openResult = openResult;
     }
 
     public Optional<NozzleProxy> getNozzleStateAtEndOfLayer()
@@ -80,7 +83,8 @@ public class LayerPostProcessResult
     }
 
     /**
-     * This is the last feedrate that the parser saw 
+     * This is the last feedrate that the parser saw
+     *
      * @param feedrate
      */
     public void setLastFeedrateInForce(int feedrate)
@@ -90,7 +94,8 @@ public class LayerPostProcessResult
 
     /**
      * This is the last feedrate that the parser saw
-     * @return 
+     *
+     * @return
      */
     public int getLastFeedrateInForce()
     {
@@ -105,5 +110,10 @@ public class LayerPostProcessResult
     public SectionNode getLastSectionNodeInForce()
     {
         return lastSectionNodeInForce;
+    }
+
+    public OpenResult getOpenResult()
+    {
+        return openResult;
     }
 }

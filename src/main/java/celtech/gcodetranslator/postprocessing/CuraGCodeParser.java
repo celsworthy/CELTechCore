@@ -16,6 +16,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
@@ -335,6 +336,30 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
         );
     }
 
+    //Cura skirt Section
+    Rule SkirtSection()
+    {
+        return Sequence(
+                SkirtSectionNode.designator,
+                Newline(),
+                OneOrMore(ChildDirective()),
+                new Action()
+                {
+                    @Override
+                    public boolean run(Context context)
+                    {
+                        SkirtSectionNode node = new SkirtSectionNode();
+                        while (context.getValueStack().iterator().hasNext())
+                        {
+                            node.addChildAtStart((GCodeEventNode) context.getValueStack().pop());
+                        }
+                        context.getValueStack().push(node);
+                        return true;
+                    }
+                }
+        );
+    }
+
     //Cura support interface Section
     Rule SupportInterfaceSection()
     {
@@ -429,6 +454,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                 SkinSection(),
                 SupportInterfaceSection(),
                 SupportSection(),
+                SkirtSection(),
                 OrphanSection());
     }
 
@@ -439,8 +465,9 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                 Test(InnerPerimeterSectionNode.designator),
                 Test(OuterPerimeterSectionNode.designator),
                 Test(SkinSectionNode.designator),
+                Test(SupportInterfaceSectionNode.designator),
                 Test(SupportSectionNode.designator),
-                Test(SupportInterfaceSectionNode.designator));
+                Test(SkirtSectionNode.designator));
     }
 
     // Comment element within a line
