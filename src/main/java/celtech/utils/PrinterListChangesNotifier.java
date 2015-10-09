@@ -11,15 +11,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 /**
- * PrinterListChangesNotifier listens to a list of printers and notifies registered listeners about
- * the following events: - Printer added - Printer removed - Head added to printer - Head removed
- * from printer - Reel added to printer (with reel index) - Reel removed from printer (with reel
- * index) - Printer Identity changed To be done: - Filament detected on extruder (with extruder
- * index) - Filament removed from extruder (with extruder index)
+ * PrinterListChangesNotifier listens to a list of printers and notifies
+ * registered listeners about the following events: - Printer added - Printer
+ * removed - Head added to printer - Head removed from printer - Reel added to
+ * printer (with reel index) - Reel removed from printer (with reel index) -
+ * Printer Identity changed To be done: - Filament detected on extruder (with
+ * extruder index) - Filament removed from extruder (with extruder index)
  *
  * @author tony
  */
@@ -58,7 +60,7 @@ public class PrinterListChangesNotifier
                 {
                 }
             }
-        });
+            });
     }
 
     private void fireWhenPrinterRemoved(Printer printer)
@@ -148,7 +150,13 @@ public class PrinterListChangesNotifier
 
     private void fireWhenPrinterAdded(Printer printer)
     {
+        List<PrinterListChangesListener> listenerList = new ArrayList<>();
         for (PrinterListChangesListener listener : listeners)
+        {
+            listenerList.add(listener);
+        }
+
+        for (PrinterListChangesListener listener : listenerList)
         {
             listener.whenPrinterAdded(printer);
             if (printer.headProperty().get() != null)
@@ -157,10 +165,10 @@ public class PrinterListChangesNotifier
             }
 
             printer.reelsProperty().entrySet().stream().
-                forEach((mappedReel) ->
-                    {
-                        listener.whenReelAdded(printer, mappedReel.getKey());
-                });
+                    forEach((mappedReel) ->
+                            {
+                                listener.whenReelAdded(printer, mappedReel.getKey());
+                    });
 
             for (int extruderIndex = 0; extruderIndex < printer.extrudersProperty().size(); extruderIndex++)
             {
