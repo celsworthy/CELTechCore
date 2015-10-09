@@ -215,7 +215,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                         oldValue.getReelEEPROMStateProperty().removeListener(reelEEPROMChangeListener);
                     }
 
-                    newValue.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
+                    if (newValue != null)
+                    {
+                        newValue.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
+                    }
                     updateWriteToReelBindings();
                     showReelsAtTopOfCombo();
                 });
@@ -869,7 +872,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         try
         {
-                      Filament filament = cmbFilament.getValue();
+            Filament filament = cmbFilament.getValue();
 
             if (currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
             {
