@@ -1852,6 +1852,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
                 nozzle0Target = filament0.getNozzleTemperature();
             }
+
+            bedFirstLayerTarget = filament0.getFirstLayerBedTemperature();
+            bedTarget = filament0.getBedTemperature();
+            ambientTarget = filament0.getAmbientTemperature();
         }
 
         if (needToSendTempsForReel0 || needToSendTempsForReel1)
