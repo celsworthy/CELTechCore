@@ -1633,7 +1633,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.SET_TEMPERATURES);
-        //TODO change this to support multiple nozzle heaters
         setTemperatures.setTemperatures(nozzle0FirstLayerTarget, nozzle0Target,
                 nozzle1FirstLayerTarget, nozzle1Target, bedFirstLayerTarget,
                 bedTarget, ambientTarget);
@@ -1808,44 +1807,51 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     || (reels.containsKey(1) && !reels.get(1).isSameAs(filament1)))
             {
                 needToSendTempsForReel1 = true;
-                nozzle1FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
-                nozzle1Target = filament1.getNozzleTemperature();
+                nozzle0FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
+                nozzle0Target = filament1.getNozzleTemperature();
                 bedFirstLayerTarget = filament1.getFirstLayerBedTemperature();
                 bedTarget = filament1.getBedTemperature();
                 ambientTarget = filament1.getAmbientTemperature();
                 feedrateMultiplier = filament1.getFeedRateMultiplier();
 
-                changeFilamentInfo("E", filament1.getDiameter(),
+                changeFilamentInfo("D", filament1.getDiameter(),
                         filament1.getFilamentMultiplier());
             } else
             {
-                nozzle1FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
-                nozzle1Target = filament1.getNozzleTemperature();
+                nozzle0FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
+                nozzle0Target = filament1.getNozzleTemperature();
             }
         }
 
         if (needToSendTempsForReel0)
         {
-            nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
-            nozzle0Target = filament0.getNozzleTemperature();
+            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                nozzle1FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+                nozzle1Target = filament0.getNozzleTemperature();
+            } else
+            {
+                nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+                nozzle0Target = filament0.getNozzleTemperature();
+            }
             bedFirstLayerTarget = filament0.getFirstLayerBedTemperature();
             bedTarget = filament0.getBedTemperature();
             ambientTarget = filament0.getAmbientTemperature();
             feedrateMultiplier = filament0.getFeedRateMultiplier();
 
-            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-            {
-                changeFilamentInfo("D", filament0.getDiameter(),
-                        filament0.getFilamentMultiplier());
-            } else
-            {
-                changeFilamentInfo("E", filament0.getDiameter(),
-                        filament0.getFilamentMultiplier());
-            }
+            changeFilamentInfo("E", filament0.getDiameter(),
+                    filament0.getFilamentMultiplier());
         } else if (needToSendTempsForReel1 && reels.containsKey(0))
         {
-            nozzle0FirstLayerTarget = reels.get(0).firstLayerNozzleTemperatureProperty().get();
-            nozzle0Target = reels.get(0).nozzleTemperatureProperty().get();
+            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                nozzle1FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+                nozzle1Target = filament0.getNozzleTemperature();
+            } else
+            {
+                nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+                nozzle0Target = filament0.getNozzleTemperature();
+            }
         }
 
         if (needToSendTempsForReel0 || needToSendTempsForReel1)

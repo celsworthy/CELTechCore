@@ -208,7 +208,7 @@ public class PostProcessor
                 }
 
                 lineRead = lineRead.trim();
-                if (lineRead.matches(";LAYER:[0-9]+"))
+                if (lineRead.matches(";LAYER:[-]*[0-9]+"))
                 {
                     if (layerCounter >= 0)
                     {

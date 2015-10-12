@@ -1091,26 +1091,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
-            if (printerSettings.getPrintSupportOverride()
-                    == SlicerParametersFile.SupportType.NO_SUPPORT
-                    || printerSettings.getPrintSupportOverride()
-                    == SlicerParametersFile.SupportType.OBJECT_MATERIAL)
-            {
-                extruder0Filament = project.getPrinterSettings().getFilament0();
-                extruder1Filament = project.getPrinterSettings().getFilament1();
-            } else
-            {
-                if (printerSettings.getPrintSupportOverride()
-                        == SlicerParametersFile.SupportType.MATERIAL_1)
-                {
-                    extruder0Filament = project.getPrinterSettings().getFilament1();
-                    extruder1Filament = project.getPrinterSettings().getFilament1();
-                } else
-                {
-                    extruder0Filament = project.getPrinterSettings().getFilament0();
-                    extruder1Filament = project.getPrinterSettings().getFilament0();
-                }
-            }
+            extruder0Filament = project.getPrinterSettings().getFilament0();
+            extruder1Filament = project.getPrinterSettings().getFilament1();
+
             if (selectedPrinter != null && targetPrinterHasOneExtruder())
             {
                 extruder1Filament = extruder0Filament;

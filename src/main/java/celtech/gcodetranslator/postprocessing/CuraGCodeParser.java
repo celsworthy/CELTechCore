@@ -29,7 +29,6 @@ import org.parboiled.BaseParser;
 import org.parboiled.Context;
 import org.parboiled.Rule;
 import org.parboiled.annotations.SuppressSubnodes;
-import org.parboiled.support.StringVar;
 import org.parboiled.support.Var;
 
 /**
@@ -79,7 +78,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     public Rule Layer()
     {
         return Sequence(
-                Sequence(";LAYER:", OneOrMore(Digit()),
+                Sequence(";LAYER:", IntegerNumber(),
                         (Action) (Context context1) ->
                         {
                             thisLayer.setLayerNumber(Integer.valueOf(context1.getMatch()));
@@ -953,6 +952,14 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     Rule Digit()
     {
         return CharRange('0', '9');
+    }
+
+    @SuppressSubnodes
+    Rule IntegerNumber()
+    {
+        return Sequence(
+                Optional('-'),
+                OneOrMore(Digit()));
     }
 
     @SuppressSubnodes

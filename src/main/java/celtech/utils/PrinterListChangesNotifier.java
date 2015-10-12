@@ -185,6 +185,11 @@ public class PrinterListChangesNotifier
         this.listeners.add(listener);
     }
 
+    public void removeListener(PrinterListChangesListener listener)
+    {
+        this.listeners.remove(listener);
+    }
+
     private void fireWhenHeadAdded(Printer printer)
     {
         for (PrinterListChangesListener listener : listeners)

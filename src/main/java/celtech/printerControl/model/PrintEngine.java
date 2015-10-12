@@ -446,8 +446,7 @@ public class PrintEngine implements ControllableService
                 if (t1 == PrintQueueStatus.PRINTING)
                 {
                     printJob.set(PrintJob.readJobFromDirectory(associatedPrinter.printJobIDProperty().get()));
-                }
-                else
+                } else
                 {
                     printJob.set(null);
                 }
@@ -658,11 +657,23 @@ public class PrintEngine implements ControllableService
         SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
                 slicerTypeToUse);
 
-        //TODO DMH and/or material-dependent profiles
-        // This is a hack to force the fan speed to 100% when using PLA - it only looks at the first reel...
+        //TODO material-dependent profiles
+        // This is a hack to force the fan speed to 100% when using PLA
         if (associatedPrinter.reelsProperty().containsKey(0))
         {
             if (associatedPrinter.reelsProperty().get(0).material.get() == MaterialType.PLA
+                    && SlicerParametersContainer.applicationProfileListContainsProfile(settingsToUse.
+                            getProfileName()))
+            {
+                settingsToUse.setEnableCooling(true);
+                settingsToUse.setMinFanSpeed_percent(100);
+                settingsToUse.setMaxFanSpeed_percent(100);
+            }
+        }
+
+        if (associatedPrinter.reelsProperty().containsKey(1))
+        {
+            if (associatedPrinter.reelsProperty().get(1).material.get() == MaterialType.PLA
                     && SlicerParametersContainer.applicationProfileListContainsProfile(settingsToUse.
                             getProfileName()))
             {
@@ -675,7 +686,11 @@ public class PrintEngine implements ControllableService
 
         // Hack to change raft related settings for Draft ABS prints
         if (project.getPrintQuality() == PrintQualityEnumeration.DRAFT
+                &&
+                ((project.getPrinterSettings().getFilament0() != null
                 && project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS)
+                || (project.getPrinterSettings().getFilament1() != null
+                && project.getPrinterSettings().getFilament1().getMaterial() == MaterialType.ABS)))
         {
             settingsToUse.setRaftBaseLinewidth_mm(1.250f);
             settingsToUse.setRaftAirGapLayer0_mm(0.285f);
@@ -683,7 +698,11 @@ public class PrintEngine implements ControllableService
         }
 
         if (project.getPrintQuality() == PrintQualityEnumeration.NORMAL
+                &&
+                ((project.getPrinterSettings().getFilament0() != null
                 && project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS)
+                || (project.getPrinterSettings().getFilament1() != null
+                && project.getPrinterSettings().getFilament1().getMaterial() == MaterialType.ABS)))
         {
             settingsToUse.setRaftAirGapLayer0_mm(0.4f);
         }

@@ -200,12 +200,22 @@ public class NozzleAssignmentUtilities
                 }
             }
 
+            boolean blankToolSelect = false;
+
             for (ObjectDelineationNode objectNode : objectNodes)
             {
                 lastObjectReferenceNumber = objectNode.getObjectNumber();
 
                 List<GCodeEventNode> childNodes = objectNode.getChildren().stream().collect(
                         Collectors.toList());
+
+                if (toolSelectNode == null)
+                {
+                    //Need to create a new Tool Select Node
+                    toolSelectNode = new ToolSelectNode();
+                    layerNode.addChildAtEnd(toolSelectNode);
+                    blankToolSelect = true;
+                }
 
                 for (GCodeEventNode childNode : childNodes)
                 {
@@ -233,8 +243,11 @@ public class NozzleAssignmentUtilities
                                             lastSectionNode);
                                 } else
                                 {
+                                    NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(objectToNozzleNumberMap.get(lastObjectReferenceNumber));
                                     requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(lastSectionNode,
-                                            (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+                                            requiredNozzleForSupportRaftSkirt,
+                                            requiredNozzleForObject);
                                 }
 
                                 try
@@ -267,20 +280,28 @@ public class NozzleAssignmentUtilities
                                             sectionNodeBeingExamined);
                                 } else
                                 {
+                                    NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(objectToNozzleNumberMap.get(lastObjectReferenceNumber));
                                     requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(sectionNodeBeingExamined,
-                                            (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+                                            requiredNozzleForSupportRaftSkirt,
+                                            requiredNozzleForObject);
                                 }
                             }
 
-                            if (toolSelectNode == null
+                            if (!blankToolSelect
+                                    && (toolSelectNode == null
                                     || toolSelectNode.getToolNumber()
-                                    != requiredNozzle.getNozzleReferenceNumber())
+                                    != requiredNozzle.getNozzleReferenceNumber()))
                             {
                                 //Need to create a new Tool Select Node
                                 toolSelectNode = new ToolSelectNode();
                                 toolSelectNode.setToolNumber(
                                         requiredNozzle.getNozzleReferenceNumber());
                                 layerNode.addChildAtEnd(toolSelectNode);
+                            } else if (blankToolSelect)
+                            {
+                                toolSelectNode.setToolNumber(
+                                        requiredNozzle.getNozzleReferenceNumber());
                             }
 
                             sectionNodeBeingExamined.removeFromParent();

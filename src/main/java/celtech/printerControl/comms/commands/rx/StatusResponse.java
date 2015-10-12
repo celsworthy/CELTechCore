@@ -1381,13 +1381,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("E Filament diameter: " + EFilamentDiameter);
         outputString.append("\n");
-        outputString.append("E Filament diameter: " + EFilamentDiameter);
-        outputString.append("\n");
-        outputString.append("E Filament diameter: " + EFilamentDiameter);
+        outputString.append("E Filament multiplier: " + EFilamentMultiplier);
         outputString.append("\n");
         outputString.append("D Filament diameter: " + DFilamentDiameter);
-        outputString.append("\n");
-        outputString.append("E Filament multiplier: " + EFilamentMultiplier);
         outputString.append("\n");
         outputString.append("D Filament multiplier: " + DFilamentMultiplier);
         outputString.append("\n");

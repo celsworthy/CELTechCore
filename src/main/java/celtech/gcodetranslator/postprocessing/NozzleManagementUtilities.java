@@ -12,6 +12,7 @@ import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
@@ -41,7 +42,8 @@ public class NozzleManagementUtilities
     }
 
     protected NozzleProxy chooseNozzleProxyForDifferentialSupportMaterial(final GCodeEventNode node,
-            final int nozzleToUseForObject) throws UnableToFindSectionNodeException
+            final NozzleProxy supportMaterialNozzle,
+            final NozzleProxy nozzleForCurrentObject) throws UnableToFindSectionNodeException
     {
         NozzleProxy nozzleProxy = null;
 
@@ -78,12 +80,13 @@ public class NozzleManagementUtilities
         }
 
         if (foundNode instanceof SupportSectionNode
-                || foundNode instanceof SupportInterfaceSectionNode)
+                || foundNode instanceof SupportInterfaceSectionNode
+                || foundNode instanceof SkirtSectionNode)
         {
-            nozzleProxy = nozzleProxies.get((nozzleToUseForObject == 0)?1:0);
+            nozzleProxy = supportMaterialNozzle;
         } else
         {
-            nozzleProxy = nozzleProxies.get(nozzleToUseForObject);
+            nozzleProxy = nozzleForCurrentObject;
         }
 
         return nozzleProxy;
