@@ -75,7 +75,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleFirstLayerTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + nozzleNumber);
+                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d").get()
@@ -103,7 +103,7 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + nozzleNumber);
+                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleTargetTemperatureProperty().asString("%d").get()
