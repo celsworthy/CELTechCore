@@ -967,7 +967,9 @@ public class CloseLogic
 //                                }
                                 break;
                             }
-                        } else if (node instanceof ExtrusionNode)
+                        }
+                        
+                        if (node instanceof ExtrusionNode)
                         {
                             foundExtrusionBeforeNozzleClose = true;
 
