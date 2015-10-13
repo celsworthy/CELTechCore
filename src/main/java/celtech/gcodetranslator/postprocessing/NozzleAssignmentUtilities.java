@@ -36,7 +36,6 @@ public class NozzleAssignmentUtilities
     private final PostProcessingMode postProcessingMode;
 
     private final NozzleManagementUtilities nozzleControlUtilities;
-    private final List<Integer> objectToNozzleNumberMap;
     private final Map<Integer, Integer> extruderToNozzleMap;
     private final Map<Integer, Integer> nozzleToExtruderMap;
 
@@ -67,16 +66,6 @@ public class NozzleAssignmentUtilities
             {
                 extruderToNozzleMap.put(extruderNumber, proxy.get().getNozzleReferenceNumber());
                 nozzleToExtruderMap.put(proxy.get().getNozzleReferenceNumber(), extruderNumber);
-            }
-        }
-
-        objectToNozzleNumberMap = new ArrayList<>();
-        for (ModelContainer model : project.getTopLevelModels())
-        {
-            for (MeshView meshView : model.descendentMeshViews())
-            {
-                int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
-                objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
             }
         }
     }
@@ -244,7 +233,7 @@ public class NozzleAssignmentUtilities
                                 } else
                                 {
                                     NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
-                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(objectToNozzleNumberMap.get(lastObjectReferenceNumber));
+                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(lastObjectReferenceNumber);
                                     requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(lastSectionNode,
                                             requiredNozzleForSupportRaftSkirt,
                                             requiredNozzleForObject);
@@ -281,7 +270,7 @@ public class NozzleAssignmentUtilities
                                 } else
                                 {
                                     NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
-                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(objectToNozzleNumberMap.get(lastObjectReferenceNumber));
+                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(lastObjectReferenceNumber);
                                     requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(sectionNodeBeingExamined,
                                             requiredNozzleForSupportRaftSkirt,
                                             requiredNozzleForObject);
@@ -367,8 +356,7 @@ public class NozzleAssignmentUtilities
 
             ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
 
-            NozzleProxy requiredNozzle = nozzleProxies.get(objectToNozzleNumberMap.get(
-                    objectNodeBeingExamined.getObjectNumber()));
+            NozzleProxy requiredNozzle = nozzleProxies.get(objectNodeBeingExamined.getObjectNumber());
 
             if (toolSelectNode == null
                     || toolSelectNode.getToolNumber() != requiredNozzle.getNozzleReferenceNumber())
