@@ -534,7 +534,7 @@ public class CloseLogic
                         extrusionNodeBeingExamined.addSiblingBefore(newExtrusionNode);
 
                         extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
-                        extrusionNodeBeingExamined.appendCommentText("Start of close towards end");
+                        extrusionNodeBeingExamined.appendCommentText("Start of overwrite close towards end");
                         double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
 
@@ -553,7 +553,7 @@ public class CloseLogic
 
             if (finalCloseNode != null)
             {
-                finalCloseNode.setElidedExtrusion(runningTotalOfExtrusion);
+                finalCloseNode.setElidedExtrusion(volumeToCloseOver);
             }
             closeResult = Optional.of(new CloseResult(1.0, nozzleInUse.getNozzleParameters().getEjectionVolume(), finalCloseNode));
         } else
@@ -669,8 +669,8 @@ public class CloseLogic
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
-                        if (inScopeEventDelta > 0
-                                || finalCloseNode == null)
+                        copy.appendCommentText("Splurge  " + inScopeEventDelta);
+                        if (finalCloseNode == null)
                         {
                             finalCloseNode = copy;
                         }
@@ -686,8 +686,8 @@ public class CloseLogic
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
-                        if (inScopeEventDelta > 0
-                                || finalCloseNode == null)
+                        copy.appendCommentText("hello");
+                        if (finalCloseNode == null)
                         {
                             finalCloseNode = copy;
                         }
@@ -753,7 +753,7 @@ public class CloseLogic
                         copy.getMovement().setY(firstSegment.getY());
                         copy.getExtrusion().setE(0);
                         copy.getExtrusion().setD(0);
-                        copy.appendCommentText("Start of close segment");
+                        copy.appendCommentText("Start of copy close segment");
                         copy.getNozzlePosition().setB(runningTotalOfExtrusion / volumeToCloseOver);
 
                         runningTotalOfExtrusion += copy.getExtrusion().getE();
@@ -761,8 +761,7 @@ public class CloseLogic
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
-                        if (inScopeEventDelta > 0
-                                || finalCloseNode == null)
+                        if (finalCloseNode == null)
                         {
                             finalCloseNode = copy;
                         }
@@ -773,6 +772,11 @@ public class CloseLogic
         } else
         {
             throw new NotEnoughAvailableExtrusionException("Not enough extrusion when attempting to reverse close");
+        }
+
+        if (finalCloseNode != null)
+        {
+            finalCloseNode.setElidedExtrusion(volumeToCloseOver);
         }
 
         return Optional.of(new CloseResult(1.0, volumeToCloseOver, finalCloseNode));
@@ -968,7 +972,7 @@ public class CloseLogic
                                 break;
                             }
                         }
-                        
+
                         if (node instanceof ExtrusionNode)
                         {
                             foundExtrusionBeforeNozzleClose = true;
@@ -1013,16 +1017,16 @@ public class CloseLogic
             {
                 if (closeResult.isPresent())
                 {
-                    if (!nextExtrusionNode.isPresent())
-                    {
-                        nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(thisLayer, retractNode);
-                    }
-
-                    if (nextExtrusionNode.isPresent())
-                    {
-                        //Add the elided extrusion to this node - the open routine will find it later
-                        ((ExtrusionNode) nextExtrusionNode.get()).setElidedExtrusion(closeResult.get().getNozzleCloseOverVolume());
-                    }
+//                    if (!nextExtrusionNode.isPresent())
+//                    {
+//                        nextExtrusionNode = nodeManagementUtilities.findNextExtrusion(thisLayer, retractNode);
+//                    }
+//
+//                    if (nextExtrusionNode.isPresent())
+//                    {
+//                        //Add the elided extrusion to this node - the open routine will find it later
+//                        ((ExtrusionNode) nextExtrusionNode.get()).setElidedExtrusion(closeResult.get().getNozzleCloseOverVolume());
+//                    }
 
                     succeeded = true;
                 } else
