@@ -166,18 +166,14 @@ public class NodeManagementUtilities
             if (potentialObjectNumber
                     < 0)
             {
-                if (layerNode.getLayerNumber() == 0)
-                {
-                    // Has to be 0 if we're on the first layer
-                    potentialObjectNumber = 0;
-                } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
+                if (lastLayerParseResult.getLastObjectNumber().isPresent())
                 {
                     potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
                 } else
                 {
                     throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
                 }
-                
+
                 if (potentialObjectNumber < 0)
                 {
                     //Still not set!
@@ -252,7 +248,7 @@ public class NodeManagementUtilities
 
         return nextExtrusion;
     }
-    
+
     protected Optional<MovementProvider> findNextMovement(GCodeEventNode topLevelNode, GCodeEventNode node) throws NodeProcessingException
     {
         Optional<MovementProvider> nextMovement = Optional.empty();

@@ -633,13 +633,15 @@ public class PurgeInsetPanelController implements Initializable
         {
             purgeThisNozzle0.setSelected(false);
             purgeThisNozzle1.setSelected(false);
-            if (PrinterUtils.isPurgeNecessaryForNozzleHeater(project, printer, 0))
-            {
-                purgeThisNozzle0.setSelected(true);
-            }
-            if (PrinterUtils.isPurgeNecessaryForNozzleHeater(project, printer, 1))
+            
+            //Dual nozzle heads have extruder/nozzle reversed!
+            if (PrinterUtils.isPurgeNecessaryForExtruder(project, printer, 0))
             {
                 purgeThisNozzle1.setSelected(true);
+            }
+            if (PrinterUtils.isPurgeNecessaryForExtruder(project, printer, 1))
+            {
+                purgeThisNozzle0.setSelected(true);
             }
         }
     }

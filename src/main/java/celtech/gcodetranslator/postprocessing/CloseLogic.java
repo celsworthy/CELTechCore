@@ -669,7 +669,6 @@ public class CloseLogic
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
-                        copy.appendCommentText("Splurge  " + inScopeEventDelta);
                         if (finalCloseNode == null)
                         {
                             finalCloseNode = copy;
@@ -686,7 +685,6 @@ public class CloseLogic
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
-                        copy.appendCommentText("hello");
                         if (finalCloseNode == null)
                         {
                             finalCloseNode = copy;
@@ -846,7 +844,7 @@ public class CloseLogic
 //
 //        return closeResult;
 //    }
-    protected void insertCloseNodes(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, List<NozzleProxy> nozzleProxies, String headTypeCode)
+    protected void insertCloseNodes(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, List<NozzleProxy> nozzleProxies)
     {
         //Tool select nodes are directly under a layer
         Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
@@ -899,7 +897,7 @@ public class CloseLogic
         {
             if (retractHolder.getNozzle() != null)
             {
-                boolean success = processRetractNode(retractHolder.getNode(), retractHolder.getNozzle(), layerNode, lastLayerParseResult, headTypeCode);
+                boolean success = processRetractNode(retractHolder.getNode(), retractHolder.getNozzle(), layerNode, lastLayerParseResult);
                 if (!success)
                 {
                     steno.warning("Close failed - removing retract anyway on layer " + layerNode.getLayerNumber());
@@ -912,8 +910,7 @@ public class CloseLogic
     private boolean processRetractNode(RetractNode retractNode,
             NozzleProxy nozzleInUse,
             LayerNode thisLayer,
-            LayerPostProcessResult lastLayerParseResult,
-            String headTypeCode)
+            LayerPostProcessResult lastLayerParseResult)
     {
         Optional<CloseResult> closeResult = Optional.empty();
 

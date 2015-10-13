@@ -61,7 +61,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
 
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
     {
-        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
         {
             printer.executeGCodeFile(ApplicationConfiguration.getApplicationModelDirectory().concat(
                     "rbx_test_xy-offset-1_roboxised.gcode"), false);

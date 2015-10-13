@@ -92,7 +92,7 @@
                   <Insets left="26.0" />
                </VBox.margin>
             </Label>
-            <Slider fx:id="bedTemperatureSlider" blockIncrement="5.0" majorTickUnit="50.0" max="170.0" min="60.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" value="80.0">
+            <Slider fx:id="bedTemperatureSlider" blockIncrement="5.0" majorTickUnit="50.0" max="170.0" min="60.0" minorTickCount="5" showTickLabels="true" value="80.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>

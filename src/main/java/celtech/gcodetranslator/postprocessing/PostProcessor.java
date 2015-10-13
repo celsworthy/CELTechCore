@@ -18,6 +18,8 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.utils.SystemUtils;
 import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
@@ -179,18 +181,41 @@ public class PostProcessor
 
             writer = Lookup.getPostProcessorOutputWriterFactory().create(gcodeOutputFile);
 
-            boolean nozzle0Required = project.getUsedExtruders().contains(0)
-                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
-                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
-            boolean nozzle1Required = project.getUsedExtruders().contains(1)
-                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
-                    || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
+            boolean nozzle0Required = false;
+            boolean nozzle1Required = false;
+
+            int defaultObjectNumber = 0;
+
+            if (headFile.getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                nozzle0Required = project.getUsedExtruders().contains(1)
+                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
+                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
+                nozzle1Required = project.getUsedExtruders().contains(0)
+                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
+                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
+
+                if (project.getUsedExtruders().contains(0)
+                        && !project.getUsedExtruders().contains(1))
+                {
+                    defaultObjectNumber = 0;
+                } else if (!project.getUsedExtruders().contains(0)
+                        && project.getUsedExtruders().contains(1))
+                {
+                    defaultObjectNumber = 1;
+                }
+            } else
+            {
+                nozzle0Required = true;
+            }
+
             outputUtilities.prependPrePrintHeader(writer, headFile.getTypeCode(),
                     nozzle0Required,
                     nozzle1Required);
 
             StringBuilder layerBuffer = new StringBuilder();
-            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(null, 0, 0, 0, 0, null, null, -1);
+
+            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(null, 0, 0, 0, defaultObjectNumber, null, null, -1);
             LayerPostProcessResult parseResultCycle2 = null;
             OpenResult lastOpenResult = null;
 
@@ -219,7 +244,7 @@ public class PostProcessor
                             nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                             timeUtils.timerStop(this, assignExtrusionTimerName);
 
-                            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                        //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
                             //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
                             //NOTE
                             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
@@ -234,6 +259,11 @@ public class PostProcessor
                             postProcessorUtilityMethods.updateLayerToLineNumber(parseResultCycle2, layerNumberToLineNumber, writer);
                             predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle2, layerNumberToPredictedDuration, writer);
 
+                            if (parseResultCycle2.getLayerData().getLayerNumber() == 0)
+                            {
+                                outputUtilities.outputTemperatureCommands(writer, nozzle0Required, nozzle1Required);
+                            }
+
                             finalEVolume += parseResultCycle2.getEVolume();
                             finalDVolume += parseResultCycle2.getDVolume();
                             timeForPrint_secs += parseResultCycle2.getTimeForLayer();
@@ -241,7 +271,7 @@ public class PostProcessor
                         parseResultCycle2 = parseResultCycle1;
 
                         //Parse anything that has gone before
-                        LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getTypeCode());
+                        LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getType());
 
                         parseResultCycle1 = parseResultCycle0;
                         parseResultCycle0 = null;
@@ -254,7 +284,7 @@ public class PostProcessor
                     layerBuffer.append('\n');
                 } else if (!lineRead.equals(""))
                 {
-                    //Ignore blank lines
+                //Ignore blank lines
                     // stash it in the buffer
                     layerBuffer.append(lineRead);
                     layerBuffer.append('\n');
@@ -262,7 +292,7 @@ public class PostProcessor
             }
 
             //This catches the last layer - if we had no data it won't do anything
-            LayerPostProcessResult parseResult = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getTypeCode());
+            LayerPostProcessResult parseResult = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getType());
 
             finalEVolume += parseResult.getEVolume();
             finalDVolume += parseResult.getDVolume();
@@ -274,7 +304,7 @@ public class PostProcessor
                 nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
-                //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
                 //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
                 //NOTE
                 //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
@@ -300,7 +330,7 @@ public class PostProcessor
                 nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
-                //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
                 //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
                 //NOTE
                 //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
@@ -325,7 +355,7 @@ public class PostProcessor
             nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
             timeUtils.timerStop(this, assignExtrusionTimerName);
 
-            //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
+        //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
             //NOTE
             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
             //NOTE
@@ -346,8 +376,8 @@ public class PostProcessor
             timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs,
                     headFile.getTypeCode(),
-                    project.getUsedExtruders().contains(0),
-                    project.getUsedExtruders().contains(1));
+                    nozzle0Required,
+                    nozzle1Required);
             timeUtils.timerStop(this, writeOutputTimerName);
 
             /**
@@ -419,7 +449,7 @@ public class PostProcessor
         return result;
     }
 
-    private LayerPostProcessResult parseLayer(StringBuilder layerBuffer, LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer, String headTypeCode)
+    private LayerPostProcessResult parseLayer(StringBuilder layerBuffer, LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer, HeadType headType)
     {
         LayerPostProcessResult parseResultAtEndOfThisLayer = null;
 
@@ -429,24 +459,28 @@ public class PostProcessor
             CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class
             );
 
-            if (lastLayerParseResult != null)
+            if (lastLayerParseResult
+                    != null)
             {
                 gcodeParser.setFeedrateInForce(lastLayerParseResult.getLastFeedrateInForce());
             }
 
             BasicParseRunner runner = new BasicParseRunner<>(gcodeParser.Layer());
+
             timeUtils.timerStart(this, parseLayerTimerName);
             ParsingResult result = runner.run(layerBuffer.toString());
+
             timeUtils.timerStop(this, parseLayerTimerName);
 
-            if (result.hasErrors() || !result.matched)
+            if (result.hasErrors()
+                    || !result.matched)
             {
                 throw new RuntimeException("Parsing failure");
             } else
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
                 int lastFeedrate = gcodeParser.getFeedrateInForce();
-                parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult, headTypeCode);
+                parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult, headType);
                 parseResultAtEndOfThisLayer.setLastFeedrateInForce(lastFeedrate);
             }
         } else
@@ -457,7 +491,7 @@ public class PostProcessor
         return parseResultAtEndOfThisLayer;
     }
 
-    private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, String headTypeCode)
+    private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, HeadType headType)
     {
         // We never want unretracts
         timeUtils.timerStart(this, unretractTimerName);
@@ -479,7 +513,7 @@ public class PostProcessor
                 lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode, lastLayerParseResult, postProcessingMode);
                 break;
             case USE_OBJECT_MATERIAL:
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult, headType);
                 break;
             default:
                 break;
@@ -493,7 +527,7 @@ public class PostProcessor
         timeUtils.timerStop(this, perRetractTimerName);
 
         timeUtils.timerStart(this, closeTimerName);
-        closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies, headTypeCode);
+        closeLogic.insertCloseNodes(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, closeTimerName);
 
         timeUtils.timerStart(this, unnecessaryToolchangeTimerName);

@@ -15,6 +15,8 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
 import java.util.List;
@@ -320,7 +322,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertEquals(3, outer2.getChildren().size());
         assertEquals(3, fill2.getChildren().size());
 
-        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByObject(testLayer, lastLayerParseResult);
+        int lastObjectNumber = assignmentUtilities.insertNozzleControlSectionsByObject(testLayer, lastLayerParseResult, HeadType.DUAL_MATERIAL_HEAD);
 
         assertEquals(1, lastObjectNumber);
         assertEquals(2, testLayer.getChildren().size());

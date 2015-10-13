@@ -12,6 +12,8 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Head.HeadType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,12 +100,12 @@ public class NozzleAssignmentUtilities
                         {
                             ExtrusionProvider extrusionNode = (ExtrusionProvider) potentialExtrusionProvider;
 
-                            switch (nozzleToExtruderMap.get(toolSelectNode.getToolNumber()))
+                            switch (toolSelectNode.getToolNumber())
                             {
-                                case 0:
+                                case 1:
                                     extrusionNode.getExtrusion().extrudeUsingEOnly();
                                     break;
-                                case 1:
+                                case 0:
                                     extrusionNode.getExtrusion().extrudeUsingDOnly();
                                     break;
                             }
@@ -329,7 +331,8 @@ public class NozzleAssignmentUtilities
     }
 
     protected int insertNozzleControlSectionsByObject(LayerNode layerNode,
-            LayerPostProcessResult lastLayerResult)
+            LayerPostProcessResult lastLayerResult,
+            HeadType headType)
     {
         int lastObjectReferenceNumber = -1;
         //We'll need at least one of these per layer
@@ -354,16 +357,21 @@ public class NozzleAssignmentUtilities
         {
             lastObjectReferenceNumber = objectNode.getObjectNumber();
 
+            //Object numbers correspond to extruder numbers
             ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
 
-            NozzleProxy requiredNozzle = nozzleProxies.get(objectNodeBeingExamined.getObjectNumber());
+            int requiredToolNumber = -1;
+
+            //TODO change if we ever get here with a single material head
+            //Tool number corresponds to nozzle number
+            requiredToolNumber = extruderToNozzleMap.get(objectNodeBeingExamined.getObjectNumber());
 
             if (toolSelectNode == null
-                    || toolSelectNode.getToolNumber() != requiredNozzle.getNozzleReferenceNumber())
+                    || toolSelectNode.getToolNumber() != requiredToolNumber)
             {
                 //Need to create a new Tool Select Node
                 toolSelectNode = new ToolSelectNode();
-                toolSelectNode.setToolNumber(requiredNozzle.getNozzleReferenceNumber());
+                toolSelectNode.setToolNumber(requiredToolNumber);
                 layerNode.addChildAtEnd(toolSelectNode);
             }
 
