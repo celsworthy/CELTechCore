@@ -2,11 +2,15 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
 import celtech.coreUI.controllers.StatusInsetController;
+import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -30,22 +34,33 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
     @FXML
     private Label projectName;
 
+    @FXML
+    private Label layerHeight;
+
     private Printer currentPrinter = null;
-    private ChangeListener<PrintJob> printJobChangeListener = (ObservableValue<? extends PrintJob> ov, PrintJob t, PrintJob t1) ->
+    private ChangeListener<PrintJob> printJobChangeListener = (ObservableValue<? extends PrintJob> ov, PrintJob t, PrintJob printJob) ->
     {
-        if (t1 != null)
+        if (printJob != null)
         {
             try
             {
-                projectName.setText(t1.getStatistics().getProjectName());
+                NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
+                threeDPformatter.setMaximumFractionDigits(3);
+                threeDPformatter.setGroupingUsed(false);
+
+                PrintJobStatistics stats = printJob.getStatistics();
+                projectName.setText(stats.getProjectName());
+                layerHeight.setText(threeDPformatter.format(stats.getLayerHeight()));
             } catch (IOException ex)
             {
                 projectName.setText("");
+                layerHeight.setText("");
                 steno.warning("Unable to retrieve project name");
             }
         } else
         {
             projectName.setText("");
+            layerHeight.setText("");
         }
     };
 
@@ -61,7 +76,7 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
             {
                 currentPrinter.getPrintEngine().printJobProperty().removeListener(printJobChangeListener);
             }
-            
+
             if (newPrinter == null)
             {
                 projectName.setText("");

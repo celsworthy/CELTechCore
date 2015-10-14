@@ -212,6 +212,14 @@ public class UtilityMethods
                         replenishExtrusionD = 0;
                         break;
                 }
+
+                if (layerEvent instanceof ExtrusionNode)
+                {
+                    if (lastMovement == null)
+                    {
+                        lastMovement = ((ExtrusionNode) layerEvent).getMovement();
+                    }
+                }
             } else if (layerEvent instanceof NozzlePositionProvider
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0)
@@ -228,6 +236,11 @@ public class UtilityMethods
                         case "D":
                             replenishExtrusionD = ((ExtrusionNode) layerEvent).getElidedExtrusion();
                             break;
+                    }
+
+                    if (lastMovement == null)
+                    {
+                        lastMovement = ((ExtrusionNode) layerEvent).getMovement();
                     }
                 }
             } else if (layerEvent instanceof ExtrusionNode
@@ -271,22 +284,21 @@ public class UtilityMethods
                     lastMovement = ((ExtrusionNode) layerEvent).getMovement();
                 }
             }
-            
 //            else if (layerEvent instanceof TravelNode)
 //            {
 //                if (lastMovement == null)
 //                {
-//                    lastMovement = ((ExtrusionNode) layerEvent).getMovement();
-//                }
-//                else
+//                    lastMovement = ((TravelNode) layerEvent).getMovement();
+//                } else
 //                {
-//                    Movement thisMovement = ((TravelNode)layerEvent).getMovement();
+//                    Movement thisMovement = ((TravelNode) layerEvent).getMovement();
 //                    Vector2D thisPoint = thisMovement.toVector2D();
 //                    Vector2D lastPoint = lastMovement.toVector2D();
 //
-//                    if (lastPoint.distance(thisPoint) > 5
-//                    Vector2D resultant = thisPoint.subtract(lastPoint);
-//                    resultant.
+//                    if (lastPoint.distance(thisPoint) > 5 && !nozzleOpen)
+//                    {
+//                        steno.warning("Travel without close on layer " + layerNode.getLayerNumber() + " at " + ((TravelNode) layerEvent).renderForOutput());
+//                    }
 //                }
 //            }
         }

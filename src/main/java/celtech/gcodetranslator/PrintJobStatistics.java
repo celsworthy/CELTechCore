@@ -16,6 +16,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 public class PrintJobStatistics
 {
     private String projectName;
+    private float layerHeight;
     private int numberOfLines;
     private double eVolumeUsed;
     private double dVolumeUsed;
@@ -27,6 +28,7 @@ public class PrintJobStatistics
     public PrintJobStatistics()
     {
         projectName = "";
+        layerHeight = 0;
         numberOfLines = 0;
         eVolumeUsed = 0;
         dVolumeUsed = 0;
@@ -37,7 +39,8 @@ public class PrintJobStatistics
     }
 
     public PrintJobStatistics(
-            String projectName, 
+            String projectName,
+            float layerHeight,
             int numberOfLines,
             double eVolumeUsed,
             double dVolumeUsed,
@@ -47,6 +50,7 @@ public class PrintJobStatistics
             double predictedDuration)
     {
         this.projectName = projectName;
+        this.layerHeight = layerHeight;
         this.numberOfLines = numberOfLines;
         this.eVolumeUsed = eVolumeUsed;
         this.dVolumeUsed = dVolumeUsed;
@@ -117,6 +121,16 @@ public class PrintJobStatistics
     public double getPredictedDuration()
     {
         return predictedDuration;
+    }
+
+    public float getLayerHeight()
+    {
+        return layerHeight;
+    }
+
+    public void setLayerHeight(float layerHeight)
+    {
+        this.layerHeight = layerHeight;
     }
     
     public String getProjectName()

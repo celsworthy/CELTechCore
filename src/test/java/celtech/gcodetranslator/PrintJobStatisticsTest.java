@@ -41,6 +41,7 @@ public class PrintJobStatisticsTest
 
         PrintJobStatistics printJobStatistics = new PrintJobStatistics(
                 name,
+                1,
                 lineNumberOfFirstExtrusion,
                 volumeUsed,
                 0,
@@ -55,6 +56,8 @@ public class PrintJobStatisticsTest
 
         assertEquals(printJobStatistics.getProjectName(),
                 readIntoPrintJobStatistics.getProjectName());
+        assertEquals(printJobStatistics.getLayerHeight(),
+                readIntoPrintJobStatistics.getLayerHeight(), 0.001);
         assertEquals(printJobStatistics.getLayerNumberToLineNumber(),
                 readIntoPrintJobStatistics.getLayerNumberToLineNumber());
         assertEquals(printJobStatistics.getLayerNumberToPredictedDuration(),
