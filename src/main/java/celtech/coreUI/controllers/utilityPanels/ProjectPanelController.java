@@ -28,24 +28,29 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProjectPanelController implements Initializable, StatusInsetController
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(
             ProjectPanelController.class.getName());
-
+    
     @FXML
     private VBox projectPanel;
-
+    
     @FXML
     private Label projectName;
-
+    
     @FXML
     private Label profileName;
-
+    
     @FXML
     private Label layerHeight;
-
+    
     private Printer currentPrinter = null;
     private ChangeListener<PrintJob> printJobChangeListener = (ObservableValue<? extends PrintJob> ov, PrintJob t, PrintJob printJob) ->
+    {
+        updateDisplay(printJob);
+    };
+    
+    private void updateDisplay(PrintJob printJob)
     {
         if (printJob != null)
         {
@@ -54,7 +59,7 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
                 NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
                 threeDPformatter.setMaximumFractionDigits(3);
                 threeDPformatter.setGroupingUsed(false);
-
+                
                 PrintJobStatistics stats = printJob.getStatistics();
                 projectName.setText(stats.getProjectName());
                 profileName.setText(stats.getProfileName());
@@ -75,7 +80,7 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
             profileName.setText("");
             layerHeight.setText("");
         }
-    };
+    }
 
     /**
      * Initialises the controller class.
@@ -89,13 +94,16 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
             {
                 currentPrinter.getPrintEngine().printJobProperty().removeListener(printJobChangeListener);
             }
-
+            
             if (newPrinter == null)
             {
-                projectName.setText("");
+                projectPanel.setVisible(false);
+                currentPrinter = null;
             } else
             {
+                currentPrinter = newPrinter;
                 newPrinter.getPrintEngine().printJobProperty().addListener(printJobChangeListener);
+                updateDisplay(newPrinter.getPrintEngine().printJobProperty().get());
             }
         });
         
