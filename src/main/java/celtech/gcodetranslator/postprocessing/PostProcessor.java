@@ -205,6 +205,7 @@ public class PostProcessor
             } else
             {
                 nozzle0Required = true;
+                nozzle1Required = true;
             }
 
             outputUtilities.prependPrePrintHeader(writer, headFile.getTypeCode(),
@@ -505,19 +506,7 @@ public class PostProcessor
         int lastObjectNumber = -1;
 
         timeUtils.timerStart(this, nozzleControlTimerName);
-        switch (postProcessingMode)
-        {
-            case TASK_BASED_NOZZLE_SELECTION:
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode, lastLayerParseResult, postProcessingMode);
-                break;
-            case SUPPORT_IN_FIRST_MATERIAL:
-            case SUPPORT_IN_SECOND_MATERIAL:
-            case USE_OBJECT_MATERIAL:
                 lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
-                break;
-            default:
-                break;
-        }
         timeUtils.timerStop(this, nozzleControlTimerName);
 
         nodeManagementUtilities.recalculateSectionExtrusion(layerNode);
