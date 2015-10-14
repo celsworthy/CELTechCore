@@ -17,6 +17,12 @@
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
+                <Label text="%projectDisplay.profile" />
+                <Label fx:id="profileName" text="Label" />
+            </children>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
                 <Label text="%projectDisplay.layerHeight" />
                 <HBox alignment="CENTER_LEFT" spacing="2.0">
                     <children>

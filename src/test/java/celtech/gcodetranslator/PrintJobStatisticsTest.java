@@ -25,7 +25,8 @@ public class PrintJobStatisticsTest
     @Test
     public void testWriteToFileAndReadBack() throws IOException
     {
-        String name = "blah";
+        String projectName = "blah";
+        String profileName = "blah2";
         double volumeUsed = 100;
         int lineNumberOfFirstExtrusion = 5;
         List<Integer> layerNumberToLineNumber = new ArrayList<>();
@@ -40,7 +41,8 @@ public class PrintJobStatisticsTest
         layerNumberToPredictedDuration.add(3.4);
 
         PrintJobStatistics printJobStatistics = new PrintJobStatistics(
-                name,
+                projectName,
+                profileName,
                 1,
                 lineNumberOfFirstExtrusion,
                 volumeUsed,

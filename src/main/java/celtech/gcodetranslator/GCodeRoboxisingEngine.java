@@ -144,6 +144,7 @@ public abstract class GCodeRoboxisingEngine implements GCodeTranslationEventHand
 
                     PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
                             "?",
+                            "?",
                             0,
                             numLines,
                             volumeUsed,

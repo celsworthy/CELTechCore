@@ -17,6 +17,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -32,7 +33,13 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
             ProjectPanelController.class.getName());
 
     @FXML
+    private VBox projectPanel;
+
+    @FXML
     private Label projectName;
+
+    @FXML
+    private Label profileName;
 
     @FXML
     private Label layerHeight;
@@ -50,16 +57,22 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
 
                 PrintJobStatistics stats = printJob.getStatistics();
                 projectName.setText(stats.getProjectName());
+                profileName.setText(stats.getProfileName());
                 layerHeight.setText(threeDPformatter.format(stats.getLayerHeight()));
+                projectPanel.setVisible(true);
             } catch (IOException ex)
             {
+                projectPanel.setVisible(false);
                 projectName.setText("");
+                profileName.setText("");
                 layerHeight.setText("");
                 steno.warning("Unable to retrieve project name");
             }
         } else
         {
+            projectPanel.setVisible(false);
             projectName.setText("");
+            profileName.setText("");
             layerHeight.setText("");
         }
     };
@@ -85,5 +98,7 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
                 newPrinter.getPrintEngine().printJobProperty().addListener(printJobChangeListener);
             }
         });
+        
+        projectPanel.setVisible(false);
     }
 }

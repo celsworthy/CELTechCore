@@ -390,6 +390,7 @@ public class PostProcessor
 
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
                     project.getProjectName(),
+                    project.getPrinterSettings().getSettings(headFile.getTypeCode()).getProfileName(),
                     project.getPrinterSettings().getSettings(headFile.getTypeCode()).getLayerHeight_mm(),
                     numLines,
                     finalEVolume,
