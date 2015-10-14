@@ -8,6 +8,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
@@ -76,6 +77,27 @@ public class NodeManagementUtilities
         return sectionNode;
     }
 
+    protected Optional<ObjectDelineationNode> lookForParentObjectNode(GCodeEventNode eventNode)
+    {
+        Optional<ObjectDelineationNode> objectNode = Optional.empty();
+
+        GCodeEventNode nodeUnderConsideration = eventNode;
+
+        while (nodeUnderConsideration.hasParent())
+        {
+            GCodeEventNode parent = nodeUnderConsideration.getParent().get();
+            if (parent instanceof ObjectDelineationNode)
+            {
+                objectNode = Optional.of((ObjectDelineationNode) parent);
+                break;
+            }
+
+            nodeUnderConsideration = parent;
+        }
+
+        return objectNode;
+    }
+
     protected void recalculateSectionExtrusion(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
@@ -103,7 +125,14 @@ public class NodeManagementUtilities
         while (layerIterator.hasNext())
         {
             GCodeEventNode node = layerIterator.next();
-            if (node instanceof ExtrusionNode)
+            if (node instanceof ToolSelectNode)
+            {
+                extrusionInRetract = 0;
+                sectionNodes.clear();
+                lastSectionNode = null;
+                lastExtrusionNode = null;
+            }
+            else if (node instanceof ExtrusionNode)
             {
                 Optional<SectionNode> parentSection = lookForParentSectionNode(node);
                 if (parentSection.isPresent())

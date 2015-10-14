@@ -16,6 +16,8 @@ import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.printerControl.model.Head;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
@@ -172,17 +175,19 @@ public class UtilityMethods
             String headTypeCode)
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
+        Movement lastMovement = null;
         boolean nozzleOpen = false;
+        double lastNozzleValue = 0;
         int lastToolNumber = -1;
         double replenishExtrusionE = 0;
         double replenishExtrusionD = 0;
         Map<ExtrusionNode, NozzleValvePositionNode> nodesToAdd = new HashMap<>();
         if (lastOpenResult != null)
         {
-                nozzleOpen = lastOpenResult.isNozzleOpen();
-                replenishExtrusionE = lastOpenResult.getOutstandingEReplenish();
-                replenishExtrusionD = lastOpenResult.getOutstandingDReplenish();
-                lastToolNumber = lastOpenResult.getLastToolNumber();
+            nozzleOpen = lastOpenResult.isNozzleOpen();
+            replenishExtrusionE = lastOpenResult.getOutstandingEReplenish();
+            replenishExtrusionD = lastOpenResult.getOutstandingDReplenish();
+            lastToolNumber = lastOpenResult.getLastToolNumber();
         }
 
         while (layerIterator.hasNext())
@@ -197,6 +202,7 @@ public class UtilityMethods
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0)
             {
                 nozzleOpen = true;
+                lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
                 switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
                 {
                     case "E":
@@ -211,6 +217,7 @@ public class UtilityMethods
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0)
             {
                 nozzleOpen = false;
+                lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
                 if (layerEvent instanceof ExtrusionNode)
                 {
                     switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
@@ -226,6 +233,15 @@ public class UtilityMethods
             } else if (layerEvent instanceof ExtrusionNode
                     && !nozzleOpen)
             {
+                if (lastNozzleValue > 0)
+                {
+                    String outputString = "Nozzle was not closed properly on layer " + layerNode.getLayerNumber() + " before extrusion " + ((ExtrusionNode) layerEvent).renderForOutput();
+                    if (layerNode.getGCodeLineNumber().isPresent())
+                    {
+                        outputString += " on line " + layerNode.getGCodeLineNumber().get();
+                    }
+                    steno.warning(outputString);
+                }
                 NozzleValvePositionNode newNozzleValvePositionNode = new NozzleValvePositionNode();
                 newNozzleValvePositionNode.getNozzlePosition().setB(1);
 
@@ -249,7 +265,30 @@ public class UtilityMethods
                 newNozzleValvePositionNode.setReplenishExtrusionD(replenishDToUse);
                 nodesToAdd.put((ExtrusionNode) layerEvent, newNozzleValvePositionNode);
                 nozzleOpen = true;
+
+                if (lastMovement == null)
+                {
+                    lastMovement = ((ExtrusionNode) layerEvent).getMovement();
+                }
             }
+            
+//            else if (layerEvent instanceof TravelNode)
+//            {
+//                if (lastMovement == null)
+//                {
+//                    lastMovement = ((ExtrusionNode) layerEvent).getMovement();
+//                }
+//                else
+//                {
+//                    Movement thisMovement = ((TravelNode)layerEvent).getMovement();
+//                    Vector2D thisPoint = thisMovement.toVector2D();
+//                    Vector2D lastPoint = lastMovement.toVector2D();
+//
+//                    if (lastPoint.distance(thisPoint) > 5
+//                    Vector2D resultant = thisPoint.subtract(lastPoint);
+//                    resultant.
+//                }
+//            }
         }
 
         nodesToAdd.entrySet().stream().forEach((entryToUpdate) ->

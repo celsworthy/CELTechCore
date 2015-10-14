@@ -115,7 +115,7 @@ public class PostProcessor
             nozzleProxies.add(proxy);
         }
 
-        if (headFile.getTypeCode().equals("RBX01-DM"))
+        if (headFile.getType() == HeadType.DUAL_MATERIAL_HEAD)
         {
             switch (project.getPrinterSettings().getPrintSupportOverride())
             {
@@ -189,11 +189,9 @@ public class PostProcessor
             if (headFile.getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
                 nozzle0Required = project.getUsedExtruders().contains(1)
-                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
                 nozzle1Required = project.getUsedExtruders().contains(0)
-                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
-                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
+                        || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
 
                 if (project.getUsedExtruders().contains(0)
                         && !project.getUsedExtruders().contains(1))
@@ -508,12 +506,12 @@ public class PostProcessor
         switch (postProcessingMode)
         {
             case TASK_BASED_NOZZLE_SELECTION:
-            case SUPPORT_IN_FIRST_MATERIAL:
-            case SUPPORT_IN_SECOND_MATERIAL:
                 lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByTask(layerNode, lastLayerParseResult, postProcessingMode);
                 break;
+            case SUPPORT_IN_FIRST_MATERIAL:
+            case SUPPORT_IN_SECOND_MATERIAL:
             case USE_OBJECT_MATERIAL:
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult, headType);
+                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
                 break;
             default:
                 break;

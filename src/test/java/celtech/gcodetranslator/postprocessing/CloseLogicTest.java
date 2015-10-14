@@ -514,117 +514,107 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertFalse(node4.getExtrusion().isEInUse());
 //    }
 //
-//    @Test
-//    public void testCloseToEndOfFill_checkAvoidsPeriIfRequired()
-//    {
-//        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
-//        FillSectionNode fill1 = new FillSectionNode();
-//        SupportSectionNode support1 = new SupportSectionNode();
-//
-//        TravelNode travel1 = new TravelNode();
-//        travel1.getMovement().setX(0);
-//        travel1.getMovement().setY(0);
-//
-//        ExtrusionNode extrusionNode1 = new ExtrusionNode();
-//        extrusionNode1.getExtrusion().setE(1f);
-//        extrusionNode1.getMovement().setX(1);
-//        extrusionNode1.getMovement().setY(1);
-//
-//        ExtrusionNode extrusionNode2 = new ExtrusionNode();
-//        extrusionNode2.getExtrusion().setE(1f);
-//        extrusionNode2.getMovement().setX(2);
-//        extrusionNode2.getMovement().setY(2);
-//
-//        ExtrusionNode extrusionNode3 = new ExtrusionNode();
-//        extrusionNode3.getExtrusion().setE(1f);
-//        extrusionNode3.getMovement().setX(3);
-//        extrusionNode3.getMovement().setY(3);
-//
-//        ExtrusionNode extrusionNode4 = new ExtrusionNode();
-//        extrusionNode4.getExtrusion().setE(1f);
-//        extrusionNode4.getMovement().setX(4);
-//        extrusionNode4.getMovement().setY(4);
-//
-//        ExtrusionNode extrusionNode5 = new ExtrusionNode();
-//        extrusionNode5.getExtrusion().setE(1f);
-//        extrusionNode5.getMovement().setX(5);
-//        extrusionNode5.getMovement().setY(5);
-//
-//        ExtrusionNode extrusionNode6 = new ExtrusionNode();
-//        extrusionNode6.getExtrusion().setE(1f);
-//        extrusionNode6.getMovement().setX(6);
-//        extrusionNode6.getMovement().setY(6);
-//
-//        ExtrusionNode extrusionNode7 = new ExtrusionNode();
-//        extrusionNode7.getExtrusion().setE(1f);
-//        extrusionNode7.getMovement().setX(7);
-//        extrusionNode7.getMovement().setY(7);
-//
-//        ExtrusionNode extrusionNode8 = new ExtrusionNode();
-//        extrusionNode8.getExtrusion().setE(1f);
-//        extrusionNode8.getMovement().setX(8);
-//        extrusionNode8.getMovement().setY(8);
-//
-//        ExtrusionNode extrusionNode9 = new ExtrusionNode();
-//        extrusionNode9.getExtrusion().setE(1f);
-//        extrusionNode9.getMovement().setX(9);
-//        extrusionNode9.getMovement().setY(9);
-//
-//        outer1.addChildAtEnd(travel1);
-//        outer1.addChildAtEnd(extrusionNode1);
-//        outer1.addChildAtEnd(extrusionNode2);
-//        outer1.addChildAtEnd(extrusionNode3);
-//        outer1.addChildAtEnd(extrusionNode4);
-//        outer1.addChildAtEnd(extrusionNode5);
-//        outer1.addChildAtEnd(extrusionNode6);
-//        outer1.addChildAtEnd(extrusionNode7);
-//        support1.addChildAtEnd(extrusionNode8);
-//        fill1.addChildAtEnd(extrusionNode9);
-//
-//        ToolSelectNode tool1 = new ToolSelectNode();
-//        tool1.addChildAtEnd(outer1);
-//        tool1.addChildAtEnd(support1);
-//        tool1.addChildAtEnd(fill1);
-//
-//        NozzleParameters nozzleParams = new NozzleParameters();
-//
-//        nozzleParams.setEjectionVolume(4);
-//
-//        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
-//
-//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-//
-//        Project testProject = new Project();
-//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-//
-//        CloseLogic closeLogic = new CloseLogic(testProject,
-//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
-//                ppFeatures, "RBX01-SM");
-//
-//        List<SectionNode> sectionsToConsider = new ArrayList<>();
-//        outer1.recalculateExtrusion();
-//        sectionsToConsider.add(outer1);
-//        support1.recalculateExtrusion();
-//        sectionsToConsider.add(support1);
-//        fill1.recalculateExtrusion();
-//        sectionsToConsider.add(fill1);
-//        
-//        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
-//
-//        Optional<CloseResult> closeResult = Optional.empty();
-//        try
-//        {
-//            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
-//        } catch (NotEnoughAvailableExtrusionException ex)
-//        {
-//            fail();
-//        }
-//        assertTrue(closeResult.isPresent());
-//
+    @Test
+    public void testOverwriteClose_SingleSection()
+    {
+        FillSectionNode fill1 = new FillSectionNode();
+
+        TravelNode travel1 = new TravelNode();
+        travel1.getMovement().setX(0);
+        travel1.getMovement().setY(0);
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.getExtrusion().setE(1f);
+        extrusionNode1.getMovement().setX(1);
+        extrusionNode1.getMovement().setY(1);
+
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.getExtrusion().setE(1f);
+        extrusionNode2.getMovement().setX(2);
+        extrusionNode2.getMovement().setY(2);
+
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.getExtrusion().setE(1f);
+        extrusionNode3.getMovement().setX(3);
+        extrusionNode3.getMovement().setY(3);
+
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.getExtrusion().setE(1f);
+        extrusionNode4.getMovement().setX(4);
+        extrusionNode4.getMovement().setY(4);
+
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.getExtrusion().setE(1f);
+        extrusionNode5.getMovement().setX(5);
+        extrusionNode5.getMovement().setY(5);
+
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.getExtrusion().setE(1f);
+        extrusionNode6.getMovement().setX(6);
+        extrusionNode6.getMovement().setY(6);
+
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.getExtrusion().setE(1f);
+        extrusionNode7.getMovement().setX(7);
+        extrusionNode7.getMovement().setY(7);
+
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.getExtrusion().setE(1f);
+        extrusionNode8.getMovement().setX(8);
+        extrusionNode8.getMovement().setY(8);
+
+        ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        extrusionNode9.getExtrusion().setE(1f);
+        extrusionNode9.getMovement().setX(9);
+        extrusionNode9.getMovement().setY(9);
+
+        fill1.addChildAtEnd(travel1);
+        fill1.addChildAtEnd(extrusionNode1);
+        fill1.addChildAtEnd(extrusionNode2);
+        fill1.addChildAtEnd(extrusionNode3);
+        fill1.addChildAtEnd(extrusionNode4);
+        fill1.addChildAtEnd(extrusionNode5);
+        fill1.addChildAtEnd(extrusionNode6);
+        fill1.addChildAtEnd(extrusionNode7);
+
+        ToolSelectNode tool1 = new ToolSelectNode();
+        tool1.addChildAtEnd(fill1);
+
+        NozzleParameters nozzleParams = new NozzleParameters();
+
+        nozzleParams.setEjectionVolume(4);
+
+        NozzleProxy testProxy = new NozzleProxy(nozzleParams);
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
+
+        Project testProject = new Project();
+        testProject.getPrinterSettings().setSettingsName("BothNozzles");
+        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+
+        CloseLogic closeLogic = new CloseLogic(testProject,
+                testProject.getPrinterSettings().getSettings("Draft"),
+                ppFeatures, "RBX01-SM");
+
+        List<SectionNode> sectionsToConsider = new ArrayList<>();
+        fill1.recalculateExtrusion();
+        sectionsToConsider.add(fill1);
+        
+        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode7, sectionsToConsider, true, false);
+
+        Optional<CloseResult> closeResult = Optional.empty();
+        try
+        {
+            closeResult = closeLogic.overwriteClose(inScopeEvents, testProxy, false);
+        } catch (NotEnoughAvailableExtrusionException ex)
+        {
+            fail();
+        }
+        assertTrue(closeResult.isPresent());
+
 //        assertEquals(8, outer1.getChildren().size());
 //        assertEquals(1, support1.getChildren().size());
 //        assertEquals(1, fill1.getChildren().size());
@@ -658,7 +648,7 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        assertSame(extrusionNode9, node4);
 //        assertFalse(node4.getNozzlePosition().isBSet());
 //        assertEquals(1, node4.getExtrusion().getE(), movementEpsilon);
-//    }
+    }
 //
 //    @Test
 //    public void testCloseToEndOfFill_checkUsesPeriIfRequired()

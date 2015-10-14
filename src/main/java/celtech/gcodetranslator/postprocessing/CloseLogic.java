@@ -167,10 +167,12 @@ public class CloseLogic
                 GCodeEventNode node = sectionIterator.next();
                 if (node instanceof NozzleValvePositionNode)
                 {
-                    movementNodes.add(node);
+//                    movementNodes.add(node);
                     keepLooking = false;
                     break;
-                } else if (node instanceof NozzlePositionProvider
+                } else 
+                    
+                    if (node instanceof NozzlePositionProvider
                         && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
                 {
                     keepLooking = false;
@@ -445,6 +447,7 @@ public class CloseLogic
         double nozzleStartingPosition = nozzleInUse.getCurrentPosition();
 
         ExtrusionNode finalCloseNode = null;
+        boolean closeStarted = false;
 
         if (useAvailableExtrusion
                 || inScopeEvents.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
@@ -474,6 +477,7 @@ public class CloseLogic
                         {
                             finalCloseNode = extrusionNodeBeingExamined;
                         }
+                        closeStarted = true;
                     } else if (comparisonResult == MathUtils.EQUAL)
                     {
                         //All done
@@ -491,7 +495,7 @@ public class CloseLogic
                     } else
                     {
                         //If we got here then we need to split this extrusion
-                        //We're splitting the last part of the line (we're just looking at it in reverse order as we consider the line from the end
+                        //We're splitting the last part of the line (we're just looking at it in reverse order as we consider the line from the end)
                         MovementProvider priorMovement = null;
 
                         if ((movementNodeCounter == inScopeEvents.getInScopeEvents().size() - 1
@@ -500,7 +504,7 @@ public class CloseLogic
                             //We dont have anywhere to go!
                             try
                             {
-                                Optional<MovementProvider> priorSectionMovement = nodeManagementUtilities.findPriorMovementInPreviousSection(extrusionNodeBeingExamined);
+                                Optional<MovementProvider> priorSectionMovement = nodeManagementUtilities.findPriorMovement(extrusionNodeBeingExamined);
                                 priorMovement = priorSectionMovement.get();
                             } catch (NodeProcessingException ex)
                             {
@@ -536,7 +540,13 @@ public class CloseLogic
                         extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
                         extrusionNodeBeingExamined.appendCommentText("Start of overwrite close towards end");
                         double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
-                        extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
+                        if (closeStarted)
+                        {
+                            extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
+                        } else
+                        {
+                            extrusionNodeBeingExamined.getNozzlePosition().setB(0);
+                        }
 
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         //No extrusion during a close
