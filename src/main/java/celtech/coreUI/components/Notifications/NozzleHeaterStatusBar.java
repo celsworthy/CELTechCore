@@ -23,7 +23,8 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
     private static final double EJECT_TEMPERATURE = 140.0;
 
     private NozzleHeater heater = null;
-    private int nozzleNumber = -1;
+    private final int nozzleNumber;
+    private final boolean thisIsTheOnlyNozzle;
     private static final double showBarIfMoreThanXDegreesOut = 3;
 
     private ChangeListener<Number> numberChangeListener = (ObservableValue<? extends Number> ov, Number lastState, Number newState) ->
@@ -36,11 +37,12 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
         reassessStatus();
     };
 
-    public NozzleHeaterStatusBar(NozzleHeater heater, int nozzleNumber)
+    public NozzleHeaterStatusBar(NozzleHeater heater, int nozzleNumber, boolean thisIsTheOnlyNozzle)
     {
         super();
         this.heater = heater;
         this.nozzleNumber = nozzleNumber;
+        this.thisIsTheOnlyNozzle = thisIsTheOnlyNozzle;
 
         heater.nozzleTemperatureProperty().addListener(numberChangeListener);
         heater.nozzleTargetTemperatureProperty().addListener(numberChangeListener);
@@ -75,7 +77,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleFirstLayerTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                    if (thisIsTheOnlyNozzle)
+                    {
+                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                    } else
+                    {
+                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                    }
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleFirstLayerTargetTemperatureProperty().asString("%d").get()
@@ -103,7 +111,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                    if (thisIsTheOnlyNozzle)
+                    {
+                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                    } else
+                    {
+                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                    }
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(heater.nozzleTargetTemperatureProperty().asString("%d").get()
@@ -130,7 +144,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - EJECT_TEMPERATURE)
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                    if (thisIsTheOnlyNozzle)
+                    {
+                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                    } else
+                    {
+                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                    }
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
                     largeTargetValue.textProperty().set(String.format("%.0f", EJECT_TEMPERATURE)
