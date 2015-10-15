@@ -163,6 +163,16 @@ public class UtilityMethods
                         throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
                     }
                 }
+
+                //Now look to see if we can consolidate the tool change with a travel
+                if (lastToolSelectNode.getChildren().size() > 0)
+                {
+                    if (lastToolSelectNode.getChildren().get(lastToolSelectNode.getChildren().size() - 1) instanceof TravelNode)
+                    {
+                        ((TravelNode) lastToolSelectNode.getChildren().get(lastToolSelectNode.getChildren().size() - 1)).changeToolDuringMovement(toolSelectNode.getToolNumber());
+                        toolSelectNode.suppressNodeOutput(true);
+                    }
+                }
             }
 
             lastToolSelectNode = toolSelectNode;
