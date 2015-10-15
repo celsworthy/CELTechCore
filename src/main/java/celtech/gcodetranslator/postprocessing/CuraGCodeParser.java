@@ -87,21 +87,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                         },
                         Newline()
                 ),
-                //                Optional(
-                //                        Sequence(
-                //                                Preamble(),
-                //                                (Action) (Context context1) ->
-                //                                {
-                //                                    if (!context1.getValueStack().isEmpty())
-                //                                    {
-                //                                        GCodeEventNode node = (GCodeEventNode) context1.getValueStack().pop();
-                //                                        TreeUtils.addChild(thisLayer, node);
-                //                                    }
-                //                                    return true;
-                //                                }
-                //                        )
-                //                ),
-                OneOrMore(
+                ZeroOrMore(
                         FirstOf(
                                 ObjectSection(),
                                 OrphanObjectSection(),
