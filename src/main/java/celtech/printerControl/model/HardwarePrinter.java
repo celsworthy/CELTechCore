@@ -573,16 +573,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             Head headToWrite, int nozzleHeaterNumber)
     {
         Filament settingsFilament = null;
-        if (nozzleHeaterNumber == 0)
+
+        if (headToWrite.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            settingsFilament = printerSettings.getFilament0();
-        } else if (nozzleHeaterNumber == 1)
-        {
-            settingsFilament = printerSettings.getFilament1();
+            if (nozzleHeaterNumber == 0)
+            {
+                settingsFilament = printerSettings.getFilament1();
+            } else if (nozzleHeaterNumber == 1)
+            {
+                settingsFilament = printerSettings.getFilament0();
+            } else
+            {
+                throw new RuntimeException("dont know which filament to use for nozzle heater  + "
+                        + nozzleHeaterNumber);
+            }
         } else
         {
-            throw new RuntimeException("dont know which filament to use for nozzle heater  + "
-                    + nozzleHeaterNumber);
+            //There's only one heater on a single material head
+            if (nozzleHeaterNumber == 0)
+            {
+                settingsFilament = printerSettings.getFilament0();
+            }
         }
 
         if (settingsFilament != null)
