@@ -9,6 +9,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Head;
 import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
+import celtech.utils.Time.TimeUtils;
 import celtech.utils.threed.ThreeDUtils;
 import celtech.utils.threed.exporters.AMFOutputConverter;
 import celtech.utils.threed.exporters.MeshFileOutputConverter;
@@ -37,6 +38,8 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
+    private static final TimeUtils timeUtils = new TimeUtils();
+    private static final String slicerTimerName = "Slicer";
 
     public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality,
             SlicerParametersFile settings, Printer printerToUse)
@@ -86,7 +89,9 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             String printJobDirectory, Project project, PrintQualityEnumeration printQuality,
             Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno)
     {
-
+        steno.info("Starting slicing");
+        timeUtils.timerStart(project, slicerTimerName);
+        
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         if (settings.getSlicerOverride() != null)
         {
@@ -111,7 +116,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                 || printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
         {
             createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
-                                                          true);
+                    true);
         } else
         {
             createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
@@ -121,6 +126,12 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
 
         boolean succeeded = sliceFile(printJobUUID, printJobDirectory, slicerType, createdMeshFiles, centreOfPrintedObject, progressReceiver, steno);
+
+        timeUtils.timerStop(project, slicerTimerName);
+        steno.info("Slicer Timer Report");
+        steno.info("============");
+        steno.info(slicerTimerName + " " + timeUtils.timeTimeSoFar_ms(project, slicerTimerName) / 1000.0 + " seconds");
+        steno.info("============");
 
         return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
                 succeeded);

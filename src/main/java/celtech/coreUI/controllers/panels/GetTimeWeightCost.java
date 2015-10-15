@@ -19,6 +19,7 @@ import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
+import celtech.utils.Time.TimeUtils;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
@@ -52,7 +53,7 @@ public class GetTimeWeightCost
     private File printJobDirectory;
     private final Cancellable cancellable;
     private Random random = new Random();
-    
+
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
@@ -103,7 +104,6 @@ public class GetTimeWeightCost
             return false;
         }
 
-        steno.info("Starting slicing");
         boolean succeeded = doSlicing(project, settings);
         if (! succeeded) {
             return false;
@@ -113,9 +113,9 @@ public class GetTimeWeightCost
         {
             return false;
         }
-        
+
         Printer printer = Lookup.getSelectedPrinterProperty().get();
-        
+
         steno.debug("start post processing");
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
@@ -125,22 +125,22 @@ public class GetTimeWeightCost
                 project,
                 settings,
                 null);
-         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
-            getPrintJobStatistics();
-        
-                if (isCancelled())
+        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
+                getPrintJobStatistics();
+
+        if (isCancelled())
         {
             return false;
         }
-                
+
         if (result.getRoboxiserResult().isSuccess())
         {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            updateFieldsForStatistics(printJobStatistics);
-        });
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                updateFieldsForStatistics(printJobStatistics);
+            });
         }
-        
+
         return result.getRoboxiserResult().isSuccess();
     }
 
@@ -182,7 +182,7 @@ public class GetTimeWeightCost
                 weight += filament1.getWeightForVolume(dVolumeUsed * 1e-9);
                 costGBP += filament1.getCostForVolume(dVolumeUsed * 1e-9);
             }
-            
+
             String formattedWeight = formatWeight(weight);
             String formattedCost = formatCost(costGBP);
             lblWeight.setText(formattedWeight);
@@ -195,7 +195,6 @@ public class GetTimeWeightCost
      */
     private boolean doSlicing(Project project, SlicerParametersFile settings)
     {
-
         settings = project.getPrinterSettings().applyOverrides(settings);
 
         //Create the print job directory
@@ -223,13 +222,13 @@ public class GetTimeWeightCost
                 temporaryDirectory
                 + settings.getProfileName()
                 + ApplicationConfiguration.printProfileFileExtension);
-        
+
         Printer printerToUse = null;
-        
+
         if (Lookup.getSelectedPrinterProperty().isNotNull().get())
         {
             printerToUse = Lookup.getSelectedPrinterProperty().get();
-        }    
+        }
 
         SliceResult sliceResult = SlicerTask.doSlicing(settings.getProfileName(), settings,
                 temporaryDirectory,
