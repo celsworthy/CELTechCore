@@ -89,7 +89,7 @@ public class ProjectTab extends Tab
                                             tabDisplayHeightProperty);
         Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
         Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
-        Node modelActionsInsetPanel = loadInsetPanel("modelActionsInsetPanel.fxml", project);
+        Node modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");

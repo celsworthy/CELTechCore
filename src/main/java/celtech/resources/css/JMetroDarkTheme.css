@@ -2808,3 +2808,8 @@ color-picker-label .text-field {
 .diagnostics .radio-button:selected .dot {
     -fx-background-color: robox_blue;
 }
+
+.hovering-panel, .hovering-panel .tab-pane, .hovering-panel .grid-pane{
+    -fx-background-color: mid_grey_30;
+    -fx-border-width: 0;
+}

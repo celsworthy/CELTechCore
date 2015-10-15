@@ -12,52 +12,33 @@ import celtech.configuration.ApplicationConfiguration;
  */
 public enum ApplicationMode
 {
-    WELCOME("printerStatus", "Welcome"),
-    CALIBRATION_CHOICE("printerStatus", "Calibration"),
-    REGISTRATION("printerStatus", "registration"),
-    PURGE("printerStatus", "purge"),
-    MAINTENANCE("printerStatus", "Maintenance"),
-    ABOUT("printerStatus", "about"),
-    SYSTEM_INFORMATION("printerStatus", "systemInformation"),
-    EXTRAS_MENU("printerStatus", "extrasMenu"),
-    //TODO printer status has to be last otherwise the temperature graph doesn't work!! Fix in DisplayManager
-    STATUS("printerStatus", null),
-    /**
-     *
-     */
-    LAYOUT("layout", null),
-    ADD_MODEL("layout", "loadModel"),
-    MY_MINI_FACTORY("layout", "myMiniFactoryLoader"),
-    /**
-     *
-     */
-    SETTINGS("settings", null);
 
-    private final String sidePanelFXMLPrefix;
+    WELCOME("Welcome"),
+    CALIBRATION_CHOICE("Calibration"),
+    REGISTRATION("registration"),
+    PURGE("purge"),
+    MAINTENANCE("Maintenance"),
+    ABOUT("about"),
+    SYSTEM_INFORMATION("systemInformation"),
+    EXTRAS_MENU("extrasMenu"),
+    //TODO printer status has to be last otherwise the temperature graph doesn't work!! Fix in DisplayManager
+    STATUS(null),
+    /**
+     *
+     */
+    LAYOUT(null),
+    ADD_MODEL("loadModel"),
+    MY_MINI_FACTORY("myMiniFactoryLoader"),
+    /**
+     *
+     */
+    SETTINGS(null);
+
     private final String insetPanelFXMLPrefix;
 
-    private ApplicationMode(String sidePanelFXMLPrefix, String insetPanelFXMLPrefix)
+    private ApplicationMode(String insetPanelFXMLPrefix)
     {
-        this.sidePanelFXMLPrefix = sidePanelFXMLPrefix;
         this.insetPanelFXMLPrefix = insetPanelFXMLPrefix;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSidePanelFXMLName()
-    {
-        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SidePanel" + ".fxml";
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSlideOutFXMLName()
-    {
-        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SlideOutPanel" + ".fxml";
     }
 
     /**
