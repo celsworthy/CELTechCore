@@ -374,6 +374,7 @@ public class NozzleAssignmentUtilities
                 if (childNode instanceof SectionNode)
                 {
                     SectionNode sectionUnderConsideration = (SectionNode) childNode;
+                    int requiredToolNumber = -1;
 
                     if (sectionUnderConsideration instanceof OrphanSectionNode)
                     {
@@ -405,6 +406,10 @@ public class NozzleAssignmentUtilities
                                         && (lastSectionNode.getParent().get() instanceof ObjectDelineationNode))
                                 {
                                     objectReferenceNumber = ((ObjectDelineationNode) lastSectionNode.getParent().get()).getObjectNumber();
+                                } else if (lastSectionNode.getParent() != null
+                                        && (lastSectionNode.getParent().get() instanceof ToolSelectNode))
+                                {
+                                    requiredToolNumber = ((ToolSelectNode) lastSectionNode.getParent().get()).getToolNumber();
                                 } else
                                 {
                                     throw new RuntimeException(
@@ -442,31 +447,32 @@ public class NozzleAssignmentUtilities
                         }
                     }
 
-                    int requiredToolNumber = -1;
-
-                    //Tool number corresponds to nozzle number
-                    if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+                    if (requiredToolNumber < 0)
                     {
+                        //Tool number corresponds to nozzle number
+                        if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+                        {
                         //Assuming that we'll only be here with a single material nozzle
-                        //In this case nozzle 0 corresponds to tool 0
-                        try
+                            //In this case nozzle 0 corresponds to tool 0
+                            try
+                            {
+                                NozzleProxy requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(sectionUnderConsideration);
+                                requiredToolNumber = requiredNozzle.getNozzleReferenceNumber();
+                            } catch (UnableToFindSectionNodeException ex)
+                            {
+                                throw new RuntimeException("Failed to determine correct nozzle - single material mode");
+                            }
+                        } else if ((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
+                                || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL)
+                                && ((sectionUnderConsideration instanceof SupportSectionNode)
+                                || (sectionUnderConsideration instanceof SupportInterfaceSectionNode)
+                                || (sectionUnderConsideration instanceof SkirtSectionNode)))
                         {
-                            NozzleProxy requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(sectionUnderConsideration);
-                            requiredToolNumber = requiredNozzle.getNozzleReferenceNumber();
-                        } catch (UnableToFindSectionNodeException ex)
+                            requiredToolNumber = (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1;
+                        } else
                         {
-                            throw new RuntimeException("Failed to determine correct nozzle - single material mode");
+                            requiredToolNumber = extruderToNozzleMap.get(objectReferenceNumber);
                         }
-                    } else if ((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL
-                            || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL)
-                            && ((sectionUnderConsideration instanceof SupportSectionNode)
-                            || (sectionUnderConsideration instanceof SupportInterfaceSectionNode)
-                            || (sectionUnderConsideration instanceof SkirtSectionNode)))
-                    {
-                        requiredToolNumber = (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1;
-                    } else
-                    {
-                        requiredToolNumber = extruderToNozzleMap.get(objectReferenceNumber);
                     }
 
                     if (toolSelectNode == null

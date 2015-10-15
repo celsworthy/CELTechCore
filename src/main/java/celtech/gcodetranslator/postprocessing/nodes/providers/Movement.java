@@ -19,7 +19,7 @@ public final class Movement implements Renderable
 
     private boolean isZSet = false;
     private double z;
-    
+
     public boolean isXSet()
     {
         return isXSet;
@@ -91,7 +91,7 @@ public final class Movement implements Renderable
         isZSet = true;
         this.z = z;
     }
-
+    
     /**
      *
      * @return

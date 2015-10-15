@@ -18,13 +18,24 @@ public class TravelNode extends GCodeEventNode implements MovementProvider, Feed
     private final Movement movement = new Movement();
     private final Feedrate feedrate = new Feedrate();
 
+    private boolean isToolChangeRequired = false;
+    private int toolNumber;
+
     //Travel events should always use G1
     @Override
     public String renderForOutput()
     {
         StringBuilder stringToReturn = new StringBuilder();
 
-        stringToReturn.append("G1 ");
+        if (isToolChangeRequired)
+        {
+            stringToReturn.append('T');
+            stringToReturn.append(toolNumber);
+            stringToReturn.append(' ');
+        } else
+        {
+            stringToReturn.append("G1 ");
+        }
 
         stringToReturn.append(feedrate.renderForOutput());
         stringToReturn.append(' ');
@@ -47,6 +58,12 @@ public class TravelNode extends GCodeEventNode implements MovementProvider, Feed
         return feedrate;
     }
 
+    public void changeToolDuringMovement(int toolNumber)
+    {
+        isToolChangeRequired = true;
+        this.toolNumber = toolNumber;
+    }
+
     @Override
     public double timeToReach(MovementProvider destinationNode) throws DurationCalculationException
     {
@@ -56,12 +73,12 @@ public class TravelNode extends GCodeEventNode implements MovementProvider, Feed
         double distance = source.distance(destination);
 
         double time = distance / feedrate.getFeedRate_mmPerSec();
-        
+
         if (time < 0)
         {
             throw new DurationCalculationException(this, destinationNode);
         }
-        
+
         return time;
     }
 }
