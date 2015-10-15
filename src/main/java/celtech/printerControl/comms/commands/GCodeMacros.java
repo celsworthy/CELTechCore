@@ -2,9 +2,13 @@ package celtech.printerControl.comms.commands;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Macro;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
+import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
+import celtech.utils.tasks.Cancellable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -387,5 +391,25 @@ public class GCodeMacros
         }
 
         return linesInMacro;
+    }
+
+    public static void sendMacroLineByLine(Printer printer, Macro macro, Cancellable cancellable) throws IOException, MacroLoadException
+    {
+        ArrayList<String> macroLines = GCodeMacros.getMacroContents(macro.getMacroFileName(),
+                printer.headProperty().get().typeCodeProperty().get(),
+                false, false);
+
+        for (String macroLine : macroLines)
+        {
+            String lineToTransmit = SystemUtils.cleanGCodeForTransmission(macroLine);
+            if (lineToTransmit.length() > 0)
+            {
+                printer.sendRawGCode(lineToTransmit, false);
+                if (PrinterUtils.waitOnBusy(printer, cancellable))
+                {
+                    return;
+                }
+            }
+        }
     }
 }
