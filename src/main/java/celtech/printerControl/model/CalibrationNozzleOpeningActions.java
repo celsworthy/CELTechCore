@@ -4,14 +4,20 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
+import celtech.configuration.Macro;
 import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.comms.commands.GCodeMacros;
+import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
+import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
+import java.io.IOException;
+import java.util.ArrayList;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -80,40 +86,12 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
         HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
 
-        printer.homeAllAxes(true, userOrErrorCancellable);
-        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+        try
         {
-            return;
-        }
-
-        printer.goToTargetNozzleHeaterTemperature(0);
-
-        waitOnNozzleTemperature(0);
-        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
+            GCodeMacros.sendMacroLineByLine(printer, Macro.BEFORE_NOZZLE_CALIBRATION, userOrErrorCancellable);
+        } catch (IOException | MacroLoadException ex)
         {
-            return;
-        }
-
-        printer.miniPurge(true, userOrErrorCancellable, 0);
-        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
-        {
-            return;
-        }
-
-        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-        {
-            printer.goToTargetNozzleHeaterTemperature(1);
-
-            waitOnNozzleTemperature(1);
-            if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
-            {
-                return;
-            }
-        }
-
-        printer.miniPurge(true, userOrErrorCancellable, 1);
-        if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
-        {
+            steno.error("Failed to load pre-calibration macro");
             return;
         }
 
