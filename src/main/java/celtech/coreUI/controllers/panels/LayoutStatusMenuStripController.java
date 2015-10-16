@@ -773,10 +773,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         printHeadPowerOffNotificationBar.setAppearanceCondition(printer.headPowerOnFlagProperty().not()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
-        .and(printer.headProperty().isNotNull()));
+                .and(printer.headProperty().isNotNull()));
         noHeadNotificationBar.setAppearanceCondition(printer.headProperty().isNull()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-        
+
         CanPrintConditionalTextBindings conditionalTextBindings
                 = new CanPrintConditionalTextBindings(project, printer);
         BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
@@ -816,9 +816,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         twoExtrudersFilament1MismatchNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(filament1Reqd).and(
                 extruder1FilamentMismatch).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-        
+
         invalidMeshInProjectNotificationBar.setAppearanceCondition(project.hasInvalidMeshes().
-            and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+                and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
     }
 
     /**
@@ -1042,7 +1042,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 return;
             }
             printButton.disableProperty().unbind();
-            if (!printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
+
+            if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
             {
                 canPrintProject.bind(
                         printer.canPrintProperty()
