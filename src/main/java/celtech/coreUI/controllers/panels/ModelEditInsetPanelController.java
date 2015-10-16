@@ -33,7 +33,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -124,6 +126,27 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     @FXML
     private ToggleSwitch useProportionalScaleSwitch;
+
+    @FXML
+    private VBox movePanel;
+
+    @FXML
+    private VBox scalePanel;
+
+    @FXML
+    private VBox rotatePanel;
+
+    @FXML
+    private ToggleButton moveButton;
+
+    @FXML
+    private ToggleButton scaleButton;
+
+    @FXML
+    private ToggleButton rotateButton;
+
+    @FXML
+    private ToggleGroup tabButtons;
 
     private Project currentProject;
     private UndoableProject undoableProject;
@@ -223,7 +246,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                     }
 
                 });
- 
+
         useProportionalScaleSwitch.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -243,6 +266,37 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 widthCaption.setVisible(!newValue);
             }
         });
+
+        tabButtons.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
+            {
+                if (newValue == moveButton)
+                {
+                    movePanel.setVisible(true);
+                    scalePanel.setVisible(false);
+                    rotatePanel.setVisible(false);
+                } else if (newValue == scaleButton)
+                {
+                    movePanel.setVisible(false);
+                    scalePanel.setVisible(true);
+                    rotatePanel.setVisible(false);
+                } else
+                {
+                    movePanel.setVisible(false);
+                    scalePanel.setVisible(false);
+                    rotatePanel.setVisible(true);
+                }
+            }
+        });
+        
+        numSelectedModels.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            updateDisplay();
+        });
+
+        tabButtons.selectToggle(moveButton);
 
         updateDisplay();
     }
@@ -306,7 +360,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
         currentProject = project;
         undoableProject = new UndoableProject(project);
-        updateDisplay();
 
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
@@ -332,10 +385,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
         repopulate(selectedModelDetails);
 
-        modelEditInsetRoot.visibleProperty().bind(
-                Bindings.lessThan(0, projectSelection.getNumModelsSelectedProperty()));
-
         setFieldsEditable();
+        updateDisplay();
 
 //        group.disableProperty().bind(numModelsSelected.lessThan(2));
 //        cut.disableProperty().bind(numModelsSelected.lessThan(1));

@@ -2863,4 +2863,18 @@ color-picker-label .text-field {
     -fx-border-width: 0;
 }
 
+.fake-tab-button
+{
+    -fx-border-width: 0;
+}
 
+.fake-tab-button:selected
+{
+    -fx-background-color: robox_blue;
+    -fx-border-width: 0;
+}
+
+.fake-tab-button:pressed
+{
+    -fx-border-width: 0;
+}
