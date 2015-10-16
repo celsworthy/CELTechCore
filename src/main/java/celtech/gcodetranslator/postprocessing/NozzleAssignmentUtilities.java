@@ -119,219 +119,219 @@ public class NozzleAssignmentUtilities
         }
     }
 
-    /**
-     *
-     * @param layerNode
-     * @param lastLayerResult
-     * @param postProcessingMode
-     * @return The reference number of the last object in the layer
-     */
-    protected int insertNozzleControlSectionsByTask(LayerNode layerNode,
-            LayerPostProcessResult lastLayerResult,
-            PostProcessingMode postProcessingMode)
-    {
-        int lastObjectReferenceNumber = -1;
-
-        if (featureSet.isEnabled(PostProcessorFeature.CLOSE_ON_TASK_CHANGE))
-        {
-            //TODO put in first layer forced nozzle select
-            //
-//        if (layerNode.getLayerNumber() == 0)
-//        {
-//            //First layer
-//            //Look for travels that exceed 2mm and close/open the nozzle as necessary
+//    /**
+//     *
+//     * @param layerNode
+//     * @param lastLayerResult
+//     * @param postProcessingMode
+//     * @return The reference number of the last object in the layer
+//     */
+//    protected int insertNozzleControlSectionsByTask(LayerNode layerNode,
+//            LayerPostProcessResult lastLayerResult,
+//            PostProcessingMode postProcessingMode)
+//    {
+//        int lastObjectReferenceNumber = -1;
 //
-//            if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+//        if (featureSet.isEnabled(PostProcessorFeature.CLOSE_ON_TASK_CHANGE))
+//        {
+//            //TODO put in first layer forced nozzle select
+//            //
+////        if (layerNode.getLayerNumber() == 0)
+////        {
+////            //First layer
+////            //Look for travels that exceed 2mm and close/open the nozzle as necessary
+////
+////            if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+////            {
+////                // Look to see if a first layer nozzle has been selected
+////                if (slicerParameters.getFirstLayerNozzle() > -1)
+////                {
+////                    currentNozzleProxy = nozzleProxies.get(slicerParameters.getFirstLayerNozzle());
+////                } else
+////                {
+////                    currentNozzleProxy
+////                }
+////            }
+////        }
+//            //We'll need at least one of these per layer
+//            ToolSelectNode toolSelectNode = null;
+//
+//            SectionNode lastSectionNode = null;
+//
+//            if (lastLayerResult != null && lastLayerResult.getLayerData() != null)
 //            {
-//                // Look to see if a first layer nozzle has been selected
-//                if (slicerParameters.getFirstLayerNozzle() > -1)
+//                GCodeEventNode lastEventOnLastLayer = lastLayerResult.getLayerData().getAbsolutelyTheLastEvent();
+//                if (lastEventOnLastLayer != null)
 //                {
-//                    currentNozzleProxy = nozzleProxies.get(slicerParameters.getFirstLayerNozzle());
-//                } else
-//                {
-//                    currentNozzleProxy
+//                    Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
+//                    if (potentialLastSection.isPresent()
+//                            && potentialLastSection.get() instanceof SectionNode)
+//                    {
+//                        lastSectionNode = (SectionNode) potentialLastSection.get();
+//
+//                        Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
+//                        if (potentialToolSelectNode.isPresent()
+//                                && potentialToolSelectNode.get() instanceof ToolSelectNode)
+//                        {
+//                            toolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
+//                        }
+//                    }
 //                }
 //            }
+//
+//            // At this stage the object nodes are directly beneath the layer node
+//            // Find all of the objects in this layer
+//            Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
+//            List<ObjectDelineationNode> objectNodes = new ArrayList<>();
+//
+//            while (layerChildIterator.hasNext())
+//            {
+//                GCodeEventNode potentialObjectNode = layerChildIterator.next();
+//
+//                if (potentialObjectNode instanceof ObjectDelineationNode)
+//                {
+//                    objectNodes.add((ObjectDelineationNode) potentialObjectNode);
+//                }
+//            }
+//
+//            boolean blankToolSelect = false;
+//
+//            for (ObjectDelineationNode objectNode : objectNodes)
+//            {
+//                lastObjectReferenceNumber = objectNode.getObjectNumber();
+//
+//                List<GCodeEventNode> childNodes = objectNode.getChildren().stream().collect(
+//                        Collectors.toList());
+//
+//                if (toolSelectNode == null)
+//                {
+//                    //Need to create a new Tool Select Node
+//                    toolSelectNode = new ToolSelectNode();
+//                    layerNode.addChildAtEnd(toolSelectNode);
+//                    blankToolSelect = true;
+//                }
+//
+//                for (GCodeEventNode childNode : childNodes)
+//                {
+//                    if (childNode instanceof SectionNode)
+//                    {
+//                        SectionNode sectionNodeBeingExamined = (SectionNode) childNode;
+//
+//                        NozzleProxy requiredNozzle = null;
+//
+//                        try
+//                        {
+//                            if (sectionNodeBeingExamined instanceof OrphanSectionNode)
+//                            {
+//                                if (lastSectionNode == null)
+//                                {
+//                                    throw new RuntimeException(
+//                                            "Failed to process orphan section on layer "
+//                                            + layerNode.getLayerNumber()
+//                                            + " as last section didn't exist");
+//                                }
+//
+//                                if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+//                                {
+//                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
+//                                            lastSectionNode);
+//                                } else
+//                                {
+//                                    NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 1 : 0);
+//                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(lastObjectReferenceNumber);
+//                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(lastSectionNode,
+//                                            requiredNozzleForSupportRaftSkirt,
+//                                            requiredNozzleForObject);
+//                                }
+//
+//                                try
+//                                {
+//                                    SectionNode replacementSection = lastSectionNode.getClass().newInstance();
+//
+//                                    // Move the child nodes to the replacement section
+//                                    Iterator<GCodeEventNode> sectionNodeChildIterator = sectionNodeBeingExamined.childIterator();
+//                                    while (sectionNodeChildIterator.hasNext())
+//                                    {
+//                                        GCodeEventNode child = sectionNodeChildIterator.next();
+//
+//                                        replacementSection.addChildAtEnd(child);
+//                                    }
+//
+//                                    sectionNodeBeingExamined.removeFromParent();
+//                                    lastSectionNode.addSiblingAfter(replacementSection);
+//                                    sectionNodeBeingExamined = replacementSection;
+//                                } catch (InstantiationException | IllegalAccessException ex)
+//                                {
+//                                    throw new RuntimeException(
+//                                            "Failed to process orphan section on layer "
+//                                            + layerNode.getLayerNumber(), ex);
+//                                }
+//                            } else
+//                            {
+//                                if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+//                                {
+//                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
+//                                            sectionNodeBeingExamined);
+//                                } else
+//                                {
+//                                    NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
+//                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(lastObjectReferenceNumber);
+//                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(sectionNodeBeingExamined,
+//                                            requiredNozzleForSupportRaftSkirt,
+//                                            requiredNozzleForObject);
+//                                }
+//                            }
+//
+//                            if (!blankToolSelect
+//                                    && (toolSelectNode == null
+//                                    || toolSelectNode.getToolNumber()
+//                                    != requiredNozzle.getNozzleReferenceNumber()))
+//                            {
+//                                //Need to create a new Tool Select Node
+//                                toolSelectNode = new ToolSelectNode();
+//                                toolSelectNode.setToolNumber(
+//                                        requiredNozzle.getNozzleReferenceNumber());
+//                                layerNode.addChildAtEnd(toolSelectNode);
+//                            } else if (blankToolSelect)
+//                            {
+//                                toolSelectNode.setToolNumber(
+//                                        requiredNozzle.getNozzleReferenceNumber());
+//                            }
+//
+//                            sectionNodeBeingExamined.removeFromParent();
+//                            toolSelectNode.addChildAtEnd(sectionNodeBeingExamined);
+//
+//                        } catch (UnableToFindSectionNodeException ex)
+//                        {
+//                            throw new RuntimeException(
+//                                    "Error attempting to insert nozzle control sections by task - "
+//                                    + ex.getMessage(), ex);
+//                        }
+//
+//                        lastSectionNode = sectionNodeBeingExamined;
+//                    } else
+//                    {
+//                        if (toolSelectNode == null)
+//                        {
+//                            //We got here because a node is sitting outside a section
+//
+//                        }
+//                        //Probably a travel node - move it over without changing it
+//                        childNode.removeFromParent();
+//                        toolSelectNode.addChildAtEnd(childNode);
+//                    }
+//                }
+//
+//                if (!objectNode.getChildren().isEmpty())
+//                {
+//                    throw new RuntimeException("Transfer of children from object "
+//                            + objectNode.getObjectNumber() + " failed");
+//                }
+//                objectNode.removeFromParent();
+//            }
 //        }
-            //We'll need at least one of these per layer
-            ToolSelectNode toolSelectNode = null;
-
-            SectionNode lastSectionNode = null;
-
-            if (lastLayerResult != null && lastLayerResult.getLayerData() != null)
-            {
-                GCodeEventNode lastEventOnLastLayer = lastLayerResult.getLayerData().getAbsolutelyTheLastEvent();
-                if (lastEventOnLastLayer != null)
-                {
-                    Optional<GCodeEventNode> potentialLastSection = lastEventOnLastLayer.getParent();
-                    if (potentialLastSection.isPresent()
-                            && potentialLastSection.get() instanceof SectionNode)
-                    {
-                        lastSectionNode = (SectionNode) potentialLastSection.get();
-
-                        Optional<GCodeEventNode> potentialToolSelectNode = lastSectionNode.getParent();
-                        if (potentialToolSelectNode.isPresent()
-                                && potentialToolSelectNode.get() instanceof ToolSelectNode)
-                        {
-                            toolSelectNode = (ToolSelectNode) potentialToolSelectNode.get();
-                        }
-                    }
-                }
-            }
-
-            // At this stage the object nodes are directly beneath the layer node
-            // Find all of the objects in this layer
-            Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
-            List<ObjectDelineationNode> objectNodes = new ArrayList<>();
-
-            while (layerChildIterator.hasNext())
-            {
-                GCodeEventNode potentialObjectNode = layerChildIterator.next();
-
-                if (potentialObjectNode instanceof ObjectDelineationNode)
-                {
-                    objectNodes.add((ObjectDelineationNode) potentialObjectNode);
-                }
-            }
-
-            boolean blankToolSelect = false;
-
-            for (ObjectDelineationNode objectNode : objectNodes)
-            {
-                lastObjectReferenceNumber = objectNode.getObjectNumber();
-
-                List<GCodeEventNode> childNodes = objectNode.getChildren().stream().collect(
-                        Collectors.toList());
-
-                if (toolSelectNode == null)
-                {
-                    //Need to create a new Tool Select Node
-                    toolSelectNode = new ToolSelectNode();
-                    layerNode.addChildAtEnd(toolSelectNode);
-                    blankToolSelect = true;
-                }
-
-                for (GCodeEventNode childNode : childNodes)
-                {
-                    if (childNode instanceof SectionNode)
-                    {
-                        SectionNode sectionNodeBeingExamined = (SectionNode) childNode;
-
-                        NozzleProxy requiredNozzle = null;
-
-                        try
-                        {
-                            if (sectionNodeBeingExamined instanceof OrphanSectionNode)
-                            {
-                                if (lastSectionNode == null)
-                                {
-                                    throw new RuntimeException(
-                                            "Failed to process orphan section on layer "
-                                            + layerNode.getLayerNumber()
-                                            + " as last section didn't exist");
-                                }
-
-                                if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
-                                {
-                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
-                                            lastSectionNode);
-                                } else
-                                {
-                                    NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
-                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(lastObjectReferenceNumber);
-                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(lastSectionNode,
-                                            requiredNozzleForSupportRaftSkirt,
-                                            requiredNozzleForObject);
-                                }
-
-                                try
-                                {
-                                    SectionNode replacementSection = lastSectionNode.getClass().newInstance();
-
-                                    // Move the child nodes to the replacement section
-                                    Iterator<GCodeEventNode> sectionNodeChildIterator = sectionNodeBeingExamined.childIterator();
-                                    while (sectionNodeChildIterator.hasNext())
-                                    {
-                                        GCodeEventNode child = sectionNodeChildIterator.next();
-
-                                        replacementSection.addChildAtEnd(child);
-                                    }
-
-                                    sectionNodeBeingExamined.removeFromParent();
-                                    lastSectionNode.addSiblingAfter(replacementSection);
-                                    sectionNodeBeingExamined = replacementSection;
-                                } catch (InstantiationException | IllegalAccessException ex)
-                                {
-                                    throw new RuntimeException(
-                                            "Failed to process orphan section on layer "
-                                            + layerNode.getLayerNumber(), ex);
-                                }
-                            } else
-                            {
-                                if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
-                                {
-                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyByTask(
-                                            sectionNodeBeingExamined);
-                                } else
-                                {
-                                    NozzleProxy requiredNozzleForSupportRaftSkirt = nozzleProxies.get((postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1);
-                                    NozzleProxy requiredNozzleForObject = nozzleProxies.get(lastObjectReferenceNumber);
-                                    requiredNozzle = nozzleControlUtilities.chooseNozzleProxyForDifferentialSupportMaterial(sectionNodeBeingExamined,
-                                            requiredNozzleForSupportRaftSkirt,
-                                            requiredNozzleForObject);
-                                }
-                            }
-
-                            if (!blankToolSelect
-                                    && (toolSelectNode == null
-                                    || toolSelectNode.getToolNumber()
-                                    != requiredNozzle.getNozzleReferenceNumber()))
-                            {
-                                //Need to create a new Tool Select Node
-                                toolSelectNode = new ToolSelectNode();
-                                toolSelectNode.setToolNumber(
-                                        requiredNozzle.getNozzleReferenceNumber());
-                                layerNode.addChildAtEnd(toolSelectNode);
-                            } else if (blankToolSelect)
-                            {
-                                toolSelectNode.setToolNumber(
-                                        requiredNozzle.getNozzleReferenceNumber());
-                            }
-
-                            sectionNodeBeingExamined.removeFromParent();
-                            toolSelectNode.addChildAtEnd(sectionNodeBeingExamined);
-
-                        } catch (UnableToFindSectionNodeException ex)
-                        {
-                            throw new RuntimeException(
-                                    "Error attempting to insert nozzle control sections by task - "
-                                    + ex.getMessage(), ex);
-                        }
-
-                        lastSectionNode = sectionNodeBeingExamined;
-                    } else
-                    {
-                        if (toolSelectNode == null)
-                        {
-                            //We got here because a node is sitting outside a section
-
-                        }
-                        //Probably a travel node - move it over without changing it
-                        childNode.removeFromParent();
-                        toolSelectNode.addChildAtEnd(childNode);
-                    }
-                }
-
-                if (!objectNode.getChildren().isEmpty())
-                {
-                    throw new RuntimeException("Transfer of children from object "
-                            + objectNode.getObjectNumber() + " failed");
-                }
-                objectNode.removeFromParent();
-            }
-        }
-        return lastObjectReferenceNumber;
-    }
+//        return lastObjectReferenceNumber;
+//    }
 
     protected int insertNozzleControlSectionsByObject(LayerNode layerNode,
             LayerPostProcessResult lastLayerResult)
@@ -468,7 +468,7 @@ public class NozzleAssignmentUtilities
                                 || (sectionUnderConsideration instanceof SupportInterfaceSectionNode)
                                 || (sectionUnderConsideration instanceof SkirtSectionNode)))
                         {
-                            requiredToolNumber = (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 0 : 1;
+                            requiredToolNumber = (postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL) ? 1 : 0;
                         } else
                         {
                             requiredToolNumber = extruderToNozzleMap.get(objectReferenceNumber);
