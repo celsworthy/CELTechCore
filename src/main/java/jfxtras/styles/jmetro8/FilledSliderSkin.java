@@ -1,33 +1,19 @@
 package jfxtras.styles.jmetro8;
 
-import com.sun.javafx.Utils;
 import com.sun.javafx.scene.control.behavior.*;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-import com.sun.javafx.scene.control.skin.SliderSkin;
 import javafx.animation.Transition;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
-import javafx.geometry.NodeOrientation;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.control.Control;
 import javafx.scene.control.Slider;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static javafx.scene.input.KeyCode.*;
-import static javafx.scene.input.KeyCode.KP_RIGHT;
-import static javafx.scene.input.KeyCode.RIGHT;
-import static javafx.scene.input.KeyEvent.KEY_RELEASED;
 
 /**
  * Created by pedro_000 on 3/30/2014.
