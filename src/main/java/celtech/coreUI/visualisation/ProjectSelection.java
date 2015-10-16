@@ -81,14 +81,14 @@ public class ProjectSelection implements ProjectChangesListener
             modelContainers.add(modelContainer);
             modelContainer.setSelected(true);
             primarySelectedModelDetails.setTo(modelContainer);
-            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
-            {
-                selectedModelContainersListener.whenAdded(modelContainer);
-            }
             numModelsSelected.set(numModelsSelected.get() + 1);
             if (modelContainer instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() + 1);
+            }
+            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            {
+                selectedModelContainersListener.whenAdded(modelContainer);
             }
         }
     }

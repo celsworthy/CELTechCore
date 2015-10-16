@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import jfxtras.styles.jmetro8.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.image.*?>
@@ -28,25 +29,29 @@
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="hovering-panel">
                             <children>
-                                <GridPane alignment="CENTER" hgap="5.0" vgap="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                    <children>
-                                        <Label styleClass="colon" text="%modelEdit.XAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                        <Label styleClass="colon" text="%modelEdit.YAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                          <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                                          <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="100.0" />
-                                        <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="70.0" />
-                                    </columnConstraints>
-                                    <padding>
-                                        <Insets />
-                                    </padding>
-                                    <rowConstraints>
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                    </rowConstraints>
-                                </GridPane>
+                        <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                                      <GridPane alignment="CENTER" hgap="5.0" vgap="0.0">
+                                          <children>
+                                              <Label styleClass="colon" text="%modelEdit.XAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                              <Label styleClass="colon" text="%modelEdit.YAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                                <RestrictedNumberField allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
+                                                <RestrictedNumberField fx:id="yAxisTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          </children>
+                                          <columnConstraints>
+                                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="100.0" />
+                                              <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="70.0" />
+                                          </columnConstraints>
+                                          <padding>
+                                              <Insets />
+                                          </padding>
+                                          <rowConstraints>
+                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          </rowConstraints>
+                                      </GridPane>
+                           </children>
+                        </VBox>
                             </children>
                         </AnchorPane>
                     </content>
@@ -130,39 +135,83 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="hovering-panel">
                      <children>
-                        <GridPane alignment="CENTER" hgap="5.0" vgap="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <Label styleClass="colon" text="%modelEdit.ScaleLabelX" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                              <Label styleClass="colon" text="%modelEdit.ScaleLabelY" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                              <Label styleClass="colon" text="%modelEdit.ScaleLabelZ" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                              <ToggleButton id="preserveAspectRatio" fx:id="preserveAspectRatio1" contentDisplay="GRAPHIC_ONLY" maxWidth="27.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="27.0" GridPane.columnIndex="1" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS">
-                                 <graphic>
-                                    <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../../images/link.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </ToggleButton>
-                              <Group />
-                              <RestrictedNumberField fx:id="widthTextField1" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="2" />
-                              <RestrictedNumberField fx:id="widthTextField12" allowedDecimalPlaces="2" layoutX="175.0" layoutY="20.0" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                              <RestrictedNumberField fx:id="widthTextField121" allowedDecimalPlaces="2" layoutX="15.0" layoutY="20.0" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                              <GridPane alignment="CENTER" hgap="5.0" vgap="0.0">
+                                 <children>
+                                    <StackPane>
+                                       <children>
+                                          <Label fx:id="scaleXCaption" styleClass="colon" text="%modelEdit.ScaleLabelX" />
+                                          <Label fx:id="widthCaption" layoutX="16.0" layoutY="15.0" styleClass="colon" text="%modelEdit.ScaleLabelX" />
+                                       </children>
+                                    </StackPane>
+                                    <StackPane GridPane.rowIndex="1">
+                                       <children>
+                                          <Label fx:id="scaleYCaption" styleClass="colon" text="%modelEdit.ScaleLabelY" />
+                                          <Label fx:id="heightCaption" layoutX="16.0" layoutY="15.0" styleClass="colon" text="%modelEdit.ScaleLabelY" />
+                                       </children>
+                                    </StackPane>
+                                    <StackPane GridPane.rowIndex="2">
+                                       <children>
+                                          <Label fx:id="scaleZCaption" styleClass="colon" text="%modelEdit.ScaleLabelZ" />
+                                          <Label fx:id="depthCaption" layoutX="15.0" layoutY="15.0" styleClass="colon" text="%modelEdit.ScaleLabelZ" />
+                                       </children>
+                                    </StackPane>
+                                    <ToggleButton id="preserveAspectRatio" fx:id="preserveAspectRatio" contentDisplay="GRAPHIC_ONLY" maxWidth="27.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="27.0" style="-fx-border-width: 0; -fx-fill-color: #ffffff;" GridPane.columnIndex="1" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS">
+                                       <graphic>
+                                          <ImageView fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../images/link.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <Group />
+                                    <StackPane GridPane.columnIndex="2">
+                                       <children>
+                                          <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" />
+                                          <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                       </children>
+                                    </StackPane>
+                                    <StackPane fx:id="textHeightField" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                       <children>
+                                          <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" />
+                                          <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                       </children>
+                                    </StackPane>
+                                    <StackPane GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                       <children>
+                                          <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" />
+                                          <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                       </children>
+                                    </StackPane>
+                                    <Label styleClass="colon" text="%modelEdit.UseProportionalScale" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+                                    <HBox alignment="CENTER" fillHeight="false" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                       <children>
+                                          <ToggleSwitch fx:id="useProportionalScaleSwitch" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" minHeight="0.0" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="90.0" />
+                                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="0.0" prefWidth="50.0" />
+                                    <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" percentWidth="0.0" prefWidth="70.0" />
+                                 </columnConstraints>
+                                 <padding>
+                                    <Insets />
+                                 </padding>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
                            </children>
-                           <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="90.0" />
-                              <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="0.0" prefWidth="50.0" />
-                              <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" percentWidth="0.0" prefWidth="70.0" />
-                           </columnConstraints>
-                           <padding>
-                              <Insets />
-                           </padding>
-                           <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                           </rowConstraints>
-                        </GridPane>
+                        </VBox>
                      </children>
                   </AnchorPane>
                </content>
@@ -179,28 +228,32 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" styleClass="hovering-panel">
                      <children>
-                        <GridPane alignment="CENTER" hgap="5.0" vgap="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <Label styleClass="colon" text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                              <Label styleClass="colon" text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                              <Label styleClass="colon" text="%modelEdit.turn" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                              <RestrictedNumberField fx:id="scaleTextWidthField11" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
-                              <RestrictedNumberField fx:id="scaleTextDepthField11" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <RestrictedNumberField fx:id="scaleTextHeightField11" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <GridPane alignment="CENTER" hgap="5.0" vgap="0.0">
+                                 <children>
+                                    <Label styleClass="colon" text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Label styleClass="colon" text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Label styleClass="colon" text="%modelEdit.turn" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <RestrictedNumberField fx:id="rotationXTextField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
+                                    <RestrictedNumberField fx:id="rotationYTextField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <RestrictedNumberField fx:id="rotationZTextField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="100.0" />
+                                    <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="70.0" />
+                                 </columnConstraints>
+                                 <padding>
+                                    <Insets />
+                                 </padding>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
                            </children>
-                           <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="100.0" />
-                              <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" percentWidth="0.0" prefWidth="70.0" />
-                           </columnConstraints>
-                           <padding>
-                              <Insets />
-                           </padding>
-                           <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                           </rowConstraints>
-                        </GridPane>
+                        </VBox>
                      </children>
                   </AnchorPane>
                </content>
@@ -216,8 +269,15 @@
             </tabs>
         </TabPane>
       <Label layoutX="125.0" layoutY="60.0" text="%modelEdit.MaterialLabel" textAlignment="RIGHT" />
-      <Button layoutX="115.0" layoutY="10.0" mnemonicParsing="false" text="%modelEdit.Material1" />
-      <Button mnemonicParsing="false" text="%modelEdit.Material2" />       
+      <HBox alignment="CENTER" spacing="5.0">
+         <children>
+            <ToggleButton fx:id="setMaterial0Button" mnemonicParsing="false" onAction="#setMaterial0" text="%modelEdit.Material1">
+               <toggleGroup>
+                  <ToggleGroup fx:id="materialButtons" />
+               </toggleGroup></ToggleButton>
+            <ToggleButton fx:id="setMaterial1Button" layoutX="107.0" layoutY="10.0" mnemonicParsing="false" onAction="#setMaterial1" text="%modelEdit.Material2" toggleGroup="$materialButtons" />
+         </children>
+      </HBox>       
     </children>
    <padding>
       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
