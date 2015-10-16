@@ -1052,7 +1052,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 return;
             }
             printButton.disableProperty().unbind();
-            if (!printer.extrudersProperty().get(1).isFittedProperty().get()) // only one extruder
+
+            if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
             {
                 canPrintProject.bind(
                         printer.canPrintProperty()
