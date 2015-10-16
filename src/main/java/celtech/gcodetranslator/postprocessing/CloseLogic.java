@@ -64,7 +64,8 @@ public class CloseLogic
 
     protected InScopeEvents extractAvailableMovements(GCodeEventNode startingNode,
             List<SectionNode> sectionsToConsider,
-            boolean includePerimeters,
+            boolean includeInternalPerimeters,
+            boolean includeExternalPerimeters,
             boolean reprioritise)
     {
         List<SectionNode> availableSectionsToCloseOver = new ArrayList<>();
@@ -94,30 +95,29 @@ public class CloseLogic
 
             availableSectionsToCloseOver.addAll(otherExtrusionSections);
 
-            if (includePerimeters)
+            if (includeInternalPerimeters)
             {
                 availableSectionsToCloseOver.addAll(innerPerimeterSections);
+            }
+            if (includeExternalPerimeters)
+            {
                 availableSectionsToCloseOver.addAll(externalPerimeterSections);
             }
         } else
         {
-            if (includePerimeters)
+            List<SectionNode> tempSectionHolder = new ArrayList<>();
+            for (SectionNode section : sectionsToConsider)
             {
-                availableSectionsToCloseOver = sectionsToConsider;
-            } else
-            {
-                List<SectionNode> tempSectionHolder = new ArrayList<>();
-                for (SectionNode section : sectionsToConsider)
+                if ((!(section instanceof OuterPerimeterSectionNode)
+                        && !(section instanceof OuterPerimeterSectionNode))
+                        || ((section instanceof OuterPerimeterSectionNode) && includeExternalPerimeters)
+                        || ((section instanceof InnerPerimeterSectionNode) && includeInternalPerimeters))
                 {
-                    if (!(section instanceof OuterPerimeterSectionNode)
-                            && (!(section instanceof InnerPerimeterSectionNode)))
-                    {
-                        tempSectionHolder.add(section);
-                    }
+                    tempSectionHolder.add(section);
                 }
-
-                availableSectionsToCloseOver = tempSectionHolder;
             }
+
+            availableSectionsToCloseOver = tempSectionHolder;
         }
 
         int sectionDelta = -1;
@@ -170,9 +170,7 @@ public class CloseLogic
 //                    movementNodes.add(node);
                     keepLooking = false;
                     break;
-                } else 
-                    
-                    if (node instanceof NozzlePositionProvider
+                } else if (node instanceof NozzlePositionProvider
                         && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
                 {
                     keepLooking = false;
@@ -206,7 +204,7 @@ public class CloseLogic
 
         //The last section is the one we want to close in...
         SectionNode sectionContainingNodeToAppendClosesTo = (SectionNode) startingNode.getParent().get();
-        InScopeEvents unprioritisedAll = extractAvailableMovements(startingNode, sectionsToConsider, true, false);
+        InScopeEvents unprioritisedAll = extractAvailableMovements(startingNode, sectionsToConsider, true, true, false);
 
         //For non-perimeters...
         if (!(sectionContainingNodeToAppendClosesTo instanceof OuterPerimeterSectionNode)
@@ -214,17 +212,28 @@ public class CloseLogic
         {
             try
             {
-                InScopeEvents unprioritisedNoPerimeters = extractAvailableMovements(startingNode, sectionsToConsider, false, false);
+                InScopeEvents unprioritisedNoPerimeters = extractAvailableMovements(startingNode, sectionsToConsider, false, false, false);
                 closeResult = overwriteClose(unprioritisedNoPerimeters, nozzleInUse, false);
             } catch (NotEnoughAvailableExtrusionException ex)
             {
                 try
                 {
-                    closeResult = copyClose(unprioritisedAll, startingNode,
-                            Optional.of(unprioritisedAll.getInScopeEvents().get(unprioritisedAll.getInScopeEvents().size() - 1)), nozzleInUse);
+                    //Try a copy close with just the inner perimeter
+                    InScopeEvents unprioritisedInnerPerimeterOnly = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
+                    closeResult = copyClose(unprioritisedInnerPerimeterOnly, startingNode,
+                            Optional.of(unprioritisedInnerPerimeterOnly.getInScopeEvents().get(unprioritisedInnerPerimeterOnly.getInScopeEvents().size() - 1)), nozzleInUse);
                 } catch (NotEnoughAvailableExtrusionException ex2)
                 {
-                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
+                    try
+                    {
+                        //Try a copy close with just the all perimeters
+                        closeResult = copyClose(unprioritisedAll, startingNode,
+                                Optional.of(unprioritisedAll.getInScopeEvents().get(unprioritisedAll.getInScopeEvents().size() - 1)), nozzleInUse);
+                    } catch (NotEnoughAvailableExtrusionException ex3)
+                    {
+                        //Revert to partial open
+                        closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
+                    }
                 }
             }
         } else
