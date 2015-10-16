@@ -344,7 +344,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
     }
     
     @Test
-    public void testInsertNozzleControlSectionsByObject_SupportMaterial0()
+    public void testInsertNozzleControlSectionsByObject_SupportMaterial2()
     {
         LayerNode testLayer = new LayerNode();
         testLayer.setLayerNumber(1);
@@ -463,7 +463,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
                 dualMaterialHead,
                 ppFeatures,
                 testProject,
-                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());
@@ -628,7 +628,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
                 dualMaterialHead,
                 ppFeatures,
                 testProject,
-                PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());

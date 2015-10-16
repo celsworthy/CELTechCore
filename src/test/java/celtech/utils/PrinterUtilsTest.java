@@ -7,6 +7,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;
+import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head;
 import celtech.utils.TestHead.TestNozzleHeater;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -55,15 +57,19 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         headFile.getNozzleHeaters().add(nozzleHeaterData);
         printer.addHeadForHeadFile(headFile);
         TestNozzleHeater testNozzleHeater = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
-            0);
+                0);
         testNozzleHeater.lastFilamentTemperatureProperty().set(NOZZLE_TEMP
-            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+                - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+
+        ModelContainer testModel = new ModelContainer();
+        testModel.setUseExtruder0(true);
+        project.addModel(testModel);
 
         boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
         assertFalse(purgeIsNecessary);
 
         testNozzleHeater.lastFilamentTemperatureProperty().set(NOZZLE_TEMP
-            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
+                - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
         purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
         assertTrue(purgeIsNecessary);
     }
@@ -75,34 +81,41 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         int NOZZLE_TEMP_1 = 220;
         Project project = new Project();
         Filament filament0 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
-        filament0.getNozzleTemperatureProperty().set(NOZZLE_TEMP_0);
+        filament0.getNozzleTemperatureProperty().set(NOZZLE_TEMP_1);
         Filament filament1 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
-        filament1.getNozzleTemperatureProperty().set(NOZZLE_TEMP_1);
+        filament1.getNozzleTemperatureProperty().set(NOZZLE_TEMP_0);
         project.getPrinterSettings().setFilament0(filament0);
         project.getPrinterSettings().setFilament1(filament1);
 
+        ModelContainer testModel = new ModelContainer();
+        testModel.setUseExtruder0(true);
+        project.addModel(testModel);
+
         TestPrinter printer = new TestPrinter(2);
         HeadFile headFile = new HeadFile();
-        headFile.setTypeCode("RBX01-SM");
+        headFile.setTypeCode("RBX01-DM");
+        headFile.setType(Head.HeadType.DUAL_MATERIAL_HEAD);
+        
         NozzleHeaterData nozzleHeaterData0 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData0);
         NozzleHeaterData nozzleHeaterData1 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData1);
         printer.addHeadForHeadFile(headFile);
+        
         TestNozzleHeater testNozzleHeater0 = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
-            0);
+                0);
         testNozzleHeater0.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_0
-            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+                - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
         TestNozzleHeater testNozzleHeater1 = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
-            1);
+                1);
         testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
-            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
+                - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
 
         boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
         assertFalse(purgeIsNecessary);
 
         testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
-            - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
+                - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
         purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
         assertTrue(purgeIsNecessary);
     }
