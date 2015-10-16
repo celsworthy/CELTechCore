@@ -292,10 +292,10 @@ public class PrinterUtils
         Filament settingsFilament = null;
         if (extruderNumber == 0)
         {
-            settingsFilament = printerSettings.getFilament0();
+            settingsFilament = printer.effectiveFilamentsProperty().get(0);
         } else if (extruderNumber == 1)
         {
-            settingsFilament = printerSettings.getFilament1();
+            settingsFilament = printer.effectiveFilamentsProperty().get(1);
         } else
         {
             throw new RuntimeException("Don't know which filament to use for nozzle heater "

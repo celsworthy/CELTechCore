@@ -12,6 +12,7 @@ import java.util.Set;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 
 /**
@@ -201,12 +202,12 @@ public class ModelGroup extends ModelContainer
      * on any child ModelContainers.
      */
     @Override
-    public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
+    public void updateColour(final PhongMaterial extruder1Colour, final PhongMaterial extruder2Colour,
         boolean showMisplacedColour)
     {
         for (ModelContainer modelContainer : childModelContainers)
         {
-            modelContainer.updateColour(displayColourExtruder0, displayColourExtruder1,
+            modelContainer.updateColour(extruder1Colour, extruder2Colour,
                                         showMisplacedColour);
         }
     }

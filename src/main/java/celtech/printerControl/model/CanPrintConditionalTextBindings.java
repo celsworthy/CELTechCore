@@ -18,7 +18,7 @@ public class CanPrintConditionalTextBindings
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CanPrintConditionalTextBindings.class.getName());
+            CanPrintConditionalTextBindings.class.getName());
 
     private final Project project;
     private final Printer printer;
@@ -30,151 +30,8 @@ public class CanPrintConditionalTextBindings
     }
 
     /**
-     * Create a binding for when project filament 0 does not match printer filament 0.
-     */
-    public BooleanBinding getExtruder0FilamentMismatch()
-    {
-        return new BooleanBinding()
-        {
-            {
-                // We don't need to include printer in the bindings dependencies because
-                // this method is called whenever the printer reel is added or removed
-                //TODO check for programming reel
-                super.bind(project.getExtruder0FilamentProperty(),
-                           project.getExtruder1FilamentProperty(),
-                           project.getTopLevelModels(),
-                           project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
-                           project.getPrinterSettings().getFilament0Property(),
-                           project.getPrinterSettings().getFilament1Property());
-            }
-
-            @Override
-            protected boolean computeValue()
-            {
-                try {
-                //steno.debug("Recompute conditional text reqd binding");
-                boolean filamentMismatch = true;
-
-                Filament printerFilament = project.getPrinterSettings().getFilament0Property().get();
-                if (printerFilament != null)
-                {
-                    //steno.debug("printer settings fil 0 is" + printerFilament + " "
-                   //     + printerFilament.getFilamentID());
-                }
-                Set<Integer> usedExtruders = project.getUsedExtruders();
-
-                if (!printer.extrudersProperty().get(1).isFittedProperty().get())
-                {
-                    // only one extruder on the printer
-//                    System.out.println("One Extruder Only");
-//                    System.out.println("Printer Settings filament 0 is "
-//                        + project.getPrinterSettings().getFilament0Property());
-
-                    if (usedExtruders.contains(0))
-                    {
-//                        System.out.println("extruder 0 is being used");
-                        Filament usedFilament = project.getExtruder0FilamentProperty().get();
-                        if (usedFilament.equals(printerFilament))
-                        {
-//                            System.out.println("used filament 0 matches printer filament 0");
-                            filamentMismatch = false;
-                        }
-                    }
-
-                    if (usedExtruders.contains(1))
-                    {
-//                        System.out.println("extruder 1 is being used");
-                        Filament usedFilament = project.getExtruder1FilamentProperty().get();
-                        if (usedFilament.equals(printerFilament))
-                        {
-//                            System.out.println(
-//                                "used filament 1 matches printer filament 0 for single extruder printer");
-                            filamentMismatch = false;
-                        }
-                    }
-                } else
-                {
-//                    System.out.println("Two extruders");
-                    // two extruders on printer, just check extruder 0
-                    if (usedExtruders.contains(0))
-                    {
-//                        System.out.println("extruder 0 is being used");
-                        Filament usedFilament = project.getExtruder0FilamentProperty().get();
-//                        System.out.println("project fil 0 is " + usedFilament);
-                        if (usedFilament != null) {
-//                            System.out.println("project fil 0 id is " + usedFilament.getFilamentID());
-                        }
-                        if (usedFilament.equals(printerFilament))
-                        {
-//                            System.out.println("used filament 0 matches printer filament 0");
-                            filamentMismatch = false;
-                        }
-                    } else
-                    {
-//                        System.out.println("Extruder 0 not being used");
-                        filamentMismatch = false;
-                    }
-
-                }
-                //steno.debug("mismatch on 0 detected: " + filamentMismatch);
-                return filamentMismatch;
-                } catch (Exception ex) {
-                    steno.exception("Error computing conditional text bindings ", ex);
-                    return false;
-                }
-            }
-        };
-
-    }
-
-    /**
-     * Create a binding for when project filament 1 does not match printer filament 1.
-     */
-    public BooleanBinding getExtruder1FilamentMismatch()
-    {
-        return new BooleanBinding()
-        {
-            {
-                // We don't need to include printer in the bindings dependencies because
-                // this method is called whenever the printer reel is added or removed
-                //TODO check for programming reel
-                super.bind(project.getExtruder0FilamentProperty(),
-                           project.getExtruder1FilamentProperty(),
-                           project.getTopLevelModels(),
-                           project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
-                           project.getPrinterSettings().getFilament0Property(),
-                           project.getPrinterSettings().getFilament1Property());
-            }
-
-            @Override
-            protected boolean computeValue()
-            {
-                //steno.debug("Recompute conditional text reqd binding (1)");
-                boolean filamentMismatch = true;
-                Filament printerFilament = project.getPrinterSettings().getFilament1Property().get();
-                Set<Integer> usedExtruders = project.getUsedExtruders();
-
-                if (usedExtruders.contains(1))
-                {
-                    //steno.debug("extruder 1 is being used");
-                    Filament usedFilament = project.getExtruder1FilamentProperty().get();
-                    //steno.debug("printer 1 filament " + printerFilament);
-                    //steno.debug("project 1 filament " + usedFilament);
-                    if (usedFilament.equals(printerFilament))
-                    {
-                        //steno.debug("used filament 1 matches printer filament 1");
-                        filamentMismatch = false;
-                    }
-                }
-                //steno.debug("mismatch on 1 detected: " + filamentMismatch);
-                return filamentMismatch;
-            }
-        };
-    }
-
-    /**
-     * Binding to detect when filament 0 is required. Filament 0 is only NOT required for
-     * two-extruder printers where all models are on extruder 1.
+     * Binding to detect when filament 0 is required. Filament 0 is only NOT
+     * required for two-extruder printers where all models are on extruder 1.
      */
     public BooleanBinding getFilament0Required()
     {
@@ -183,23 +40,17 @@ public class CanPrintConditionalTextBindings
 
             {
                 super.bind(project.getExtruder0FilamentProperty(),
-                           project.getExtruder1FilamentProperty(),
-                           project.getTopLevelModels(),
-                           project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
-                           project.getPrinterSettings().getFilament0Property(),
-                           project.getPrinterSettings().getFilament1Property());
+                        project.getExtruder1FilamentProperty(),
+                        project.getTopLevelModels(),
+                        project.getModelColourChanged() // USE USEEXTRUDERS ? as observable
+                );
             }
 
             @Override
             protected boolean computeValue()
             {
                 Set<Integer> usedExtruders = project.getUsedExtruders();
-                if (printer.extrudersProperty().get(1).isFittedProperty().get()
-                    && !usedExtruders.contains(0))
-                {
-                    return false;
-                }
-                return true;
+                return usedExtruders.contains(0);
             }
         };
     }
@@ -214,21 +65,16 @@ public class CanPrintConditionalTextBindings
 
             {
                 super.bind(project.getExtruder0FilamentProperty(),
-                           project.getExtruder1FilamentProperty(),
-                           project.getTopLevelModels(),
-                           project.getModelColourChanged(), // USE USEEXTRUDERS ? as observable
-                           project.getPrinterSettings().getFilament0Property(),
-                           project.getPrinterSettings().getFilament1Property());
+                        project.getExtruder1FilamentProperty(),
+                        project.getTopLevelModels(),
+                        project.getModelColourChanged() // USE USEEXTRUDERS ? as observable
+                );
             }
 
             @Override
             protected boolean computeValue()
             {
                 Set<Integer> usedExtruders = project.getUsedExtruders();
-                if (!printer.extrudersProperty().get(1).isFittedProperty().get())
-                {
-                    return false;
-                }
                 return usedExtruders.contains(1);
             }
         };

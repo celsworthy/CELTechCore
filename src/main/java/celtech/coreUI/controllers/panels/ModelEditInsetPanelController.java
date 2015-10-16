@@ -291,11 +291,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             }
         });
         
-        numSelectedModels.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            updateDisplay();
-        });
-
         tabButtons.selectToggle(moveButton);
 
         updateDisplay();
@@ -1138,6 +1133,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             populateScaleYField(modelContainer.getYScale());
             populateScaleZField(modelContainer.getZScale());
         }
+        updateDisplay();
     }
 
 }

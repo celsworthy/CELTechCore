@@ -62,9 +62,6 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         project.setExtruder0Filament(projectFil0);
         project.setExtruder1Filament(projectFil1);
 
-        project.getPrinterSettings().setFilament0(PURPLE);
-        project.getPrinterSettings().setFilament1(WHITE);
-
         return project;
     }
     
@@ -79,9 +76,6 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
 
         project.setExtruder0Filament(projectFil0);
         project.setExtruder1Filament(projectFil1);
-
-        project.getPrinterSettings().setFilament0(PURPLE);
-        project.getPrinterSettings().setFilament1(WHITE);
 
         return project;
     }    
@@ -98,10 +92,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertFalse(filament1Reqd.get());
     }
@@ -118,11 +110,9 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
 
-        assertTrue(extruder0FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertFalse(filament1Reqd.get());
     }
@@ -140,10 +130,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
             = new CanPrintConditionalTextBindings(project, printer);
 
         project.getTopLevelModels().get(0).setUseExtruder0(false);
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertTrue(extruder0FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertFalse(filament1Reqd.get());
     }
@@ -161,11 +149,9 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
             = new CanPrintConditionalTextBindings(project, printer);
 
         project.getTopLevelModels().get(0).setUseExtruder0(false);
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         // filament 0 not required because model is not on extruder 0
-        assertFalse(extruder0FilamentMismatch.get());
         assertFalse(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
     }
@@ -182,11 +168,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertFalse(filament1Reqd.get());
     }
@@ -204,12 +187,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
-        assertFalse(extruder1FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
     }    
@@ -227,12 +206,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertTrue(extruder0FilamentMismatch.get());
-        assertFalse(extruder1FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
     }      
@@ -250,12 +225,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
-        assertFalse(extruder0FilamentMismatch.get());
-        assertTrue(extruder1FilamentMismatch.get());
         assertTrue(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
     }     

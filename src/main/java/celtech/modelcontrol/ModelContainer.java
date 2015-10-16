@@ -1757,7 +1757,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * it to the given colour, also taking into account if it is misplaced (off
      * the bed). Also call the same method on any child ModelContainers.
      */
-    public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
+    public void updateColour(final PhongMaterial extruder0Material, final PhongMaterial extruder1Material,
             boolean showMisplacedColour)
     {
         boolean offBed = getRootModelContainer().isOffBed.get();
@@ -1776,21 +1776,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             switch (associateWithExtruderNumber.get())
             {
                 case 0:
-                    if (displayColourExtruder0 == null)
+                    if (extruder0Material == null)
                     {
                         meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
                     } else
                     {
-                        meshView.setMaterial(getMaterialForColour(displayColourExtruder0));
+                        meshView.setMaterial(extruder0Material);
                     }
                     break;
                 case 1:
-                    if (displayColourExtruder1 == null)
+                    if (extruder1Material == null)
                     {
                         meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
                     } else
                     {
-                        meshView.setMaterial(getMaterialForColour(displayColourExtruder1));
+                        meshView.setMaterial(extruder1Material);
                     }
                     break;
                 default:
@@ -1798,18 +1798,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                     break;
             }
         }
-    }
-
-    private PhongMaterial getMaterialForColour(Color displayColourExtruder)
-    {
-        PhongMaterial meshMaterial = new PhongMaterial(displayColourExtruder);
-        if (displayColourExtruder.equals(Color.BLACK))
-        {
-            meshMaterial.setSpecularColor(Color.DARKGRAY);
-            meshMaterial.setSpecularPower(20);
-            meshMaterial.setDiffuseColor(new Color(0.1, 0.1, 0.1, 1));
-        }
-        return meshMaterial;
     }
 
     @Override

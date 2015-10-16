@@ -140,6 +140,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     private boolean justEnteredDragMode;
     private final ProjectGUIRules projectGUIRules;
+    
+    private PhongMaterial extruder1Material = new PhongMaterial(Color.BLUE);
+    private PhongMaterial extruder2Material = new PhongMaterial(Color.GREEN);
+    private PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
+    private PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
 
     private void rotateCameraAroundAxes(double xangle, double yangle)
     {
@@ -1007,19 +1012,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void updateModelColour(ModelContainer model)
     {
-        Color colour0 = null;
-        Color colour1 = null;
-        if (extruder0Filament != null)
-        {
-            colour0 = extruder0Filament.getDisplayColour();
-        }
-        if (extruder1Filament != null)
-        {
-            colour1 = extruder1Filament.getDisplayColour();
-        }
-
         boolean showMisplacedColour = applicationStatus.getMode() == ApplicationMode.LAYOUT;
-        model.updateColour(colour0, colour1, showMisplacedColour);
+        model.updateColour(extruder1Material, extruder2Material, showMisplacedColour);
     }
 
     private void deselectAllModels()
@@ -1054,17 +1048,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
      */
     private void setupPrintSettingsFilamentListeners(Project project)
     {
-        project.getPrinterSettings().getFilament0Property().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateModelColoursForPositionModeAndTargetPrinter();
-                });
-
-        project.getPrinterSettings().getFilament1Property().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateModelColoursForPositionModeAndTargetPrinter();
-                });
+        //TODO remove once chop finished
+//        project.getPrinterSettings().getFilament0Property().addListener(
+//                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+//                {
+//                    updateModelColoursForPositionModeAndTargetPrinter();
+//                });
+//
+//        project.getPrinterSettings().getFilament1Property().addListener(
+//                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
+//                {
+//                    updateModelColoursForPositionModeAndTargetPrinter();
+//                });
         updateModelColours();
     }
 
@@ -1089,20 +1084,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         PrinterSettings printerSettings = project.getPrinterSettings();
         Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
 
-        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
-        {
-            extruder0Filament = project.getPrinterSettings().getFilament0();
-            extruder1Filament = project.getPrinterSettings().getFilament1();
-
-            if (selectedPrinter != null && targetPrinterHasOneExtruder())
-            {
-                extruder1Filament = extruder0Filament;
-            }
-        } else
-        {
-            extruder0Filament = project.getExtruder0FilamentProperty().get();
-            extruder1Filament = project.getExtruder1FilamentProperty().get();
-        }
+        //TODO remove once chop finished
+//        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+//        {
+//            extruder0Filament = project.getPrinterSettings().getFilament0();
+//            extruder1Filament = project.getPrinterSettings().getFilament1();
+//
+//            if (selectedPrinter != null && targetPrinterHasOneExtruder())
+//            {
+//                extruder1Filament = extruder0Filament;
+//            }
+//        } else
+//        {
+//            extruder0Filament = project.getExtruder0FilamentProperty().get();
+//            extruder1Filament = project.getExtruder1FilamentProperty().get();
+//        }
         updateModelColours();
     }
 

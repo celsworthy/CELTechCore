@@ -169,13 +169,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final ModelLoader modelLoader = new ModelLoader();
 
     private ConditionalNotificationBar oneExtruderNoFilamentSelectedNotificationBar;
-    private ConditionalNotificationBar oneExtruderFilamentMismatchNotificationBar;
     private ConditionalNotificationBar oneExtruderNoFilamentNotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament0SelectedNotificationBar;
-    private ConditionalNotificationBar twoExtrudersFilament0MismatchNotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament0NotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1SelectedNotificationBar;
-    private ConditionalNotificationBar twoExtrudersFilament1MismatchNotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1NotificationBar;
     private ConditionalNotificationBar doorOpenConditionalNotificationBar;
     private ConditionalNotificationBar invalidMeshInProjectNotificationBar;
@@ -231,7 +228,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
             {
-                //TODO fix for DMH
                 printer.printProject(currentProject);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             }
@@ -647,13 +643,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void initialize()
     {
         oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationDisplay.NotificationType.CAUTION);
-        oneExtruderFilamentMismatchNotificationBar = new ConditionalNotificationBar("dialogs.filamentMismatchMessage", NotificationDisplay.NotificationType.NOTE);
         oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationDisplay.NotificationType.CAUTION);
         twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersFilament0MismatchNotificationBar = new ConditionalNotificationBar("dialogs.filament0MismatchMessage", NotificationDisplay.NotificationType.NOTE);
         twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationDisplay.NotificationType.CAUTION);
         twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersFilament1MismatchNotificationBar = new ConditionalNotificationBar("dialogs.filament1MismatchMessage", NotificationDisplay.NotificationType.NOTE);
         twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationDisplay.NotificationType.CAUTION);
         doorOpenConditionalNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintDoorIsOpenMessage", NotificationDisplay.NotificationType.CAUTION);
         invalidMeshInProjectNotificationBar = new ConditionalNotificationBar("dialogs.invalidMeshInProjectMessage", NotificationDisplay.NotificationType.NOTE);
@@ -789,15 +782,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         CanPrintConditionalTextBindings conditionalTextBindings
                 = new CanPrintConditionalTextBindings(project, printer);
-        BooleanBinding extruder0FilamentMismatch = conditionalTextBindings.getExtruder0FilamentMismatch();
-        BooleanBinding extruder1FilamentMismatch = conditionalTextBindings.getExtruder1FilamentMismatch();
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
 
         BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
         BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
-        BooleanBinding noFilament0Selected = project.getPrinterSettings().getFilament0Property().isNull();
-        BooleanBinding noFilament1Selected = project.getPrinterSettings().getFilament1Property().isNull();
+        BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull();
+        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull();
 
         oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(filament0Reqd).and(
                 noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
@@ -806,8 +797,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
-        oneExtruderFilamentMismatchNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(extruder0FilamentMismatch).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-
         twoExtrudersNoFilament0SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(filament0Reqd).and(
                 noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
@@ -815,17 +804,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
-        twoExtrudersFilament0MismatchNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(extruder0FilamentMismatch).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-
         twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(filament1Reqd).and(
                 noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
         twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(filament1Reqd).and(
                 printer.extrudersProperty().get(1).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-
-        twoExtrudersFilament1MismatchNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(filament1Reqd).and(
-                extruder1FilamentMismatch).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
         invalidMeshInProjectNotificationBar.setAppearanceCondition(project.hasInvalidMeshes().
                 and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
@@ -908,13 +892,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void clearConditionalNotificationBarConditions()
     {
         oneExtruderNoFilamentSelectedNotificationBar.clearAppearanceCondition();
-        oneExtruderFilamentMismatchNotificationBar.clearAppearanceCondition();
         oneExtruderNoFilamentNotificationBar.clearAppearanceCondition();
         twoExtrudersNoFilament0SelectedNotificationBar.clearAppearanceCondition();
-        twoExtrudersFilament0MismatchNotificationBar.clearAppearanceCondition();
         twoExtrudersNoFilament0NotificationBar.clearAppearanceCondition();
         twoExtrudersNoFilament1SelectedNotificationBar.clearAppearanceCondition();
-        twoExtrudersFilament1MismatchNotificationBar.clearAppearanceCondition();
         twoExtrudersNoFilament1NotificationBar.clearAppearanceCondition();
         doorOpenConditionalNotificationBar.clearAppearanceCondition();
         invalidMeshInProjectNotificationBar.clearAppearanceCondition();
@@ -1058,30 +1039,23 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 canPrintProject.bind(
                         printer.canPrintProperty()
                         .and(project.canPrintProperty())
-                        .and(printerSettings.getFilament0Property().isNotNull())
+                        .and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotNull())
                         .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                 .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                         .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                         .and(printer.headPowerOnFlagProperty()));
-            } else // this printer has two extruders
+            } else
             {
                 if (project.allModelsOnSameExtruder())
                 {
                     // only one extruder required, which one is it?
                     int extruderNumber = project.getUsedExtruders().iterator().next();
-                    ObjectProperty<Filament> requiredFilamentProperty = null;
-                    if (extruderNumber == 0)
-                    {
-                        requiredFilamentProperty = printerSettings.getFilament0Property();
-                    } else
-                    {
-                        requiredFilamentProperty = printerSettings.getFilament1Property();
-                    }
+                    BooleanBinding filamentPresentBinding = Bindings.valueAt(printer.effectiveFilamentsProperty(), extruderNumber).isNotNull();
 
                     canPrintProject.bind(
                             printer.canPrintProperty()
                             .and(project.canPrintProperty())
-                            .and(requiredFilamentProperty.isNotNull())
+                            .and(filamentPresentBinding)
                             .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                             .and(printer.extrudersProperty().get(extruderNumber).
@@ -1090,11 +1064,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     );
                 } else // both extruders are required
                 {
+                    BooleanBinding filament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotNull();
+                    BooleanBinding filament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNotNull();
+
                     canPrintProject.bind(
                             printer.canPrintProperty()
                             .and(project.canPrintProperty())
-                            .and(printerSettings.getFilament0Property().isNotNull())
-                            .and(printerSettings.getFilament1Property().isNotNull())
+                            .and(filament0Selected)
+                            .and(filament1Selected)
                             .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                             .and(printer.extrudersProperty().get(0).filamentLoadedProperty())

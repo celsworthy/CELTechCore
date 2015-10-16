@@ -33,6 +33,7 @@ import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.List;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -517,4 +518,8 @@ public interface Printer extends RoboxResponseConsumer
     public void startComms();
 
     public void stopComms();
+    
+    public void overrideFilament(int reelNumber, Filament filament);
+    
+    public ObservableMap<Integer, Filament> effectiveFilamentsProperty();
 }

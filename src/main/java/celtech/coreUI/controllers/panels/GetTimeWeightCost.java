@@ -8,7 +8,6 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
-import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
@@ -19,7 +18,6 @@ import celtech.services.postProcessor.PostProcessorTask;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SliceResult;
 import celtech.services.slicer.SlicerTask;
-import celtech.utils.Time.TimeUtils;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
@@ -105,7 +103,8 @@ public class GetTimeWeightCost
         }
 
         boolean succeeded = doSlicing(project, settings);
-        if (! succeeded) {
+        if (!succeeded)
+        {
             return false;
         }
 
@@ -137,7 +136,7 @@ public class GetTimeWeightCost
         {
             Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                updateFieldsForStatistics(printJobStatistics);
+                updateFieldsForStatistics(printJobStatistics, printer);
             });
         }
 
@@ -147,15 +146,21 @@ public class GetTimeWeightCost
     /**
      * Update the time/cost/weight fields based on the given statistics.
      */
-    private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
+    private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics, Printer printer)
     {
         String formattedDuration = formatDuration(printJobStatistics.getPredictedDuration());
 
         double eVolumeUsed = printJobStatistics.geteVolumeUsed();
         double dVolumeUsed = printJobStatistics.getdVolumeUsed();
 
-        Filament filament0 = project.getPrinterSettings().getFilament0();
-        Filament filament1 = project.getPrinterSettings().getFilament1();
+        Filament filament0 = null;
+        Filament filament1 = null;
+
+        if (printer != null)
+        {
+            filament0 = printer.effectiveFilamentsProperty().get(0);
+            filament1 = printer.effectiveFilamentsProperty().get(1);
+        }
 
         lblTime.setText(formattedDuration);
 

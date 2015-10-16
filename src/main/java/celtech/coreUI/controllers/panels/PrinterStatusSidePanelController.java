@@ -200,7 +200,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             if (extruder.isFittedProperty().get())
             {
                 MaterialComponent materialComponent
-                    = new MaterialComponent(MaterialComponent.Mode.STATUS, printer, extruderNumber);
+                    = new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
                 materialContainer.getChildren().add(materialComponent);
             }
         }

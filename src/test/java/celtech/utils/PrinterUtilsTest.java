@@ -48,9 +48,9 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         Project project = new Project();
         Filament filament = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
         filament.getNozzleTemperatureProperty().set(NOZZLE_TEMP);
-        project.getPrinterSettings().setFilament0(filament);
 
         TestPrinter printer = new TestPrinter(1);
+        printer.overrideFilament(0, filament);
         HeadFile headFile = new HeadFile();
         headFile.setTypeCode("RBX01-SM");
         NozzleHeaterData nozzleHeaterData = new NozzleHeaterData();
@@ -84,8 +84,6 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         filament0.getNozzleTemperatureProperty().set(NOZZLE_TEMP_1);
         Filament filament1 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
         filament1.getNozzleTemperatureProperty().set(NOZZLE_TEMP_0);
-        project.getPrinterSettings().setFilament0(filament0);
-        project.getPrinterSettings().setFilament1(filament1);
 
         ModelContainer testModel = new ModelContainer();
         testModel.setUseExtruder0(true);
