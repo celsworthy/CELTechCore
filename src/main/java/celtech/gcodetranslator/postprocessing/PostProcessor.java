@@ -205,7 +205,7 @@ public class PostProcessor
             } else
             {
                 nozzle0Required = true;
-                nozzle1Required = true;
+                nozzle1Required = false;
             }
 
             outputUtilities.prependPrePrintHeader(writer, headFile.getTypeCode(),
