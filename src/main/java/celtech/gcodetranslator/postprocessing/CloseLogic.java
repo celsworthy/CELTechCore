@@ -220,8 +220,15 @@ public class CloseLogic
                 {
                     //Try a copy close with just the inner perimeter
                     InScopeEvents unprioritisedInnerPerimeterOnly = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
+                    if (unprioritisedInnerPerimeterOnly.getInScopeEvents().size() > 0)
+                    {
                     closeResult = copyClose(unprioritisedInnerPerimeterOnly, startingNode,
                             Optional.of(unprioritisedInnerPerimeterOnly.getInScopeEvents().get(unprioritisedInnerPerimeterOnly.getInScopeEvents().size() - 1)), nozzleInUse);
+                    }
+                    else
+                    {
+                        throw new NotEnoughAvailableExtrusionException("No inner perimeter");
+                    }
                 } catch (NotEnoughAvailableExtrusionException ex2)
                 {
                     try
