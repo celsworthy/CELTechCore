@@ -9,6 +9,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
@@ -140,7 +141,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     private boolean justEnteredDragMode;
     private final ProjectGUIRules projectGUIRules;
-    
+
+    private PhongMaterial loaded1Material = new PhongMaterial(Color.BLUE);
+    private PhongMaterial loaded2Material = new PhongMaterial(Color.GREEN);
     private PhongMaterial extruder1Material = new PhongMaterial(Color.BLUE);
     private PhongMaterial extruder2Material = new PhongMaterial(Color.GREEN);
     private PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
@@ -992,9 +995,44 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 
     private void updateModelColours()
     {
+        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
+        Filament filament0 = null;
+        Filament filament1 = null;
+
+        if (selectedPrinter != null)
+        {
+            filament0 = selectedPrinter.effectiveFilamentsProperty().get(0);
+            filament1 = selectedPrinter.effectiveFilamentsProperty().get(1);
+        }
+        PhongMaterial materialToUseForExtruder0 = null;
+        PhongMaterial materialToUseForExtruder1 = null;
+
+        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+        {
+            if (filament0 != null)
+            {
+                materialToUseForExtruder0 = loaded1Material;
+                loaded1Material.setDiffuseColor(filament0.getDisplayColour());
+            } else
+            {
+                materialToUseForExtruder0 = extruder1Material;
+            }
+            if (filament1 != null)
+            {
+                materialToUseForExtruder1 = loaded2Material;
+                loaded2Material.setDiffuseColor(filament1.getDisplayColour());
+            } else
+            {
+                materialToUseForExtruder1 = extruder2Material;
+            }
+        } else
+        {
+            materialToUseForExtruder0 = extruder1Material;
+            materialToUseForExtruder1 = extruder2Material;
+        }
         for (ModelContainer model : loadedModels)
         {
-            updateModelColour(model);
+            updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, model);
         }
 
         for (ModelContainer model : loadedModels)
@@ -1010,10 +1048,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         }
     }
 
-    private void updateModelColour(ModelContainer model)
+    private void updateModelColour(PhongMaterial materialToUseForExtruder0, PhongMaterial materialToUseForExtruder1, ModelContainer model)
     {
         boolean showMisplacedColour = applicationStatus.getMode() == ApplicationMode.LAYOUT;
-        model.updateColour(extruder1Material, extruder2Material, showMisplacedColour);
+        model.updateColour(materialToUseForExtruder0, materialToUseForExtruder1, showMisplacedColour);
     }
 
     private void deselectAllModels()
@@ -1110,8 +1148,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         for (ModelContainer model : modelContainer.getModelsHoldingMeshViews())
         {
             model.checkOffBed();
-            updateModelColour(model);
         }
+        updateModelColoursForPositionModeAndTargetPrinter();
         collideModels();
     }
 
@@ -1139,10 +1177,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
-        for (ModelContainer model : modelContainer.getModelsHoldingMeshViews())
-        {
-            updateModelColour(model);
-        }
+        updateModelColoursForPositionModeAndTargetPrinter();
     }
 
     @Override
