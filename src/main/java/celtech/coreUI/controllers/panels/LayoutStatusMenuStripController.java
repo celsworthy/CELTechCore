@@ -26,6 +26,7 @@ import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -40,6 +41,7 @@ import static java.lang.Double.max;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -162,6 +164,16 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
+
+    @FXML
+    private GraphicButtonWithLabel groupButton;
+
+    @FXML
+    private GraphicButtonWithLabel ungroupButton;
+
+    @FXML
+    private GraphicButtonWithLabel cutButton;
+
     private Project selectedProject;
     private UndoableProject undoableSelectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
@@ -183,11 +195,37 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void group(ActionEvent event)
     {
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        
+        Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(
+                mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        undoableSelectedProject.group(modelContainers);
+        Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
+                mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
+        changedModelGroups.removeAll(modelGroups);
+        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
+        if (changedModelGroups.size() == 1)
+        {
+            Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
+                    changedModelGroups.iterator().next());
+        }
+    }
+
+    @FXML
+    void ungroup(ActionEvent event)
+    {
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        undoableSelectedProject.ungroup(modelContainers);
+        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
     }
 
     @FXML
     void startCut(ActionEvent event)
     {
+        layoutSubmode.set(LayoutSubmode.Z_CUT);
     }
 
     @FXML
@@ -1101,6 +1139,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         duplicateModelButton.disableProperty().unbind();
         snapToGroundButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
+        groupButton.disableProperty().unbind();
+        groupButton.visibleProperty().unbind();
+        ungroupButton.disableProperty().unbind();
+        groupButton.visibleProperty().unbind();
+        cutButton.disableProperty().unbind();
 
         BooleanBinding notSelectModeOrNoSelectedModels
                 = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
@@ -1125,6 +1168,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 notSelectModeOrNoLoadedModels.or(projectGUIRules.canAddModel().not()));
         snapToGroundButton.disableProperty().bind(
                 noLoadedModels.or(projectGUIRules.canSnapToGroundSelection().not()));
+
+        groupButton.disableProperty().bind(
+                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
+        groupButton.visibleProperty().bind(
+                noLoadedModels.or(projectGUIRules.canGroupSelection()));
+
+        ungroupButton.disableProperty().bind(
+                noLoadedModels.or(projectGUIRules.canUngroupSelection().not()));
+        ungroupButton.visibleProperty().bind(
+                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
+
+        cutButton.disableProperty().bind(
+                noLoadedModels.or(projectGUIRules.canCutModel().not()));
 
         ChangeListener<LayoutSubmode> whenSubModeChanges
                 = (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->

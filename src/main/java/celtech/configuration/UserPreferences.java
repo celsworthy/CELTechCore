@@ -35,6 +35,7 @@ public class UserPreferences
     private final BooleanProperty showAdjustments = new SimpleBooleanProperty(true);
     private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
+    private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
 
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
@@ -68,6 +69,7 @@ public class UserPreferences
         showAdjustments.set(userPreferenceFile.isShowAdjustments());
         this.currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
+        this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -77,6 +79,7 @@ public class UserPreferences
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
+        showMetricUnits.addListener(booleanChangeListener);
     }
 
     public String getLanguageTag()
@@ -288,5 +291,20 @@ public class UserPreferences
     public void setShowAdjustments(boolean showAdjustments)
     {
         this.showAdjustments.set(showAdjustments);
-    }      
+    }
+    
+    public void setShowMetricUnits(boolean value)
+    {
+        showMetricUnits.set(value);
+    }
+
+    public boolean isShowMetricUnits()
+    {
+        return showMetricUnits.get();
+    }
+    
+    public BooleanProperty showMetricUnitsProperty()
+    {
+        return showMetricUnits;
+    }
 }

@@ -2,6 +2,7 @@ package celtech.coreUI.components;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationEnvironment;
+import celtech.configuration.units.UnitType;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -12,10 +13,12 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.IndexRange;
@@ -34,6 +37,7 @@ public class RestrictedNumberField extends TextField
     private final FloatProperty floatValue = new SimpleFloatProperty(-1);
     private final DoubleProperty doubleValue = new SimpleDoubleProperty(-1);
     private final BooleanProperty allowNegative = new SimpleBooleanProperty(false);
+    private final ObjectProperty<UnitType> units = new SimpleObjectProperty<>(UnitType.NONE);
     private Pattern restrictionPattern = Pattern.compile("[0-9]+");
 
     private NumberFormat numberFormatter = null;
@@ -46,6 +50,21 @@ public class RestrictedNumberField extends TextField
 
     private boolean suppressTextToNumberUpdate = false;
 
+    
+    public UnitType getUnits()
+    {
+        return units.get();
+    }
+    
+    public void setUnits(UnitType units)
+    {
+        this.units.set(units);
+    }
+    
+    public ObjectProperty<UnitType> unitsProperty()
+    {
+        return units;
+    }
     
     public boolean getAllowNegative() {
         return allowNegative.get();

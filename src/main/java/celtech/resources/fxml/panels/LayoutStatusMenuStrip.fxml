@@ -77,7 +77,12 @@
                                         <GraphicButtonWithLabel fx:id="duplicateModelButton" fxmlFileName="copyModelButton" labelText="%buttonText.duplicateModel" onAction="#copyModel" />
                                         <GraphicToggleButtonWithLabel id="snapToGroundButton" fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" labelText="%buttonText.layFlat" onAction="#snapToGround" />
                                         <GraphicButtonWithLabel fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" labelText="%buttonText.autoLayout" onAction="#autoLayoutModels" />
+                                        <StackPane>
+                                            <children>
                                         <GraphicButtonWithLabel fx:id="groupButton" fxmlFileName="groupButton" labelText="%buttonText.group" onAction="#group" />
+                                        <GraphicButtonWithLabel fx:id="ungroupButton" fxmlFileName="groupButton" labelText="%buttonText.ungroup" onAction="#ungroup" />
+                                            </children>
+                                        </StackPane>
                                         <GraphicButtonWithLabel fx:id="cutButton" fxmlFileName="cutButton" labelText="%buttonText.cut" onAction="#startCut" />
                                     </children>
                                 </FlowPane>

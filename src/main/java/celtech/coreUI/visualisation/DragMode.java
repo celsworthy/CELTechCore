@@ -40,5 +40,6 @@ public enum DragMode
     /**
      *
      */
-    ROTATE
+    ROTATE,
+    CAMERA_TRANSLATE
 }

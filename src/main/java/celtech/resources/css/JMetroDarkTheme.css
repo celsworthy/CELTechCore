@@ -2860,21 +2860,28 @@ color-picker-label .text-field {
 
 .hovering-panel, .hovering-panel .tab-pane, .hovering-panel .grid-pane{
     -fx-background-color: mid_grey_30;
-    -fx-border-width: 0;
+    -fx-border-width: 0px;
 }
 
 .fake-tab-button
 {
-    -fx-border-width: 0;
+    -fx-border-width: 0px;
 }
 
 .fake-tab-button:selected
 {
     -fx-background-color: robox_blue;
-    -fx-border-width: 0;
+    -fx-border-width: 0px;
 }
 
 .fake-tab-button:pressed
 {
-    -fx-border-width: 0;
+    -fx-border-width: 0px;
+}
+
+.zcut-panel
+{
+    -fx-background-color: robox_blue;
+    -fx-border-width: 0px;
+    -fx-spacing: 5px;
 }

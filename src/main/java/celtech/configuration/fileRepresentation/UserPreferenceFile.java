@@ -28,6 +28,7 @@ public class UserPreferenceFile
     private boolean showDiagnostics = true;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
+    private boolean showMetricUnits = true;
 
     public String getLanguageTag()
     {
@@ -144,35 +145,46 @@ public class UserPreferenceFile
         setShowDiagnostics(userPreferences.getShowDiagnostics());
         setShowGCode(userPreferences.getShowGCode());
         setShowAdjustments(userPreferences.getShowAdjustments());
+        setShowMetricUnits(userPreferences.isShowMetricUnits());
     }
 
     public boolean isShowDiagnostics()
     {
         return showDiagnostics;
     }
-    
+
     public boolean isShowGCode()
     {
         return showGCode;
     }
-    
+
     public boolean isShowAdjustments()
     {
         return showAdjustments;
-    }    
-    
+    }
+
     public void setShowDiagnostics(boolean showDiagnostics)
     {
         this.showDiagnostics = showDiagnostics;
-    }    
-    
+    }
+
     public void setShowGCode(boolean showGCode)
     {
         this.showGCode = showGCode;
     }
-    
+
     public void setShowAdjustments(boolean showAdjustments)
     {
         this.showAdjustments = showAdjustments;
-    }    
+    }
+
+    public boolean isShowMetricUnits()
+    {
+        return showMetricUnits;
+    }
+
+    public void setShowMetricUnits(boolean showMetricUnits)
+    {
+        this.showMetricUnits = showMetricUnits;
+    }
 }

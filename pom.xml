@@ -150,6 +150,21 @@
             <artifactId>parboiled-java</artifactId>
             <version>1.1.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jcsg</groupId>
+            <artifactId>core</artifactId>
+            <version>1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.birdasaur</groupId>
+            <artifactId>FXyzLib</artifactId>
+            <version>1</version>
+        </dependency>
     </dependencies>
     
     <reporting>                                                                              

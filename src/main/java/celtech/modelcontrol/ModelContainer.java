@@ -7,6 +7,7 @@ import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
+import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
@@ -14,6 +15,7 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
+import com.sun.javafx.scene.CameraHelper;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -39,6 +41,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -138,8 +141,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private File modelFile;
-    
+
     private Node bed;
+
+    private Camera cameraViewingMe = null;
+    private ScreenExtents extents = new ScreenExtents();
 
     public ModelContainer()
     {
@@ -423,8 +429,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * N.B．It only works for top level objects ie．top level groups or ungrouped
-     * models.
+     * N.Bï¼ŽIt only works for top level objects ieï¼Žtop level groups or
+     * ungrouped models.
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
@@ -1815,50 +1821,101 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private void notifyScreenExtentsChange()
     {
+        recalculateScreenExtents();
+
         for (ScreenExtentsProvider.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
         {
             screenExtentsListener.screenExtentsChanged(this);
         }
     }
 
+    private void recalculateScreenExtents()
+    {
+        if (getLocalBounds() != null
+                && cameraViewingMe != null)
+        {
+            double halfWidth = getScaledWidth() / 2;
+            double halfDepth = getScaledDepth() / 2;
+            double halfHeight = getScaledHeight() / 2;
+            double minX = getCentreX() - halfWidth;
+            double maxX = getCentreX() + halfWidth;
+            double minZ = getCentreZ() - halfDepth;
+            double maxZ = getCentreZ() + halfDepth;
+            double minY = getCentreY() - halfHeight;
+            double maxY = getCentreY() + halfHeight;
+
+//            Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
+//            Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
+//            Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
+//            Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
+//            Point2D frontLeftTop = localToScreen(minX, minY, minZ);
+//            Point2D frontRightTop = localToScreen(maxX, minY, minZ);
+//            Point2D backLeftTop = localToScreen(minX, minY, maxZ);
+//            Point2D backRightTop = localToScreen(maxX, minY, maxZ);
+
+//            Point3D frontLeftBottomScene = localToScene(minX, maxY, minZ);
+//            Point3D frontRightBottomScene = localToScene(maxX, maxY, minZ);
+//            Point3D backLeftBottomScene = localToScene(minX, maxY, maxZ);
+//            Point3D backRightBottomScene = localToScene(maxX, maxY, maxZ);
+//            Point3D frontLeftTopScene = localToScene(minX, minY, minZ);
+//            Point3D frontRightTopScene = localToScene(maxX, minY, minZ);
+//            Point3D backLeftTopScene = localToScene(minX, minY, maxZ);
+//            Point3D backRightTopScene = localToScene(maxX, minY, maxZ);
+
+            Point2D frontLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, minZ));
+            Point2D frontRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, minZ));
+            Point2D backLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, maxZ));
+            Point2D backRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, maxZ));
+            Point2D frontLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, minZ));
+            Point2D frontRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, minZ));
+            Point2D backLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, maxZ));
+            Point2D backRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, maxZ));
+//        Point3D frontLeftBottomCamera = cameraTransform.sceneToLocal(frontLeftBottomScene);
+//        Point3D frontRightBottomCamera = cameraTransform.sceneToLocal(frontRightBottomScene);
+//        Point3D backLeftBottomCamera = cameraTransform.sceneToLocal(backLeftBottomScene);
+//        Point3D backRightBottomCamera = cameraTransform.sceneToLocal(backRightBottomScene);
+//        Point3D frontLeftTopCamera = cameraTransform.sceneToLocal(frontLeftTopScene);
+//        Point3D frontRightTopCamera = cameraTransform.sceneToLocal(frontRightTopScene);
+//        Point3D backLeftTopCamera = cameraTransform.sceneToLocal(backLeftTopScene);
+//        Point3D backRightTopCamera = cameraTransform.sceneToLocal(backRightTopScene);
+//
+//        Point2D frontLeftBottom = cameraTransform.localToScreen(frontLeftBottomCamera);
+//        Point2D frontRightBottom = cameraTransform.localToScreen(frontRightBottomCamera);
+//        Point2D backLeftBottom = cameraTransform.localToScreen(backLeftBottomCamera);
+//        Point2D backRightBottom = cameraTransform.localToScreen(backRightBottomCamera);
+//        Point2D frontLeftTop = cameraTransform.localToScreen(frontLeftTopCamera);
+//        Point2D frontRightTop = cameraTransform.localToScreen(frontRightTopCamera);
+//        Point2D backLeftTop = cameraTransform.localToScreen(backLeftTopCamera);
+//        Point2D backRightTop = cameraTransform.localToScreen(backRightTopCamera);
+            if (extents == null)
+            {
+                extents = new ScreenExtents();
+            }
+            if (frontLeftBottom != null)
+            {
+                extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
+                extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
+                extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
+                extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
+
+                extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
+                extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
+                extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
+                extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
+
+                extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
+                extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
+                extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
+                extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
+
+                extents.recalculateMaxMin();
+            }
+        }
+    }
+
     @Override
     public ScreenExtents getScreenExtents()
     {
-        double halfWidth = getScaledWidth() / 2;
-        double halfDepth = getScaledDepth() / 2;
-        double halfHeight = getScaledHeight() / 2;
-        double minX = getCentreX() - halfWidth;
-        double maxX = getCentreX() + halfWidth;
-        double minZ = getCentreZ() - halfDepth;
-        double maxZ = getCentreZ() + halfDepth;
-        double minY = getCentreY() - halfHeight;
-        double maxY = getCentreY() + halfHeight;
-
-        Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
-        Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
-        Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
-        Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
-        Point2D frontLeftTop = localToScreen(minX, minY, minZ);
-        Point2D frontRightTop = localToScreen(maxX, minY, minZ);
-        Point2D backLeftTop = localToScreen(minX, minY, maxZ);
-        Point2D backRightTop = localToScreen(maxX, minY, maxZ);
-
-        ScreenExtents extents = new ScreenExtents();
-        extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
-        extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
-        extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
-        extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
-
-        extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
-        extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
-        extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
-        extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
-
-        extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
-        extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
-        extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
-        extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
-
         return extents;
     }
 
@@ -1878,6 +1935,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public double getTransformedDepth()
     {
         return getScaledDepth();
+    }
+
+    @Override
+    public void heresYourCamera(Camera camera)
+    {
+        this.cameraViewingMe = camera;
     }
 
     @Override
