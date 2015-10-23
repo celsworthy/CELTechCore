@@ -319,6 +319,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner = new Spinner();
         spinner.setVisible(false);
         spinnerContainer.getChildren().add(spinner);
+        Lookup.setSpinnerControl(this);
 
         AnchorPane.setBottomAnchor(rootAnchorPane, 0.0);
         AnchorPane.setLeftAnchor(rootAnchorPane, 0.0);

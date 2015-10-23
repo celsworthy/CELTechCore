@@ -2866,6 +2866,7 @@ color-picker-label .text-field {
 .fake-tab-button
 {
     -fx-border-width: 0px;
+    -fx-padding: 0;
 }
 
 .fake-tab-button:selected

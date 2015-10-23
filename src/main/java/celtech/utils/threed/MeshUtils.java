@@ -32,7 +32,7 @@ public class MeshUtils
     /**
      * Remove vertices that are not used by any faces.
      */
-    static void removeUnusedAndDuplicateVertices(TriangleMesh childMesh)
+    public static void removeUnusedAndDuplicateVertices(TriangleMesh childMesh)
     {
 
         removeUnusedVertices(childMesh);

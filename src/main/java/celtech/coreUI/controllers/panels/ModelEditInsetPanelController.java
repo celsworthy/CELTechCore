@@ -210,6 +210,31 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
     }
 
+    private ChangeListener<LayoutSubmode> layoutSubmodeListener = new ChangeListener<LayoutSubmode>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue)
+        {
+            modelEditInsetRoot.setDisable(newValue == LayoutSubmode.Z_CUT);
+        }
+    };
+
+    private void updateProportionalLabels(boolean proportionalOn)
+    {
+        scaleTextDepthField.setVisible(proportionalOn);
+        scaleTextHeightField.setVisible(proportionalOn);
+        scaleTextWidthField.setVisible(proportionalOn);
+        depthTextField.setVisible(!proportionalOn);
+        heightTextField.setVisible(!proportionalOn);
+        widthTextField.setVisible(!proportionalOn);
+        scaleXCaption.setVisible(proportionalOn);
+        scaleYCaption.setVisible(proportionalOn);
+        scaleZCaption.setVisible(proportionalOn);
+        depthCaption.setVisible(!proportionalOn);
+        heightCaption.setVisible(!proportionalOn);
+        widthCaption.setVisible(!proportionalOn);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -247,23 +272,15 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
                 });
 
+        useProportionalScaleSwitch.setSelected(false);
+        updateProportionalLabels(false);
+
         useProportionalScaleSwitch.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                scaleTextDepthField.setVisible(newValue);
-                scaleTextHeightField.setVisible(newValue);
-                scaleTextWidthField.setVisible(newValue);
-                depthTextField.setVisible(!newValue);
-                heightTextField.setVisible(!newValue);
-                widthTextField.setVisible(!newValue);
-                scaleXCaption.setVisible(newValue);
-                scaleYCaption.setVisible(newValue);
-                scaleZCaption.setVisible(newValue);
-                depthCaption.setVisible(!newValue);
-                heightCaption.setVisible(!newValue);
-                widthCaption.setVisible(!newValue);
+                updateProportionalLabels(newValue);
             }
         });
 
@@ -272,25 +289,34 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             @Override
             public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue)
             {
-                if (newValue == moveButton)
+                if (newValue == moveButton
+                        && oldValue != moveButton)
                 {
                     movePanel.setVisible(true);
                     scalePanel.setVisible(false);
                     rotatePanel.setVisible(false);
-                } else if (newValue == scaleButton)
+                } else if (newValue == scaleButton
+                        && oldValue != scaleButton)
                 {
                     movePanel.setVisible(false);
                     scalePanel.setVisible(true);
                     rotatePanel.setVisible(false);
-                } else
+                } else if (newValue == rotateButton
+                        && oldValue != rotateButton)
                 {
                     movePanel.setVisible(false);
                     scalePanel.setVisible(false);
                     rotatePanel.setVisible(true);
                 }
+                
+                if (newValue == oldValue
+                        && newValue != null)
+                {
+                    newValue.setSelected(true);
+                }
             }
         });
-        
+
         tabButtons.selectToggle(moveButton);
 
         updateDisplay();
@@ -353,6 +379,11 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             numSelectedModels.unbind();
         }
 
+        if (layoutSubmode != null)
+        {
+            layoutSubmode.removeListener(layoutSubmodeListener);
+        }
+
         currentProject = project;
         undoableProject = new UndoableProject(project);
 
@@ -361,6 +392,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         numSelectedModels.bind(projectSelection.getNumModelsSelectedProperty());
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
+        layoutSubmode.addListener(layoutSubmodeListener);
 
         ProjectSelection.PrimarySelectedModelDetails selectedModelDetails
                 = projectSelection.getPrimarySelectedModelDetails();

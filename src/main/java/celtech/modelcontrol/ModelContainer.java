@@ -145,7 +145,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Node bed;
 
     private Camera cameraViewingMe = null;
-    private ScreenExtents extents = new ScreenExtents();
+    private ScreenExtents extents = null;
 
     public ModelContainer()
     {
@@ -1844,14 +1844,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             double minY = getCentreY() - halfHeight;
             double maxY = getCentreY() + halfHeight;
 
-//            Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
-//            Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
-//            Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
-//            Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
-//            Point2D frontLeftTop = localToScreen(minX, minY, minZ);
-//            Point2D frontRightTop = localToScreen(maxX, minY, minZ);
-//            Point2D backLeftTop = localToScreen(minX, minY, maxZ);
-//            Point2D backRightTop = localToScreen(maxX, minY, maxZ);
+            Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
+            Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
+            Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
+            Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
+            Point2D frontLeftTop = localToScreen(minX, minY, minZ);
+            Point2D frontRightTop = localToScreen(maxX, minY, minZ);
+            Point2D backLeftTop = localToScreen(minX, minY, maxZ);
+            Point2D backRightTop = localToScreen(maxX, minY, maxZ);
 
 //            Point3D frontLeftBottomScene = localToScene(minX, maxY, minZ);
 //            Point3D frontRightBottomScene = localToScene(maxX, maxY, minZ);
@@ -1862,15 +1862,15 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //            Point3D backLeftTopScene = localToScene(minX, minY, maxZ);
 //            Point3D backRightTopScene = localToScene(maxX, minY, maxZ);
 
-            Point2D frontLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, minZ));
-            Point2D frontRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, minZ));
-            Point2D backLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, maxZ));
-            Point2D backRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, maxZ));
-            Point2D frontLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, minZ));
-            Point2D frontRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, minZ));
-            Point2D backLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, maxZ));
-            Point2D backRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, maxZ));
-//        Point3D frontLeftBottomCamera = cameraTransform.sceneToLocal(frontLeftBottomScene);
+//            Point2D frontLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, minZ));
+//            Point2D frontRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, minZ));
+//            Point2D backLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, maxZ));
+//            Point2D backRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, maxZ));
+//            Point2D frontLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, minZ));
+//            Point2D frontRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, minZ));
+//            Point2D backLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, maxZ));
+//            Point2D backRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, maxZ));
+////        Point3D frontLeftBottomCamera = cameraTransform.sceneToLocal(frontLeftBottomScene);
 //        Point3D frontRightBottomCamera = cameraTransform.sceneToLocal(frontRightBottomScene);
 //        Point3D backLeftBottomCamera = cameraTransform.sceneToLocal(backLeftBottomScene);
 //        Point3D backRightBottomCamera = cameraTransform.sceneToLocal(backRightBottomScene);
@@ -1916,6 +1916,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public ScreenExtents getScreenExtents()
     {
+        if (extents == null)
+        {
+            recalculateScreenExtents();
+        }
         return extents;
     }
 
