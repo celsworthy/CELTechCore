@@ -46,4 +46,18 @@ public class ProjectGUIRules
         return Bindings.isEmpty(excludedFromSelection);
     }
 
+    public BooleanBinding canCutModel()
+    {
+        return projectSelection.getNumModelsSelectedProperty().isEqualTo(1).and(Bindings.isEmpty(excludedFromSelection));
+    }
+
+    public BooleanBinding canGroupSelection()
+    {
+        return projectSelection.getNumModelsSelectedProperty().greaterThan(1).and(Bindings.isEmpty(excludedFromSelection));
+    }
+
+    public BooleanBinding canUngroupSelection()
+    {
+        return projectSelection.getNumGroupsSelectedProperty().isEqualTo(1).and(Bindings.isEmpty(excludedFromSelection));
+    }
 }

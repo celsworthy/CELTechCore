@@ -82,43 +82,44 @@ public class PrinterSettings
         return dataChanged;
     }
 
-    public void setFilament0(Filament filament)
-    {
-        if (selectedFilament0.get() != filament)
-        {
-            selectedFilament0.set(filament);
-            toggleDataChanged();
-        }
-    }
-
-    public void setFilament1(Filament filament)
-    {
-        if (selectedFilament1.get() != filament)
-        {
-            selectedFilament1.set(filament);
-            toggleDataChanged();
-        }
-    }
-
-    public Filament getFilament0()
-    {
-        return selectedFilament0.get();
-    }
-
-    public Filament getFilament1()
-    {
-        return selectedFilament1.get();
-    }
-
-    public ObjectProperty<Filament> getFilament0Property()
-    {
-        return selectedFilament0;
-    }
-
-    public ObjectProperty<Filament> getFilament1Property()
-    {
-        return selectedFilament1;
-    }
+    //TODO remove if project filament settings no longer required
+//    public void setFilament0(Filament filament)
+//    {
+//        if (selectedFilament0.get() != filament)
+//        {
+//            selectedFilament0.set(filament);
+//            toggleDataChanged();
+//        }
+//    }
+//
+//    public void setFilament1(Filament filament)
+//    {
+//        if (selectedFilament1.get() != filament)
+//        {
+//            selectedFilament1.set(filament);
+//            toggleDataChanged();
+//        }
+//    }
+//
+//    public Filament getFilament0()
+//    {
+//        return selectedFilament0.get();
+//    }
+//
+//    public Filament getFilament1()
+//    {
+//        return selectedFilament1.get();
+//    }
+//
+//    public ObjectProperty<Filament> getFilament0Property()
+//    {
+//        return selectedFilament0;
+//    }
+//
+//    public ObjectProperty<Filament> getFilament1Property()
+//    {
+//        return selectedFilament1;
+//    }
 
     public void setPrintQuality(PrintQualityEnumeration value)
     {

@@ -687,10 +687,10 @@ public class PrintEngine implements ControllableService
         // Hack to change raft related settings for Draft ABS prints
         if (project.getPrintQuality() == PrintQualityEnumeration.DRAFT
                 &&
-                ((project.getPrinterSettings().getFilament0() != null
-                && project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS)
-                || (project.getPrinterSettings().getFilament1() != null
-                && project.getPrinterSettings().getFilament1().getMaterial() == MaterialType.ABS)))
+                ((associatedPrinter.effectiveFilamentsProperty().get(0) != null
+                && associatedPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.ABS)
+                || (associatedPrinter.effectiveFilamentsProperty().get(1) != null
+                && associatedPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.ABS)))
         {
             settingsToUse.setRaftBaseLinewidth_mm(1.250f);
             settingsToUse.setRaftAirGapLayer0_mm(0.285f);
@@ -699,10 +699,10 @@ public class PrintEngine implements ControllableService
 
         if (project.getPrintQuality() == PrintQualityEnumeration.NORMAL
                 &&
-                ((project.getPrinterSettings().getFilament0() != null
-                && project.getPrinterSettings().getFilament0().getMaterial() == MaterialType.ABS)
-                || (project.getPrinterSettings().getFilament1() != null
-                && project.getPrinterSettings().getFilament1().getMaterial() == MaterialType.ABS)))
+                ((associatedPrinter.effectiveFilamentsProperty().get(0) != null
+                && associatedPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.ABS)
+                || (associatedPrinter.effectiveFilamentsProperty().get(1) != null
+                && associatedPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.ABS)))
         {
             settingsToUse.setRaftAirGapLayer0_mm(0.4f);
         }

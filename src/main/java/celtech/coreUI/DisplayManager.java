@@ -86,20 +86,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private HBox mainHolder;
     private StackPane sidePanelContainer;
     private final HashMap<ApplicationMode, Pane> insetPanels;
-    private final HashMap<ApplicationMode, HBox> sidePanels;
     private final AnchorPane rhPanel;
     private final VBox projectTabPaneHolder;
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
-    private final HashMap<ApplicationMode, SidePanelManager> sidePanelControllers;
+    private HBox sidePanel;
+    private SidePanelManager sidePanelController;
 
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
     private static Tab printerStatusTab;
     private static Tab addPageTab;
     private Tab lastLayoutTab;
-
-    private final HashMap<String, SidePanelManager> sidePanelControllerCache;
-    private final HashMap<String, HBox> sidePanelCache;
 
     /*
      * Project loading
@@ -122,11 +119,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         this.rootStackPane = new StackPane();
         this.nodesMayHaveMoved = new SimpleBooleanProperty(false);
-        this.sidePanelCache = new HashMap<>();
-        this.sidePanelControllerCache = new HashMap<>();
-        this.sidePanelControllers = new HashMap<>();
         this.insetPanelControllers = new HashMap<>();
-        this.sidePanels = new HashMap<>();
         this.insetPanels = new HashMap<>();
         applicationStatus = ApplicationStatus.getInstance();
         projectManager = ProjectManager.getInstance();
@@ -205,7 +198,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         // Remove the existing side panel
         if (oldMode != null)
         {
-            sidePanelContainer.getChildren().remove(sidePanels.get(oldMode));
             Pane lastInsetPanel = insetPanels.get(oldMode);
             if (lastInsetPanel != null)
             {
@@ -220,8 +212,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
 
         // Now add the relevant new one...
-        sidePanelContainer.getChildren().add(sidePanels.get(newMode));
-
         Pane newInsetPanel = insetPanels.get(newMode);
         if (newInsetPanel != null)
         {
@@ -329,6 +319,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner = new Spinner();
         spinner.setVisible(false);
         spinnerContainer.getChildren().add(spinner);
+        Lookup.setSpinnerControl(this);
 
         AnchorPane.setBottomAnchor(rootAnchorPane, 0.0);
         AnchorPane.setLeftAnchor(rootAnchorPane, 0.0);
@@ -356,6 +347,19 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         // Create a place to hang the side panels from
         sidePanelContainer = new StackPane();
         HBox.setHgrow(sidePanelContainer, Priority.NEVER);
+
+        try
+        {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "printerStatusSidePanel.fxml");
+            steno.debug("About to load side panel fxml: " + fxmlFileName);
+            FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
+            sidePanel = (HBox) sidePanelLoader.load();
+            sidePanelController = sidePanelLoader.getController();
+        } catch (Exception ex)
+        {
+            steno.exception("Couldn't load side panel", ex);
+        }
+        sidePanelContainer.getChildren().add(sidePanel);
 
         mainHolder.getChildren().add(sidePanelContainer);
 
@@ -575,42 +579,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             insetPanels.put(mode, null);
             insetPanelControllers.put(mode, null);
             steno.exception("Couldn't load inset panel for mode:" + mode, ex);
-        }
-
-        SidePanelManager sidePanelController = null;
-        HBox sidePanel = null;
-        boolean sidePanelLoadedOK = false;
-
-        if (sidePanelControllerCache.containsKey(mode.getSidePanelFXMLName()) == false)
-        {
-            try
-            {
-                URL fxmlFileName = getClass().getResource(mode.getSidePanelFXMLName());
-                steno.debug("About to load side panel fxml: " + fxmlFileName);
-                FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
-                sidePanel = (HBox) sidePanelLoader.load();
-                sidePanelController = sidePanelLoader.getController();
-                sidePanel.setId(mode.name());
-                sidePanelLoadedOK = true;
-                sidePanelControllerCache.put(mode.getSidePanelFXMLName(), sidePanelController);
-                sidePanelCache.put(mode.getSidePanelFXMLName(), sidePanel);
-            } catch (Exception ex)
-            {
-                sidePanels.put(mode, null);
-                sidePanelControllers.put(mode, null);
-                steno.exception("Couldn't load side panel for mode:" + mode, ex);
-            }
-        } else
-        {
-            sidePanelController = sidePanelControllerCache.get(mode.getSidePanelFXMLName());
-            sidePanel = sidePanelCache.get(mode.getSidePanelFXMLName());
-            sidePanelLoadedOK = true;
-        }
-
-        if (sidePanelLoadedOK)
-        {
-            sidePanels.put(mode, sidePanel);
-            sidePanelControllers.put(mode, sidePanelController);
         }
     }
 

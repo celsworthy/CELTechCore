@@ -78,17 +78,17 @@ public class ProjectSelection implements ProjectChangesListener
     {
         if (!modelContainers.contains(modelContainer))
         {
-            modelContainers.add(modelContainer);
             modelContainer.setSelected(true);
+            modelContainers.add(modelContainer);
             primarySelectedModelDetails.setTo(modelContainer);
-            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
-            {
-                selectedModelContainersListener.whenAdded(modelContainer);
-            }
             numModelsSelected.set(numModelsSelected.get() + 1);
             if (modelContainer instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() + 1);
+            }
+            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            {
+                selectedModelContainersListener.whenAdded(modelContainer);
             }
         }
     }
@@ -100,13 +100,13 @@ public class ProjectSelection implements ProjectChangesListener
     {
         if (modelContainers.contains(modelContainer))
         {
+            modelContainer.setSelected(false);
             modelContainers.remove(modelContainer);
             numModelsSelected.set(numModelsSelected.get() - 1);
             if (modelContainer instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() - 1);
             }
-            modelContainer.setSelected(false);
             for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
             {
                 selectedModelContainersListener.whenRemoved(modelContainer);

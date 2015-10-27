@@ -172,6 +172,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final PrinterAncillarySystems printerAncillarySystems = new PrinterAncillarySystems();
     private final ObjectProperty<Head> head = new SimpleObjectProperty<>(null);
     private final ObservableMap<Integer, Reel> reels = FXCollections.observableHashMap();
+    private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
     private final ObservableList<Extruder> extruders = FXCollections.observableArrayList();
 
     private EEPROMState lastHeadEEPROMState = null;
@@ -442,6 +443,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public ObservableMap<Integer, Filament> effectiveFilamentsProperty()
+    {
+        return effectiveFilaments;
+    }
+
+    @Override
+    public void overrideFilament(int reelNumber, Filament filament)
+    {
+        effectiveFilaments.put(reelNumber, filament);
+    }
+
+    @Override
     public ObservableList<Extruder> extrudersProperty()
     {
         return extruders;
@@ -578,10 +591,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             if (nozzleHeaterNumber == 0)
             {
-                settingsFilament = printerSettings.getFilament1();
+                settingsFilament = effectiveFilamentsProperty().get(1);
             } else if (nozzleHeaterNumber == 1)
             {
-                settingsFilament = printerSettings.getFilament0();
+                settingsFilament = effectiveFilamentsProperty().get(0);
             } else
             {
                 throw new RuntimeException("dont know which filament to use for nozzle heater  + "
@@ -592,7 +605,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             //There's only one heater on a single material head
             if (nozzleHeaterNumber == 0)
             {
-                settingsFilament = printerSettings.getFilament0();
+                settingsFilament = effectiveFilamentsProperty().get(0);
             }
         }
 
@@ -1788,9 +1801,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void printProject(Project project) throws PrinterException
     {
-        //TODO modify for multiple reels
-        Filament filament0 = project.getPrinterSettings().getFilament0();
-        Filament filament1 = project.getPrinterSettings().getFilament1();
+        Filament filament0 = effectiveFilamentsProperty().get(0);
+        Filament filament1 = effectiveFilamentsProperty().get(1);
 
         double nozzle0FirstLayerTarget = 0;
         double nozzle1FirstLayerTarget = 0;
@@ -3647,6 +3659,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                             getMessage());
                                 }
                                 break;
+                            default:
+                                //Update the effective filament if *and only if* we have this filament in our database
+                                // Should happen on the second time through after an auto-update
+                                Filament filament = filamentContainer.getFilamentByID(reelResponse.getReelFilamentID());
+                                effectiveFilaments.put(reelResponse.getReelNumber(), filament);
+                                break;
                         }
                     }
                     break;
@@ -3841,8 +3859,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         case NOT_PRESENT:
                             reels.remove(reelNumber);
+                            effectiveFilaments.remove(reelNumber);
                             break;
                         case NOT_PROGRAMMED:
+                            reels.remove(reelNumber);
+                            effectiveFilaments.remove(reelNumber);
                             steno.error("Unformatted reel detected - no action taken");
 //                            try
 //                            {

@@ -508,6 +508,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         {
             Filament filament = (Filament) selectedMaterial;
             selectedFilamentProperty.set(filament);
+            Lookup.getSelectedPrinterProperty().get().overrideFilament(extruderNumber, filament);
         } else
         {
             selectedFilamentProperty.set(null);

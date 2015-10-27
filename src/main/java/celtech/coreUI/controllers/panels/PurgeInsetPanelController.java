@@ -610,10 +610,10 @@ public class PurgeInsetPanelController implements Initializable
     {
         this.project = project;
         bindPrinter(printerToUse);
-        selectMaterial0(printerSettings.getFilament0());
-        cmbCurrentMaterial0.setValue(printerSettings.getFilament0());
-        selectMaterial1(printerSettings.getFilament1());
-        cmbCurrentMaterial1.setValue(printerSettings.getFilament1());
+        selectMaterial0(printer.effectiveFilamentsProperty().get(0));
+        cmbCurrentMaterial0.setValue(printer.effectiveFilamentsProperty().get(0));
+        selectMaterial1(printer.effectiveFilamentsProperty().get(1));
+        cmbCurrentMaterial1.setValue(printer.effectiveFilamentsProperty().get(1));
 
         setPurgeForRequiredNozzles(project);
 

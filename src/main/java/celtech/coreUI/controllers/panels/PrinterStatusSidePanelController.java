@@ -1,6 +1,8 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.model.Extruder;
@@ -13,6 +15,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -34,11 +37,13 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian Hudson @ Liberty Systems Limited
  */
 public class PrinterStatusSidePanelController implements Initializable, SidePanelManager,
-    PrinterListChangesListener
+        PrinterListChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        PrinterStatusSidePanelController.class.getName());
+            PrinterStatusSidePanelController.class.getName());
+
+    private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
     @FXML
     private VBox materialContainer;
@@ -70,6 +75,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label legendAmbient;
 
     @FXML
+    private Label modeTitle;
+
+    @FXML
     private PrinterGridComponent printerGridComponent;
 
     private Printer previousSelectedPrinter = null;
@@ -82,22 +90,22 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private ChartManager chartManager;
 
     private final ListChangeListener<XYChart.Data<Number, Number>> graphDataPointChangeListener
-        = (ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change) ->
-        {
-            while (change.next())
+            = (ListChangeListener.Change<? extends XYChart.Data<Number, Number>> change) ->
             {
-                if (change.wasAdded() || change.wasRemoved())
+                while (change.next())
                 {
-                    timeAxis.setLowerBound(currentAmbientTemperatureHistory.getData().size()
-                        - MAX_DATA_POINTS);
-                    timeAxis.setUpperBound(currentAmbientTemperatureHistory.getData().size());
-                } else if (change.wasReplaced())
-                {
-                } else if (change.wasUpdated())
-                {
+                    if (change.wasAdded() || change.wasRemoved())
+                    {
+                        timeAxis.setLowerBound(currentAmbientTemperatureHistory.getData().size()
+                                - MAX_DATA_POINTS);
+                        timeAxis.setUpperBound(currentAmbientTemperatureHistory.getData().size());
+                    } else if (change.wasReplaced())
+                    {
+                    } else if (change.wasUpdated())
+                    {
+                    }
                 }
-            }
-        };
+            };
 
     /**
      * Initialises the controller class.
@@ -112,16 +120,35 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
         selectedPrinter.addListener(
-            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-            {
-                whenPrinterSelected(newValue);
-            });
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                {
+                    whenPrinterSelected(newValue);
+                });
 
         initialiseTemperatureChart();
         controlDetailsVisibility();
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
+        applicationStatus.modeProperty().addListener(new ChangeListener<ApplicationMode>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+            {
+                switch (newValue)
+                {
+                    case LAYOUT:
+                        modeTitle.setText(Lookup.i18n("mode.layout"));
+                        break;
+                    case SETTINGS:
+                        modeTitle.setText(Lookup.i18n("mode.settings"));
+                        break;
+                    default:
+                        modeTitle.setText(Lookup.i18n("mode.status"));
+                        break;
+                }
+            }
+        });
     }
 
     private void initialiseTemperatureChart()
@@ -141,7 +168,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     }
 
     /**
-     * When a printer is selected bind to it and show temperature chart etc if necessary.
+     * When a printer is selected bind to it and show temperature chart etc if
+     * necessary.
      *
      * @param printer
      */
@@ -200,7 +228,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             if (extruder.isFittedProperty().get())
             {
                 MaterialComponent materialComponent
-                    = new MaterialComponent(MaterialComponent.Mode.STATUS, printer, extruderNumber);
+                        = new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
                 materialContainer.getChildren().add(materialComponent);
             }
         }
@@ -227,24 +255,24 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private void unbindHeadProperties(Head head)
     {
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
-            graphDataPointChangeListener);
+                graphDataPointChangeListener);
         chartManager.removeAllNozzles();
     }
 
     private void bindHeadProperties(Head head)
     {
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().addListener(
-            graphDataPointChangeListener);
+                graphDataPointChangeListener);
 
         for (int i = 0; i < head.getNozzleHeaters().size(); i++)
         {
             NozzleHeater nozzleHeater = head.getNozzleHeaters().get(i);
             chartManager.addNozzle(i,
-                                   nozzleHeater.getNozzleTemperatureHistory(),
-                                   nozzleHeater.heaterModeProperty(),
-                                   nozzleHeater.nozzleTargetTemperatureProperty(),
-                                   nozzleHeater.nozzleFirstLayerTargetTemperatureProperty(),
-                                   nozzleHeater.nozzleTemperatureProperty());
+                    nozzleHeater.getNozzleTemperatureHistory(),
+                    nozzleHeater.heaterModeProperty(),
+                    nozzleHeater.nozzleTargetTemperatureProperty(),
+                    nozzleHeater.nozzleFirstLayerTargetTemperatureProperty(),
+                    nozzleHeater.nozzleTemperatureProperty());
 
         }
     }
