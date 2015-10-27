@@ -64,6 +64,7 @@ public class TestPrinter implements Printer
 
     private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
     private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
+    private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
     private int numExtruders = 1;
 
     public TestPrinter()
@@ -1094,12 +1095,12 @@ public class TestPrinter implements Printer
     @Override
     public void overrideFilament(int reelNumber, Filament filament)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        effectiveFilaments.put(reelNumber, filament);
     }
 
     @Override
     public ObservableMap<Integer, Filament> effectiveFilamentsProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return effectiveFilaments;
     }
 }

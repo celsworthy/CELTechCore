@@ -99,6 +99,8 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         NozzleHeaterData nozzleHeaterData1 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData1);
         printer.addHeadForHeadFile(headFile);
+        printer.overrideFilament(0, filament0);
+        printer.overrideFilament(1, filament1);
         
         TestNozzleHeater testNozzleHeater0 = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
                 0);

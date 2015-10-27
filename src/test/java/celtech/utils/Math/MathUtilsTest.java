@@ -132,9 +132,9 @@ public class MathUtilsTest
         PolarCoordinate input3 = new PolarCoordinate(0, Math.PI / 2, radius);
         Point3D result3 = MathUtils.sphericalToCartesianLocalSpaceAdjusted(input3);
         assertNotNull(result3);
-        assertEquals(0, result3.getX(), epsilon);
-        assertEquals(-70.7106, result3.getY(), epsilon);
-        assertEquals(-70.7106, result3.getZ(), epsilon);
+        assertEquals(100, result3.getX(), epsilon);
+        assertEquals(0, result3.getY(), epsilon);
+        assertEquals(0, result3.getZ(), epsilon);
     }
     
 //    @Test
