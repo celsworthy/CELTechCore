@@ -171,8 +171,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     private GraphicButtonWithLabel ungroupButton;
 
-    @FXML
-    private GraphicButtonWithLabel cutButton;
+//    @FXML
+//    private GraphicButtonWithLabel cutButton;
 
     private Project selectedProject;
     private UndoableProject undoableSelectedProject;
@@ -1143,7 +1143,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         groupButton.visibleProperty().unbind();
         ungroupButton.disableProperty().unbind();
         groupButton.visibleProperty().unbind();
-        cutButton.disableProperty().unbind();
+//        cutButton.disableProperty().unbind();
 
         BooleanBinding notSelectModeOrNoSelectedModels
                 = Bindings.notEqual(LayoutSubmode.SELECT, layoutSubmodeProperty).or(
@@ -1179,8 +1179,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         ungroupButton.visibleProperty().bind(
                 noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
 
-        cutButton.disableProperty().bind(
-                noLoadedModels.or(projectGUIRules.canCutModel().not()));
+//        cutButton.disableProperty().bind(
+//                noLoadedModels.or(projectGUIRules.canCutModel().not()));
 
         ChangeListener<LayoutSubmode> whenSubModeChanges
                 = (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->

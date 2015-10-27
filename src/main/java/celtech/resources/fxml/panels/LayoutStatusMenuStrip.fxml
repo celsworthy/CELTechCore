@@ -83,7 +83,7 @@
                                         <GraphicButtonWithLabel fx:id="ungroupButton" fxmlFileName="groupButton" labelText="%buttonText.ungroup" onAction="#ungroup" />
                                             </children>
                                         </StackPane>
-                                        <GraphicButtonWithLabel fx:id="cutButton" fxmlFileName="cutButton" labelText="%buttonText.cut" onAction="#startCut" />
+                                        <!--<GraphicButtonWithLabel fx:id="cutButton" fxmlFileName="cutButton" labelText="%buttonText.cut" onAction="#startCut" />-->
                                     </children>
                                 </FlowPane>
                             </children>
