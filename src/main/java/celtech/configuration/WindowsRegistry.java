@@ -99,7 +99,7 @@ public class WindowsRegistry
                             value));
 
             vals = (valb != null ? new String(valb).trim() : null);
-            System.out.println("MimeExclusionListForCache = " + vals);
+//            System.out.println("MimeExclusionListForCache = " + vals);
             closeKey.invoke(Preferences.userRoot(), hKey);
 
         } catch (Exception e)
