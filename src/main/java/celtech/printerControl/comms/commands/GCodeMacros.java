@@ -171,7 +171,7 @@ public class GCodeMacros
         }
 
         appendMacroContents(contents, parentMacros, macroName,
-                headTypeCode, nozzleUse,
+                specifiedHeadType, nozzleUse,
                 (Lookup.getUserPreferences().safetyFeaturesOnProperty().get() == false) ? GCodeMacros.SafetyIndicator.SAFETIES_OFF : GCodeMacros.SafetyIndicator.DONT_CARE);
 
         return contents;
@@ -298,7 +298,7 @@ public class GCodeMacros
 
         String[] matchingMacroFilenames = macroDirectory.list(filterForMacrosWithCorrectBase);
 
-        int highestScore = -1;
+        int highestScore = -999;
         int indexOfHighestScoringFilename = -1;
 
         if (matchingMacroFilenames.length > 0)
