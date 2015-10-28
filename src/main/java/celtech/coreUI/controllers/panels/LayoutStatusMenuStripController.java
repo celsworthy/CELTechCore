@@ -204,9 +204,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
+        
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1)
         {
+            changedModelGroups.iterator().next().recalculateScreenExtents();
             Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
                     changedModelGroups.iterator().next());
         }
@@ -733,6 +735,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         closeNozzleButton.setVisible(false);
         fillNozzleButton.setVisible(false);
+        
+        groupButton.setVisible(true);
+        ungroupButton.setVisible(false);
 
         // Prevent the status bar affecting layout when it is invisible
         statusButtonHBox.visibleProperty().addListener(new ChangeListener<Boolean>()

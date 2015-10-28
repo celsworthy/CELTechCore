@@ -38,6 +38,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -210,6 +211,17 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
     }
 
+    @FXML
+    private void flipMaterials(ActionEvent event)
+    {
+        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            undoableProject.setUseExtruder0Filament(modelContainer, !(modelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
+        }
+        updateDisplay();
+    }
+
     private ChangeListener<LayoutSubmode> layoutSubmodeListener = new ChangeListener<LayoutSubmode>()
     {
         @Override
@@ -308,11 +320,11 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                     scalePanel.setVisible(false);
                     rotatePanel.setVisible(true);
                 }
-                
-                if (newValue == oldValue
-                        && newValue != null)
+
+                if (newValue == null
+                        && oldValue != null)
                 {
-                    newValue.setSelected(true);
+                    oldValue.setSelected(true);
                 }
             }
         });
@@ -328,44 +340,49 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
         if (currentProject != null)
         {
-            ReadOnlyIntegerProperty numModelsSelected = Lookup.getProjectGUIState(currentProject).getProjectSelection().getNumModelsSelectedProperty();
-            ReadOnlyIntegerProperty numGroupsSelected = Lookup.getProjectGUIState(currentProject).getProjectSelection().getNumGroupsSelectedProperty();
+            Set<ModelContainer> selectedModels = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
 
-            if (numGroupsSelected.get() > 1 || numModelsSelected.get() > 1)
+            if (selectedModels.size() > 1)
             {
                 modelName.setText(Lookup.i18n("modelEdit.MultipleModelsSelected"));
+                modelName.setTooltip(null);
                 showDisplay = true;
-            } else if (numGroupsSelected.get() == 1 || numModelsSelected.get() == 1)
+            } else if (selectedModels.size() == 1)
             {
-                modelName.setText(Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator().next().getModelName());
+                String name = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator().next().getModelName();
+                modelName.setText(name);
+                modelName.setTooltip(new Tooltip(name));
                 showDisplay = true;
             }
 
-            boolean foundMaterial0 = false;
-            boolean foundMaterial1 = false;
-
-            Iterator<ModelContainer> selectedModelIterator = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator();
-            while (selectedModelIterator.hasNext())
+            if (showDisplay)
             {
-                ModelContainer container = selectedModelIterator.next();
-                if (container.getAssociateWithExtruderNumberProperty().get() == 0)
+                boolean foundMaterial0 = false;
+                boolean foundMaterial1 = false;
+
+                Iterator<ModelContainer> selectedModelIterator = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator();
+                while (selectedModelIterator.hasNext())
                 {
-                    foundMaterial0 = true;
+                    ModelContainer container = selectedModelIterator.next();
+                    if (container.getAssociateWithExtruderNumberProperty().get() == 0)
+                    {
+                        foundMaterial0 = true;
+                    } else
+                    {
+                        foundMaterial1 = true;
+                    }
+                }
+
+                if (foundMaterial0 && !foundMaterial1)
+                {
+                    materialButtons.selectToggle(setMaterial0Button);
+                } else if (!foundMaterial0 && foundMaterial1)
+                {
+                    materialButtons.selectToggle(setMaterial1Button);
                 } else
                 {
-                    foundMaterial1 = true;
+                    materialButtons.selectToggle(null);
                 }
-            }
-
-            if (foundMaterial0 && !foundMaterial1)
-            {
-                materialButtons.selectToggle(setMaterial0Button);
-            } else if (!foundMaterial0 && foundMaterial1)
-            {
-                materialButtons.selectToggle(setMaterial1Button);
-            } else
-            {
-                materialButtons.selectToggle(null);
             }
         }
 

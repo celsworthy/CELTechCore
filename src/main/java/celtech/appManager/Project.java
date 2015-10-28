@@ -674,6 +674,7 @@ public class Project implements Serializable
         
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         modelGroup.checkOffBed();
+        modelGroup.recalculateScreenExtents();
         return modelGroup;
     }
 

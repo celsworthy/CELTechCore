@@ -239,6 +239,7 @@ public class ModelGroup extends ModelContainer
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());
+        copy.recalculateScreenExtents();
         return copy;
     }
 

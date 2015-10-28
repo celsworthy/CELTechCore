@@ -1180,21 +1180,28 @@
     -fx-fill: graph_line_red;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_red;
+    -fx-stroke-width: 2px;
+    -fx-stroke-dash-array: 5 5;
 }
 .graph-blue {
     -fx-fill: graph_line_blue;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_blue;
+    -fx-stroke-width: 2px;
+    -fx-stroke-dash-array: 5 5;
+    -fx-stroke-dash-offset: 5; 
 }
 .graph-green {
     -fx-fill: graph_line_green;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_green;
+    -fx-stroke-width: 2px;
 }
 .graph-yellow {
     -fx-fill: graph_line_yellow;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_yellow;
+    -fx-stroke-width: 2px;
 }
 
 .temperatureChartLegend {
@@ -2750,25 +2757,15 @@ color-picker-label .text-field {
 {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18pt;
-    -fx-fill: robox_blue;
     -fx-text-alignment: center;
-} 
+}  
 
-.dimension-group
+.bed-axis-label
 {
-    -fx-stroke: highlight_colour_orange;
-    -fx-fill: highlight_colour_orange;
-} 
-
-.dimension-line
-{
-    -fx-stroke: robox_blue;
-} 
-
-.dimension-arrow
-{
-    -fx-fill: robox_blue;
-} 
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18pt;
+    -fx-text-alignment: center;
+}  
 
 .rotationField {
     -fx-pref-width: 40;
@@ -2863,26 +2860,87 @@ color-picker-label .text-field {
     -fx-border-width: 0px;
 }
 
-.fake-tab-button
+.fake-tab-button {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;
+    -fx-padding: 0px;  
+    -fx-graphic-text-gap: 2px;
+    -fx-content-display: LEFT;
+
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+
+    -fx-background-color: #1d1d1d;
+    -fx-border-color: #1d1d1d;
+
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.fake-tab-button:default
 {
-    -fx-border-width: 0px;
-    -fx-padding: 0;
+    -fx-background-color: #1d1d1d;
+    -fx-border-colour: #1d1d1d;
+}
+
+.fake-tab-button:hover{
+    -fx-background-color: hover_colour;
+    -fx-border-color: hover_colour;
+}
+
+.fake-tab-button:pressed, .fake-tab-button:default:hover:pressed
+{
+    -fx-background-color: pressed_colour;
+    -fx-border-color: pressed_colour;
+    -fx-text-fill: background_colour;
+    -fx-fill-color: background_colour;
 }
 
 .fake-tab-button:selected
 {
     -fx-background-color: robox_blue;
-    -fx-border-width: 0px;
+    -fx-border-color: robox_blue;
 }
 
-.fake-tab-button:pressed
+.fake-tab-button:disabled, .fake-tab-button:default:disabled
 {
-    -fx-border-width: 0px;
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
 }
 
-.zcut-panel
+/*.fake-tab-button:default
 {
-    -fx-background-color: robox_blue;
-    -fx-border-width: 0px;
+    -fx-background-color: #008287;
+    -fx-text-fill: #ffffff;
+}*/
+
+.fake-tab-button:default:hover{
+    -fx-background-color: #219297;
+}
+
+#model-edit-panel
+{
     -fx-spacing: 5px;
+}
+
+#model-edit-panel .label
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;    
+}
+
+.boldText
+{
+    -fx-font-family: 'Source Sans Pro Bold';
+}
+
+.regularText
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+}
+
+.lightText
+{
+    -fx-font-family: 'Source Sans Pro Light';
 }

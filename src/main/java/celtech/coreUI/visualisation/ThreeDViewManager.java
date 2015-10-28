@@ -74,7 +74,7 @@ import org.fxyz.utils.MeshUtils;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager implements Project.ProjectChangesListener
+public class ThreeDViewManager implements Project.ProjectChangesListener, ScreenCoordinateConverter
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -136,6 +136,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
 //    private double cameraLookAtCentreX = 0;
 //    private double cameraLookAtCentreY = 0;
 //    private double cameraLookAtCentreZ = 0;
+    private List<CameraViewChangeListener> cameraViewChangeListeners = new ArrayList<>();
 
     private double mousePosX;
     private double mousePosY;
@@ -314,6 +315,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
             modelContainer.cameraViewOfYouHasChanged();
+        }
+        
+        for (CameraViewChangeListener listener : cameraViewChangeListeners)
+        {
+            listener.cameraViewOfYouHasChanged();
         }
     }
 
@@ -1621,5 +1627,19 @@ public class ThreeDViewManager implements Project.ProjectChangesListener
         verticalDragPlane.setTranslateX(bedPoint.getX());
         verticalDragPlane.setTranslateZ(bedPoint.getZ());
         verticalDragPlane.setRotate(-demandedCameraRotationY.get());
+    }
+
+    public void addCameraViewChangeListener(CameraViewChangeListener listener)
+    {
+        if (!cameraViewChangeListeners.contains(listener))
+        {
+            cameraViewChangeListeners.add(listener);
+        }
+    }
+
+    @Override
+    public Point2D convertWorldCoordinatesToScreen(double worldX, double worldY,double worldZ)
+    {
+        return bed.localToScreen(worldX, worldY, worldZ);
     }
 }

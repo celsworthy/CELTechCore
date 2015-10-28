@@ -9,6 +9,7 @@ import celtech.appManager.ProjectMode;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.ProjectAwareController;
+import celtech.coreUI.visualisation.BedAxes;
 import celtech.coreUI.visualisation.DimensionLineManager;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
@@ -58,6 +59,7 @@ public class ProjectTab extends Tab
     private boolean titleBeingEdited = false;
     private final ModelLoader modelLoader = new ModelLoader();
     private DimensionLineManager dimensionLineManager = null;
+    private BedAxes bedAxes = null;
     private ZCutEntryBox zCutEntryBox = null;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
@@ -101,11 +103,14 @@ public class ProjectTab extends Tab
 
         setupDragHandlers();
 
+        bedAxes = new BedAxes(viewManager);
         basePane.getChildren().addAll(viewManager.getSubScene(), timeCostInsetPanel,
-                settingsInsetPanel, modelActionsInsetPanel);
+                settingsInsetPanel, modelActionsInsetPanel, bedAxes);
+
         //Leave this out in 1.01.05
         setupDragHandlers();
         dimensionLineManager = new DimensionLineManager(basePane, project);
+        viewManager.addCameraViewChangeListener(bedAxes);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
         zCutEntryBox = new ZCutEntryBox(basePane, layoutSubmode, viewManager, project);

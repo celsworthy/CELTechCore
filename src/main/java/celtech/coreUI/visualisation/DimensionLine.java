@@ -1,5 +1,6 @@
 package celtech.coreUI.visualisation;
 
+import celtech.coreUI.StandardColours;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.utils.Math.MathUtils;
@@ -79,19 +80,10 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         dimensionText.getTransforms().addAll(textTranslate, textRotate);
 
         dimensionText.getStyleClass().add("dimension-label");
-
-        if (modelContainer instanceof ModelGroup)
-        {
-            dimensionText.getStyleClass().add("dimension-group");
-            dimensionLine.getStyleClass().add("dimension-group");
-            upArrow.getStyleClass().add("dimension-group");
-            downArrow.getStyleClass().add("dimension-group");
-        } else
-        {
-            dimensionLine.getStyleClass().add("dimension-line");
-            upArrow.getStyleClass().add("dimension-arrow");
-            downArrow.getStyleClass().add("dimension-arrow");
-        }
+        dimensionText.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        dimensionLine.setStroke(StandardColours.DIMENSION_LINE_GREEN);
+        upArrow.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        downArrow.setFill(StandardColours.DIMENSION_LINE_GREEN);
 
         downArrow.getPoints().setAll(0d, 0d,
                                      arrowWidth / 2, -arrowHeight,
@@ -178,7 +170,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 textTranslate.setX(midPoint.getX());
                 textTranslate.setY(midPoint.getY());
-                textRotate.setAngle(-angle);
+//                textRotate.setAngle(-angle);
 
                 firstArrowTranslate.setX(topPoint.getX());
                 firstArrowTranslate.setY(topPoint.getY());
@@ -298,7 +290,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 textTranslate.setX(midPoint.getX());
                 textTranslate.setY(midPoint.getY());
-                textRotate.setAngle(normaliseArrowAngle(angle - 90));
+//                textRotate.setAngle(normaliseArrowAngle(angle - 90));
 
                 firstArrowTranslate.setX(backPoint.getX());
                 firstArrowTranslate.setY(backPoint.getY());

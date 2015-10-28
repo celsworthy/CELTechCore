@@ -398,6 +398,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
         copy.setUseExtruder0(associateWithExtruderNumber.get() == 0);
         copy.setState(this.getState());
+        copy.recalculateScreenExtents();
         return copy;
     }
 
@@ -1762,6 +1763,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * If this model is associated with the given extruder number then recolour
      * it to the given colour, also taking into account if it is misplaced (off
      * the bed). Also call the same method on any child ModelContainers.
+     * @param extruder0Material
+     * @param extruder1Material
+     * @param showMisplacedColour
      */
     public void updateColour(final PhongMaterial extruder0Material, final PhongMaterial extruder1Material,
             boolean showMisplacedColour)
@@ -1809,6 +1813,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public void addScreenExtentsChangeListener(ScreenExtentsProvider.ScreenExtentsListener listener)
     {
+        recalculateScreenExtents();
         screenExtentsChangeListeners.add(listener);
     }
 
@@ -1829,10 +1834,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    private void recalculateScreenExtents()
+    public void recalculateScreenExtents()
     {
-        if (getLocalBounds() != null
-                && cameraViewingMe != null)
+        if (getLocalBounds() != null)
         {
             double halfWidth = getScaledWidth() / 2;
             double halfDepth = getScaledDepth() / 2;
@@ -1887,11 +1891,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 //        Point2D frontRightTop = cameraTransform.localToScreen(frontRightTopCamera);
 //        Point2D backLeftTop = cameraTransform.localToScreen(backLeftTopCamera);
 //        Point2D backRightTop = cameraTransform.localToScreen(backRightTopCamera);
-            if (extents == null)
+            if (extents == null && frontLeftBottom != null)
             {
                 extents = new ScreenExtents();
             }
-            if (frontLeftBottom != null)
+            
+            if (extents != null && frontLeftBottom != null)
             {
                 extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
                 extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
