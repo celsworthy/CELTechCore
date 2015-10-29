@@ -1,7 +1,9 @@
 package celtech.gcodetranslator.postprocessing;
 
+import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
+import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.CannotCloseFromPerimeterException;
 import celtech.gcodetranslator.GCodeOutputWriter;
@@ -17,6 +19,7 @@ import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.printerControl.model.Head;
@@ -52,6 +55,30 @@ public class UtilityMethods
         this.ppFeatureSet = ppFeatureSet;
         nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);
         this.closeLogic = new CloseLogic(project, settings, ppFeatureSet, headType);
+    }
+
+    protected void insertCameraTriggersAndCloses(LayerNode layerNode,
+            LayerPostProcessResult lastLayerPostProcessResult,
+            List<NozzleProxy> nozzleProxies)
+    {
+        if (Lookup.getUserPreferences().isGoProTriggerEnabled())
+        {
+            GCodeEventNode lastEvent = layerNode.getAbsolutelyTheLastEvent();
+            if (lastEvent != null)
+            {
+                IteratorWithOrigin<GCodeEventNode> eventIterator = lastEvent.treeSpanningBackwardsIterator();
+
+                while (eventIterator.hasNext())
+                {
+                    GCodeEventNode event = eventIterator.next();
+
+                    if (event instanceof NozzlePositionProvider)
+                    {
+
+                    }
+                }
+            }
+        }
     }
 
     protected void suppressUnnecessaryToolChangesAndInsertToolchangeCloses(LayerNode layerNode,

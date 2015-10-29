@@ -30,6 +30,7 @@ import celtech.printerControl.comms.commands.MacroPrintException;
 import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerService;
+import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
@@ -147,13 +148,16 @@ public class PrintEngine implements ControllableService
     /**
      * The movie maker task
      */
-    private MovieMakerTask movieMakerTask = null;
+//    private MovieMakerTask movieMakerTask = null;
 
     private boolean raiseProgressNotifications = true;
+    
+    private CameraTriggerManager cameraTriggerManager;
 
     public PrintEngine(Printer associatedPrinter)
     {
         this.associatedPrinter = associatedPrinter;
+        cameraTriggerManager = new CameraTriggerManager(associatedPrinter);
 
         cancelSliceEventHandler = (WorkerStateEvent t) ->
         {
@@ -445,9 +449,11 @@ public class PrintEngine implements ControllableService
             {
                 if (t1 == PrintQueueStatus.PRINTING)
                 {
+                    cameraTriggerManager.listenForCameraTrigger();
                     printJob.set(PrintJob.readJobFromDirectory(associatedPrinter.printJobIDProperty().get()));
                 } else
                 {
+                    cameraTriggerManager.stopListeningForCameraTrigger();
                     printJob.set(null);
                 }
             }
@@ -578,38 +584,38 @@ public class PrintEngine implements ControllableService
                         acceptedPrintRequest);
             }
 
-            movieMakerTask = new MovieMakerTask(project.getProjectName(), associatedPrinter);
-            movieMakerTask.setOnSucceeded(new EventHandler<WorkerStateEvent>()
-            {
+//            movieMakerTask = new MovieMakerTask(project.getProjectName(), associatedPrinter);
+//            movieMakerTask.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+//            {
+//
+//                @Override
+//                public void handle(WorkerStateEvent event)
+//                {
+//                    steno.info("Movie maker succeeded");
+//                }
+//            });
+//            movieMakerTask.setOnFailed(new EventHandler<WorkerStateEvent>()
+//            {
+//
+//                @Override
+//                public void handle(WorkerStateEvent event)
+//                {
+//                    steno.info("Movie maker failed");
+//                }
+//            });
+//            movieMakerTask.setOnCancelled(new EventHandler<WorkerStateEvent>()
+//            {
+//
+//                @Override
+//                public void handle(WorkerStateEvent event)
+//                {
+//                    steno.info("Movie maker was cancelled");
+//                }
+//            });
 
-                @Override
-                public void handle(WorkerStateEvent event)
-                {
-                    steno.info("Movie maker succeeded");
-                }
-            });
-            movieMakerTask.setOnFailed(new EventHandler<WorkerStateEvent>()
-            {
-
-                @Override
-                public void handle(WorkerStateEvent event)
-                {
-                    steno.info("Movie maker failed");
-                }
-            });
-            movieMakerTask.setOnCancelled(new EventHandler<WorkerStateEvent>()
-            {
-
-                @Override
-                public void handle(WorkerStateEvent event)
-                {
-                    steno.info("Movie maker was cancelled");
-                }
-            });
-
-            Thread movieThread = new Thread(movieMakerTask);
-            movieThread.setName("Movie Maker - " + project.getProjectName());
-            movieThread.setDaemon(true);
+//            Thread movieThread = new Thread(movieMakerTask);
+//            movieThread.setName("Movie Maker - " + project.getProjectName());
+//            movieThread.setDaemon(true);
 //            movieThread.start();
         }
 
@@ -1068,11 +1074,11 @@ public class PrintEngine implements ControllableService
                     steno.info("Shutdown print service...");
                     transferGCodeToPrinterService.cancelRun();
                 }
-                if (movieMakerTask.isRunning())
-                {
-                    steno.info("Shutdown move maker");
-                    movieMakerTask.shutdown();
-                }
+//                if (movieMakerTask.isRunning())
+//                {
+//                    steno.info("Shutdown move maker");
+//                    movieMakerTask.shutdown();
+//                }
                 steno.info("Shutdown print services complete");
                 return true;
             }

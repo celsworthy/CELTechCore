@@ -48,7 +48,7 @@ public class SlicerParametersFile
         }
     }
 
-    private int version = 5;
+    private int version = 6;
     private String profileName;
     private String headType;
     private SlicerType slicerOverride;
@@ -83,7 +83,9 @@ public class SlicerParametersFile
     private int supportNozzle;
     private int supportInterfaceNozzle;
     private int maxClosesBeforeNozzleReselect;
-
+    private float zHopHeight;
+    private float zHopDistance;
+            
     /*
      * Support
      */
@@ -808,6 +810,28 @@ public class SlicerParametersFile
         firePropertyChange("maxClosesBeforeNozzleReselect", null, maxClosesBeforeNozzleReselect);
     }
 
+    public float getzHopHeight()
+    {
+        return zHopHeight;
+    }
+
+    public void setzHopHeight(float zHopHeight)
+    {
+        this.zHopHeight = zHopHeight;
+        firePropertyChange("zHopHeight", null, zHopHeight);
+    }
+
+    public float getzHopDistance()
+    {
+        return zHopDistance;
+    }
+
+    public void setzHopDistance(float zHopDistance)
+    {
+        this.zHopDistance = zHopDistance;
+        firePropertyChange("zHopDistance", null, zHopDistance);
+    }
+
     @Override
     public SlicerParametersFile clone()
     {
@@ -852,6 +876,8 @@ public class SlicerParametersFile
         clone.supportInterfaceNozzle = supportInterfaceNozzle;
 
         clone.maxClosesBeforeNozzleReselect = maxClosesBeforeNozzleReselect;
+        clone.zHopHeight = zHopHeight;
+        clone.zHopDistance = zHopDistance;
 
         /*
          * Support

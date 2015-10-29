@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -52,6 +51,7 @@ public class PostProcessor
     private final String perRetractTimerName = "PerRetract";
     private final String closeTimerName = "Close";
     private final String unnecessaryToolchangeTimerName = "UnnecessaryToolchange";
+    private final String cameraEventTimerName = "CameraEvent";
     private final String openTimerName = "Open";
     private final String assignExtrusionTimerName = "AssignExtrusion";
     private final String layerResultTimerName = "LayerResult";
@@ -523,6 +523,10 @@ public class PostProcessor
         postProcessorUtilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, unnecessaryToolchangeTimerName);
 
+        timeUtils.timerStart(this, cameraEventTimerName);
+        postProcessorUtilityMethods.insertCameraTriggersAndCloses(layerNode, lastLayerParseResult, nozzleProxies);
+        timeUtils.timerStop(this, cameraEventTimerName);
+
         //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
         timeUtils.timerStart(this, layerResultTimerName);
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult);
@@ -628,6 +632,7 @@ public class PostProcessor
         steno.info(perRetractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, perRetractTimerName));
         steno.info(closeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, closeTimerName));
         steno.info(unnecessaryToolchangeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unnecessaryToolchangeTimerName));
+        steno.info(cameraEventTimerName + " " + timeUtils.timeTimeSoFar_ms(this, cameraEventTimerName));
         steno.info(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
         steno.info(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
         steno.info(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));

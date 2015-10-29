@@ -4,21 +4,12 @@
  */
 package celtech.services.roboxmoviemaker;
 
-import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.model.Printer;
-import java.io.File;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.CvSize;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacpp.opencv_highgui;
-import static org.bytedeco.javacpp.opencv_highgui.CV_FOURCC;
-import org.bytedeco.javacpp.opencv_highgui.CvCapture;
-import org.bytedeco.javacpp.opencv_highgui.CvVideoWriter;
 
 /**
  *
@@ -39,8 +30,8 @@ public class MovieMakerTask extends Task<MovieMakerResult>
         }
     };
     
-    private CvCapture frameGrabber = null;
-    private CvVideoWriter videoWriter = null;
+//    private CvCapture frameGrabber = null;
+//    private CvVideoWriter videoWriter = null;
     private boolean keepRunning = false;
 
     /**
@@ -60,38 +51,40 @@ public class MovieMakerTask extends Task<MovieMakerResult>
         boolean succeeded = false;
         keepRunning = true;
         
-        String movieFile = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + "movie.avi";
-        String movieFile2 = "C:\\Users\\Ian\\Documents\\CEL Robox\\PrintJobs\\movie.avi";
+//        String movieFile = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID + File.separator + "movie.avi";
+//        String movieFile2 = "C:\\Users\\Ian\\Documents\\CEL Robox\\PrintJobs\\movie.avi";
         
         updateTitle("Movie Maker");
         updateMessage("Preparing to capture images");
         updateProgress(0, 100);
         
-        frameGrabber = opencv_highgui.cvCaptureFromCAM(0);
+//        frameGrabber = opencv_highgui.cvCaptureFromCAM(0);
         
-        IplImage img = opencv_highgui.cvQueryFrame(frameGrabber);
-        if (img != null)
-        {
-            CvSize frameSize = opencv_core.cvGetSize(img);
-            videoWriter = opencv_highgui.cvCreateVideoWriter(movieFile2, CV_FOURCC((byte) 'M', (byte) 'J', (byte) 'P', (byte) 'G'), 1.0, frameSize);
-            
-            if (videoWriter != null)
-            {
+//        IplImage img = opencv_highgui.cvQueryFrame(frameGrabber);
+//        if (img != null)
+//        {
+//            CvSize frameSize = opencv_core.cvGetSize(img);
+//            videoWriter = opencv_highgui.cvCreateVideoWriter(movieFile2, CV_FOURCC((byte) 'M', (byte) 'J', (byte) 'P', (byte) 'G'), 1.0, frameSize);
+//            
+//            if (videoWriter != null)
+//            {
                 printerToUse.getPrinterAncillarySystems().xStopSwitchProperty().addListener(triggerListener);
-                
-                succeeded = true;
-                
+//                
+//                succeeded = true;
+//                
                 while (keepRunning)
                 {
                     Thread.sleep(100);
                 }
                 
-                opencv_highgui.cvReleaseVideoWriter(videoWriter);
-                steno.info("Releasing video writer");
-                opencv_highgui.cvReleaseCapture(frameGrabber);
-                steno.info("Releasing video grabber");
-            }
-        }
+                printerToUse.getPrinterAncillarySystems().xStopSwitchProperty().removeListener(triggerListener);
+//                
+//                opencv_highgui.cvReleaseVideoWriter(videoWriter);
+//                steno.info("Releasing video writer");
+//                opencv_highgui.cvReleaseCapture(frameGrabber);
+//                steno.info("Releasing video grabber");
+//            }
+//        }
         
         return new MovieMakerResult(succeeded);
     }

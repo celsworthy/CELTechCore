@@ -802,70 +802,6 @@ public class CloseLogic
         return Optional.of(new CloseResult(1.0, volumeToCloseOver, finalCloseNode));
     }
 
-//    protected Optional<CloseResult> insertNozzleCloses(RetractNode retractNode, final NozzleProxy nozzleInUse)
-//            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException, PostProcessingError
-//    {
-//        Optional<CloseResult> closeResult = null;
-//
-//        //Assume the nozzle is always fully open...
-//        nozzleInUse.setCurrentPosition(1.0);
-//        if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
-//        {
-//            closeResult = insertProgressiveNozzleClose(retractNode, nozzleInUse);
-//        } else
-//        {
-//            closeResult = insertNozzleCloseFullyAfterEvent(retractNode.getPriorExtrusionNode(), nozzleInUse);
-//        }
-//
-//        return closeResult;
-//    }
-//    /**
-//     *
-//     * @param layerNode
-//     * @param extrusionUpToClose
-//     * @param lastExtrusionNodeBeforeClose
-//     * @param nozzleInUse
-//     * @return
-//     * @throws
-//     * celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException @see
-//     * CloseResult
-//     * @throws celtech.gcodetranslator.CannotCloseFromPerimeterException
-//     * @throws celtech.gcodetranslator.NoPerimeterToCloseOverException
-//     * @throws celtech.gcodetranslator.NotEnoughAvailableExtrusionException
-//     */
-//    protected Optional<CloseResult> insertsff (LayerNode layerNode,
-//            double extrusionUpToClose, ExtrusionNode lastExtrusionNodeBeforeClose, final NozzleProxy nozzleInUse)
-//            throws NodeProcessingException, CannotCloseFromPerimeterException, NoPerimeterToCloseOverException, NotEnoughAvailableExtrusionException, PostProcessingError
-//    {
-//        Optional<CloseResult> closeResult = Optional.empty();
-//
-//        List<SectionNode> sectionsToConsider = new ArrayList<>();
-//        Iterator<GCodeEventNode> childrenOfTheLayer = layerNode.childIterator();
-//        while (childrenOfTheLayer.hasNext())
-//        {
-//            GCodeEventNode potentialSectionNode = childrenOfTheLayer.next();
-//
-//            if (potentialSectionNode instanceof SectionNode)
-//            {
-//                sectionsToConsider.add((SectionNode) potentialSectionNode);
-//            }
-//        }
-//
-//        if (sectionsToConsider.size() > 0)
-//        {
-//            //Assume the nozzle is always fully open...
-//            nozzleInUse.setCurrentPosition(1.0);
-//            if (featureSet.isEnabled(PostProcessorFeature.GRADUAL_CLOSE))
-//            {
-////                closeResult = insertProgressiveNozzleClose(sectionsToConsider, lastExtrusionNodeBeforeClose, nozzleInUse);
-//            } else
-//            {
-//                closeResult = insertNozzleCloseFullyAfterEvent(lastExtrusionNodeBeforeClose, nozzleInUse);
-//            }
-//        }
-//
-//        return closeResult;
-//    }
     protected void insertCloseNodes(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, List<NozzleProxy> nozzleProxies)
     {
         //Tool select nodes are directly under a layer
@@ -935,8 +871,6 @@ public class CloseLogic
             LayerPostProcessResult lastLayerParseResult)
     {
         Optional<CloseResult> closeResult = Optional.empty();
-
-        Optional<ExtrusionNode> nextExtrusionNode = Optional.empty();
 
         boolean processedClose = false;
 

@@ -33,7 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.poly2tri.geometry.polygon.Polygon;
+import org.poly2tri.polygon.Polygon;
 import org.poly2tri.triangulation.TriangulationPoint;
 
 
@@ -724,13 +724,13 @@ class MyPanel extends JPanel
                    yOffset + (int) (endY),
                    xOffset + (int) (beginX),
                    yOffset + (int) (beginY));
-        if (polygon.getHoles() != null)
-        {
-            for (Polygon hole : polygon.getHoles())
-            {
-                drawPolygon(hole, g, xOffset, yOffset, scale, Color.ORANGE);
-            }
-        }
+//        if (polygon.getHoles() != null)
+//        {
+//            for (Polygon hole : polygon.getHoles())
+//            {
+//                drawPolygon(hole, g, xOffset, yOffset, scale, Color.ORANGE);
+//            }
+//        }
     }
 
     void showLoops(Set<List<ManifoldEdge>> loops)

@@ -36,6 +36,7 @@ public class UserPreferences
     private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
+    private final BooleanProperty goProTriggerEnabled = new SimpleBooleanProperty(false);
 
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
@@ -70,6 +71,7 @@ public class UserPreferences
         this.currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
+        this.goProTriggerEnabled.set(userPreferenceFile.isGoProTriggerEnabled());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -80,6 +82,8 @@ public class UserPreferences
         showAdjustments.addListener(booleanChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
+        goProTriggerEnabled.addListener(booleanChangeListener);
+
     }
 
     public String getLanguageTag()
@@ -226,6 +230,21 @@ public class UserPreferences
         this.currencyGBPToLocalMultiplier.set(value);
     }
 
+    public BooleanProperty getGoProTriggerEnabledProperty()
+    {
+        return goProTriggerEnabled;
+    }
+
+    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
+    {
+        this.goProTriggerEnabled.set(goProTriggerEnabled);
+    }
+
+    public boolean isGoProTriggerEnabled()
+    {
+        return goProTriggerEnabled.get();
+    }
+
     private void saveSettings()
     {
         UserPreferenceContainer.savePreferences(this);
@@ -252,7 +271,7 @@ public class UserPreferences
     {
         return showDiagnostics;
     }
-    
+
     public boolean getShowDiagnostics()
     {
         return showDiagnostics.get();
@@ -261,13 +280,13 @@ public class UserPreferences
     public void setShowDiagnostics(boolean showDiagnostics)
     {
         this.showDiagnostics.set(showDiagnostics);
-    }    
-    
+    }
+
     public BooleanProperty showGCodeProperty()
     {
         return showGCode;
     }
-    
+
     public boolean getShowGCode()
     {
         return showDiagnostics.get();
@@ -276,13 +295,13 @@ public class UserPreferences
     public void setShowGCode(boolean showGCode)
     {
         this.showGCode.set(showGCode);
-    }       
-    
+    }
+
     public BooleanProperty showAdjustmentsProperty()
     {
         return showAdjustments;
-    }    
-    
+    }
+
     public boolean getShowAdjustments()
     {
         return showAdjustments.get();
@@ -292,7 +311,7 @@ public class UserPreferences
     {
         this.showAdjustments.set(showAdjustments);
     }
-    
+
     public void setShowMetricUnits(boolean value)
     {
         showMetricUnits.set(value);
@@ -302,7 +321,7 @@ public class UserPreferences
     {
         return showMetricUnits.get();
     }
-    
+
     public BooleanProperty showMetricUnitsProperty()
     {
         return showMetricUnits;

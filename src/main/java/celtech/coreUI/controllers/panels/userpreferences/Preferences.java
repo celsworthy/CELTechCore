@@ -30,9 +30,13 @@ public class Preferences
         Preference detectFilamentLoadedPref = new TickBoxPreference(userPreferences.
                 detectLoadedFilamentProperty(), "preferences.detectLoadedFilament");
 
+        Preference goProTriggerEnabledPref = new TickBoxPreference(userPreferences.getGoProTriggerEnabledProperty(),
+                "preferences.goProTriggerEnabled");
+
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
         preferences.add(detectFilamentLoadedPref);
+        preferences.add(goProTriggerEnabledPref);
 
         return preferences;
     }
@@ -64,19 +68,19 @@ public class Preferences
 
         return preferences;
     }
-    
+
     public static List<PreferencesInnerPanelController.Preference> createInterfacePreferences(
-        UserPreferences userPreferences)
+            UserPreferences userPreferences)
     {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
         Preference showDiagnosticsPref = new TickBoxPreference(userPreferences.showDiagnosticsProperty(),
-                                                            "preferences.showDiagnostics");
+                "preferences.showDiagnostics");
 
         Preference showGCodePref = new TickBoxPreference(userPreferences.showGCodeProperty(),
-                                                            "preferences.showGCode");
+                "preferences.showGCode");
         Preference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
-                                                        "preferences.showAdjustments");
+                "preferences.showAdjustments");
 
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);

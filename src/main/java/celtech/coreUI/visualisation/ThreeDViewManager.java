@@ -791,14 +791,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             goToPreset(CameraPositionPreset.TOP);
                             deselectAllModels();
-                            startSettingsAnimation();
+//                            startSettingsAnimation();
                             break;
                         default:
                             goToPreset(CameraPositionPreset.FRONT);
                             subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
                             subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            stopSettingsAnimation();
+//                            stopSettingsAnimation();
                             break;
                     }
                     updateModelColoursForPositionModeAndTargetPrinter();

@@ -22,7 +22,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class BedAxes extends Pane implements CameraViewChangeListener
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(BedAxes.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(BedAxes.class.getName());
     private final Text xText = new Text();
     private final Line xAxis = new Line();
     private final Text yText = new Text();
@@ -48,7 +48,6 @@ public class BedAxes extends Pane implements CameraViewChangeListener
     private final double lineWidth = 3;
     private final double textOffsetFromOrigin = lineLength + 5;
 
-    private Point2D currentOriginScreenPosition = Point2D.ZERO;
     private final ScreenCoordinateConverter screenCoordinateConverter;
 
     public BedAxes(ScreenCoordinateConverter screenCoordinateConverter)
@@ -57,7 +56,7 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         initialise();
     }
 
-    public void initialise()
+    private void initialise()
     {
         xText.getTransforms().add(xTextTranslate);
         xText.getStyleClass().add("bed-axis-label");
@@ -134,7 +133,7 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         return angle;
     }
 
-    private void updateArrowAndTextPosition()
+    public void updateArrowAndTextPosition()
     {
         Point2D origin = screenCoordinateConverter.convertWorldCoordinatesToScreen(0, 0, 0);
         Point2D xAxisVector = screenCoordinateConverter.convertWorldCoordinatesToScreen(lineLength, 0, 0);
@@ -146,11 +145,14 @@ public class BedAxes extends Pane implements CameraViewChangeListener
 
         Point2D originLocal = screenToLocal(origin);
         Point2D xAxisLocalEnd = screenToLocal(xAxisVector);
+        Point2D xTextPositionLocal = screenToLocal(xTextPosition);
         Point2D yAxisLocalEnd = screenToLocal(yAxisVector);
+        Point2D yTextPositionLocal = screenToLocal(yTextPosition);
         Point2D zAxisLocalEnd = screenToLocal(zAxisVector);
+        Point2D zTextPositionLocal = screenToLocal(zTextPosition);
 
-        xTextTranslate.setX(xTextPosition.getX());
-        xTextTranslate.setY(xTextPosition.getY());
+        xTextTranslate.setX(xTextPositionLocal.getX());
+        xTextTranslate.setY(xTextPositionLocal.getY());
         xAxis.setStartX(originLocal.getX());
         xAxis.setStartY(originLocal.getY());
         xAxis.setEndX(xAxisLocalEnd.getX());
@@ -160,8 +162,8 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         double xAngle = calculateAngle(originLocal, xAxisLocalEnd);
         xArrowRotate.setAngle(xAngle);
 
-        yTextTranslate.setX(yTextPosition.getX());
-        yTextTranslate.setY(yTextPosition.getY());
+        yTextTranslate.setX(yTextPositionLocal.getX());
+        yTextTranslate.setY(yTextPositionLocal.getY());
         yAxis.setStartX(originLocal.getX());
         yAxis.setStartY(originLocal.getY());
         yAxis.setEndX(yAxisLocalEnd.getX());
@@ -171,8 +173,8 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         double yAngle = calculateAngle(originLocal, yAxisLocalEnd);
         yArrowRotate.setAngle(yAngle);
 
-        zTextTranslate.setX(zTextPosition.getX());
-        zTextTranslate.setY(zTextPosition.getY());
+        zTextTranslate.setX(zTextPositionLocal.getX());
+        zTextTranslate.setY(zTextPositionLocal.getY());
         zAxis.setStartX(originLocal.getX());
         zAxis.setStartY(originLocal.getY());
         zAxis.setEndX(zAxisLocalEnd.getX());

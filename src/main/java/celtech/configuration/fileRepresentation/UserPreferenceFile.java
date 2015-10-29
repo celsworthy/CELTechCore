@@ -29,6 +29,7 @@ public class UserPreferenceFile
     private boolean showGCode = true;
     private boolean showAdjustments = true;
     private boolean showMetricUnits = true;
+    private boolean goProTriggerEnabled = true;
 
     public String getLanguageTag()
     {
@@ -130,22 +131,14 @@ public class UserPreferenceFile
         this.currencyGBPToLocalMultiplier = currencyGBPToLocalMultiplier;
     }
 
-    public void populateFromSettings(UserPreferences userPreferences)
+    public boolean isGoProTriggerEnabled()
     {
-        setSlicerType(userPreferences.getSlicerType());
-        setSafetyFeaturesOn(userPreferences.isSafetyFeaturesOn());
-        setLanguageTag(userPreferences.getLanguageTag());
-        setShowTooltips(userPreferences.isShowTooltips());
-        setLoggingLevel(userPreferences.getLoggingLevel());
-        setAdvancedMode(userPreferences.isAdvancedMode());
-        setFirstUse(userPreferences.isFirstUse());
-        setDetectLoadedFilament(userPreferences.getDetectLoadedFilament());
-        setCurrencySymbol(userPreferences.getCurrencySymbol());
-        setCurrencyGBPToLocalMultiplier(userPreferences.getcurrencyGBPToLocalMultiplier());
-        setShowDiagnostics(userPreferences.getShowDiagnostics());
-        setShowGCode(userPreferences.getShowGCode());
-        setShowAdjustments(userPreferences.getShowAdjustments());
-        setShowMetricUnits(userPreferences.isShowMetricUnits());
+        return goProTriggerEnabled;
+    }
+
+    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
+    {
+        this.goProTriggerEnabled = goProTriggerEnabled;
     }
 
     public boolean isShowDiagnostics()
@@ -186,5 +179,24 @@ public class UserPreferenceFile
     public void setShowMetricUnits(boolean showMetricUnits)
     {
         this.showMetricUnits = showMetricUnits;
+    }
+
+    public void populateFromSettings(UserPreferences userPreferences)
+    {
+        setSlicerType(userPreferences.getSlicerType());
+        setSafetyFeaturesOn(userPreferences.isSafetyFeaturesOn());
+        setLanguageTag(userPreferences.getLanguageTag());
+        setShowTooltips(userPreferences.isShowTooltips());
+        setLoggingLevel(userPreferences.getLoggingLevel());
+        setAdvancedMode(userPreferences.isAdvancedMode());
+        setFirstUse(userPreferences.isFirstUse());
+        setDetectLoadedFilament(userPreferences.getDetectLoadedFilament());
+        setCurrencySymbol(userPreferences.getCurrencySymbol());
+        setCurrencyGBPToLocalMultiplier(userPreferences.getcurrencyGBPToLocalMultiplier());
+        setShowDiagnostics(userPreferences.getShowDiagnostics());
+        setShowGCode(userPreferences.getShowGCode());
+        setShowAdjustments(userPreferences.getShowAdjustments());
+        setShowMetricUnits(userPreferences.isShowMetricUnits());
+        setGoProTriggerEnabled(userPreferences.isGoProTriggerEnabled());
     }
 }

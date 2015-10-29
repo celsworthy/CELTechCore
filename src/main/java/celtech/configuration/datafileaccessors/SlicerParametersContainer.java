@@ -143,6 +143,8 @@ public class SlicerParametersContainer
             steno.info("Convert " + newSettings.getProfileName() + " profile to version 5");
             newSettings.setHeadType(HeadContainer.defaultHeadID);
             newSettings.setVersion(5);
+            newSettings.setzHopHeight(0);
+            newSettings.setzHopDistance(0);
             doSaveEditedUserProfile(newSettings);
         }
     }

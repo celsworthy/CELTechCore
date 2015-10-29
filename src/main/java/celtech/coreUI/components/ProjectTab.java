@@ -104,8 +104,8 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         bedAxes = new BedAxes(viewManager);
-        basePane.getChildren().addAll(viewManager.getSubScene(), timeCostInsetPanel,
-                settingsInsetPanel, modelActionsInsetPanel, bedAxes);
+        basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, timeCostInsetPanel,
+                settingsInsetPanel, modelActionsInsetPanel);
 
         //Leave this out in 1.01.05
         setupDragHandlers();
@@ -154,7 +154,7 @@ public class ProjectTab extends Tab
                 30.0);
 
         this.setContent(basePane);
-
+        
         this.setGraphic(nonEditableProjectNameField);
 
         setupNameFields();
@@ -388,6 +388,11 @@ public class ProjectTab extends Tab
     public void fireProjectSelected()
     {
         Lookup.setSelectedProject(project);
+    }
+    
+    public void justAdded()
+    {
+        bedAxes.updateArrowAndTextPosition();
     }
 
 }

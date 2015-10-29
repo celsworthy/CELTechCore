@@ -115,11 +115,11 @@
             <artifactId>commons-compress</artifactId>
             <version>1.8</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
             <version>0.11</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>xml-resolver</groupId>
             <artifactId>xml-resolver</artifactId>

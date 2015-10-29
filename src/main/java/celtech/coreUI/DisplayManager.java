@@ -90,7 +90,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final VBox projectTabPaneHolder;
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
     private HBox sidePanel;
-    private SidePanelManager sidePanelController;
 
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
@@ -354,7 +353,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             steno.debug("About to load side panel fxml: " + fxmlFileName);
             FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
             sidePanel = (HBox) sidePanelLoader.load();
-            sidePanelController = sidePanelLoader.getController();
         } catch (Exception ex)
         {
             steno.exception("Couldn't load side panel", ex);
@@ -606,6 +604,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 tabDisplay.heightProperty());
         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
         tabDisplaySelectionModel.select(projectTab);
+        projectTab.justAdded();
 
         return projectTab;
     }
