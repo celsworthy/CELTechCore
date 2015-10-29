@@ -10,6 +10,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.LogLevel;
@@ -37,7 +39,12 @@ public class UserPreferences
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
     private final BooleanProperty goProTriggerEnabled = new SimpleBooleanProperty(false);
+    private final StringProperty goProWifiPassword = new SimpleStringProperty("");
 
+    private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+    {
+        saveSettings();
+    };
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         saveSettings();
@@ -72,6 +79,7 @@ public class UserPreferences
         this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
         this.goProTriggerEnabled.set(userPreferenceFile.isGoProTriggerEnabled());
+        this.goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -83,7 +91,7 @@ public class UserPreferences
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
         goProTriggerEnabled.addListener(booleanChangeListener);
-
+        goProWifiPassword.addListener(stringChangeListener);
     }
 
     public String getLanguageTag()
@@ -243,6 +251,21 @@ public class UserPreferences
     public boolean isGoProTriggerEnabled()
     {
         return goProTriggerEnabled.get();
+    }
+
+    public StringProperty getGoProWifiProperty()
+    {
+        return goProWifiPassword;
+    }
+
+    public void setGoProWifiPassword(String goProWifiPassword)
+    {
+        this.goProWifiPassword.set(goProWifiPassword);
+    }
+
+    public String getGoProWifiPassword()
+    {
+        return goProWifiPassword.get();
     }
 
     private void saveSettings()

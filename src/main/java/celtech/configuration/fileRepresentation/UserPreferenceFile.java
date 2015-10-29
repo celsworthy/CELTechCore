@@ -30,6 +30,7 @@ public class UserPreferenceFile
     private boolean showAdjustments = true;
     private boolean showMetricUnits = true;
     private boolean goProTriggerEnabled = true;
+    private String goProWifiPassword = "";
 
     public String getLanguageTag()
     {
@@ -131,16 +132,6 @@ public class UserPreferenceFile
         this.currencyGBPToLocalMultiplier = currencyGBPToLocalMultiplier;
     }
 
-    public boolean isGoProTriggerEnabled()
-    {
-        return goProTriggerEnabled;
-    }
-
-    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
-    {
-        this.goProTriggerEnabled = goProTriggerEnabled;
-    }
-
     public boolean isShowDiagnostics()
     {
         return showDiagnostics;
@@ -181,6 +172,26 @@ public class UserPreferenceFile
         this.showMetricUnits = showMetricUnits;
     }
 
+    public boolean isGoProTriggerEnabled()
+    {
+        return goProTriggerEnabled;
+    }
+
+    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
+    {
+        this.goProTriggerEnabled = goProTriggerEnabled;
+    }
+
+    public String getGoProWifiPassword()
+    {
+        return goProWifiPassword;
+    }
+
+    public void setGoProWifiPassword(String goProWifiPassword)
+    {
+        this.goProWifiPassword = goProWifiPassword;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
@@ -198,5 +209,6 @@ public class UserPreferenceFile
         setShowAdjustments(userPreferences.getShowAdjustments());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setGoProTriggerEnabled(userPreferences.isGoProTriggerEnabled());
+        setGoProWifiPassword(userPreferences.getGoProWifiPassword());
     }
 }

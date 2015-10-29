@@ -33,10 +33,14 @@ public class Preferences
         Preference goProTriggerEnabledPref = new TickBoxPreference(userPreferences.getGoProTriggerEnabledProperty(),
                 "preferences.goProTriggerEnabled");
 
+        Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
+                "preferences.goProWifiPassword");
+
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
         preferences.add(detectFilamentLoadedPref);
         preferences.add(goProTriggerEnabledPref);
+        preferences.add(goProWifiPasswordPref);
 
         return preferences;
     }

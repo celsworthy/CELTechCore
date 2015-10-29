@@ -21,7 +21,9 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
+import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import celtech.printerControl.model.CameraTriggerManager;
 import celtech.printerControl.model.Head;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,20 +65,47 @@ public class UtilityMethods
     {
         if (Lookup.getUserPreferences().isGoProTriggerEnabled())
         {
-            GCodeEventNode lastEvent = layerNode.getAbsolutelyTheLastEvent();
-            if (lastEvent != null)
+            Iterator<GCodeEventNode> layerBackwards = layerNode.childBackwardsIterator();
+
+            while (layerBackwards.hasNext())
             {
-                IteratorWithOrigin<GCodeEventNode> eventIterator = lastEvent.treeSpanningBackwardsIterator();
-
-                while (eventIterator.hasNext())
+                GCodeEventNode layerChild = layerBackwards.next();
+                if (layerChild instanceof ToolSelectNode)
                 {
-                    GCodeEventNode event = eventIterator.next();
+                    closeAtEndOfToolSelectIfNecessary((ToolSelectNode) layerChild, nozzleProxies);
+                    break;
+                }
+            }
 
-                    if (event instanceof NozzlePositionProvider)
+            Movement lastMovement = null;
+
+            //Now add the
+            GCodeEventNode lastEvent = layerNode.getAbsolutelyTheLastEvent();
+            if (lastEvent != null
+                    && lastEvent instanceof MovementProvider)
+            {
+                lastMovement = ((MovementProvider) lastEvent).getMovement();
+            } else if (lastEvent != null)
+            {
+                IteratorWithOrigin<GCodeEventNode> layerBackwardsIterator = lastEvent.treeSpanningBackwardsIterator();
+                while (layerBackwardsIterator.hasNext())
+                {
+                    GCodeEventNode layerBackwardsChild = layerBackwardsIterator.next();
+
+                    if (layerNode instanceof MovementProvider)
                     {
-
+                        lastMovement = ((MovementProvider) layerBackwardsChild).getMovement();
+                        break;
                     }
                 }
+            }
+
+            if (lastEvent != null && lastMovement != null)
+            {
+                CameraTriggerManager.appendLayerEndTriggerCode(layerNode, lastMovement);
+            } else
+            {
+                steno.warning("Couldn't add camera trigger on layer " + layerNode.getLayerNumber());
             }
         }
     }
@@ -117,92 +146,97 @@ public class UtilityMethods
                 toolSelectNode.suppressNodeOutput(true);
             } else
             {
-                // The tool has changed
-                // Close the nozzle if it isn't already...
-                //Insert a close at the end if there isn't already a close following the last extrusion
-                Iterator<GCodeEventNode> nodeIterator = lastToolSelectNode.childBackwardsIterator();
-                boolean keepLooking = true;
-                boolean needToClose = false;
-                GCodeEventNode eventToCloseFrom = null;
-
-                List<SectionNode> sectionsToConsiderForClose = new ArrayList<>();
-
-                //If we see a nozzle event BEFORE an extrusion then the nozzle has already been closed
-                //If we see an extrusion BEFORE a nozzle event then we must close
-                //Keep looking until we find a nozzle event, so that 
-                while (nodeIterator.hasNext()
-                        && keepLooking)
-                {
-                    GCodeEventNode node = nodeIterator.next();
-
-                    if (node instanceof SectionNode)
-                    {
-                        Iterator<GCodeEventNode> sectionIterator = node.childBackwardsIterator();
-                        while (sectionIterator.hasNext()
-                                && keepLooking)
-                        {
-                            GCodeEventNode sectionChild = sectionIterator.next();
-                            if (sectionChild instanceof NozzlePositionProvider
-                                    && ((NozzlePositionProvider) sectionChild).getNozzlePosition().isBSet())
-                            {
-                                keepLooking = false;
-                            } else if (sectionChild instanceof ExtrusionNode)
-                            {
-                                if (!sectionsToConsiderForClose.contains((SectionNode) node))
-                                {
-                                    sectionsToConsiderForClose.add(0, (SectionNode) node);
-                                }
-                                if (eventToCloseFrom == null)
-                                {
-                                    eventToCloseFrom = sectionChild;
-                                    needToClose = true;
-                                }
-                            }
-                        }
-                    } else
-                    {
-                        if (node instanceof NozzlePositionProvider
-                                && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
-                        {
-                            keepLooking = false;
-                        } else if (node instanceof ExtrusionNode)
-                        {
-                            if (eventToCloseFrom == null)
-                            {
-                                eventToCloseFrom = node;
-                                needToClose = true;
-                            }
-                        }
-                    }
-                }
-
-                if (needToClose)
-                {
-                    try
-                    {
-                        Optional<CloseResult> closeResult = closeLogic.insertProgressiveNozzleClose(eventToCloseFrom, sectionsToConsiderForClose, nozzleProxies.get(toolSelectNode.getToolNumber()));
-                        if (!closeResult.isPresent())
-                        {
-                            steno.warning("Close failed - unable to record replenish");
-                        }
-                    } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
-                    {
-                        throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
-                    }
-                }
+                closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
 
                 //Now look to see if we can consolidate the tool change with a travel
-                if (lastToolSelectNode.getChildren().size() > 0)
+                if (toolSelectNode.getChildren().size() > 0)
                 {
-                    if (lastToolSelectNode.getChildren().get(lastToolSelectNode.getChildren().size() - 1) instanceof TravelNode)
+                    if (toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1) instanceof TravelNode)
                     {
-                        ((TravelNode) lastToolSelectNode.getChildren().get(lastToolSelectNode.getChildren().size() - 1)).changeToolDuringMovement(toolSelectNode.getToolNumber());
+                        ((TravelNode) toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1)).changeToolDuringMovement(toolSelectNode.getToolNumber());
                         toolSelectNode.suppressNodeOutput(true);
                     }
                 }
             }
 
             lastToolSelectNode = toolSelectNode;
+        }
+    }
+
+    protected void closeAtEndOfToolSelectIfNecessary(ToolSelectNode toolSelectNode, List<NozzleProxy> nozzleProxies)
+    {
+        // The tool has changed
+        // Close the nozzle if it isn't already...
+        //Insert a close at the end if there isn't already a close following the last extrusion
+        Iterator<GCodeEventNode> nodeIterator = toolSelectNode.childBackwardsIterator();
+        boolean keepLooking = true;
+        boolean needToClose = false;
+        GCodeEventNode eventToCloseFrom = null;
+
+        List<SectionNode> sectionsToConsiderForClose = new ArrayList<>();
+
+        //If we see a nozzle event BEFORE an extrusion then the nozzle has already been closed
+        //If we see an extrusion BEFORE a nozzle event then we must close
+        //Keep looking until we find a nozzle event, so that 
+        while (nodeIterator.hasNext()
+                && keepLooking)
+        {
+            GCodeEventNode node = nodeIterator.next();
+
+            if (node instanceof SectionNode)
+            {
+                Iterator<GCodeEventNode> sectionIterator = node.childBackwardsIterator();
+                while (sectionIterator.hasNext()
+                        && keepLooking)
+                {
+                    GCodeEventNode sectionChild = sectionIterator.next();
+                    if (sectionChild instanceof NozzlePositionProvider
+                            && ((NozzlePositionProvider) sectionChild).getNozzlePosition().isBSet())
+                    {
+                        keepLooking = false;
+                    } else if (sectionChild instanceof ExtrusionNode)
+                    {
+                        if (!sectionsToConsiderForClose.contains((SectionNode) node))
+                        {
+                            sectionsToConsiderForClose.add(0, (SectionNode) node);
+                        }
+                        if (eventToCloseFrom == null)
+                        {
+                            eventToCloseFrom = sectionChild;
+                            needToClose = true;
+                        }
+                    }
+                }
+            } else
+            {
+                if (node instanceof NozzlePositionProvider
+                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
+                {
+                    keepLooking = false;
+                } else if (node instanceof ExtrusionNode)
+                {
+                    if (eventToCloseFrom == null)
+                    {
+                        eventToCloseFrom = node;
+                        needToClose = true;
+                    }
+                }
+            }
+        }
+
+        if (needToClose)
+        {
+            try
+            {
+                Optional<CloseResult> closeResult = closeLogic.insertProgressiveNozzleClose(eventToCloseFrom, sectionsToConsiderForClose, nozzleProxies.get(toolSelectNode.getToolNumber()));
+                if (!closeResult.isPresent())
+                {
+                    steno.warning("Close failed - unable to record replenish");
+                }
+            } catch (NodeProcessingException | CannotCloseFromPerimeterException | NoPerimeterToCloseOverException | NotEnoughAvailableExtrusionException | PostProcessingError ex)
+            {
+                throw new RuntimeException("Error locating available extrusion during tool select normalisation", ex);
+            }
         }
     }
 

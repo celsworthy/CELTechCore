@@ -8,6 +8,7 @@ import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
+import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -243,7 +245,7 @@ public class PostProcessor
                             nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                             timeUtils.timerStop(this, assignExtrusionTimerName);
 
-                        //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
                             //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
                             //NOTE
                             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
@@ -283,7 +285,7 @@ public class PostProcessor
                     layerBuffer.append('\n');
                 } else if (!lineRead.equals(""))
                 {
-                //Ignore blank lines
+                    //Ignore blank lines
                     // stash it in the buffer
                     layerBuffer.append(lineRead);
                     layerBuffer.append('\n');
@@ -303,7 +305,7 @@ public class PostProcessor
                 nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
-            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
                 //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
                 //NOTE
                 //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
@@ -329,7 +331,7 @@ public class PostProcessor
                 nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
-            //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
+                //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
                 //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
                 //NOTE
                 //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
@@ -354,7 +356,7 @@ public class PostProcessor
             nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
             timeUtils.timerStop(this, assignExtrusionTimerName);
 
-        //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
+            //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
             //NOTE
             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
             //NOTE
@@ -506,7 +508,7 @@ public class PostProcessor
         int lastObjectNumber = -1;
 
         timeUtils.timerStart(this, nozzleControlTimerName);
-                lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
+        lastObjectNumber = nozzleControlUtilities.insertNozzleControlSectionsByObject(layerNode, lastLayerParseResult);
         timeUtils.timerStop(this, nozzleControlTimerName);
 
         nodeManagementUtilities.recalculateSectionExtrusion(layerNode);
@@ -527,7 +529,6 @@ public class PostProcessor
         postProcessorUtilityMethods.insertCameraTriggersAndCloses(layerNode, lastLayerParseResult, nozzleProxies);
         timeUtils.timerStop(this, cameraEventTimerName);
 
-        //NEED CODE TO ADD CLOSE AT END OF LAST LAYER IF NOT ALREADY THERE
         timeUtils.timerStart(this, layerResultTimerName);
         LayerPostProcessResult postProcessResult = determineLayerPostProcessResult(layerNode, lastLayerParseResult);
         postProcessResult.setLastObjectNumber(lastObjectNumber);
@@ -605,6 +606,26 @@ public class PostProcessor
             } else if (foundNode instanceof SectionNode)
             {
                 lastSectionNode = (SectionNode) foundNode;
+            } else if (foundNode instanceof GCodeDirectiveNode
+                    && ((GCodeDirectiveNode) foundNode).getGValue() == 4)
+            {
+                GCodeDirectiveNode directive = (GCodeDirectiveNode) foundNode;
+                if (directive.getGValue() == 4)
+                {
+                    //Found a dwell
+                    Optional<Integer> sValue = directive.getSValue();
+                    if (sValue.isPresent())
+                    {
+                        //Seconds
+                        timeForLayer += sValue.get();
+                    }
+                    Optional<Integer> pValue = directive.getPValue();
+                    if (pValue.isPresent())
+                    {
+                        //Microseconds
+                        timeForLayer += pValue.get() / 1000.0;
+                    }
+                }
             }
         }
 
