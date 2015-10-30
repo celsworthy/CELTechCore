@@ -60,6 +60,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -89,7 +90,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final AnchorPane rhPanel;
     private final VBox projectTabPaneHolder;
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
-    private HBox sidePanel;
+    private VBox sidePanel;
 
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
@@ -129,16 +130,16 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         AnchorPane.setRightAnchor(projectTabPaneHolder, 0.0);
         this.rhPanel = new AnchorPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
-        switch (ApplicationConfiguration.getMachineType())
-        {
-            case LINUX_X64:
-            case LINUX_X86:
-                System.setProperty("prism.lcdtext", "false");
-                break;
-            default:
-                System.setProperty("prism.lcdtext", "true");
-                break;
-        }
+//        switch (ApplicationConfiguration.getMachineType())
+//        {
+//            case LINUX_X64:
+//            case LINUX_X86:
+//                System.setProperty("prism.lcdtext", "false");
+//                break;
+//            default:
+//                System.setProperty("prism.lcdtext", "true");
+//                break;
+//        }
         steno.debug("Starting AutoMaker - machine type is " + ApplicationConfiguration.
                 getMachineType());
     }
@@ -176,6 +177,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     tabDisplay.heightProperty());
             tabDisplay.getTabs().add(projectTab);
             tabDisplaySelectionModel.select(projectTab);
+            projectTab.justAdded();
 
             Lookup.getUserPreferences().setFirstUse(false);
         }
@@ -352,7 +354,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "printerStatusSidePanel.fxml");
             steno.debug("About to load side panel fxml: " + fxmlFileName);
             FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
-            sidePanel = (HBox) sidePanelLoader.load();
+            sidePanel = (VBox) sidePanelLoader.load();
         } catch (Exception ex)
         {
             steno.exception("Couldn't load side panel", ex);
@@ -406,11 +408,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             printerStatusTab.setClosable(false);
             printerStatusTab.setContent(printerStatusPage);
             tabDisplay.getTabs().add(printerStatusTab);
-
-            addPageTab = new Tab();
-            addPageTab.setText("+");
-            addPageTab.setClosable(false);
-            tabDisplay.getTabs().add(addPageTab);
 
             tabDisplaySelectionModel.selectedItemProperty().addListener(
                     (ObservableValue<? extends Tab> ov, Tab lastTab, Tab newTab) ->
@@ -550,6 +547,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         steno.debug("load projects");
         loadProjectsAtStartup();
+
+        addPageTab = new Tab();
+        addPageTab.setText("+");
+        addPageTab.setClosable(false);
+        tabDisplay.getTabs().add(addPageTab);
 
         rootAnchorPane.layout();
 
@@ -741,24 +743,24 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
 
-        double scaleFactor = 1.0;
-        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
-        {
-            scaleFactor = scene.getHeight() / START_SCALING_WINDOW_HEIGHT;
-            if (scaleFactor < MINIMUM_SCALE_FACTOR)
-            {
-                scaleFactor = MINIMUM_SCALE_FACTOR;
-            }
-        }
-
-        rootAnchorPane.setScaleX(scaleFactor);
-        rootAnchorPane.setScaleY(scaleFactor);
-        rootAnchorPane.setScaleZ(scaleFactor);
-
-        rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
-        rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
-        rootAnchorPane.setPrefHeight(scene.getHeight() / scaleFactor);
-        rootAnchorPane.setMinHeight(scene.getHeight() / scaleFactor);
+//        double scaleFactor = 1.0;
+//        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
+//        {
+//            scaleFactor = scene.getHeight() / START_SCALING_WINDOW_HEIGHT;
+//            if (scaleFactor < MINIMUM_SCALE_FACTOR)
+//            {
+//                scaleFactor = MINIMUM_SCALE_FACTOR;
+//            }
+//        }
+//
+//        rootAnchorPane.setScaleX(scaleFactor);
+//        rootAnchorPane.setScaleY(scaleFactor);
+//        rootAnchorPane.setScaleZ(scaleFactor);
+//
+//        rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
+//        rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
+//        rootAnchorPane.setPrefHeight(scene.getHeight() / scaleFactor);
+//        rootAnchorPane.setMinHeight(scene.getHeight() / scaleFactor);
 
     }
 
@@ -913,5 +915,16 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
             event.consume();
         });
+    }
+
+    public void mainStageShown()
+    {
+        for (Tab potentialProjectTab : tabDisplay.getTabs())
+        {
+            if (potentialProjectTab instanceof ProjectTab)
+            {
+                ((ProjectTab) potentialProjectTab).justAdded();
+            }
+        }
     }
 }

@@ -14,7 +14,7 @@
 <?scenebuilder-preview-i18n-resource ../i18n/LanguageData.properties?>
 <?scenebuilder-stylesheet ../css/AutoMaker.css?>
 
-<AnchorPane id="AnchorPane" fx:id="container" minHeight="0.0" minWidth="0.0" styleClass="project-view-background" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
+<AnchorPane id="AnchorPane" fx:id="container" minHeight="0.0" minWidth="0.0" styleClass="statusPanelBackground" stylesheets="@../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.PrinterStatusPageController">
     <children>
         <StackPane fx:id="statusPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>

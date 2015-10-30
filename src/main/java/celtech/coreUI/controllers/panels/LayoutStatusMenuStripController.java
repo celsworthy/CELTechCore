@@ -1181,7 +1181,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         ungroupButton.disableProperty().bind(
                 noLoadedModels.or(projectGUIRules.canUngroupSelection().not()));
-        ungroupButton.visibleProperty().bind(
+        groupButton.visibleProperty().bind(
                 noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
 
 //        cutButton.disableProperty().bind(

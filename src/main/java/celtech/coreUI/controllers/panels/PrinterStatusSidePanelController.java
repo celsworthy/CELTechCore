@@ -21,6 +21,7 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
+import javafx.scene.Group;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -81,7 +82,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private VBox headPanel;
 
     @FXML
-    private Label headTitle;
+    private Label headTitleBold;
+
+    @FXML
+    private Label headTitleLight;
 
     @FXML
     private Label headDescription;
@@ -91,6 +95,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private Label headFeeds;
+
+    @FXML
+    private Group singleMaterialHead;
+
+    @FXML
+    private Group dualMaterialHead;
 
     private Printer previousSelectedPrinter = null;
     private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
@@ -274,10 +284,22 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
         headPanel.setPrefHeight(-1);
         headPanel.setVisible(true);
-        headTitle.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".title"));
+        headTitleBold.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleBold"));
+        headTitleLight.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleLight"));
         headDescription.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".description"));
         headNozzles.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".nozzles"));
         headFeeds.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".feeds"));
+        
+        if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            dualMaterialHead.setVisible(true);
+            singleMaterialHead.setVisible(false);
+        }
+        else
+        {
+            dualMaterialHead.setVisible(false);
+            singleMaterialHead.setVisible(true);
+        }
     }
 
     private void controlDetailsVisibility()

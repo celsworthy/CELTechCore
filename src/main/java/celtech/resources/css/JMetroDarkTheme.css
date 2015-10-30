@@ -91,6 +91,7 @@
 
 .label{
     -fx-text-fill: white;
+    -fx-font-smoothing-type: lcd;
 }
 
 .header{
@@ -108,9 +109,7 @@
     -fx-fill-color: grey;
 }
 
-/*.text{
-    -fx-font-smoothing-type: gray;
-}*/
+.text { -fx-font-smoothing-type: lcd; }
 
 .text-field {
     -fx-font-size: 10pt;
@@ -1096,6 +1095,7 @@
 }
 .reelMaterialRemaining {
     -fx-font-size: 18;
+    -fx-font-smoothing-type: lcd;
 }
 
 #reelNumberMaterial {
@@ -1387,6 +1387,10 @@ table-view .column-header-background {
 
 .regularFont {
     -fx-font-family: 'Source Sans Pro Regular';
+}
+
+.statusPanelBackground{
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #a0a0a0, #c8c8c8);
 }
 
 .statusPanel{
@@ -2922,14 +2926,17 @@ color-picker-label .text-field {
 .boldText
 {
     -fx-font-family: 'Source Sans Pro Bold';
+    -fx-font-smoothing-type: lcd;
 }
 
 .regularText
 {
     -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-smoothing-type: lcd;
 }
 
 .lightText
 {
     -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-smoothing-type: lcd;
 }

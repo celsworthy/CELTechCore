@@ -537,8 +537,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             newWidth = parent.getWidth();
         }
 
-        double xScale = Double.min((newWidth / beginWidth), 1.0);
-        double yScale = Double.min((newHeight / beginHeight), 1.0);
+        double xScale = Double.min((newWidth / beginWidth), 0.7);
+        double yScale = Double.min((newHeight / beginHeight), 0.7);
 
         statusPane.setScaleX(xScale);
         statusPane.setScaleY(yScale);
