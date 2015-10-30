@@ -1907,7 +1907,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         try
         {
-            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
+            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                if (project.getUsedExtruders().contains(0))
+                {
+                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureE, true);
+                } else
+                {
+                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureD, true);
+                }
+            } else
+            {
+                transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
+            }
         } catch (RoboxCommsException ex)
         {
             steno.error("Error whilst sending preheat commands");
@@ -2645,14 +2657,23 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
+    public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException
     {
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headToWrite);
         commandInterface.writeToPrinter(writeHeadEEPROM);
 
-        readHeadEEPROM();
+        if (readback)
+        {
+            readHeadEEPROM();
+        }
+    }
+
+    @Override
+    public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
+    {
+        writeHeadEEPROM(headToWrite, true);
     }
 
     @Override
@@ -3389,7 +3410,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
                                                 if (suppressedFirmwareErrors.contains(foundError)
                                                 || (foundError == FirmwareError.HEAD_POWER_EEPROM
-                                                && doNotCheckForPresenceOfHead))
+                                                && doNotCheckForPresenceOfHead)
+                                                || ((foundError == FirmwareError.D_FILAMENT_SLIP
+                                                || foundError == FirmwareError.E_FILAMENT_SLIP)
+                                                && printerStatus.get() == PrinterStatus.IDLE))
                                                 {
                                                     steno.debug("Error:" + foundError.
                                                             name() + " suppressed");

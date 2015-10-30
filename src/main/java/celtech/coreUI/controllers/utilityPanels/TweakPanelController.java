@@ -10,14 +10,16 @@ import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -36,31 +38,55 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private VBox container;
 
     @FXML
-    private Slider speedMultiplierSlider;
+    private Label printSpeedDisplay;
 
     @FXML
-    private Slider extrusionMultiplier1Slider;
+    private Slider speedMultiplierSlider;
 
     @FXML
     private VBox extrusionMultiplier1Box;
 
     @FXML
-    private Slider extrusionMultiplier2Slider;
+    private Label extrusionMultiplier1Text;
+
+    @FXML
+    private Label extrusionMultiplier1Display;
+
+    @FXML
+    private Slider extrusionMultiplier1Slider;
 
     @FXML
     private VBox extrusionMultiplier2Box;
 
     @FXML
-    private Slider nozzleTemperature1Slider;
+    private Label extrusionMultiplier2Display;
+
+    @FXML
+    private Slider extrusionMultiplier2Slider;
 
     @FXML
     private VBox nozzleTemperature1Box;
 
     @FXML
-    private Slider nozzleTemperature2Slider;
+    private Label nozzle1Text;
+
+    @FXML
+    private Label nozzle1Display;
+
+    @FXML
+    private Slider nozzleTemperature1Slider;
 
     @FXML
     private VBox nozzleTemperature2Box;
+
+    @FXML
+    private Label nozzle2Display;
+
+    @FXML
+    private Slider nozzleTemperature2Slider;
+
+    @FXML
+    private Label bedDisplay;
 
     @FXML
     private Slider bedTemperatureSlider;
@@ -89,6 +115,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 inhibitFeedrate = true;
                 speedMultiplierSlider.setValue(newValue.doubleValue() * 100.0);
+                printSpeedDisplay.setText(String.format("%d%%", (int) (newValue.doubleValue() * 100.0)));
                 inhibitFeedrate = false;
             };
 
@@ -114,6 +141,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 inhibitBed = true;
                 bedTemperatureSlider.setValue(newValue.doubleValue());
+                bedDisplay.setText(String.format("%d°C", (int) newValue.doubleValue()));
                 inhibitBed = false;
             };
 
@@ -133,6 +161,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 inhibitExtrusion1 = true;
                 extrusionMultiplier1Slider.setValue(newValue.doubleValue() * 100.0);
+                extrusionMultiplier1Display.setText(String.format("%d%%", (int) (newValue.doubleValue() * 100.0)));
                 inhibitExtrusion1 = false;
             };
 
@@ -159,6 +188,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 inhibitExtrusion2 = true;
                 extrusionMultiplier2Slider.setValue(newValue.doubleValue() * 100.0);
+                extrusionMultiplier2Display.setText(String.format("%d%%", (int) (newValue.doubleValue() * 100.0)));
                 inhibitExtrusion2 = false;
             };
 
@@ -185,6 +215,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 inhibitNozzleTemp1 = true;
                 nozzleTemperature1Slider.setValue(newValue.intValue());
+                nozzle1Display.setText(String.format("%d°C", (int) newValue.doubleValue()));
                 inhibitNozzleTemp1 = false;
             };
 
@@ -205,6 +236,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 inhibitNozzleTemp2 = true;
                 nozzleTemperature2Slider.setValue(newValue.intValue());
+                nozzle2Display.setText(String.format("%d°C", (int) newValue.doubleValue()));
                 inhibitNozzleTemp2 = false;
             };
 
@@ -233,9 +265,19 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     {
         container.setVisible(false);
         Lookup.getSelectedPrinterProperty().addListener(
-                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter) ->
                 {
-                    bindToPrintEngineStatus(newValue);
+                    bindToPrintEngineStatus(newPrinter);
+
+                    if (newPrinter == null)
+                    {
+                        container.setVisible(false);
+                        currentPrinter = null;
+                    } else
+                    {
+                        container.setVisible(true);
+                        currentPrinter = newPrinter;
+                    }
                 });
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
@@ -271,6 +313,8 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
     private void bind()
     {
+        printSpeedDisplay.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().
+                feedRateMultiplierProperty().get() * 100.0)));
         speedMultiplierSlider.setValue(currentPrinter.getPrinterAncillarySystems().
                 feedRateMultiplierProperty().get() * 100.0);
         speedMultiplierSlider.valueChangingProperty().addListener(speedMultiplierSliderListener);
@@ -278,14 +322,26 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         currentPrinter.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
                 feedRateChangeListener);
 
-        bedTemperatureSlider.setValue(currentPrinter.getPrinterAncillarySystems().
-                bedTargetTemperatureProperty().get());
+        if (currentPrinter.getPrinterAncillarySystems().bedHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
+        {
+            bedDisplay.setText(String.format("%d°C", (int) currentPrinter.getPrinterAncillarySystems().
+                    bedFirstLayerTargetTemperatureProperty().get()));
+            bedTemperatureSlider.setValue(currentPrinter.getPrinterAncillarySystems().
+                    bedFirstLayerTargetTemperatureProperty().get());
+        } else
+        {
+            bedDisplay.setText(String.format("%d°C", (int) currentPrinter.getPrinterAncillarySystems().
+                    bedTargetTemperatureProperty().get()));
+            bedTemperatureSlider.setValue(currentPrinter.getPrinterAncillarySystems().
+                    bedTargetTemperatureProperty().get());
+        }
         bedTemperatureSlider.valueChangingProperty().addListener(bedTempSliderListener);
         currentPrinter.getPrinterAncillarySystems().bedTargetTemperatureProperty().addListener(
                 bedTargetTemperatureChangeListener);
 
         if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get())
         {
+            extrusionMultiplier1Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0)));
             extrusionMultiplier1Slider.setValue(currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0);
             extrusionMultiplier1Slider.valueChangingProperty().addListener(extrusionMultiplier1SliderListener);
             currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().addListener(extrusionMultiplier1ChangeListener);
@@ -293,6 +349,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
         if (currentPrinter.extrudersProperty().get(1).isFittedProperty().get())
         {
+            extrusionMultiplier2Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().doubleValue() * 100.0)));
             extrusionMultiplier2Slider.setValue(currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().doubleValue() * 100.0);
             extrusionMultiplier2Slider.valueChangingProperty().addListener(extrusionMultiplier2SliderListener);
             currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().addListener(extrusionMultiplier2ChangeListener);
@@ -345,9 +402,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 if (currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                 {
+                    nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
                     nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().get());
                 } else
                 {
+                    nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().doubleValue()));
                     nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().get());
                 }
                 nozzleTemperature1Slider.valueChangingProperty().addListener(nozzleTemp1SliderListener);
@@ -365,9 +424,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 if (currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                 {
+                    nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
                     nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().get());
                 } else if (currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().get() == HeaterMode.NORMAL)
                 {
+                    nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().doubleValue()));
                     nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().get());
                 }
                 nozzleTemperature1Slider.valueChangingProperty().addListener(nozzleTemp1SliderListener);
@@ -377,9 +438,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
                 if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                 {
+                    nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
                     nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().get());
                 } else if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.NORMAL)
                 {
+                    nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().doubleValue()));
                     nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().get());
                 }
                 nozzleTemperature2Slider.valueChangingProperty().addListener(nozzleTemp2SliderListener);

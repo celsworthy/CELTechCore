@@ -3,12 +3,16 @@ package celtech.printerControl.model;
 import celtech.Lookup;
 import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
+import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
@@ -24,123 +28,102 @@ public class CameraTriggerManager
     private Stenographer steno = StenographerFactory.getStenographer(CameraTriggerManager.class.getName());
     private Printer associatedPrinter = null;
     private static final float xTriggerPosition = 30;
-    private static final float yTriggerPosition = 0;
+    private static final float yTriggerPosition = -6;
     private static final float yForwardPosition = 75;
+    private static final int moveFeedrate_mm_per_min = 12000;
+    private final ScheduledExecutorService scheduledPhoto;
+    private final Runnable photoRun;
 
     public CameraTriggerManager(Printer printer)
     {
         associatedPrinter = printer;
+        scheduledPhoto = Executors.newSingleThreadScheduledExecutor();
+        photoRun = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                String goProURLString = "http://10.5.5.9/camera/SH?t=" + Lookup.getUserPreferences().getGoProWifiPassword() + "&p=%01";
+                try
+                {
+                    URL obj = new URL(goProURLString);
+                    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+                    con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.44 (KHTML, like Gecko) JavaFX/8.0 Safari/537.44");
+
+                    // optional default is GET
+                    con.setRequestMethod("GET");
+
+                    //add request header
+                    con.setConnectTimeout(500);
+                    int responseCode = con.getResponseCode();
+
+                    if (responseCode == 200
+                            && con.getContentLength() > 0)
+                    {
+                        steno.info("Took picture");
+                    } else
+                    {
+                        steno.info("Failed to take picture - response was " + responseCode);
+                    }
+                } catch (IOException ex)
+                {
+                    steno.error("Exception whilst attempting to take GoPro picture");
+                }
+            }
+        };
     }
 
-    private ChangeListener<Boolean> cameraTriggerListener = new ChangeListener<Boolean>()
+    private ChangeListener<Number> cameraTriggerListener = new ChangeListener<Number>()
     {
         @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
         {
-            if (!oldValue && newValue)
+            if (newValue.intValue() > oldValue.intValue())
             {
                 triggerCamera();
             }
         }
     };
 
-    public static void appendLayerEndTriggerCode(LayerNode layer, Movement lastMovement)
+    public static void appendLayerEndTriggerCode(LayerChangeDirectiveNode layerChangeNode)
     {
         CommentNode beginComment = new CommentNode("Start of camera trigger");
         CommentNode endComment = new CommentNode("End of camera trigger");
 
-        GCodeDirectiveNode relativeMove = new GCodeDirectiveNode();
-        relativeMove.setGValue(91);
-
-        GCodeDirectiveNode absoluteMove = new GCodeDirectiveNode();
-        absoluteMove.setGValue(90);
-
-        TravelNode moveOnUp = new TravelNode();
-        moveOnUp.getMovement().setZ(0.5);
-        moveOnUp.getFeedrate().setFeedRate_mmPerMin(100);
-
-        TravelNode moveToCameraPosition = new TravelNode();
-        moveToCameraPosition.getMovement().setX(xTriggerPosition);
-        moveToCameraPosition.getMovement().setY(yTriggerPosition);
-        moveToCameraPosition.getFeedrate().setFeedRate_mmPerMin(1000);
-
-        GCodeDirectiveNode dwellToAllowTrigger = new GCodeDirectiveNode();
-        dwellToAllowTrigger.setGValue(4);
-        dwellToAllowTrigger.setPValue(700);
-
         TravelNode moveBedForward = new TravelNode();
         moveBedForward.getMovement().setY(yForwardPosition);
-        moveBedForward.getFeedrate().setFeedRate_mmPerMin(100);
+        moveBedForward.getFeedrate().setFeedRate_mmPerMin(moveFeedrate_mm_per_min);
 
         GCodeDirectiveNode dwellWhilePictureTaken = new GCodeDirectiveNode();
         dwellWhilePictureTaken.setGValue(4);
-        dwellWhilePictureTaken.setSValue(2);
+        dwellWhilePictureTaken.setPValue(1500);
 
         TravelNode returnToPreviousPosition = new TravelNode();
-        returnToPreviousPosition.getMovement().setX(lastMovement.getX());
-        returnToPreviousPosition.getMovement().setY(lastMovement.getY());
-        returnToPreviousPosition.getFeedrate().setFeedRate_mmPerMin(1000);
+        returnToPreviousPosition.getMovement().setX(layerChangeNode.getMovement().getX());
+        returnToPreviousPosition.getMovement().setY(layerChangeNode.getMovement().getY());
+        returnToPreviousPosition.getFeedrate().setFeedRate_mmPerMin(moveFeedrate_mm_per_min);
 
-        TravelNode moveDown = new TravelNode();
-        moveDown.getMovement().setZ(-0.5);
-        moveDown.getFeedrate().setFeedRate_mmPerMin(100);
-
-        layer.addChildAtEnd(beginComment);
-        layer.addChildAtEnd(relativeMove);
-        layer.addChildAtEnd(moveOnUp);
-        layer.addChildAtEnd(absoluteMove);
-        layer.addChildAtEnd(moveToCameraPosition);
-        layer.addChildAtEnd(dwellToAllowTrigger);
-        layer.addChildAtEnd(moveBedForward);
-        layer.addChildAtEnd(dwellWhilePictureTaken);
-        layer.addChildAtEnd(returnToPreviousPosition);
-        layer.addChildAtEnd(relativeMove);
-        layer.addChildAtEnd(moveDown);
-        layer.addChildAtEnd(absoluteMove);
-        layer.addChildAtEnd(endComment);
+        layerChangeNode.addSiblingAfter(endComment);
+        layerChangeNode.addSiblingAfter(returnToPreviousPosition);
+        layerChangeNode.addSiblingAfter(dwellWhilePictureTaken);
+        layerChangeNode.addSiblingAfter(moveBedForward);
+        layerChangeNode.addSiblingAfter(beginComment);
     }
 
     public void listenForCameraTrigger()
     {
         steno.info("Started listening");
-        associatedPrinter.getPrinterAncillarySystems().YStopSwitch.addListener(cameraTriggerListener);
+        associatedPrinter.getPrintEngine().progressCurrentLayerProperty().addListener(cameraTriggerListener);
     }
 
     public void stopListeningForCameraTrigger()
     {
         steno.info("Stopped listening");
-        associatedPrinter.getPrinterAncillarySystems().YStopSwitch.removeListener(cameraTriggerListener);
+        associatedPrinter.getPrintEngine().progressCurrentLayerProperty().removeListener(cameraTriggerListener);
     }
 
     private void triggerCamera()
     {
-        String goProURLString = "http://10.5.5.9/camera/SH?t=" + Lookup.getUserPreferences().getGoProWifiPassword() + "&p=%01";
-
-        steno.info("Snap");
-        try
-        {
-            URL obj = new URL(goProURLString);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.44 (KHTML, like Gecko) JavaFX/8.0 Safari/537.44");
-
-            // optional default is GET
-            con.setRequestMethod("GET");
-
-            //add request header
-            con.setConnectTimeout(500);
-            int responseCode = con.getResponseCode();
-
-            if (responseCode == 200
-                    && con.getContentLength() > 0)
-            {
-                steno.info("Took picture");
-            } else
-            {
-                steno.info("Failed to take picture - response was " + responseCode);
-            }
-        } catch (IOException ex)
-        {
-            steno.error("Exception whilst attempting to take GoPro picture");
-        }
+        scheduledPhoto.schedule(photoRun, 3500, TimeUnit.MILLISECONDS);
     }
 }

@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import celtech.coreUI.components.*?>
 
-<fx:root type="celtech.coreUI.components.ChoiceLinkDialogBox" minHeight="100.0" minWidth="100.0" styleClass="error-dialogue" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="celtech.coreUI.components.ChoiceLinkDialogBox" minHeight="100.0" minWidth="100.0" styleClass="error-dialog" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <HyperlinkedLabel id="errorDialogTitle" fx:id="title" text="" />
         <HyperlinkedLabel id="errorDialogMessage" fx:id="message" text="" />

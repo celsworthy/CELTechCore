@@ -80,6 +80,8 @@ class ChartManager
             + "-fx-shape: \"M0,6 L12,0 L12,6 L0,6 Z\"; ";
 
     private final String graphLineCSS = "-fx-stroke-width: 3; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
+    private final String graphLineFatCSS = "-fx-stroke-width: 4; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
+    private final String graphLineThinCSS = "-fx-stroke-width: 2; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
     private int dashedLineCounter = 0;
 
     private enum BugType
@@ -227,10 +229,10 @@ class ChartManager
             {
                 if (dashedLineCounter > 0)
                 {
-                    lineNode.setStyle(graphLineCSS + "-fx-stroke: " + webColour + "; -fx-stroke-dash-array: 10 10; -fx-stroke-dash-offset: 10; ");
+                    lineNode.setStyle(graphLineThinCSS + "-fx-stroke: " + webColour);
                 } else
                 {
-                    lineNode.setStyle(graphLineCSS + "-fx-stroke: " + webColour + "; -fx-stroke-dash-array: 10 10; ");
+                    lineNode.setStyle(graphLineFatCSS + "-fx-stroke: " + webColour);
                 }
                 dashedLineCounter++;
             } else

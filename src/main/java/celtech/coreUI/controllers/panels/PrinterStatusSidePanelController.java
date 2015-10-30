@@ -75,10 +75,22 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label legendAmbient;
 
     @FXML
-    private Label modeTitle;
+    private PrinterGridComponent printerGridComponent;
 
     @FXML
-    private PrinterGridComponent printerGridComponent;
+    private VBox headPanel;
+
+    @FXML
+    private Label headTitle;
+
+    @FXML
+    private Label headDescription;
+
+    @FXML
+    private Label headNozzles;
+
+    @FXML
+    private Label headFeeds;
 
     private Printer previousSelectedPrinter = null;
     private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
@@ -128,27 +140,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         initialiseTemperatureChart();
         controlDetailsVisibility();
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        headPanel.setVisible(false);
 
-        applicationStatus.modeProperty().addListener(new ChangeListener<ApplicationMode>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
-            {
-                switch (newValue)
-                {
-                    case LAYOUT:
-                        modeTitle.setText(Lookup.i18n("mode.layout"));
-                        break;
-                    case SETTINGS:
-                        modeTitle.setText(Lookup.i18n("mode.settings"));
-                        break;
-                    default:
-                        modeTitle.setText(Lookup.i18n("mode.status"));
-                        break;
-                }
-            }
-        });
+        Lookup.getPrinterListChangesNotifier().addListener(this);
     }
 
     private void initialiseTemperatureChart()
@@ -257,6 +251,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
                 graphDataPointChangeListener);
         chartManager.removeAllNozzles();
+        headPanel.setPrefHeight(0);
+        headPanel.setMinHeight(0);
+        headPanel.setVisible(false);
     }
 
     private void bindHeadProperties(Head head)
@@ -275,6 +272,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     nozzleHeater.nozzleTemperatureProperty());
 
         }
+        headPanel.setPrefHeight(-1);
+        headPanel.setVisible(true);
+        headTitle.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".title"));
+        headDescription.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".description"));
+        headNozzles.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".nozzles"));
+        headFeeds.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".feeds"));
     }
 
     private void controlDetailsVisibility()

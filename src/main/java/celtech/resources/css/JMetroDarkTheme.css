@@ -1989,17 +1989,12 @@ modal-dialogue{
     -fx-font-size: 28px;
 }
 
-.statusBar #targetLegend {
+.statusBar .smallerText {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
-.statusBar #targetValue {
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
-}
-
-.statusBar #currentValue {
+.statusBar .largerText {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
 }
@@ -2041,19 +2036,13 @@ modal-dialogue{
     -fx-text-fill: black;
 }
 
-.secondaryStatusBar #targetLegend {
+.secondaryStatusBar .smallerText {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-text-fill: black;
 }
 
-.secondaryStatusBar #targetValue {
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
-    -fx-text-fill: black;
-}
-
-.secondaryStatusBar #currentValue {
+.secondaryStatusBar .largerText {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
     -fx-text-fill: black;

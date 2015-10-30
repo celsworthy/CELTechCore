@@ -345,7 +345,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         brimSlider.valueChangingProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean was, Boolean now) ->
                 {
-                    if (was && !now)
+                    if (!brimSlider.isValueChanging())
                     {
                         printerSettings.setBrimOverride(brimSlider.valueProperty().intValue());
                     }

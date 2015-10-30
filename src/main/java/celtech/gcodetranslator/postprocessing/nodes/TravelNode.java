@@ -13,8 +13,9 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  *
  * @author Ian
  */
-public class TravelNode extends GCodeEventNode implements MovementProvider, FeedrateProvider, SupportsPrintTimeCalculation, Renderable
+public class TravelNode extends GCodeEventNode implements MovementProvider, FeedrateProvider, SupportsPrintTimeCalculation, Renderable, MergeableWithToolchange
 {
+
     private final Movement movement = new Movement();
     private final Feedrate feedrate = new Feedrate();
 
@@ -58,6 +59,7 @@ public class TravelNode extends GCodeEventNode implements MovementProvider, Feed
         return feedrate;
     }
 
+    @Override
     public void changeToolDuringMovement(int toolNumber)
     {
         isToolChangeRequired = true;

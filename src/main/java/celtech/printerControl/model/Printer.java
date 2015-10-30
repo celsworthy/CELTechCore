@@ -430,6 +430,8 @@ public interface Printer extends RoboxResponseConsumer
 
     public void updatePrinterIDChecksum(String checksum) throws PrinterException;
 
+    public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException;
+    
     /**
      *
      * @param headToWrite

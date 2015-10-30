@@ -1103,4 +1103,10 @@ public class TestPrinter implements Printer
     {
         return effectiveFilaments;
     }
+
+    @Override
+    public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

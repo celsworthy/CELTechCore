@@ -13,13 +13,16 @@ import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PostProcessingError;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
+import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.MergeableWithToolchange;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithStartPoint;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
@@ -65,6 +68,18 @@ public class UtilityMethods
     {
         if (Lookup.getUserPreferences().isGoProTriggerEnabled())
         {
+            IteratorWithStartPoint<GCodeEventNode> layerForwards = layerNode.treeSpanningIterator(null);
+            while (layerForwards.hasNext())
+            {
+                GCodeEventNode layerForwardsEvent = layerForwards.next();
+
+                if (layerForwardsEvent instanceof LayerChangeDirectiveNode)
+                {
+                    CameraTriggerManager.appendLayerEndTriggerCode((LayerChangeDirectiveNode) layerForwardsEvent);
+                    break;
+                }
+            }
+
             Iterator<GCodeEventNode> layerBackwards = layerNode.childBackwardsIterator();
 
             while (layerBackwards.hasNext())
@@ -75,37 +90,6 @@ public class UtilityMethods
                     closeAtEndOfToolSelectIfNecessary((ToolSelectNode) layerChild, nozzleProxies);
                     break;
                 }
-            }
-
-            Movement lastMovement = null;
-
-            //Now add the
-            GCodeEventNode lastEvent = layerNode.getAbsolutelyTheLastEvent();
-            if (lastEvent != null
-                    && lastEvent instanceof MovementProvider)
-            {
-                lastMovement = ((MovementProvider) lastEvent).getMovement();
-            } else if (lastEvent != null)
-            {
-                IteratorWithOrigin<GCodeEventNode> layerBackwardsIterator = lastEvent.treeSpanningBackwardsIterator();
-                while (layerBackwardsIterator.hasNext())
-                {
-                    GCodeEventNode layerBackwardsChild = layerBackwardsIterator.next();
-
-                    if (layerNode instanceof MovementProvider)
-                    {
-                        lastMovement = ((MovementProvider) layerBackwardsChild).getMovement();
-                        break;
-                    }
-                }
-            }
-
-            if (lastEvent != null && lastMovement != null)
-            {
-                CameraTriggerManager.appendLayerEndTriggerCode(layerNode, lastMovement);
-            } else
-            {
-                steno.warning("Couldn't add camera trigger on layer " + layerNode.getLayerNumber());
             }
         }
     }
@@ -149,11 +133,11 @@ public class UtilityMethods
                 closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
 
                 //Now look to see if we can consolidate the tool change with a travel
-                if (toolSelectNode.getChildren().size() > 0)
+                if (lastToolSelectNode.getChildren().size() > 0)
                 {
-                    if (toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1) instanceof TravelNode)
+                    if (lastToolSelectNode.getChildren().get(lastToolSelectNode.getChildren().size() - 1) instanceof MergeableWithToolchange)
                     {
-                        ((TravelNode) toolSelectNode.getChildren().get(toolSelectNode.getChildren().size() - 1)).changeToolDuringMovement(toolSelectNode.getToolNumber());
+                        ((MergeableWithToolchange) lastToolSelectNode.getChildren().get(lastToolSelectNode.getChildren().size() - 1)).changeToolDuringMovement(toolSelectNode.getToolNumber());
                         toolSelectNode.suppressNodeOutput(true);
                     }
                 }

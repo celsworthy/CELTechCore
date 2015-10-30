@@ -99,9 +99,6 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private HBox materialColourContainer;
 
     @FXML
-    private HBox materialRemainingContainer;
-
-    @FXML
     private ComboBox<Object> cmbMaterials;
 
     public MaterialComponent()
@@ -113,7 +110,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         super();
         URL fxml = getClass().getResource(
-            "/celtech/resources/fxml/components/material/material.fxml");
+                "/celtech/resources/fxml/components/material/material.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -134,27 +131,27 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
         Lookup.getUserPreferences().advancedModeProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                repopulateCmbMaterials();
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    repopulateCmbMaterials();
+                });
 
         selectedFilamentProperty.addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                switch (mode)
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                 {
-                    case STATUS:
-                        displayForStatusScreen(newValue);
-                        break;
-                    case LAYOUT:
-                        displayForLayoutScreen(newValue);
-                        break;
-                    case SETTINGS:
-                        displayForSettingsScreen(newValue);
-                        break;
-                }
-            });
+                    switch (mode)
+                    {
+                        case STATUS:
+                            displayForStatusScreen(newValue);
+                            break;
+                        case LAYOUT:
+                            displayForLayoutScreen(newValue);
+                            break;
+                        case SETTINGS:
+                            displayForSettingsScreen(newValue);
+                            break;
+                    }
+                });
 
         setUpFilamentLoadedListener();
         setUpFilamentChangedListener();
@@ -171,8 +168,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * When the filament property changes for STATUS mode, update the component appropriately.
-     * selectedFilament of null indicates that there is no Reel loaded on this extruder.
+     * When the filament property changes for STATUS mode, update the component
+     * appropriately. selectedFilament of null indicates that there is no Reel
+     * loaded on this extruder.
      */
     private void displayForStatusScreen(Filament filament)
     {
@@ -206,16 +204,17 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 setReelType(ReelType.GEARS);
             }
             setMaterial(extruderNumber, filament.getMaterial(),
-                        filament.getFriendlyFilamentName(),
-                        filament.getDisplayColourProperty().get(),
-                        remainingFilament,
-                        diameter, filamentLoaded());
+                    filament.getFriendlyFilamentName(),
+                    filament.getDisplayColourProperty().get(),
+                    remainingFilament,
+                    diameter, filamentLoaded());
         }
     }
 
     /**
-     * When the filament property changes for LAYOUT mode, update the component appropriately.
-     * selectedFilament of null is not valid after the first setting.
+     * When the filament property changes for LAYOUT mode, update the component
+     * appropriately. selectedFilament of null is not valid after the first
+     * setting.
      */
     private void displayForLayoutScreen(Filament filament)
     {
@@ -226,16 +225,16 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (filament != null)
         {
             setMaterial(extruderNumber, filament.getMaterial(),
-                        filament.getFriendlyFilamentName(),
-                        filament.getDisplayColourProperty().get(),
-                        remainingFilament,
-                        diameter, false);
+                    filament.getFriendlyFilamentName(),
+                    filament.getDisplayColourProperty().get(),
+                    remainingFilament,
+                    diameter, false);
         }
     }
 
     /**
-     * In LAYOUT mode this widget is responsible for updating the project filaments directly, and
-     * listening for changes to the project filament.
+     * In LAYOUT mode this widget is responsible for updating the project
+     * filaments directly, and listening for changes to the project filament.
      */
     public void setLayoutProject(Project project)
     {
@@ -244,33 +243,33 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             this.undoableProject = new UndoableProject(project);
         }
         selectedFilamentProperty.addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                if (extruderNumber == 0)
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                 {
-                    undoableProject.setExtruder0Filament(newValue);
-                } else
-                {
-                    undoableProject.setExtruder1Filament(newValue);
-                }
-            });
+                    if (extruderNumber == 0)
+                    {
+                        undoableProject.setExtruder0Filament(newValue);
+                    } else
+                    {
+                        undoableProject.setExtruder1Filament(newValue);
+                    }
+                });
 
         ChangeListener<Filament> filamentChangeListener = new ChangeListener<Filament>()
         {
 
             @Override
             public void changed(
-                ObservableValue<? extends Filament> observable, Filament oldValue, Filament filament)
+                    ObservableValue<? extends Filament> observable, Filament oldValue, Filament filament)
             {
                 if (filament != null)
                 {
                     Float remainingFilament = 0f;
                     Float diameter = 0f;
                     setMaterial(extruderNumber, filament.getMaterial(),
-                                filament.getFriendlyFilamentName(),
-                                filament.getDisplayColourProperty().get(),
-                                remainingFilament,
-                                diameter, false);
+                            filament.getFriendlyFilamentName(),
+                            filament.getDisplayColourProperty().get(),
+                            remainingFilament,
+                            diameter, false);
                 }
             }
         };
@@ -285,9 +284,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * When the filament property changes for SETTINGS mode, update the component appropriately.
-     * selectedFilament of null indicates that the component is in the initial "Unknown" state that
-     * occurs if no reel is loaded on that extruder and the user has yet to pick a filament.
+     * When the filament property changes for SETTINGS mode, update the
+     * component appropriately. selectedFilament of null indicates that the
+     * component is in the initial "Unknown" state that occurs if no reel is
+     * loaded on that extruder and the user has yet to pick a filament.
      */
     private void displayForSettingsScreen(Filament filament)
     {
@@ -321,10 +321,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                 setReelType(ReelType.GEARS);
             }
             setMaterial(extruderNumber, filament.getMaterial(),
-                        filament.getFriendlyFilamentName(),
-                        filament.getDisplayColourProperty().get(),
-                        remainingFilament,
-                        diameter, filamentLoaded());
+                    filament.getFriendlyFilamentName(),
+                    filament.getDisplayColourProperty().get(),
+                    remainingFilament,
+                    diameter, filamentLoaded());
         }
     }
 
@@ -363,8 +363,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 //
 //    }
     /**
-     * Set up the materials combo box. This displays a list of filaments and can also display an
-     * "Unknown" (string) option when required.
+     * Set up the materials combo box. This displays a list of filaments and can
+     * also display an "Unknown" (string) option when required.
      */
     private void setupComboBox()
     {
@@ -375,45 +375,45 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         repopulateCmbMaterials();
 
         filamentContainer.getUserFilamentList().addListener(
-            (ListChangeListener.Change<? extends Filament> change) ->
-            {
-
-                while (change.next())
+                (ListChangeListener.Change<? extends Filament> change) ->
                 {
-                    if (change.wasAdded())
-                    {
-                        for (Filament filament : change.getAddedSubList())
-                        {
-                            cmbMaterials.getItems().add(filament);
-                        }
-                    } else if (change.wasRemoved())
-                    {
-                        for (Filament filament : change.getRemoved())
-                        {
-                            cmbMaterials.getItems().remove(filament);
-                        }
-                    } else if (change.wasReplaced())
-                    {
-                    } else if (change.wasUpdated())
-                    {
-                    }
-                }
 
-            });
+                    while (change.next())
+                    {
+                        if (change.wasAdded())
+                        {
+                            for (Filament filament : change.getAddedSubList())
+                            {
+                                cmbMaterials.getItems().add(filament);
+                            }
+                        } else if (change.wasRemoved())
+                        {
+                            for (Filament filament : change.getRemoved())
+                            {
+                                cmbMaterials.getItems().remove(filament);
+                            }
+                        } else if (change.wasReplaced())
+                        {
+                        } else if (change.wasUpdated())
+                        {
+                        }
+                    }
+
+                });
 
         cmbMaterials.valueProperty().addListener(
-            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-            {
-                if (newValue instanceof Filament)
+                (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
                 {
-                    selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
-                    removeUnknownFromCombo();
-                } else
-                {
-                    // must be "Unknown"
-                    selectedFilamentProperty.set(null);
-                }
-            });
+                    if (newValue instanceof Filament)
+                    {
+                        selectedFilamentProperty.set((Filament) cmbMaterials.getValue());
+                        removeUnknownFromCombo();
+                    } else
+                    {
+                        // must be "Unknown"
+                        selectedFilamentProperty.set(null);
+                    }
+                });
 
         if (mode == Mode.SETTINGS)
         {
@@ -437,16 +437,16 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         try
         {
             allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
-                (Filament o1, Filament o2)
-                -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                    (Filament o1, Filament o2)
+                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                    (Filament o1, Filament o2)
-                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                        (Filament o1, Filament o2)
+                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
                 userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                    (Filament o1, Filament o2)
-                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                        (Filament o1, Filament o2)
+                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             }
         } catch (NoClassDefFoundError exception)
         {
@@ -475,8 +475,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * Set the combo box selection to the filament of the given id, or to the first filament in the
-     * list if filamentId is empty.
+     * Set the combo box selection to the filament of the given id, or to the
+     * first filament in the list if filamentId is empty.
      *
      * @param filamentId
      */
@@ -536,61 +536,19 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     private void updateGUIForModeAndPrinterExtruder()
     {
-        switch (mode)
-        {
-            case STATUS:
-                customiseForStatusScreen();
-                break;
-            case LAYOUT:
-                customiseForLayoutScreen();
-                break;
-            case SETTINGS:
-                customiseForSettingsScreen();
-                break;
-        }
-    }
-
-    private void customiseForLayoutScreen()
-    {
-        cmbMaterials.setVisible(true);
-        materialColourContainer.setVisible(true);
-        materialRemainingContainer.setVisible(false);
-        hideMaterialDetails();
-        displayForLayoutScreen(selectedFilamentProperty.get());
-    }
-
-    private void customiseForSettingsScreen()
-    {
-        showMaterialDetails();
-        if (printer.reelsProperty().containsKey(extruderNumber))
-        {
-            cmbMaterials.setVisible(false);
-            materialColourContainer.setVisible(true);
-            materialRemainingContainer.setVisible(true);
-            setReelType(ReelType.ROBOX);
-            Reel reel = printer.reelsProperty().get(extruderNumber);
-            Filament filament = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
-            selectedFilamentProperty.set(filament);
-        } else
-        {
-            selectedFilamentProperty.set(null);
-            cmbMaterials.setVisible(true);
-            materialColourContainer.setVisible(false);
-            materialRemainingContainer.setVisible(false);
-        }
-        displayForSettingsScreen(selectedFilamentProperty.get());
+        customiseForStatusScreen();
     }
 
     /**
-     * Configure this component as required for the Status screen. It should only show the details
-     * of a loaded SmartReel. If no SmartReel is present then simply display 'Unknown' as the
-     * material with a ReelType of SOLID_QUESTION. Do not show the combo.
+     * Configure this component as required for the Status screen. It should
+     * only show the details of a loaded SmartReel. If no SmartReel is present
+     * then simply display 'Unknown' as the material with a ReelType of
+     * SOLID_QUESTION. Do not show the combo.
      */
     private void customiseForStatusScreen()
     {
         cmbMaterials.setVisible(false);
         materialColourContainer.setVisible(true);
-        materialRemainingContainer.setVisible(true);
         showMaterialDetails();
         if (printer.reelsProperty().containsKey(extruderNumber))
         {
@@ -607,17 +565,17 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
     private void showMaterialDetails()
     {
-        materialRemainingContainer.setPrefHeight(20);
-        AnchorPane.setTopAnchor(materialRemainingContainer, 100.0);
-        anchorPane.setPrefHeight(130);
+//        materialRemainingContainer.setPrefHeight(20);
+//        AnchorPane.setTopAnchor(materialRemainingContainer, 100.0);
+//        anchorPane.setPrefHeight(130);
         materialRemaining.setVisible(true);
     }
 
     private void hideMaterialDetails()
     {
-        materialRemainingContainer.setPrefHeight(0);
-        AnchorPane.setTopAnchor(materialRemainingContainer, 90.0);
-        anchorPane.setPrefHeight(95);
+//        materialRemainingContainer.setPrefHeight(0);
+//        AnchorPane.setTopAnchor(materialRemainingContainer, 90.0);
+//        anchorPane.setPrefHeight(95);
         materialRemaining.setVisible(false);
     }
 
@@ -645,11 +603,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     private void setMaterial(int reelNumber, MaterialType materialType, String materialColourString,
-        Color colour, double remainingFilament, double filamentDiameter, boolean filamentLoaded)
+            Color colour, double remainingFilament, double filamentDiameter, boolean filamentLoaded)
     {
 
         String numberMaterial = String.valueOf(reelNumber + 1) + ":"
-            + materialType.getFriendlyName();
+                + materialType.getFriendlyName();
 
         double remainingLengthMeters = remainingFilament / 1000d;
         if (remainingLengthMeters < 0)
@@ -660,13 +618,13 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         double crossSectionM2 = Math.PI * filamentDiameter * filamentDiameter / 4d * 1e-6;
         double remainingWeightG = remainingLengthMeters * crossSectionM2 * densityKGM3 * 1000d;
         String remaining = ((int) remainingLengthMeters) + "m / " + ((int) remainingWeightG)
-            + "g " + Lookup.i18n("materialComponent.remaining");
+                + "g " + Lookup.i18n("materialComponent.remaining");
 
         showDetails(numberMaterial, remaining, materialColourString, colour, filamentLoaded);
     }
 
     private void showDetails(String numberMaterial, String materialRemainingString,
-        String materialColourString, Color colour, boolean filamentLoaded)
+            String materialColourString, Color colour, boolean filamentLoaded)
     {
 
         svgLoaded.setVisible(filamentLoaded);
@@ -699,7 +657,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         setReelType(ReelType.SOLID_QUESTION);
         String materialUnknown = Lookup.i18n("materialComponent.materialUnknown");
         showDetails((1 + extruderNumber) + ":", "", materialUnknown,
-                    Color.BLACK, true);
+                Color.BLACK, true);
     }
 
     /**
@@ -720,8 +678,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * Select the given filament and update the control to reflect the selected colour etc. The
-     * remaining material is set to show 0.
+     * Select the given filament and update the control to reflect the selected
+     * colour etc. The remaining material is set to show 0.
      */
     public void setSelectedFilamentInComboBox(Filament filament)
     {
@@ -745,7 +703,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     /**
-     * In SETTINGS mode, when a custom filament has been chosen remove the Unknown option.
+     * In SETTINGS mode, when a custom filament has been chosen remove the
+     * Unknown option.
      */
     private void removeUnknownFromCombo()
     {
@@ -758,26 +717,26 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     }
 
     ChangeListener<Color> filamentChanged
-        = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
-        {
-            updateGUIForModeAndPrinterExtruder();
-            repopulateCmbMaterials();
-        };
+            = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+            {
+                updateGUIForModeAndPrinterExtruder();
+                repopulateCmbMaterials();
+            };
 
     private void setUpFilamentChangedListener()
     {
         selectedFilamentProperty.addListener(
-            (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-            {
-                if (oldValue != null)
+                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                 {
-                    oldValue.getDisplayColourProperty().removeListener(filamentChanged);
-                }
-                if (newValue != null)
-                {
-                    newValue.getDisplayColourProperty().addListener(filamentChanged);
-                }
-            });
+                    if (oldValue != null)
+                    {
+                        oldValue.getDisplayColourProperty().removeListener(filamentChanged);
+                    }
+                    if (newValue != null)
+                    {
+                        newValue.getDisplayColourProperty().addListener(filamentChanged);
+                    }
+                });
     }
 
     private void setUpFilamentLoadedListener()
@@ -785,10 +744,10 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         if (printer != null && printer.extrudersProperty().get(extruderNumber) != null)
         {
             printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                updateGUIForModeAndPrinterExtruder();
-            });
+                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                    {
+                        updateGUIForModeAndPrinterExtruder();
+                    });
         }
     }
 

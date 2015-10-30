@@ -29,7 +29,7 @@ public class UserPreferenceFile
     private boolean showGCode = true;
     private boolean showAdjustments = true;
     private boolean showMetricUnits = true;
-    private boolean goProTriggerEnabled = true;
+    private boolean goProTriggerEnabled = false;
     private String goProWifiPassword = "";
 
     public String getLanguageTag()

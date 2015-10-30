@@ -73,6 +73,11 @@ public class ChoiceLinkDialogBox extends VBox
     public boolean closedDueToPrinterDisconnect() {
         return closedDueToPrinterDisconnect;
     }
+
+    public ChoiceLinkDialogBox()
+    {
+        this.closeOnPrinterDisconnect = true;
+    }
     
     public ChoiceLinkDialogBox(boolean closeOnPrinterDisconnect)
     {
@@ -168,6 +173,7 @@ public class ChoiceLinkDialogBox extends VBox
      */
     public Optional<ChoiceLinkButton> getUserInput() throws PrinterDisconnectedException
     {
+//        dialogStage.setWidth(DisplayManager.getMainStage().getWidth());
         dialogStage.showAndWait();
         openDialogs.remove(this);
         

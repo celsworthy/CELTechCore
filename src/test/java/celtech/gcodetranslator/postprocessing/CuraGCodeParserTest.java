@@ -365,7 +365,7 @@ public class CuraGCodeParserTest
 
         assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
         assertEquals(RetractNode.class, layerNode.getChildren().get(1).getClass());
-        assertEquals(TravelNode.class, layerNode.getChildren().get(2).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, layerNode.getChildren().get(2).getClass());
         assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(3).getClass());
 
         OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(3);
@@ -408,7 +408,7 @@ public class CuraGCodeParserTest
         FillSectionNode fillNode = (FillSectionNode) node.getChildren().get(0);
         assertEquals(4, fillNode.getChildren().size());
         assertEquals(RetractNode.class, fillNode.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, fillNode.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, fillNode.getChildren().get(1).getClass());
         assertEquals(UnretractNode.class, fillNode.getChildren().get(2).getClass());
         assertEquals(ExtrusionNode.class, fillNode.getChildren().get(3).getClass());
 
@@ -467,7 +467,7 @@ public class CuraGCodeParserTest
         FillSectionNode fillNode = (FillSectionNode) node.getChildren().get(0);
         assertEquals(4, fillNode.getChildren().size());
         assertEquals(RetractNode.class, fillNode.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, fillNode.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, fillNode.getChildren().get(1).getClass());
         assertEquals(UnretractNode.class, fillNode.getChildren().get(2).getClass());
         assertEquals(ExtrusionNode.class, fillNode.getChildren().get(3).getClass());
 
@@ -687,7 +687,7 @@ public class CuraGCodeParserTest
         FillSectionNode node = (FillSectionNode) result.valueStack.pop();
         assertEquals(4, node.getChildren().size());
         assertEquals(RetractNode.class, node.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, node.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, node.getChildren().get(1).getClass());
         assertEquals(UnretractNode.class, node.getChildren().get(2).getClass());
         assertEquals(ExtrusionNode.class, node.getChildren().get(3).getClass());
     }
@@ -713,7 +713,7 @@ public class CuraGCodeParserTest
         InnerPerimeterSectionNode sectionNode = (InnerPerimeterSectionNode) result.valueStack.pop();
         assertEquals(4, sectionNode.getChildren().size());
         assertEquals(RetractNode.class, sectionNode.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, sectionNode.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, sectionNode.getChildren().get(1).getClass());
         assertEquals(UnretractNode.class, sectionNode.getChildren().get(2).getClass());
         assertEquals(ExtrusionNode.class, sectionNode.getChildren().get(3).getClass());
     }
@@ -740,7 +740,7 @@ public class CuraGCodeParserTest
         OuterPerimeterSectionNode sectionNode = (OuterPerimeterSectionNode) result.valueStack.pop();
         assertEquals(4, sectionNode.getChildren().size());
         assertEquals(RetractNode.class, sectionNode.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, sectionNode.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, sectionNode.getChildren().get(1).getClass());
         assertEquals(UnretractNode.class, sectionNode.getChildren().get(2).getClass());
         assertEquals(ExtrusionNode.class, sectionNode.getChildren().get(3).getClass());
     }
@@ -767,7 +767,7 @@ public class CuraGCodeParserTest
         SupportSectionNode sectionNode = (SupportSectionNode) result.valueStack.pop();
         assertEquals(4, sectionNode.getChildren().size());
         assertEquals(RetractNode.class, sectionNode.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, sectionNode.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, sectionNode.getChildren().get(1).getClass());
         assertEquals(UnretractNode.class, sectionNode.getChildren().get(2).getClass());
         assertEquals(ExtrusionNode.class, sectionNode.getChildren().get(3).getClass());
     }
@@ -926,7 +926,7 @@ public class CuraGCodeParserTest
                 3, layerNode.getChildren().size());
 
         assertEquals(MCodeNode.class, layerNode.getChildren().get(0).getClass());
-        assertEquals(TravelNode.class, layerNode.getChildren().get(1).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, layerNode.getChildren().get(1).getClass());
         assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(2).getClass());
 
         OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(2);
@@ -1064,7 +1064,7 @@ public class CuraGCodeParserTest
 
         assertEquals(2, layerNode.getChildren().size());
 
-        assertEquals(TravelNode.class, layerNode.getChildren().get(0).getClass());
+        assertEquals(LayerChangeDirectiveNode.class, layerNode.getChildren().get(0).getClass());
         assertEquals(OrphanObjectDelineationNode.class, layerNode.getChildren().get(1).getClass());
 
         OrphanObjectDelineationNode objectNode = (OrphanObjectDelineationNode) layerNode.getChildren().get(1);
