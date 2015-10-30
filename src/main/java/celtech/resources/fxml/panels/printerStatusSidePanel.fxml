@@ -18,20 +18,27 @@
     <children>
         <AnchorPane minHeight="750.0">
             <children>
-                <VBox id="StatusPanel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" AnchorPane.topAnchor="20.0" HBox.hgrow="ALWAYS">
+                <VBox id="StatusPanel" spacing="20" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" styleClass="sidePanel" AnchorPane.topAnchor="20.0" HBox.hgrow="ALWAYS">
                     <children>
                         <HBox alignment="CENTER">
                             <children>
                                 <PrinterGridComponent fx:id="printerGridComponent" styleClass="printerGrid" />
                             </children>
                         </HBox>
-                        <Pane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
                         <VBox fx:id="headPanel" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="80.0" prefWidth="260.0" styleClass="statusPanelChild" translateX="20.0">
                             <children>
-                                <Label fx:id="headTitle" style="-fx-font-size: 18px;" styleClass="regularText" text="Label" />
-                                <Label fx:id="headDescription" style="-fx-font-size: 12px;" styleClass="lightText" text="Label" />
-                                <Label fx:id="headNozzles" layoutX="10.0" layoutY="10.0" style="-fx-font-size: 12;" styleClass="lightText" text="Label" />
-                                <Label fx:id="headFeeds" layoutX="10.0" layoutY="27.0" style="-fx-font-size: 12;" styleClass="lightText" text="Label" />
+                                <HBox>
+                                    <children>
+                                        <VBox>
+                                            <children>
+                                                <Label fx:id="headTitle" style="-fx-font-size: 18px;" styleClass="regularText" text="Label" />
+                                                <Label fx:id="headDescription" style="-fx-font-size: 12px;" styleClass="lightText" text="Label" />
+                                                <Label fx:id="headNozzles" layoutX="10.0" layoutY="10.0" style="-fx-font-size: 12;" styleClass="lightText" text="Label" />
+                                                <Label fx:id="headFeeds" layoutX="10.0" layoutY="27.0" style="-fx-font-size: 12;" styleClass="lightText" text="Label" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
