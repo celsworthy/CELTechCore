@@ -448,6 +448,7 @@ public class PostProcessor
                 }
             }
         }
+        steno.info("About to exit post processor with result " + result.isSuccess());
 
         return result;
     }

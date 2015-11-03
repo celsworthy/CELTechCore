@@ -709,7 +709,6 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
         Var<Integer> fValue = new Var<>();
         Var<Double> xValue = new Var<>();
         Var<Double> yValue = new Var<>();
-        Var<Double> zValue = new Var<>();
 
         return Sequence("G0 ",
                 Optional(
@@ -723,10 +722,6 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                                 ),
                                 Sequence("Y", FloatingPointNumber(),
                                         yValue.set(Double.valueOf(match())),
-                                        Optional(' ')
-                                ),
-                                Sequence("Z", FloatingPointNumber(),
-                                        zValue.set(Double.valueOf(match())),
                                         Optional(' ')
                                 )
                         )
@@ -752,11 +747,6 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                         if (yValue.isSet())
                         {
                             node.getMovement().setY(yValue.get());
-                        }
-
-                        if (zValue.isSet())
-                        {
-                            node.getMovement().setZ(zValue.get());
                         }
 
                         node.setGCodeLineNumber(startingLineNumber);
@@ -867,7 +857,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                 Optional(
                         Feedrate(fValue)
                 ),
-                OneOrMore(
+                ZeroOrMore(
                         FirstOf(
                                 Sequence("X", FloatingPointNumber(),
                                         xValue.set(Double.valueOf(match())),
@@ -876,12 +866,12 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                                 Sequence("Y", FloatingPointNumber(),
                                         yValue.set(Double.valueOf(match())),
                                         Optional(' ')
-                                ),
-                                Sequence("Z", FloatingPointNumber(),
-                                        zValue.set(Double.valueOf(match())),
-                                        Optional(' ')
                                 )
                         )
+                ),
+                Sequence("Z", FloatingPointNumber(),
+                        zValue.set(Double.valueOf(match())),
+                        Optional(' ')
                 ),
                 Newline(),
                 new Action()

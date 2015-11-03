@@ -293,6 +293,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         if (currentPrinter != null)
         {
             currentPrinter.getPrintEngine().printQueueStatusProperty().removeListener(printQueueStatusListener);
+            unbind();
         }
 
         currentPrinter = printer;
@@ -302,9 +303,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             if (printer.getPrintEngine().printQueueStatusProperty().get() == PrintQueueStatus.PRINTING)
             {
                 bind();
-            } else
-            {
-                unbind();
             }
             Lookup.getPrinterListChangesNotifier().addListener(this);
 
@@ -390,7 +388,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                     extrusionMultiplier2ChangeListener);
         }
 
-        updateNozzleTemperatureDisplay();
+        unbindNozzleTemperatureDisplay();
     }
 
     private void updateNozzleTemperatureDisplay()
@@ -471,16 +469,46 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             nozzleTemperature2Box.setMaxHeight(0);
             nozzleTemperature2Box.setMinHeight(0);
 
-            if (currentPrinter.headProperty().get() != null)
+            if (currentPrinter != null)
             {
-                currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(nozzleTemp1ChangeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp1ChangeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().removeListener(heaterModeListener);
+                if (currentPrinter.headProperty().get() != null)
+                {
+                    currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(nozzleTemp1ChangeListener);
+                    currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp1ChangeListener);
+                    currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().removeListener(heaterModeListener);
 
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().removeListener(heaterModeListener);
+                    currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
+                    currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
+                    currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().removeListener(heaterModeListener);
+                }
             }
+        }
+    }
+
+    private void unbindNozzleTemperatureDisplay()
+    {
+        nozzleTemperature1Slider.valueChangingProperty().removeListener(nozzleTemp1SliderListener);
+
+        nozzleTemperature1Box.setVisible(false);
+        nozzleTemperature1Box.setMaxHeight(0);
+        nozzleTemperature1Box.setMinHeight(0);
+
+        nozzleTemperature2Slider.valueChangingProperty().removeListener(nozzleTemp2SliderListener);
+
+        nozzleTemperature2Box.setVisible(false);
+        nozzleTemperature2Box.setMaxHeight(0);
+        nozzleTemperature2Box.setMinHeight(0);
+
+        if (currentPrinter != null
+                && currentPrinter.headProperty().get() != null)
+        {
+            currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(nozzleTemp1ChangeListener);
+            currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp1ChangeListener);
+            currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().removeListener(heaterModeListener);
+
+            currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
+            currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
+            currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().removeListener(heaterModeListener);
         }
     }
 

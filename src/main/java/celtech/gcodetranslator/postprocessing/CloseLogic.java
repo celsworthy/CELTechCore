@@ -218,10 +218,9 @@ public class CloseLogic
                     InScopeEvents unprioritisedInnerPerimeterOnly = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
                     if (unprioritisedInnerPerimeterOnly.getInScopeEvents().size() > 0)
                     {
-                    closeResult = copyClose(unprioritisedInnerPerimeterOnly, startingNode,
-                            Optional.of(unprioritisedInnerPerimeterOnly.getInScopeEvents().get(unprioritisedInnerPerimeterOnly.getInScopeEvents().size() - 1)), nozzleInUse);
-                    }
-                    else
+                        closeResult = copyClose(unprioritisedInnerPerimeterOnly, startingNode,
+                                Optional.of(unprioritisedInnerPerimeterOnly.getInScopeEvents().get(unprioritisedInnerPerimeterOnly.getInScopeEvents().size() - 1)), nozzleInUse);
+                    } else
                     {
                         throw new NotEnoughAvailableExtrusionException("No inner perimeter");
                     }
@@ -900,66 +899,72 @@ public class CloseLogic
                     IteratorWithOrigin<GCodeEventNode> layerBackwardsIterator = lastNodeOnLastLayer.treeSpanningBackwardsIterator();
                     SectionNode lastSectionNode = null;
 
-                    if (lastNodeOnLastLayer instanceof ExtrusionNode)
+                    //Don't need to close if the nozzle is already closed!
+                    if (!(lastNodeOnLastLayer instanceof NozzlePositionProvider
+                            && ((NozzlePositionProvider) lastNodeOnLastLayer).getNozzlePosition().isBSet()))
                     {
-                        extrusionToCloseFrom = (ExtrusionNode) lastNodeOnLastLayer;
-                    }
-
-                    boolean foundExtrusionBeforeNozzleClose = false;
-
-                    while (layerBackwardsIterator.hasNext())
-                    {
-                        GCodeEventNode node = layerBackwardsIterator.next();
-
-                        if (node instanceof NozzlePositionProvider)
+                        if (lastNodeOnLastLayer instanceof ExtrusionNode)
                         {
-                            if (node instanceof NozzlePositionProvider
-                                    && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
+                            extrusionToCloseFrom = (ExtrusionNode) lastNodeOnLastLayer;
+                        }
+
+                        boolean foundExtrusionBeforeNozzleClose = false;
+
+                        search:
+                        while (layerBackwardsIterator.hasNext())
+                        {
+                            GCodeEventNode node = layerBackwardsIterator.next();
+
+                            if (node instanceof NozzlePositionProvider)
                             {
+                                if (node instanceof NozzlePositionProvider
+                                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
+                                {
 //                                Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
 //                                if (parentSection.isPresent())
 //                                {
 //                                    //Exclude the section we're in just in case...
 //                                    sectionsToConsider.remove(parentSection.get());
 //                                }
-                                break;
-                            }
-                        }
-
-                        if (node instanceof ExtrusionNode)
-                        {
-                            foundExtrusionBeforeNozzleClose = true;
-
-                            if (extrusionToCloseFrom == null)
-                            {
-                                extrusionToCloseFrom = (ExtrusionNode) node;
+                                    break search;
+                                }
                             }
 
-                            Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
-                            if (parentSection.isPresent())
+                            if (node instanceof ExtrusionNode)
                             {
-                                if (lastSectionNode != parentSection.get())
+                                foundExtrusionBeforeNozzleClose = true;
+
+                                if (extrusionToCloseFrom == null)
                                 {
-                                    sectionsToConsider.add(0, parentSection.get());
-                                    lastSectionNode = parentSection.get();
+                                    extrusionToCloseFrom = (ExtrusionNode) node;
+                                }
+
+                                Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
+                                if (parentSection.isPresent())
+                                {
+                                    if (lastSectionNode != parentSection.get())
+                                    {
+                                        sectionsToConsider.add(0, parentSection.get());
+                                        lastSectionNode = parentSection.get();
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if (foundExtrusionBeforeNozzleClose)
-                    {
-                        processedClose = true;
-                        if (sectionsToConsider.size() > 0)
+                        if (foundExtrusionBeforeNozzleClose)
                         {
-                            closeResult = insertProgressiveNozzleClose(extrusionToCloseFrom, sectionsToConsider, nozzleInUse);
-                        } else
-                        {
-                            //We only seem to have one extrusion to close over...
-                            if (extrusionToCloseFrom != null)
+                            processedClose = true;
+                            if (sectionsToConsider.size() > 0)
                             {
-                                sectionsToConsider.add((SectionNode) extrusionToCloseFrom.getParent().get());
                                 closeResult = insertProgressiveNozzleClose(extrusionToCloseFrom, sectionsToConsider, nozzleInUse);
+                            } else
+                            {
+                                //We only seem to have one extrusion to close over...
+                                if (extrusionToCloseFrom != null)
+                                {
+                                    sectionsToConsider.add((SectionNode) extrusionToCloseFrom.getParent().get());
+                                    closeResult = insertProgressiveNozzleClose(extrusionToCloseFrom, sectionsToConsider, nozzleInUse);
+                                }
                             }
                         }
                     }
