@@ -43,6 +43,7 @@ public class CameraTriggerManager
             @Override
             public void run()
             {
+                steno.info("Firing camera");
                 String goProURLString = "http://10.5.5.9/camera/SH?t=" + Lookup.getUserPreferences().getGoProWifiPassword() + "&p=%01";
                 try
                 {
@@ -73,15 +74,12 @@ public class CameraTriggerManager
         };
     }
 
-    private ChangeListener<Number> cameraTriggerListener = new ChangeListener<Number>()
+    private final ChangeListener<Number> cameraTriggerListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        @Override
-        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        steno.info("Layer change: " + newValue.intValue());
+        if (newValue.intValue() > oldValue.intValue())
         {
-            if (newValue.intValue() > oldValue.intValue())
-            {
-                triggerCamera();
-            }
+            triggerCamera();
         }
     };
 
@@ -124,6 +122,7 @@ public class CameraTriggerManager
 
     private void triggerCamera()
     {
-        scheduledPhoto.schedule(photoRun, 3500, TimeUnit.MILLISECONDS);
+        steno.info("Asked to trigger camera");
+        scheduledPhoto.schedule(photoRun, 800, TimeUnit.MILLISECONDS);
     }
 }
