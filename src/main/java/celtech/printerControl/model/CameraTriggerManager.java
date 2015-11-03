@@ -94,7 +94,7 @@ public class CameraTriggerManager
 
         GCodeDirectiveNode dwellWhilePictureTaken = new GCodeDirectiveNode();
         dwellWhilePictureTaken.setGValue(4);
-        dwellWhilePictureTaken.setPValue(1500);
+        dwellWhilePictureTaken.setSValue(2);
 
         TravelNode returnToPreviousPosition = new TravelNode();
         returnToPreviousPosition.getMovement().setX(layerChangeNode.getMovement().getX());
@@ -123,6 +123,6 @@ public class CameraTriggerManager
     private void triggerCamera()
     {
         steno.info("Asked to trigger camera");
-        scheduledPhoto.schedule(photoRun, 800, TimeUnit.MILLISECONDS);
+        scheduledPhoto.execute(photoRun);
     }
 }
