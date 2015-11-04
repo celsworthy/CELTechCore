@@ -299,7 +299,8 @@ public class PostProcessor
             finalDVolume += parseResult.getDVolume();
             timeForPrint_secs += parseResult.getTimeForLayer();
 
-            if (parseResultCycle2 != null)
+            if (parseResultCycle2 != null
+                    && parseResultCycle2.getLayerData() != null)
             {
                 timeUtils.timerStart(this, assignExtrusionTimerName);
                 nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
@@ -325,7 +326,8 @@ public class PostProcessor
                 timeForPrint_secs += parseResultCycle2.getTimeForLayer();
             }
 
-            if (parseResultCycle1 != null)
+            if (parseResultCycle1 != null
+                    && parseResultCycle1.getLayerData() != null)
             {
                 timeUtils.timerStart(this, assignExtrusionTimerName);
                 nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
