@@ -216,6 +216,7 @@ public class PostProcessor
 
             StringBuilder layerBuffer = new StringBuilder();
 
+            steno.info("About to read file");
             LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(null, 0, 0, 0, defaultObjectNumber, null, null, -1);
             LayerPostProcessResult parseResultCycle2 = null;
             OpenResult lastOpenResult = null;
@@ -234,13 +235,17 @@ public class PostProcessor
                 }
 
                 lineRead = lineRead.trim();
+                steno.info("Read line " + lineRead);
                 if (lineRead.matches(";LAYER:[-]*[0-9]+"))
                 {
+                    steno.info("Processing layer");
                     if (layerCounter >= 0)
                     {
+                    steno.info("Layer count >= 0");
                         if (parseResultCycle2 != null
                                 && parseResultCycle2.getLayerData() != null)
                         {
+                            steno.info("Assign");
                             timeUtils.timerStart(this, assignExtrusionTimerName);
                             nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                             timeUtils.timerStop(this, assignExtrusionTimerName);
@@ -250,10 +255,12 @@ public class PostProcessor
                             //NOTE
                             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
                             //NOTE
+                            steno.info("Open");
                             timeUtils.timerStart(this, openTimerName);
                             lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
                             timeUtils.timerStop(this, openTimerName);
 
+                            steno.info("Write");
                             timeUtils.timerStart(this, writeOutputTimerName);
                             outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
                             timeUtils.timerStop(this, writeOutputTimerName);
@@ -271,6 +278,7 @@ public class PostProcessor
                         }
                         parseResultCycle2 = parseResultCycle1;
 
+                        steno.info("Parse prior");
                         //Parse anything that has gone before
                         LayerPostProcessResult parseResultCycle0 = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getType());
 
@@ -292,6 +300,7 @@ public class PostProcessor
                 }
             }
 
+                    steno.info("Parse layer");
             //This catches the last layer - if we had no data it won't do anything
             LayerPostProcessResult parseResult = parseLayer(layerBuffer, parseResultCycle1, writer, headFile.getType());
 

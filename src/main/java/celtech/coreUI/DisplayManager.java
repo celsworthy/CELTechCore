@@ -34,8 +34,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -113,7 +116,20 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private Pane spinnerContainer;
     private Spinner spinner;
 
+    //Display scaling
     private BooleanProperty nodesMayHaveMoved;
+
+    public enum DisplayScalingMode
+    {
+
+        NORMAL,
+        SHORT,
+        VERY_SHORT
+    }
+
+    private ObjectProperty<DisplayScalingMode> displayScalingModeProperty = new SimpleObjectProperty<>(DisplayScalingMode.NORMAL);
+    private final int SHORT_SCALE_BELOW_HEIGHT = 890;
+    private final int VERY_SHORT_SCALE_BELOW_HEIGHT = 700;
 
     private DisplayManager()
     {
@@ -742,6 +758,28 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
 
+        steno.info("Window size change: " + scene.getWidth() + " : " + scene.getHeight());
+
+        if (scene.getHeight() < VERY_SHORT_SCALE_BELOW_HEIGHT)
+        {
+            if (displayScalingModeProperty.get() != DisplayScalingMode.VERY_SHORT)
+            {
+                displayScalingModeProperty.set(DisplayScalingMode.VERY_SHORT);
+            }
+        } else if (scene.getHeight() < SHORT_SCALE_BELOW_HEIGHT)
+        {
+            if (displayScalingModeProperty.get() != DisplayScalingMode.SHORT)
+            {
+                displayScalingModeProperty.set(DisplayScalingMode.SHORT);
+            }
+        } else
+        {
+            if (displayScalingModeProperty.get() != DisplayScalingMode.NORMAL)
+            {
+                displayScalingModeProperty.set(DisplayScalingMode.NORMAL);
+            }
+        }
+
 //        double scaleFactor = 1.0;
 //        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
 //        {
@@ -760,7 +798,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 //        rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
 //        rootAnchorPane.setPrefHeight(scene.getHeight() / scaleFactor);
 //        rootAnchorPane.setMinHeight(scene.getHeight() / scaleFactor);
-
     }
 
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()
@@ -925,5 +962,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 ((ProjectTab) potentialProjectTab).justAdded();
             }
         }
+    }
+
+    public ReadOnlyObjectProperty<DisplayScalingMode> getDisplayScalingModeProperty()
+    {
+        return displayScalingModeProperty;
     }
 }

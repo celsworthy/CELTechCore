@@ -79,7 +79,7 @@
                         </HBox>
                     </children>
                 </VBox>
-                <VBox fx:id="materialContainer" alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild"/>
+                <VBox fx:id="materialContainer" alignment="CENTER" minHeight="-1" prefHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="260.0" styleClass="statusPanelChild"/>
                 <VBox VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER" maxHeight="1000" >
                     <children>
                         <LineChart id="temperatureChart" fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false">

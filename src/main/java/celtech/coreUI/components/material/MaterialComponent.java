@@ -9,6 +9,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.coreUI.DisplayManager;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -156,6 +157,29 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         setUpFilamentLoadedListener();
         setUpFilamentChangedListener();
     }
+//        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener((ObservableValue<? extends DisplayManager.DisplayScalingMode> observable, DisplayManager.DisplayScalingMode oldValue, DisplayManager.DisplayScalingMode newValue) ->
+//        {
+//            updateForDisplayScaling(newValue);
+//        });
+//        
+//        updateForDisplayScaling(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
+//    }
+//
+//    private void updateForDisplayScaling(DisplayManager.DisplayScalingMode displayScalingMode)
+//    {
+//        switch (displayScalingMode)
+//        {
+//            case NORMAL:
+//                setMaxHeight(120);
+//                break;
+//            case SHORT:
+//                setMaxHeight(110);
+//                break;
+//            case VERY_SHORT:
+//                setMaxHeight(80);
+//                break;
+//        }
+//    }
 
     public ReadOnlyObjectProperty<Filament> getSelectedFilamentProperty()
     {

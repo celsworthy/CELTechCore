@@ -3,6 +3,8 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.coreUI.DisplayManager;
+import celtech.coreUI.DisplayManager.DisplayScalingMode;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.model.Extruder;
@@ -153,6 +155,28 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         headPanel.setVisible(false);
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
+        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener((ObservableValue<? extends DisplayManager.DisplayScalingMode> observable, DisplayManager.DisplayScalingMode oldValue, DisplayManager.DisplayScalingMode newValue) ->
+        {
+            updateForDisplayScaling(newValue);
+        });
+        
+        updateForDisplayScaling(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
+    }
+
+    private void updateForDisplayScaling(DisplayManager.DisplayScalingMode displayScalingMode)
+    {
+        switch (displayScalingMode)
+        {
+            case NORMAL:
+                temperatureChart.setMaxHeight(180);
+                break;
+            case SHORT:
+                temperatureChart.setMaxHeight(160);
+                break;
+            case VERY_SHORT:
+                temperatureChart.setMaxHeight(140);
+                break;
+        }
     }
 
     private void initialiseTemperatureChart()
@@ -234,6 +258,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 MaterialComponent materialComponent
                         = new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
                 materialContainer.getChildren().add(materialComponent);
+                if (printer.extrudersProperty().size() > 1)
+                {
+                    materialComponent.setMaxHeight(110);
+                }
+                else
+                {
+                    materialComponent.setMaxHeight(120);
+                }
             }
         }
     }
@@ -289,13 +321,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         headDescription.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".description"));
         headNozzles.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".nozzles"));
         headFeeds.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".feeds"));
-        
+
         if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
             dualMaterialHead.setVisible(true);
             singleMaterialHead.setVisible(false);
-        }
-        else
+        } else
         {
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(true);
