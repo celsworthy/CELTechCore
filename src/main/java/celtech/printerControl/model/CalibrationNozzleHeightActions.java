@@ -75,7 +75,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         zco.set(0);
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_HEIGHT);
-        savedHeadData = printer.readHeadEEPROM();
+        savedHeadData = printer.readHeadEEPROM(true);
         clearZOffsetsOnHead();
         heatNozzle();
 
@@ -105,7 +105,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                 savedHeadData.getLastFilamentTemperature(0),
                 savedHeadData.getLastFilamentTemperature(1),
                 savedHeadData.getHeadHours());
-        printer.readHeadEEPROM();
+        printer.readHeadEEPROM(false);
     }
 
     private void heatNozzle() throws InterruptedException, PrinterException
@@ -117,7 +117,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
         {
             printer.goToTargetNozzleHeaterTemperature(1);
         }
-        
+
         waitOnNozzleTemperature(0);
         if (PrinterUtils.waitOnMacroFinished(printer, userOrErrorCancellable))
         {
@@ -152,7 +152,7 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
                 nozzleHeater
                 .nozzleTargetTemperatureProperty().get(), 5, 300, userOrErrorCancellable);
     }
-    
+
     public void doHomeZAction() throws CalibrationException
     {
         printer.homeZ();

@@ -415,7 +415,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException
+    public HeadEEPROMDataResponse readHeadEEPROM(boolean dontPublishResponseEvent) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1106,6 +1106,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStateProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -148,7 +148,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             // N.B. this call must come after reading the data in the fields because
             // reading the head eeprom results in the fields being updated with current head
             // data (i.e. fields will lose edited values)
-            HeadEEPROMDataResponse headDataResponse = selectedPrinter.readHeadEEPROM();
+            HeadEEPROMDataResponse headDataResponse = selectedPrinter.readHeadEEPROM(true);
             String uniqueId = headDataResponse.getUniqueID();
             if (uniqueId.length() == 0)
             {

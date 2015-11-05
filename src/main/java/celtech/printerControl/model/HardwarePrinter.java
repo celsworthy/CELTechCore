@@ -175,7 +175,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
     private final ObservableList<Extruder> extruders = FXCollections.observableArrayList();
 
-    private EEPROMState lastHeadEEPROMState = null;
+    private ObjectProperty<EEPROMState> lastHeadEEPROMState = new SimpleObjectProperty<>(EEPROMState.NOT_PRESENT);
     private final int maxNumberOfReels = 2;
     private ObservableList<EEPROMState> lastReelEEPROMState = FXCollections.observableArrayList(EEPROMState.NOT_PRESENT, EEPROMState.NOT_PRESENT);
 
@@ -571,7 +571,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         try
         {
             writeHeadEEPROM(headToWrite);
-            readHeadEEPROM();
+            readHeadEEPROM(false);
         } catch (RoboxCommsException ex)
         {
             steno.warning("Failed to write purge temperature");
@@ -2666,7 +2666,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         if (readback)
         {
-            readHeadEEPROM();
+            readHeadEEPROM(false);
         }
     }
 
@@ -2677,11 +2677,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException
+    public HeadEEPROMDataResponse readHeadEEPROM(boolean dontPublishResponseEvent) throws RoboxCommsException
     {
         ReadHeadEEPROM readHead = (ReadHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.READ_HEAD_EEPROM);
-        return (HeadEEPROMDataResponse) commandInterface.writeToPrinter(readHead);
+        return (HeadEEPROMDataResponse) commandInterface.writeToPrinter(readHead, dontPublishResponseEvent);
     }
 
     @Override
@@ -3757,7 +3757,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                             break;
                                     }
                                 }
-                            } else
+                            } else if (!headIntegrityChecksInhibited)
                             {
                                 // We don't recognise the head but it seems to be valid
                                 Lookup.getSystemNotificationHandler().showHeadNotRecognisedDialog(
@@ -3767,7 +3767,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             }
                         } else
                         {
-                            if (repairCorruptEEPROMData)
+                            if (repairCorruptEEPROMData && !headIntegrityChecksInhibited)
                             {
                                 // Either not set or type code doesn't match Robox head type code
                                 Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog(
@@ -3799,7 +3799,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                             } else
                                             {
                                                 //Force the head prompt - we must have been cancelled
-                                                lastHeadEEPROMState = EEPROMState.NOT_PRESENT;
+                                                lastHeadEEPROMState.set(EEPROMState.NOT_PRESENT);
                                             }
                                         });
                             }
@@ -3837,9 +3837,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         private void checkHeadEEPROM(StatusResponse statusResponse)
         {
-            if (lastHeadEEPROMState != statusResponse.getHeadEEPROMState())
+            if (lastHeadEEPROMState.get() != statusResponse.getHeadEEPROMState())
             {
-                lastHeadEEPROMState = statusResponse.getHeadEEPROMState();
+                lastHeadEEPROMState.set(statusResponse.getHeadEEPROMState());
                 switch (statusResponse.getHeadEEPROMState())
                 {
                     case NOT_PRESENT:
@@ -3860,7 +3860,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         try
                         {
                             steno.info("About to read head EEPROM");
-                            readHeadEEPROM();
+                            readHeadEEPROM(false);
                         } catch (RoboxCommsException ex)
                         {
                             steno.exception("Error attempting to read head eeprom", ex);
@@ -4066,6 +4066,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ObservableList<EEPROMState> getReelEEPROMStateProperty()
     {
         return lastReelEEPROMState;
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStateProperty()
+    {
+        return lastHeadEEPROMState;
     }
 
     @Override

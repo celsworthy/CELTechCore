@@ -56,7 +56,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
         printerErrorHandler.registerForPrinterErrors();
 
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_ALIGNMENT);
-        savedHeadData = printer.readHeadEEPROM();
+        savedHeadData = printer.readHeadEEPROM(true);
     }
 
     public void doPrintPattern() throws PrinterException, RoboxCommsException, InterruptedException, CalibrationException
@@ -122,7 +122,7 @@ public class CalibrationXAndYActions extends StateTransitionActions
                         savedHeadData.getLastFilamentTemperature(0),
                         savedHeadData.getLastFilamentTemperature(1),
                         savedHeadData.getHeadHours());
-                printer.readHeadEEPROM();
+                printer.readHeadEEPROM(false);
             } catch (RoboxCommsException ex)
             {
                 steno.error("Unable to restore head! " + ex);

@@ -82,7 +82,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         printer.inhibitHeadIntegrityChecks(true);
         printer.setPrinterStatus(PrinterStatus.CALIBRATING_NOZZLE_OPENING);
 
-        savedHeadData = printer.readHeadEEPROM();
+        savedHeadData = printer.readHeadEEPROM(true);
 
         HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
 
@@ -151,7 +151,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                     savedHeadData.getHeadHours());
         }
 
-        printer.readHeadEEPROM();
+        printer.readHeadEEPROM(false);
 
         printer.goToXYZPosition(PrintBed.getPrintVolumeCentre().getX(),
                 PrintBed.getPrintVolumeCentre().getZ(),

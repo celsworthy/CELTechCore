@@ -227,7 +227,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public FirmwareResponse readFirmwareVersion() throws PrinterException;
 
-    public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException;
+    public HeadEEPROMDataResponse readHeadEEPROM(boolean dontPublishResponseEvent) throws RoboxCommsException;
 
     public PrinterIDResponse readPrinterID() throws PrinterException;
 
@@ -516,6 +516,8 @@ public interface Printer extends RoboxResponseConsumer
     public void loadFirmware(String firmwareFilePath);
     
     public ObservableList<EEPROMState> getReelEEPROMStateProperty();
+    
+    public ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStateProperty();
 
     public void startComms();
 

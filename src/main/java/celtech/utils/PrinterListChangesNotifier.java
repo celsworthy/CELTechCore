@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -60,7 +61,7 @@ public class PrinterListChangesNotifier
                 {
                 }
             }
-            });
+        });
     }
 
     private void fireWhenPrinterRemoved(Printer printer)
@@ -192,7 +193,8 @@ public class PrinterListChangesNotifier
 
     private void fireWhenHeadAdded(Printer printer)
     {
-        for (PrinterListChangesListener listener : listeners)
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenHeadAdded(printer);
         }
@@ -200,7 +202,8 @@ public class PrinterListChangesNotifier
 
     private void fireWhenHeadRemoved(Printer printer, Head head)
     {
-        for (PrinterListChangesListener listener : listeners)
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenHeadRemoved(printer, head);
         }
@@ -208,7 +211,8 @@ public class PrinterListChangesNotifier
 
     private void fireWhenReelAdded(Printer printer, int reelIndex)
     {
-        for (PrinterListChangesListener listener : listeners)
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenReelAdded(printer, reelIndex);
         }
@@ -216,7 +220,8 @@ public class PrinterListChangesNotifier
 
     private void fireWhenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
-        for (PrinterListChangesListener listener : listeners)
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenReelRemoved(printer, reel, reelIndex);
         }
@@ -224,7 +229,8 @@ public class PrinterListChangesNotifier
 
     private void fireWhenReelChanged(Printer printer, Reel reel)
     {
-        for (PrinterListChangesListener listener : listeners)
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenReelChanged(printer, reel);
         }
@@ -232,7 +238,8 @@ public class PrinterListChangesNotifier
 
     private void fireWhenExtruderAdded(Printer printer, int extruderIndex)
     {
-        for (PrinterListChangesListener listener : new ArrayList<>(listeners))
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenExtruderAdded(printer, extruderIndex);
         }
@@ -240,10 +247,10 @@ public class PrinterListChangesNotifier
 
     private void fireWhenExtruderRemoved(Printer printer, int extruderIndex)
     {
-        for (PrinterListChangesListener listener : listeners)
+        List<PrinterListChangesListener> listToIterateThrough = listeners.stream().collect(Collectors.toList());
+        for (PrinterListChangesListener listener : listToIterateThrough)
         {
             listener.whenExtruderRemoved(printer, extruderIndex);
         }
     }
-
 }

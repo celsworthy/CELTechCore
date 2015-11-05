@@ -131,7 +131,7 @@ public class PurgeActions extends StateTransitionActions
 
         // put the write after the purge routine once the firmware no longer raises an error whilst connected to the host computer
         //TODO make PURGE work for dual material head
-        savedHeadData = printer.readHeadEEPROM();
+        savedHeadData = printer.readHeadEEPROM(true);
     }
 
     private int getNumNozzleHeaters()
@@ -237,7 +237,7 @@ public class PurgeActions extends StateTransitionActions
                 nozzleFilamentTemperature.get(0),
                 reel1FilamentTemperature,
                 savedHeadData.getHeadHours());
-        printer.readHeadEEPROM();
+        printer.readHeadEEPROM(false);
         printer.setPrinterStatus(PrinterStatus.IDLE);
         deregisterPrinterErrorHandler();
     }
