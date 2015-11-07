@@ -939,8 +939,8 @@ public class LayoutSidePanelController implements Initializable, SidePanelManage
         boundProject = project;
         undoableProject = new UndoableProject(project);
 
-        materialComponent0.setLayoutProject(project);
-        materialComponent1.setLayoutProject(project);
+//        materialComponent0.setLayoutProject(project);
+//        materialComponent1.setLayoutProject(project);
 
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();

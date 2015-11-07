@@ -107,7 +107,7 @@ public class ChoiceLinkDialogBox extends VBox
         dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
         dialogStage.setScene(dialogScene);
         dialogStage.initOwner(DisplayManager.getMainStage());
-        dialogStage.initModality(Modality.WINDOW_MODAL);
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
 
         getStyleClass().add("error-dialog");
     }

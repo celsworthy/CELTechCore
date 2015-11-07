@@ -5,6 +5,7 @@ package celtech.coreUI.components.material;
 
 import celtech.Lookup;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -15,7 +16,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author tony
  */
-public class FilamentCell extends ListCell<Object>
+public class FilamentCell extends ListCell<Filament>
 {
 
     private static int SWATCH_SQUARE_SIZE = 16;
@@ -35,12 +36,12 @@ public class FilamentCell extends ListCell<Object>
     }
 
     @Override
-    protected void updateItem(Object item, boolean empty)
+    protected void updateItem(Filament item, boolean empty)
     {
         super.updateItem(item, empty);
         if (item != null && !empty)
         {
-            if (item instanceof Filament)
+            if (item != FilamentContainer.UNKNOWN_FILAMENT)
             {
                 Filament filament = (Filament) item;
                 setGraphic(cellContainer);
@@ -56,6 +57,7 @@ public class FilamentCell extends ListCell<Object>
         } else
         {
             setGraphic(null);
+            label.setText(Lookup.i18n("materialComponent.unknown"));
         }
 
     }

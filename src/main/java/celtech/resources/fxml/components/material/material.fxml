@@ -48,7 +48,6 @@
                 <Text id="reelNumberMaterial" fx:id="reelNumberMaterial" fill="#087ec3" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelLabel" text="1:XXX" AnchorPane.bottomAnchor="72.0" AnchorPane.leftAnchor="20.0" />
                 <StackPane layoutY="60.0" AnchorPane.bottomAnchor="38.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <children>
-                        <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#whenMaterialSelected" prefHeight="30.0" prefWidth="240.0" styleClass="cmbCleanCombo" />
                         <HBox fx:id="materialColourContainer" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="240.0" style="-fx-background-color: blue;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0" StackPane.alignment="CENTER">
                             <children>
                                 <Text fx:id="materialColour" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialName" text="Royal Blue">
@@ -61,6 +60,7 @@
                                 <Insets left="10.0" />
                             </padding>
                         </HBox>
+                        <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#whenMaterialSelected" prefHeight="30.0" prefWidth="240.0" styleClass="cmbCleanCombo" />
                     </children>
                 </StackPane>
                 <Text fx:id="materialRemaining" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialRemaining" text="24m / 121g remaining" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" />

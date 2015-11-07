@@ -45,7 +45,7 @@ public class PrinterIDDialog
             dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
             dialogStage.setScene(dialogScene);
             dialogStage.initOwner(DisplayManager.getMainStage());
-            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
             dialogController.configure(dialogStage);
         } catch (IOException ex)
         {

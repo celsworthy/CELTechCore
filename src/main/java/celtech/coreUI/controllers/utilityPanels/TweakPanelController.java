@@ -271,11 +271,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
                     if (newPrinter == null)
                     {
-                        container.setVisible(false);
                         currentPrinter = null;
                     } else
                     {
-                        container.setVisible(true);
                         currentPrinter = newPrinter;
                     }
                 });
@@ -311,6 +309,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
     private void bind()
     {
+        container.setVisible(true);
         printSpeedDisplay.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().
                 feedRateMultiplierProperty().get() * 100.0)));
         speedMultiplierSlider.setValue(currentPrinter.getPrinterAncillarySystems().

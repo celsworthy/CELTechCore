@@ -165,18 +165,18 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void updateForDisplayScaling(DisplayManager.DisplayScalingMode displayScalingMode)
     {
-        switch (displayScalingMode)
-        {
-            case NORMAL:
-                temperatureChart.setMaxHeight(180);
-                break;
-            case SHORT:
-                temperatureChart.setMaxHeight(160);
-                break;
-            case VERY_SHORT:
-                temperatureChart.setMaxHeight(140);
-                break;
-        }
+//        switch (displayScalingMode)
+//        {
+//            case NORMAL:
+//                temperatureChart.setMaxHeight(180);
+//                break;
+//            case SHORT:
+//                temperatureChart.setMaxHeight(160);
+//                break;
+//            case VERY_SHORT:
+//                temperatureChart.setMaxHeight(140);
+//                break;
+//        }
     }
 
     private void initialiseTemperatureChart()

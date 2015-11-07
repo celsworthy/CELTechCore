@@ -2,6 +2,7 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.components.JogButton;
@@ -21,6 +22,7 @@ import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -30,6 +32,8 @@ import javafx.scene.Node;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -108,80 +112,31 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private Group temperatureWarning;
 
     @FXML
-    private JogButton extruder_minus100;
+    private VBox extruder1Controls;
 
     @FXML
-    private JogButton extruder_minus20;
+    private VBox extruder2Controls;
 
     @FXML
-    private JogButton extruder_minus5;
+    private HBox xAxisControls;
 
     @FXML
-    private JogButton extruder_plus100;
+    private VBox yAxisControls;
 
     @FXML
-    private JogButton extruder_plus20;
-
-    @FXML
-    private JogButton extruder_plus5;
-
-    @FXML
-    private JogButton x_minus100;
-
-    @FXML
-    private JogButton x_minus10;
-
-    @FXML
-    private JogButton x_minus1;
-
-    @FXML
-    private JogButton x_plus100;
-
-    @FXML
-    private JogButton x_plus10;
-
-    @FXML
-    private JogButton x_plus1;
-
-    @FXML
-    private JogButton y_minus100;
-
-    @FXML
-    private JogButton y_minus10;
-
-    @FXML
-    private JogButton y_minus1;
-
-    @FXML
-    private JogButton y_plus100;
-
-    @FXML
-    private JogButton y_plus10;
-
-    @FXML
-    private JogButton y_plus1;
-
-    @FXML
-    private JogButton z_minus10;
-
-    @FXML
-    private JogButton z_minus1;
-
-    @FXML
-    private JogButton z_minus0_1;
-
-    @FXML
-    private JogButton z_plus10;
-
-    @FXML
-    private JogButton z_plus1;
-
-    @FXML
-    private JogButton z_plus0_1;
+    private VBox zAxisControls;
 
     private Node[] advancedControls = null;
 
     private Printer lastSelectedPrinter = null;
+
+    private VBox vBoxLeft = new VBox();
+    private VBox vBoxRight = new VBox();
+
+    private MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
+    {
+        setupBaseDisplay();
+    };
 
     @FXML
     void jogButton(ActionEvent event)
@@ -258,10 +213,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         advancedControls = new Node[]
         {
-            extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
-            x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
-            y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
-            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10
+            extruder1Controls,
+            extruder2Controls,
+            xAxisControls,
+            yAxisControls,
+            zAxisControls
         };
 
         setAdvancedControlsVisibility();
@@ -308,6 +264,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             doorClosed.visibleProperty().bind(selectedPrinter.
                                     getPrinterAncillarySystems().doorOpenProperty().not());
 
+                            selectedPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
                         }
 
                         setAdvancedControlsVisibility();
@@ -327,24 +284,28 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             baseReel2.setVisible(false);
             baseReelBoth.setVisible(false);
             bed.setVisible(false);
+            vBoxLeft.setVisible(false);
+            vBoxRight.setVisible(false);
         } else
         {
-            if (printerToUse.reelsProperty().containsKey(0)
-                    && printerToUse.reelsProperty().containsKey(1))
+            vBoxLeft.setVisible(true);
+            vBoxRight.setVisible(true);
+            if (printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+                    && printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get())
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(true);
                 bed.setVisible(true);
-            } else if (printerToUse.reelsProperty().containsKey(0))
+            } else if (printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get())
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(true);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
                 bed.setVisible(true);
-            } else if (printerToUse.reelsProperty().containsKey(1))
+            } else if (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get())
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
@@ -370,18 +331,18 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         effect.setHue(hueConverter(desiredColor.getHue()));
         effect.setBrightness(desiredColor.getBrightness() - 1);
         effect.setSaturation(desiredColor.getSaturation());
-        steno.info("Colour - h=" + hueConverter(desiredColor.getHue()) + " s=" + desiredColor.getSaturation() + " b" + desiredColor.getBrightness());
+//        steno.info("Colour - h=" + hueConverter(desiredColor.getHue()) + " s=" + desiredColor.getSaturation() + " b" + desiredColor.getBrightness());
     }
 
     private void setupReel1Colour()
     {
         if (printerToUse == null
-                || !printerToUse.reelsProperty().containsKey(0))
+                || !printerToUse.effectiveFilamentsProperty().containsKey(0))
         {
             reel1Background.setVisible(false);
         } else
         {
-            Color reel1Colour = printerToUse.reelsProperty().get(0).displayColourProperty().get();
+            Color reel1Colour = printerToUse.effectiveFilamentsProperty().get(0).getDisplayColour();                    
             setColorAdjustFromDesiredColour(reel1BackgroundColourEffect, reel1Colour);
             reel1Background.setVisible(true);
         }
@@ -390,12 +351,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private void setupReel2Colour()
     {
         if (printerToUse == null
-                || !printerToUse.reelsProperty().containsKey(1))
+                || !printerToUse.effectiveFilamentsProperty().containsKey(1))
         {
             reel2Background.setVisible(false);
         } else
         {
-            Color reel2Colour = printerToUse.reelsProperty().get(1).displayColourProperty().get();
+            Color reel2Colour = printerToUse.effectiveFilamentsProperty().get(1).getDisplayColour();
             setColorAdjustFromDesiredColour(reel2BackgroundColourEffect, reel2Colour);
             reel2Background.setVisible(true);
         }
@@ -552,6 +513,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     printerColourChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
             lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
+            lastSelectedPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
         }
 
         temperatureWarning.visibleProperty().unbind();
@@ -563,7 +525,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         doorClosed.setVisible(false);
     }
 
-    private Node loadInsetPanel(String innerPanelFXMLName, String title,
+    private VBox loadInsetPanel(String innerPanelFXMLName, String title,
             BooleanProperty visibleProperty)
     {
         URL insetPanelURL = getClass().getResource(
@@ -633,16 +595,15 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void loadInsetPanels()
     {
-        VBox vBoxLeft = new VBox();
         vBoxLeft.setSpacing(30);
         Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
                 Lookup.getUserPreferences().showDiagnosticsProperty());
-        Node gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
+        VBox gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
                 Lookup.getUserPreferences().showGCodeProperty());
+        VBox.setVgrow(gcodePanel, Priority.ALWAYS);
         vBoxLeft.getChildren().add(diagnosticPanel);
         vBoxLeft.getChildren().add(gcodePanel);
 
-        VBox vBoxRight = new VBox();
         vBoxRight.setSpacing(30);
         Node projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null);
         Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",

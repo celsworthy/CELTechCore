@@ -1,5 +1,6 @@
 package celtech.configuration.datafileaccessors;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentFileFilter;
@@ -42,6 +43,20 @@ public class FilamentContainer
     public final Filament createNewFilament = new Filament(null, null, null,
                                                            0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE,
                                                            0, false);
+    public static final Filament UNKNOWN_FILAMENT = new Filament(Lookup.i18n("materialComponent.unknown"),
+            MaterialType.ABS,
+            null,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            Color.ALICEBLUE,
+            0,
+            false);
 
     private static final String nameProperty = "name";
     private static final String materialProperty = "material";
