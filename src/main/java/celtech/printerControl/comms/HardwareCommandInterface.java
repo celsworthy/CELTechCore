@@ -75,6 +75,7 @@ public class HardwareCommandInterface extends CommandInterface
         RoboxRxPacket receivedPacket = null;
 
         if (commsState == RoboxCommsState.CONNECTED
+                || commsState == RoboxCommsState.CHECKING_SD_CARD_IS_PRESENT
                 || commsState == RoboxCommsState.CHECKING_FIRMWARE
                 || commsState == RoboxCommsState.CHECKING_ID
                 || commsState == RoboxCommsState.DETERMINING_PRINTER_STATUS)

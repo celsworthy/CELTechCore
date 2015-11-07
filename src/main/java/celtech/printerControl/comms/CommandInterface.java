@@ -3,6 +3,7 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
@@ -118,12 +119,31 @@ public abstract class CommandInterface extends Thread
                     if (printerCommsOpen)
                     {
                         steno.debug("Connected to Robox on " + printerHandle);
-                        commsState = RoboxCommsState.CHECKING_FIRMWARE;
+                        commsState = RoboxCommsState.CHECKING_SD_CARD_IS_PRESENT;
                     } else
                     {
                         steno.debug("Failed to connect to Robox on " + printerHandle);
                         controlInterface.failedToConnect(printerHandle);
                         keepRunning = false;
+                    }
+                    break;
+
+                case CHECKING_SD_CARD_IS_PRESENT:
+                    try
+                    {
+                        StatusResponse response = (StatusResponse) writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST), true);
+                        if (!response.isSDCardPresent())
+                        {
+                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(FirmwareError.SD_CARD, printerToUse);
+                            disconnectPrinter();
+                            keepRunning = false;
+                        } else
+                        {
+                            commsState = RoboxCommsState.CHECKING_FIRMWARE;
+                        }
+                    } catch (RoboxCommsException ex)
+                    {
+                        steno.error("Failure during printer status request. " + ex.toString());
                     }
                     break;
 
