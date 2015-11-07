@@ -228,6 +228,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private BooleanProperty headPowerOnFlag = new SimpleBooleanProperty(false);
 
+    private boolean inCommissioningMode = false;
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
      * way to override the detection of whether a filament is loaded or not on a
@@ -3144,86 +3146,89 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void consumeError(FirmwareError error)
     {
 
-        switch (error)
+        if (!inCommissioningMode)
         {
-            //TODO DMH
-            case E_UNLOAD_ERROR:
-            case D_UNLOAD_ERROR:
-                Lookup.getSystemNotificationHandler().showEjectFailedDialog(this);
-                break;
+            switch (error)
+            {
+                //TODO DMH
+                case E_UNLOAD_ERROR:
+                case D_UNLOAD_ERROR:
+                    Lookup.getSystemNotificationHandler().showEjectFailedDialog(this);
+                    break;
 
-            case E_FILAMENT_SLIP:
-            case D_FILAMENT_SLIP:
-                boolean showStandardError = false;
+                case E_FILAMENT_SLIP:
+                case D_FILAMENT_SLIP:
+                    boolean showStandardError = false;
 
-                if (pauseStatus.get() == PauseStatus.PAUSED)
-                {
-                    switch (error)
+                    if (pauseStatus.get() == PauseStatus.PAUSED)
                     {
-                        case E_FILAMENT_SLIP:
-                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                    FirmwareError.PSEUDO_E_FILAMENT_SLIP_WHILST_PAUSED,
-                                    this);
-                            break;
+                        switch (error)
+                        {
+                            case E_FILAMENT_SLIP:
+                                Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                        FirmwareError.PSEUDO_E_FILAMENT_SLIP_WHILST_PAUSED,
+                                        this);
+                                break;
 
-                        case D_FILAMENT_SLIP:
-                            Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                    FirmwareError.PSEUDO_D_FILAMENT_SLIP_WHILST_PAUSED,
-                                    this);
-                            break;
-                    }
-                } else
-                {
-                    switch (printerStatus.get())
+                            case D_FILAMENT_SLIP:
+                                Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                        FirmwareError.PSEUDO_D_FILAMENT_SLIP_WHILST_PAUSED,
+                                        this);
+                                break;
+                        }
+                    } else
                     {
-                        case PRINTING_PROJECT:
-                            boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
-                            if (limitOnSlipActionsReached)
-                            {
-                                try
+                        switch (printerStatus.get())
+                        {
+                            case PRINTING_PROJECT:
+                                boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
+                                if (limitOnSlipActionsReached)
                                 {
-                                    pause();
-                                } catch (PrinterException ex)
-                                {
-                                    steno.error("Unable to pause during filament slip handling");
+                                    try
+                                    {
+                                        pause();
+                                    } catch (PrinterException ex)
+                                    {
+                                        steno.error("Unable to pause during filament slip handling");
+                                    }
+                                    showStandardError = true;
                                 }
+                                break;
+                            case IDLE:
                                 showStandardError = true;
-                            }
-                            break;
-                        case IDLE:
-                            showStandardError = true;
-                            break;
-                    }
+                                break;
+                        }
 
-                    if (showStandardError)
-                    {
-                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                error,
-                                this);
-                    }
-                }
-                break;
-
-            default:
-                // Back stop
-                switch (printerStatus.get())
-                {
-                    //Ignore the error in these cases - they should be handled elsewhere
-                    case CALIBRATING_NOZZLE_ALIGNMENT:
-                    case CALIBRATING_NOZZLE_HEIGHT:
-                    case CALIBRATING_NOZZLE_OPENING:
-                    case PURGING_HEAD:
-                        break;
-                    default:
-                        if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_E
-                                && busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_D)
+                        if (showStandardError)
                         {
                             Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                    error, this);
+                                    error,
+                                    this);
                         }
-                        break;
-                }
-                break;
+                    }
+                    break;
+
+                default:
+                    // Back stop
+                    switch (printerStatus.get())
+                    {
+                        //Ignore the error in these cases - they should be handled elsewhere
+                        case CALIBRATING_NOZZLE_ALIGNMENT:
+                        case CALIBRATING_NOZZLE_HEIGHT:
+                        case CALIBRATING_NOZZLE_OPENING:
+                        case PURGING_HEAD:
+                            break;
+                        default:
+                            if (busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_E
+                                    && busyStatus.get() != BusyStatus.UNLOADING_FILAMENT_D)
+                            {
+                                Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                        error, this);
+                            }
+                            break;
+                    }
+                    break;
+            }
         }
     }
 
@@ -3413,7 +3418,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                 && doNotCheckForPresenceOfHead)
                                                 || ((foundError == FirmwareError.D_FILAMENT_SLIP
                                                 || foundError == FirmwareError.E_FILAMENT_SLIP)
-                                                && printerStatus.get() == PrinterStatus.IDLE))
+                                                && printerStatus.get() == PrinterStatus.IDLE
+                                                && !inCommissioningMode))
                                                 {
                                                     steno.debug("Error:" + foundError.
                                                             name() + " suppressed");
@@ -4090,5 +4096,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public String toString()
     {
         return printerIdentity.printerFriendlyName.get();
+    }
+
+    @Override
+    public void setCommissioningTestMode(boolean inCommissioningMode)
+    {
+        this.inCommissioningMode = inCommissioningMode;
     }
 }

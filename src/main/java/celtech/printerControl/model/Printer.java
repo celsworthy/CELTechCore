@@ -526,4 +526,6 @@ public interface Printer extends RoboxResponseConsumer
     public void overrideFilament(int reelNumber, Filament filament);
     
     public ObservableMap<Integer, Filament> effectiveFilamentsProperty();
+    
+    public void setCommissioningTestMode(boolean inCommissioningMode);
 }
