@@ -77,12 +77,24 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleFirstLayerTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    if (thisIsTheOnlyNozzle)
+                    if (heater.nozzleFirstLayerTargetTemperatureProperty().get() > heater.nozzleTemperatureProperty().get())
                     {
-                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                        if (thisIsTheOnlyNozzle)
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                        } else
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                        }
                     } else
                     {
-                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                        if (thisIsTheOnlyNozzle)
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.coolingNozzle"));
+                        } else
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.coolingNozzle") + " " + (nozzleNumber + 1));
+                        }
                     }
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
@@ -111,12 +123,24 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                 if (Math.abs(heater.nozzleTemperatureProperty().get() - heater.nozzleTargetTemperatureProperty().get())
                         > showBarIfMoreThanXDegreesOut)
                 {
-                    if (thisIsTheOnlyNozzle)
+                    if (heater.nozzleTargetTemperatureProperty().get() > heater.nozzleTemperatureProperty().get())
                     {
-                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                        if (thisIsTheOnlyNozzle)
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
+                        } else
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                        }
                     } else
                     {
-                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                        if (thisIsTheOnlyNozzle)
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.coolingNozzle"));
+                        } else
+                        {
+                            largeProgressDescription.setText(Lookup.i18n("printerStatus.coolingNozzle") + " " + (nozzleNumber + 1));
+                        }
                     }
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
