@@ -85,6 +85,8 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         savedHeadData = printer.readHeadEEPROM(true);
 
         HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
+        
+        printer.switchAllNozzleHeatersOff();
 
         try
         {
