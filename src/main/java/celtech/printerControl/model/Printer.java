@@ -482,7 +482,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 
-    public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
+    public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException;
 
     /**
      * This method is intended to be used by commissioning tools and should not

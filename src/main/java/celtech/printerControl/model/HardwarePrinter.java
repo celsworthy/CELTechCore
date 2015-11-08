@@ -3298,14 +3298,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void extrudeUntilSlip(int extruderNumber) throws PrinterException
+    public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException
     {
         try
         {
             if (extrudersProperty().get(extruderNumber).isFitted.get())
             {
                 transmitDirectGCode("G36 "
-                        + extrudersProperty().get(extruderNumber).getExtruderAxisLetter(), false);
+                        + extrudersProperty().get(extruderNumber).getExtruderAxisLetter()
+                        + extrusionVolume
+                        + " F" + feedrate_mm_per_min, false);
             } else
             {
                 String errorText = "Attempt to extrude until slip on extruder " + extruderNumber

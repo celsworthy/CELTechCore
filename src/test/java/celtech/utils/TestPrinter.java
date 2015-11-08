@@ -907,12 +907,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void extrudeUntilSlip(int extruderNumber) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1118,6 +1112,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void setCommissioningTestMode(boolean inCommissioningMode)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
