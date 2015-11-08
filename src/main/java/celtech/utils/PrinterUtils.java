@@ -20,7 +20,12 @@ import celtech.printerControl.model.Printer;
 import celtech.utils.tasks.Cancellable;
 import java.util.Set;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -368,19 +373,35 @@ public class PrinterUtils
     public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
             Task task, int temperature, int tolerance, int timeoutSec, Cancellable cancellable) throws InterruptedException
     {
-        boolean failed = false;
-
         int minTemp = temperature - tolerance;
         int maxTemp = temperature + tolerance;
         long timestampAtStart = System.currentTimeMillis();
         long timeoutMillis = timeoutSec * 1000;
+        BooleanProperty failed = new SimpleBooleanProperty(false);
+
+        ChangeListener<Boolean> cancelChangeListener = new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                failed.set(true);
+            }
+        };
+
+        WeakChangeListener weakCancelChangeListener = new WeakChangeListener<>(cancelChangeListener);
+
+        if (cancellable != null)
+        {
+            cancellable.cancelled().addListener(weakCancelChangeListener);
+        }
 
         if (task != null || cancellable != null)
         {
             try
             {
                 while ((temperatureProperty.get() < minTemp
-                        || temperatureProperty.get() > maxTemp))
+                        || temperatureProperty.get() > maxTemp)
+                        && !failed.get())
                 {
                     if (task != null && task.isCancelled() || (cancellable != null
                             && cancellable.cancelled().get()))
@@ -392,14 +413,14 @@ public class PrinterUtils
                     long currentTimeMillis = System.currentTimeMillis();
                     if ((currentTimeMillis - timestampAtStart) >= timeoutMillis)
                     {
-                        failed = true;
+                        failed.set(true);
                         break;
                     }
                 }
             } catch (InterruptedException ex)
             {
                 steno.error("Interrupted during busy check");
-                failed = true;
+                failed.set(true);
             }
         } else
         {
@@ -413,18 +434,23 @@ public class PrinterUtils
                     long currentTimeMillis = System.currentTimeMillis();
                     if ((currentTimeMillis - timestampAtStart) >= timeoutMillis)
                     {
-                        failed = true;
+                        failed.set(true);
                         break;
                     }
                 }
             } catch (InterruptedException ex)
             {
                 steno.error("Interrupted during busy check");
-                failed = true;
+                failed.set(true);
             }
         }
 
-        return failed;
+        if (cancellable != null)
+        {
+            cancellable.cancelled().removeListener(weakCancelChangeListener);
+        }
+
+        return failed.get();
     }
 
     public static float deriveNozzle1OverrunFromOffsets(float nozzle1Offset, float nozzle2Offset)
