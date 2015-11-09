@@ -4,6 +4,7 @@ import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.model.Reel;
 import celtech.utils.SystemUtils;
 import java.io.Serializable;
+import java.util.Comparator;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -47,6 +48,11 @@ public class Filament implements Serializable, Cloneable
     private final FloatProperty remainingFilament = new SimpleFloatProperty(
             ApplicationConfiguration.mmOfFilamentOnAReel);
     private final FloatProperty costGBPPerKG = new SimpleFloatProperty(35f);
+
+    public static final Comparator<Filament> BY_MATERIAL
+            = Comparator.comparing(Filament::getMaterial);
+    public static final Comparator<Filament> BY_NAME
+            = Comparator.comparing(Filament::getFriendlyFilamentName);
 
     public Filament(
             String friendlyFilamentName,
@@ -425,7 +431,13 @@ public class Filament implements Serializable, Cloneable
     @Override
     public String toString()
     {
-        return getLongFriendlyName() + " " + material.get();
+        StringBuilder stringToReturn = new StringBuilder();
+        stringToReturn.append(getLongFriendlyName());
+        if (material.get() != null)
+        {
+            stringToReturn.append(material.get());
+        }
+        return stringToReturn.toString();
     }
 
     public static String generateUserFilamentID()

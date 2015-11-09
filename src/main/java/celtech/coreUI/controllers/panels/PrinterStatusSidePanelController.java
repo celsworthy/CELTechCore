@@ -131,6 +131,15 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 }
             };
 
+    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        {
+            refreshMaterialContainer(previousSelectedPrinter);
+        }
+    };
+
     /**
      * Initialises the controller class.
      *
@@ -159,7 +168,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             updateForDisplayScaling(newValue);
         });
-        
+
         updateForDisplayScaling(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
     }
 
@@ -244,16 +253,21 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setLegendLabels(legendNozzleS, legendNozzleT, legendBed, legendAmbient);
         chartManager.bindPrinter(printer);
 
-        bindMaterialContainer(printer);
+        printer.extrudersProperty().forEach(extruder ->
+        {
+            extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
+        });
+
+        refreshMaterialContainer(printer);
     }
 
-    private void bindMaterialContainer(Printer printer)
+    private void refreshMaterialContainer(Printer printer)
     {
         materialContainer.getChildren().clear();
         for (int extruderNumber = 0; extruderNumber < 2; extruderNumber++)
         {
             Extruder extruder = printer.extrudersProperty().get(extruderNumber);
-            if (extruder.isFittedProperty().get())
+            if (extruder.filamentLoadedProperty().get())
             {
                 MaterialComponent materialComponent
                         = new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
@@ -261,8 +275,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 if (printer.extrudersProperty().size() > 1)
                 {
                     materialComponent.setMaxHeight(110);
-                }
-                else
+                } else
                 {
                     materialComponent.setMaxHeight(120);
                 }
@@ -284,6 +297,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         currentAmbientTemperatureHistory = null;
         chartManager.unbindPrinter();
+
+        printer.extrudersProperty().forEach(extruder ->
+        {
+            extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
+        });
 
         unbindMaterialContainer();
     }
@@ -399,7 +417,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         if (printer == selectedPrinter.get())
         {
-            bindMaterialContainer(printer);
+            refreshMaterialContainer(printer);
         }
     }
 
@@ -408,7 +426,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         if (printer == selectedPrinter.get())
         {
-            bindMaterialContainer(printer);
+            refreshMaterialContainer(printer);
         }
     }
 

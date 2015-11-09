@@ -138,6 +138,15 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         setupBaseDisplay();
     };
 
+    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        {
+            setupBaseDisplay();
+        }
+    };
+
     @FXML
     void jogButton(ActionEvent event)
     {
@@ -213,8 +222,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         advancedControls = new Node[]
         {
-            extruder1Controls,
-            extruder2Controls,
             xAxisControls,
             yAxisControls,
             zAxisControls
@@ -265,6 +272,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                                     getPrinterAncillarySystems().doorOpenProperty().not());
 
                             selectedPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+
+                            selectedPrinter.extrudersProperty().forEach(extruder ->
+                                    {
+                                        extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
+                            });
                         }
 
                         setAdvancedControlsVisibility();
@@ -283,6 +295,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             baseReel1.setVisible(false);
             baseReel2.setVisible(false);
             baseReelBoth.setVisible(false);
+            extruder1Controls.setVisible(false);
+            extruder2Controls.setVisible(false);
             bed.setVisible(false);
             vBoxLeft.setVisible(false);
             vBoxRight.setVisible(false);
@@ -297,6 +311,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(true);
+                extruder1Controls.setVisible(true);
+                extruder2Controls.setVisible(true);
                 bed.setVisible(true);
             } else if (printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get())
             {
@@ -304,6 +320,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(true);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
+                extruder1Controls.setVisible(true);
+                extruder2Controls.setVisible(false);
                 bed.setVisible(true);
             } else if (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get())
             {
@@ -311,6 +329,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(true);
                 baseReelBoth.setVisible(false);
+                extruder1Controls.setVisible(false);
+                extruder2Controls.setVisible(true);
                 bed.setVisible(true);
             } else
             {
@@ -318,6 +338,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
+                extruder1Controls.setVisible(false);
+                extruder2Controls.setVisible(false);
                 bed.setVisible(true);
             }
         }
@@ -342,7 +364,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             reel1Background.setVisible(false);
         } else
         {
-            Color reel1Colour = printerToUse.effectiveFilamentsProperty().get(0).getDisplayColour();                    
+            Color reel1Colour = printerToUse.effectiveFilamentsProperty().get(0).getDisplayColour();
             setColorAdjustFromDesiredColour(reel1BackgroundColourEffect, reel1Colour);
             reel1Background.setVisible(true);
         }
@@ -514,6 +536,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
             lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
             lastSelectedPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+            lastSelectedPrinter.extrudersProperty().forEach(extruder ->
+            {
+                extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
+            });
         }
 
         temperatureWarning.visibleProperty().unbind();

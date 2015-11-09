@@ -41,19 +41,13 @@ public class FilamentCell extends ListCell<Filament>
         super.updateItem(item, empty);
         if (item != null && !empty)
         {
-            if (item != FilamentContainer.UNKNOWN_FILAMENT)
-            {
-                Filament filament = (Filament) item;
-                setGraphic(cellContainer);
-                rectangle.setFill(filament.getDisplayColour());
+            Filament filament = (Filament) item;
+            setGraphic(cellContainer);
+            rectangle.setFill(filament.getDisplayColour());
 
                 label.setText(filament.getLongFriendlyName() + " "
                     + filament.getMaterial().getFriendlyName());
-                label.getStyleClass().add("filamentSwatchPadding");
-            } else {
-                setGraphic(null);
-                label.setText(Lookup.i18n("materialComponent.unknown"));
-            }
+            label.getStyleClass().add("filamentSwatchPadding");
         } else
         {
             setGraphic(null);

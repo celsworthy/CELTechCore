@@ -18,6 +18,7 @@ import celtech.utils.PrinterListChangesListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -40,6 +41,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
+import org.codehaus.jackson.map.util.Comparators;
 
 /**
  *
@@ -421,15 +423,11 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
                     } else
                     {
                         // must be "Unknown"
-                        selectedFilamentProperty.set(null);
+                        selectedFilamentProperty.set(FilamentContainer.UNKNOWN_FILAMENT);
                     }
                 });
 
-        if (mode == Mode.SETTINGS)
-        {
-            cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
-        }
-
+        cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
     }
 
     private void repopulateCmbMaterials()
@@ -439,17 +437,14 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
 
         try
         {
-            allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
-                    (Filament o1, Filament o2)
-                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
-                allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                        (Filament o1, Filament o2)
-                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
-                userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                        (Filament o1, Filament o2)
-                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                allFilaments.addAll(filamentContainer.getCompleteFilamentList());
+                userFilaments.addAll(filamentContainer.getUserFilamentList());
+            } else
+            {
+                allFilaments.addAll(filamentContainer.getAppFilamentList());
             }
         } catch (NoClassDefFoundError exception)
         {
