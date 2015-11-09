@@ -133,18 +133,14 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private VBox vBoxLeft = new VBox();
     private VBox vBoxRight = new VBox();
 
-    private MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
+    private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
         setupBaseDisplay();
     };
 
-    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+    private final ChangeListener<Boolean> filamentLoadedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
-        @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-        {
-            setupBaseDisplay();
-        }
+        setupBaseDisplay();
     };
 
     @FXML
@@ -228,6 +224,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         };
 
         setAdvancedControlsVisibility();
+        
+        AnchorPane.setTopAnchor(vBoxLeft, 30.0);
+        AnchorPane.setBottomAnchor(vBoxLeft, 30.0);
         loadInsetPanels();
 
         Lookup.getSelectedPrinterProperty().addListener(

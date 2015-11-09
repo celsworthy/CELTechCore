@@ -39,6 +39,8 @@
     mid_grey_30: rgb(64,64,64, 0.3);
     white_60: rgb(255,255,255, 0.6);
     light_grey: rgb(99,99,99);
+    light_grey_30: rgb(99,99,99, 0.3);
+    superlight_grey_30: rgb(200,200,200, 0.3);
     robox_blue: #0096e1;
     highlight_colour: rgb(0, 157, 226);
     highlight_colour_orange: #ff661b;
@@ -2939,4 +2941,30 @@ color-picker-label .text-field {
 {
     -fx-font-family: 'Source Sans Pro Light';
     -fx-font-smoothing-type: lcd;
+}
+
+.gcode-transcript
+{
+    -fx-background-color: white;
+    -fx-text-fill: black
+}
+
+.gcode-transcript .list-cell:filled:selected:focused, gcode-transcript .list-cell:filled:selected,
+.gcode-transcript .list-cell:even:filled:hover:selected,
+.gcode-transcript .list-cell:odd:filled:hover:selected,
+.gcode-transcript .list-cell:odd:filled:pressed,
+.gcode-transcript .list-cell:odd:filled:pressed:selected
+{
+    -fx-background-color: light_grey_30;
+    -fx-text-fill: black
+}
+
+.gcode-transcript .list-cell:even, .gcode-transcript .list-cell:even:filled:hover {
+    -fx-text-fill: black;
+    -fx-background-color: superlight_grey_30;
+}
+
+.gcode-transcript .list-cell:odd, .gcode-transcript .list-cell:odd:filled:hover {
+    -fx-text-fill: black;
+    -fx-background-color: white;
 }

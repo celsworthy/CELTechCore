@@ -4,12 +4,10 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
-import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.coreUI.DisplayManager;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -18,7 +16,6 @@ import celtech.utils.PrinterListChangesListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -28,7 +25,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -41,7 +37,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
-import org.codehaus.jackson.map.util.Comparators;
 
 /**
  *
@@ -541,9 +536,15 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             Filament filament = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
             selectedFilamentProperty.set(filament);
             materialRemaining.setVisible(true);
-        } else
+        } else if (printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get())
         {
             cmbMaterials.setVisible(true);
+            selectedFilamentProperty.set(null);
+            materialRemaining.setVisible(false);
+        }
+        else
+        {
+            cmbMaterials.setVisible(false);
             selectedFilamentProperty.set(null);
             materialRemaining.setVisible(false);
         }
@@ -638,8 +639,8 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     {
         svgLoaded.setVisible(false);
         setReelType(ReelType.SOLID_CROSS);
-        String pleaseLoadAFilament = Lookup.i18n("materialComponent.pleaseLoadAFilament");
-        showDetails((1 + extruderNumber) + ":", "", pleaseLoadAFilament, Color.BLACK, false);
+        String filamentNotLoaded = Lookup.i18n("materialComponent.filamentNotLoaded");
+        showDetails((1 + extruderNumber) + ":", "", filamentNotLoaded, Color.BLACK, false);
     }
 
     private void setReelColourString(String colourString)

@@ -6,15 +6,19 @@ import celtech.coreUI.controllers.StatusInsetController;
 import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -29,8 +33,9 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        GCodePanelController.class.getName());
+            GCodePanelController.class.getName());
     private ListChangeListener<String> gcodeTranscriptListener = null;
+    private Printer currentPrinter = null;
 
     @FXML
     private VBox gcodeEditParent;
@@ -39,7 +44,7 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
     private RestrictedTextField gcodeEntryField;
 
     @FXML
-    private TextArea gcodeTranscript;
+    private ListView<String> gcodeTranscript;
 
     @FXML
     private Button sendGCodeButton;
@@ -65,119 +70,100 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
         Lookup.getSelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
     }
 
+    private void selectLastItemInTranscript()
+    {
+        gcodeTranscript.getSelectionModel().selectLast();
+        gcodeTranscript.scrollTo(gcodeTranscript.getSelectionModel().getSelectedIndex());
+    }
+
+    private boolean suppressReactionToGCodeEntryChange = false;
+
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
         gcodeEntryField.disableProperty().bind(
-            Lookup.getUserPreferences().advancedModeProperty().not());
+                Lookup.getUserPreferences().advancedModeProperty().not());
         sendGCodeButton.disableProperty().bind(
-            Lookup.getUserPreferences().advancedModeProperty().not());
-
-        gcodeTranscript.setEditable(false);
-        gcodeTranscript.setScrollTop(Double.MAX_VALUE);
+                Lookup.getUserPreferences().advancedModeProperty().not());
 
         gcodeTranscriptListener = (ListChangeListener.Change<? extends String> change) ->
         {
             while (change.next())
             {
-                if (change.wasAdded())
-                {
-                    for (String additem : change.getAddedSubList())
-                    {
-                        gcodeTranscript.appendText(additem);
-                    }
-                } else if (change.wasRemoved())
-                {
-                    for (String additem : change.getRemoved())
-                    {
-                    }
-                } else if (change.wasReplaced())
-                {
-                } else if (change.wasUpdated())
-                {
-                }
             }
+
+            suppressReactionToGCodeEntryChange = true;
+            selectLastItemInTranscript();
+            suppressReactionToGCodeEntryChange = false;
         };
 
-        populateGCodeArea();
+        gcodeTranscript.selectionModelProperty().get().selectedItemProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+            {
+                if (!suppressReactionToGCodeEntryChange)
+                {
+                    gcodeEntryField.setText(gcodeTranscript.getSelectionModel().getSelectedItem());
+                }
+            }
+        });
 
         Lookup.getSelectedPrinterProperty().addListener(
-            (ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
-            {
-                if (t1 != null)
+                (ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
                 {
-                    t1.gcodeTranscriptProperty().addListener(gcodeTranscriptListener);
+                    if (currentPrinter != null)
+                    {
+                        currentPrinter.gcodeTranscriptProperty().removeListener(gcodeTranscriptListener);
+                    }
 
-                }
+                    if (t1 != null)
+                    {
+                        gcodeTranscript.setItems(t1.gcodeTranscriptProperty());
+                        t1.gcodeTranscriptProperty().addListener(gcodeTranscriptListener);
+                    } else
+                    {
+                        gcodeTranscript.setItems(null);
+                    }
 
-                if (t != null)
-                {
-                    t.gcodeTranscriptProperty().removeListener(gcodeTranscriptListener);
-                }
-
-                populateGCodeArea();
-            });
+                    currentPrinter = t1;
+                });
 
         gcodeEditParent.visibleProperty().bind(Lookup.getSelectedPrinterProperty().isNotNull());
 
         gcodeEntryField.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent t) ->
-                        {
-                            if (t.getCode() == KeyCode.UP)
-                            {
-                                String allText = gcodeTranscript.getText();
-
-                                if (gcodeTranscript.getSelectedText().length() > 0)
-                                {
-                                    int selectionStart = gcodeTranscript.getSelection().getStart();
-                                    int selectionEnd = gcodeTranscript.getSelection().getEnd();
-
-                                    int lastposition = allText.lastIndexOf('\n', selectionStart);
-
-                                    if (lastposition > 0)
-                                    {
-                                        int penultimatePosition = allText.lastIndexOf(
-                                            "\n", lastposition - 1);
-                                        if (penultimatePosition > 0)
-                                        {
-                                            gcodeTranscript.selectRange(
-                                                penultimatePosition, lastposition);
-                                        }
-                                    }
-                                } else
-                                {
-                                    int lastposition = allText.lastIndexOf('\n');
-
-                                    if (lastposition > 0)
-                                    {
-                                        int penultimatePosition = allText.lastIndexOf(
-                                            "\n", lastposition - 1);
-                                        if (penultimatePosition > 0)
-                                        {
-                                            gcodeTranscript.selectRange(
-                                                penultimatePosition, lastposition);
-                                        }
-                                    }
-                                }
-                            } else if (t.getCode() == KeyCode.DOWN)
-                            {
-                                gcodeTranscript.selectNextWord();
-                            }
+        {
+            if (t.getCode() == KeyCode.UP)
+            {
+                gcodeTranscript.getSelectionModel().selectPrevious();
+//                gcodeEntryField.setText(gcodeTranscript.getSelectionModel().getSelectedItem());
+                t.consume();
+            } else if (t.getCode() == KeyCode.DOWN)
+            {
+                gcodeTranscript.getSelectionModel().selectNext();
+//                gcodeEntryField.setText(gcodeTranscript.getSelectionModel().getSelectedItem());
+                t.consume();
+            }
         });
 
-    }
-
-    private void populateGCodeArea()
-    {
-        if (Lookup.getSelectedPrinterProperty().get() != null)
+        gcodeTranscript.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent t) ->
         {
-            gcodeTranscript.setText("");
-            for (String gcodeLine : Lookup.getSelectedPrinterProperty().get().gcodeTranscriptProperty())
+            if (t.getCode() == KeyCode.ENTER)
             {
-                gcodeTranscript.appendText(gcodeLine);
+                fireGCodeAtPrinter();
             }
-        } else
+        });
+        
+        gcodeTranscript.setOnMouseClicked(new EventHandler<MouseEvent>()
         {
-            gcodeTranscript.setText("");
-        }
+            @Override
+            public void handle(MouseEvent event)
+            {
+                if (event.getButton() ==MouseButton.PRIMARY && event.getClickCount() > 1)
+                {
+                    fireGCodeAtPrinter();
+                }
+            }
+        });
     }
 }
