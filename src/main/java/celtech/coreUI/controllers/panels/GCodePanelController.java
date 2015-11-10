@@ -1,9 +1,12 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusInsetController;
+import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -15,7 +18,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -24,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  *
@@ -67,7 +70,42 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
     private void fireGCodeAtPrinter()
     {
         gcodeEntryField.selectAll();
-        Lookup.getSelectedPrinterProperty().get().sendRawGCode(gcodeEntryField.getText(), true);
+        String text = gcodeEntryField.getText();
+
+        if (text.startsWith("!"))
+        {
+            String macroFilename = text.substring(1);
+            String gcodeFileWithPathApp = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroFilename + ".gcode";
+            String gcodeFileWithPathUser = ApplicationConfiguration.getUserStorageDirectory() + ApplicationConfiguration.macroFileSubpath + macroFilename + ".gcode";
+            String gcodeFileToUse = null;
+
+            if (FileUtils.fileExists(gcodeFileWithPathUser))
+            {
+                gcodeFileToUse = gcodeFileWithPathUser;
+            } else if (FileUtils.fileExists(gcodeFileWithPathApp))
+            {
+                gcodeFileToUse = gcodeFileWithPathApp;
+            }
+
+            //See if we can run a macro
+            if (currentPrinter != null && gcodeFileToUse != null)
+            {
+                try
+                {
+                    currentPrinter.executeGCodeFile(gcodeFileToUse, true);
+                    currentPrinter.gcodeTranscriptProperty().add(text);
+                } catch (PrinterException ex)
+                {
+                    steno.error("Failed to run macro: " + macroFilename);
+                }
+            } else
+            {
+                steno.error("Can't run requested macro: " + macroFilename);
+            }
+        } else
+        {
+            Lookup.getSelectedPrinterProperty().get().sendRawGCode(text.toUpperCase(), true);
+        }
     }
 
     private void selectLastItemInTranscript()
@@ -136,12 +174,10 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
             if (t.getCode() == KeyCode.UP)
             {
                 gcodeTranscript.getSelectionModel().selectPrevious();
-//                gcodeEntryField.setText(gcodeTranscript.getSelectionModel().getSelectedItem());
                 t.consume();
             } else if (t.getCode() == KeyCode.DOWN)
             {
                 gcodeTranscript.getSelectionModel().selectNext();
-//                gcodeEntryField.setText(gcodeTranscript.getSelectionModel().getSelectedItem());
                 t.consume();
             }
         });
@@ -153,13 +189,13 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
                 fireGCodeAtPrinter();
             }
         });
-        
+
         gcodeTranscript.setOnMouseClicked(new EventHandler<MouseEvent>()
         {
             @Override
             public void handle(MouseEvent event)
             {
-                if (event.getButton() ==MouseButton.PRIMARY && event.getClickCount() > 1)
+                if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() > 1)
                 {
                     fireGCodeAtPrinter();
                 }

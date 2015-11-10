@@ -3,7 +3,6 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -22,10 +21,8 @@ import celtech.printerControl.comms.commands.tx.ReadPrinterID;
 import celtech.printerControl.comms.commands.tx.ReadReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ReportErrors;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
-import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.model.Head;
@@ -65,12 +62,6 @@ public class TestCommandInterface extends CommandInterface
     @Override
     protected void setSleepBetweenStatusChecks(int sleepMillis)
     {
-    }
-
-    @Override
-    public RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
-    {
-        return writeToPrinter(messageToWrite, false);
     }
 
     @Override

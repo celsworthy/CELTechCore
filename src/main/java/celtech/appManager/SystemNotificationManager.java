@@ -118,4 +118,6 @@ public interface SystemNotificationManager
     public void showLoadFilamentNowMessage();
     
     public boolean showModelIsInvalidDialog(Set<String> modelNames);
+    
+    public void clearAllDialogsOnDisconnect();
 }

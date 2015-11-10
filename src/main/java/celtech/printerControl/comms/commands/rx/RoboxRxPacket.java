@@ -165,7 +165,15 @@ public abstract class RoboxRxPacket
     /**
      *
      * @param byteData
+     * @param requiredFirmwareVersion
      * @return
      */
-    public abstract boolean populatePacket(byte[] byteData);
+    public abstract boolean populatePacket(byte[] byteData, float requiredFirmwareVersion);
+    
+    /**
+     * 
+     * @param requiredFirmwareVersion
+     * @return 
+     */
+    public abstract int packetLength(float requiredFirmwareVersion);
 }

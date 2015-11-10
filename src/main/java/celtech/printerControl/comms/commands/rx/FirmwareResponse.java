@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
@@ -36,15 +32,15 @@ public class FirmwareResponse extends RoboxRxPacket
     {
         return firmwareRevisionFloat;
     }
-    
+
     public String getFirmwareRevisionString()
     {
-       return firmwareRevisionString; 
+        return firmwareRevisionString;
     }
 
     /**
-     * 
-     * @param firmwareRevision 
+     *
+     * @param firmwareRevision
      */
     public void setFirmwareRevision(String firmwareRevision)
     {
@@ -65,7 +61,7 @@ public class FirmwareResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -105,5 +101,11 @@ public class FirmwareResponse extends RoboxRxPacket
         outputString.append(">>>>>>>>>>\n");
 
         return outputString.toString();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 9;
     }
 }

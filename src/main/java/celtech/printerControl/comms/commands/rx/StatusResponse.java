@@ -15,12 +15,13 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    /* v728 firmware
+    /*
+     V736 firmware
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff q
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
      p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
-     b = busy ('0'->not busy, '1'->busy, '2'->loading filament, '3'->unloading filament)
+     b = busy ('0'->not busy, '1'->busy, '2'->loading E filament, '3'->unloading E filament, '4'->loading D filament, '5'->unloading D filament)
      x = X switch state
      y = Y switch state
      z = Z switch state
@@ -34,11 +35,11 @@ public class StatusResponse extends RoboxRxPacket
      a = Z top switch state
      m = extruder E ('0'->not present, '1'->present)
      n = extruder D ('0'->not present, '1'->present)
-     k = nozzle 0 heater mode ('0'->off, '1'->normal, '2'->first layer)
+     k = nozzle 0 heater mode ('0'->off, '1'->normal, '2'->first layer, '3' -> filament eject)
      mmmmmmmm = nozzle 0 temperature (decimal float format)
      nnnnnnnn = nozzle 0 target (decimal float format)
      cccccccc = nozzle 0 first layer target (decimal float format)
-     l = nozzle 1 heater mode ('0'-> off, '1'-<normal, '2'->first layer)
+     l = nozzle 1 heater mode ('0'-> off, '1'-<normal, '2'->first layer, '3' -> filament eject)
      rrrrrrrr = nozzle 1 temperature (decimal float format)
      uuuuuuuu = nozzle 1 target (decimal float format)
      dddddddd = nozzle 1 first layer target (decimal float format)
@@ -70,6 +71,9 @@ public class StatusResponse extends RoboxRxPacket
      total length = 213
      */
 
+    /**
+     * In v699 t and q are not present
+     */
     private final String charsetToUse = "US-ASCII";
     private String runningPrintJobID = null;
     private final int runningPrintJobIDBytes = 16;
@@ -885,7 +889,7 @@ public class StatusResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -1195,15 +1199,18 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse B position - " + BPositionString);
             }
 
-            String nozzleInUseString = new String(byteData, byteOffset, 1, charsetToUse);
-            try
+            if (requiredFirmwareVersion >= 701)
             {
-                this.nozzleInUse = decimalFloatFormatter.parse(nozzleInUseString).intValue();
-            } catch (ParseException ex)
-            {
-                steno.error("Couldn't parse nozzle in use - " + nozzleInUseString);
+                String nozzleInUseString = new String(byteData, byteOffset, 1, charsetToUse);
+                try
+                {
+                    this.nozzleInUse = decimalFloatFormatter.parse(nozzleInUseString).intValue();
+                } catch (ParseException ex)
+                {
+                    steno.error("Couldn't parse nozzle in use - " + nozzleInUseString);
+                }
+                byteOffset += 1;
             }
-            byteOffset += 1;
 
             // E Filament
             String filamentDiameterString = new String(byteData, byteOffset, decimalFloatFormatBytes,
@@ -1267,8 +1274,11 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse feed rate multiplier - " + feedRateMultiplierString);
             }
 
-            this.headPowerOn = (byteData[byteOffset] & 1) > 0;
-            byteOffset += 1;
+            if (requiredFirmwareVersion >= 724)
+            {
+                this.headPowerOn = (byteData[byteOffset] & 1) > 0;
+                byteOffset += 1;
+            }
 
             success = true;
         } catch (UnsupportedEncodingException ex)
@@ -1394,5 +1404,21 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append(">>>>>>>>>>\n");
 
         return outputString.toString();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        if (requiredFirmwareVersion >= 724 || requiredFirmwareVersion == RoboxRxPacketFactory.USE_LATEST_FIRMWARE_VERSION)
+        {
+            return 213;
+        } else if (requiredFirmwareVersion >= 701)
+        {
+            return 212;
+        }
+        else
+        {
+            return 211;
+        }
     }
 }

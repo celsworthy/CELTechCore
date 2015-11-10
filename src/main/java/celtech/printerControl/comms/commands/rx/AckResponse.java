@@ -39,11 +39,11 @@ public class AckResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         int byteOffset = 1;
 
-        for (; byteOffset < this.getPacketType().getPacketSize(); byteOffset++)
+        for (; byteOffset < packetLength(requiredFirmwareVersion); byteOffset++)
         {
             if ((byteData[byteOffset] & 1) > 0)
             {
@@ -97,5 +97,11 @@ public class AckResponse extends RoboxRxPacket
         outputString.append(">>>>>>>>>>\n");
 
         return outputString.toString();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 33;
     }
 }

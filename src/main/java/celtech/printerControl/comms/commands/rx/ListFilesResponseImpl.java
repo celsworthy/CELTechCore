@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
@@ -26,7 +22,7 @@ public class ListFilesResponseImpl extends ListFilesResponse
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -84,5 +80,11 @@ public class ListFilesResponseImpl extends ListFilesResponse
     public ArrayList<String> getPrintJobIDs()
     {
         return printJobIDs;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 3;
     }
 }

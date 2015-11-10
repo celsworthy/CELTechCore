@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class HoursCounterResponse extends RoboxRxPacket
 {
+
     private final String charsetToUse = "US-ASCII";
     private final int bytesUsed = 8;
     private float hoursCounterFloat = 0;
@@ -35,7 +36,7 @@ public class HoursCounterResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -43,7 +44,7 @@ public class HoursCounterResponse extends RoboxRxPacket
         {
             //Offset past the command
             int byteOffset = 1;
-            
+
             String hoursCounterString = new String(byteData, byteOffset, bytesUsed, charsetToUse);
             byteOffset += bytesUsed;
 
@@ -77,5 +78,11 @@ public class HoursCounterResponse extends RoboxRxPacket
         outputString.append(">>>>>>>>>>\n");
 
         return outputString.toString();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 9;
     }
 }

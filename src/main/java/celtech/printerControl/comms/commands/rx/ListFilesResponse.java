@@ -26,7 +26,7 @@ public abstract class ListFilesResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public abstract boolean populatePacket(byte[] byteData);
+    public abstract boolean populatePacket(byte[] byteData, float requiredFirmwareVersion);
 
     /**
      *

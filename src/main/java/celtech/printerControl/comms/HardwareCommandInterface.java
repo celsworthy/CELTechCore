@@ -41,31 +41,23 @@ public class HardwareCommandInterface extends CommandInterface
     @Override
     protected void disconnectPrinter()
     {
-        if (serialPortManager.serialPort.isOpened())
+        if (serialPortManager != null
+                && serialPortManager.serialPort != null)
         {
-            try
+            if (serialPortManager.serialPort.isOpened())
             {
-                serialPortManager.disconnect();
-            } catch (SerialPortException ex)
-            {
-                steno.error("Failed to shut down serial port " + ex.getMessage());
+                try
+                {
+                    serialPortManager.disconnect();
+                } catch (SerialPortException ex)
+                {
+                    steno.error("Failed to shut down serial port " + ex.getMessage());
+                }
             }
         }
 
         controlInterface.disconnected(printerHandle);
         keepRunning = false;
-    }
-
-    /**
-     *
-     * @param messageToWrite
-     * @return
-     * @throws RoboxCommsException
-     */
-    @Override
-    public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
-    {
-        return writeToPrinter(messageToWrite, false);
     }
 
     @Override
@@ -75,7 +67,6 @@ public class HardwareCommandInterface extends CommandInterface
         RoboxRxPacket receivedPacket = null;
 
         if (commsState == RoboxCommsState.CONNECTED
-                || commsState == RoboxCommsState.CHECKING_SD_CARD_IS_PRESENT
                 || commsState == RoboxCommsState.CHECKING_FIRMWARE
                 || commsState == RoboxCommsState.CHECKING_ID
                 || commsState == RoboxCommsState.DETERMINING_PRINTER_STATUS)
@@ -100,6 +91,9 @@ public class HardwareCommandInterface extends CommandInterface
                                 + packetType);
                     }
                     steno.trace("Got a response packet back of type: " + packetType.toString());
+                    RoboxRxPacket rxPacketTemplate = RoboxRxPacketFactory.createPacket(packetType);
+                    int packetLength = rxPacketTemplate.packetLength(firmwareVersionInUse);
+                    
                     byte[] inputBuffer = null;
                     if (packetType.containsLengthField())
                     {
@@ -125,8 +119,8 @@ public class HardwareCommandInterface extends CommandInterface
                         }
                     } else
                     {
-                        inputBuffer = new byte[packetType.getPacketSize()];
-                        int bytesToRead = packetType.getPacketSize() - 1;
+                        inputBuffer = new byte[packetLength];
+                        int bytesToRead = packetLength - 1;
                         byte[] payloadData = serialPortManager.readSerialPort(bytesToRead);
                         for (int i = 0; i < bytesToRead; i++)
                         {
@@ -138,9 +132,8 @@ public class HardwareCommandInterface extends CommandInterface
 
                     try
                     {
-                        receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
-                        steno.
-                                trace("Got packet of type " + receivedPacket.getPacketType().name());
+                        receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer, firmwareVersionInUse);
+                        steno.trace("Got packet of type " + receivedPacket.getPacketType().name());
 
                         if (!dontPublishResult)
                         {
@@ -161,7 +154,7 @@ public class HardwareCommandInterface extends CommandInterface
                     }
                 } else
                 {
-                        // Attempt to drain the crud from the input
+                    // Attempt to drain the crud from the input
                     // There shouldn't be anything here but just in case...
                     byte[] storage = serialPortManager.readAllDataOnBuffer();
 

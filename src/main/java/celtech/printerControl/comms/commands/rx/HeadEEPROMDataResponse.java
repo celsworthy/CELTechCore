@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
@@ -53,7 +49,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     }
 
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -527,5 +523,11 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         nozzle2YOffset = headWriteCommand.getNozzle2YOffset();
         nozzle2ZOffset = headWriteCommand.getNozzle2ZOffset();
         nozzle2BOffset = headWriteCommand.getNozzle2BOffset();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 193;
     }
 }

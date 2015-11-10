@@ -18,10 +18,6 @@ public enum RoboxCommsState
     /**
      *
      */
-    CHECKING_SD_CARD_IS_PRESENT,
-    /**
-     *
-     */
     CHECKING_FIRMWARE,
     /**
      *

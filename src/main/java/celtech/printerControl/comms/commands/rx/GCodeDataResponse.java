@@ -1,12 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
-import java.text.ParseException;
 
 /**
  *
@@ -35,7 +29,7 @@ public class GCodeDataResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -89,5 +83,11 @@ public class GCodeDataResponse extends RoboxRxPacket
     public String getGCodeResponse()
     {
         return gCodeResponse;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 5;
     }
 }

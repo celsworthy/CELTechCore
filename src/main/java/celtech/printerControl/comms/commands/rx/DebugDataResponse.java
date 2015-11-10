@@ -1,6 +1,5 @@
 package celtech.printerControl.comms.commands.rx;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class DebugDataResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -78,5 +77,11 @@ public class DebugDataResponse extends RoboxRxPacket
     public List<Integer> getDebugData()
     {
         return debugResponse;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 257;
     }
 }

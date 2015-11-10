@@ -56,18 +56,6 @@ public class RoboxRemoteCommandInterface extends CommandInterface
         keepRunning = false;
     }
 
-    /**
-     *
-     * @param messageToWrite
-     * @return
-     * @throws RoboxCommsException
-     */
-    @Override
-    public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
-    {
-        return writeToPrinter(messageToWrite, false);
-    }
-
     @Override
     public synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite,
             boolean dontPublishResult) throws RoboxCommsException
@@ -99,6 +87,9 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                                 + packetType);
                     }
                     steno.trace("Got a response packet back of type: " + packetType.toString());
+                    RoboxRxPacket rxPacketTemplate = RoboxRxPacketFactory.createPacket(packetType);
+                    int packetLength = rxPacketTemplate.packetLength(firmwareVersionInUse);
+
                     byte[] inputBuffer = null;
                     if (packetType.containsLengthField())
                     {
@@ -124,8 +115,8 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                         }
                     } else
                     {
-                        inputBuffer = new byte[packetType.getPacketSize()];
-                        int bytesToRead = packetType.getPacketSize() - 1;
+                        inputBuffer = new byte[packetLength];
+                        int bytesToRead = packetLength - 1;
                         byte[] payloadData = serialPortManager.readSerialPort(bytesToRead);
                         for (int i = 0; i < bytesToRead; i++)
                         {
@@ -137,7 +128,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
 
                     try
                     {
-                        receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer);
+                        receivedPacket = RoboxRxPacketFactory.createPacket(inputBuffer, firmwareVersionInUse);
                         steno.
                                 trace("Got packet of type " + receivedPacket.getPacketType().name());
 
@@ -160,7 +151,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                     }
                 } else
                 {
-                        // Attempt to drain the crud from the input
+                    // Attempt to drain the crud from the input
                     // There shouldn't be anything here but just in case...
                     byte[] storage = serialPortManager.readAllDataOnBuffer();
 

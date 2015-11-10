@@ -224,7 +224,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         };
 
         setAdvancedControlsVisibility();
-        
+
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setBottomAnchor(vBoxLeft, 30.0);
         loadInsetPanels();
@@ -303,8 +303,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             vBoxLeft.setVisible(true);
             vBoxRight.setVisible(true);
-            if (printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
-                    && printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get())
+            if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
+                    && (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1)))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
@@ -313,7 +313,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 extruder1Controls.setVisible(true);
                 extruder2Controls.setVisible(true);
                 bed.setVisible(true);
-            } else if (printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get())
+            } else if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
+                    && (!printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && !printerToUse.effectiveFilamentsProperty().containsKey(1)))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(true);
@@ -322,7 +323,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 extruder1Controls.setVisible(true);
                 extruder2Controls.setVisible(false);
                 bed.setVisible(true);
-            } else if (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get())
+            } else if ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1))
+                    && (!printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && !printerToUse.effectiveFilamentsProperty().containsKey(0)))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
@@ -343,11 +345,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             }
         }
 
-        setupReel1Colour();
-        setupReel2Colour();
-    }
+    setupReel1Colour();
+    setupReel2Colour();
+}
 
-    private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
+private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
     {
         effect.setHue(hueConverter(desiredColor.getHue()));
         effect.setBrightness(desiredColor.getBrightness() - 1);
@@ -479,7 +481,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         parent.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable,
+        public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
@@ -488,7 +490,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         parent.heightProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-            public void changed(ObservableValue<? extends Number> observable,
+        public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
@@ -569,7 +571,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
                 {
                     @Override
-                    public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
+        public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
                     {
                         panelVisibilityAction(visible, panelToChangeHeightOf);
                     }
@@ -646,52 +648,52 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     }
 
     @Override
-    public void whenPrinterAdded(Printer printer)
+        public void whenPrinterAdded(Printer printer)
     {
     }
 
     @Override
-    public void whenPrinterRemoved(Printer printer)
+        public void whenPrinterRemoved(Printer printer)
     {
     }
 
     @Override
-    public void whenHeadAdded(Printer printer)
-    {
-        setupHead();
-    }
-
-    @Override
-    public void whenHeadRemoved(Printer printer, Head head)
+        public void whenHeadAdded(Printer printer)
     {
         setupHead();
     }
 
     @Override
-    public void whenReelAdded(Printer printer, int reelIndex)
+        public void whenHeadRemoved(Printer printer, Head head)
+    {
+        setupHead();
+    }
+
+    @Override
+        public void whenReelAdded(Printer printer, int reelIndex)
     {
         setupBaseDisplay();
     }
 
     @Override
-    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+        public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
         setupBaseDisplay();
     }
 
     @Override
-    public void whenReelChanged(Printer printer, Reel reel)
+        public void whenReelChanged(Printer printer, Reel reel)
     {
         setupBaseDisplay();
     }
 
     @Override
-    public void whenExtruderAdded(Printer printer, int extruderIndex)
+        public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
     }
 
     @Override
-    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+        public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
 
