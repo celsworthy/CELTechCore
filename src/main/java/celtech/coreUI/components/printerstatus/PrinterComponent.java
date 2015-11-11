@@ -6,6 +6,7 @@ package celtech.coreUI.components.printerstatus;
 import celtech.Lookup;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.StandardColours;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
@@ -97,9 +98,18 @@ public class PrinterComponent extends Pane
     @FXML
     private PrinterSVGComponent printerSVG;
     private final Printer printer;
-    private ChangeListener<String> nameListener;
-    private ChangeListener<Color> colorListener;
-    private ChangeListener<Number> progressListener;
+    private ChangeListener<String> nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+    {
+        setName(newValue);
+    };
+    private ChangeListener<Color> colorListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+    {
+        setColour(newValue);
+    };
+    private ChangeListener<Number> progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        setProgress((double) newValue);
+    };
 
     public PrinterComponent(Printer printer)
     {
@@ -145,43 +155,39 @@ public class PrinterComponent extends Pane
         setStyle("-fx-background-color: white;");
 
         name.setFill(Color.WHITE);
-        String nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
+        String nameText;
+
+        if (printer != null)
+        {
+            nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
+            setColour(printer.getPrinterIdentity().printerColourProperty().get());
+            printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
+            printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
+            printer.getPrintEngine().progressProperty().addListener(progressListener);
+            printer.printerStatusProperty().addListener(
+                    (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
+                    {
+                        updateStatus(newValue, printer.pauseStatusProperty().get());
+                    });
+
+            printer.pauseStatusProperty().addListener(
+                    (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
+                    {
+                        updateStatus(printer.printerStatusProperty().get(), newValue);
+                    });
+            updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
+        } else
+        {
+            nameText = Lookup.i18n("sidePanel_printerStatus.notConnected");
+            String style = "-fx-background-color: #" + colourToString(StandardColours.LIGHT_GREY) + ";";
+            innerPane.setStyle(style);
+            updateStatus(PrinterStatus.IDLE, PauseStatus.NOT_PAUSED);
+        }
+
         nameText = fitNameToWidth(nameText);
         name.setText(nameText);
-        setColour(printer.getPrinterIdentity().printerColourProperty().get());
-
-        progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            setProgress((double) newValue);
-        };
-
-        nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-        {
-            setName(newValue);
-        };
-
-        colorListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
-        {
-            setColour(newValue);
-        };
-
-        printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
-        printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
-        printer.getPrintEngine().progressProperty().addListener(progressListener);
-        printer.printerStatusProperty().addListener(
-                (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
-                {
-                    updateStatus(newValue, printer.pauseStatusProperty().get());
-                });
-
-        printer.pauseStatusProperty().addListener(
-                (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
-                {
-                    updateStatus(printer.printerStatusProperty().get(), newValue);
-                });
 
         setSize(Size.SIZE_LARGE);
-        updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
     }
 
     public void setProgress(double progress)

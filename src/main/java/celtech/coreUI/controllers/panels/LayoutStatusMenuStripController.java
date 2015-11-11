@@ -35,6 +35,7 @@ import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import celtech.utils.PrinterUtils;
 import static celtech.utils.StringMetrics.getWidthOfString;
+import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponse;
 import java.io.File;
 import static java.lang.Double.max;
@@ -173,7 +174,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
 //    @FXML
 //    private GraphicButtonWithLabel cutButton;
-
     private Project selectedProject;
     private UndoableProject undoableSelectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
@@ -196,7 +196,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void group(ActionEvent event)
     {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
-        
+
         Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
@@ -204,7 +204,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
-        
+
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1)
         {
@@ -218,7 +218,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void ungroup(ActionEvent event)
     {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
-        
+
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableSelectedProject.ungroup(modelContainers);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
@@ -263,7 +263,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         currentProject, printerSettings, printer);
             } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
             {
-                currentStatusPrinter.resetPurgeTemperature(printerSettings);
+                currentPrinter.resetPurgeTemperature(printerSettings);
                 printer.printProject(currentProject);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
@@ -300,19 +300,63 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
 
     @FXML
-    void maintenance(ActionEvent event)
+    void purge(ActionEvent event)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.MAINTENANCE);
+        try
+        {
+            if (currentPrinter.headProperty().get() != null)
+            {
+                if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    boolean needHeater1 = currentPrinter.extrudersProperty().get(0).isFittedProperty().get()
+                            && currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
+                    boolean needHeater2 = currentPrinter.extrudersProperty().get(1).isFittedProperty().get()
+                            && currentPrinter.extrudersProperty().get(1).filamentLoadedProperty().get();
+
+                    Printer.NozzleHeaters heatersRequired = null;
+
+                    if (needHeater1 && needHeater2)
+                    {
+                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_BOTH;
+                    } else if (needHeater1)
+                    {
+                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_0;
+                    } else if (needHeater2)
+                    {
+                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_1;
+                    }
+
+                    if (heatersRequired != null)
+                    {
+                        currentPrinter.purgeMaterial(heatersRequired, false, null);
+                    }
+                } else
+                {
+                    boolean needHeater1 = currentPrinter.extrudersProperty().get(0).isFittedProperty().get()
+                            && currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
+
+                    if (needHeater1)
+                    {
+                        currentPrinter.purgeMaterial(Printer.NozzleHeaters.NOZZLE_HEATER_0, false, null);
+                    }
+                }
+            }
+        } catch (PrinterException ex)
+        {
+            steno.error("Error opening door " + ex.getMessage());
+        }
     }
 
     @FXML
-    void register(ActionEvent event)
+    void register(ActionEvent event
+    )
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.REGISTRATION);
     }
 
     @FXML
-    void addModel(ActionEvent event)
+    void addModel(ActionEvent event
+    )
     {
         Platform.runLater(() ->
         {
@@ -422,7 +466,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.goToOpenDoorPosition(null);
+            currentPrinter.goToOpenDoorPosition(null);
         } catch (PrinterException ex)
         {
             steno.error("Error opening door " + ex.getMessage());
@@ -493,7 +537,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.ejectFilament(extruder, null);
+            currentPrinter.ejectFilament(extruder, null);
         } catch (PrinterException ex)
         {
             steno.error("Error when sending eject filament - " + ex.getMessage());
@@ -505,7 +549,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.selectNozzle(0);
+            currentPrinter.selectNozzle(0);
             currentNozzle.set(0);
         } catch (PrinterException ex)
         {
@@ -518,7 +562,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.selectNozzle(1);
+            currentPrinter.selectNozzle(1);
             currentNozzle.set(1);
         } catch (PrinterException ex)
         {
@@ -531,7 +575,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.openNozzleFully();
+            currentPrinter.openNozzleFully();
         } catch (PrinterException ex)
         {
             steno.error("Error when opening nozzle" + ex.getMessage());
@@ -543,7 +587,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.closeNozzleFully();
+            currentPrinter.closeNozzleFully();
         } catch (PrinterException ex)
         {
             steno.error("Error when closing nozzle" + ex.getMessage());
@@ -555,7 +599,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.homeAllAxes(false, null);
+            currentPrinter.homeAllAxes(false, null);
         } catch (PrinterException ex)
         {
             steno.error("Couldn't run home macro");
@@ -567,12 +611,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            if (currentStatusPrinter.getPrinterAncillarySystems().headFanOnProperty().get())
+            if (currentPrinter.getPrinterAncillarySystems().headFanOnProperty().get())
             {
-                currentStatusPrinter.switchOffHeadFan();
+                currentPrinter.switchOffHeadFan();
             } else
             {
-                currentStatusPrinter.switchOnHeadFan();
+                currentPrinter.switchOnHeadFan();
             }
         } catch (PrinterException ex)
         {
@@ -589,11 +633,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             if (headLEDOn == true)
             {
-                currentStatusPrinter.switchOffHeadLEDs();
+                currentPrinter.switchOffHeadLEDs();
                 headLEDOn = false;
             } else
             {
-                currentStatusPrinter.switchOnHeadLEDs();
+                currentPrinter.switchOnHeadLEDs();
                 headLEDOn = true;
             }
         } catch (PrinterException ex)
@@ -615,15 +659,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             switch (ambientLEDState)
             {
                 case OFF:
-                    currentStatusPrinter.setAmbientLEDColour(Color.BLACK);
+                    currentPrinter.setAmbientLEDColour(Color.BLACK);
                     break;
                 case WHITE:
-                    currentStatusPrinter.setAmbientLEDColour(
+                    currentPrinter.setAmbientLEDColour(
                             colourMap.displayToPrinterColour(Color.WHITE));
                     break;
                 case COLOUR:
-                    currentStatusPrinter.setAmbientLEDColour(
-                            currentStatusPrinter.getPrinterIdentity().printerColourProperty().get());
+                    currentPrinter.setAmbientLEDColour(
+                            currentPrinter.getPrinterIdentity().printerColourProperty().get());
                     break;
             }
         } catch (PrinterException ex)
@@ -637,7 +681,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentStatusPrinter.removeHead((TaskResponse taskResponse) ->
+            currentPrinter.removeHead((TaskResponse taskResponse) ->
             {
                 removeHeadFinished(taskResponse);
             });
@@ -664,11 +708,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     /**
      * The printer selected on the Status screen.
      */
-    private Printer currentStatusPrinter = null;
-    /**
-     * The printer selected on the Settings screen.
-     */
-    private Printer currentSettingsPrinter = null;
+    private Printer currentPrinter = null;
     private final BooleanProperty printerAvailable = new SimpleBooleanProperty(false);
 
     private final ChangeListener<Boolean> headFanStatusListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -715,9 +755,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
-                    currentSettingsPrinter = newValue;
+                    currentPrinter = newValue;
                 });
-        currentSettingsPrinter = Lookup.getSelectedPrinterProperty().get();
+        currentPrinter = Lookup.getSelectedPrinterProperty().get();
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
     }
@@ -735,7 +775,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         closeNozzleButton.setVisible(false);
         fillNozzleButton.setVisible(false);
-        
+
         groupButton.setVisible(true);
         ungroupButton.setVisible(false);
 
@@ -863,7 +903,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void createStatusPrinterListener()
     {
-        currentStatusPrinter = Lookup.getSelectedPrinterProperty().get();
+        currentPrinter = Lookup.getSelectedPrinterProperty().get();
 
         Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
@@ -871,7 +911,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 printerAvailable.set(true);
 
-                if (currentStatusPrinter != null)
+                if (currentPrinter != null)
                 {
                     unlockDoorButton.disableProperty().unbind();
                     ejectFilamentButton.disableProperty().unbind();
@@ -884,7 +924,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     openNozzleButton.disableProperty().unbind();
                     closeNozzleButton.disableProperty().unbind();
                     homeButton.disableProperty().unbind();
-                    currentStatusPrinter.getPrinterAncillarySystems().headFanOnProperty().
+                    currentPrinter.getPrinterAncillarySystems().headFanOnProperty().
                             removeListener(headFanStatusListener);
                     headLightsButton.disableProperty().unbind();
                     ambientLightsButton.disableProperty().unbind();
@@ -922,7 +962,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         .bind(newValue.canCalibrateHeadProperty().not());
                 removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
 
-                currentStatusPrinter = newValue;
+                currentPrinter = newValue;
 
             } else
             {
@@ -1008,7 +1048,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         createPrinterSettingsListener(printerSettings);
         bindSelectedModels(project);
 
-        if (currentSettingsPrinter != null && project != null)
+        if (currentPrinter != null && project != null)
         {
             whenProjectOrSettingsPrinterChange();
         }
@@ -1027,8 +1067,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            updateCanPrintProjectBindings(currentSettingsPrinter, selectedProject);
-            updatePrintButtonConditionalText(currentSettingsPrinter, selectedProject);
+            updateCanPrintProjectBindings(currentPrinter, selectedProject);
+            updatePrintButtonConditionalText(currentPrinter, selectedProject);
         } catch (Exception ex)
         {
             steno.warning("Error updating can print or print button conditionals: " + ex);
@@ -1049,7 +1089,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         selectedProject = project;
         undoableSelectedProject = new UndoableProject(project);
         printerSettings = project.getPrinterSettings();
-        currentSettingsPrinter = Lookup.getSelectedPrinterProperty().get();
+        currentPrinter = Lookup.getSelectedPrinterProperty().get();
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
@@ -1186,7 +1226,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
 //        cutButton.disableProperty().bind(
 //                noLoadedModels.or(projectGUIRules.canCutModel().not()));
-
         ChangeListener<LayoutSubmode> whenSubModeChanges
                 = (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->
                 {
@@ -1213,7 +1252,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        if (printer == currentStatusPrinter)
+        if (printer == currentPrinter)
         {
             openNozzleButton.visibleProperty().bind(
                     printer.headProperty().get().bPositionProperty().lessThan(0.5));
@@ -1242,7 +1281,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
-        if (printer == currentSettingsPrinter)
+        if (printer == currentPrinter)
         {
             whenProjectOrSettingsPrinterChange();
         }
@@ -1251,7 +1290,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
-        if (printer == currentSettingsPrinter)
+        if (printer == currentPrinter)
         {
             whenProjectOrSettingsPrinterChange();
         }
@@ -1260,7 +1299,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
-        if (printer == currentSettingsPrinter)
+        if (printer == currentPrinter)
         {
             whenProjectOrSettingsPrinterChange();
         }
@@ -1269,7 +1308,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
-        if (printer == currentSettingsPrinter)
+        if (printer == currentPrinter)
         {
             whenProjectOrSettingsPrinterChange();
         }
@@ -1278,7 +1317,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-        if (printer == currentSettingsPrinter)
+        if (printer == currentPrinter)
         {
             whenProjectOrSettingsPrinterChange();
         }

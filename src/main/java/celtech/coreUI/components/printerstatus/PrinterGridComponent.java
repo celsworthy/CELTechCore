@@ -25,7 +25,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * This component houses a square grid of PrinterComponents and is used a printer selector.
+ * This component houses a square grid of PrinterComponents and is used a
+ * printer selector.
  *
  * @author tony
  */
@@ -61,7 +62,7 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
      * Add the given printer component to the given grid coordinates.
      */
     private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
-        int column)
+            int column)
     {
         PrinterComponent.Size size;
         if (connectedPrinters.size() > 6)
@@ -98,8 +99,8 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     }
 
     /**
-     * Remove the given printer from the display. Update the selected printer to one of the
-     * remaining printers.
+     * Remove the given printer from the display. Update the selected printer to
+     * one of the remaining printers.
      */
     public void removePrinter(Printer printer)
     {
@@ -117,16 +118,24 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
         {
             columnsPerRow = 3;
         }
-        for (Printer printer : connectedPrinters)
+
+        if (connectedPrinters.size() > 0)
         {
-            PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
-            addPrinterComponentToGrid(printerComponent, row, column);
-            column += 1;
-            if (column == columnsPerRow)
+            for (Printer printer : connectedPrinters)
             {
-                column = 0;
-                row += 1;
+                PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
+                addPrinterComponentToGrid(printerComponent, row, column);
+                column += 1;
+                if (column == columnsPerRow)
+                {
+                    column = 0;
+                    row += 1;
+                }
             }
+        } else
+        {
+            PrinterComponent printerComponent = createPrinterComponentForPrinter(null);
+            addPrinterComponentToGrid(printerComponent, row, column);
         }
         // UGH shouldnt need this here but can't get PrinterComponent / Grid to negotiate size
         if (connectedPrinters.size() > 1 && connectedPrinters.size() <= 2)
@@ -145,8 +154,8 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     }
 
     /**
-     * Create the PrinterComponent for the given printer and set up any listeners on component
-     * events.
+     * Create the PrinterComponent for the given printer and set up any
+     * listeners on component events.
      */
     private PrinterComponent createPrinterComponentForPrinter(Printer printer)
     {
@@ -160,8 +169,9 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     }
 
     /**
-     * This is called when the user clicks on the printer component for the given printer, and
-     * handles click (select printer) and double-click (go to edit printer details).
+     * This is called when the user clicks on the printer component for the
+     * given printer, and handles click (select printer) and double-click (go to
+     * edit printer details).
      *
      * @param event
      */
@@ -198,16 +208,16 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     private void showEditPrinterDetails(Printer printer)
     {
         Stenographer steno = StenographerFactory.getStenographer(
-            PrinterGridComponent.class.getName());
+                PrinterGridComponent.class.getName());
         PrinterColourMap colourMap = PrinterColourMap.getInstance();
         if (printer != null)
         {
             printerIDDialog.setPrinterToUse(printer);
             PrinterIdentity printerIdentity = printer.getPrinterIdentity();
             printerIDDialog.setChosenDisplayColour(colourMap.printerToDisplayColour(
-                printerIdentity.printerColourProperty().get()));
+                    printerIdentity.printerColourProperty().get()));
             printerIDDialog.
-                setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
+                    setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
 
             boolean okPressed = printerIDDialog.show();
 
@@ -217,7 +227,7 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
                 {
                     printer.updatePrinterName(printerIDDialog.getChosenPrinterName());
                     printer.updatePrinterDisplayColour(colourMap.displayToPrinterColour(
-                        printerIDDialog.getChosenDisplayColour()));
+                            printerIDDialog.getChosenDisplayColour()));
                 } catch (PrinterException ex)
                 {
                     steno.error("Error writing printer ID");
@@ -227,7 +237,8 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     }
 
     /**
-     * Select any one of the active printers. If there are no printers left then select 'null'
+     * Select any one of the active printers. If there are no printers left then
+     * select 'null'
      */
     private void selectOnePrinter()
     {
