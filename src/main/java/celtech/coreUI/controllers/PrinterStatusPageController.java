@@ -5,6 +5,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.controllers.utilityPanels.OuterPanelController;
 import celtech.printerControl.PrinterStatus;
@@ -125,6 +126,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     @FXML
     private VBox zAxisControls;
+
+    @FXML
+    private VBox disconnectedText;
+
+    @FXML
+    private HyperlinkedLabel disconnectedLinkedText;
 
     private Node[] advancedControls = null;
 
@@ -284,6 +291,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     }
                 });
 
+        disconnectedLinkedText.replaceText(Lookup.i18n("printerStatus.noPrinterAttached"));
     }
 
     private void setupBaseDisplay()
@@ -299,10 +307,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             bed.setVisible(false);
             vBoxLeft.setVisible(false);
             vBoxRight.setVisible(false);
+            disconnectedText.setVisible(true);
         } else
         {
             vBoxLeft.setVisible(true);
             vBoxRight.setVisible(true);
+            disconnectedText.setVisible(false);
             if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
                     && (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1)))
             {

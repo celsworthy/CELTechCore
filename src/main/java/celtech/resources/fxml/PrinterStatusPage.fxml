@@ -78,6 +78,12 @@
                   <Image url="@../images/statusRender/Bed.png" />
                </image>
             </ImageView>
+            <VBox fx:id="disconnectedText" alignment="CENTER">
+               <children>
+                  <Label style="-fx-font-size: 60px;" styleClass="boldText" text="%printerStatus.noPrinterAttachedNoRobox" textAlignment="CENTER" />
+                  <HyperlinkedLabel fx:id="disconnectedLinkedText" maxHeight="-Infinity" maxWidth="-Infinity" style="-fx-font-size: 40px;" styleClass="regularText" textAlignment="CENTER" />
+               </children>
+            </VBox>
                 <Group fx:id="temperatureWarning" mouseTransparent="true" scaleX="0.2" scaleY="0.2" translateX="174.0" translateY="185.0">
                     <children>
                         <Group>
