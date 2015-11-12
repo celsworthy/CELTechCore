@@ -410,7 +410,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     configure(projectTabPaneHolder);
 
             printerStatusTab = new Tab();
-            printerStatusTab.setText(Lookup.i18n("printerStatusTabTitle"));
             FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(
                     ApplicationConfiguration.fxmlResourcePath
                     + "infoScreenIndicator.fxml"), Lookup.getLanguageBundle());
