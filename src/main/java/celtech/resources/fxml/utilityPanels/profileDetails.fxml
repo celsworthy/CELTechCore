@@ -8,7 +8,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="480.0" spacing="5.0" styleClass="innerPanel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="480.0" spacing="5.0" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <HBox alignment="CENTER">
             <children>
@@ -942,7 +942,4 @@
         </TabPane>
         <TextArea id="helpText" fx:id="helpText" editable="false" wrapText="true" />
     </children>
-    <padding>
-        <Insets left="25.0" right="25.0" />
-    </padding>
 </VBox>

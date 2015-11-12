@@ -15,6 +15,7 @@ import celtech.services.printing.GCodePrintResult;
 import celtech.services.printing.TransferGCodeToPrinterService;
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -38,7 +39,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class MaintenanceInsetPanelController implements Initializable
+public class MaintenanceInsetPanelController implements Initializable, MenuInnerPanel
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(MaintenanceInsetPanelController.class.getName());
@@ -103,11 +104,6 @@ public class MaintenanceInsetPanelController implements Initializable
     @FXML
     private Button ZTestButton;
     
-    @FXML
-    void back(ActionEvent event) {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
-    }
-
     @FXML
     void ejectStuckMaterial1(ActionEvent event)
     {
@@ -443,5 +439,17 @@ public class MaintenanceInsetPanelController implements Initializable
         {
             ex.printStackTrace();
         }
+    }
+
+    @Override
+    public String getMenuTitle()
+    {
+        return "maintenancePanel.title";
+    }
+
+    @Override
+    public List<OperationButton> getOperationButtons()
+    {
+        return null;
     }
 }

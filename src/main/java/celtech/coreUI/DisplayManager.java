@@ -10,16 +10,14 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.Notifications.NotificationArea;
-import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.Spinner;
 import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
-import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
+import celtech.coreUI.controllers.panels.LibraryMenuPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
-import celtech.coreUI.controllers.panels.SidePanelManager;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ModelLoader;
@@ -63,7 +61,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -201,9 +198,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     public void showAndSelectPrintProfile(SlicerParametersFile printProfile)
     {
-        ApplicationStatus.getInstance().setMode(ApplicationMode.EXTRAS_MENU);
-        Initializable initializable = insetPanelControllers.get(ApplicationMode.EXTRAS_MENU);
-        ExtrasMenuPanelController controller = (ExtrasMenuPanelController) initializable;
+        ApplicationStatus.getInstance().setMode(ApplicationMode.LIBRARY);
+        Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
+        LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
         controller.showAndSelectPrintProfile(printProfile);
     }
 
@@ -583,6 +580,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 steno.debug("About to load inset panel fxml: " + fxmlFileName);
                 FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName,
                         Lookup.getLanguageBundle());
+                insetPanelLoader.setController(mode.getControllerClass().newInstance());
                 Pane insetPanel = (Pane) insetPanelLoader.load();
                 Initializable insetPanelController = insetPanelLoader.getController();
                 insetPanel.setId(mode.name());

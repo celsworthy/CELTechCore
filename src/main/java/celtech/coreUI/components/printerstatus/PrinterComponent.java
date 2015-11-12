@@ -47,6 +47,7 @@ public class PrinterComponent extends Pane
     public enum Status
     {
 
+        NO_INDICATOR(""),
         READY("printerStatus.idle"),
         PRINTING("printerStatus.printing"),
         PAUSED("printerStatus.paused"),
@@ -181,7 +182,7 @@ public class PrinterComponent extends Pane
             nameText = Lookup.i18n("sidePanel_printerStatus.notConnected");
             String style = "-fx-background-color: #" + colourToString(StandardColours.LIGHT_GREY) + ";";
             innerPane.setStyle(style);
-            updateStatus(PrinterStatus.IDLE, PauseStatus.NOT_PAUSED);
+            setStatus(Status.NO_INDICATOR);
         }
 
         nameText = fitNameToWidth(nameText);

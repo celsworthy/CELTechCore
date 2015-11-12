@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
+import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import static celtech.coreUI.controllers.panels.FXMLUtilities.addColonsToLabels;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
@@ -36,7 +36,7 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class HeadEEPROMController implements Initializable, PrinterListChangesListener,
-        ExtrasMenuInnerPanel
+        MenuInnerPanel
 {
 
     Stenographer steno = StenographerFactory.getStenographer(HeadEEPROMController.class.getName());
@@ -464,8 +464,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     @Override
     public List<OperationButton> getOperationButtons()
     {
-        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
-        ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
+        List<MenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        MenuInnerPanel.OperationButton saveButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -500,7 +500,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         };
         operationButtons.add(saveButton);
 
-        ExtrasMenuInnerPanel.OperationButton resetToDefaultsButton = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton resetToDefaultsButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()

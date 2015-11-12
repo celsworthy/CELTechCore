@@ -7,12 +7,12 @@ import java.util.List;
 import javafx.beans.property.BooleanProperty;
 
 /**
- * ExtrasMenuInnerPanel defines the properties needed to instantiate an inner panel from
- * the ExtrasMenuPanel.
+ * MenuInnerPanel defines the properties needed to instantiate an inner panel from
+ the ExtrasMenuPanel.
  * 
  * @author tony
  */
-public interface ExtrasMenuInnerPanel
+public interface MenuInnerPanel
 {
     /**
      * An OperationButton defines a button which is required to be shown when this

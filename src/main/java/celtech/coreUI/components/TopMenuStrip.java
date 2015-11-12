@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.components;
 
 import celtech.appManager.ApplicationMode;
@@ -32,6 +27,9 @@ public class TopMenuStrip extends HBox
     private GraphicButton extrasMenuButton;
     
     @FXML
+    private GraphicButton libraryButton;
+    
+    @FXML
     void extrasMenuPressed(ActionEvent event)
     {
         applicationStatus.setMode(ApplicationMode.EXTRAS_MENU);
@@ -41,6 +39,12 @@ public class TopMenuStrip extends HBox
     void aboutPressed(ActionEvent event)
     {
         applicationStatus.setMode(ApplicationMode.ABOUT);
+    }
+    
+    @FXML
+    void libraryPressed(ActionEvent event)
+    {
+        applicationStatus.setMode(ApplicationMode.LIBRARY);
     }
     
     public TopMenuStrip()
@@ -68,14 +72,15 @@ public class TopMenuStrip extends HBox
         
         BooleanBinding buttonDisabled = 
             applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.EXTRAS_MENU)
-                )));
-
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)).
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)).
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.EXTRAS_MENU)).
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LIBRARY));
+        
         aboutButton.disableProperty().bind(buttonDisabled);
 
         extrasMenuButton.disableProperty().bind(buttonDisabled);
         
+        libraryButton.disableProperty().bind(buttonDisabled);
     }
 }

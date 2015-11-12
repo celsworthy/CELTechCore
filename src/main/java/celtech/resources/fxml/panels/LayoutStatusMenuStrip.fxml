@@ -59,7 +59,7 @@
                                             </children>
                                         </StackPane>
                                         <GraphicButtonWithLabel fx:id="calibrateButton" fxmlFileName="calibrateButton" labelText="%buttonText.calibrate" onAction="#calibrate" />
-                                        <GraphicButtonWithLabel fx:id="maintenanceButton" fxmlFileName="calibrateButton" labelText="%maintenancePanel.title" onAction="#maintenance" />
+                                        <GraphicButtonWithLabel fx:id="purgeButton" fxmlFileName="purgeButton" labelText="%buttonText.purge" onAction="#purge" />
                                         <GraphicButtonWithLabel fx:id="homeButton" fxmlFileName="homeAxesButton" labelText="%buttonText.home" onAction="#homeAll" />
                                         <GraphicButtonWithLabel fx:id="removeHeadButton" fxmlFileName="removeHeadButton" labelText="%buttonText.removeHead" onAction="#removeHead" />
                                         <GraphicToggleButtonWithLabel fx:id="headFanButton" fxmlFileName="headFanButton" labelText="%buttonText.headFan" onAction="#toggleHeadFan" />

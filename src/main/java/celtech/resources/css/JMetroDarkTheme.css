@@ -1665,7 +1665,7 @@ modal-dialogue{
 }    
 
 .blue-inset-panel{
-    -fx-background-color: highlight_colour;
+    -fx-background-color: black;
 }
 
 .blue-inset-panel-text{
@@ -1674,6 +1674,7 @@ modal-dialogue{
 
 .inset-panel{
     -fx-background-color: light_grey;
+    -fx-padding: 0 25 0 25;
 }
 
 .inset-panel-with-menu{
@@ -2804,7 +2805,7 @@ color-picker-label .text-field {
 * Head
 */
 
-.head_panel {
+.head_panel, .head_panel .label {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 14px;
 }

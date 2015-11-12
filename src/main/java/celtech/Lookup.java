@@ -17,7 +17,7 @@ import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
-import celtech.coreUI.controllers.panels.ExtrasMenuInnerPanel;
+import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
@@ -98,11 +98,7 @@ public class Lookup
     private static final Map<Project, ProjectGUIState> projectGUIStates = new HashMap<>();
     private static final Languages languages = new Languages();
     private static GCodeOutputWriterFactory<GCodeOutputWriter> postProcessorGCodeOutputWriterFactory;
-    /**
-     * The ExtrasMenuInnerPanel that is being displayed inside the ExtrasMenuPanel.
-     */
-    private static final ObjectProperty<ExtrasMenuInnerPanel> extrasMenuInnerPanel = new SimpleObjectProperty<>();
-
+    
     /**
      * The database of known filaments.
      */
@@ -325,16 +321,6 @@ public class Lookup
         return projectGUIStates.get(project);
     }
 
-    public static void setExtrasInnerPanel(ExtrasMenuInnerPanel extrasMenuInnerPanel)
-    {
-        Lookup.extrasMenuInnerPanel.set(extrasMenuInnerPanel);
-    }
-
-    public static ReadOnlyObjectProperty<ExtrasMenuInnerPanel> getExtrasInnerPanel()
-    {
-        return Lookup.extrasMenuInnerPanel;
-    }
-    
     public static NotificationDisplay getNotificationDisplay()
     {
         return notificationDisplay;

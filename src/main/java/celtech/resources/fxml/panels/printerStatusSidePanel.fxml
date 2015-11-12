@@ -74,12 +74,12 @@
                                 </VBox>
                             </children>
                             <padding>
-                                <Insets left="10.0" bottom="10.0" right="10" top="10"/>
+                                <Insets left="10.0" bottom="20.0" right="10" top="10"/>
                             </padding>
                         </HBox>
                     </children>
                 </VBox>
-                <VBox fx:id="materialContainer" alignment="CENTER" prefWidth="260.0" styleClass="statusPanelChild"/>
+                <VBox fx:id="materialContainer" alignment="CENTER" prefWidth="260.0" minHeight="-Infinity" styleClass="statusPanelChild"/>
                 <VBox VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER" maxHeight="1000" >
                     <children>
                         <LineChart id="temperatureChart" fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false">

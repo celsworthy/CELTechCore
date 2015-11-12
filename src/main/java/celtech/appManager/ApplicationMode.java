@@ -1,10 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
+import celtech.coreUI.controllers.panels.AboutPanelController;
+import celtech.coreUI.controllers.panels.CalibrationInsetPanelController;
+import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
+import celtech.coreUI.controllers.panels.LibraryMenuPanelController;
+import celtech.coreUI.controllers.panels.LoadModelInsetPanelController;
+import celtech.coreUI.controllers.panels.MaintenanceInsetPanelController;
+import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
+import celtech.coreUI.controllers.panels.RegistrationInsetPanelController;
+import celtech.coreUI.controllers.panels.WelcomeInsetPanelController;
 
 /**
  *
@@ -13,32 +19,35 @@ import celtech.configuration.ApplicationConfiguration;
 public enum ApplicationMode
 {
 
-    WELCOME("Welcome"),
-    CALIBRATION_CHOICE("Calibration"),
-    REGISTRATION("registration"),
-    PURGE("purge"),
-    MAINTENANCE("Maintenance"),
-    ABOUT("about"),
-    SYSTEM_INFORMATION("systemInformation"),
-    EXTRAS_MENU("extrasMenu"),
+    WELCOME("Welcome", WelcomeInsetPanelController.class),
+    CALIBRATION_CHOICE("Calibration", CalibrationInsetPanelController.class),
+    REGISTRATION("registration", RegistrationInsetPanelController.class),
+    PURGE("purge", PurgeInsetPanelController.class),
+    MAINTENANCE("Maintenance", MaintenanceInsetPanelController.class),
+    ABOUT("about", AboutPanelController.class),
+    SYSTEM_INFORMATION("systemInformation", null),
+    EXTRAS_MENU("extrasMenu", ExtrasMenuPanelController.class),
     //TODO printer status has to be last otherwise the temperature graph doesn't work!! Fix in DisplayManager
-    STATUS(null),
+    STATUS(null, null),
     /**
      *
      */
-    LAYOUT(null),
-    ADD_MODEL("loadModel"),
-    MY_MINI_FACTORY("myMiniFactoryLoader"),
+    LAYOUT(null, null),
+    ADD_MODEL("loadModel", LoadModelInsetPanelController.class),
+    MY_MINI_FACTORY("myMiniFactoryLoader", MyMiniFactoryLoaderController.class),
     /**
      *
      */
-    SETTINGS(null);
+    SETTINGS(null, null),
+    LIBRARY("extrasMenu", LibraryMenuPanelController.class);
 
     private final String insetPanelFXMLPrefix;
+    private final Class controllerClass;
 
-    private ApplicationMode(String insetPanelFXMLPrefix)
+    private ApplicationMode(String insetPanelFXMLPrefix, Class<?> controllerClass)
     {
         this.insetPanelFXMLPrefix = insetPanelFXMLPrefix;
+        this.controllerClass = controllerClass;
     }
 
     /**
@@ -50,4 +59,8 @@ public enum ApplicationMode
         return ApplicationConfiguration.fxmlPanelResourcePath + insetPanelFXMLPrefix + "InsetPanel" + ".fxml";
     }
 
+    public Class getControllerClass()
+    {
+        return controllerClass;
+    }
 }

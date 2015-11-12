@@ -18,7 +18,7 @@ import javafx.scene.layout.RowConstraints;
  *
  * @author tony
  */
-public class PreferencesInnerPanelController implements Initializable, ExtrasMenuInnerPanel
+public class PreferencesInnerPanelController implements Initializable, MenuInnerPanel
 {
 
     private static final int ROW_HEIGHT = 60;
@@ -108,9 +108,9 @@ public class PreferencesInnerPanelController implements Initializable, ExtrasMen
     }
 
     @Override
-    public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
+    public List<MenuInnerPanel.OperationButton> getOperationButtons()
     {
-        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        List<MenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
         return operationButtons;
     }
 }

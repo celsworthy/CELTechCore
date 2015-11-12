@@ -302,49 +302,52 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void purge(ActionEvent event)
     {
-        try
-        {
-            if (currentPrinter.headProperty().get() != null)
-            {
-                if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                {
-                    boolean needHeater1 = currentPrinter.extrudersProperty().get(0).isFittedProperty().get()
-                            && currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
-                    boolean needHeater2 = currentPrinter.extrudersProperty().get(1).isFittedProperty().get()
-                            && currentPrinter.extrudersProperty().get(1).filamentLoadedProperty().get();
+        DisplayManager.getInstance().getPurgeInsetPanelController().purge(currentPrinter);
 
-                    Printer.NozzleHeaters heatersRequired = null;
-
-                    if (needHeater1 && needHeater2)
-                    {
-                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_BOTH;
-                    } else if (needHeater1)
-                    {
-                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_0;
-                    } else if (needHeater2)
-                    {
-                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_1;
-                    }
-
-                    if (heatersRequired != null)
-                    {
-                        currentPrinter.purgeMaterial(heatersRequired, false, null);
-                    }
-                } else
-                {
-                    boolean needHeater1 = currentPrinter.extrudersProperty().get(0).isFittedProperty().get()
-                            && currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
-
-                    if (needHeater1)
-                    {
-                        currentPrinter.purgeMaterial(Printer.NozzleHeaters.NOZZLE_HEATER_0, false, null);
-                    }
-                }
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Error opening door " + ex.getMessage());
-        }
+        //Consider transplanting the below to the purge controller
+//        try
+//        {
+//            if (currentPrinter.headProperty().get() != null)
+//            {
+//                if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+//                {
+//                    boolean needHeater1 = currentPrinter.extrudersProperty().get(0).isFittedProperty().get()
+//                            && currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
+//                    boolean needHeater2 = currentPrinter.extrudersProperty().get(1).isFittedProperty().get()
+//                            && currentPrinter.extrudersProperty().get(1).filamentLoadedProperty().get();
+//
+//                    Printer.NozzleHeaters heatersRequired = null;
+//
+//                    if (needHeater1 && needHeater2)
+//                    {
+//                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_BOTH;
+//                    } else if (needHeater1)
+//                    {
+//                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_0;
+//                    } else if (needHeater2)
+//                    {
+//                        heatersRequired = Printer.NozzleHeaters.NOZZLE_HEATER_1;
+//                    }
+//
+//                    if (heatersRequired != null)
+//                    {
+//                        currentPrinter.purgeMaterial(heatersRequired, false, null);
+//                    }
+//                } else
+//                {
+//                    boolean needHeater1 = currentPrinter.extrudersProperty().get(0).isFittedProperty().get()
+//                            && currentPrinter.extrudersProperty().get(0).filamentLoadedProperty().get();
+//
+//                    if (needHeater1)
+//                    {
+//                        currentPrinter.purgeMaterial(Printer.NozzleHeaters.NOZZLE_HEATER_0, false, null);
+//                    }
+//                }
+//            }
+//        } catch (PrinterException ex)
+//        {
+//            steno.error("Error opening door " + ex.getMessage());
+//        }
     }
 
     @FXML
