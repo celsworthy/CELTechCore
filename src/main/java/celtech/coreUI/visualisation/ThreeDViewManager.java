@@ -11,6 +11,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
+import celtech.coreUI.StandardColours;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
@@ -172,8 +173,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private PhongMaterial loaded1Material = new PhongMaterial(Color.BLUE);
     private PhongMaterial loaded2Material = new PhongMaterial(Color.GREEN);
-    private PhongMaterial extruder1Material = new PhongMaterial(Color.web("#0096e1"));
-    private PhongMaterial extruder2Material = new PhongMaterial(Color.GREEN);
+    private PhongMaterial extruder1Material = new PhongMaterial(StandardColours.ROBOX_BLUE);
+    private PhongMaterial extruder2Material = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE);
     private PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
     private PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
     private PhongMaterial zcutDisplayPlaneMaterial = new PhongMaterial(Color.web("#00005530"));
