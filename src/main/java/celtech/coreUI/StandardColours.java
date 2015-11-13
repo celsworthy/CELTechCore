@@ -18,4 +18,5 @@ public class StandardColours
     public static Color SELECTION_HIGHLIGHTER_GREEN = Color.BLACK;
     public static Color DIMENSION_LINE_GREEN = Color.GREEN.brighter().brighter();
     public static Color BED_AXIS_GREEN = Color.GREEN.brighter().brighter();
+    public static Color HIGHLIGHT_ORANGE = Color.web("#ff661b");
 }
