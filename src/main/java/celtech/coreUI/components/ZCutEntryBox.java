@@ -68,7 +68,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
                 {
                     Lookup.getSpinnerControl().startSpinning(paneInWhichControlResides);
                     timeUtils.timerStart(this, "Cut");
-                    List<ModelContainer> resultingModels = viewManager.cutModelAt(currentModel, cutHeight.doubleValueProperty().get());
+                    List<ModelContainer> resultingModels = viewManager.cutModelAt(currentModel, cutHeight.getAsDouble());
                     timeUtils.timerStop(this, "Cut");
                     System.out.println("Cut " + timeUtils.timeTimeSoFar_ms(this, "Cut"));
                     Set<ModelContainer> modelToRemove = new HashSet<>();

@@ -21,8 +21,11 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 /**
  *
@@ -46,38 +49,42 @@ public class RestrictedNumberField extends TextField
     private String restriction = "[0-9]+";
     private String decimalSeparator = null;
 
-    private ChangeListener<Number> valueChangeListener = null;
+    private ChangeListener<Number> doubleChangeListener = null;
+    private ChangeListener<Number> floatChangeListener = null;
+    private ChangeListener<Number> intChangeListener = null;
 
     private boolean suppressTextToNumberUpdate = false;
 
-    
     public UnitType getUnits()
     {
         return units.get();
     }
-    
+
     public void setUnits(UnitType units)
     {
         this.units.set(units);
     }
-    
+
     public ObjectProperty<UnitType> unitsProperty()
     {
         return units;
     }
-    
-    public boolean getAllowNegative() {
+
+    public boolean getAllowNegative()
+    {
         return allowNegative.get();
     }
-    
-    public void setAllowNegative(boolean allowNegative) {
+
+    public void setAllowNegative(boolean allowNegative)
+    {
         this.allowNegative.set(allowNegative);
-    }    
-    
-    public BooleanProperty allowNegativeProperty() {
+    }
+
+    public BooleanProperty allowNegativeProperty()
+    {
         return allowNegative;
     }
-    
+
     /**
      *
      * @return
@@ -106,8 +113,6 @@ public class RestrictedNumberField extends TextField
     {
         return maxLength;
     }
-    
-    
 
     /**
      *
@@ -150,7 +155,8 @@ public class RestrictedNumberField extends TextField
         {
             newRestriction = "[0-9]{0," + maxLength.get() + "}";
         }
-        if (allowNegative.get()) {
+        if (allowNegative.get())
+        {
             newRestriction = "-?" + newRestriction;
         }
         restrictionPattern = Pattern.compile(newRestriction);
@@ -171,20 +177,74 @@ public class RestrictedNumberField extends TextField
     public RestrictedNumberField()
     {
         this.getStyleClass().add(this.getClass().getSimpleName());
-        
+
         setText("-1");
 
-        valueChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        doubleChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
             if (!suppressTextToNumberUpdate)
             {
                 setText(getNumberFormatter().format(newValue));
+                suppressTextToNumberUpdate = true;
+                floatValue.set(newValue.floatValue());
+                intValue.set(newValue.intValue());
+                suppressTextToNumberUpdate = false;
             }
         };
 
-        intValue.addListener(valueChangeListener);
-        floatValue.addListener(valueChangeListener);
-        doubleValue.addListener(valueChangeListener);
+        floatChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            if (!suppressTextToNumberUpdate)
+            {
+                setText(getNumberFormatter().format(newValue));
+                suppressTextToNumberUpdate = true;
+                doubleValue.set(newValue.doubleValue());
+                intValue.set(newValue.intValue());
+                suppressTextToNumberUpdate = false;
+            }
+        };
+
+        intChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        {
+            if (!suppressTextToNumberUpdate)
+            {
+                setText(getNumberFormatter().format(newValue));
+                suppressTextToNumberUpdate = true;
+                floatValue.set(newValue.floatValue());
+                doubleValue.set(newValue.doubleValue());
+                suppressTextToNumberUpdate = false;
+            }
+        };
+
+        intValue.addListener(intChangeListener);
+        floatValue.addListener(floatChangeListener);
+        doubleValue.addListener(doubleChangeListener);
+
+        addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
+        {
+            @Override
+            public void handle(KeyEvent event)
+            {
+                if (event.getCode() == KeyCode.ESCAPE)
+                {
+                    setText(getNumberFormatter().format(doubleValue.get()));
+                    event.consume();
+                } else if (event.getCode() == KeyCode.ENTER)
+                {
+                    updateNumberValues();
+                    setText(getNumberFormatter().format(doubleValue.get()));
+                }
+            }
+        });
+
+        focusedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                updateNumberValues();
+            }
+        });
     }
 
     private void enforceRestriction(String oldText, IndexRange oldSelectionRange)
@@ -206,7 +266,6 @@ public class RestrictedNumberField extends TextField
         super.replaceText(start, end, text);
 
         enforceRestriction(oldText, oldSelectionRange);
-        updateNumberValues();
     }
 
     private void updateNumberValues()
@@ -232,7 +291,6 @@ public class RestrictedNumberField extends TextField
         super.replaceSelection(text);
 
         enforceRestriction(oldText, oldSelectionRange);
-        updateNumberValues();
     }
 
     @Override
@@ -244,7 +302,6 @@ public class RestrictedNumberField extends TextField
         super.replaceText(range, text);
 
         enforceRestriction(oldText, oldSelectionRange);
-        updateNumberValues();
     }
 
     public int getAsInt() throws ParseException
@@ -271,12 +328,15 @@ public class RestrictedNumberField extends TextField
         {
             Locale usersLocale = null;
             try
-            {   ApplicationEnvironment applicationEnvironment = Lookup.getApplicationEnvironment();
-            if (applicationEnvironment == null) {
-                usersLocale = Locale.getDefault();
-            } else {
-                usersLocale = applicationEnvironment.getAppLocale();
-            }    
+            {
+                ApplicationEnvironment applicationEnvironment = Lookup.getApplicationEnvironment();
+                if (applicationEnvironment == null)
+                {
+                    usersLocale = Locale.getDefault();
+                } else
+                {
+                    usersLocale = applicationEnvironment.getAppLocale();
+                }
                 numberFormatter = NumberFormat.getInstance(usersLocale);
             } catch (NoClassDefFoundError ex)
             {

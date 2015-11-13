@@ -56,6 +56,12 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     private final Stenographer steno = StenographerFactory.getStenographer(ModelEditInsetPanelController.class.getName());
 
+    public interface NoArgsVoidFunc
+    {
+
+        void run() throws Exception;
+    }
+
     @FXML
     private VBox modelEditInsetRoot;
 
@@ -882,7 +888,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     /**
      * When focus is lost or ENTER is pressed, run the given function.
      */
-    private void addNumberFieldListener(RestrictedNumberField textField, LayoutSidePanelController.NoArgsVoidFunc func)
+    private void addNumberFieldListener(RestrictedNumberField textField, NoArgsVoidFunc func)
     {
         textField.focusedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -909,7 +915,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                         func.run();
                     } catch (Exception ex)
                     {
-                        steno.debug("exception updating number field " + ex);
+                        steno.warning("exception updating number field " + ex);
                     }
                     break;
             }
@@ -1056,7 +1062,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         try
         {
             double newScaleDepth = scaleTextDepthField.getAsDouble();
-            if (newScaleDepth == lastScaleDepth)
+            if (newScaleDepth == lastScaleDepth
+                    || newScaleDepth < 0)
             {
                 return;
             } else
@@ -1088,7 +1095,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         try
         {
             double newScaleHeight = scaleTextHeightField.getAsDouble();
-            if (newScaleHeight == lastScaleHeight)
+            if (newScaleHeight == lastScaleHeight
+                    || newScaleHeight < 0)
             {
                 return;
             } else
@@ -1120,7 +1128,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         try
         {
             double newScaleWidth = scaleTextWidthField.getAsDouble();
-            if (newScaleWidth == lastScaleWidth)
+            if (newScaleWidth == lastScaleWidth
+                    || newScaleWidth < 0)
             {
                 return;
             } else

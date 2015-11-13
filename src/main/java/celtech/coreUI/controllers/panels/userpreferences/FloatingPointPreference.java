@@ -43,13 +43,8 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
     @Override
     public void updateValueFromControl()
     {
-        try
-        {
-            floatProperty.set(control.getAsFloat());
-        } catch (ParseException ex)
-        {
-            floatProperty.set(1);
-        }
+        floatProperty.set(control.floatValueProperty().get());
+
         // User Preferences controls whether the property can be set - read back just in case our selection was overridden
         control.floatValueProperty().set(floatProperty.get());
     }

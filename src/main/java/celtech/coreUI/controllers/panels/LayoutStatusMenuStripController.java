@@ -1217,15 +1217,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         snapToGroundButton.disableProperty().bind(
                 noLoadedModels.or(projectGUIRules.canSnapToGroundSelection().not()));
 
-        groupButton.disableProperty().bind(
-                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
-        groupButton.visibleProperty().bind(
-                noLoadedModels.or(projectGUIRules.canGroupSelection()));
+//        groupButton.disableProperty().bind(
+//                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
+        groupButton.visibleProperty().bind(noLoadedModels.not().and(projectGUIRules.canGroupSelection()));
 
-        ungroupButton.disableProperty().bind(
-                noLoadedModels.or(projectGUIRules.canUngroupSelection().not()));
-        groupButton.visibleProperty().bind(
-                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
+//        ungroupButton.disableProperty().bind(
+//                noLoadedModels.or(projectGUIRules.canUngroupSelection().not()));
+        ungroupButton.visibleProperty().bind(
+                noLoadedModels.not().and(projectGUIRules.canUngroupSelection()));
 
 //        cutButton.disableProperty().bind(
 //                noLoadedModels.or(projectGUIRules.canCutModel().not()));

@@ -163,9 +163,9 @@
                                 <Label text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <Label text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <Label text="%modelEdit.turn" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                <RestrictedNumberField fx:id="rotationXTextField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
-                                <RestrictedNumberField fx:id="rotationYTextField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <RestrictedNumberField fx:id="rotationZTextField" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
+                                <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <RestrictedNumberField fx:id="rotationZTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             </children>
                             <columnConstraints>
                                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="50.0" />
