@@ -71,44 +71,76 @@ public class STLOutputConverter implements MeshFileOutputConverter
             outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
         } else
         {
-            //Collate a list of models for each extruder
-            Map<Integer, List<MeshView>> modelsAgainstExtruders = new HashMap<>();
-            List<MeshView> extruder0Models = new ArrayList<>();
-            List<MeshView> extruder1Models = new ArrayList<>();
-            modelsAgainstExtruders.put(0, extruder0Models);
-            modelsAgainstExtruders.put(1, extruder1Models);
-
             for (ModelContainer modelContainer : project.getTopLevelModels())
             {
-                if (!(modelContainer instanceof ModelGroup))
-                {
-                    modelsAgainstExtruders.get(modelContainer.getAssociateWithExtruderNumberProperty().get()).add(modelContainer.getMeshView());
-                }
-
-                Set<ModelContainer> descendents = modelContainer.getDescendentModelContainers();
-                descendents.stream().forEach(descendent ->
-                {
-                    if (!(descendent instanceof ModelGroup))
-                    {
-                        modelsAgainstExtruders.get(descendent.getAssociateWithExtruderNumberProperty().get()).add(descendent.getMeshView());
-                    }
-                });
+                outputAllMeshesFromContainer(modelContainer, createdFiles, printJobUUID,
+                        printJobDirectory);
             }
-
-            String extruder0ModelFilename = printJobDirectory + printJobUUID
-                    + "_E" + ApplicationConfiguration.stlTempFileExtension;
-            createdFiles.add(extruder0ModelFilename);
-            outputMeshViewsInSingleFile(extruder0ModelFilename, extruder0Models);
-
-            String extruder1ModelFilename = printJobDirectory + printJobUUID
-                    + "_D" + ApplicationConfiguration.stlTempFileExtension;
-            createdFiles.add(extruder1ModelFilename);
-            outputMeshViewsInSingleFile(extruder1ModelFilename, extruder1Models);
         }
 
         return createdFiles;
     }
 
+    // Just in case we need to go back to separate files...
+//    @Override
+//    public List<String> outputFile(Project project, String printJobUUID, String printJobDirectory,
+//            boolean outputAsSingleFile)
+//    {
+//        List<String> createdFiles = new ArrayList<>();
+//        modelFileCount = 0;
+//
+//        if (outputAsSingleFile)
+//        {
+//            List<MeshView> meshViewsToOutput = new ArrayList<>();
+//
+//            project.getTopLevelModels().stream().forEach(mc -> meshViewsToOutput.addAll(
+//                    mc.descendentMeshViews()));
+//
+//            String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+//                    + ApplicationConfiguration.stlTempFileExtension;
+//
+//            createdFiles.add(tempModelFilenameWithPath);
+//
+//            outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewsToOutput);
+//        } else
+//        {
+//            //Collate a list of models for each extruder
+//            Map<Integer, List<MeshView>> modelsAgainstExtruders = new HashMap<>();
+//            List<MeshView> extruder0Models = new ArrayList<>();
+//            List<MeshView> extruder1Models = new ArrayList<>();
+//            modelsAgainstExtruders.put(0, extruder0Models);
+//            modelsAgainstExtruders.put(1, extruder1Models);
+//
+//            for (ModelContainer modelContainer : project.getTopLevelModels())
+//            {
+//                if (!(modelContainer instanceof ModelGroup))
+//                {
+//                    modelsAgainstExtruders.get(modelContainer.getAssociateWithExtruderNumberProperty().get()).add(modelContainer.getMeshView());
+//                }
+//
+//                Set<ModelContainer> descendents = modelContainer.getDescendentModelContainers();
+//                descendents.stream().forEach(descendent ->
+//                {
+//                    if (!(descendent instanceof ModelGroup))
+//                    {
+//                        modelsAgainstExtruders.get(descendent.getAssociateWithExtruderNumberProperty().get()).add(descendent.getMeshView());
+//                    }
+//                });
+//            }
+//
+//            String extruder0ModelFilename = printJobDirectory + printJobUUID
+//                    + "_E" + ApplicationConfiguration.stlTempFileExtension;
+//            createdFiles.add(extruder0ModelFilename);
+//            outputMeshViewsInSingleFile(extruder0ModelFilename, extruder0Models);
+//
+//            String extruder1ModelFilename = printJobDirectory + printJobUUID
+//                    + "_D" + ApplicationConfiguration.stlTempFileExtension;
+//            createdFiles.add(extruder1ModelFilename);
+//            outputMeshViewsInSingleFile(extruder1ModelFilename, extruder1Models);
+//        }
+//
+//        return createdFiles;
+//    }
     private void outputAllMeshesFromContainer(ModelContainer container,
             List<String> createdFiles,
             String printJobUUID, String printJobDirectory)
@@ -184,7 +216,7 @@ public class STLOutputConverter implements MeshFileOutputConverter
                     int[] faceArray = triangles.getFaces().toArray(null);
                     float[] pointArray = triangles.getPoints().toArray(null);
                     int numberOfFacets = faceArray.length / 6;
-                    
+
                     for (int facetNumber = 0; facetNumber < numberOfFacets; facetNumber++)
                     {
                         dataBuffer.rewind();

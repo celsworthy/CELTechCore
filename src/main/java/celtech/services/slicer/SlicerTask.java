@@ -242,12 +242,13 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                             + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
                 }
 
-                for (String fileName : createdMeshFiles)
-                {
-                    windowsPrintCommand += " \"";
-                    windowsPrintCommand += fileName;
-                    windowsPrintCommand += "\"";
-                }
+                windowsPrintCommand += " *.stl";
+//                for (String fileName : createdMeshFiles)
+//                {
+//                    windowsPrintCommand += " \"";
+//                    windowsPrintCommand += fileName;
+//                    windowsPrintCommand += "\"";
+//                }
                 windowsPrintCommand += " && popd\"";
                 commands.add(windowsPrintCommand);
                 break;
