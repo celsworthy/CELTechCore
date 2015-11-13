@@ -8,6 +8,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.coreUI.StandardColours;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -617,7 +618,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         String colourString = colourToString(colour);
         reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
-        svgLoaded.setStyle("-fx-fill: #" + colourString + ";");
+        svgLoaded.setFill(StandardColours.HIGHLIGHT_ORANGE);
         setReelColourString(colourString);
 
         materialColour.setText(materialColourString);
