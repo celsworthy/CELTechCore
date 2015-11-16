@@ -37,6 +37,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -99,8 +100,13 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                 tabDisplayWidthProperty,
                 tabDisplayHeightProperty);
+        
+        VBox rhInsetContainer = new VBox();
+        rhInsetContainer.setSpacing(30);
         Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
         Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
+        rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
+
         Node modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
 
         basePane = new AnchorPane();
@@ -109,8 +115,7 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         bedAxes = new BedAxes(viewManager);
-        basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, timeCostInsetPanel,
-                settingsInsetPanel, modelActionsInsetPanel);
+        basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, rhInsetContainer, modelActionsInsetPanel);
 
         //Leave this out in 1.01.05
         setupDragHandlers();
@@ -145,13 +150,9 @@ public class ProjectTab extends Tab
                 false);
         timeCostInsetPanel.setVisible(
                 false);
-        AnchorPane.setTopAnchor(timeCostInsetPanel,
+        AnchorPane.setTopAnchor(rhInsetContainer,
                 30.0);
-        AnchorPane.setRightAnchor(timeCostInsetPanel,
-                30.0);
-        AnchorPane.setTopAnchor(settingsInsetPanel,
-                220.0);
-        AnchorPane.setRightAnchor(settingsInsetPanel,
+        AnchorPane.setRightAnchor(rhInsetContainer,
                 30.0);
         AnchorPane.setTopAnchor(modelActionsInsetPanel,
                 30.0);
