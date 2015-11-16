@@ -10,7 +10,9 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javax.sound.midi.SysexMessage;
 
 /**
  *
@@ -39,21 +41,35 @@ public class FilamentCell extends ListCell<Filament>
     protected void updateItem(Filament item, boolean empty)
     {
         super.updateItem(item, empty);
-        if (item != null && !empty)
+        if (item != null && !empty
+                && item != FilamentContainer.UNKNOWN_FILAMENT)
         {
             Filament filament = (Filament) item;
             setGraphic(cellContainer);
+            rectangle.setVisible(true);
             rectangle.setFill(filament.getDisplayColour());
 
+            if (filament.getMaterial() != null)
+            {
                 label.setText(filament.getLongFriendlyName() + " "
-                    + filament.getMaterial().getFriendlyName());
+                        + filament.getMaterial().getFriendlyName());
+            } else
+            {
+                label.setText(filament.getLongFriendlyName());
+            }
+            label.getStyleClass().add("filamentSwatchPadding");
+        } else if (item == FilamentContainer.UNKNOWN_FILAMENT)
+        {
+            Filament filament = (Filament) item;
+            setGraphic(cellContainer);
+            rectangle.setVisible(false);
+
+            label.setText(filament.getLongFriendlyName());
             label.getStyleClass().add("filamentSwatchPadding");
         } else
         {
             setGraphic(null);
             label.setText(Lookup.i18n("materialComponent.unknown"));
         }
-
     }
-
 }

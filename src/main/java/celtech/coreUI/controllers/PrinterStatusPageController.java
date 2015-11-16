@@ -370,7 +370,8 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
     private void setupReel1Colour()
     {
         if (printerToUse == null
-                || !printerToUse.effectiveFilamentsProperty().containsKey(0))
+                || !printerToUse.effectiveFilamentsProperty().containsKey(0)
+                || printerToUse.effectiveFilamentsProperty().get(0) == null)
         {
             reel1Background.setVisible(false);
         } else
@@ -384,7 +385,8 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
     private void setupReel2Colour()
     {
         if (printerToUse == null
-                || !printerToUse.effectiveFilamentsProperty().containsKey(1))
+                || !printerToUse.effectiveFilamentsProperty().containsKey(1)
+                || printerToUse.effectiveFilamentsProperty().get(1) == null)
         {
             reel2Background.setVisible(false);
         } else

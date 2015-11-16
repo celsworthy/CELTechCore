@@ -102,7 +102,7 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
             {
                 steno.error("Can't run requested macro: " + macroFilename);
             }
-        } else
+        } else if (!text.equals(""))
         {
             Lookup.getSelectedPrinterProperty().get().sendRawGCode(text.toUpperCase(), true);
         }

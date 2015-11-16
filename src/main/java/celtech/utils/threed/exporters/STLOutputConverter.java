@@ -63,8 +63,9 @@ public class STLOutputConverter implements MeshFileOutputConverter
             project.getTopLevelModels().stream().forEach(mc -> meshViewsToOutput.addAll(
                     mc.descendentMeshViews()));
 
-            String tempModelFilenameWithPath = printJobDirectory + printJobUUID
-                    + ApplicationConfiguration.stlTempFileExtension;
+            String tempModelFilename = printJobUUID
+                    + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
+            String tempModelFilenameWithPath = printJobDirectory + tempModelFilename;
 
             createdFiles.add(tempModelFilenameWithPath);
 
@@ -147,12 +148,13 @@ public class STLOutputConverter implements MeshFileOutputConverter
     {
         for (MeshView meshView : container.descendentMeshViews())
         {
-            String tempModelFilenameWithPath = printJobDirectory + printJobUUID
+            String tempModelFilename = printJobUUID
                     + "-" + modelFileCount + ApplicationConfiguration.stlTempFileExtension;
+            String tempModelFilenameWithPath = printJobDirectory + tempModelFilename;
             List<MeshView> meshViewToOutput = new ArrayList<>();
             meshViewToOutput.add(meshView);
             outputMeshViewsInSingleFile(tempModelFilenameWithPath, meshViewToOutput);
-            createdFiles.add(tempModelFilenameWithPath);
+            createdFiles.add(tempModelFilename);
             modelFileCount++;
         }
     }

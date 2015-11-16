@@ -618,8 +618,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 tabDisplay.heightProperty());
         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
         tabDisplaySelectionModel.select(projectTab);
-        projectTab.justAdded();
-
         return projectTab;
     }
 
@@ -948,17 +946,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
             event.consume();
         });
-    }
-
-    public void mainStageShown()
-    {
-        for (Tab potentialProjectTab : tabDisplay.getTabs())
-        {
-            if (potentialProjectTab instanceof ProjectTab)
-            {
-                ((ProjectTab) potentialProjectTab).justAdded();
-            }
-        }
     }
 
     public ReadOnlyObjectProperty<DisplayScalingMode> getDisplayScalingModeProperty()

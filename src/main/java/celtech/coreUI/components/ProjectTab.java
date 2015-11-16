@@ -91,6 +91,11 @@ public class ProjectTab extends Tab
             steno.debug("Completed project save");
         });
 
+        setOnSelectionChanged((Event t) ->
+        {
+            bedAxes.updateArrowAndTextPosition();
+        });
+
         viewManager = new ThreeDViewManager(project,
                 tabDisplayWidthProperty,
                 tabDisplayHeightProperty);
@@ -114,7 +119,7 @@ public class ProjectTab extends Tab
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
         zCutEntryBox = new ZCutEntryBox(basePane, layoutSubmode, viewManager, project);
-        
+
         layoutSubmode.addListener(new ChangeListener<LayoutSubmode>()
         {
             @Override
@@ -154,7 +159,7 @@ public class ProjectTab extends Tab
                 30.0);
 
         this.setContent(basePane);
-        
+
         this.setGraphic(nonEditableProjectNameField);
 
         setupNameFields();
@@ -389,10 +394,4 @@ public class ProjectTab extends Tab
     {
         Lookup.setSelectedProject(project);
     }
-    
-    public void justAdded()
-    {
-        bedAxes.updateArrowAndTextPosition();
-    }
-
 }

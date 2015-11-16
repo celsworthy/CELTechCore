@@ -131,14 +131,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 }
             };
 
-    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-        {
-            refreshMaterialContainer(previousSelectedPrinter);
-        }
-    };
+//    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
+//    {
+//        @Override
+//        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+//        {
+//            refreshMaterialContainer(previousSelectedPrinter);
+//        }
+//    };
 
     /**
      * Initialises the controller class.
@@ -253,10 +253,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setLegendLabels(legendNozzleS, legendNozzleT, legendBed, legendAmbient);
         chartManager.bindPrinter(printer);
 
-        printer.extrudersProperty().forEach(extruder ->
-        {
-            extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
-        });
+//        printer.extrudersProperty().forEach(extruder ->
+//        {
+//            extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
+//        });
 
         refreshMaterialContainer(printer);
     }
@@ -270,7 +270,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             if (extruder.isFittedProperty().get())
             {
                 MaterialComponent materialComponent
-                        = new MaterialComponent(MaterialComponent.Mode.SETTINGS, printer, extruderNumber);
+                        = new MaterialComponent(printer, extruderNumber);
                 materialContainer.getChildren().add(materialComponent);
                 if (printer.extrudersProperty().size() > 1)
                 {
@@ -298,10 +298,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         currentAmbientTemperatureHistory = null;
         chartManager.unbindPrinter();
 
-        printer.extrudersProperty().forEach(extruder ->
-        {
-            extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
-        });
+//        printer.extrudersProperty().forEach(extruder ->
+//        {
+//            extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
+//        });
 
         unbindMaterialContainer();
     }

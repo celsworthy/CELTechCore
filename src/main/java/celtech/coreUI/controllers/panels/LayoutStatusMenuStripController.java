@@ -1120,18 +1120,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             }
             printButton.disableProperty().unbind();
 
-            if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
-            {
-                canPrintProject.bind(
-                        printer.canPrintProperty()
-                        .and(project.canPrintProperty())
-                        .and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotNull())
-                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                        .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                        .and(printer.headPowerOnFlagProperty()));
-            } else
-            {
+//            if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+//            {
+//                canPrintProject.bind(
+//                        printer.canPrintProperty()
+//                        .and(project.canPrintProperty())
+//                        .and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotNull())
+//                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+//                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+//                        .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
+//                        .and(printer.headPowerOnFlagProperty()));
+//            } else
+//            {
                 if (project.allModelsOnSameExtruder())
                 {
                     // only one extruder required, which one is it?
@@ -1165,7 +1165,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                     .and(printer.headPowerOnFlagProperty()))
                     );
                 }
-            }
+//            }
             printButton.disableProperty().bind(canPrintProject.not());
         }
     }
