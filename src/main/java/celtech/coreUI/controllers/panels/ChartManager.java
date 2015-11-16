@@ -77,7 +77,8 @@ class ChartManager
 
     private final String rhTriangleBugLowerOnlyCSS
             = "-fx-background-radius: 0; "
-            + "-fx-shape: \"M0,6 L12,0 L12,6 L0,6 Z\"; ";
+            + "-fx-shape: \"M0,6 L12,0 L12,6 L0,6 Z\"; "
+            + "-fx-padding: 8 0 0 0;";
 
     private final String graphLineCSS = "-fx-stroke-width: 3; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
     private final String graphLineFatCSS = "-fx-stroke-width: 4; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
@@ -169,7 +170,7 @@ class ChartManager
                 bugType = BugType.LOWER;
             }
             setupBug(nozzleTargetTempFirstIndex + nozzleCounter, nozzleChartDataSets.get(
-                    nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour.get(nozzleCounter), bugType);
+                    nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour.get(nozzleCounter), BugType.ALL);
         }
 
         int startOfLineSection = firstNozzleIndexOffset + nozzleChartDataSets.size();

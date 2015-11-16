@@ -653,6 +653,7 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
         container.getChildren().add(vBoxLeft);
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setLeftAnchor(vBoxLeft, 30.0);
+        AnchorPane.setBottomAnchor(vBoxLeft, 90.0);
         container.getChildren().add(vBoxRight);
         AnchorPane.setTopAnchor(vBoxRight, 30.0);
         AnchorPane.setRightAnchor(vBoxRight, 30.0);

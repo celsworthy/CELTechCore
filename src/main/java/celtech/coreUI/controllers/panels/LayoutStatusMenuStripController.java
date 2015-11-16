@@ -172,6 +172,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     private GraphicButtonWithLabel ungroupButton;
 
+    @FXML
+    private GraphicButtonWithLabel purgeButton;
+
 //    @FXML
 //    private GraphicButtonWithLabel cutButton;
     private Project selectedProject;
@@ -933,6 +936,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     ambientLightsButton.disableProperty().unbind();
                     calibrateButton.disableProperty().unbind();
                     removeHeadButton.disableProperty().unbind();
+                    purgeButton.disableProperty().unbind();
 
                     clearConditionalNotificationBarConditions();
                 }
@@ -964,6 +968,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 calibrateButton.disableProperty()
                         .bind(newValue.canCalibrateHeadProperty().not());
                 removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
+                purgeButton.disableProperty()
+                        .bind(newValue.canPurgeHeadProperty().not());
 
                 currentPrinter = newValue;
 

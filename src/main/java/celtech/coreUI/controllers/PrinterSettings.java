@@ -1,8 +1,6 @@
 package celtech.coreUI.controllers;
 
-import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -29,8 +27,6 @@ public class PrinterSettings
     private final Stenographer steno = StenographerFactory.getStenographer(
         PrinterSettings.class.getName());
 
-    private final ObjectProperty<Filament> selectedFilament0 = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<Filament> selectedFilament1 = new SimpleObjectProperty<>(null);
     private final StringProperty customSettingsName = new SimpleStringProperty();
     private final ObjectProperty<PrintQualityEnumeration> printQuality
         = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
@@ -81,45 +77,6 @@ public class PrinterSettings
     {
         return dataChanged;
     }
-
-    //TODO remove if project filament settings no longer required
-//    public void setFilament0(Filament filament)
-//    {
-//        if (selectedFilament0.get() != filament)
-//        {
-//            selectedFilament0.set(filament);
-//            toggleDataChanged();
-//        }
-//    }
-//
-//    public void setFilament1(Filament filament)
-//    {
-//        if (selectedFilament1.get() != filament)
-//        {
-//            selectedFilament1.set(filament);
-//            toggleDataChanged();
-//        }
-//    }
-//
-//    public Filament getFilament0()
-//    {
-//        return selectedFilament0.get();
-//    }
-//
-//    public Filament getFilament1()
-//    {
-//        return selectedFilament1.get();
-//    }
-//
-//    public ObjectProperty<Filament> getFilament0Property()
-//    {
-//        return selectedFilament0;
-//    }
-//
-//    public ObjectProperty<Filament> getFilament1Property()
-//    {
-//        return selectedFilament1;
-//    }
 
     public void setPrintQuality(PrintQualityEnumeration value)
     {

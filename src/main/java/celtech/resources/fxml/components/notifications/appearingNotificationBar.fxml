@@ -8,7 +8,7 @@
 <?import javafx.scene.*?>
 <?import celtech.coreUI.components.buttons.*?>
 
-<fx:root fx:id="notificationBar" maxHeight="60.0" maxWidth="1.7976931348623157E308" prefHeight="60.0" prefWidth="400.0" styleClass="notification-bar" type="StackPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root fx:id="notificationBar" mouseTransparent="true" pickOnBounds="false" maxHeight="60.0" maxWidth="1.7976931348623157E308" prefHeight="60.0" prefWidth="400.0" styleClass="notification-bar" type="StackPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <VBox alignment="CENTER" fillWidth="false" mouseTransparent="true" StackPane.alignment="CENTER">
             <children>

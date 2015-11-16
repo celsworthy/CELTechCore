@@ -20,7 +20,7 @@
                   <Label fx:id="printSpeedDisplay" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-                <Slider fx:id="speedMultiplierSlider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" value="100.0">
+                <Slider fx:id="speedMultiplierSlider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" snapToTicks="true" value="100.0">
                     <padding>
                         <Insets left="20.0" right="20.0" />
                     </padding>
@@ -41,7 +41,7 @@
                   <Label fx:id="extrusionMultiplier1Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="extrusionMultiplier1Slider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" value="100.0">
+            <Slider fx:id="extrusionMultiplier1Slider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" snapToTicks="true" value="100.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -62,7 +62,7 @@
                   <Label fx:id="extrusionMultiplier2Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="extrusionMultiplier2Slider" blockIncrement="5.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" value="100.0">
+            <Slider fx:id="extrusionMultiplier2Slider" blockIncrement="5.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" snapToTicks="true" value="100.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -80,7 +80,7 @@
                   <Label fx:id="nozzle1Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="nozzleTemperature1Slider" blockIncrement="5.0" majorTickUnit="20.0" max="300.0" min="180.0" showTickLabels="true" value="180.0">
+            <Slider fx:id="nozzleTemperature1Slider" blockIncrement="5.0" majorTickUnit="20.0" max="300.0" min="180.0" showTickLabels="true" snapToTicks="true" value="180.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -98,7 +98,7 @@
                   <Label fx:id="nozzle2Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="nozzleTemperature2Slider" blockIncrement="5.0" majorTickUnit="20.0" max="300.0" min="180.0" minorTickCount="5" showTickLabels="true" value="180.0">
+            <Slider fx:id="nozzleTemperature2Slider" blockIncrement="5.0" majorTickUnit="20.0" max="300.0" min="180.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" value="180.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -116,7 +116,7 @@
                   <Label fx:id="bedDisplay" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="bedTemperatureSlider" blockIncrement="5.0" majorTickUnit="50.0" max="170.0" min="60.0" minorTickCount="5" showTickLabels="true" value="80.0">
+            <Slider fx:id="bedTemperatureSlider" blockIncrement="5.0" majorTickUnit="50.0" max="170.0" min="60.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" value="80.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>

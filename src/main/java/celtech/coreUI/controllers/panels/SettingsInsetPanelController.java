@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -245,7 +246,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         supportComboBox.getItems().remove(SupportType.NO_SUPPORT);
 
         supportComboBox.valueProperty().addListener(
-                (ObservableValue<? extends Object> ov, Object lastSupportValue, Object newSupportValue) ->
+                (ObservableValue<? extends SlicerParametersFile.SupportType> ov, SlicerParametersFile.SupportType lastSupportValue, SlicerParametersFile.SupportType newSupportValue) ->
                 {
                     if (populatingForProject)
                     {
@@ -254,7 +255,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
                     if (lastSupportValue != newSupportValue)
                     {
-                        printerSettings.setPrintSupportOverride((SupportType) newSupportValue);
+                        printerSettings.setPrintSupportOverride(newSupportValue);
                     }
                 });
 
@@ -325,31 +326,34 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         raftSlider.valueProperty().addListener(
                 (ObservableValue<? extends Number> ov, Number lastRaftValue, Number newRaftValue) ->
                 {
-                    if (lastRaftValue != newRaftValue)
+                    if (!raftSlider.isValueChanging())
                     {
                         boolean raftSelected = (newRaftValue.doubleValue() >= 1.0);
                         printerSettings.setRaftOverride(raftSelected);
                     }
                 });
 
-        fillDensitySlider.valueChangingProperty()
+        fillDensitySlider.valueProperty()
                 .addListener(
-                        (ObservableValue<? extends Boolean> observable, Boolean was, Boolean now) ->
+                        (ObservableValue<? extends Number> observable, Number was, Number now) ->
                         {
-                            if (was && !now)
+                            if (!fillDensitySlider.isValueChanging())
                             {
-                                printerSettings.setFillDensityOverride(fillDensitySlider.valueProperty().floatValue() / 100.0f);
+                                printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
                             }
                         });
 
-        brimSlider.valueChangingProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean was, Boolean now) ->
+        brimSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                if (!brimSlider.isValueChanging())
                 {
-                    if (!brimSlider.isValueChanging())
-                    {
-                        printerSettings.setBrimOverride(brimSlider.valueProperty().intValue());
-                    }
-                });
+                    printerSettings.setBrimOverride(newValue.intValue());
+                }
+            }
+        });
     }
 
     @FXML

@@ -5,7 +5,9 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.utils.Math.MathUtils;
 import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.Camera;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
@@ -23,11 +25,11 @@ public class BedAxes extends Pane implements CameraViewChangeListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(BedAxes.class.getName());
-    private final Text xText = new Text();
+    private final Label xText = new Label();
     private final Line xAxis = new Line();
-    private final Text yText = new Text();
+    private final Label yText = new Label();
     private final Line yAxis = new Line();
-    private final Text zText = new Text();
+    private final Label zText = new Label();
     private final Line zAxis = new Line();
     private final Polygon xArrow = new Polygon();
     private final Polygon yArrow = new Polygon();
@@ -61,7 +63,8 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         xText.getTransforms().add(xTextTranslate);
         xText.getStyleClass().add("bed-axis-label");
         xText.setText("X");
-        xText.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        xText.setTextFill(StandardColours.DIMENSION_LINE_GREEN);
+        xText.setAlignment(Pos.CENTER);
         xAxis.setStroke(StandardColours.DIMENSION_LINE_GREEN);
         xAxis.setStrokeWidth(lineWidth);
         xArrow.setFill(StandardColours.DIMENSION_LINE_GREEN);
@@ -75,7 +78,8 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         yText.getTransforms().add(yTextTranslate);
         yText.getStyleClass().add("bed-axis-label");
         yText.setText("Y");
-        yText.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        yText.setTextFill(StandardColours.DIMENSION_LINE_GREEN);
+        yText.setAlignment(Pos.CENTER);
         yAxis.setStroke(StandardColours.DIMENSION_LINE_GREEN);
         yAxis.setStrokeWidth(lineWidth);
         yArrow.setFill(StandardColours.DIMENSION_LINE_GREEN);
@@ -89,7 +93,8 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         zText.getTransforms().add(zTextTranslate);
         zText.getStyleClass().add("bed-axis-label");
         zText.setText("Z");
-        zText.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        zText.setTextFill(StandardColours.DIMENSION_LINE_GREEN);
+        zText.setAlignment(Pos.CENTER);
         zAxis.setStroke(StandardColours.DIMENSION_LINE_GREEN);
         zAxis.setStrokeWidth(lineWidth);
 

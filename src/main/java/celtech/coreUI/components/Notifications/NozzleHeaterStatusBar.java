@@ -50,6 +50,9 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
         heater.heaterModeProperty().addListener(heaterModeChangeListener);
 
         getStyleClass().add("secondaryStatusBar");
+        
+        setPickOnBounds(false);
+        setMouseTransparent(true);
 
         reassessStatus();
     }

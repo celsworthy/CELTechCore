@@ -5,7 +5,6 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -37,24 +36,16 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.CheckBox;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javax.print.PrintException;
 import libertysystems.stenographer.Stenographer;
@@ -79,6 +70,9 @@ public class PurgeInsetPanelController implements Initializable
     private ConditionalNotificationBar cantPrintNoFilamentNotificationBar;
     private ConditionalNotificationBar cantPrintNoFilament0NotificationBar;
     private ConditionalNotificationBar cantPrintNoFilament1NotificationBar;
+    private ConditionalNotificationBar cantPrintFilamentNotSpecifiedNotificationBar;
+    private ConditionalNotificationBar cantPrintFilament0NotSpecifiedNotificationBar;
+    private ConditionalNotificationBar cantPrintFilament1NotSpecifiedNotificationBar;
 
     BooleanBinding purgeTwoNozzleHeaters;
 
@@ -147,9 +141,6 @@ public class PurgeInsetPanelController implements Initializable
     private Text textCurrentMaterial0;
 
     @FXML
-    private ComboBox<Filament> cmbCurrentMaterial0;
-
-    @FXML
     private GridPane purgeDetailsGrid0;
 
     @FXML
@@ -165,16 +156,13 @@ public class PurgeInsetPanelController implements Initializable
     private Text textCurrentMaterial1;
 
     @FXML
-    private ComboBox<Filament> cmbCurrentMaterial1;
-
-    @FXML
     private GridPane purgeDetailsGrid1;
 
     @FXML
-    private ToggleButton purgeThisNozzle0;
+    private CheckBox purgeThisNozzle0;
 
     @FXML
-    private ToggleButton purgeThisNozzle1;
+    private CheckBox purgeThisNozzle1;
 
     @FXML
     void start(ActionEvent event)
@@ -233,10 +221,11 @@ public class PurgeInsetPanelController implements Initializable
         cantPrintNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationDisplay.NotificationType.CAUTION);
         cantPrintNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationDisplay.NotificationType.CAUTION);
         cantPrintNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationDisplay.NotificationType.CAUTION);
+        cantPrintFilamentNotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationDisplay.NotificationType.CAUTION);
+        cantPrintFilament0NotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationDisplay.NotificationType.CAUTION);
+        cantPrintFilament1NotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationDisplay.NotificationType.CAUTION);
 
         FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
-
-        setupMaterialCombos();
 
         Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
         {
@@ -333,9 +322,6 @@ public class PurgeInsetPanelController implements Initializable
 
         diagram.setScaleX(xScale);
         diagram.setScaleY(yScale);
-//        diagramContainer.setPrefHeight(newHeight);
-//        diagramContainer.setPrefWidth(newWidth);
-//        diagramContainer.setTranslateX(newWidth / 2);
     }
 
     private void populateNamesToButtons()
@@ -436,6 +422,12 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
+    private MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
+    {
+        showCurrentMaterial0();
+        showCurrentMaterial1();
+    };
+
     /**
      * Bind to the given printer. This is only called once for a given purge and
      * should not be called again during the purge.
@@ -448,27 +440,26 @@ public class PurgeInsetPanelController implements Initializable
             cantPrintNoFilamentNotificationBar.clearAppearanceCondition();
             cantPrintNoFilament0NotificationBar.clearAppearanceCondition();
             cantPrintNoFilament1NotificationBar.clearAppearanceCondition();
-            cmbCurrentMaterial0.visibleProperty().unbind();
+            cantPrintFilamentNotSpecifiedNotificationBar.clearAppearanceCondition();
+            cantPrintFilament0NotSpecifiedNotificationBar.clearAppearanceCondition();
+            cantPrintFilament1NotSpecifiedNotificationBar.clearAppearanceCondition();
             textCurrentMaterial0.visibleProperty().unbind();
-            cmbCurrentMaterial1.visibleProperty().unbind();
             textCurrentMaterial1.visibleProperty().unbind();
             proceedButton.disableProperty().unbind();
             purgeThisNozzle0.onActionProperty().unbind();
+            purgeThisNozzle1.onActionProperty().unbind();
+            printer.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
         }
 
         this.printer = printer;
 
-        BooleanBinding reel0Present = Bindings.valueAt(printer.reelsProperty(), 0).isNotNull();
-        BooleanBinding reel1Present = Bindings.valueAt(printer.reelsProperty(), 1).isNotNull();
+        printer.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
 
         purgeTwoNozzleHeaters = Bindings.size(
                 printer.headProperty().get().getNozzleHeaters()).greaterThan(1);
 
-        cmbCurrentMaterial0.visibleProperty().bind(reel0Present.not());
-        textCurrentMaterial0.visibleProperty().bind(reel0Present);
-
-        cmbCurrentMaterial1.visibleProperty().bind(reel1Present.not());
-        textCurrentMaterial1.visibleProperty().bind(reel1Present);
+        textCurrentMaterial0.visibleProperty().bind(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotNull());
+        textCurrentMaterial1.visibleProperty().bind(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNotNull());
     }
 
     /**
@@ -478,14 +469,8 @@ public class PurgeInsetPanelController implements Initializable
      */
     private void showCurrentMaterial0()
     {
-        if (printer.reelsProperty().containsKey(0))
-        {
-            currentMaterial0 = Lookup.getFilamentContainer().getFilamentByID(
-                    printer.reelsProperty().get(0).filamentIDProperty().get());
-        } else
-        {
-            currentMaterial0 = cmbCurrentMaterial0.getValue();
-        }
+        currentMaterial0 = printer.effectiveFilamentsProperty().get(0);
+
         if (currentMaterial0 != null)
         {
             selectMaterial0(currentMaterial0);
@@ -507,14 +492,9 @@ public class PurgeInsetPanelController implements Initializable
         {
             return;
         }
-        if (printer.reelsProperty().containsKey(1))
-        {
-            currentMaterial1 = Lookup.getFilamentContainer().getFilamentByID(
-                    printer.reelsProperty().get(1).filamentIDProperty().get());
-        } else
-        {
-            currentMaterial1 = cmbCurrentMaterial1.getValue();
-        }
+
+        currentMaterial1 = printer.effectiveFilamentsProperty().get(1);
+
         if (currentMaterial1 != null)
         {
             selectMaterial1(currentMaterial1);
@@ -548,8 +528,11 @@ public class PurgeInsetPanelController implements Initializable
 
         if (!headHasTwoNozzleHeaters(printer))
         {
-            cantPrintNoFilamentNotificationBar.setAppearanceCondition(extruder0NotLoaded
-                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)));
+            cantPrintNoFilamentNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                    .and(extruder0NotLoaded));
+
+            cantPrintFilamentNotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                    .and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull()));
 
             BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen).or(extruder0NotLoaded);
             button.disableProperty().bind(isDisabled);
@@ -587,15 +570,21 @@ public class PurgeInsetPanelController implements Initializable
 
             if (button == proceedButton)
             {
-                cantPrintNoFilament0NotificationBar.setAppearanceCondition(purgingNozzleHeater0.and(extruder0NotLoaded)
-                        .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)));
-
-                cantPrintNoFilament1NotificationBar.setAppearanceCondition(purgingNozzleHeater1.and(extruder1NotLoaded)
-                        .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)));
-
+                cantPrintNoFilament0NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                        .and(purgingNozzleHeater0.and(extruder0NotLoaded)));
+                
+                cantPrintNoFilament1NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                        .and(purgingNozzleHeater1.and(extruder1NotLoaded)));
+                
+                cantPrintFilament0NotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                        .and(purgingNozzleHeater0.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())));
+                
+                cantPrintFilament1NotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
+                        .and(purgingNozzleHeater1.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())));
+                
                 BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen)
-                        .or(purgingNozzleHeater0.and(extruder0NotLoaded))
-                        .or(purgingNozzleHeater1.and(extruder1NotLoaded))
+                        .or(purgingNozzleHeater0.and(extruder0NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())))
+                        .or(purgingNozzleHeater1.and(extruder1NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())))
                         .or(purgingNozzleHeater0.not().and(purgingNozzleHeater1.not()));
                 button.disableProperty().bind(isDisabled);
             }
@@ -611,9 +600,7 @@ public class PurgeInsetPanelController implements Initializable
         this.project = project;
         bindPrinter(printerToUse);
         selectMaterial0(printer.effectiveFilamentsProperty().get(0));
-        cmbCurrentMaterial0.setValue(printer.effectiveFilamentsProperty().get(0));
         selectMaterial1(printer.effectiveFilamentsProperty().get(1));
-        cmbCurrentMaterial1.setValue(printer.effectiveFilamentsProperty().get(1));
 
         setPurgeForRequiredNozzles(project);
 
@@ -633,7 +620,7 @@ public class PurgeInsetPanelController implements Initializable
         {
             purgeThisNozzle0.setSelected(false);
             purgeThisNozzle1.setSelected(false);
-            
+
             //Dual nozzle heads have extruder/nozzle reversed!
             if (PrinterUtils.isPurgeNecessaryForExtruder(project, printer, 0))
             {
@@ -722,34 +709,6 @@ public class PurgeInsetPanelController implements Initializable
         }
     }
 
-    private void setupMaterialCombos()
-    {
-        cmbCurrentMaterial0.setCellFactory(
-                (ListView<Filament> param) -> new FilamentCell());
-
-        cmbCurrentMaterial0.setButtonCell(cmbCurrentMaterial0.getCellFactory().call(null));
-
-        repopulateCmbCurrentMaterials();
-
-        cmbCurrentMaterial0.valueProperty().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    selectMaterial0(newValue);
-                });
-
-        cmbCurrentMaterial1.setCellFactory(
-                (ListView<Filament> param) -> new FilamentCell());
-
-        cmbCurrentMaterial1.setButtonCell(cmbCurrentMaterial1.getCellFactory().call(null));
-
-        cmbCurrentMaterial1.valueProperty().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    selectMaterial1(newValue);
-                });
-
-    }
-
     /**
      * Tell the purge state machine about the (changed) current material, and
      * update the relevant text fields.
@@ -788,80 +747,15 @@ public class PurgeInsetPanelController implements Initializable
             {
                 steno.exception("Error setting purge filament", ex);
             }
-            textCurrentMaterial1.setText(currentMaterial1.getLongFriendlyName() + " "
-                    + currentMaterial1.getMaterial().getFriendlyName());
-            purgeTemperature1.setText(transitionManager.getPurgeTemperature(1).asString().get());
-        }
-    }
-
-    private void repopulateCmbCurrentMaterials()
-    {
-        FilamentContainer filamentContainer = Lookup.getFilamentContainer();
-        try
-        {
-            ObservableList<Filament> filamentList = FXCollections.observableArrayList();
-            ObservableList<Filament> appFilaments = FXCollections.observableArrayList();
-            ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
-            appFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
-                    (Filament o1, Filament o2)
-                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
-            if (Lookup.getUserPreferences().isAdvancedMode())
+            if (currentMaterial1.getMaterial() != null)
             {
-                appFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                        (Filament o1, Filament o2)
-                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
-                userFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                        (Filament o1, Filament o2)
-                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
-            }
-            filamentList.addAll(appFilaments);
-            filamentList.addAll(userFilaments);
-            cmbCurrentMaterial0.setItems(filamentList);
-            cmbCurrentMaterial1.setItems(filamentList);
-        } catch (NoClassDefFoundError exception)
-        {
-            // this should only happen in SceneBuilder            
-        }
-    }
-
-    public static class FilamentCell extends ListCell<Filament>
-    {
-
-        private static int SWATCH_SQUARE_SIZE = 16;
-
-        HBox cellContainer;
-        Rectangle rectangle = new Rectangle();
-        Label label;
-
-        public FilamentCell()
-        {
-            cellContainer = new HBox();
-            cellContainer.setAlignment(Pos.CENTER_LEFT);
-            rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
-            label = new Label();
-            label.setId("materialComponentComboLabel");
-            cellContainer.getChildren().addAll(rectangle, label);
-        }
-
-        @Override
-        protected void updateItem(Filament item, boolean empty)
-        {
-            super.updateItem(item, empty);
-            if (item != null && !empty)
-            {
-                Filament filament = (Filament) item;
-                setGraphic(cellContainer);
-                rectangle.setFill(filament.getDisplayColour());
-
-                label.setText(filament.getLongFriendlyName() + " "
-                        + filament.getMaterial().getFriendlyName());
-                label.getStyleClass().add("filamentSwatchPadding");
+                textCurrentMaterial1.setText(currentMaterial1.getLongFriendlyName() + " "
+                        + currentMaterial1.getMaterial().getFriendlyName());
             } else
             {
-                setGraphic(null);
+                textCurrentMaterial1.setText(currentMaterial1.getLongFriendlyName());
             }
-
+            purgeTemperature1.setText(transitionManager.getPurgeTemperature(1).asString().get());
         }
-
     }
 }

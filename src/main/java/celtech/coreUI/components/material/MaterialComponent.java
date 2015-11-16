@@ -35,6 +35,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 /**
  *
@@ -81,13 +82,16 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     private SVGPath svgLoaded;
 
     @FXML
-    private Text materialColour;
+    private Text materialColour1;
+
+    @FXML
+    private Text materialColour2;
 
     @FXML
     private Text materialRemaining;
 
     @FXML
-    private HBox materialColourContainer;
+    private TextFlow materialColourContainer;
 
     @FXML
     private ComboBox<Filament> cmbMaterials;
@@ -393,13 +397,25 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         svgLoaded.setFill(StandardColours.HIGHLIGHT_ORANGE);
         setReelColourString(colourString);
 
-        materialColour.setText(materialColourString);
-        if (colour.getBrightness() < 0.5)
+        int endOfManufacturerSection = materialColourString.indexOf(' ');
+        if (endOfManufacturerSection > 0 && endOfManufacturerSection < materialColourString.length() - 1)
         {
-            materialColour.setStyle("-fx-fill:white;");
+            materialColour1.setText(materialColourString.substring(0, endOfManufacturerSection));
+            materialColour2.setText(materialColourString.substring(endOfManufacturerSection));
         } else
         {
-            materialColour.setStyle("-fx-fill:black;");
+            materialColour1.setText("");
+            materialColour2.setText(materialColourString);
+        }
+
+        if (colour.getBrightness() < 0.5)
+        {
+            materialColour1.setStyle("-fx-fill:white;");
+            materialColour2.setStyle("-fx-fill:white;");
+        } else
+        {
+            materialColour1.setStyle("-fx-fill:black;");
+            materialColour2.setStyle("-fx-fill:black;");
         }
     }
 
