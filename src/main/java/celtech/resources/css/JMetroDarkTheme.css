@@ -2752,7 +2752,7 @@ color-picker-label .text-field {
 .dimension-label
 {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 18pt;
+    -fx-font-size: 12pt;
     -fx-text-alignment: center;
 }  
 

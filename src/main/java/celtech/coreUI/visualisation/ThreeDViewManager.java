@@ -174,7 +174,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private PhongMaterial loaded1Material = new PhongMaterial(Color.BLUE);
     private PhongMaterial loaded2Material = new PhongMaterial(Color.GREEN);
     private PhongMaterial extruder1Material = new PhongMaterial(StandardColours.ROBOX_BLUE);
+    private PhongMaterial extruder1TransparentMaterial = new PhongMaterial(StandardColours.ROBOX_BLUE_TRANSPARENT);
     private PhongMaterial extruder2Material = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE);
+    private PhongMaterial extruder2TransparentMaterial = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE_TRANSPARENT);
     private PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
     private PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
     private PhongMaterial zcutDisplayPlaneMaterial = new PhongMaterial(Color.web("#00005530"));
@@ -317,7 +319,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             modelContainer.cameraViewOfYouHasChanged();
         }
-        
+
         for (CameraViewChangeListener listener : cameraViewChangeListeners)
         {
             listener.cameraViewOfYouHasChanged();
@@ -433,9 +435,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             processModeChange();
         }
-    };
-
-    private void handleMouseDoubleClickedEvent(MouseEvent event)
+    };private void handleMouseDoubleClickedEvent(MouseEvent event)
     {
         Node intersectedNode = event.getPickResult().getIntersectedNode();
         if (intersectedNode instanceof MeshView)
@@ -1264,6 +1264,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             excludedFromSelection.add(modelContainer);
         }
+        
+        excludedFromSelection.remove(modelGroup);
 
         for (ModelContainer modelContainer : modelGroup.getChildModelContainers())
         {
@@ -1340,24 +1342,19 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, model);
         }
-
-        for (ModelContainer model : loadedModels)
-        {
-            for (MeshView meshView : model.descendentMeshViews())
-            {
-                if (excludedFromSelection.contains((ModelContainer) meshView.getParent()))
-                {
-                    Color color = ((PhongMaterial) meshView.getMaterial()).getDiffuseColor();
-                    meshView.setMaterial(new PhongMaterial(color.grayscale()));
-                }
-            }
-        }
     }
 
     private void updateModelColour(PhongMaterial materialToUseForExtruder0, PhongMaterial materialToUseForExtruder1, ModelContainer model)
     {
         boolean showMisplacedColour = applicationStatus.getMode() == ApplicationMode.LAYOUT;
-        model.updateColour(materialToUseForExtruder0, materialToUseForExtruder1, showMisplacedColour);
+
+        if (excludedFromSelection.contains(model))
+        {
+            model.updateColour(extruder1TransparentMaterial, extruder2TransparentMaterial, showMisplacedColour);
+        } else
+        {
+            model.updateColour(materialToUseForExtruder0, materialToUseForExtruder1, showMisplacedColour);
+        }
     }
 
     private void deselectAllModels()
@@ -1639,7 +1636,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     }
 
     @Override
-    public Point2D convertWorldCoordinatesToScreen(double worldX, double worldY,double worldZ)
+    public Point2D convertWorldCoordinatesToScreen(double worldX, double worldY, double worldZ)
     {
         return bed.localToScreen(worldX, worldY, worldZ);
     }

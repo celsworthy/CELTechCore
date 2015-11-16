@@ -1,8 +1,10 @@
 package celtech.coreUI.visualisation;
 
+import celtech.Lookup;
+import celtech.configuration.units.UnitConverter;
+import celtech.configuration.units.UnitType;
 import celtech.coreUI.StandardColours;
 import celtech.modelcontrol.ModelContainer;
-import celtech.utils.Math.MathUtils;
 import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -128,7 +130,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         if (direction == LineDirection.VERTICAL)
         {
             dimensionText.setText(String.
-                    format("%.2f", transformedHeight));
+                    format("%.2fmm", transformedHeight));
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
@@ -196,7 +198,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.HORIZONTAL)
         {
             dimensionText.setText(String.
-                    format("%.2f", transformedWidth));
+                    format("%.2fmm", transformedWidth));
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
@@ -263,7 +265,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.FORWARD_BACK)
         {
             dimensionText.setText(String.
-                    format("%.2f", transformedDepth));
+                    format("%.2fmm", transformedDepth));
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()
