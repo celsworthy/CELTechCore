@@ -149,7 +149,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private Camera cameraViewingMe = null;
     private ScreenExtents extents = null;
 
-    private List<Transform> rotationTransforms = new ArrayList<>();
+    private List<Transform> rotationTransforms;
 
     public ModelContainer()
     {
@@ -339,6 +339,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationLean = new SimpleDoubleProperty(0);
         preferredRotationTwist = new SimpleDoubleProperty(0);
         preferredRotationTurn = new SimpleDoubleProperty(0);
+        rotationTransforms = new ArrayList<>();
 
     }
 
@@ -447,17 +448,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             List<Transform> parentTransforms = useMyTransforms.get(containerIndex).getRotationTransforms();
             try
             {
-//                Transform concatenatedTransforms = null;
-//                for (int transformCount = parentTransforms.size() - 1; transformCount >= 0; transformCount--)
-//                {
-//                    if (concatenatedTransforms == null)
-//                    {
-//                        concatenatedTransforms = parentTransforms.get(transformCount).createInverse();
-//                    } else
-//                    {
-//                        concatenatedTransforms.createConcatenation(parentTransforms.get(transformCount).createInverse());
-//                    }
-//                }
                 Transform concatenatedTransforms = parentTransforms.get(2).createInverse()
                         .createConcatenation(parentTransforms.get(1).createInverse()
                                 .createConcatenation(parentTransforms.get(0).createInverse()));
