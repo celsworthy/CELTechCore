@@ -803,64 +803,67 @@ public class CloseLogic
 
     protected void insertCloseNodes(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, List<NozzleProxy> nozzleProxies)
     {
-        //Tool select nodes are directly under a layer
-        Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
-
-        ToolSelectNode lastToolSelectNode = null;
-
-        if (lastLayerParseResult != null)
+        if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
         {
-            lastToolSelectNode = lastLayerParseResult.getLastToolSelectInForce();
-        }
+            //Tool select nodes are directly under a layer
+            Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
 
-        List<RetractHolder> retractNodes = new ArrayList<>();
+            ToolSelectNode lastToolSelectNode = null;
 
-        while (layerChildIterator.hasNext())
-        {
-            GCodeEventNode layerChild = layerChildIterator.next();
-
-            if (layerChild instanceof RetractNode)
+            if (lastLayerParseResult != null)
             {
-                if (lastToolSelectNode != null)
-                {
-                    NozzleProxy nozzleInUse = nozzleProxies.get(lastToolSelectNode.getToolNumber());
-                    retractNodes.add(new RetractHolder((RetractNode) layerChild, nozzleInUse));
-                } else
-                {
-                    steno.warning("Removed retract on layer " + layerNode.getLayerNumber() + " with no prior tool selected");
-                    retractNodes.add(new RetractHolder((RetractNode) layerChild, null));
-                }
-            } else if (layerChild instanceof ToolSelectNode)
+                lastToolSelectNode = lastLayerParseResult.getLastToolSelectInForce();
+            }
+
+            List<RetractHolder> retractNodes = new ArrayList<>();
+
+            while (layerChildIterator.hasNext())
             {
-                ToolSelectNode toolSelectNode = (ToolSelectNode) layerChild;
+                GCodeEventNode layerChild = layerChildIterator.next();
 
-                NozzleProxy nozzleInUse = nozzleProxies.get(toolSelectNode.getToolNumber());
-
-                Iterator<GCodeEventNode> toolSelectChildren = toolSelectNode.treeSpanningIterator(null);
-
-                while (toolSelectChildren.hasNext())
+                if (layerChild instanceof RetractNode)
                 {
-                    GCodeEventNode toolSelectChild = toolSelectChildren.next();
-
-                    if (toolSelectChild instanceof RetractNode)
+                    if (lastToolSelectNode != null)
                     {
-                        retractNodes.add(new RetractHolder((RetractNode) toolSelectChild, nozzleInUse));
+                        NozzleProxy nozzleInUse = nozzleProxies.get(lastToolSelectNode.getToolNumber());
+                        retractNodes.add(new RetractHolder((RetractNode) layerChild, nozzleInUse));
+                    } else
+                    {
+                        steno.warning("Removed retract on layer " + layerNode.getLayerNumber() + " with no prior tool selected");
+                        retractNodes.add(new RetractHolder((RetractNode) layerChild, null));
+                    }
+                } else if (layerChild instanceof ToolSelectNode)
+                {
+                    ToolSelectNode toolSelectNode = (ToolSelectNode) layerChild;
+
+                    NozzleProxy nozzleInUse = nozzleProxies.get(toolSelectNode.getToolNumber());
+
+                    Iterator<GCodeEventNode> toolSelectChildren = toolSelectNode.treeSpanningIterator(null);
+
+                    while (toolSelectChildren.hasNext())
+                    {
+                        GCodeEventNode toolSelectChild = toolSelectChildren.next();
+
+                        if (toolSelectChild instanceof RetractNode)
+                        {
+                            retractNodes.add(new RetractHolder((RetractNode) toolSelectChild, nozzleInUse));
+                        }
                     }
                 }
             }
-        }
 
-        for (RetractHolder retractHolder : retractNodes)
-        {
-            if (retractHolder.getNozzle() != null)
+            for (RetractHolder retractHolder : retractNodes)
             {
-                boolean success = processRetractNode(retractHolder.getNode(), retractHolder.getNozzle(), layerNode, lastLayerParseResult);
-                if (!success)
+                if (retractHolder.getNozzle() != null)
                 {
-                    steno.warning("Close failed - removing retract anyway on layer " + layerNode.getLayerNumber());
+                    boolean success = processRetractNode(retractHolder.getNode(), retractHolder.getNozzle(), layerNode, lastLayerParseResult);
+                    if (!success)
+                    {
+                        steno.warning("Close failed - removing retract anyway on layer " + layerNode.getLayerNumber());
+                    }
                 }
+                retractHolder.getNode().removeFromParent();
             }
-            retractHolder.getNode().removeFromParent();
         }
     }
 

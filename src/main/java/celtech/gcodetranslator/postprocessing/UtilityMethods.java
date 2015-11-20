@@ -3,7 +3,6 @@ package celtech.gcodetranslator.postprocessing;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.CannotCloseFromPerimeterException;
 import celtech.gcodetranslator.GCodeOutputWriter;
@@ -20,25 +19,18 @@ import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
-import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
-import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithStartPoint;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
-import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.printerControl.model.CameraTriggerManager;
-import celtech.printerControl.model.Head;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
@@ -130,8 +122,11 @@ public class UtilityMethods
                 toolSelectNode.suppressNodeOutput(true);
             } else
             {
-                closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
-
+                if (ppFeatureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+                {
+                    closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
+                }
+                
                 //Now look to see if we can consolidate the tool change with a travel
                 if (lastToolSelectNode.getChildren().size() > 0)
                 {
