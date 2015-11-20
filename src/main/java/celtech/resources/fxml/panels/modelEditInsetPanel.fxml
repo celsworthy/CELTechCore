@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.*?>
 
-<VBox id="model-edit-panel" fx:id="modelEditInsetRoot" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="260.0" spacing="5.0" styleClass="hovering-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.ModelEditInsetPanelController">
+<VBox id="model-edit-panel" fx:id="modelEditInsetRoot" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="380.0" prefWidth="260.0" spacing="5.0" styleClass="hovering-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.ModelEditInsetPanelController">
     <children>
         <HBox spacing="5.0">
             <children>
@@ -125,10 +125,10 @@
                                 <Insets />
                             </padding>
                             <rowConstraints>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                         </GridPane>
                     </children>
@@ -150,8 +150,8 @@
                                 <Insets />
                             </padding>
                             <rowConstraints>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                         </GridPane>
                     </children>
@@ -175,9 +175,9 @@
                                 <Insets />
                             </padding>
                             <rowConstraints>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                         </GridPane>
                     </children>
@@ -191,12 +191,12 @@
             </VBox.margin>
         </StackPane>
         <Label layoutX="125.0" layoutY="60.0" text="%modelEdit.MaterialLabel" textAlignment="RIGHT" />
-        <ToggleButton fx:id="setMaterial0Button" contentDisplay="TEXT_ONLY" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#setMaterial0" text="%modelEdit.Material1">
+        <ToggleButton fx:id="setMaterial0Button" contentDisplay="TEXT_ONLY" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#setMaterial0" styleClass="model-material1-button" text="%modelEdit.Material1">
             <toggleGroup>
                 <ToggleGroup fx:id="materialButtons" />
             </toggleGroup>
         </ToggleButton>
-        <ToggleButton fx:id="setMaterial1Button" contentDisplay="TEXT_ONLY" layoutX="107.0" layoutY="10.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#setMaterial1" text="%modelEdit.Material2" toggleGroup="$materialButtons" />
+        <ToggleButton fx:id="setMaterial1Button" contentDisplay="TEXT_ONLY" layoutX="107.0" layoutY="10.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#setMaterial1" styleClass="model-material2-button" text="%modelEdit.Material2" toggleGroup="$materialButtons" />
         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#flipMaterials" text="%modelEdit.flipMaterials" />       
     </children>
     <padding>

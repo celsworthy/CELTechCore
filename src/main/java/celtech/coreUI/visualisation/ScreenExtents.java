@@ -28,7 +28,7 @@ public class ScreenExtents
             outputString.append(edge.getFirstPoint().toString());
             outputString.append(',');
             outputString.append(edge.getSecondPoint().toString());
-        outputString.append("\n");
+            outputString.append("\n");
         }
         outputString.append("Width Edges");
         for (Edge edge : widthEdges)
@@ -36,7 +36,7 @@ public class ScreenExtents
             outputString.append(edge.getFirstPoint().toString());
             outputString.append(',');
             outputString.append(edge.getSecondPoint().toString());
-        outputString.append("\n");
+            outputString.append("\n");
         }
         outputString.append("Depth Edges");
         for (Edge edge : depthEdges)
@@ -44,7 +44,7 @@ public class ScreenExtents
             outputString.append(edge.getFirstPoint().toString());
             outputString.append(',');
             outputString.append(edge.getSecondPoint().toString());
-        outputString.append("\n");
+            outputString.append("\n");
         }
 
         outputString.append("X - min:" + minX + " max:" + maxX);
@@ -93,10 +93,27 @@ public class ScreenExtents
             tempMaxY = Math.max(tempMaxY, (int) secondPoint.getY());
             tempMinY = Math.min(tempMinY, (int) secondPoint.getY());
         }
-        
+
         minX = tempMinX;
         maxX = tempMaxX;
         minY = tempMinY;
         maxY = tempMaxY;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj != null && obj instanceof ScreenExtents)
+        {
+            ScreenExtents extentsToCompare = (ScreenExtents) obj;
+            if (extentsToCompare.maxX == maxX
+                    && extentsToCompare.maxY == maxY
+                    && extentsToCompare.minX == minY
+                    && extentsToCompare.minY == minY)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

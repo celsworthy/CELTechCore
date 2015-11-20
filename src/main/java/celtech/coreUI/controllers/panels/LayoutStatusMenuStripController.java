@@ -211,7 +211,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1)
         {
-            changedModelGroups.iterator().next().recalculateScreenExtents();
+            changedModelGroups.iterator().next().notifyScreenExtentsChange();
             Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
                     changedModelGroups.iterator().next());
         }

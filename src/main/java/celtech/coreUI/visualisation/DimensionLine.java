@@ -1,8 +1,5 @@
 package celtech.coreUI.visualisation;
 
-import celtech.Lookup;
-import celtech.configuration.units.UnitConverter;
-import celtech.configuration.units.UnitType;
 import celtech.coreUI.StandardColours;
 import celtech.modelcontrol.ModelContainer;
 import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
@@ -34,8 +31,8 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     private final Rotate arrowRotate = new Rotate();
     private final Rotate textRotate = new Rotate();
 
-    private final double arrowHeight = 20;
-    private final double arrowWidth = 10;
+    private final double arrowHeight = 18;
+    private final double arrowWidth = 8;
     private final double arrowOffsetFromCorner = 30;
 
     private LineDirection direction;
@@ -130,7 +127,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         if (direction == LineDirection.VERTICAL)
         {
             dimensionText.setText(String.
-                    format("%.2fmm", transformedHeight));
+                    format("%.1f", transformedHeight));
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
@@ -184,8 +181,8 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
                 dimensionLine.setEndX(topPoint.getX());
                 dimensionLine.setEndY(topPoint.getY());
 
-                textTranslate.setX(midPoint.getX());
-                textTranslate.setY(midPoint.getY());
+                textTranslate.setX(midPoint.getX() - dimensionText.getBoundsInLocal().getWidth() / 2.0);
+                textTranslate.setY(midPoint.getY() + dimensionText.getBoundsInLocal().getHeight() / 2.0);
 //                textRotate.setAngle(-angle);
 
                 firstArrowTranslate.setX(topPoint.getX());
@@ -198,7 +195,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.HORIZONTAL)
         {
             dimensionText.setText(String.
-                    format("%.2fmm", transformedWidth));
+                    format("%.1f", transformedWidth));
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
@@ -251,8 +248,8 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
                 dimensionLine.setEndX(leftPoint.getX());
                 dimensionLine.setEndY(leftPoint.getY());
 
-                textTranslate.setX(midPoint.getX());
-                textTranslate.setY(midPoint.getY());
+                textTranslate.setX(midPoint.getX() - dimensionText.getBoundsInLocal().getWidth() / 2.0);
+                textTranslate.setY(midPoint.getY() + dimensionText.getBoundsInLocal().getHeight() / 2.0);
 
                 firstArrowTranslate.setX(leftPoint.getX());
                 firstArrowTranslate.setY(leftPoint.getY());
@@ -265,7 +262,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.FORWARD_BACK)
         {
             dimensionText.setText(String.
-                    format("%.2fmm", transformedDepth));
+                    format("%.1f", transformedDepth));
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()
@@ -318,8 +315,8 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
                 dimensionLine.setEndX(backPoint.getX());
                 dimensionLine.setEndY(backPoint.getY());
 
-                textTranslate.setX(midPoint.getX());
-                textTranslate.setY(midPoint.getY());
+                textTranslate.setX(midPoint.getX() - dimensionText.getBoundsInLocal().getWidth() / 2.0);
+                textTranslate.setY(midPoint.getY() + dimensionText.getBoundsInLocal().getHeight() / 2.0);
 //                textRotate.setAngle(normaliseArrowAngle(angle - 90));
 
                 firstArrowTranslate.setX(backPoint.getX());

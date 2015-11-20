@@ -23,17 +23,14 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -462,14 +459,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
                     changedModelGroups.iterator().next());
         }
-    }
-
-    @FXML
-    void doUngroup(ActionEvent event)
-    {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        undoableProject.ungroup(modelContainers);
-        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
     }
 
     @FXML
@@ -1163,19 +1152,14 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
      */
     private void setFieldsEditable()
     {
-        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-        rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1).or(projectGUIRules.canTranslateRotateOrScaleSelection().not()));
-
-        scaleTextWidthField.disableProperty().bind(projectGUIRules.canTranslateRotateOrScaleSelection().not());
-        scaleTextHeightField.disableProperty().bind(projectGUIRules.canTranslateRotateOrScaleSelection().not());
-        scaleTextDepthField.disableProperty().bind(projectGUIRules.canTranslateRotateOrScaleSelection().not());
-
+        xAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        yAxisTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        widthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        heightTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        depthTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationXTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationYTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
+        rotationZTextField.disableProperty().bind(numSelectedModels.greaterThan(1));
     }
 
     private void whenNumSelectedModelsChanged()

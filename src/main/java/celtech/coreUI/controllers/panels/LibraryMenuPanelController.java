@@ -27,10 +27,6 @@ public class LibraryMenuPanelController extends MenuPanelController
         profileDetails = loadInnerPanel(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml",
                 profileDetailsController);
-        
-        loadInnerPanel(
-                ApplicationConfiguration.fxmlPanelResourcePath + "MaintenanceInsetPanel.fxml",
-                new MaintenanceInsetPanelController());
     }
     
         public void showAndSelectPrintProfile(SlicerParametersFile printProfile)

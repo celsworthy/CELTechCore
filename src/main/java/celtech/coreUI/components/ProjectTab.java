@@ -38,6 +38,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.PopupWindow;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -115,9 +116,15 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         bedAxes = new BedAxes(viewManager);
+        VBox dimensionContainer = new VBox();
+        dimensionContainer.setMouseTransparent(true);
+        AnchorPane.setBottomAnchor(dimensionContainer, 0.0);
+        AnchorPane.setTopAnchor(dimensionContainer, 0.0);
+        AnchorPane.setRightAnchor(dimensionContainer, 0.0);
+        AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
+        
         basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, rhInsetContainer, modelActionsInsetPanel);
 
-        //Leave this out in 1.01.05
         setupDragHandlers();
         dimensionLineManager = new DimensionLineManager(basePane, project);
         viewManager.addCameraViewChangeListener(bedAxes);

@@ -42,8 +42,12 @@
     light_grey_30: rgb(99,99,99, 0.3);
     superlight_grey_30: rgb(200,200,200, 0.3);
     robox_blue: #0096e1;
+    robox_blue_darker: #0087d2;
+    robox_blue_lighter: #0fa5f0;
     highlight_colour: rgb(0, 157, 226);
     highlight_colour_orange: #ff661b;
+    highlight_colour_orange_darker: #f0570c;
+    highlight_colour_orange_lighter: #ff752a;
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -219,9 +223,52 @@
     -fx-background-color: #008287;
     -fx-text-fill: #ffffff;
 }
+/*
+.toggle-button:selected {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+}*/
+/*
+ * Model edit button
+ */
+.model-material1-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-background-color: robox_blue;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
 
-.toggle-button:default:hover{
-    -fx-background-color: #219297;
+.model-material1-button:pressed, .model-material1-button:default:hover:pressed, .model-material1-button:selected:hover, .model-material1-button:selected:focused, .model-material1-button:selected
+{
+    -fx-background-color: robox_blue_darker;
+    -fx-text-fill: background_colour;
+}
+
+.model-material1-button:hover{
+    -fx-background-color: robox_blue_lighter;
+}
+
+.model-material2-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-background-color: highlight_colour_orange;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.model-material2-button:pressed, .model-material2-button:default:hover:pressed, .model-material2-button:selected:hover, .model-material2-button:selected:focused, .model-material2-button:selected
+{
+    -fx-background-color: highlight_colour_orange_darker;
+    -fx-text-fill: background_colour;
+}
+
+.model-material2-button:hover{
+    -fx-background-color: highlight_colour_orange_lighter;
 }
 
 /*
@@ -327,10 +374,6 @@
     -fx-border-color: transparent;
 }
 
-.toggle-button:selected {
-    -fx-background-color: light_grey;
-    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
-}
 /*
  * Jog Button
  */
@@ -475,54 +518,6 @@
 .gizmoControlButton:pressed #rotationHandle {
     -fx-fill: gizmoRotationHandle_pressed;
 }
-
-/*******************************************************************************
- *                                                                             *
- * Toggle Button                                                               *
- *                                                                             *
- ******************************************************************************/
-/*
-.toggle-button {
-    -fx-padding: 5 22 5 22;   
-    -fx-border-color: #e2e2e2;
-    -fx-border-width: 2;
-
-    -fx-background-radius: 0;
-
-    -fx-background-color: #1d1d1d;
-
-    -fx-font-size: 11pt;
-    -fx-text-fill: #d8d8d8;
-}
-
-.toggle-button:focused {
-    -fx-border-color: white, white;
-
-    -fx-border-width: 1, 1;
-    -fx-border-style: solid, segments(1, 1);
-    -fx-border-radius: 0, 0;
-    -fx-border-insets: 1 1 1 1, 0;
-}
-
-.toggle-button:hover {
-    -fx-text-fill: #d8d8d8;
-    -fx-background-color: #3a3a3a;
-}
-
-.toggle-button:selected {
-    -fx-background-color: white;
-    -fx-text-fill: #1d1d1d;
-}
-
-.toggle-button:selected:hover {
-    -fx-background-color: #eee;
-    -fx-text-fill: #1d1d1d;
-
-    -fx-border-color: #eee;
-}
-.toggle-button:disabled {
-    -fx-opacity: -fx-disabled-opacity;
-}*/
 
 /*******************************************************************************
  *                                                                             *

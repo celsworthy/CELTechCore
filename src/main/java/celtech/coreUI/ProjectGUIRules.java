@@ -26,11 +26,6 @@ public class ProjectGUIRules
         this.excludedFromSelection = excludedFromSelection;
     }
 
-    public BooleanBinding canTranslateRotateOrScaleSelection()
-    {
-        return projectSelection.getSelectionHasChildOfGroup().not();
-    }
-
     public BooleanBinding canSnapToGroundSelection()
     {
         return projectSelection.getSelectionHasChildOfGroup().not();

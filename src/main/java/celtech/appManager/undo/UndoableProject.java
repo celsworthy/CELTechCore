@@ -6,8 +6,11 @@ package celtech.appManager.undo;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.PrintBed;
 import celtech.modelcontrol.ModelContainer;
+import java.util.HashSet;
 import java.util.Set;
+import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -162,6 +165,15 @@ public class UndoableProject
         }, canMerge);
     }
 
+    public void translateModelsTo(Set<ModelContainer> modelContainers, double x, double z,
+            boolean canMerge)
+    {
+        doTransformCommand(() ->
+        {
+            project.translateModelsTo(modelContainers, x, z);
+        }, canMerge);
+    }
+
     public void autoLayout()
     {
         doTransformCommand(() ->
@@ -169,14 +181,14 @@ public class UndoableProject
             project.autoLayout();
         });
     }
-    
+
     public void dropToBed(Set<ModelContainer> modelContainers)
     {
         doTransformCommand(() ->
         {
             project.dropToBed(modelContainers);
         });
-    }   
+    }
 
     public void snapToGround(ModelContainer modelContainer, MeshView meshView, int faceNumber)
     {
@@ -239,16 +251,15 @@ public class UndoableProject
     {
         Command groupCommand = new GroupCommand(project, modelContainers);
         commandStack.do_(groupCommand);
-        
-    }    
-    
+
+    }
+
     public void ungroup(Set<ModelContainer> modelContainers)
     {
         Command ungroupCommand = new UngroupCommand(project, modelContainers);
         commandStack.do_(ungroupCommand);
-    }   
-    
-    
+    }
+
     public void cut(Set<ModelContainer> modelContainers, float cutHeightValue)
     {
         Command cutCommand = new CutCommand(project, modelContainers, cutHeightValue);

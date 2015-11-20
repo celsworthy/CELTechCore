@@ -208,6 +208,13 @@ public class ModelBounds
         centreX += deltaCentreX;
     }
 
+    public void translateY(double deltaCentreY)
+    {
+        minY += deltaCentreY;
+        maxY += deltaCentreY;
+        centreY += deltaCentreY;
+    }
+
     public void translateZ(double deltaCentreZ)
     {
         minZ += deltaCentreZ;

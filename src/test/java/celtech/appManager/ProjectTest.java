@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.util.Pair;
 import org.junit.Assert;
 import org.junit.ClassRule;

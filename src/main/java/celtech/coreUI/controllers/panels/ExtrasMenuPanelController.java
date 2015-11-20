@@ -41,5 +41,8 @@ public class ExtrasMenuPanelController extends MenuPanelController
                 new PreferencesInnerPanelController("preferences.interface",
                         Preferences.createInterfacePreferences(
                                 userPreferences)));
+        loadInnerPanel(
+                ApplicationConfiguration.fxmlPanelResourcePath + "MaintenanceInsetPanel.fxml",
+                new MaintenanceInsetPanelController());
     }
 }

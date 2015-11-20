@@ -67,6 +67,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Transform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.fxyz.utils.MeshUtils;
@@ -119,7 +120,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private final ReadOnlyDoubleProperty widthPropertyToFollow;
     private final ReadOnlyDoubleProperty heightPropertyToFollow;
-    private final Set<ModelContainer> excludedFromSelection;
+    private final Set<ModelContainer> inSelectedGroupButNotSelected;
 
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
     private final Xform cameraTranslateXform = new Xform(Xform.RotateOrder.XYZ, "CameraTranslateXForm");
@@ -177,6 +178,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private PhongMaterial extruder1TransparentMaterial = new PhongMaterial(StandardColours.ROBOX_BLUE_TRANSPARENT);
     private PhongMaterial extruder2Material = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE);
     private PhongMaterial extruder2TransparentMaterial = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE_TRANSPARENT);
+    private PhongMaterial greyExcludedMaterial = new PhongMaterial(StandardColours.LIGHT_GREY_TRANSPARENT);
     private PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
     private PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
     private PhongMaterial zcutDisplayPlaneMaterial = new PhongMaterial(Color.web("#00005530"));
@@ -435,12 +437,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             processModeChange();
         }
-    };private void handleMouseDoubleClickedEvent(MouseEvent event)
+    };
+
+    private void handleMouseDoubleClickedEvent(MouseEvent event)
     {
         Node intersectedNode = event.getPickResult().getIntersectedNode();
         if (intersectedNode instanceof MeshView)
         {
-            if (excludedFromSelection.contains((ModelContainer) intersectedNode.getParent()))
+            if (inSelectedGroupButNotSelected.contains((ModelContainer) intersectedNode.getParent()))
             {
                 return;
             }
@@ -458,7 +462,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     });
             if (selectedMeshViews.contains((MeshView) intersectedNode))
             {
-                isolateForSelectedMeshView((MeshView) intersectedNode);
+                doSelectTranslateModel(intersectedNode, event.getPickResult().getIntersectedPoint(), event, false);
+                updateGroupSelectionList();
+                updateModelColoursForPositionModeAndTargetPrinter();
             }
         }
     }
@@ -494,12 +500,22 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         Node intersectedNode = pickResult.getIntersectedNode();
 
         boolean shortcut = event.isShortcutDown();
-//        if (shortcut && event.isSecondaryButtonDown())
-//        {
-//            //Go into translate by camera mode
-//            primeCameraDragPlane(intersectedNode, pickedPoint);
-//        } else
 
+        ModelGroup ancestorGroup = null;
+
+        //Drop out early if we shouldn't use this click
+//        if (intersectedNode instanceof MeshView)
+//        {
+//            ModelContainer parentModel = (ModelContainer) intersectedNode.getParent();
+//            ancestorGroup = getTopLevelAncestorGroup(parentModel);
+//
+//            if (layoutSubmode.get() == LayoutSubmode.SELECT
+//                    && ancestorGroup != null
+//                    && inSelectedGroupButNotSelected.isEmpty())
+//            {
+//                return;
+//            }
+//        }
         if (event.isPrimaryButtonDown())
         {
             if (intersectedNode.getParent() != null)
@@ -518,22 +534,25 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             {
                 if (intersectedNode instanceof MeshView)
                 {
-                    if (excludedFromSelection.contains((ModelContainer) intersectedNode.getParent()))
-                    {
-                        return;
-                    }
-
-                    ModelContainer rootModelContainer
-                            = ModelContainer.getRootModelContainer((MeshView) intersectedNode);
                     switch (layoutSubmode.get())
                     {
                         case SNAP_TO_GROUND:
+                            ModelContainer rootModelContainer
+                                    = ModelContainer.getRootModelContainer((MeshView) intersectedNode);
                             doSnapToGround(rootModelContainer, (MeshView) intersectedNode, pickResult);
                             break;
                         case Z_CUT:
                             break;
                         case SELECT:
-                            doSelectTranslateModel(intersectedNode, pickedPoint, event);
+//                            ModelContainer parentModel = (ModelContainer) intersectedNode.getParent();
+//                            ancestorGroup = getTopLevelAncestorGroup(parentModel);
+//                            if (ancestorGroup != null)
+//                            {
+//                                doSelectTranslateModel(ancestorGroup, pickedPoint, event);
+//                            } else
+//                            {
+                            doSelectTranslateModel(intersectedNode, pickedPoint, event, true);
+//                            }
                             break;
                     }
                 } else if (intersectedNode == zCutDisplayPlane
@@ -544,20 +563,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 } else if (layoutSubmode.get() != LayoutSubmode.Z_CUT)
                 {
                     projectSelection.deselectAllModels();
-                    excludedFromSelection.clear();
-                    updateModelColoursForPositionModeAndTargetPrinter();
                 }
+                updateGroupSelectionList();
+                updateModelColoursForPositionModeAndTargetPrinter();
             }
         }
     }
 
-    private void doSelectTranslateModel(Node intersectedNode, Point3D pickedPoint, MouseEvent event)
+    private void doSelectTranslateModel(Node intersectedNode, Point3D pickedPoint, MouseEvent event, boolean findParentGroup)
     {
         Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
         Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(
                 pickedScenePoint);
 
         translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
+
         Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(
                 pickedScenePoint);
         lastDragPosition = pickedDragPlanePoint;
@@ -579,12 +599,31 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         ModelContainer pickedModel = (ModelContainer) parent;
         // get top-level ModelContainer (could be grouped) that is not excluded from
         // selection
-        while (pickedModel.getParentModelContainer() instanceof ModelContainer
-                && !excludedFromSelection.contains(pickedModel.getParentModelContainer()))
+//        while (pickedModel.getParentModelContainer() instanceof ModelContainer
+//                && !excludedFromSelection.contains(pickedModel.getParentModelContainer()))
+
+        if (findParentGroup && !pickedModel.isSelected())
         {
-            pickedModel = (ModelContainer) pickedModel.getParentModelContainer();
+            while (pickedModel.getParentModelContainer() instanceof ModelContainer)
+            {
+                pickedModel = (ModelContainer) pickedModel.getParentModelContainer();
+            }
         }
 
+//        List<Transform> modelRotationTransforms = pickedModel.getRotationTransforms();
+//        translationDragPlane.getTransforms().clear();
+//        translationDragPlane.getTransforms().addAll(modelRotationTransforms);
+//        if (inSelectedGroupButNotSelected.isEmpty())
+//        {
+//            // Find the top-level group - only if we haven't selected a child in the group
+//            // get top-level ModelContainer (could be grouped) that is not excluded from
+//            // selection
+//            while (pickedModel.getParentModelContainer() instanceof ModelContainer
+//                    && !inSelectedGroupButNotSelected.contains(pickedModel.getParentModelContainer()))
+//            {
+//                pickedModel = (ModelContainer) pickedModel.getParentModelContainer();
+//            }
+//        }
         if (pickedModel.isSelected() == false)
         {
             boolean multiSelect = event.isShortcutDown();
@@ -595,6 +634,26 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             if (multiSelect)
             {
                 deselectModel(pickedModel);
+            }
+        }
+    }
+
+    private void updateGroupSelectionList()
+    {
+        inSelectedGroupButNotSelected.clear();
+
+        for (ModelContainer model : projectSelection.getSelectedModelsSnapshot())
+        {
+            ModelGroup parentGroup = getTopLevelAncestorGroup(model);
+            if (parentGroup != null)
+            {
+                for (ModelContainer subContainer : parentGroup.getDescendentModelContainers())
+                {
+                    if (!projectSelection.getSelectedModelsSnapshot().contains(subContainer))
+                    {
+                        inSelectedGroupButNotSelected.add(subContainer);
+                    }
+                }
             }
         }
     }
@@ -616,12 +675,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         double mouseDeltaX = (mousePosX - mouseOldX);
         double mouseDeltaY = (mousePosY - mouseOldY);
 
-        if (event.isPrimaryButtonDown()
-                && projectGUIRules.canTranslateRotateOrScaleSelection().not().get())
-        {
-            return;
-        }
-
+//        if (event.isPrimaryButtonDown())
+////                && projectGUIRules.canTranslateRotateOrScaleSelection().not().get())
+//        {
+//            return;
+//        }
         boolean shortcut = event.isShortcutDown();
         if (shortcut && event.isSecondaryButtonDown())
         {
@@ -689,7 +747,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             {
                 Point3D pickedPoint = event.getPickResult().getIntersectedPoint();
                 Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
+                Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(
+                        pickedScenePoint);
+
+//                translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
+
                 Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(pickedScenePoint);
+                
                 if (lastDragPosition != null)
                 {
                     Point3D resultant = pickedDragPlanePoint.subtract(lastDragPosition);
@@ -819,7 +883,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         loadedModels = project.getTopLevelModels();
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
-        excludedFromSelection = Lookup.getProjectGUIState(project).getExcludedFromSelection();
+        inSelectedGroupButNotSelected = Lookup.getProjectGUIState(project).getExcludedFromSelection();
         projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
 
         widthPropertyToFollow = widthProperty;
@@ -870,6 +934,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         bed = buildBed();
         translationDragPlane.setId("DragPlane");
         translationDragPlane.setOpacity(0.0);
+        translationDragPlane.setMaterial(greyExcludedMaterial);
         translationDragPlane.setMouseTransparent(true);
         translationDragPlane.setTranslateX(PrintBed.getPrintVolumeCentre().getX());
         translationDragPlane.setTranslateZ(PrintBed.getPrintVolumeCentre().getZ());
@@ -1139,6 +1204,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             }
             projectSelection.addModelContainer(selectedNode);
         }
+
+        updateGroupSelectionList();
     }
 
     private void translateSelection(double x, double z)
@@ -1153,6 +1220,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             projectSelection.removeModelContainer(pickedModel);
         }
+
+        updateGroupSelectionList();
     }
 
     private void collideModels()
@@ -1234,23 +1303,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
      */
     private void isolateForSelectedMeshView(MeshView meshView)
     {
-        ModelGroup ancestorSelectedGroup = getAncestorSelectedGroup(meshView);
+        ModelContainer parentModelContainer = (ModelContainer) meshView.getParent();
+        ModelGroup ancestorSelectedGroup = getAncestorSelectedGroup(parentModelContainer);
         if (ancestorSelectedGroup != null)
         {
-            // isolate children of ancestor group
-            isolateGroupChildren(ancestorSelectedGroup);
-            //get group/container under ancestor group that contains meshview
-            //then select that group
             projectSelection.deselectAllModels();
 
-            for (ModelContainer modelContainer : ancestorSelectedGroup.getChildModelContainers())
-            {
-                if (modelContainer.descendentMeshViews().contains(meshView))
-                {
-                    projectSelection.addModelContainer(modelContainer);
-                    break;
-                }
-            }
+            //Just select the intersected node...
+            projectSelection.addModelContainer(parentModelContainer);
+
+            updateGroupSelectionList();
         }
     }
 
@@ -1258,35 +1320,47 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
      * Isolate the given ModelGroup/Container. De-isolate all other
      * modelgroups/containers.
      */
-    private void isolateGroupChildren(ModelGroup modelGroup)
+    private void isolateGroupChildren(ModelGroup modelGroup, ModelContainer selectedModel)
     {
-        for (ModelContainer modelContainer : project.getAllModels())
-        {
-            excludedFromSelection.add(modelContainer);
-        }
-        
-        excludedFromSelection.remove(modelGroup);
+        inSelectedGroupButNotSelected.clear();
 
-        for (ModelContainer modelContainer : modelGroup.getChildModelContainers())
+        for (ModelContainer modelContainer : modelGroup.getDescendentModelContainers())
         {
-            excludedFromSelection.remove(modelContainer);
-            for (ModelContainer modelContainer1 : modelContainer.getDescendentModelContainers())
+            if (modelContainer != selectedModel)
             {
-                excludedFromSelection.remove(modelContainer1);
+                inSelectedGroupButNotSelected.add(modelContainer);
             }
         }
-
-        updateModelColoursForPositionModeAndTargetPrinter();
-
     }
 
     /**
      * Get the first ancestor group that is selected. If no ancestor is selected
      * then return null.
      */
-    private ModelGroup getAncestorSelectedGroup(MeshView meshView)
+    private ModelGroup getTopLevelAncestorGroup(ModelContainer parentModelContainer)
     {
-        ModelContainer parentModelContainer = (ModelContainer) meshView.getParent();
+        ModelGroup topLevelGroup = null;
+
+        if (parentModelContainer != null)
+        {
+            while (parentModelContainer.getParentModelContainer() != null)
+            {
+                parentModelContainer = parentModelContainer.getParentModelContainer();
+                if (parentModelContainer instanceof ModelGroup)
+                {
+                    topLevelGroup = (ModelGroup) parentModelContainer;
+                }
+            }
+        }
+        return topLevelGroup;
+    }
+
+    /**
+     * Get the first ancestor group that is selected. If no ancestor is selected
+     * then return null.
+     */
+    private ModelGroup getAncestorSelectedGroup(ModelContainer parentModelContainer)
+    {
         if (parentModelContainer != null)
         {
             while (parentModelContainer.getParentModelContainer() != null)
@@ -1340,7 +1414,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
         for (ModelContainer model : loadedModels)
         {
-            updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, model);
+            if (model instanceof ModelGroup)
+            {
+                for (ModelContainer childModel : ((ModelGroup) model).getDescendentModelContainers())
+                {
+                    updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, childModel);
+                }
+            } else
+            {
+                updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, model);
+            }
         }
     }
 
@@ -1348,12 +1431,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     {
         boolean showMisplacedColour = applicationStatus.getMode() == ApplicationMode.LAYOUT;
 
-        if (excludedFromSelection.contains(model))
-        {
-            model.updateColour(extruder1TransparentMaterial, extruder2TransparentMaterial, showMisplacedColour);
-        } else
+        if (inSelectedGroupButNotSelected.isEmpty())
         {
             model.updateColour(materialToUseForExtruder0, materialToUseForExtruder1, showMisplacedColour);
+        } else
+        {
+            if (inSelectedGroupButNotSelected.contains(model))
+            {
+                model.updateColour(extruder1TransparentMaterial, extruder2TransparentMaterial, showMisplacedColour);
+            } else if (model.isSelected())
+            {
+                model.updateColour(materialToUseForExtruder0, materialToUseForExtruder1, showMisplacedColour);
+            } else
+            {
+                model.updateColour(greyExcludedMaterial, greyExcludedMaterial, showMisplacedColour);
+            }
         }
     }
 
@@ -1446,10 +1538,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     @Override
     public void whenModelAdded(ModelContainer modelContainer)
     {
-        addBedReferenceToModel(modelContainer);
         models.getChildren().add(modelContainer);
+        modelContainer.setBedReference(bed);
+
         for (ModelContainer model : modelContainer.getModelsHoldingMeshViews())
         {
+            model.setBedReference(bed);
             model.checkOffBed();
             model.heresYourCamera(camera);
         }
