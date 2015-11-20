@@ -99,6 +99,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label headFeeds;
 
     @FXML
+    private Group singleMaterialLiteHead;
+
+    @FXML
     private Group singleMaterialHead;
 
     @FXML
@@ -344,10 +347,18 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             dualMaterialHead.setVisible(true);
             singleMaterialHead.setVisible(false);
-        } else
+            singleMaterialLiteHead.setVisible(false);
+        } else if (head.typeCodeProperty().get().equals("RBX01-SL"))
+        {
+            dualMaterialHead.setVisible(false);
+            singleMaterialHead.setVisible(false);
+            singleMaterialLiteHead.setVisible(true);
+        }
+        else
         {
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(true);
+            singleMaterialLiteHead.setVisible(false);
         }
     }
 

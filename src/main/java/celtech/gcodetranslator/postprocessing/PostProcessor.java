@@ -250,9 +250,12 @@ public class PostProcessor
                             //NOTE
                             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
                             //NOTE
-                            timeUtils.timerStart(this, openTimerName);
-                            lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
-                            timeUtils.timerStop(this, openTimerName);
+                            if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+                            {
+                                timeUtils.timerStart(this, openTimerName);
+                                lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                                timeUtils.timerStop(this, openTimerName);
+                            }
 
                             timeUtils.timerStart(this, writeOutputTimerName);
                             outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
@@ -311,9 +314,12 @@ public class PostProcessor
                 //NOTE
                 //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
                 //NOTE
-                timeUtils.timerStart(this, openTimerName);
-                lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
-                timeUtils.timerStop(this, openTimerName);
+                if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+                {
+                    timeUtils.timerStart(this, openTimerName);
+                    lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle2.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                    timeUtils.timerStop(this, openTimerName);
+                }
 
                 timeUtils.timerStart(this, writeOutputTimerName);
                 outputUtilities.writeLayerToFile(parseResultCycle2.getLayerData(), writer);
@@ -338,9 +344,12 @@ public class PostProcessor
                 //NOTE
                 //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
                 //NOTE
-                timeUtils.timerStart(this, openTimerName);
-                lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle1.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
-                timeUtils.timerStop(this, openTimerName);
+                if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+                {
+                    timeUtils.timerStart(this, openTimerName);
+                    lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResultCycle1.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                    timeUtils.timerStop(this, openTimerName);
+                }
 
                 timeUtils.timerStart(this, writeOutputTimerName);
                 outputUtilities.writeLayerToFile(parseResultCycle1.getLayerData(), writer);
@@ -362,9 +371,12 @@ public class PostProcessor
             //NOTE
             //Since we're using the open/close state here we need to make sure this is the last open/close thing we do...
             //NOTE
-            timeUtils.timerStart(this, openTimerName);
-            lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResult.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
-            timeUtils.timerStop(this, openTimerName);
+            if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+            {
+                timeUtils.timerStart(this, openTimerName);
+                lastOpenResult = postProcessorUtilityMethods.insertOpens(parseResult.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
+                timeUtils.timerStop(this, openTimerName);
+            }
 
             timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.writeLayerToFile(parseResult.getLayerData(), writer);
@@ -654,10 +666,13 @@ public class PostProcessor
         steno.info(orphanTimerName + " " + timeUtils.timeTimeSoFar_ms(this, orphanTimerName));
         steno.info(nozzleControlTimerName + " " + timeUtils.timeTimeSoFar_ms(this, nozzleControlTimerName));
         steno.info(perRetractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, perRetractTimerName));
-        steno.info(closeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, closeTimerName));
         steno.info(unnecessaryToolchangeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unnecessaryToolchangeTimerName));
         steno.info(cameraEventTimerName + " " + timeUtils.timeTimeSoFar_ms(this, cameraEventTimerName));
-        steno.info(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
+        if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+        {
+            steno.info(closeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, closeTimerName));
+            steno.info(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
+        }
         steno.info(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
         steno.info(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
         steno.info(parseLayerTimerName + " " + timeUtils.timeTimeSoFar_ms(this, parseLayerTimerName));

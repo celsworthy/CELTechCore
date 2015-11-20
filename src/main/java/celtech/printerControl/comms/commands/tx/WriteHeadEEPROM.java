@@ -45,11 +45,11 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     }
 
     public void populateEEPROM(String headTypeCode, String headUniqueID, float maximumTemperature,
-        float thermistorBeta, float thermistorTCal,
-        float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
-        String filament0ID, String filament1ID,
-        float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
-        float lastFilamentTemperature0, float lastFilamentTemperature1, float hourCounter)
+            float thermistorBeta, float thermistorTCal,
+            float nozzle1XOffset, float nozzle1YOffset, float nozzle1ZOffset, float nozzle1BOffset,
+            String filament0ID, String filament1ID,
+            float nozzle2XOffset, float nozzle2YOffset, float nozzle2ZOffset, float nozzle2BOffset,
+            float lastFilamentTemperature0, float lastFilamentTemperature1, float hourCounter)
     {
 
         this.headTypeCode = headTypeCode;
@@ -113,25 +113,47 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         }
 
         List<Nozzle> nozzles = head.getNozzles();
-
-        populateEEPROM(head.typeCodeProperty().get(),
-                       head.uniqueIDProperty().get(),
-                       heater0.maximumTemperatureProperty().get(),
-                       heater0.betaProperty().get(),
-                       heater0.tCalProperty().get(),
-                       nozzles.get(0).xOffsetProperty().get(),
-                       nozzles.get(0).yOffsetProperty().get(),
-                       nozzles.get(0).zOffsetProperty().get(),
-                       nozzles.get(0).bOffsetProperty().get(),
-                       heater0.filamentIDProperty().get(),
-                       filament1ID,
-                       nozzles.get(1).xOffsetProperty().get(),
-                       nozzles.get(1).yOffsetProperty().get(),
-                       nozzles.get(1).zOffsetProperty().get(),
-                       nozzles.get(1).bOffsetProperty().get(),
-                       heater0.lastFilamentTemperatureProperty().get(),
-                       lastFilamentTemperature1,
-                       head.headHoursProperty().get());
+        if (nozzles.size() > 1)
+        {
+            populateEEPROM(head.typeCodeProperty().get(),
+                    head.uniqueIDProperty().get(),
+                    heater0.maximumTemperatureProperty().get(),
+                    heater0.betaProperty().get(),
+                    heater0.tCalProperty().get(),
+                    nozzles.get(0).xOffsetProperty().get(),
+                    nozzles.get(0).yOffsetProperty().get(),
+                    nozzles.get(0).zOffsetProperty().get(),
+                    nozzles.get(0).bOffsetProperty().get(),
+                    heater0.filamentIDProperty().get(),
+                    filament1ID,
+                    nozzles.get(1).xOffsetProperty().get(),
+                    nozzles.get(1).yOffsetProperty().get(),
+                    nozzles.get(1).zOffsetProperty().get(),
+                    nozzles.get(1).bOffsetProperty().get(),
+                    heater0.lastFilamentTemperatureProperty().get(),
+                    lastFilamentTemperature1,
+                    head.headHoursProperty().get());
+        } else
+        {
+            populateEEPROM(head.typeCodeProperty().get(),
+                    head.uniqueIDProperty().get(),
+                    heater0.maximumTemperatureProperty().get(),
+                    heater0.betaProperty().get(),
+                    heater0.tCalProperty().get(),
+                    nozzles.get(0).xOffsetProperty().get(),
+                    nozzles.get(0).yOffsetProperty().get(),
+                    nozzles.get(0).zOffsetProperty().get(),
+                    nozzles.get(0).bOffsetProperty().get(),
+                    heater0.filamentIDProperty().get(),
+                    null,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    head.headHoursProperty().get());
+        }
     }
 
     @Override
