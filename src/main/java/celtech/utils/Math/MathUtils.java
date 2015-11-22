@@ -148,8 +148,8 @@ public class MathUtils
         // theta = arcsin(-y / r)
         // phi = arctan(z / x)
         double r = Math.sqrt((cartesianCoordinate.getX() * cartesianCoordinate.getX())
-            + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
-            + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
+                + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
+                + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
         double theta = Math.asin(-cartesianCoordinate.getY() / r);
         double phi = Math.atan2(cartesianCoordinate.getZ(), cartesianCoordinate.getX());
 
@@ -212,8 +212,8 @@ public class MathUtils
         // theta = arcsin(-y / r)
         // phi = arctan(z / x)
         double r = Math.sqrt((cartesianCoordinate.getX() * cartesianCoordinate.getX())
-            + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
-            + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
+                + (cartesianCoordinate.getY() * cartesianCoordinate.getY())
+                + (cartesianCoordinate.getZ() * cartesianCoordinate.getZ()));
         double theta = Math.asin(-cartesianCoordinate.getY() / r);
         double phi = Math.atan2(cartesianCoordinate.getZ(), cartesianCoordinate.getX());
 
@@ -262,8 +262,8 @@ public class MathUtils
 
         return new Point2D(xPos, yPos);
     }
-    
-        /**
+
+    /**
      *
      * @param angle
      * @param radius
@@ -282,7 +282,7 @@ public class MathUtils
         {
             yPos = -yPos;
         }
-        
+
         return new Point2D(xPos, yPos);
     }
 
@@ -369,9 +369,9 @@ public class MathUtils
         double halfYDifference = (Math.max(startPoint.getY(), endPoint.getY()) - Math.min(startPoint.getY(), endPoint.getY())) / 2;
         double midX = Math.min(startPoint.getX(), endPoint.getX()) + halfXDifference;
         double midY = Math.min(startPoint.getY(), endPoint.getY()) + halfYDifference;
-        
+
         Vector2D midPoint = new Vector2D(midX, midY);
-        
+
         return midPoint;
     }
 
@@ -400,11 +400,11 @@ public class MathUtils
         int pointXMaxTest = compareDouble(pointToTest.getX(), Math.max(segmentToTest.getStart().getX(), segmentToTest.getEnd().getX()), 1e-10);
         int pointYMinTest = compareDouble(pointToTest.getY(), Math.min(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY()), 1e-10);
         int pointYMaxTest = compareDouble(pointToTest.getY(), Math.max(segmentToTest.getStart().getY(), segmentToTest.getEnd().getY()), 1e-10);
-        
+
         if ((pointXMinTest == EQUAL || pointXMinTest == MORE_THAN)
-            && (pointXMaxTest == EQUAL || pointXMaxTest == LESS_THAN)
-            && (pointYMinTest == EQUAL || pointYMinTest == MORE_THAN)
-            && (pointYMaxTest == EQUAL || pointYMaxTest == LESS_THAN))
+                && (pointXMaxTest == EQUAL || pointXMaxTest == LESS_THAN)
+                && (pointYMinTest == EQUAL || pointYMinTest == MORE_THAN)
+                && (pointYMaxTest == EQUAL || pointYMaxTest == LESS_THAN))
         {
             pointWithinSegment = true;
         }
@@ -415,7 +415,6 @@ public class MathUtils
     public static final int EQUAL = 0;
     public static final int MORE_THAN = 1;
     public static final int LESS_THAN = -1;
-
 
     public static int compareDouble(double a, double b, double epsilon)
     {
@@ -432,7 +431,7 @@ public class MathUtils
             return LESS_THAN;
         }
     }
-    
+
     public static int compareFloat(float a, float b, float epsilon)
     {
         float result = a - b;

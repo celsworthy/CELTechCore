@@ -3,27 +3,40 @@
  */
 package celtech.modelcontrol;
 
+import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.utils.threed.ThreeDUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
+import javafx.scene.transform.Rotate;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
- * ModelGroup is a ModelContainer that is a group of child ModelContainers or other ModelGroups.
+ * ModelGroup is a ModelContainer that is a group of child ModelContainers or
+ * other ModelGroups.
  *
  * @author tony
  */
-public class ModelGroup extends ModelContainer
+public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.ScreenExtentsListener
 {
 
+    private Stenographer steno = StenographerFactory.getStenographer(ModelGroup.class.getName());
     private final Group modelContainersGroup = new Group();
     private Set<ModelContainer> childModelContainers;
+
+    private double turnRotationAngle = 0;
+    private Rotate turnRotate = new Rotate(0, ThreeDUtils.Y_AXIS_JFX);
 
     public ModelGroup(Set<ModelContainer> modelContainers)
     {
@@ -36,6 +49,7 @@ public class ModelGroup extends ModelContainer
         for (ModelContainer modelContainer : modelContainers)
         {
             modelContainer.clearBedTransform();
+            modelContainer.addScreenExtentsChangeListener(this);
         }
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         /**
@@ -81,6 +95,7 @@ public class ModelGroup extends ModelContainer
 
     public void removeModel(ModelContainer modelContainer)
     {
+        modelContainer.removeScreenExtentsChangeListener(this);
         childModelContainers.remove(modelContainer);
     }
 
@@ -92,7 +107,8 @@ public class ModelGroup extends ModelContainer
     }
 
     /**
-     * Return a set of all descendent ModelContainers that have MeshView children.
+     * Return a set of all descendent ModelContainers that have MeshView
+     * children.
      */
     @Override
     public Set<ModelContainer> getModelsHoldingMeshViews()
@@ -107,8 +123,8 @@ public class ModelGroup extends ModelContainer
     }
 
     /**
-     * Return a set of all descendent ModelContainers (and include this one) that have
-     * ModelContainer children.
+     * Return a set of all descendent ModelContainers (and include this one)
+     * that have ModelContainer children.
      */
     @Override
     public Collection<? extends ModelContainer> getModelsHoldingModels()
@@ -144,8 +160,8 @@ public class ModelGroup extends ModelContainer
     }
 
     /**
-     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
-     * dimensions before any transforms).
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the
+     * original model dimensions before any transforms).
      */
     @Override
     ModelBounds calculateBoundsInLocal()
@@ -178,8 +194,8 @@ public class ModelGroup extends ModelContainer
         double newcentreZ = minZ + (newdepth / 2);
 
         return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                               newheight, newdepth, newcentreX, newcentreY,
-                               newcentreZ);
+                newheight, newdepth, newcentreX, newcentreY,
+                newcentreZ);
     }
 
     @Override
@@ -196,18 +212,18 @@ public class ModelGroup extends ModelContainer
     }
 
     /**
-     * If this model is associated with the given extruder number then recolour it to the given
-     * colour, also taking into account if it is misplaced (off the bed). Also call the same method
-     * on any child ModelContainers.
+     * If this model is associated with the given extruder number then recolour
+     * it to the given colour, also taking into account if it is misplaced (off
+     * the bed). Also call the same method on any child ModelContainers.
      */
     @Override
-    public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
-        boolean showMisplacedColour)
+    public void updateColour(final PhongMaterial extruder1Colour, final PhongMaterial extruder2Colour,
+            boolean showMisplacedColour)
     {
         for (ModelContainer modelContainer : childModelContainers)
         {
-            modelContainer.updateColour(displayColourExtruder0, displayColourExtruder1,
-                                        showMisplacedColour);
+            modelContainer.updateColour(extruder1Colour, extruder2Colour,
+                    showMisplacedColour);
         }
     }
 
@@ -238,7 +254,41 @@ public class ModelGroup extends ModelContainer
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());
+        copy.recalculateScreenExtents();
         return copy;
     }
 
+//    @Override
+//    public void translateBy(double xMove, double zMove)
+//    {
+//        for (ModelContainer modelContainer : getChildModelContainers())
+//        {
+//            modelContainer.translateBy(xMove, zMove);
+//        }
+//    }
+//
+//    @Override
+//    public void setRotationTurn(double value)
+//    {
+//        //The centre of rotation is the centre of the group
+//        turnRotate.setAngle(value - turnRotationAngle);
+//        for (ModelContainer modelContainer : getChildModelContainers())
+//        {
+//            modelContainer.setRotationTurn(value);
+//            Point3D newPosition = turnRotate.deltaTransform(modelContainer.getTransformedCentreX(), modelContainer.getTransformedCentreY(), modelContainer.getTransformedCentreZ());
+//            double newX = newPosition.getX() - modelContainer.getTransformedCentreX();
+//            double newY = newPosition.getY() - modelContainer.getTransformedCentreY();
+//            double newZ = newPosition.getZ() - modelContainer.getTransformedCentreZ();
+//            modelContainer.translateBy(newX, newY, newZ);
+//        }
+//
+//        turnRotationAngle = value;
+//    }
+
+    @Override
+    public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
+    {
+        notifyScreenExtentsChange();
+        notifyShapeChange();
+    }
 }

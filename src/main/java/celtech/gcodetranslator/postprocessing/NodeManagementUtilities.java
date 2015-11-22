@@ -8,10 +8,9 @@ import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
-import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -76,6 +75,27 @@ public class NodeManagementUtilities
         return sectionNode;
     }
 
+    protected Optional<ObjectDelineationNode> lookForParentObjectNode(GCodeEventNode eventNode)
+    {
+        Optional<ObjectDelineationNode> objectNode = Optional.empty();
+
+        GCodeEventNode nodeUnderConsideration = eventNode;
+
+        while (nodeUnderConsideration.hasParent())
+        {
+            GCodeEventNode parent = nodeUnderConsideration.getParent().get();
+            if (parent instanceof ObjectDelineationNode)
+            {
+                objectNode = Optional.of((ObjectDelineationNode) parent);
+                break;
+            }
+
+            nodeUnderConsideration = parent;
+        }
+
+        return objectNode;
+    }
+
     protected void recalculateSectionExtrusion(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
@@ -103,7 +123,14 @@ public class NodeManagementUtilities
         while (layerIterator.hasNext())
         {
             GCodeEventNode node = layerIterator.next();
-            if (node instanceof ExtrusionNode)
+            if (node instanceof ToolSelectNode)
+            {
+                extrusionInRetract = 0;
+                sectionNodes.clear();
+                lastSectionNode = null;
+                lastExtrusionNode = null;
+            }
+            else if (node instanceof ExtrusionNode)
             {
                 Optional<SectionNode> parentSection = lookForParentSectionNode(node);
                 if (parentSection.isPresent())
@@ -166,18 +193,14 @@ public class NodeManagementUtilities
             if (potentialObjectNumber
                     < 0)
             {
-                if (layerNode.getLayerNumber() == 0)
-                {
-                    // Has to be 0 if we're on the first layer
-                    potentialObjectNumber = 0;
-                } else if (lastLayerParseResult.getLastObjectNumber().isPresent())
+                if (lastLayerParseResult.getLastObjectNumber().isPresent())
                 {
                     potentialObjectNumber = lastLayerParseResult.getLastObjectNumber().get();
                 } else
                 {
                     throw new RuntimeException("Cannot determine object number for orphan on layer " + layerNode.getLayerNumber());
                 }
-                
+
                 if (potentialObjectNumber < 0)
                 {
                     //Still not set!
@@ -252,7 +275,7 @@ public class NodeManagementUtilities
 
         return nextExtrusion;
     }
-    
+
     protected Optional<MovementProvider> findNextMovement(GCodeEventNode topLevelNode, GCodeEventNode node) throws NodeProcessingException
     {
         Optional<MovementProvider> nextMovement = Optional.empty();

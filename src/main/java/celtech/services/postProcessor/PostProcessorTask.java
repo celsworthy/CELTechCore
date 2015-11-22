@@ -111,6 +111,8 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
 
         if (selectedSlicer == SlicerType.Cura)
         {
+            PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+
             HeadFile headFileToUse = null;
             if (printer == null
                     || printer.headProperty().get() == null)
@@ -119,14 +121,15 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             } else
             {
                 headFileToUse = HeadContainer.getHeadByID(printer.headProperty().get().typeCodeProperty().get());
+                if (!headFileToUse.getTypeCode().equals("RBX01-SL")
+                        && !headFileToUse.getTypeCode().equals("RBX01-DL"))
+                {
+                    ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+                    ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
+                    ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+                    ppFeatures.enableFeature(PostProcessorFeature.REPLENISH_BEFORE_OPEN);
+                }
             }
-
-            PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-            ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-            ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-            ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-            ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
-            ppFeatures.enableFeature(PostProcessorFeature.REPLENISH_BEFORE_OPEN);
 
             PostProcessor postProcessor = new PostProcessor(
                     gcodeFileToProcess,

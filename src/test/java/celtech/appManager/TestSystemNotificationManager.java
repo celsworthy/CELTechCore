@@ -241,4 +241,10 @@ public class TestSystemNotificationManager implements SystemNotificationManager
         return false;
     }
 
+    @Override
+    public void clearAllDialogsOnDisconnect()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

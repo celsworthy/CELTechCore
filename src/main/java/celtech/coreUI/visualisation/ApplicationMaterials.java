@@ -5,7 +5,11 @@
  */
 package celtech.coreUI.visualisation;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.StandardColours;
+import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.gcode.representation.MovementType;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
@@ -17,13 +21,15 @@ import javafx.scene.paint.PhongMaterial;
 public class ApplicationMaterials
 {
 
-    public static final Color roboxBlue = Color.rgb(38,125,216);
+    public static final Color roboxBlue = Color.rgb(38, 125, 216);
     private static final PhongMaterial defaultModelMaterial = new PhongMaterial(roboxBlue);
     private static final PhongMaterial selectedModelMaterial = new PhongMaterial(Color.LAWNGREEN);
     private static final PhongMaterial collidedModelMaterial = new PhongMaterial(Color.DARKORANGE);
     private static final PhongMaterial collidedSelectedModelMaterial = new PhongMaterial(Color.PERU);
     private static final PhongMaterial offBedModelMaterial = new PhongMaterial(Color.CRIMSON);
-    
+
+    private static PhongMaterial selectionBoxMaterial = null;
+
     //GCode-related materials
     private static final PhongMaterial extrusionMaterial = new PhongMaterial(Color.GREEN);
     private static final PhongMaterial retractMaterial = new PhongMaterial(Color.RED);
@@ -69,7 +75,7 @@ public class ApplicationMaterials
     {
         return collidedSelectedModelMaterial;
     }
-    
+
     /**
      *
      * @return
@@ -77,6 +83,21 @@ public class ApplicationMaterials
     public static PhongMaterial getOffBedModelMaterial()
     {
         return offBedModelMaterial;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static PhongMaterial getSelectionBoxMaterial()
+    {
+        if (selectionBoxMaterial == null)
+        {
+            selectionBoxMaterial = new PhongMaterial(StandardColours.SELECTION_HIGHLIGHTER_GREEN);
+            Image illuminationMap = new Image(SelectionHighlighter.class.getResource(ApplicationConfiguration.imageResourcePath + "greenIlluminationMap.png").toExternalForm());
+            selectionBoxMaterial.setSelfIlluminationMap(illuminationMap);
+        }
+        return selectionBoxMaterial;
     }
 
     /**
@@ -133,7 +154,7 @@ public class ApplicationMaterials
     public static Material getGCodeMaterial(MovementType movementType, boolean selected)
     {
         Material returnVal = extrusionMaterial;
-        
+
         if (selected == false)
         {
             switch (movementType)
@@ -165,7 +186,7 @@ public class ApplicationMaterials
                     break;
             }
         }
-        
+
         return returnVal;
     }
 }

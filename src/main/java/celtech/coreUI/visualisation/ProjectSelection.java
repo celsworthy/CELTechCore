@@ -20,7 +20,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
 /**
- * ProjectSelection captures all required state about the currently selected ModelContainers.
+ * ProjectSelection captures all required state about the currently selected
+ * ModelContainers.
  *
  * @author tony
  */
@@ -33,7 +34,8 @@ public class ProjectSelection implements ProjectChangesListener
     private final IntegerProperty numGroupsSelected = new SimpleIntegerProperty(0);
     private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
     /**
-     * If any of the current selection are a child of a group then value is true.
+     * If any of the current selection are a child of a group then value is
+     * true.
      */
     private final BooleanBinding selectionHasChildOfGroup;
 
@@ -78,17 +80,20 @@ public class ProjectSelection implements ProjectChangesListener
     {
         if (!modelContainers.contains(modelContainer))
         {
-            modelContainers.add(modelContainer);
             modelContainer.setSelected(true);
+            modelContainers.add(modelContainer);
             primarySelectedModelDetails.setTo(modelContainer);
-            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
-            {
-                selectedModelContainersListener.whenAdded(modelContainer);
-            }
             numModelsSelected.set(numModelsSelected.get() + 1);
             if (modelContainer instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() + 1);
+                modelContainer.updateOriginalModelBounds();
+                modelContainer.notifyScreenExtentsChange();
+                modelContainer.notifyShapeChange();
+            }
+            for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
+            {
+                selectedModelContainersListener.whenAdded(modelContainer);
             }
         }
     }
@@ -100,13 +105,16 @@ public class ProjectSelection implements ProjectChangesListener
     {
         if (modelContainers.contains(modelContainer))
         {
+            modelContainer.setSelected(false);
             modelContainers.remove(modelContainer);
             numModelsSelected.set(numModelsSelected.get() - 1);
             if (modelContainer instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() - 1);
+                modelContainer.updateOriginalModelBounds();
+                modelContainer.notifyScreenExtentsChange();
+                modelContainer.notifyShapeChange();
             }
-            modelContainer.setSelected(false);
             for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
             {
                 selectedModelContainersListener.whenRemoved(modelContainer);
@@ -171,7 +179,8 @@ public class ProjectSelection implements ProjectChangesListener
     }
 
     /**
-     * Call this method when the transformed geometry of the selected model have changed.
+     * Call this method when the transformed geometry of the selected model have
+     * changed.
      */
     public void updateSelectedValues()
     {
@@ -214,7 +223,8 @@ public class ProjectSelection implements ProjectChangesListener
     }
 
     /**
-     * Add a listener that will be notified whenever a ModelContainer is selected or deselected.
+     * Add a listener that will be notified whenever a ModelContainer is
+     * selected or deselected.
      */
     public void addListener(SelectedModelContainersListener selectedModelContainersListener)
     {
@@ -222,7 +232,8 @@ public class ProjectSelection implements ProjectChangesListener
     }
 
     /**
-     * Remove a listener that will be notified whenever a ModelContainer is selected or deselected.
+     * Remove a listener that will be notified whenever a ModelContainer is
+     * selected or deselected.
      */
     public void removeListener(SelectedModelContainersListener selectedModelContainersListener)
     {
@@ -244,8 +255,8 @@ public class ProjectSelection implements ProjectChangesListener
     }
 
     /**
-     * PrimarySelectedModelDetails contains the details pertaining to the primary selected
-     * ModelContainer.
+     * PrimarySelectedModelDetails contains the details pertaining to the
+     * primary selected ModelContainer.
      */
     public class PrimarySelectedModelDetails
     {

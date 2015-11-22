@@ -7,6 +7,7 @@ import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
+import celtech.coreUI.visualisation.Xform;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
@@ -14,6 +15,7 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
+import com.sun.javafx.scene.CameraHelper;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -39,14 +41,17 @@ import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Transform;
@@ -138,8 +143,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private File modelFile;
-    
-    private Node bed;
+
+    private Group bed;
+
+    private Camera cameraViewingMe = null;
+    private ScreenExtents extents = null;
+
+    private List<Transform> rotationTransforms;
 
     public ModelContainer()
     {
@@ -214,15 +224,24 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         System.out.println("==============================================");
     }
 
+    public List<Transform> getRotationTransforms()
+    {
+        return rotationTransforms;
+    }
+
     protected void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
         transformDropToBedYAdjust = new Translate(0, 0, 0);
+        transformMoveToPreferred = new Translate(0, 0, 0);
+        transformBedCentre = new Translate(0, 0, 0);
+
         transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
         transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
-        transformMoveToPreferred = new Translate(0, 0, 0);
-        transformBedCentre = new Translate(0, 0, 0);
+        rotationTransforms.add(transformRotateTurnPreferred);
+        rotationTransforms.add(transformRotateLeanPreferred);
+        rotationTransforms.add(transformRotateTwistPreferred);
 
         setBedCentreOffsetTransform();
 
@@ -251,7 +270,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
-    void updateOriginalModelBounds()
+    public void updateOriginalModelBounds()
     {
         originalModelBounds = calculateBoundsInLocal();
         setScalePivotToCentreOfModel();
@@ -320,6 +339,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationLean = new SimpleDoubleProperty(0);
         preferredRotationTwist = new SimpleDoubleProperty(0);
         preferredRotationTurn = new SimpleDoubleProperty(0);
+        rotationTransforms = new ArrayList<>();
 
     }
 
@@ -392,19 +412,61 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
         copy.setUseExtruder0(associateWithExtruderNumber.get() == 0);
         copy.setState(this.getState());
+        copy.recalculateScreenExtents();
         return copy;
     }
 
     public void translateBy(double xMove, double zMove)
     {
+        translateBy(xMove, 0, zMove);
+    }
+    
+    public void translateBy(double xMove, double yMove, double zMove)
+    {
+        Point3D localPoint = new Point3D(xMove, yMove, zMove);
 
-        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
-        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
+        List<ModelContainer> useMyTransforms = new ArrayList<>();
 
-        updateLastTransformedBoundsInParentForTranslateByX(xMove);
-        updateLastTransformedBoundsInParentForTranslateByZ(zMove);
+        Node currentNode = this;
+        while (currentNode != bed
+                && currentNode.getParent() != null)
+        {
+            Parent parent = currentNode.getParent();
+            if (parent instanceof ModelContainer)
+            {
+                useMyTransforms.add((ModelContainer) parent);
+            } else if (parent instanceof ModelGroup)
+            {
+                useMyTransforms.add((ModelGroup) parent);
+            }
 
-        keepOnBedXZ();
+            currentNode = parent;
+        }
+
+        for (int containerIndex = useMyTransforms.size() - 1; containerIndex >= 0; containerIndex--)
+        {
+            List<Transform> parentTransforms = useMyTransforms.get(containerIndex).getRotationTransforms();
+            try
+            {
+                Transform concatenatedTransforms = parentTransforms.get(2).createInverse()
+                        .createConcatenation(parentTransforms.get(1).createInverse()
+                                .createConcatenation(parentTransforms.get(0).createInverse()));
+                localPoint = concatenatedTransforms.deltaTransform(localPoint);
+            } catch (NonInvertibleTransformException ex)
+            {
+                steno.error("Couldn't invert rotation transform");
+            }
+        }
+
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + localPoint.getX());
+        transformMoveToPreferred.setY(transformMoveToPreferred.getY() + localPoint.getY());
+        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + localPoint.getZ());
+
+        updateLastTransformedBoundsInParentForTranslateByX(localPoint.getX());
+        updateLastTransformedBoundsInParentForTranslateByY(localPoint.getY());
+        updateLastTransformedBoundsInParentForTranslateByZ(localPoint.getZ());
+
+//        keepOnBedXZ();
     }
 
     public double getMoveToPreferredX()
@@ -423,8 +485,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * N.B．It only works for top level objects ie．top level groups or ungrouped
-     * models.
+     * N.BÃ¯Â¼Å½It only works for top level objects ieÃ¯Â¼Å½top level groups or
+     * ungrouped models.
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
@@ -656,9 +718,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return maxMin;
     }
 
-    public void setBedReference(Node bed)
+    public void setBedReference(Group bed)
     {
         this.bed = bed;
+
     }
 
     private class ApplyTwist implements UnivariateFunction
@@ -1621,6 +1684,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return lastTransformedBoundsInParent.getCentreX();
     }
 
+    public double getTransformedCentreY()
+    {
+        return lastTransformedBoundsInParent.getCentreY();
+    }
+
     @Override
     public double getOriginalHeight()
     {
@@ -1702,6 +1770,16 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    private void updateLastTransformedBoundsInParentForTranslateByY(double deltaCentreY)
+    {
+        if (lastTransformedBoundsInParent != null)
+        {
+            lastTransformedBoundsInParent.translateY(deltaCentreY);
+        }
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
     private void updateLastTransformedBoundsInParentForTranslateByZ(double deltaCentreZ)
     {
         if (lastTransformedBoundsInParent != null)
@@ -1739,7 +1817,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * This method must be called at the end of any operation that changes one
      * or more of the transforms.
      */
-    private void notifyShapeChange()
+    public void notifyShapeChange()
     {
         for (ShapeProvider.ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
@@ -1756,8 +1834,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * If this model is associated with the given extruder number then recolour
      * it to the given colour, also taking into account if it is misplaced (off
      * the bed). Also call the same method on any child ModelContainers.
+     *
+     * @param extruder0Material
+     * @param extruder1Material
+     * @param showMisplacedColour
      */
-    public void updateColour(final Color displayColourExtruder0, final Color displayColourExtruder1,
+    public void updateColour(final PhongMaterial extruder0Material, final PhongMaterial extruder1Material,
             boolean showMisplacedColour)
     {
         boolean offBed = getRootModelContainer().isOffBed.get();
@@ -1776,21 +1858,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             switch (associateWithExtruderNumber.get())
             {
                 case 0:
-                    if (displayColourExtruder0 == null)
+                    if (extruder0Material == null)
                     {
                         meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
                     } else
                     {
-                        meshView.setMaterial(getMaterialForColour(displayColourExtruder0));
+                        meshView.setMaterial(extruder0Material);
                     }
                     break;
                 case 1:
-                    if (displayColourExtruder1 == null)
+                    if (extruder1Material == null)
                     {
                         meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
                     } else
                     {
-                        meshView.setMaterial(getMaterialForColour(displayColourExtruder1));
+                        meshView.setMaterial(extruder1Material);
                     }
                     break;
                 default:
@@ -1800,21 +1882,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    private PhongMaterial getMaterialForColour(Color displayColourExtruder)
-    {
-        PhongMaterial meshMaterial = new PhongMaterial(displayColourExtruder);
-        if (displayColourExtruder.equals(Color.BLACK))
-        {
-            meshMaterial.setSpecularColor(Color.DARKGRAY);
-            meshMaterial.setSpecularPower(20);
-            meshMaterial.setDiffuseColor(new Color(0.1, 0.1, 0.1, 1));
-        }
-        return meshMaterial;
-    }
-
     @Override
     public void addScreenExtentsChangeListener(ScreenExtentsProvider.ScreenExtentsListener listener)
     {
+        recalculateScreenExtents();
         screenExtentsChangeListeners.add(listener);
     }
 
@@ -1825,52 +1896,118 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         screenExtentsChangeListeners.remove(listener);
     }
 
-    private void notifyScreenExtentsChange()
+    public void notifyScreenExtentsChange()
     {
-        for (ScreenExtentsProvider.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+        if (recalculateScreenExtents())
         {
-            screenExtentsListener.screenExtentsChanged(this);
+            for (ScreenExtentsProvider.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+            {
+                screenExtentsListener.screenExtentsChanged(this);
+            }
         }
+    }
+
+    protected boolean recalculateScreenExtents()
+    {
+        boolean extentsChanged = false;
+
+        if (getLocalBounds() != null)
+        {
+            double halfWidth = getScaledWidth() / 2;
+            double halfDepth = getScaledDepth() / 2;
+            double halfHeight = getScaledHeight() / 2;
+            double minX = getCentreX() - halfWidth;
+            double maxX = getCentreX() + halfWidth;
+            double minZ = getCentreZ() - halfDepth;
+            double maxZ = getCentreZ() + halfDepth;
+            double minY = getCentreY() - halfHeight;
+            double maxY = getCentreY() + halfHeight;
+
+            Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
+            Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
+            Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
+            Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
+            Point2D frontLeftTop = localToScreen(minX, minY, minZ);
+            Point2D frontRightTop = localToScreen(maxX, minY, minZ);
+            Point2D backLeftTop = localToScreen(minX, minY, maxZ);
+            Point2D backRightTop = localToScreen(maxX, minY, maxZ);
+
+//            Point3D frontLeftBottomScene = localToScene(minX, maxY, minZ);
+//            Point3D frontRightBottomScene = localToScene(maxX, maxY, minZ);
+//            Point3D backLeftBottomScene = localToScene(minX, maxY, maxZ);
+//            Point3D backRightBottomScene = localToScene(maxX, maxY, maxZ);
+//            Point3D frontLeftTopScene = localToScene(minX, minY, minZ);
+//            Point3D frontRightTopScene = localToScene(maxX, minY, minZ);
+//            Point3D backLeftTopScene = localToScene(minX, minY, maxZ);
+//            Point3D backRightTopScene = localToScene(maxX, minY, maxZ);
+//            Point2D frontLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, minZ));
+//            Point2D frontRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, minZ));
+//            Point2D backLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, maxZ));
+//            Point2D backRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, maxZ));
+//            Point2D frontLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, minZ));
+//            Point2D frontRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, minZ));
+//            Point2D backLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, maxZ));
+//            Point2D backRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, maxZ));
+////        Point3D frontLeftBottomCamera = cameraTransform.sceneToLocal(frontLeftBottomScene);
+//        Point3D frontRightBottomCamera = cameraTransform.sceneToLocal(frontRightBottomScene);
+//        Point3D backLeftBottomCamera = cameraTransform.sceneToLocal(backLeftBottomScene);
+//        Point3D backRightBottomCamera = cameraTransform.sceneToLocal(backRightBottomScene);
+//        Point3D frontLeftTopCamera = cameraTransform.sceneToLocal(frontLeftTopScene);
+//        Point3D frontRightTopCamera = cameraTransform.sceneToLocal(frontRightTopScene);
+//        Point3D backLeftTopCamera = cameraTransform.sceneToLocal(backLeftTopScene);
+//        Point3D backRightTopCamera = cameraTransform.sceneToLocal(backRightTopScene);
+//
+//        Point2D frontLeftBottom = cameraTransform.localToScreen(frontLeftBottomCamera);
+//        Point2D frontRightBottom = cameraTransform.localToScreen(frontRightBottomCamera);
+//        Point2D backLeftBottom = cameraTransform.localToScreen(backLeftBottomCamera);
+//        Point2D backRightBottom = cameraTransform.localToScreen(backRightBottomCamera);
+//        Point2D frontLeftTop = cameraTransform.localToScreen(frontLeftTopCamera);
+//        Point2D frontRightTop = cameraTransform.localToScreen(frontRightTopCamera);
+//        Point2D backLeftTop = cameraTransform.localToScreen(backLeftTopCamera);
+//        Point2D backRightTop = cameraTransform.localToScreen(backRightTopCamera);
+            ScreenExtents lastExtents = extents;
+            if (extents == null && frontLeftBottom != null)
+            {
+                extents = new ScreenExtents();
+            }
+
+            if (extents != null && frontLeftBottom != null)
+            {
+                extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
+                extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
+                extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
+                extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
+
+                extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
+                extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
+                extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
+                extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
+
+                extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
+                extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
+                extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
+                extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
+
+                extents.recalculateMaxMin();
+            }
+
+            if (extents != null
+                    && !extents.equals(lastExtents))
+            {
+                extentsChanged = true;
+            }
+        }
+
+        return extentsChanged;
     }
 
     @Override
     public ScreenExtents getScreenExtents()
     {
-        double halfWidth = getScaledWidth() / 2;
-        double halfDepth = getScaledDepth() / 2;
-        double halfHeight = getScaledHeight() / 2;
-        double minX = getCentreX() - halfWidth;
-        double maxX = getCentreX() + halfWidth;
-        double minZ = getCentreZ() - halfDepth;
-        double maxZ = getCentreZ() + halfDepth;
-        double minY = getCentreY() - halfHeight;
-        double maxY = getCentreY() + halfHeight;
-
-        Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
-        Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
-        Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
-        Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
-        Point2D frontLeftTop = localToScreen(minX, minY, minZ);
-        Point2D frontRightTop = localToScreen(maxX, minY, minZ);
-        Point2D backLeftTop = localToScreen(minX, minY, maxZ);
-        Point2D backRightTop = localToScreen(maxX, minY, maxZ);
-
-        ScreenExtents extents = new ScreenExtents();
-        extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
-        extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
-        extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
-        extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
-
-        extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
-        extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
-        extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
-        extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
-
-        extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
-        extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
-        extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
-        extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
-
+        if (extents == null)
+        {
+            recalculateScreenExtents();
+        }
         return extents;
     }
 
@@ -1890,6 +2027,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public double getTransformedDepth()
     {
         return getScaledDepth();
+    }
+
+    @Override
+    public void heresYourCamera(Camera camera)
+    {
+        this.cameraViewingMe = camera;
     }
 
     @Override
@@ -1922,6 +2065,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public Set<ModelContainer> getDescendentModelContainers()
     {
         return Collections.EMPTY_SET;
+
     }
 
     /**
@@ -2016,6 +2160,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateTransformsFromLeanTwistTurnAngles();
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        notifyScreenExtentsChange();
+        notifyShapeChange();
     }
 
     public int getModelId()

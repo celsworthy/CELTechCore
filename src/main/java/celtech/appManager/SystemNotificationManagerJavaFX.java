@@ -40,7 +40,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             SystemNotificationManagerJavaFX.class.getName());
-    private boolean errorDialogOnDisplay = false;
 
     private HashMap<SystemErrorHandlerOptions, ChoiceLinkButton> errorToButtonMap = null;
 
@@ -82,6 +81,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private ChoiceLinkDialogBox loadFilamentNowDialogBox = null;
 
+    private ChoiceLinkDialogBox errorChoiceBox = null;
+
     @Override
     public void showErrorNotification(String title, String message)
     {
@@ -122,13 +123,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     break;
 
                 default:
-                    if (!errorDialogOnDisplay)
+                    if (errorChoiceBox == null)
                     {
-                        errorDialogOnDisplay = true;
-
                         setupErrorOptions();
 
-                        ChoiceLinkDialogBox errorChoiceBox = new ChoiceLinkDialogBox(true);
+                        errorChoiceBox = new ChoiceLinkDialogBox(true);
                         errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
                         errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
                         error.getOptions()
@@ -189,7 +188,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                             }
                         }
 
-                        errorDialogOnDisplay = false;
+                        errorChoiceBox = null;
                     }
                     break;
             }
@@ -387,24 +386,31 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result)
     {
-        switch (result.getStatus())
+        if (result != null)
         {
-            case FirmwareLoadResult.SDCARD_ERROR:
-                showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
-                        Lookup.i18n("dialogs.sdCardError"));
-                break;
-            case FirmwareLoadResult.FILE_ERROR:
-                showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
-                        Lookup.i18n("dialogs.firmwareFileError"));
-                break;
-            case FirmwareLoadResult.OTHER_ERROR:
-                showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
-                        Lookup.i18n("dialogs.firmwareUpdateFailedMessage"));
-                break;
-            case FirmwareLoadResult.SUCCESS:
-                showInformationNotification(Lookup.i18n("dialogs.firmwareUpdateSuccessTitle"),
-                        Lookup.i18n("dialogs.firmwareUpdateSuccessMessage"));
-                break;
+            switch (result.getStatus())
+            {
+                case FirmwareLoadResult.SDCARD_ERROR:
+                    showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
+                            Lookup.i18n("dialogs.sdCardError"));
+                    break;
+                case FirmwareLoadResult.FILE_ERROR:
+                    showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
+                            Lookup.i18n("dialogs.firmwareFileError"));
+                    break;
+                case FirmwareLoadResult.OTHER_ERROR:
+                    showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
+                            Lookup.i18n("dialogs.firmwareUpdateFailedMessage"));
+                    break;
+                case FirmwareLoadResult.SUCCESS:
+                    showInformationNotification(Lookup.i18n("dialogs.firmwareUpdateSuccessTitle"),
+                            Lookup.i18n("dialogs.firmwareUpdateSuccessMessage"));
+                    break;
+            }
+        } else
+        {
+            showErrorNotification(Lookup.i18n("dialogs.firmwareUpdateFailedTitle"),
+                    Lookup.i18n("dialogs.firmwareUpdateFailedMessage"));
         }
     }
 
@@ -1243,7 +1249,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public boolean showModelIsInvalidDialog(Set<String> modelNames)
     {
-       Callable<Boolean> askUserWhetherToLoadModel = new Callable()
+        Callable<Boolean> askUserWhetherToLoadModel = new Callable()
         {
             @Override
             public Boolean call() throws Exception
@@ -1252,13 +1258,13 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.modelInvalidTitle"));
                 choiceLinkDialogBox.setMessage(Lookup.i18n(
                         "dialogs.modelInvalidDescription"));
-                
+
                 ListView problemModels = new ListView();
                 problemModels.getItems().addAll(modelNames);
                 choiceLinkDialogBox.addControl(problemModels);
-                
+
                 problemModels.setMaxHeight(200);
-                
+
                 ChoiceLinkButton loadChoice = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("dialogs.loadModel"));
                 choiceLinkDialogBox.addChoiceLink(Lookup.i18n("dialogs.dontLoadModel"));
@@ -1285,6 +1291,18 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             steno.error("Error during model invalid query");
             return false;
+        }
+    }
+
+    @Override
+    public void clearAllDialogsOnDisconnect()
+    {
+        if (errorChoiceBox != null)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                errorChoiceBox.closeDueToPrinterDisconnect();
+            });
         }
     }
 }

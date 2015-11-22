@@ -52,7 +52,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ProfileLibraryPanelController implements Initializable, ExtrasMenuInnerPanel
+public class ProfileLibraryPanelController implements Initializable, MenuInnerPanel
 {
 
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
@@ -1885,10 +1885,10 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
     }
 
     @Override
-    public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
+    public List<MenuInnerPanel.OperationButton> getOperationButtons()
     {
-        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
-        ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
+        List<MenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        MenuInnerPanel.OperationButton saveButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -1922,7 +1922,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         };
         operationButtons.add(saveButton);
-        ExtrasMenuInnerPanel.OperationButton saveAsButton = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton saveAsButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -1956,7 +1956,7 @@ public class ProfileLibraryPanelController implements Initializable, ExtrasMenuI
 
         };
         operationButtons.add(saveAsButton);
-        ExtrasMenuInnerPanel.OperationButton deleteButton = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton deleteButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()

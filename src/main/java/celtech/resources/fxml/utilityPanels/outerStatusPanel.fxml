@@ -22,7 +22,7 @@
                   </StackPane>
                </children>
                <padding>
-                  <Insets right="3.0" />
+                  <Insets right="10.0" />
                </padding>
             </HBox>
             <HBox alignment="CENTER" maxWidth="350.0" minWidth="350.0" mouseTransparent="true" prefWidth="350.0">

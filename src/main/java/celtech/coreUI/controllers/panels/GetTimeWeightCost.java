@@ -8,7 +8,6 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
-import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
@@ -52,7 +51,7 @@ public class GetTimeWeightCost
     private File printJobDirectory;
     private final Cancellable cancellable;
     private Random random = new Random();
-    
+
     public GetTimeWeightCost(Project project, SlicerParametersFile settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
@@ -103,9 +102,9 @@ public class GetTimeWeightCost
             return false;
         }
 
-        steno.info("Starting slicing");
         boolean succeeded = doSlicing(project, settings);
-        if (! succeeded) {
+        if (!succeeded)
+        {
             return false;
         }
 
@@ -113,9 +112,9 @@ public class GetTimeWeightCost
         {
             return false;
         }
-        
+
         Printer printer = Lookup.getSelectedPrinterProperty().get();
-        
+
         steno.debug("start post processing");
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
@@ -125,37 +124,43 @@ public class GetTimeWeightCost
                 project,
                 settings,
                 null);
-         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
-            getPrintJobStatistics();
-        
-                if (isCancelled())
+        PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
+                getPrintJobStatistics();
+
+        if (isCancelled())
         {
             return false;
         }
-                
+
         if (result.getRoboxiserResult().isSuccess())
         {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            updateFieldsForStatistics(printJobStatistics);
-        });
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                updateFieldsForStatistics(printJobStatistics, printer);
+            });
         }
-        
+
         return result.getRoboxiserResult().isSuccess();
     }
 
     /**
      * Update the time/cost/weight fields based on the given statistics.
      */
-    private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics)
+    private void updateFieldsForStatistics(PrintJobStatistics printJobStatistics, Printer printer)
     {
         String formattedDuration = formatDuration(printJobStatistics.getPredictedDuration());
 
         double eVolumeUsed = printJobStatistics.geteVolumeUsed();
         double dVolumeUsed = printJobStatistics.getdVolumeUsed();
 
-        Filament filament0 = project.getPrinterSettings().getFilament0();
-        Filament filament1 = project.getPrinterSettings().getFilament1();
+        Filament filament0 = null;
+        Filament filament1 = null;
+
+        if (printer != null)
+        {
+            filament0 = printer.effectiveFilamentsProperty().get(0);
+            filament1 = printer.effectiveFilamentsProperty().get(1);
+        }
 
         lblTime.setText(formattedDuration);
 
@@ -182,7 +187,7 @@ public class GetTimeWeightCost
                 weight += filament1.getWeightForVolume(dVolumeUsed * 1e-9);
                 costGBP += filament1.getCostForVolume(dVolumeUsed * 1e-9);
             }
-            
+
             String formattedWeight = formatWeight(weight);
             String formattedCost = formatCost(costGBP);
             lblWeight.setText(formattedWeight);
@@ -195,7 +200,6 @@ public class GetTimeWeightCost
      */
     private boolean doSlicing(Project project, SlicerParametersFile settings)
     {
-
         settings = project.getPrinterSettings().applyOverrides(settings);
 
         //Create the print job directory
@@ -223,13 +227,13 @@ public class GetTimeWeightCost
                 temporaryDirectory
                 + settings.getProfileName()
                 + ApplicationConfiguration.printProfileFileExtension);
-        
+
         Printer printerToUse = null;
-        
+
         if (Lookup.getSelectedPrinterProperty().isNotNull().get())
         {
             printerToUse = Lookup.getSelectedPrinterProperty().get();
-        }    
+        }
 
         SliceResult sliceResult = SlicerTask.doSlicing(settings.getProfileName(), settings,
                 temporaryDirectory,

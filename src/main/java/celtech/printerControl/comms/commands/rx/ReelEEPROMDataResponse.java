@@ -57,7 +57,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -425,5 +425,11 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     public int getReelNumber()
     {
         return reelNumber;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 193;
     }
 }

@@ -29,7 +29,6 @@ import org.parboiled.BaseParser;
 import org.parboiled.Context;
 import org.parboiled.Rule;
 import org.parboiled.annotations.SuppressSubnodes;
-import org.parboiled.support.StringVar;
 import org.parboiled.support.Var;
 
 /**
@@ -44,6 +43,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     private LayerNode thisLayer = new LayerNode();
     private int feedrateInForce = -1;
     private int startingLineNumber = 0;
+    private double currentLayerHeight = 0;
     protected Var<Integer> currentObject = new Var<>(-1);
 
     public int getStartingLineNumber()
@@ -79,7 +79,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     public Rule Layer()
     {
         return Sequence(
-                Sequence(";LAYER:", OneOrMore(Digit()),
+                Sequence(";LAYER:", IntegerNumber(),
                         (Action) (Context context1) ->
                         {
                             thisLayer.setLayerNumber(Integer.valueOf(context1.getMatch()));
@@ -88,21 +88,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                         },
                         Newline()
                 ),
-                //                Optional(
-                //                        Sequence(
-                //                                Preamble(),
-                //                                (Action) (Context context1) ->
-                //                                {
-                //                                    if (!context1.getValueStack().isEmpty())
-                //                                    {
-                //                                        GCodeEventNode node = (GCodeEventNode) context1.getValueStack().pop();
-                //                                        TreeUtils.addChild(thisLayer, node);
-                //                                    }
-                //                                    return true;
-                //                                }
-                //                        )
-                //                ),
-                OneOrMore(
+                ZeroOrMore(
                         FirstOf(
                                 ObjectSection(),
                                 OrphanObjectSection(),
@@ -117,7 +103,12 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                             }
                             return true;
                         }
-                )
+                ),
+                (Action) (Context context1) ->
+                {
+                    thisLayer.setLayerHeight_mm(currentLayerHeight);
+                    return true;
+                }
         );
     }
 
@@ -718,7 +709,6 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
         Var<Integer> fValue = new Var<>();
         Var<Double> xValue = new Var<>();
         Var<Double> yValue = new Var<>();
-        Var<Double> zValue = new Var<>();
 
         return Sequence("G0 ",
                 Optional(
@@ -732,10 +722,6 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                                 ),
                                 Sequence("Y", FloatingPointNumber(),
                                         yValue.set(Double.valueOf(match())),
-                                        Optional(' ')
-                                ),
-                                Sequence("Z", FloatingPointNumber(),
-                                        zValue.set(Double.valueOf(match())),
                                         Optional(' ')
                                 )
                         )
@@ -761,11 +747,6 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                         if (yValue.isSet())
                         {
                             node.getMovement().setY(yValue.get());
-                        }
-
-                        if (zValue.isSet())
-                        {
-                            node.getMovement().setZ(zValue.get());
                         }
 
                         node.setGCodeLineNumber(startingLineNumber);
@@ -863,19 +844,35 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     }
 
     //Layer change
-    // G[01] Z1.020
+    //Travel
+    // G0 F12000 X88.302 Y42.421 Z1.020
     Rule LayerChangeDirective()
     {
-        Var<Float> zValue = new Var<>();
         Var<Integer> fValue = new Var<>();
-        Var<String> commentText = new Var<>();
+        Var<Double> xValue = new Var<>();
+        Var<Double> yValue = new Var<>();
+        Var<Double> zValue = new Var<>();
 
-        return Sequence('G', FirstOf('0', '1'), ' ',
-                'Z',
-                FloatingPointNumber(),
-                zValue.set(Float.valueOf(match())),
-                Optional(Feedrate(fValue)),
-                Optional(Comment(commentText)),
+        return Sequence("G0 ",
+                Optional(
+                        Feedrate(fValue)
+                ),
+                ZeroOrMore(
+                        FirstOf(
+                                Sequence("X", FloatingPointNumber(),
+                                        xValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                ),
+                                Sequence("Y", FloatingPointNumber(),
+                                        yValue.set(Double.valueOf(match())),
+                                        Optional(' ')
+                                )
+                        )
+                ),
+                Sequence("Z", FloatingPointNumber(),
+                        zValue.set(Double.valueOf(match())),
+                        Optional(' ')
+                ),
                 Newline(),
                 new Action()
                 {
@@ -884,20 +881,30 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                     {
                         LayerChangeDirectiveNode node = new LayerChangeDirectiveNode();
 
-                        node.getMovement().setZ(zValue.get());
-
                         if (fValue.isSet())
                         {
                             node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
 
-                        if (commentText.isSet())
+                        if (xValue.isSet())
                         {
-                            node.setCommentText(commentText.get());
+                            node.getMovement().setX(xValue.get());
                         }
-                        node.setGCodeLineNumber(startingLineNumber);
-                        context.getValueStack().push(node);
 
+                        if (yValue.isSet())
+                        {
+                            node.getMovement().setY(yValue.get());
+                        }
+
+                        if (zValue.isSet())
+                        {
+                            node.getMovement().setZ(zValue.get());
+                            currentLayerHeight = zValue.get();
+                        }
+
+                        node.setGCodeLineNumber(startingLineNumber);
+
+                        context.getValueStack().push(node);
                         return true;
                     }
                 }
@@ -953,6 +960,14 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     Rule Digit()
     {
         return CharRange('0', '9');
+    }
+
+    @SuppressSubnodes
+    Rule IntegerNumber()
+    {
+        return Sequence(
+                Optional('-'),
+                OneOrMore(Digit()));
     }
 
     @SuppressSubnodes

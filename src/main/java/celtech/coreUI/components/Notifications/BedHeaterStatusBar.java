@@ -55,6 +55,9 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
 
         getStyleClass().add("secondaryStatusBar");
 
+        setPickOnBounds(false);
+        setMouseTransparent(true);
+
         reassessStatus();
     }
 

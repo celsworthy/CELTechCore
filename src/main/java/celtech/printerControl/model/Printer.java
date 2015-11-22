@@ -33,6 +33,7 @@ import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.List;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -226,7 +227,7 @@ public interface Printer extends RoboxResponseConsumer
 
     public FirmwareResponse readFirmwareVersion() throws PrinterException;
 
-    public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException;
+    public HeadEEPROMDataResponse readHeadEEPROM(boolean dontPublishResponseEvent) throws RoboxCommsException;
 
     public PrinterIDResponse readPrinterID() throws PrinterException;
 
@@ -429,6 +430,8 @@ public interface Printer extends RoboxResponseConsumer
 
     public void updatePrinterIDChecksum(String checksum) throws PrinterException;
 
+    public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException;
+    
     /**
      *
      * @param headToWrite
@@ -479,7 +482,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 
-    public void extrudeUntilSlip(int extruderNumber) throws PrinterException;
+    public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException;
 
     /**
      * This method is intended to be used by commissioning tools and should not
@@ -513,8 +516,16 @@ public interface Printer extends RoboxResponseConsumer
     public void loadFirmware(String firmwareFilePath);
     
     public ObservableList<EEPROMState> getReelEEPROMStateProperty();
+    
+    public ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStateProperty();
 
     public void startComms();
 
     public void stopComms();
+    
+    public void overrideFilament(int reelNumber, Filament filament);
+    
+    public ObservableMap<Integer, Filament> effectiveFilamentsProperty();
+    
+    public void setCommissioningTestMode(boolean inCommissioningMode);
 }

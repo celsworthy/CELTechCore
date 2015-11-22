@@ -11,7 +11,7 @@
 <?import javafx.scene.text.*?>
 <?import org.controlsfx.control.textfield.*?>
 
-<GridPane id="materialsGridPane" fx:id="filamentsGridPane" vgap="8.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<GridPane id="materialsGridPane" fx:id="filamentsGridPane" styleClass="inset-panel" vgap="8.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <columnConstraints>
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="45.0" />
         <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="15.0" />
@@ -165,6 +165,6 @@
       <Label styleClass="colon" text="%filamentLibrary.remainingOnReelM" GridPane.rowIndex="7" />
     </children>
     <padding>
-        <Insets left="35.0" right="5.0" top="15.0" />
+        <Insets left="5.0" right="5.0" top="15.0" />
     </padding>
 </GridPane>

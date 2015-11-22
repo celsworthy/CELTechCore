@@ -26,12 +26,9 @@ import libertysystems.stenographer.StenographerFactory;
 public class HyperlinkedLabel extends TextFlow
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-        HyperlinkedLabel.class.getName());
-
     private StringProperty text = new SimpleStringProperty("");
     private static final Pattern hyperlinkPattern = Pattern.compile(
-        "\\<a href=\"([^\"]+)\">([^<]+)</a>");
+            "\\<a href=\"([^\"]+)\">([^<]+)</a>");
     private Map<String, URI> hyperlinkMap = new HashMap<>();
 
     public void replaceText(String newText)
@@ -65,29 +62,29 @@ public class HyperlinkedLabel extends TextFlow
                     {
                         Hyperlink newhyperlink = (Hyperlink) event.getSource();
                         final String clickedLinkText = newhyperlink == null ? "" : newhyperlink.
-                            getText();
+                                getText();
                         if (hyperlinkMap.containsKey(clickedLinkText))
                         {
                             URI linkToVisit = hyperlinkMap.get(clickedLinkText);
                             if (Desktop.isDesktopSupported()
-                                && ApplicationConfiguration.getMachineType()
-                                != MachineType.LINUX_X86
-                                && ApplicationConfiguration.getMachineType()
-                                != MachineType.LINUX_X64)
+                                    && ApplicationConfiguration.getMachineType()
+                                    != MachineType.LINUX_X86
+                                    && ApplicationConfiguration.getMachineType()
+                                    != MachineType.LINUX_X64)
                             {
                                 try
                                 {
                                     Desktop.getDesktop().browse(linkToVisit);
                                 } catch (IOException ex)
                                 {
-                                    steno.error("Error when attempting to browse to "
-                                        + linkToVisit.
-                                        toString());
+                                    System.err.println("Error when attempting to browse to "
+                                            + linkToVisit.
+                                            toString());
                                 }
                             } else
                             {
-                                steno.error(
-                                    "Couldn't get Desktop - not able to support hyperlinks");
+                                System.err.println(
+                                        "Couldn't get Desktop - not able to support hyperlinks");
                             }
                         }
                     });
@@ -95,12 +92,12 @@ public class HyperlinkedLabel extends TextFlow
                     getChildren().add(hyperlink);
                 } catch (URISyntaxException ex)
                 {
-                    steno.error("Error attempting to create UI hyperlink from "
-                        + linkURLString);
+                    System.err.println("Error attempting to create UI hyperlink from "
+                            + linkURLString);
                 }
             } else
             {
-                steno.error("Error rendering dialog text: " + newText);
+                System.err.println("Error rendering dialog text: " + newText);
             }
         }
 

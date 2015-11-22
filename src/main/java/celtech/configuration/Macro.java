@@ -32,6 +32,8 @@ public enum Macro
     
     MINI_PURGE("Short_Purge", "printerStatus.macro.miniPurge", "M21"),
     
+    BEFORE_NOZZLE_CALIBRATION("before_Nozzle_Cal", "printerStatus.macro.beforeNozzleCal", "M22"),
+    
     // Commissionator macros
     COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
     COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),

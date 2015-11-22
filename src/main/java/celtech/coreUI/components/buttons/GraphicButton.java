@@ -81,7 +81,7 @@ public class GraphicButton extends Button
             } catch (IOException exception)
             {
                 exception.printStackTrace();
-                throw new RuntimeException(exception);
+//                throw new RuntimeException(exception);
             }
         }
     }

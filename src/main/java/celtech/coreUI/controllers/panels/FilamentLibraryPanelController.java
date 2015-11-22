@@ -51,11 +51,11 @@ import javafx.scene.shape.SVGPath;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
-public class FilamentLibraryPanelController implements Initializable, ExtrasMenuInnerPanel
+public class FilamentLibraryPanelController implements Initializable, MenuInnerPanel
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-            ExtrasMenuPanelController.class.getName());
+            FilamentLibraryPanelController.class.getName());
 
     enum Fields
     {
@@ -100,7 +100,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     private final ObjectProperty<State> state = new SimpleObjectProperty<>();
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
-    private final BooleanProperty remainingOnReelEdited = new SimpleBooleanProperty(false);
 
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
@@ -180,6 +179,8 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
     @FXML
     private GridPane filamentsGridPane;
+    
+    private final String REMAINING_ON_REEL_UNCHANGED = "-";
 
     private ListChangeListener<EEPROMState> reelEEPROMChangeListener = new ListChangeListener<EEPROMState>()
     {
@@ -215,7 +216,10 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                         oldValue.getReelEEPROMStateProperty().removeListener(reelEEPROMChangeListener);
                     }
 
-                    newValue.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
+                    if (newValue != null)
+                    {
+                        newValue.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
+                    }
                     updateWriteToReelBindings();
                     showReelsAtTopOfCombo();
                 });
@@ -468,7 +472,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         remainingOnReelM.floatValueProperty().set(0);
 //        colour.setValue(filament.getDisplayColour());
         isDirty.set(false);
-        remainingOnReelEdited.set(false);
     }
 
     private void setupWidgetChangeListeners()
@@ -505,7 +508,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         ambientTemperature.textProperty().addListener(dirtyStringListener);
         costGBPPerKG.textProperty().addListener(dirtyStringListener);
         remainingOnReelM.textProperty().addListener(dirtyStringListener);
-        remainingOnReelM.textProperty().addListener(remainingOnReelListener);
     }
 
     private void setupWidgetEditableBindings()
@@ -676,11 +678,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                 updateWriteToReelBindings();
                 updateSaveBindings();
             };
-    private final ChangeListener<String> remainingOnReelListener
-            = (ObservableValue<? extends String> ov, String t, String t1) ->
-            {
-                remainingOnReelEdited.set(true);
-            };
 
     private final ChangeListener<MaterialType> dirtyMaterialTypeListener
             = (ObservableValue<? extends MaterialType> ov, MaterialType t, MaterialType t1) ->
@@ -721,7 +718,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
         nozzleTemperature.intValueProperty().set(filament.getNozzleTemperature());
         colour.setValue(filament.getDisplayColour());
         costGBPPerKG.floatValueProperty().set(filament.getCostGBPPerKG());
-        remainingOnReelM.textProperty().set("-");
+        remainingOnReelM.textProperty().set(REMAINING_ON_REEL_UNCHANGED);
         isDirty.set(false);
     }
 
@@ -843,7 +840,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                     whenSavePressed();
                 }
                 float remainingFilament = getRemainingFilament(0);
-                if (state.get() == State.CUSTOM && remainingOnReelEdited.get())
+                if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
                 {
                     try
                     {
@@ -858,7 +855,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             }
 
             currentPrinter.get().transmitWriteReelEEPROM(0, filament);
-            remainingOnReelEdited.set(false);
         } catch (RoboxCommsException | PrinterException ex)
         {
             steno.error("Unable to write to Reel 0 " + ex);
@@ -869,7 +865,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     {
         try
         {
-                      Filament filament = cmbFilament.getValue();
+            Filament filament = cmbFilament.getValue();
 
             if (currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
             {
@@ -882,7 +878,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
                     whenSavePressed();
                 }
                 float remainingFilament = getRemainingFilament(1);
-                if (state.get() == State.CUSTOM && remainingOnReelEdited.get())
+                if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
                 {
                     try
                     {
@@ -897,7 +893,6 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
             }
 
             currentPrinter.get().transmitWriteReelEEPROM(1, filament);
-            remainingOnReelEdited.set(false);
         } catch (RoboxCommsException | PrinterException ex)
         {
             steno.error("Unable to write to Reel 1 " + ex);
@@ -983,11 +978,11 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
     }
 
     @Override
-    public List<ExtrasMenuInnerPanel.OperationButton> getOperationButtons()
+    public List<MenuInnerPanel.OperationButton> getOperationButtons()
     {
-        List<ExtrasMenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
+        List<MenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
 
-        ExtrasMenuInnerPanel.OperationButton saveButton = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton saveButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -1021,7 +1016,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         };
         operationButtons.add(saveButton);
-        ExtrasMenuInnerPanel.OperationButton saveAsButton = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton saveAsButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -1055,7 +1050,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         };
         operationButtons.add(saveAsButton);
-        ExtrasMenuInnerPanel.OperationButton deleteButton = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton deleteButton = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -1089,7 +1084,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         };
         operationButtons.add(deleteButton);
-        ExtrasMenuInnerPanel.OperationButton writeToReel1Button = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton writeToReel1Button = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()
@@ -1123,7 +1118,7 @@ public class FilamentLibraryPanelController implements Initializable, ExtrasMenu
 
         };
         operationButtons.add(writeToReel1Button);
-        ExtrasMenuInnerPanel.OperationButton writeToReel2Button = new ExtrasMenuInnerPanel.OperationButton()
+        MenuInnerPanel.OperationButton writeToReel2Button = new MenuInnerPanel.OperationButton()
         {
             @Override
             public String getTextId()

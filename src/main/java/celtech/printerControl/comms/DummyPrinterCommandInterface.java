@@ -120,12 +120,6 @@ public class DummyPrinterCommandInterface extends CommandInterface
     {
     }
 
-    @Override
-    public RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
-    {
-        return writeToPrinter(messageToWrite, false);
-    }
-
     private void handleNozzleTempChange()
     {
         if (nozzleHeaterModeS != HeaterMode.OFF && currentNozzleTemperatureS
@@ -599,7 +593,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             } else if (messageData.startsWith("M113"))
             {
                 // ZDelta
-                gcodeResponse.populatePacket("0000eZdelta:0.01\nok".getBytes());
+                gcodeResponse.populatePacket("0000eZdelta:0.01\nok".getBytes(), RoboxRxPacketFactory.USE_LATEST_FIRMWARE_VERSION);
             } else if (messageData.startsWith(errorCommand))
             {
                 String errorString = messageData.replaceAll(errorCommand, "");

@@ -64,6 +64,7 @@ public class TestPrinter implements Printer
 
     private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
     private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
+    private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
     private int numExtruders = 1;
 
     public TestPrinter()
@@ -414,7 +415,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public HeadEEPROMDataResponse readHeadEEPROM() throws RoboxCommsException
+    public HeadEEPROMDataResponse readHeadEEPROM(boolean dontPublishResponseEvent) throws RoboxCommsException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -906,12 +907,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void extrudeUntilSlip(int extruderNumber) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1087,6 +1082,42 @@ public class TestPrinter implements Printer
 
     @Override
     public ObservableList<EEPROMState> getReelEEPROMStateProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void overrideFilament(int reelNumber, Filament filament)
+    {
+        effectiveFilaments.put(reelNumber, filament);
+    }
+
+    @Override
+    public ObservableMap<Integer, Filament> effectiveFilamentsProperty()
+    {
+        return effectiveFilaments;
+    }
+
+    @Override
+    public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStateProperty()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setCommissioningTestMode(boolean inCommissioningMode)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

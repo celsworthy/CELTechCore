@@ -10,7 +10,7 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.shape.*?>
 
-<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.PurgeInsetPanelController">
+<VBox fx:id="container" pickOnBounds="false" style="-fx-background-color: black;" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <BorderPane maxHeight="1E308" maxWidth="1E308" pickOnBounds="false" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
             <VBox.margin>
@@ -75,13 +75,8 @@
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                                                         <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.currentMaterial" textAlignment="CENTER" GridPane.rowIndex="1" />
-                                                        <StackPane GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                                                            <children>
-                                                                <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" StackPane.alignment="CENTER_LEFT" />
-                                                                <ComboBox id="purgeFilamentCombo" fx:id="cmbCurrentMaterial0" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
-                                                            </children>
-                                                        </StackPane>
-                                                        <ToggleButton fx:id="purgeThisNozzle0" mnemonicParsing="false" styleClass="purgeToggle" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                                                          <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+                                          <CheckBox fx:id="purgeThisNozzle0" mnemonicParsing="false" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
                                                     </children>
                                                 </GridPane>
                                                 <GridPane fx:id="purgeDetailsGrid1" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
@@ -106,13 +101,8 @@
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" />
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-                                                        <StackPane GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                                                            <children>
-                                                                <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial1" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" StackPane.alignment="CENTER_LEFT" />
-                                                                <ComboBox id="purgeFilamentCombo" fx:id="cmbCurrentMaterial1" promptText="%purgeMaterial.pleaseSelectCurrentMaterial" styleClass="cmbCleanCombo" GridPane.columnIndex="2" GridPane.rowIndex="1" StackPane.alignment="CENTER_LEFT" />
-                                                            </children>
-                                                        </StackPane>
-                                                        <ToggleButton fx:id="purgeThisNozzle1" mnemonicParsing="false" styleClass="purgeToggle" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                                                          <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial1" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+                                          <CheckBox fx:id="purgeThisNozzle1" mnemonicParsing="false" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
                                                     </children>
                                                 </GridPane>
                                             </children>
@@ -1029,9 +1019,9 @@
                     </children>
                 </VBox>
             </bottom>
-            <top>
-                <TopMenuStrip BorderPane.alignment="CENTER" />
-            </top>
+         <top>
+            <HBox minHeight="60.0" BorderPane.alignment="CENTER" />
+         </top>
         </BorderPane>
     </children>
 </VBox>

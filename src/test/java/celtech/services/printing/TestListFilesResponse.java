@@ -26,7 +26,7 @@ class TestListFilesResponse extends ListFilesResponse
     }
 
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float useFirmwareVersion)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -40,6 +40,12 @@ class TestListFilesResponse extends ListFilesResponse
             jobIds.add(jobId);
         }
         return jobIds;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

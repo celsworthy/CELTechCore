@@ -63,7 +63,7 @@ public class ObjImporter
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        ObjImporter.class.getName());
+            ObjImporter.class.getName());
 
     private int vertexIndex(int vertexIndex)
     {
@@ -116,13 +116,13 @@ public class ObjImporter
                 MeshView meshView = meshes_.get(i);
                 int extruder = extruderAssociations.get(i);
                 ModelContainer childModelContainer = new ModelContainer(modelFile, meshView,
-                                                                        extruder);
+                        extruder);
                 modelContainers.add(childModelContainer);
             }
 
             modelLoadResult = new ModelLoadResult(modelFileToLoad,
-                                                  modelFile.getName(), 
-                                                  modelContainers);
+                    modelFile.getName(),
+                    modelContainers);
 
         } catch (Exception ex)
         {
@@ -268,13 +268,20 @@ public class ObjImporter
                     String materialFilename = line.substring("mtllib ".length()).trim();
                     MtlReader mtlReader = new MtlReader(materialFilename, filePath);
 
-                   materialNameAgainstIndex = mtlReader.getMaterials();
+                    materialNameAgainstIndex = mtlReader.getMaterials();
                 } else if (line.startsWith("usemtl "))
                 {
                     // setting new material for next mesh
                     String materialName = line.substring("usemtl ".length());
-
-                    materialNumber = materialNameAgainstIndex.get(materialName);
+                    Integer foundMaterial = materialNameAgainstIndex.get(materialName);
+                    if (foundMaterial != null)
+                    {
+                        materialNumber = foundMaterial;
+                    }
+                    else
+                    {
+                        materialNumber = 0;
+                    }
                 } else if (line.isEmpty() || line.startsWith("#"))
                 {
                     // comments and empty lines are ignored
@@ -315,7 +322,7 @@ public class ObjImporter
             } catch (Exception ex)
             {
                 Logger.getLogger(MtlReader.class
-                    .getName()).log(Level.SEVERE, "Failed to parse line:" + line, ex);
+                        .getName()).log(Level.SEVERE, "Failed to parse line:" + line, ex);
             }
         }
 
@@ -363,7 +370,7 @@ public class ObjImporter
         mesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
         meshes.put(key, mesh);
-        
+
         //Just in case the material number wasn't specified (mentioning no names Microsoft)
         if (materialNumber < 0)
         {
@@ -377,9 +384,9 @@ public class ObjImporter
 //                + mesh.getFaces().size() / TriangleMesh.NUM_COMPONENTS_PER_FACE +" faces, "
 //                + mesh.getFaceSmoothingGroups().size() + " smoothing groups.");
         steno.debug(
-            "Loaded object mesh " + (newVertices.size() / 3.) + " vertices, "
-            + (newFaces.size() / 6.) + " faces, "
-            + smoothingGroups.length + " smoothing groups.");
+                "Loaded object mesh " + (newVertices.size() / 3.) + " vertices, "
+                + (newFaces.size() / 6.) + " faces, "
+                + smoothingGroups.length + " smoothing groups.");
 
         facesStart = facesFromFile.size();
     }

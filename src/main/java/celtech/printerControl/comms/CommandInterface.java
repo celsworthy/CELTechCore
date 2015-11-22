@@ -3,12 +3,14 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
+import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -43,6 +45,7 @@ public abstract class CommandInterface extends Thread
     protected final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     protected String requiredFirmwareVersionString = "";
     protected float requiredFirmwareVersion = 0;
+    protected float firmwareVersionInUse = 0;
 
     protected boolean suppressPrinterIDChecks = false;
     protected int sleepBetweenStatusChecks = 1000;
@@ -151,15 +154,40 @@ public abstract class CommandInterface extends Thread
                         if (firmwareResponse.getFirmwareRevisionFloat() != requiredFirmwareVersion)
                         {
                             // The firmware version is different to that associated with AutoMaker
-                            // Tell the user to update
-
                             steno.warning("Firmware version is "
                                     + firmwareResponse.getFirmwareRevisionString() + " and should be "
                                     + requiredFirmwareVersionString);
 
+//                            Lookup.setFirmwareVersion()
+                            // Is the SD card present?
+                            try
+                            {
+                                StatusRequest request = (StatusRequest) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST);
+                                firmwareVersionInUse = firmwareResponse.getFirmwareRevisionFloat();
+                                StatusResponse response = (StatusResponse) writeToPrinter(request, true);
+                                if (!response.isSDCardPresent())
+                                {
+                                    steno.warning("SD Card not present");
+                                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(FirmwareError.SD_CARD, printerToUse);
+                                    disconnectPrinter();
+                                    keepRunning = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    Lookup.getSystemNotificationHandler().clearAllDialogsOnDisconnect();
+                                }
+                            } catch (RoboxCommsException ex)
+                            {
+                                steno.error("Failure during printer status request. " + ex.toString());
+                                break;
+                            }
+
+                            // Tell the user to update
                             loadRequiredFirmware = Lookup.getSystemNotificationHandler().
                                     askUserToUpdateFirmware();
                         }
+
                         if (loadRequiredFirmware)
                         {
                             loadingFirmware = true;
@@ -167,6 +195,7 @@ public abstract class CommandInterface extends Thread
                                     + "robox_r" + requiredFirmwareVersionString + ".bin");
                         } else
                         {
+                            firmwareVersionInUse = firmwareResponse.getFirmwareRevisionFloat();
                             moveOnFromFirmwareCheck(firmwareResponse);
                         }
                     } catch (PrinterException ex)
@@ -320,15 +349,11 @@ public abstract class CommandInterface extends Thread
      * @return
      * @throws RoboxCommsException
      */
-    public abstract RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException;
+    public final synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
+    {
+        return writeToPrinter(messageToWrite, false);
+    }
 
-    /**
-     *
-     * @param messageToWrite
-     * @param dontPublishResult
-     * @return
-     * @throws RoboxCommsException
-     */
     public abstract RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite,
             boolean dontPublishResult) throws RoboxCommsException;
 

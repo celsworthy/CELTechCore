@@ -1,10 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
+import celtech.coreUI.controllers.panels.AboutPanelController;
+import celtech.coreUI.controllers.panels.CalibrationInsetPanelController;
+import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
+import celtech.coreUI.controllers.panels.LibraryMenuPanelController;
+import celtech.coreUI.controllers.panels.LoadModelInsetPanelController;
+import celtech.coreUI.controllers.panels.MaintenanceInsetPanelController;
+import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
+import celtech.coreUI.controllers.panels.RegistrationInsetPanelController;
+import celtech.coreUI.controllers.panels.WelcomeInsetPanelController;
 
 /**
  *
@@ -12,52 +18,36 @@ import celtech.configuration.ApplicationConfiguration;
  */
 public enum ApplicationMode
 {
-    WELCOME("printerStatus", "Welcome"),
-    CALIBRATION_CHOICE("printerStatus", "Calibration"),
-    REGISTRATION("printerStatus", "registration"),
-    PURGE("printerStatus", "purge"),
-    MAINTENANCE("printerStatus", "Maintenance"),
-    ABOUT("printerStatus", "about"),
-    SYSTEM_INFORMATION("printerStatus", "systemInformation"),
-    EXTRAS_MENU("printerStatus", "extrasMenu"),
+
+    WELCOME("Welcome", WelcomeInsetPanelController.class),
+    CALIBRATION_CHOICE("Calibration", CalibrationInsetPanelController.class),
+    REGISTRATION("registration", RegistrationInsetPanelController.class),
+    PURGE("purge", PurgeInsetPanelController.class),
+    MAINTENANCE("Maintenance", MaintenanceInsetPanelController.class),
+    ABOUT("about", AboutPanelController.class),
+    SYSTEM_INFORMATION("systemInformation", null),
+    EXTRAS_MENU("extrasMenu", ExtrasMenuPanelController.class),
     //TODO printer status has to be last otherwise the temperature graph doesn't work!! Fix in DisplayManager
-    STATUS("printerStatus", null),
+    STATUS(null, null),
     /**
      *
      */
-    LAYOUT("layout", null),
-    ADD_MODEL("layout", "loadModel"),
-    MY_MINI_FACTORY("layout", "myMiniFactoryLoader"),
+    LAYOUT(null, null),
+    ADD_MODEL("loadModel", LoadModelInsetPanelController.class),
+    MY_MINI_FACTORY("myMiniFactoryLoader", MyMiniFactoryLoaderController.class),
     /**
      *
      */
-    SETTINGS("settings", null);
+    SETTINGS(null, null),
+    LIBRARY("extrasMenu", LibraryMenuPanelController.class);
 
-    private final String sidePanelFXMLPrefix;
     private final String insetPanelFXMLPrefix;
+    private final Class controllerClass;
 
-    private ApplicationMode(String sidePanelFXMLPrefix, String insetPanelFXMLPrefix)
+    private ApplicationMode(String insetPanelFXMLPrefix, Class<?> controllerClass)
     {
-        this.sidePanelFXMLPrefix = sidePanelFXMLPrefix;
         this.insetPanelFXMLPrefix = insetPanelFXMLPrefix;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSidePanelFXMLName()
-    {
-        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SidePanel" + ".fxml";
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getSlideOutFXMLName()
-    {
-        return ApplicationConfiguration.fxmlPanelResourcePath + sidePanelFXMLPrefix + "SlideOutPanel" + ".fxml";
+        this.controllerClass = controllerClass;
     }
 
     /**
@@ -69,4 +59,8 @@ public enum ApplicationMode
         return ApplicationConfiguration.fxmlPanelResourcePath + insetPanelFXMLPrefix + "InsetPanel" + ".fxml";
     }
 
+    public Class getControllerClass()
+    {
+        return controllerClass;
+    }
 }

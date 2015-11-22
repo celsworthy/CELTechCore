@@ -5,10 +5,11 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root alignment="TOP_RIGHT" prefHeight="60.0"  pickOnBounds="false" fx:id="container" type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root fx:id="container" alignment="CENTER_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" pickOnBounds="false" prefHeight="60.0" type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GraphicButton fx:id="aboutButton" fxmlFileName="helpButton" onAction="#aboutPressed" />
+        <GraphicButton fx:id="libraryButton" fxmlFileName="libraryButton" onAction="#libraryPressed" style="-fx-padding: 5 5 5 10;" />
         <GraphicButton fx:id="extrasMenuButton" fxmlFileName="preferencesButton" onAction="#extrasMenuPressed" />
+        <GraphicButton fx:id="aboutButton" fxmlFileName="helpButton" layoutX="15.0" layoutY="15.0" onAction="#aboutPressed" />
     </children>
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

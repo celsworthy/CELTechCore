@@ -515,11 +515,9 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //    }
 //
 //    @Test
-//    public void testCloseToEndOfFill_checkAvoidsPeriIfRequired()
+//    public void testOverwriteClose_SingleSection()
 //    {
-//        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
 //        FillSectionNode fill1 = new FillSectionNode();
-//        SupportSectionNode support1 = new SupportSectionNode();
 //
 //        TravelNode travel1 = new TravelNode();
 //        travel1.getMovement().setX(0);
@@ -570,20 +568,16 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        extrusionNode9.getMovement().setX(9);
 //        extrusionNode9.getMovement().setY(9);
 //
-//        outer1.addChildAtEnd(travel1);
-//        outer1.addChildAtEnd(extrusionNode1);
-//        outer1.addChildAtEnd(extrusionNode2);
-//        outer1.addChildAtEnd(extrusionNode3);
-//        outer1.addChildAtEnd(extrusionNode4);
-//        outer1.addChildAtEnd(extrusionNode5);
-//        outer1.addChildAtEnd(extrusionNode6);
-//        outer1.addChildAtEnd(extrusionNode7);
-//        support1.addChildAtEnd(extrusionNode8);
-//        fill1.addChildAtEnd(extrusionNode9);
+//        fill1.addChildAtEnd(travel1);
+//        fill1.addChildAtEnd(extrusionNode1);
+//        fill1.addChildAtEnd(extrusionNode2);
+//        fill1.addChildAtEnd(extrusionNode3);
+//        fill1.addChildAtEnd(extrusionNode4);
+//        fill1.addChildAtEnd(extrusionNode5);
+//        fill1.addChildAtEnd(extrusionNode6);
+//        fill1.addChildAtEnd(extrusionNode7);
 //
 //        ToolSelectNode tool1 = new ToolSelectNode();
-//        tool1.addChildAtEnd(outer1);
-//        tool1.addChildAtEnd(support1);
 //        tool1.addChildAtEnd(fill1);
 //
 //        NozzleParameters nozzleParams = new NozzleParameters();
@@ -602,18 +596,14 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 //
 //        CloseLogic closeLogic = new CloseLogic(testProject,
-//                testProject.getPrinterSettings().getSettings("RBX01-SM"),
+//                testProject.getPrinterSettings().getSettings("Draft"),
 //                ppFeatures, "RBX01-SM");
 //
 //        List<SectionNode> sectionsToConsider = new ArrayList<>();
-//        outer1.recalculateExtrusion();
-//        sectionsToConsider.add(outer1);
-//        support1.recalculateExtrusion();
-//        sectionsToConsider.add(support1);
 //        fill1.recalculateExtrusion();
 //        sectionsToConsider.add(fill1);
 //        
-//        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode9, sectionsToConsider, true, false);
+//        InScopeEvents inScopeEvents = closeLogic.extractAvailableMovements(extrusionNode7, sectionsToConsider, true, false);
 //
 //        Optional<CloseResult> closeResult = Optional.empty();
 //        try
@@ -625,39 +615,39 @@ public class CloseLogicTest extends JavaFXConfiguredTest
 //        }
 //        assertTrue(closeResult.isPresent());
 //
-//        assertEquals(8, outer1.getChildren().size());
-//        assertEquals(1, support1.getChildren().size());
-//        assertEquals(1, fill1.getChildren().size());
-//
-//        assertTrue(outer1.getChildren().get(5) instanceof ExtrusionNode);
-//        ExtrusionNode node0 = (ExtrusionNode) outer1.getChildren().get(5);
-//        assertSame(extrusionNode5, node0);
-//        assertFalse(node0.getNozzlePosition().isBSet());
-//        assertEquals(1, node0.getExtrusion().getE(), movementEpsilon);
-//
-//        assertTrue(outer1.getChildren().get(6) instanceof ExtrusionNode);
-//        ExtrusionNode node1 = (ExtrusionNode) outer1.getChildren().get(6);
-//        assertSame(extrusionNode6, node1);
-//        assertFalse(node1.getNozzlePosition().isBSet());
-//        assertEquals(1, node1.getExtrusion().getE(), movementEpsilon);
-//
-//        assertTrue(outer1.getChildren().get(7) instanceof ExtrusionNode);
-//        ExtrusionNode node2 = (ExtrusionNode) outer1.getChildren().get(7);
-//        assertSame(extrusionNode7, node2);
-//        assertFalse(node2.getNozzlePosition().isBSet());
-//        assertEquals(1, node2.getExtrusion().getE(), movementEpsilon);
-//
-//        assertTrue(support1.getChildren().get(0) instanceof ExtrusionNode);
-//        ExtrusionNode node3 = (ExtrusionNode) support1.getChildren().get(0);
-//        assertSame(extrusionNode8, node3);
-//        assertFalse(node3.getNozzlePosition().isBSet());
-//        assertEquals(1, node3.getExtrusion().getE(), movementEpsilon);
-//
-//        assertTrue(fill1.getChildren().get(0) instanceof ExtrusionNode);
-//        ExtrusionNode node4 = (ExtrusionNode) fill1.getChildren().get(0);
-//        assertSame(extrusionNode9, node4);
-//        assertFalse(node4.getNozzlePosition().isBSet());
-//        assertEquals(1, node4.getExtrusion().getE(), movementEpsilon);
+////        assertEquals(8, outer1.getChildren().size());
+////        assertEquals(1, support1.getChildren().size());
+////        assertEquals(1, fill1.getChildren().size());
+////
+////        assertTrue(outer1.getChildren().get(5) instanceof ExtrusionNode);
+////        ExtrusionNode node0 = (ExtrusionNode) outer1.getChildren().get(5);
+////        assertSame(extrusionNode5, node0);
+////        assertFalse(node0.getNozzlePosition().isBSet());
+////        assertEquals(1, node0.getExtrusion().getE(), movementEpsilon);
+////
+////        assertTrue(outer1.getChildren().get(6) instanceof ExtrusionNode);
+////        ExtrusionNode node1 = (ExtrusionNode) outer1.getChildren().get(6);
+////        assertSame(extrusionNode6, node1);
+////        assertFalse(node1.getNozzlePosition().isBSet());
+////        assertEquals(1, node1.getExtrusion().getE(), movementEpsilon);
+////
+////        assertTrue(outer1.getChildren().get(7) instanceof ExtrusionNode);
+////        ExtrusionNode node2 = (ExtrusionNode) outer1.getChildren().get(7);
+////        assertSame(extrusionNode7, node2);
+////        assertFalse(node2.getNozzlePosition().isBSet());
+////        assertEquals(1, node2.getExtrusion().getE(), movementEpsilon);
+////
+////        assertTrue(support1.getChildren().get(0) instanceof ExtrusionNode);
+////        ExtrusionNode node3 = (ExtrusionNode) support1.getChildren().get(0);
+////        assertSame(extrusionNode8, node3);
+////        assertFalse(node3.getNozzlePosition().isBSet());
+////        assertEquals(1, node3.getExtrusion().getE(), movementEpsilon);
+////
+////        assertTrue(fill1.getChildren().get(0) instanceof ExtrusionNode);
+////        ExtrusionNode node4 = (ExtrusionNode) fill1.getChildren().get(0);
+////        assertSame(extrusionNode9, node4);
+////        assertFalse(node4.getNozzlePosition().isBSet());
+////        assertEquals(1, node4.getExtrusion().getE(), movementEpsilon);
 //    }
 //
 //    @Test

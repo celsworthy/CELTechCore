@@ -40,5 +40,7 @@ public enum DragMode
     /**
      *
      */
-    ROTATE
+    ROTATE,
+    ZCUT
+    
 }

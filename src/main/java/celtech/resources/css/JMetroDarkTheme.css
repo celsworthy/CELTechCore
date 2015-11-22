@@ -39,9 +39,15 @@
     mid_grey_30: rgb(64,64,64, 0.3);
     white_60: rgb(255,255,255, 0.6);
     light_grey: rgb(99,99,99);
+    light_grey_30: rgb(99,99,99, 0.3);
+    superlight_grey_30: rgb(200,200,200, 0.3);
     robox_blue: #0096e1;
+    robox_blue_darker: #0087d2;
+    robox_blue_lighter: #0fa5f0;
     highlight_colour: rgb(0, 157, 226);
     highlight_colour_orange: #ff661b;
+    highlight_colour_orange_darker: #f0570c;
+    highlight_colour_orange_lighter: #ff752a;
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -91,6 +97,7 @@
 
 .label{
     -fx-text-fill: white;
+    -fx-font-smoothing-type: lcd;
 }
 
 .header{
@@ -108,9 +115,7 @@
     -fx-fill-color: grey;
 }
 
-/*.text{
-    -fx-font-smoothing-type: gray;
-}*/
+.text { -fx-font-smoothing-type: lcd; }
 
 .text-field {
     -fx-font-size: 10pt;
@@ -172,6 +177,98 @@
 
 .button:default:hover{
     -fx-background-color: #219297;
+}
+
+.toggle-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+
+    -fx-background-radius: 0;
+
+    -fx-background-color: #1d1d1d;
+
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.toggle-button:hover{
+    -fx-background-color: hover_colour;
+}
+
+.toggle-button:pressed, .button:default:hover:pressed
+{
+    -fx-background-color: pressed_colour;
+    -fx-text-fill: background_colour;
+}
+
+.toggle-button:focused
+{
+    -fx-border-color: white, white;
+    -fx-border-width: 1, 1;
+    -fx-border-style: solid, segments(1, 1);
+    -fx-border-radius: 0, 0;
+    -fx-border-insets: 1 1 1 1, 0;
+}
+
+.toggle-button:disabled, .button:default:disabled
+{
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
+}
+
+.toggle-button:default
+{
+    -fx-background-color: #008287;
+    -fx-text-fill: #ffffff;
+}
+/*
+.toggle-button:selected {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+}*/
+/*
+ * Model edit button
+ */
+.model-material1-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-background-color: robox_blue;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.model-material1-button:pressed, .model-material1-button:default:hover:pressed, .model-material1-button:selected:hover, .model-material1-button:selected:focused, .model-material1-button:selected
+{
+    -fx-background-color: robox_blue_darker;
+    -fx-text-fill: background_colour;
+}
+
+.model-material1-button:hover{
+    -fx-background-color: robox_blue_lighter;
+}
+
+.model-material2-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-background-color: highlight_colour_orange;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.model-material2-button:pressed, .model-material2-button:default:hover:pressed, .model-material2-button:selected:hover, .model-material2-button:selected:focused, .model-material2-button:selected
+{
+    -fx-background-color: highlight_colour_orange_darker;
+    -fx-text-fill: background_colour;
+}
+
+.model-material2-button:hover{
+    -fx-background-color: highlight_colour_orange_lighter;
 }
 
 /*
@@ -277,10 +374,6 @@
     -fx-border-color: transparent;
 }
 
-.toggle-button:selected {
-    -fx-background-color: light_grey;
-    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
-}
 /*
  * Jog Button
  */
@@ -425,54 +518,6 @@
 .gizmoControlButton:pressed #rotationHandle {
     -fx-fill: gizmoRotationHandle_pressed;
 }
-
-/*******************************************************************************
- *                                                                             *
- * Toggle Button                                                               *
- *                                                                             *
- ******************************************************************************/
-/*
-.toggle-button {
-    -fx-padding: 5 22 5 22;   
-    -fx-border-color: #e2e2e2;
-    -fx-border-width: 2;
-
-    -fx-background-radius: 0;
-
-    -fx-background-color: #1d1d1d;
-
-    -fx-font-size: 11pt;
-    -fx-text-fill: #d8d8d8;
-}
-
-.toggle-button:focused {
-    -fx-border-color: white, white;
-
-    -fx-border-width: 1, 1;
-    -fx-border-style: solid, segments(1, 1);
-    -fx-border-radius: 0, 0;
-    -fx-border-insets: 1 1 1 1, 0;
-}
-
-.toggle-button:hover {
-    -fx-text-fill: #d8d8d8;
-    -fx-background-color: #3a3a3a;
-}
-
-.toggle-button:selected {
-    -fx-background-color: white;
-    -fx-text-fill: #1d1d1d;
-}
-
-.toggle-button:selected:hover {
-    -fx-background-color: #eee;
-    -fx-text-fill: #1d1d1d;
-
-    -fx-border-color: #eee;
-}
-.toggle-button:disabled {
-    -fx-opacity: -fx-disabled-opacity;
-}*/
 
 /*******************************************************************************
  *                                                                             *
@@ -1047,6 +1092,7 @@
 }
 .reelMaterialRemaining {
     -fx-font-size: 18;
+    -fx-font-smoothing-type: lcd;
 }
 
 #reelNumberMaterial {
@@ -1131,21 +1177,28 @@
     -fx-fill: graph_line_red;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_red;
+    -fx-stroke-width: 2px;
+    -fx-stroke-dash-array: 5 5;
 }
 .graph-blue {
     -fx-fill: graph_line_blue;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_blue;
+    -fx-stroke-width: 2px;
+    -fx-stroke-dash-array: 5 5;
+    -fx-stroke-dash-offset: 5; 
 }
 .graph-green {
     -fx-fill: graph_line_green;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_green;
+    -fx-stroke-width: 2px;
 }
 .graph-yellow {
     -fx-fill: graph_line_yellow;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_yellow;
+    -fx-stroke-width: 2px;
 }
 
 .temperatureChartLegend {
@@ -1331,6 +1384,10 @@ table-view .column-header-background {
 
 .regularFont {
     -fx-font-family: 'Source Sans Pro Regular';
+}
+
+.statusPanelBackground{
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #a0a0a0, #c8c8c8);
 }
 
 .statusPanel{
@@ -1603,7 +1660,7 @@ modal-dialogue{
 }    
 
 .blue-inset-panel{
-    -fx-background-color: highlight_colour;
+    -fx-background-color: black;
 }
 
 .blue-inset-panel-text{
@@ -1612,6 +1669,7 @@ modal-dialogue{
 
 .inset-panel{
     -fx-background-color: light_grey;
+    -fx-padding: 0 0 0 25;
 }
 
 .inset-panel-with-menu{
@@ -1933,17 +1991,12 @@ modal-dialogue{
     -fx-font-size: 28px;
 }
 
-.statusBar #targetLegend {
+.statusBar .smallerText {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
-.statusBar #targetValue {
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
-}
-
-.statusBar #currentValue {
+.statusBar .largerText {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
 }
@@ -1985,19 +2038,13 @@ modal-dialogue{
     -fx-text-fill: black;
 }
 
-.secondaryStatusBar #targetLegend {
+.secondaryStatusBar .smallerText {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-text-fill: black;
 }
 
-.secondaryStatusBar #targetValue {
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 14px;
-    -fx-text-fill: black;
-}
-
-.secondaryStatusBar #currentValue {
+.secondaryStatusBar .largerText {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 18px;
     -fx-text-fill: black;
@@ -2700,26 +2747,16 @@ color-picker-label .text-field {
 .dimension-label
 {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 18pt;
-    -fx-fill: robox_blue;
+    -fx-font-size: 12pt;
     -fx-text-alignment: center;
-} 
+}  
 
-.dimension-group
+.bed-axis-label
 {
-    -fx-stroke: highlight_colour_orange;
-    -fx-fill: highlight_colour_orange;
-} 
-
-.dimension-line
-{
-    -fx-stroke: robox_blue;
-} 
-
-.dimension-arrow
-{
-    -fx-fill: robox_blue;
-} 
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18pt;
+    -fx-text-alignment: center;
+}  
 
 .rotationField {
     -fx-pref-width: 40;
@@ -2763,7 +2800,7 @@ color-picker-label .text-field {
 * Head
 */
 
-.head_panel {
+.head_panel, .head_panel .label {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 14px;
 }
@@ -2807,4 +2844,123 @@ color-picker-label .text-field {
 
 .diagnostics .radio-button:selected .dot {
     -fx-background-color: robox_blue;
+}
+
+.hovering-panel, .hovering-panel .tab-pane, .hovering-panel .grid-pane{
+    -fx-background-color: mid_grey_30;
+    -fx-border-width: 0px;
+}
+
+.fake-tab-button {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;
+    -fx-padding: 0px;  
+    -fx-graphic-text-gap: 2px;
+    -fx-content-display: LEFT;
+
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+
+    -fx-background-color: #1d1d1d;
+    -fx-border-color: #1d1d1d;
+
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.fake-tab-button:default
+{
+    -fx-background-color: #1d1d1d;
+    -fx-border-colour: #1d1d1d;
+}
+
+.fake-tab-button:hover{
+    -fx-background-color: hover_colour;
+    -fx-border-color: hover_colour;
+}
+
+.fake-tab-button:pressed, .fake-tab-button:default:hover:pressed
+{
+    -fx-background-color: pressed_colour;
+    -fx-border-color: pressed_colour;
+    -fx-text-fill: background_colour;
+    -fx-fill-color: background_colour;
+}
+
+.fake-tab-button:selected
+{
+    -fx-background-color: robox_blue;
+    -fx-border-color: robox_blue;
+}
+
+.fake-tab-button:disabled, .fake-tab-button:default:disabled
+{
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
+}
+
+/*.fake-tab-button:default
+{
+    -fx-background-color: #008287;
+    -fx-text-fill: #ffffff;
+}*/
+
+.fake-tab-button:default:hover{
+    -fx-background-color: #219297;
+}
+
+#model-edit-panel
+{
+    -fx-spacing: 5px;
+}
+
+#model-edit-panel .label
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;    
+}
+
+.boldText
+{
+    -fx-font-family: 'Source Sans Pro Bold';
+    -fx-font-smoothing-type: lcd;
+}
+
+.regularText
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-smoothing-type: lcd;
+}
+
+.lightText
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-smoothing-type: lcd;
+}
+
+.gcode-transcript
+{
+    -fx-background-color: white;
+    -fx-text-fill: black
+}
+
+.gcode-transcript .list-cell:filled:selected:focused, gcode-transcript .list-cell:filled:selected,
+.gcode-transcript .list-cell:even:filled:hover:selected,
+.gcode-transcript .list-cell:odd:filled:hover:selected,
+.gcode-transcript .list-cell:odd:filled:pressed,
+.gcode-transcript .list-cell:odd:filled:pressed:selected
+{
+    -fx-background-color: light_grey_30;
+    -fx-text-fill: black
+}
+
+.gcode-transcript .list-cell:even, .gcode-transcript .list-cell:even:filled:hover {
+    -fx-text-fill: black;
+    -fx-background-color: superlight_grey_30;
+}
+
+.gcode-transcript .list-cell:odd, .gcode-transcript .list-cell:odd:filled:hover {
+    -fx-text-fill: black;
+    -fx-background-color: white;
 }

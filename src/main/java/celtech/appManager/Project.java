@@ -45,13 +45,14 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point3D;
+import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
-
 
 /**
  *
@@ -61,7 +62,6 @@ public class Project implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
-
 
     public static class ProjectLoadException extends Exception
     {
@@ -78,7 +78,7 @@ public class Project implements Serializable
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        Project.class.getName());
+            Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
 
     Set<ProjectChangesListener> projectChangesListeners;
@@ -109,28 +109,28 @@ public class Project implements Serializable
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
-            + formatter.format(now));
+                + formatter.format(now));
         lastModifiedDate.set(now);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
 
         customSettingsNotChosen.bind(
-            printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
-            .and(printerSettings.getSettingsNameProperty().isEmpty()));
+                printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
+                .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
 
         printerSettings.getDataChanged().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                projectModified();
-                fireWhenPrinterSettingsChanged(printerSettings);
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    projectModified();
+                    fireWhenPrinterSettingsChanged(printerSettings);
+                });
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(
-            (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-            {
-                projectModified();
-            });
+                (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
+                {
+                    projectModified();
+                });
 
     }
 
@@ -184,18 +184,18 @@ public class Project implements Serializable
     public final String getAbsolutePath()
     {
         return ApplicationConfiguration.getProjectDirectory() + File.separator
-            + projectNameProperty.get()
-            + ApplicationConfiguration.projectFileExtension;
+                + projectNameProperty.get()
+                + ApplicationConfiguration.projectFileExtension;
     }
 
     public Set<ModelContainer> getModelContainersWithInvalidMesh()
     {
         Set<ModelContainer> invalidModelContainers = new HashSet<>();
         getAllModels().stream().filter((modelContainer)
-            -> (modelContainer.isInvalidMesh())).forEach((modelContainer) ->
-                {
-                    invalidModelContainers.add(modelContainer);
-            });
+                -> (modelContainer.isInvalidMesh())).forEach((modelContainer) ->
+                        {
+                            invalidModelContainers.add(modelContainer);
+                });
         return invalidModelContainers;
     }
 
@@ -233,9 +233,9 @@ public class Project implements Serializable
         try
         {
             FileInputStream projectFileStream = new FileInputStream(basePath
-                + ApplicationConfiguration.projectFileExtension);
+                    + ApplicationConfiguration.projectFileExtension);
             ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(
-                projectFileStream));
+                    projectFileStream));
             Project loadedProject = (Project) reader.readObject();
             reader.close();
             for (ModelContainer modelContainer : loadedProject.topLevelModels)
@@ -252,13 +252,13 @@ public class Project implements Serializable
     }
 
     /**
-     * Get the first non-whitespace character in a file. If there is no non-whitespace character
-     * then return a space.
+     * Get the first non-whitespace character in a file. If there is no
+     * non-whitespace character then return a space.
      */
     private static char getFirstNonWhitespaceCharacter(String basePath) throws FileNotFoundException, IOException
     {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath
-            + ApplicationConfiguration.projectFileExtension));
+                + ApplicationConfiguration.projectFileExtension));
         String line;
         while ((line = bufferedReader.readLine()) != null)
         {
@@ -330,7 +330,7 @@ public class Project implements Serializable
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
         FileInputStream fileInputStream = new FileInputStream(basePath
-            + ApplicationConfiguration.projectModelsFileExtension);
+                + ApplicationConfiguration.projectModelsFileExtension);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
         ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
@@ -338,7 +338,7 @@ public class Project implements Serializable
         {
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
             Optional<MeshUtils.MeshError> error = MeshUtils.validate(
-                (TriangleMesh) modelContainer.getMeshView().getMesh());
+                    (TriangleMesh) modelContainer.getMeshView().getMesh());
             if (error.isPresent())
             {
                 modelContainer.setIsInvalidMesh(true);
@@ -350,7 +350,7 @@ public class Project implements Serializable
     public static void saveProject(Project project)
     {
         String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-            + project.getProjectName();
+                + project.getProjectName();
         project.save(basePath);
     }
 
@@ -384,8 +384,8 @@ public class Project implements Serializable
             } catch (IOException ex)
             {
                 steno.exception(
-                    "Couldn't write project state to file for project "
-                    + projectNameProperty.get(), ex);
+                        "Couldn't write project state to file for project "
+                        + projectNameProperty.get(), ex);
             }
         }
     }
@@ -413,7 +413,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Return which extruders are used by the project, as a set of the extruder numbers.
+     * Return which extruders are used by the project, as a set of the extruder
+     * numbers.
      */
     public Set<Integer> getUsedExtruders()
     {
@@ -426,11 +427,11 @@ public class Project implements Serializable
     }
 
     /**
-     * This is the Project file reader for version 1.01.04 and is used for reading old project
-     * files.
+     * This is the Project file reader for version 1.01.04 and is used for
+     * reading old project files.
      */
     private void readObject(ObjectInputStream in)
-        throws IOException, ClassNotFoundException
+            throws IOException, ClassNotFoundException
     {
         initialise();
 
@@ -531,8 +532,8 @@ public class Project implements Serializable
     }
 
     /**
-     * For new projects this should be called to initialise the extruder filaments according to the
-     * currently selected printer.
+     * For new projects this should be called to initialise the extruder
+     * filaments according to the currently selected printer.
      */
     private void initialiseExtruderFilaments()
     {
@@ -591,12 +592,12 @@ public class Project implements Serializable
 
     public void removeModels(Set<ModelContainer> modelContainers)
     {
-        
+
         for (ModelContainer modelContainer : modelContainers)
         {
             assert modelContainer != null;
-        }    
-        
+        }
+
         topLevelModels.removeAll(modelContainers);
 
         for (ModelContainer modelContainer : modelContainers)
@@ -640,19 +641,19 @@ public class Project implements Serializable
     {
         // XXX this is a bug, modelExtruderNumberListener is being overridden for each model
         modelExtruderNumberListener
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
-                modelColourChanged.set(!modelColourChanged.get());
-            };
+                = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
+                    modelColourChanged.set(!modelColourChanged.get());
+                };
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
-            modelExtruderNumberListener);
+                modelExtruderNumberListener);
     }
 
     private void removeModelListeners(ModelContainer modelContainer)
     {
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
-            modelExtruderNumberListener);
+                modelExtruderNumberListener);
     }
 
     public BooleanProperty canPrintProperty()
@@ -671,9 +672,10 @@ public class Project implements Serializable
     public ModelGroup createNewGroup(Set<ModelContainer> modelContainers)
     {
         checkNotAlreadyInGroup(modelContainers);
-        
+
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
         return modelGroup;
     }
 
@@ -682,15 +684,16 @@ public class Project implements Serializable
         Set<ModelContainer> modelsAlreadyInGroups = getDescendentModelsInAllGroups();
         for (ModelContainer model : modelContainers)
         {
-            if (modelsAlreadyInGroups.contains(model)) {
+            if (modelsAlreadyInGroups.contains(model))
+            {
                 throw new RuntimeException("Model " + model + " is already in a group");
             }
         }
     }
 
     /**
-     * Create a new group from models that are not yet in the project, and add model listeners to
-     * all descendent children.
+     * Create a new group from models that are not yet in the project, and add
+     * model listeners to all descendent children.
      */
     public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
     {
@@ -772,7 +775,7 @@ public class Project implements Serializable
         }
         return modelsHoldingMeshViews;
     }
-    
+
     /**
      * Return the set of those ModelContainers which are in any group.
      */
@@ -781,25 +784,28 @@ public class Project implements Serializable
         Set<ModelContainer> modelsInGroups = new HashSet<>();
         for (ModelContainer model : topLevelModels)
         {
-            if (model instanceof ModelGroup) {
+            if (model instanceof ModelGroup)
+            {
                 modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
-            } 
+            }
         }
         return modelsInGroups;
     }
-    
+
     /**
-     * Return the set of those ModelContainers which are in any group descending from the
-     * given group.
+     * Return the set of those ModelContainers which are in any group descending
+     * from the given group.
      */
     private Set<ModelContainer> getDescendentModelsInGroup(ModelGroup modelGroup)
     {
         Set<ModelContainer> modelsInGroups = new HashSet<>();
         for (ModelContainer model : modelGroup.getChildModelContainers())
         {
-            if (model instanceof ModelGroup) {
+            if (model instanceof ModelGroup)
+            {
                 modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
-            } else {
+            } else
+            {
                 modelsInGroups.add(model);
             }
         }
@@ -807,8 +813,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Return a Map of child_model_id -> parent_model_id for all model:group and group:group
-     * relationships.
+     * Return a Map of child_model_id -> parent_model_id for all model:group and
+     * group:group relationships.
      */
     public Map<Integer, Set<Integer>> getGroupStructure()
     {
@@ -821,7 +827,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Return a Map of model_id -> state for all models holding models (ie groups).
+     * Return a Map of model_id -> state for all models holding models (ie
+     * groups).
      */
     public Map<Integer, ModelContainer.State> getGroupState()
     {
@@ -834,15 +841,15 @@ public class Project implements Serializable
     }
 
     /**
-     * Using the group function, reapply the groupings as given by the groupStructure. The first
-     * groups to be created must be those containing only non-groups, and then each level of the
-     * group hierarchy.<p>
-     * First create new groups where all children are already instantiated. Then repeat until no new
-     * groups are created.
+     * Using the group function, reapply the groupings as given by the
+     * groupStructure. The first groups to be created must be those containing
+     * only non-groups, and then each level of the group hierarchy.<p>
+     * First create new groups where all children are already instantiated. Then
+     * repeat until no new groups are created.
      * </p>
      */
     public void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
-        Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+            Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
         do
@@ -852,13 +859,13 @@ public class Project implements Serializable
     }
 
     /**
-     * Create groups where all the children are already instantiated, based on the structure
-     * and state given in the parameters.
+     * Create groups where all the children are already instantiated, based on
+     * the structure and state given in the parameters.
      *
      * @return the number of groups created
      */
     private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure,
-        Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+            Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
     {
         int numGroups = 0;
         for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
@@ -876,7 +883,8 @@ public class Project implements Serializable
     }
 
     /**
-     * Return true if loadedModels contains models for all the given modelIds, else return false.
+     * Return true if loadedModels contains models for all the given modelIds,
+     * else return false.
      */
     private boolean allModelsInstantiated(Set<Integer> modelIds)
     {
@@ -942,10 +950,9 @@ public class Project implements Serializable
         group.checkOffBed();
     }
 
-
     /**
-     * ProjectChangesListener allows other objects to observe when models are added or removed etc
-     * to the project.
+     * ProjectChangesListener allows other objects to observe when models are
+     * added or removed etc to the project.
      */
     public interface ProjectChangesListener
     {
@@ -966,19 +973,21 @@ public class Project implements Serializable
         void whenAutoLaidOut();
 
         /**
-         * This should be fired when one or more models have been moved, rotated or scaled etc. If
-         * possible try to fire just once for any given group change.
+         * This should be fired when one or more models have been moved, rotated
+         * or scaled etc. If possible try to fire just once for any given group
+         * change.
          */
         void whenModelsTransformed(Set<ModelContainer> modelContainers);
 
         /**
-         * This should be fired when certain details of the model change. Currently this is only: -
-         * associatedExtruder
+         * This should be fired when certain details of the model change.
+         * Currently this is only: - associatedExtruder
          */
         void whenModelChanged(ModelContainer modelContainer, String propertyName);
 
         /**
-         * This should be fired whenever the PrinterSettings of the project changes.
+         * This should be fired whenever the PrinterSettings of the project
+         * changes.
          *
          * @param printerSettings
          */
@@ -989,7 +998,7 @@ public class Project implements Serializable
     {
         Collections.sort(topLevelModels);
         PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
-                                              (int) PrintBed.maxPrintableZSize);
+                (int) PrintBed.maxPrintableZSize);
 
         thing.reference(topLevelModels, 10);
         thing.pack();
@@ -1008,9 +1017,9 @@ public class Project implements Serializable
     }
 
     /**
-     * Scale X, Y and Z by the given factor, apply the given ratio to the given scale. I.e. the
-     * ratio is not an absolute figure to be applied to the models but a ratio to be applied to the
-     * current scale.
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given
+     * scale. I.e. the ratio is not an absolute figure to be applied to the
+     * models but a ratio to be applied to the current scale.
      */
     public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
     {
@@ -1025,7 +1034,7 @@ public class Project implements Serializable
     }
 
     public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
-        boolean preserveAspectRatio)
+            boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -1048,7 +1057,7 @@ public class Project implements Serializable
     }
 
     public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
-        boolean preserveAspectRatio)
+            boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -1071,7 +1080,7 @@ public class Project implements Serializable
     }
 
     public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
-        boolean preserveAspectRatio)
+            boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
@@ -1199,6 +1208,18 @@ public class Project implements Serializable
         fireWhenModelsTransformed(modelContainers);
     }
 
+    public void translateModelsTo(Set<ModelContainer> modelContainers, double x, double z)
+    {
+        for (ModelContainer model : modelContainers)
+        {
+            {
+                model.translateTo(x, z);
+            }
+        }
+        projectModified();
+        fireWhenModelsTransformed(modelContainers);
+    }
+
     private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -1248,7 +1269,7 @@ public class Project implements Serializable
     public Set<ModelContainer.State> getModelStates()
     {
         Set<ModelContainer.State> modelStates = new HashSet<>();
-        for (ModelContainer model : topLevelModels)
+        for (ModelContainer model : getAllModels())
         {
             modelStates.add(model.getState());
         }

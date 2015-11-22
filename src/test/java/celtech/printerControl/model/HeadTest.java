@@ -4,11 +4,8 @@ import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.DummyPrinterCommandInterface;
 import celtech.printerControl.comms.PrinterStatusConsumer;
-import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.utils.TestHead;
-import celtech.utils.TestPrinter;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -49,12 +46,12 @@ public class HeadTest extends JavaFXConfiguredTest
         Printer printer = new HardwarePrinter(null, commandInterface);
 
         printer.sendRawGCode("DEFAULS", false);
-        printer.readHeadEEPROM();
+        printer.readHeadEEPROM(false);
         System.out.println("head is " + printer.headProperty().get());
         int numNozzleHeaters = printer.headProperty().get().getNozzleHeaters().size();
         System.out.println("num heaters: " + numNozzleHeaters);
 
-        HeadEEPROMDataResponse headData = printer.readHeadEEPROM();
+        HeadEEPROMDataResponse headData = printer.readHeadEEPROM(true);
 
         float NOZZLE_TEMP_0 = 101f;
         float NOZZLE_TEMP_1 = 102f;

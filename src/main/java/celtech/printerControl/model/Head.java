@@ -252,8 +252,7 @@ public class Head implements Cloneable, RepairableComponent
         if (headFile != null)
         {
             headType.set(HeadContainer.getHeadByID(typeCode).getType());
-        }
-        else
+        } else
         {
             headType.set(null);
         }
@@ -296,25 +295,26 @@ public class Head implements Cloneable, RepairableComponent
     {
         boolean matches = false;
 
-        if (response.getTypeCode().equals(typeCodeProperty().get())
-                && response.getHeadHours() == headHoursProperty().get()
-                && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
-                && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
-                && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
-                && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
-                && response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
-                && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
-                && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
-                && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get()
-                && response.getMaximumTemperature() == getNozzleHeaters().get(0)
-                .maximumTemperatureProperty().get()
-                && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
-                && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get()
-                && response.getUniqueID().equals(uniqueIDProperty().get()))
+        if (response.getTypeCode().equals(typeCodeProperty().get()))
         {
-            matches = true;
-        }
+            matches = response.getHeadHours() == headHoursProperty().get()
+                    && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
+                    && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
+                    && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
+                    && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
+                    && response.getMaximumTemperature() == getNozzleHeaters().get(0).maximumTemperatureProperty().get()
+                    && response.getUniqueID().equals(uniqueIDProperty().get())
+                    && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
+                    && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get();
 
+            if (getNozzles().size() > 1)
+            {
+                matches &= response.getNozzle2BOffset() == getNozzles().get(1).bOffsetProperty().get()
+                        && response.getNozzle2XOffset() == getNozzles().get(1).xOffsetProperty().get()
+                        && response.getNozzle2YOffset() == getNozzles().get(1).yOffsetProperty().get()
+                        && response.getNozzle2ZOffset() == getNozzles().get(1).zOffsetProperty().get();
+            }
+        }
         return matches;
     }
 

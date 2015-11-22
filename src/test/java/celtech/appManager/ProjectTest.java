@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.util.Pair;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -72,7 +74,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         Assert.assertEquals(PROJECT_NAME, newProject.getProjectName());
         Assert.assertEquals(BRIM, newProject.getPrinterSettings().getBrimOverride());
         Assert.assertEquals(FILL_DENSITY, newProject.getPrinterSettings().getFillDensityOverride(),
-                            1e-10);
+                1e-10);
         Assert.assertEquals(PRINT_SUPPORT, newProject.getPrinterSettings().getPrintSupportOverride());
         Assert.assertEquals(FILAMENT_0, newProject.getExtruder0FilamentProperty().get());
         Assert.assertEquals(FILAMENT_1, newProject.getExtruder1FilamentProperty().get());
@@ -140,7 +142,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         Pair<Project, ModelGroup> pair = makeProject();
         Project project = pair.getKey();
         Set<Integer> expectedIds = project.getTopLevelModels().stream().map(
-            x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
+                x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
 
         ProjectFile projectFile = new ProjectFile();
         projectFile.populateFromProject(project);
@@ -148,13 +150,13 @@ public class ProjectTest extends JavaFXConfiguredTest
         Project.saveProject(project);
 
         Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
-            + File.separator + project.getProjectName());
+                + File.separator + project.getProjectName());
 
         Assert.assertEquals(2, newProject.getTopLevelModels().size());
 
         Assert.assertEquals(expectedIds,
-                            newProject.getTopLevelModels().stream().map(x -> x.getModelId()).collect(
-                                Collectors.toSet()));
+                newProject.getTopLevelModels().stream().map(x -> x.getModelId()).collect(
+                        Collectors.toSet()));
     }
 
     @Test
@@ -165,7 +167,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         Project project = pair.getKey();
         ModelGroup superGroup = pair.getValue();
         Set<Integer> expectedIds = superGroup.getChildModelContainers().stream().map(
-            x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
+                x -> ((ModelContainer) x).getModelId()).collect(Collectors.toSet());
 
         ProjectFile projectFile = new ProjectFile();
         projectFile.populateFromProject(project);
@@ -173,7 +175,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         Project.saveProject(project);
 
         Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
-            + File.separator + project.getProjectName());
+                + File.separator + project.getProjectName());
 
         Assert.assertEquals(1, newProject.getTopLevelModels().size());
 
@@ -183,42 +185,42 @@ public class ProjectTest extends JavaFXConfiguredTest
         Assert.assertEquals(3, newProject.getTopLevelModels().size());
 
         Assert.assertEquals(expectedIds,
-                            newProject.getTopLevelModels().stream().map(x -> x.getModelId()).collect(
-                                Collectors.toSet()));
+                newProject.getTopLevelModels().stream().map(x -> x.getModelId()).collect(
+                        Collectors.toSet()));
 
         Set<ModelGroup> modelGroups = newProject.getTopLevelModels().stream().
-            filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
+                filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
 
         Assert.assertEquals(1, modelGroups.size());
         ModelGroup modelGroup = modelGroups.iterator().next();
         Assert.assertEquals(2, modelGroup.getChildModelContainers().size());
 
     }
-    
+
     @Test
     public void testSaveProjectWithGroupWithRotation() throws IOException
     {
-        
+
         double ROTATION = 20.1f;
 
         Pair<Project, ModelGroup> pair = makeProject();
         Project project = pair.getKey();
         ModelGroup group = pair.getValue();
         group.setRotationLean(ROTATION);
-        
+
         ProjectFile projectFile = new ProjectFile();
         projectFile.populateFromProject(project);
 
         Project.saveProject(project);
 
         Project newProject = Project.loadProject(ApplicationConfiguration.getProjectDirectory()
-            + File.separator + project.getProjectName());
-        
+                + File.separator + project.getProjectName());
+
         Set<ModelGroup> modelGroups = newProject.getTopLevelModels().stream().
-            filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
-        
+                filter(x -> x instanceof ModelGroup).map(x -> (ModelGroup) x).collect(Collectors.toSet());
+
         Assert.assertEquals(1, modelGroups.size());
         ModelGroup modelGroup = modelGroups.iterator().next();
         Assert.assertEquals(ROTATION, modelGroup.getRotationLean(), 0.001);
-    }    
+    }
 }

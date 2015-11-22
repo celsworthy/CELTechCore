@@ -1,8 +1,8 @@
 package celtech.coreUI.visualisation;
 
+import celtech.coreUI.StandardColours;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelGroup;
-import celtech.utils.Math.MathUtils;
+import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
@@ -31,8 +31,8 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     private final Rotate arrowRotate = new Rotate();
     private final Rotate textRotate = new Rotate();
 
-    private final double arrowHeight = 30;
-    private final double arrowWidth = 10;
+    private final double arrowHeight = 18;
+    private final double arrowWidth = 8;
     private final double arrowOffsetFromCorner = 30;
 
     private LineDirection direction;
@@ -40,9 +40,13 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     private double normaliseArrowAngle(final double angle)
     {
         double angleToReturn = 0;
+//        if (angle < 0)
+//        {
+//            angleToReturn = -angle - 180;
+//        } else
         if (angle < 0)
         {
-            angleToReturn = -angle - 180;
+            angleToReturn = angle;
         } else
         {
             angleToReturn = -angle;
@@ -79,30 +83,21 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         dimensionText.getTransforms().addAll(textTranslate, textRotate);
 
         dimensionText.getStyleClass().add("dimension-label");
-
-        if (modelContainer instanceof ModelGroup)
-        {
-            dimensionText.getStyleClass().add("dimension-group");
-            dimensionLine.getStyleClass().add("dimension-group");
-            upArrow.getStyleClass().add("dimension-group");
-            downArrow.getStyleClass().add("dimension-group");
-        } else
-        {
-            dimensionLine.getStyleClass().add("dimension-line");
-            upArrow.getStyleClass().add("dimension-arrow");
-            downArrow.getStyleClass().add("dimension-arrow");
-        }
+        dimensionText.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        dimensionLine.setStroke(StandardColours.DIMENSION_LINE_GREEN);
+        upArrow.setFill(StandardColours.DIMENSION_LINE_GREEN);
+        downArrow.setFill(StandardColours.DIMENSION_LINE_GREEN);
 
         downArrow.getPoints().setAll(0d, 0d,
-                                     arrowWidth / 2, -arrowHeight,
-                                     -arrowWidth / 2, -arrowHeight);
+                arrowWidth / 2, -arrowHeight,
+                -arrowWidth / 2, -arrowHeight);
         downArrow.getTransforms().addAll(secondArrowTranslate, arrowRotate);
         arrowRotate.setPivotX(0);
         arrowRotate.setPivotY(0);
 
         upArrow.getPoints().setAll(0d, 0d,
-                                   arrowWidth / 2, arrowHeight,
-                                   -arrowWidth / 2, arrowHeight);
+                arrowWidth / 2, arrowHeight,
+                -arrowWidth / 2, arrowHeight);
         upArrow.getTransforms().addAll(firstArrowTranslate, arrowRotate);
 
         getChildren().addAll(upArrow, downArrow, dimensionLine, dimensionText);
@@ -110,35 +105,35 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         setMouseTransparent(true);
 
         updateArrowAndTextPosition(modelContainer.getScreenExtents(),
-                                   modelContainer.getTransformedHeight(),
-                                   modelContainer.getTransformedWidth(),
-                                   modelContainer.getTransformedDepth());
+                modelContainer.getTransformedHeight(),
+                modelContainer.getTransformedWidth(),
+                modelContainer.getTransformedDepth());
     }
 
     @Override
     public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
     {
         updateArrowAndTextPosition(screenExtentsProvider.getScreenExtents(),
-                                   screenExtentsProvider.getTransformedHeight(),
-                                   screenExtentsProvider.getTransformedWidth(),
-                                   screenExtentsProvider.getTransformedDepth());
+                screenExtentsProvider.getTransformedHeight(),
+                screenExtentsProvider.getTransformedWidth(),
+                screenExtentsProvider.getTransformedDepth());
     }
 
     private void updateArrowAndTextPosition(final ScreenExtents extents,
-        final double transformedHeight,
-        final double transformedWidth,
-        final double transformedDepth)
+            final double transformedHeight,
+            final double transformedWidth,
+            final double transformedDepth)
     {
         if (direction == LineDirection.VERTICAL)
         {
             dimensionText.setText(String.
-                format("%.2f", transformedHeight));
+                    format("%.1f", transformedHeight));
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
             {
                 if (extents.heightEdges[edgeIndex].getFirstPoint().getX() < heightEdge.
-                    getFirstPoint().getX())
+                        getFirstPoint().getX())
                 {
                     heightEdge = extents.heightEdges[edgeIndex];
                 }
@@ -164,21 +159,31 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             Point2D bottomPoint = screenToLocal(bottomVerticalPoint);
 
             if (topPoint != null
-                && bottomPoint != null)
+                    && bottomPoint != null)
             {
-                double opposite = topPoint.getX() - bottomPoint.getX();
-                double adjacent = topPoint.getY() - bottomPoint.getY();
-                double theta = Math.atan(opposite / adjacent);
-                double angle = theta * MathUtils.RAD_TO_DEG;
+                double xComponent = topPoint.getX() - bottomPoint.getX();
+                double yComponent = topPoint.getY() - bottomPoint.getY();
+                double lineLength = Math.sqrt((xComponent * xComponent) + (yComponent * yComponent));
+                double angle = (RAD_TO_DEG * Math.atan2(xComponent, -yComponent));
+
+                if (lineLength < arrowHeight * 2 + 5)
+                {
+                    upArrow.setVisible(false);
+                    downArrow.setVisible(false);
+                } else
+                {
+                    upArrow.setVisible(true);
+                    downArrow.setVisible(true);
+                }
 
                 dimensionLine.setStartX(bottomPoint.getX());
                 dimensionLine.setStartY(bottomPoint.getY());
                 dimensionLine.setEndX(topPoint.getX());
                 dimensionLine.setEndY(topPoint.getY());
 
-                textTranslate.setX(midPoint.getX());
-                textTranslate.setY(midPoint.getY());
-                textRotate.setAngle(-angle);
+                textTranslate.setX(midPoint.getX() - dimensionText.getBoundsInLocal().getWidth() / 2.0);
+                textTranslate.setY(midPoint.getY() + dimensionText.getBoundsInLocal().getHeight() / 2.0);
+//                textRotate.setAngle(-angle);
 
                 firstArrowTranslate.setX(topPoint.getX());
                 firstArrowTranslate.setY(topPoint.getY());
@@ -190,19 +195,19 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.HORIZONTAL)
         {
             dimensionText.setText(String.
-                format("%.2f", transformedWidth));
+                    format("%.1f", transformedWidth));
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
-                > widthEdge.getFirstPoint().getY()
-                && extents.widthEdges[1].getSecondPoint().getY()
-                > widthEdge.getSecondPoint().getY())
+                    > widthEdge.getFirstPoint().getY()
+                    && extents.widthEdges[1].getSecondPoint().getY()
+                    > widthEdge.getSecondPoint().getY())
             {
                 widthEdge = extents.widthEdges[1];
             }
 
-            Point2D leftHorizontalPoint = null;
-            Point2D rightHorizontalPoint = null;
+            Point2D leftHorizontalPoint = widthEdge.getFirstPoint();
+            Point2D rightHorizontalPoint = widthEdge.getSecondPoint();
 
             if (widthEdge.getFirstPoint().getX() < widthEdge.getSecondPoint().getX())
             {
@@ -221,25 +226,30 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             Point2D rightPoint = screenToLocal(rightHorizontalPoint);
 
             if (leftPoint != null
-                && rightPoint != null)
+                    && rightPoint != null)
             {
-                double opposite = leftPoint.getX() - rightPoint.getX();
-                double adjacent = leftPoint.getY() - rightPoint.getY();
-                double theta = Math.atan(opposite / adjacent);
-                double angle = theta * MathUtils.RAD_TO_DEG;
+                double xComponent = rightPoint.getX() - leftPoint.getX();
+                double yComponent = rightPoint.getY() - leftPoint.getY();
+                double lineLength = Math.sqrt((xComponent * xComponent) + (yComponent * yComponent));
+                double angle = (RAD_TO_DEG * Math.atan2(xComponent, -yComponent)) - 180;
+
+                if (lineLength < arrowHeight * 2 + 5)
+                {
+                    upArrow.setVisible(false);
+                    downArrow.setVisible(false);
+                } else
+                {
+                    upArrow.setVisible(true);
+                    downArrow.setVisible(true);
+                }
 
                 dimensionLine.setStartX(rightPoint.getX());
                 dimensionLine.setStartY(rightPoint.getY());
                 dimensionLine.setEndX(leftPoint.getX());
                 dimensionLine.setEndY(leftPoint.getY());
 
-                textTranslate.setX(midPoint.getX());
-                textTranslate.setY(midPoint.getY());
-//                steno.info("Text rotate");
-//                steno.info("Input " + (angle - 90));
-//                textRotate.setAngle(normaliseTextAngle(angle));
-//                steno.info("Normalised " + normaliseTextAngle(angle));
-//                steno.info("<<<<<<<<<<<");
+                textTranslate.setX(midPoint.getX() - dimensionText.getBoundsInLocal().getWidth() / 2.0);
+                textTranslate.setY(midPoint.getY() + dimensionText.getBoundsInLocal().getHeight() / 2.0);
 
                 firstArrowTranslate.setX(leftPoint.getX());
                 firstArrowTranslate.setY(leftPoint.getY());
@@ -247,19 +257,18 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
                 secondArrowTranslate.setX(rightPoint.getX());
                 secondArrowTranslate.setY(rightPoint.getY());
 
-                double angleToRotateArrow = normaliseArrowAngle(angle);
-                arrowRotate.setAngle(angleToRotateArrow);
+                arrowRotate.setAngle(angle);
             }
         } else if (direction == LineDirection.FORWARD_BACK)
         {
             dimensionText.setText(String.
-                format("%.2f", transformedDepth));
+                    format("%.1f", transformedDepth));
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()
-                > depthEdge.getFirstPoint().getY()
-                && extents.depthEdges[1].getSecondPoint().getY()
-                > depthEdge.getSecondPoint().getY())
+                    > depthEdge.getFirstPoint().getY()
+                    && extents.depthEdges[1].getSecondPoint().getY()
+                    > depthEdge.getSecondPoint().getY())
             {
                 depthEdge = extents.depthEdges[1];
             }
@@ -284,21 +293,31 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             Point2D frontPoint = screenToLocal(frontHorizontalPoint);
 
             if (backPoint != null
-                && frontPoint != null)
+                    && frontPoint != null)
             {
-                double opposite = backPoint.getX() - frontPoint.getX();
-                double adjacent = backPoint.getY() - frontPoint.getY();
-                double theta = Math.atan(opposite / adjacent);
-                double angle = theta * MathUtils.RAD_TO_DEG;
+                double xComponent = backPoint.getX() - frontPoint.getX();
+                double yComponent = backPoint.getY() - frontPoint.getY();
+                double lineLength = Math.sqrt((xComponent * xComponent) + (yComponent * yComponent));
+                double angle = (RAD_TO_DEG * Math.atan2(xComponent, -yComponent));
+
+                if (lineLength < arrowHeight * 2 + 5)
+                {
+                    upArrow.setVisible(false);
+                    downArrow.setVisible(false);
+                } else
+                {
+                    upArrow.setVisible(true);
+                    downArrow.setVisible(true);
+                }
 
                 dimensionLine.setStartX(frontPoint.getX());
                 dimensionLine.setStartY(frontPoint.getY());
                 dimensionLine.setEndX(backPoint.getX());
                 dimensionLine.setEndY(backPoint.getY());
 
-                textTranslate.setX(midPoint.getX());
-                textTranslate.setY(midPoint.getY());
-                textRotate.setAngle(normaliseArrowAngle(angle - 90));
+                textTranslate.setX(midPoint.getX() - dimensionText.getBoundsInLocal().getWidth() / 2.0);
+                textTranslate.setY(midPoint.getY() + dimensionText.getBoundsInLocal().getHeight() / 2.0);
+//                textRotate.setAngle(normaliseArrowAngle(angle - 90));
 
                 firstArrowTranslate.setX(backPoint.getX());
                 firstArrowTranslate.setY(backPoint.getY());

@@ -41,6 +41,8 @@ public class GCodeConstants
      *
      */
     protected static final String goToTargetFirstLayerBedTemperature = "M139";
+    protected static final String goToTargetFirstLayerBedTemperatureE = "M139 E";
+    protected static final String goToTargetFirstLayerBedTemperatureD = "M139 D";
 
     /**
      *

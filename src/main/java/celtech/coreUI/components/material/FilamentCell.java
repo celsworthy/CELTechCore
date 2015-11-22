@@ -5,17 +5,20 @@ package celtech.coreUI.components.material;
 
 import celtech.Lookup;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javax.sound.midi.SysexMessage;
 
 /**
  *
  * @author tony
  */
-public class FilamentCell extends ListCell<Object>
+public class FilamentCell extends ListCell<Filament>
 {
 
     private static int SWATCH_SQUARE_SIZE = 16;
@@ -35,29 +38,38 @@ public class FilamentCell extends ListCell<Object>
     }
 
     @Override
-    protected void updateItem(Object item, boolean empty)
+    protected void updateItem(Filament item, boolean empty)
     {
         super.updateItem(item, empty);
-        if (item != null && !empty)
+        if (item != null && !empty
+                && item != FilamentContainer.UNKNOWN_FILAMENT)
         {
-            if (item instanceof Filament)
-            {
-                Filament filament = (Filament) item;
-                setGraphic(cellContainer);
-                rectangle.setFill(filament.getDisplayColour());
+            Filament filament = (Filament) item;
+            setGraphic(cellContainer);
+            rectangle.setVisible(true);
+            rectangle.setFill(filament.getDisplayColour());
 
+            if (filament.getMaterial() != null)
+            {
                 label.setText(filament.getLongFriendlyName() + " "
-                    + filament.getMaterial().getFriendlyName());
-                label.getStyleClass().add("filamentSwatchPadding");
-            } else {
-                setGraphic(null);
-                label.setText(Lookup.i18n("materialComponent.unknown"));
+                        + filament.getMaterial().getFriendlyName());
+            } else
+            {
+                label.setText(filament.getLongFriendlyName());
             }
+            label.getStyleClass().add("filamentSwatchPadding");
+        } else if (item == FilamentContainer.UNKNOWN_FILAMENT)
+        {
+            Filament filament = (Filament) item;
+            setGraphic(cellContainer);
+            rectangle.setVisible(false);
+
+            label.setText(filament.getLongFriendlyName());
+            label.getStyleClass().add("filamentSwatchPadding");
         } else
         {
             setGraphic(null);
+            label.setText(Lookup.i18n("materialComponent.unknown"));
         }
-
     }
-
 }

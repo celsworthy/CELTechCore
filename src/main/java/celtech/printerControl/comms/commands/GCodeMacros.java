@@ -2,9 +2,13 @@ package celtech.printerControl.comms.commands;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Macro;
 import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.printerControl.model.Head;
+import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.printerControl.model.Printer;
+import celtech.utils.PrinterUtils;
 import celtech.utils.SystemUtils;
+import celtech.utils.tasks.Cancellable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -13,10 +17,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.TreeMap;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -24,9 +26,6 @@ import org.apache.commons.io.FileUtils;
  */
 public class GCodeMacros
 {
-
-    private static final String safetyFeaturesOnDirectory = "Safety_Features_ON";
-    private static final String safetyFeaturesOffDirectory = "Safety_Features_OFF";
 
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeMacros.class.
             getName());
@@ -59,6 +58,22 @@ public class GCodeMacros
         {
             return filenameCode;
         }
+
+        public static SafetyIndicator getEnumForFilenameCode(String code)
+        {
+            SafetyIndicator foundValue = null;
+
+            for (SafetyIndicator value : SafetyIndicator.values())
+            {
+                if (code.equals(value.getFilenameCode()))
+                {
+                    foundValue = value;
+                    break;
+                }
+            }
+
+            return foundValue;
+        }
     }
 
     public enum NozzleUseIndicator implements FilenameEncoder
@@ -83,6 +98,22 @@ public class GCodeMacros
         public String getFilenameCode()
         {
             return filenameCode;
+        }
+
+        public static NozzleUseIndicator getEnumForFilenameCode(String code)
+        {
+            NozzleUseIndicator foundValue = null;
+
+            for (NozzleUseIndicator value : NozzleUseIndicator.values())
+            {
+                if (code.equals(value.getFilenameCode()))
+                {
+                    foundValue = value;
+                    break;
+                }
+            }
+
+            return foundValue;
         }
     }
 
@@ -114,6 +145,7 @@ public class GCodeMacros
         }
 
         NozzleUseIndicator nozzleUse;
+        String specifiedHeadType = null;
 
         if (headTypeCode == null
                 || headTypeCode.equalsIgnoreCase(HeadContainer.defaultHeadID))
@@ -121,6 +153,8 @@ public class GCodeMacros
             nozzleUse = NozzleUseIndicator.DONT_CARE;
         } else
         {
+            specifiedHeadType = headTypeCode;
+            
             if (!requireNozzle0 && !requireNozzle1)
             {
                 nozzleUse = NozzleUseIndicator.DONT_CARE;
@@ -137,7 +171,7 @@ public class GCodeMacros
         }
 
         appendMacroContents(contents, parentMacros, macroName,
-                headTypeCode, nozzleUse,
+                specifiedHeadType, nozzleUse,
                 (Lookup.getUserPreferences().safetyFeaturesOnProperty().get() == false) ? GCodeMacros.SafetyIndicator.SAFETIES_OFF : GCodeMacros.SafetyIndicator.DONT_CARE);
 
         return contents;
@@ -264,7 +298,7 @@ public class GCodeMacros
 
         String[] matchingMacroFilenames = macroDirectory.list(filterForMacrosWithCorrectBase);
 
-        int highestScore = -1;
+        int highestScore = -999;
         int indexOfHighestScoringFilename = -1;
 
         if (matchingMacroFilenames.length > 0)
@@ -313,7 +347,7 @@ public class GCodeMacros
 //        }
     }
 
-    private static int scoreMacroFilename(String filename,
+    protected static int scoreMacroFilename(String filename,
             String headTypeCode,
             NozzleUseIndicator nozzleUse,
             SafetyIndicator safeties)
@@ -323,20 +357,125 @@ public class GCodeMacros
 
         String[] filenameSplit = filename.split("\\.");
 
+        HeadFile specifiedHeadFile = null;
+        if (headTypeCode != null)
+        {
+            specifiedHeadFile = HeadContainer.getHeadByID(headTypeCode);
+        }
+        NozzleUseIndicator specifiedNozzleUseIndicator = nozzleUse;
+        SafetyIndicator specifiedSafetyIndicator = safeties;
+
+        HeadFile fileHeadFile = null;
+        NozzleUseIndicator fileNozzleUseIndicator = null;
+        SafetyIndicator fileSafetyIndicator = null;
+
         if (filenameSplit.length == 2
                 && ("." + filenameSplit[1]).equalsIgnoreCase(ApplicationConfiguration.macroFileExtension))
         {
             String[] nameParts = filenameSplit[0].split(separator);
 
+            int namePartCounter = 0;
+
             for (String namePart : nameParts)
             {
-                if (namePart.equalsIgnoreCase(headTypeCode)
-                        || namePart.equalsIgnoreCase(nozzleUse.getFilenameCode())
-                        || namePart.equalsIgnoreCase(safeties.getFilenameCode()))
+                if (namePartCounter > 0)
                 {
-                    score++;
+                    if (fileHeadFile == null)
+                    {
+                        fileHeadFile = HeadContainer.getHeadByID(namePart);
+                    }
+
+                    if (fileNozzleUseIndicator == null)
+                    {
+                        fileNozzleUseIndicator = NozzleUseIndicator.getEnumForFilenameCode(namePart);
+                    }
+
+                    if (fileSafetyIndicator == null)
+                    {
+                        fileSafetyIndicator = SafetyIndicator.getEnumForFilenameCode(namePart);
+                    }
                 }
+                namePartCounter++;
             }
+
+            //Was it present?
+            if (fileHeadFile != null)
+            {
+                if (specifiedHeadFile == null)
+                {
+                    //Present but not specified
+                    score -= 1;
+                } else
+                {
+                    if (specifiedHeadFile != fileHeadFile)
+                    {
+                        //Specified but not equal
+                        score -= 1;
+                    } else
+                    {
+                        //Specified and equal
+                        score += 1;
+                    }
+                }
+            } else if (specifiedHeadFile != null)
+            {
+                //Specified but not present
+                score -= 1;
+            }
+
+            //Was it present?
+            if (fileNozzleUseIndicator != null)
+            {
+                if (specifiedNozzleUseIndicator == NozzleUseIndicator.DONT_CARE)
+                {
+                    //Present but not specified
+                    score -= 1;
+                } else
+                {
+                    if (specifiedNozzleUseIndicator != fileNozzleUseIndicator)
+                    {
+                        //Specified but not equal
+                        score -= 1;
+                    } else
+                    {
+                        //Specified and equal
+                        score += 1;
+                    }
+                }
+            } else if (specifiedNozzleUseIndicator != NozzleUseIndicator.DONT_CARE)
+            {
+                //Specified but not present
+                score -= 1;
+            }
+
+            //Was it present?
+            if (fileSafetyIndicator != null)
+            {
+                if (specifiedSafetyIndicator == SafetyIndicator.DONT_CARE)
+                {
+                    //Present but not specified
+                    score -= 1;
+                } else
+                {
+                    if (specifiedSafetyIndicator != fileSafetyIndicator)
+                    {
+                        //Specified but not equal
+                        score -= 1;
+                    } else
+                    {
+                        //Specified and equal
+                        score += 1;
+                    }
+                }
+            } else if (specifiedSafetyIndicator != SafetyIndicator.DONT_CARE)
+            {
+                //Specified but not present
+                score -= 1;
+            }
+
+        } else
+        {
+            steno.warning("Couldn't score macro file: " + filename);
         }
 
         return score;
@@ -387,5 +526,25 @@ public class GCodeMacros
         }
 
         return linesInMacro;
+    }
+
+    public static void sendMacroLineByLine(Printer printer, Macro macro, Cancellable cancellable) throws IOException, MacroLoadException
+    {
+        ArrayList<String> macroLines = GCodeMacros.getMacroContents(macro.getMacroFileName(),
+                printer.headProperty().get().typeCodeProperty().get(),
+                false, false);
+
+        for (String macroLine : macroLines)
+        {
+            String lineToTransmit = SystemUtils.cleanGCodeForTransmission(macroLine);
+            if (lineToTransmit.length() > 0)
+            {
+                printer.sendRawGCode(lineToTransmit, false);
+                if (PrinterUtils.waitOnBusy(printer, cancellable))
+                {
+                    return;
+                }
+            }
+        }
     }
 }

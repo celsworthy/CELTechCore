@@ -11,52 +11,53 @@
 <?import javafx.scene.text.*?>
 <?import org.controlsfx.control.textfield.*?>
 
-<VBox styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.ExtrasMenuPanelController">
+<VBox styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <BorderPane style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
-            <center>
-                <VBox>
+        <VBox VBox.vgrow="ALWAYS">
+            <children>
+                <HBox style="-fx-background-color: light_grey;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
                     <children>
-                        <TopMenuStrip BorderPane.alignment="CENTER" />
-                        <HBox style="-fx-background-color: light_grey;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
-                            <children>
-                        <VerticalMenu fx:id="libraryMenu" />
+                        <VerticalMenu fx:id="panelMenu" />
                         <Separator id="calibrationMenuSeparator" maxWidth="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefWidth="5.0">
-                           <HBox.margin>
-                              <Insets bottom="30.0" top="95.0" />
-                           </HBox.margin>
+                            <HBox.margin>
+                                <Insets bottom="30.0" top="95.0" />
+                            </HBox.margin>
                         </Separator>
                         <VBox fx:id="insetNodeContainer">
-                           <children>
-                           </children>
-                           <padding>
-                              <Insets top="95.0" />
-                           </padding>
+                            <children>
+                            </children>
+                            <padding>
+                                <Insets top="95.0" />
+                            </padding>
                         </VBox>
+                    </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+                </HBox>
+                <StackPane>
+                    <children>
+                        <HBox pickOnBounds="false" alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
+                            <children>
+                                <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
                             </children>
                         </HBox>
-                        <BorderPane>
-                            <left>
-                                <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
-                                    <children>
-                                        <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
-                                    </children>
-                                </HBox>
-                            </left>
-                            <center>
-                                <HBox fx:id="buttonBoxContainer" alignment="CENTER" prefHeight="90.0" BorderPane.alignment="CENTER">
-                                    <children>
-                                    </children>
-                                </HBox>
-                            </center>
-                        </BorderPane>
+                        <HBox pickOnBounds="false" fx:id="buttonBoxContainer" alignment="CENTER" prefHeight="90.0" BorderPane.alignment="CENTER">
+                            <children>
+                            </children>
+                        </HBox>
                     </children>
-                </VBox>
-            </center>
-            <left>
-                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
-            </left>
-        </BorderPane>
-        
+                </StackPane>
+            </children>
+         <VBox.margin>
+            <Insets left="30.0" />
+         </VBox.margin>
+         <padding>
+            <Insets top="60.0" />
+         </padding>
+        </VBox>
     </children>
+    <VBox.margin>
+        <Insets top="60.0" />
+    </VBox.margin>
 </VBox>
