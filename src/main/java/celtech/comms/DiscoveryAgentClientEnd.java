@@ -1,13 +1,11 @@
 package celtech.comms;
 
-import celtech.printerControl.comms.DeviceDetector;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.net.SocketTimeoutException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -21,7 +19,7 @@ public class DiscoveryAgentClientEnd implements Runnable
     private final Stenographer steno = StenographerFactory.getStenographer("DiscoveryAgentClientEnd");
     private boolean initialised = false;
     private InetAddress group = null;
-    private MulticastSocket s = null;
+    private DatagramSocket s = null;
     private final RemoteHostListener remoteHostListener;
     private boolean keepRunning = true;
 
@@ -43,8 +41,9 @@ public class DiscoveryAgentClientEnd implements Runnable
             try
             {
                 group = InetAddress.getByName(RemoteDiscovery.multicastAddress);
-                s = new MulticastSocket(RemoteDiscovery.multicastSocket);
-                s.joinGroup(group);
+                s = new DatagramSocket(RemoteDiscovery.clientSocket);
+                s.setSoTimeout(500);
+                steno.info("Bound to " + s.getLocalAddress());
                 initialised = true;
             } catch (IOException ex)
             {
@@ -58,15 +57,19 @@ public class DiscoveryAgentClientEnd implements Runnable
             {
                 DatagramPacket hi = new DatagramPacket(RemoteDiscovery.discoverHostsMessage.getBytes("US-ASCII"),
                         RemoteDiscovery.discoverHostsMessage.length(),
-                        group, RemoteDiscovery.multicastSocket);
+                        group, RemoteDiscovery.remoteSocket);
 
                 s.send(hi);
 
-                byte[] buf = new byte[1000];
+                byte[] buf = new byte[100];
                 DatagramPacket recv = new DatagramPacket(buf, buf.length);
                 s.receive(recv);
 
-                steno.info("Got multicast from " + recv.getAddress().getHostAddress() + ":" + recv.getSocketAddress() + " content was " + recv.getLength() + " bytes " + String.valueOf(recv.getData()));
+                steno.info("Got response from " + recv.getAddress().getHostAddress() + ":" + recv.getSocketAddress() + " content was " + recv.getLength() + " bytes " + String.valueOf(recv.getData()));
+            }
+            catch (SocketTimeoutException ex)
+            {
+                //Nothing heard
             } catch (IOException ex)
             {
                 steno.error("Unable to query for remote hosts");
@@ -81,17 +84,6 @@ public class DiscoveryAgentClientEnd implements Runnable
             }
         }
 
-        if (s.isConnected())
-        {
-            try
-            {
-                s.leaveGroup(group);
-                s.close();
-            } catch (IOException ex)
-            {
-                steno.error("Unable to leave remote host detection group");
-            }
-        }
     }
 
 }

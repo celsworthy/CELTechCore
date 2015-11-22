@@ -105,15 +105,15 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     @Override
     public void run()
     {
-//        remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
-//        remoteHostDiscoveryThread.start();
+        remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
+        remoteHostDiscoveryThread.start();
 
         while (keepRunning)
         {
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
             assessCandidatePrinters(serialPrinters);
 
-//            List<DeviceDetector.DetectedPrinter> remotePrinters = roboxRemoteDeviceDetector.searchForDevices();
+//            List<DeviceDetector.DetectedPrinter> remotePrinters = remoteHostDiscoveryClient.searchForDevices();
 //            assessCandidatePrinters(remotePrinters);
             try
             {
