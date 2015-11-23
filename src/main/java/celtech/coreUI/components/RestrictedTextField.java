@@ -128,7 +128,15 @@ public class RestrictedTextField extends TextField
         if (text != null)
         {
             text = applyRestriction(text);
-            int length = this.getText().length() + text.length() - (end - start);
+            
+            int currentLength = 0;
+            
+            if(this.getText() != null)
+            {
+                currentLength = this.getText().length();
+            }
+            
+            int length = currentLength + text.length() - (end - start);
 
             if ( //Control characters - always let them through
                     text.equals("")
