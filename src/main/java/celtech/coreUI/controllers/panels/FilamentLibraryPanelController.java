@@ -179,7 +179,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
     @FXML
     private GridPane filamentsGridPane;
-    
+
     private final String REMAINING_ON_REEL_UNCHANGED = "-";
 
     private ListChangeListener<EEPROMState> reelEEPROMChangeListener = new ListChangeListener<EEPROMState>()
@@ -285,7 +285,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
     private void updateSaveBindings()
     {
-        if (currentFilament != null && currentFilament.equals(currentFilamentAsEdited))
+        if (currentFilament != null
+                && currentFilament.equals(currentFilamentAsEdited))
         {
             canSave.unbind();
             canSave.setValue(false);
@@ -324,13 +325,15 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             }
 
             if ((currentPrinter.get().reelsProperty().containsKey(0)
-                    && (filament0OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)))
+                    && (filament0OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)
+                    || !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED)))
                     || currentPrinter.get().getReelEEPROMStateProperty().get(0) == EEPROMState.NOT_PROGRAMMED)
             {
                 canWriteToReel1.set(true);
             }
             if ((currentPrinter.get().reelsProperty().containsKey(1)
-                    && (filament1OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)))
+                    && (filament1OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)
+                    || !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED)))
                     || currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
             {
                 canWriteToReel2.set(true);
@@ -835,10 +838,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             } else
             {
 
-                if (isEditable.get())
-                {
-                    whenSavePressed();
-                }
                 float remainingFilament = getRemainingFilament(0);
                 if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
                 {
@@ -849,6 +848,11 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                     {
                         steno.error("parsing remaining filament");
                     }
+                }
+
+                if (isEditable.get())
+                {
+                    whenSavePressed();
                 }
 
                 filament.setRemainingFilament(remainingFilament);
