@@ -120,13 +120,18 @@ public class UtilityMethods
             } else if (lastToolSelectNode.getToolNumber() == toolSelectNode.getToolNumber())
             {
                 toolSelectNode.suppressNodeOutput(true);
+
+                if (ppFeatureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+                {
+                    closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
+                }
             } else
             {
                 if (ppFeatureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
                 {
                     closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
                 }
-                
+
                 //Now look to see if we can consolidate the tool change with a travel
                 if (lastToolSelectNode.getChildren().size() > 0)
                 {

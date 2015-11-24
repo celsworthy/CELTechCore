@@ -1,4 +1,3 @@
-
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
@@ -83,7 +82,7 @@ public class NozzleAssignmentUtilities
             {
                 int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
                 objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
-    }
+            }
         }
     }
 
@@ -195,9 +194,16 @@ public class NozzleAssignmentUtilities
 
                             if (lastSectionNode == null)
                             {
-                                throw new RuntimeException(
-                                        "Couldn't determine prior section for orphan on layer "
-                                        + layerNode.getLayerNumber() + " as last section didn't exist");
+                                if (layerNode.getLayerNumber() == 0)
+                                {
+                                    //Special case - set tool to 0
+                                    requiredToolNumber = 0;
+                                } else
+                                {
+                                    throw new RuntimeException(
+                                            "Couldn't determine prior section for orphan on layer "
+                                            + layerNode.getLayerNumber() + " as last section didn't exist");
+                                }
                             } else
                             {
                                 if (lastSectionNode.getParent() != null
@@ -250,7 +256,7 @@ public class NozzleAssignmentUtilities
                         //Tool number corresponds to nozzle number
                         if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
                         {
-                        //Assuming that we'll only be here with a single material nozzle
+                            //Assuming that we'll only be here with a single material nozzle
                             //In this case nozzle 0 corresponds to tool 0
                             try
                             {

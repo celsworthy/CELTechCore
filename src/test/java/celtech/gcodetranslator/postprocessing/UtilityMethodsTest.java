@@ -480,221 +480,225 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
 //        assertEquals(0.0, ((NozzlePositionProvider) outer2.getChildren().get(5)).getNozzlePosition().getB(), 0.0001);
 //    }
 
-//    //@Test DISABLED23/09/15
-//    public void testSuppressUnnecessaryToolChangesAndInsertToolchangeCloses()
-//    {
-//        LayerNode testLayer = new LayerNode();
-//        testLayer.setLayerNumber(1);
-//
-//        ToolSelectNode tool1 = new ToolSelectNode();
-//        tool1.setToolNumber(0);
-//        ToolSelectNode tool2 = new ToolSelectNode();
-//        tool2.setToolNumber(0);
-//        ToolSelectNode tool3 = new ToolSelectNode();
-//        tool3.setToolNumber(1);
-//
-//        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
-//        InnerPerimeterSectionNode inner2 = new InnerPerimeterSectionNode();
-//        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
-//        OuterPerimeterSectionNode outer2 = new OuterPerimeterSectionNode();
-//        FillSectionNode fill1 = new FillSectionNode();
-//        FillSectionNode fill2 = new FillSectionNode();
-//
-//        tool1.addChildAtEnd(inner1);
-//        tool1.addChildAtEnd(outer1);
-//
-//        ExtrusionNode extrusionNode1 = new ExtrusionNode();
-//        extrusionNode1.getExtrusion().setE(1f);
-//        extrusionNode1.getMovement().setX(1);
-//        extrusionNode1.getMovement().setY(1);
-//        extrusionNode1.setCommentText("Ex1");
-//
-//        ExtrusionNode extrusionNode2 = new ExtrusionNode();
-//        extrusionNode2.getExtrusion().setE(1f);
-//        extrusionNode2.getMovement().setX(9);
-//        extrusionNode2.getMovement().setY(1);
-//        extrusionNode2.setCommentText("Ex2");
-//
-//        ExtrusionNode extrusionNode3 = new ExtrusionNode();
-//        extrusionNode3.getExtrusion().setE(1f);
-//        extrusionNode3.getMovement().setX(9);
-//        extrusionNode3.getMovement().setY(9);
-//        extrusionNode3.setCommentText("Ex3");
-//
-//        ExtrusionNode extrusionNode4 = new ExtrusionNode();
-//        extrusionNode4.getExtrusion().setE(1f);
-//        extrusionNode4.getMovement().setX(1);
-//        extrusionNode4.getMovement().setY(9);
-//
-//        ExtrusionNode extrusionNode5 = new ExtrusionNode();
-//        extrusionNode5.getExtrusion().setE(1f);
-//        extrusionNode5.getMovement().setX(0);
-//        extrusionNode5.getMovement().setY(0);
-//
-//        ExtrusionNode extrusionNode6 = new ExtrusionNode();
-//        extrusionNode6.getExtrusion().setE(1f);
-//        extrusionNode6.getMovement().setX(10);
-//        extrusionNode6.getMovement().setY(0);
-//
-//        ExtrusionNode extrusionNode7 = new ExtrusionNode();
-//        extrusionNode7.getExtrusion().setE(1f);
-//        extrusionNode7.getMovement().setX(10);
-//        extrusionNode7.getMovement().setY(10);
-//
-//        ExtrusionNode extrusionNode8 = new ExtrusionNode();
-//        extrusionNode8.getExtrusion().setE(1f);
-//        extrusionNode8.getMovement().setX(0);
-//        extrusionNode8.getMovement().setY(10);
-//
-//        inner1.addChildAtEnd(extrusionNode1);
-//        inner1.addChildAtEnd(extrusionNode2);
-//        inner1.addChildAtEnd(extrusionNode3);
-//        inner1.addChildAtEnd(extrusionNode4);
-//
-//        outer1.addChildAtEnd(extrusionNode5);
-//        outer1.addChildAtEnd(extrusionNode6);
-//        outer1.addChildAtEnd(extrusionNode7);
-//        outer1.addChildAtEnd(extrusionNode8);
-//
-//        tool2.addChildAtEnd(fill1);
-//        tool2.addChildAtEnd(fill2);
-//
-//        ExtrusionNode extrusionNode9 = new ExtrusionNode();
-//        extrusionNode9.getExtrusion().setE(1f);
-//        extrusionNode9.getMovement().setX(0);
-//        extrusionNode9.getMovement().setY(0);
-//
-//        ExtrusionNode extrusionNode10 = new ExtrusionNode();
-//        extrusionNode10.getExtrusion().setE(1f);
-//        extrusionNode10.getMovement().setX(1);
-//        extrusionNode10.getMovement().setY(1);
-//
-//        ExtrusionNode extrusionNode11 = new ExtrusionNode();
-//        extrusionNode11.getExtrusion().setE(1f);
-//        extrusionNode11.getMovement().setX(2);
-//        extrusionNode11.getMovement().setY(2);
-//
-//        ExtrusionNode extrusionNode12 = new ExtrusionNode();
-//        extrusionNode12.getExtrusion().setE(1f);
-//        extrusionNode12.getMovement().setX(1);
-//        extrusionNode12.getMovement().setY(1);
-//
-//        ExtrusionNode extrusionNode13 = new ExtrusionNode();
-//        extrusionNode13.getExtrusion().setE(1f);
-//        extrusionNode13.getMovement().setX(2);
-//        extrusionNode13.getMovement().setY(2);
-//
-//        ExtrusionNode extrusionNode14 = new ExtrusionNode();
-//        extrusionNode14.getExtrusion().setE(1f);
-//        extrusionNode14.getMovement().setX(3);
-//        extrusionNode14.getMovement().setY(3);
-//
-//        fill1.addChildAtEnd(extrusionNode9);
-//        fill1.addChildAtEnd(extrusionNode10);
-//        fill1.addChildAtEnd(extrusionNode11);
-//
-//        fill2.addChildAtEnd(extrusionNode12);
-//        fill2.addChildAtEnd(extrusionNode13);
-//        fill2.addChildAtEnd(extrusionNode14);
-//
-//        tool3.addChildAtEnd(inner2);
-//        tool3.addChildAtEnd(outer2);
-//
-//        ExtrusionNode extrusionNode15 = new ExtrusionNode();
-//        extrusionNode15.getExtrusion().setE(1f);
-//        extrusionNode15.getMovement().setX(1);
-//        extrusionNode15.getMovement().setY(1);
-//
-//        ExtrusionNode extrusionNode16 = new ExtrusionNode();
-//        extrusionNode16.getExtrusion().setE(1f);
-//        extrusionNode16.getMovement().setX(9);
-//        extrusionNode16.getMovement().setY(1);
-//
-//        ExtrusionNode extrusionNode17 = new ExtrusionNode();
-//        extrusionNode17.getExtrusion().setE(1f);
-//        extrusionNode17.getMovement().setX(9);
-//        extrusionNode17.getMovement().setY(9);
-//
-//        ExtrusionNode extrusionNode18 = new ExtrusionNode();
-//        extrusionNode18.getExtrusion().setE(1f);
-//        extrusionNode18.getMovement().setX(1);
-//        extrusionNode18.getMovement().setY(9);
-//
-//        ExtrusionNode extrusionNode19 = new ExtrusionNode();
-//        extrusionNode19.getExtrusion().setE(1f);
-//        extrusionNode19.getMovement().setX(0);
-//        extrusionNode19.getMovement().setY(0);
-//
-//        ExtrusionNode extrusionNode20 = new ExtrusionNode();
-//        extrusionNode20.getExtrusion().setE(1f);
-//        extrusionNode20.getMovement().setX(10);
-//        extrusionNode20.getMovement().setY(1);
-//
-//        ExtrusionNode extrusionNode21 = new ExtrusionNode();
-//        extrusionNode21.getExtrusion().setE(1f);
-//        extrusionNode21.getMovement().setX(10);
-//        extrusionNode21.getMovement().setY(10);
-//
-//        ExtrusionNode extrusionNode22 = new ExtrusionNode();
-//        extrusionNode22.getExtrusion().setE(1f);
-//        extrusionNode22.getMovement().setX(1);
-//        extrusionNode22.getMovement().setY(10);
-//
-//        inner2.addChildAtEnd(extrusionNode15);
-//        inner2.addChildAtEnd(extrusionNode16);
-//        inner2.addChildAtEnd(extrusionNode17);
-//        inner2.addChildAtEnd(extrusionNode18);
-//
-//        outer2.addChildAtEnd(extrusionNode19);
-//        outer2.addChildAtEnd(extrusionNode20);
-//        outer2.addChildAtEnd(extrusionNode21);
-//        outer2.addChildAtEnd(extrusionNode22);
-//
-//        testLayer.addChildAtEnd(tool1);
-//        testLayer.addChildAtEnd(tool2);
-//        testLayer.addChildAtEnd(tool3);
-//
-//        NozzleParameters nozzleParams = new NozzleParameters();
-//        nozzleParams.setEjectionVolume(1f);
-//
-//        Optional<NozzleProxy> testProxy = Optional.of(new NozzleProxy(nozzleParams));
-//        testProxy.get().setCurrentPosition(1.0);
-//
-//        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-//        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
-//        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
-//        ppFeatures.enableFeature(PostProcessorFeature.CLOSE_ON_TASK_CHANGE);
-//        ppFeatures.enableFeature(PostProcessorFeature.GRADUAL_CLOSE);
-//
-//        Project testProject = new Project();
-//        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-//        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
-//
-//        List<NozzleProxy> nozzleProxies = new ArrayList<>();
-//        for (int nozzleIndex = 0;
-//                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
-//                .size(); nozzleIndex++)
-//        {
-//            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
-//            proxy.setNozzleReferenceNumber(nozzleIndex);
-//            nozzleProxies.add(proxy);
-//        }
-//
-//        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
-//            testProject.getPrinterSettings().getSettings("RBX01-SM"), 
-//            "RBX01-SM");
-//        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testProxy, testLayer, 0, 0, 0, 10, null, null, -1);
-//
-//        utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeOpensAndCloses(testLayer, lastLayerParseResult, nozzleProxies);
-//
-//        assertEquals(3, testLayer.getChildren().size());
-//        assertFalse(tool1.isNodeOutputSuppressed());
-//        assertTrue(tool2.isNodeOutputSuppressed());
-//        assertFalse(tool3.isNodeOutputSuppressed());
-//
-//        assertTrue(tool3.getAbsolutelyTheLastEvent() instanceof NozzlePositionProvider);
-//        assertTrue(((NozzlePositionProvider)tool3.getAbsolutelyTheLastEvent()).getNozzlePosition().isBSet());
-//    }
+    @Test
+    public void testSuppressUnnecessaryToolChangesAndInsertToolchangeCloses()
+    {
+        LayerNode testLayer = new LayerNode();
+        testLayer.setLayerNumber(1);
+
+        ToolSelectNode tool1 = new ToolSelectNode();
+        tool1.setToolNumber(0);
+        ToolSelectNode tool2 = new ToolSelectNode();
+        tool2.setToolNumber(0);
+        ToolSelectNode tool3 = new ToolSelectNode();
+        tool3.setToolNumber(1);
+
+        InnerPerimeterSectionNode inner1 = new InnerPerimeterSectionNode();
+        InnerPerimeterSectionNode inner2 = new InnerPerimeterSectionNode();
+        OuterPerimeterSectionNode outer1 = new OuterPerimeterSectionNode();
+        OuterPerimeterSectionNode outer2 = new OuterPerimeterSectionNode();
+        FillSectionNode fill1 = new FillSectionNode();
+        FillSectionNode fill2 = new FillSectionNode();
+
+        tool1.addChildAtEnd(inner1);
+        tool1.addChildAtEnd(outer1);
+
+        ExtrusionNode extrusionNode1 = new ExtrusionNode();
+        extrusionNode1.getExtrusion().setE(1f);
+        extrusionNode1.getMovement().setX(1);
+        extrusionNode1.getMovement().setY(1);
+        extrusionNode1.setCommentText("Ex1");
+
+        ExtrusionNode extrusionNode2 = new ExtrusionNode();
+        extrusionNode2.getExtrusion().setE(1f);
+        extrusionNode2.getMovement().setX(9);
+        extrusionNode2.getMovement().setY(1);
+        extrusionNode2.setCommentText("Ex2");
+
+        ExtrusionNode extrusionNode3 = new ExtrusionNode();
+        extrusionNode3.getExtrusion().setE(1f);
+        extrusionNode3.getMovement().setX(9);
+        extrusionNode3.getMovement().setY(9);
+        extrusionNode3.setCommentText("Ex3");
+
+        ExtrusionNode extrusionNode4 = new ExtrusionNode();
+        extrusionNode4.getExtrusion().setE(1f);
+        extrusionNode4.getMovement().setX(1);
+        extrusionNode4.getMovement().setY(9);
+
+        ExtrusionNode extrusionNode5 = new ExtrusionNode();
+        extrusionNode5.getExtrusion().setE(1f);
+        extrusionNode5.getMovement().setX(0);
+        extrusionNode5.getMovement().setY(0);
+
+        ExtrusionNode extrusionNode6 = new ExtrusionNode();
+        extrusionNode6.getExtrusion().setE(1f);
+        extrusionNode6.getMovement().setX(10);
+        extrusionNode6.getMovement().setY(0);
+
+        ExtrusionNode extrusionNode7 = new ExtrusionNode();
+        extrusionNode7.getExtrusion().setE(1f);
+        extrusionNode7.getMovement().setX(10);
+        extrusionNode7.getMovement().setY(10);
+
+        ExtrusionNode extrusionNode8 = new ExtrusionNode();
+        extrusionNode8.getExtrusion().setE(1f);
+        extrusionNode8.getMovement().setX(0);
+        extrusionNode8.getMovement().setY(10);
+
+        inner1.addChildAtEnd(extrusionNode1);
+        inner1.addChildAtEnd(extrusionNode2);
+        inner1.addChildAtEnd(extrusionNode3);
+        inner1.addChildAtEnd(extrusionNode4);
+
+        outer1.addChildAtEnd(extrusionNode5);
+        outer1.addChildAtEnd(extrusionNode6);
+        outer1.addChildAtEnd(extrusionNode7);
+        outer1.addChildAtEnd(extrusionNode8);
+
+        tool2.addChildAtEnd(fill1);
+        tool2.addChildAtEnd(fill2);
+
+        ExtrusionNode extrusionNode9 = new ExtrusionNode();
+        extrusionNode9.getExtrusion().setE(1f);
+        extrusionNode9.getMovement().setX(0);
+        extrusionNode9.getMovement().setY(0);
+
+        ExtrusionNode extrusionNode10 = new ExtrusionNode();
+        extrusionNode10.getExtrusion().setE(1f);
+        extrusionNode10.getMovement().setX(1);
+        extrusionNode10.getMovement().setY(1);
+
+        ExtrusionNode extrusionNode11 = new ExtrusionNode();
+        extrusionNode11.getExtrusion().setE(1f);
+        extrusionNode11.getMovement().setX(2);
+        extrusionNode11.getMovement().setY(2);
+
+        ExtrusionNode extrusionNode12 = new ExtrusionNode();
+        extrusionNode12.getExtrusion().setE(1f);
+        extrusionNode12.getMovement().setX(1);
+        extrusionNode12.getMovement().setY(1);
+
+        ExtrusionNode extrusionNode13 = new ExtrusionNode();
+        extrusionNode13.getExtrusion().setE(1f);
+        extrusionNode13.getMovement().setX(2);
+        extrusionNode13.getMovement().setY(2);
+
+        ExtrusionNode extrusionNode14 = new ExtrusionNode();
+        extrusionNode14.getExtrusion().setE(1f);
+        extrusionNode14.getMovement().setX(3);
+        extrusionNode14.getMovement().setY(3);
+
+        fill1.addChildAtEnd(extrusionNode9);
+        fill1.addChildAtEnd(extrusionNode10);
+        fill1.addChildAtEnd(extrusionNode11);
+
+        fill2.addChildAtEnd(extrusionNode12);
+        fill2.addChildAtEnd(extrusionNode13);
+        fill2.addChildAtEnd(extrusionNode14);
+
+        tool3.addChildAtEnd(inner2);
+        tool3.addChildAtEnd(outer2);
+
+        ExtrusionNode extrusionNode15 = new ExtrusionNode();
+        extrusionNode15.getExtrusion().setE(1f);
+        extrusionNode15.getMovement().setX(1);
+        extrusionNode15.getMovement().setY(1);
+
+        ExtrusionNode extrusionNode16 = new ExtrusionNode();
+        extrusionNode16.getExtrusion().setE(1f);
+        extrusionNode16.getMovement().setX(9);
+        extrusionNode16.getMovement().setY(1);
+
+        ExtrusionNode extrusionNode17 = new ExtrusionNode();
+        extrusionNode17.getExtrusion().setE(1f);
+        extrusionNode17.getMovement().setX(9);
+        extrusionNode17.getMovement().setY(9);
+
+        ExtrusionNode extrusionNode18 = new ExtrusionNode();
+        extrusionNode18.getExtrusion().setE(1f);
+        extrusionNode18.getMovement().setX(1);
+        extrusionNode18.getMovement().setY(9);
+
+        ExtrusionNode extrusionNode19 = new ExtrusionNode();
+        extrusionNode19.getExtrusion().setE(1f);
+        extrusionNode19.getMovement().setX(0);
+        extrusionNode19.getMovement().setY(0);
+
+        ExtrusionNode extrusionNode20 = new ExtrusionNode();
+        extrusionNode20.getExtrusion().setE(1f);
+        extrusionNode20.getMovement().setX(10);
+        extrusionNode20.getMovement().setY(1);
+
+        ExtrusionNode extrusionNode21 = new ExtrusionNode();
+        extrusionNode21.getExtrusion().setE(1f);
+        extrusionNode21.getMovement().setX(10);
+        extrusionNode21.getMovement().setY(10);
+
+        ExtrusionNode extrusionNode22 = new ExtrusionNode();
+        extrusionNode22.getExtrusion().setE(1f);
+        extrusionNode22.getMovement().setX(1);
+        extrusionNode22.getMovement().setY(10);
+
+        inner2.addChildAtEnd(extrusionNode15);
+        inner2.addChildAtEnd(extrusionNode16);
+        inner2.addChildAtEnd(extrusionNode17);
+        inner2.addChildAtEnd(extrusionNode18);
+
+        outer2.addChildAtEnd(extrusionNode19);
+        outer2.addChildAtEnd(extrusionNode20);
+        outer2.addChildAtEnd(extrusionNode21);
+        outer2.addChildAtEnd(extrusionNode22);
+
+        testLayer.addChildAtEnd(tool1);
+        testLayer.addChildAtEnd(tool2);
+        testLayer.addChildAtEnd(tool3);
+
+        NozzleParameters nozzleParams = new NozzleParameters();
+        nozzleParams.setEjectionVolume(1f);
+
+        Optional<NozzleProxy> testProxy = Optional.of(new NozzleProxy(nozzleParams));
+        testProxy.get().setCurrentPosition(1.0);
+
+        PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
+        ppFeatures.enableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
+        ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
+
+        Project testProject = new Project();
+        testProject.getPrinterSettings().setSettingsName("Normal");
+        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-DM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-DM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+            testProject.getPrinterSettings().getSettings("RBX01-DM"), 
+            "RBX01-DM");
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 10, null, null, -1);
+
+        OutputUtilities opUtils = new OutputUtilities();
+        
+        opUtils.outputNodes(testLayer, 0);
+        utilityMethods.suppressUnnecessaryToolChangesAndInsertToolchangeCloses(testLayer, lastLayerParseResult, nozzleProxies);
+        
+        opUtils.outputNodes(testLayer, 0);
+
+        assertEquals(3, testLayer.getChildren().size());
+        assertFalse(tool1.isNodeOutputSuppressed());
+        assertTrue(tool2.isNodeOutputSuppressed());
+        assertFalse(tool3.isNodeOutputSuppressed());
+
+        assertTrue(tool2.getAbsolutelyTheLastEvent() instanceof NozzlePositionProvider);
+        assertTrue(((NozzlePositionProvider)tool2.getAbsolutelyTheLastEvent()).getNozzlePosition().isBSet());
+    }
 
 //    @Test
 //    public void testInsertNozzleOpenFullyBeforeEvent_noReplenish()
