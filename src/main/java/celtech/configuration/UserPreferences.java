@@ -6,9 +6,11 @@ import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.configuration.units.CurrencySymbol;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -40,6 +42,9 @@ public class UserPreferences
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
     private final BooleanProperty goProTriggerEnabled = new SimpleBooleanProperty(false);
     private final StringProperty goProWifiPassword = new SimpleStringProperty("");
+    private final StringProperty goProXMove = new SimpleStringProperty("");
+    private final StringProperty goProYMove = new SimpleStringProperty("");
+    private final IntegerProperty goProDelay = new SimpleIntegerProperty(0);
 
     private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
@@ -80,6 +85,9 @@ public class UserPreferences
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
         this.goProTriggerEnabled.set(userPreferenceFile.isGoProTriggerEnabled());
         this.goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
+        this.goProXMove.set(userPreferenceFile.getGoProXMove());
+        this.goProYMove.set(userPreferenceFile.getGoProYMove());
+        this.goProDelay.set(userPreferenceFile.getGoProDelay());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -92,6 +100,9 @@ public class UserPreferences
         showMetricUnits.addListener(booleanChangeListener);
         goProTriggerEnabled.addListener(booleanChangeListener);
         goProWifiPassword.addListener(stringChangeListener);
+        goProXMove.addListener(stringChangeListener);
+        goProYMove.addListener(stringChangeListener);
+        goProDelay.addListener(numberChangeListener);
     }
 
     public String getLanguageTag()
@@ -349,4 +360,50 @@ public class UserPreferences
     {
         return showMetricUnits;
     }
+
+    public String getGoProXMove()
+    {
+        return goProXMove.get();
+    }
+
+    public void setGoProXMove(String value)
+    {
+        goProXMove.set(value);
+    }
+
+    public StringProperty getGoProXMoveProperty()
+    {
+        return goProXMove;
+    }
+
+    public String getGoProYMove()
+    {
+        return goProYMove.get();
+    }
+
+    public void setGoProYMove(String value)
+    {
+        goProYMove.set(value);
+    }
+
+    public StringProperty getGoProYMoveProperty()
+    {
+        return goProYMove;
+    }
+
+    public int getGoProDelay()
+    {
+        return goProDelay.get();
+    }
+
+    public void setGoProDelay(int value)
+    {
+        goProDelay.set(value);
+    }
+
+    public IntegerProperty getGoProDelayProperty()
+    {
+        return goProDelay;
+    }
+
 }

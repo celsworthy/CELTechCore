@@ -36,11 +36,23 @@ public class Preferences
         Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
                 "preferences.goProWifiPassword");
 
+        Preference goProXMovePref = new StringPreference(userPreferences.getGoProXMoveProperty(),
+                "preferences.goProXMove");
+
+        Preference goProYMovePref = new StringPreference(userPreferences.getGoProYMoveProperty(),
+                "preferences.goProYMove");
+
+        Preference goProDelayPref = new IntegerPreference(userPreferences.getGoProDelayProperty(),
+                "preferences.goProDelay");
+
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
         preferences.add(detectFilamentLoadedPref);
         preferences.add(goProTriggerEnabledPref);
         preferences.add(goProWifiPasswordPref);
+        preferences.add(goProXMovePref);
+        preferences.add(goProYMovePref);
+        preferences.add(goProDelayPref);
 
         return preferences;
     }
