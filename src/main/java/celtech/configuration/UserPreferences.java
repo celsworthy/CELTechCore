@@ -45,6 +45,7 @@ public class UserPreferences
     private final StringProperty goProXMove = new SimpleStringProperty("");
     private final StringProperty goProYMove = new SimpleStringProperty("");
     private final IntegerProperty goProDelay = new SimpleIntegerProperty(0);
+    private final IntegerProperty goProDelayBeforeCapture = new SimpleIntegerProperty(0);
 
     private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
@@ -88,6 +89,7 @@ public class UserPreferences
         this.goProXMove.set(userPreferenceFile.getGoProXMove());
         this.goProYMove.set(userPreferenceFile.getGoProYMove());
         this.goProDelay.set(userPreferenceFile.getGoProDelay());
+        this.goProDelayBeforeCapture.set(userPreferenceFile.getGoProDelayBeforeCapture());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -103,6 +105,7 @@ public class UserPreferences
         goProXMove.addListener(stringChangeListener);
         goProYMove.addListener(stringChangeListener);
         goProDelay.addListener(numberChangeListener);
+        goProDelayBeforeCapture.addListener(numberChangeListener);
     }
 
     public String getLanguageTag()
@@ -406,4 +409,18 @@ public class UserPreferences
         return goProDelay;
     }
 
+    public int getGoProDelayBeforeCapture()
+    {
+        return goProDelayBeforeCapture.get();
+    }
+
+    public void setGoProDelayBeforeCapture(int value)
+    {
+        goProDelayBeforeCapture.set(value);
+    }
+
+    public IntegerProperty getGoProDelayBeforeCaptureProperty()
+    {
+        return goProDelayBeforeCapture;
+    }
 }

@@ -45,6 +45,9 @@ public class Preferences
         Preference goProDelayPref = new IntegerPreference(userPreferences.getGoProDelayProperty(),
                 "preferences.goProDelay");
 
+        Preference goProDelayBeforeCapturePref = new IntegerPreference(userPreferences.getGoProDelayBeforeCaptureProperty(),
+                "preferences.goProDelayBeforeCapture");
+
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
         preferences.add(detectFilamentLoadedPref);
@@ -53,6 +56,7 @@ public class Preferences
         preferences.add(goProXMovePref);
         preferences.add(goProYMovePref);
         preferences.add(goProDelayPref);
+        preferences.add(goProDelayBeforeCapturePref);
 
         return preferences;
     }

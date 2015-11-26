@@ -50,7 +50,14 @@ public class ApplicationStatus
      */
     public void setMode(ApplicationMode newMode)
     {
-        lastMode = currentMode.get();
+        if (currentMode.get() != ApplicationMode.ABOUT
+                && currentMode.get() != ApplicationMode.PURGE
+                && currentMode.get() != ApplicationMode.CALIBRATION_CHOICE
+                && currentMode.get() != ApplicationMode.EXTRAS_MENU
+                && currentMode.get() != ApplicationMode.LIBRARY)
+        {
+            lastMode = currentMode.get();
+        }
         currentMode.setValue(newMode);
     }
 
@@ -62,7 +69,7 @@ public class ApplicationStatus
     {
         return currentMode.getValue();
     }
-    
+
     /**
      *
      * @return
@@ -116,7 +123,7 @@ public class ApplicationStatus
     {
         return averageTimePerFrameProperty;
     }
-    
+
     public void returnToLastMode()
     {
         if (lastMode != null)

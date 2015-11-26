@@ -2749,6 +2749,9 @@ color-picker-label .text-field {
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-font-size: 12pt;
     -fx-text-alignment: center;
+    -fx-pref-width: 40px;
+    -fx-max-width: 40px;
+    -fx-border-color: black;
 }  
 
 .bed-axis-label

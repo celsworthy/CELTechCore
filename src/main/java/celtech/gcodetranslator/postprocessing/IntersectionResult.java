@@ -11,11 +11,13 @@ public class IntersectionResult
 {
     private final GCodeEventNode closestNode;
     private final Vector2D intersectionPoint;
+    private final int nodeIndex;
 
-    public IntersectionResult(GCodeEventNode closestNode, Vector2D intersectionPoint)
+    public IntersectionResult(GCodeEventNode closestNode, Vector2D intersectionPoint, int nodeIndex)
     {
         this.closestNode = closestNode;
         this.intersectionPoint = intersectionPoint;
+        this.nodeIndex = nodeIndex;
     }
 
     public GCodeEventNode getClosestNode()
@@ -26,5 +28,10 @@ public class IntersectionResult
     public Vector2D getIntersectionPoint()
     {
         return intersectionPoint;
+    }
+
+    public int getNodeIndex()
+    {
+        return nodeIndex;
     }
 }

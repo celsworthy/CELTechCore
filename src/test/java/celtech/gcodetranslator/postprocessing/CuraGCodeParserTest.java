@@ -209,6 +209,16 @@ public class CuraGCodeParserTest
         assertFalse(result4.hasErrors());
         assertFalse(result4.matched);
 
+        String inputData5 = "G0 F12000 X146.378 Y92.092\n";
+        ParsingResult result5 = runner.run(inputData5);
+
+        assertFalse(result5.hasErrors());
+        assertTrue(result5.matched);
+        assertEquals(1, result5.valueStack.size());
+        assertTrue(result5.valueStack.peek(0) instanceof TravelNode);
+        assertEquals(146.378, ((TravelNode) result5.valueStack.peek(0)).getMovement().getX(), 0.001);
+        assertEquals(92.092, ((TravelNode) result5.valueStack.peek(0)).getMovement().getY(), 0.001);
+        assertEquals(12000, ((TravelNode) result5.valueStack.peek(0)).getFeedrate().getFeedRate_mmPerMin());
     }
 
     @Test
@@ -486,7 +496,7 @@ public class CuraGCodeParserTest
                 + "G1 F1800 E0.00000\n"
                 + "G1 X12.3 Y14.5 E1.00000\n"
                 + ";TYPE:WALL-OUTER\n"
-                + "G1 X125.3 Y314.5 E1.00000\n";
+                + "G1 X125.3 Y34.5 E1.00000\n";
 
         CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class
         );

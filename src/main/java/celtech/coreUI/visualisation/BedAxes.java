@@ -195,7 +195,7 @@ public class BedAxes extends Pane implements CameraViewChangeListener
     }
 
     @Override
-    public void cameraViewOfYouHasChanged()
+    public void cameraViewOfYouHasChanged(double cameraDistance)
     {
         updateArrowAndTextPosition();
     }

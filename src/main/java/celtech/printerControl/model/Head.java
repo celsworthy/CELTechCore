@@ -392,7 +392,7 @@ public class Head implements Cloneable, RepairableComponent
                 }
             }
 
-            steno.info("Head data bounds check - result is " + result.name());
+            steno.debug("Head data bounds check - result is " + result.name());
         } else
         {
             steno.warning("Head bounds check requested but reference data could not be obtained.");

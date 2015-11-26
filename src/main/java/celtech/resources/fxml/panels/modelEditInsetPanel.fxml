@@ -62,8 +62,8 @@
                             <children>
                                 <StackPane GridPane.halignment="LEFT">
                                     <children>
-                                        <Label fx:id="scaleXCaption" text="%modelEdit.ScaleLabelX" />
-                                        <Label fx:id="widthCaption" layoutX="16.0" layoutY="15.0" text="%modelEdit.WidthLabel" />
+                                        <Label fx:id="scaleXCaption" style="-fx-font-size: 14;" styleClass="regularText" text="%modelEdit.ScaleLabelX" />
+                                        <Label fx:id="widthCaption" layoutX="16.0" layoutY="15.0" styleClass="regularText" text="%modelEdit.WidthLabel" />
                                     </children>
                                 </StackPane>
                                 <StackPane GridPane.halignment="LEFT" GridPane.rowIndex="1">

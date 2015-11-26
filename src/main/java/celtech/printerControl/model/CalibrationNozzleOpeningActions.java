@@ -14,10 +14,8 @@ import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
-import celtech.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
 import java.io.IOException;
-import java.util.ArrayList;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -85,7 +83,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         savedHeadData = printer.readHeadEEPROM(true);
 
         HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
-        
+
         printer.switchAllNozzleHeatersOff();
 
         try
@@ -340,28 +338,41 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         // set to just about to be open
         saveSettings();
         printer.closeNozzleFully();
+
         printer.selectNozzle(0);
         extrudeUntilStall(0);
         pressuriseSystem(0);
-        pressuriseSystem(1);
+
         Thread.sleep(3000);
+
         printer.selectNozzle(1);
-        // 
-        nozzlePosition.set(0);
+        extrudeUntilStall(1);
+        pressuriseSystem(1);
     }
 
     public void doConfirmMaterialExtrudingAction() throws PrinterException, CalibrationException
     {
         printer.selectNozzle(0);
+        extrudeUntilStall(0);
         printer.openNozzleFully();
-        printer.sendRawGCode("G1 E10 F75", false);
+
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            printer.sendRawGCode("G1 D10 F75", false);
+        } else
+        {
+            printer.sendRawGCode("G1 E10 F75", false);
+        }
+
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
         }
+
         printer.selectNozzle(1);
+        extrudeUntilStall(1);
         printer.openNozzleFully();
-        printer.sendRawGCode("G1 E10 F100", false);
+        printer.sendRawGCode("G1 E10 F75", false);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;
@@ -491,6 +502,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         failedActionPerformed = true;
         try
         {
+            steno.info("failed action");
             printerErrorHandler.deregisterForPrinterErrors();
             restoreHeadData();
             resetPrinter();
@@ -505,6 +517,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     @Override
     void whenUserCancelDetected()
     {
+        steno.info("user cancel action");
         restoreHeadData();
         abortAnyOngoingPrint();
     }
@@ -512,6 +525,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     @Override
     void whenErrorDetected()
     {
+        steno.info("error cancel action");
         printerErrorHandler.deregisterForPrinterErrors();
         restoreHeadData();
         abortAnyOngoingPrint();

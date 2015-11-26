@@ -120,11 +120,6 @@ public class UtilityMethods
             } else if (lastToolSelectNode.getToolNumber() == toolSelectNode.getToolNumber())
             {
                 toolSelectNode.suppressNodeOutput(true);
-
-                if (ppFeatureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
-                {
-                    closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
-                }
             } else
             {
                 if (ppFeatureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))

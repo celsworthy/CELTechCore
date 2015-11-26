@@ -34,6 +34,7 @@ public class UserPreferenceFile
     private String goProXMove = "";
     private String goProYMove = "";
     private int goProDelay = 2;
+    private int goProDelayBeforeCapture = 2;
 
     public String getLanguageTag()
     {
@@ -225,6 +226,16 @@ public class UserPreferenceFile
         return goProDelay;
     }
 
+    public void setGoProDelayBeforeCapture(int goProDelayBeforeCapture)
+    {
+        this.goProDelayBeforeCapture = goProDelayBeforeCapture;
+    }
+
+    public int getGoProDelayBeforeCapture()
+    {
+        return goProDelayBeforeCapture;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
@@ -246,5 +257,6 @@ public class UserPreferenceFile
         setGoProXMove(userPreferences.getGoProXMove());
         setGoProYMove(userPreferences.getGoProYMove());
         setGoProDelay(userPreferences.getGoProDelay());
+        setGoProDelayBeforeCapture(userPreferences.getGoProDelayBeforeCapture());
     }
 }

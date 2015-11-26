@@ -23,7 +23,7 @@ public class TransferGCodeToPrinterService extends Service<GCodePrintResult> imp
     private final StringProperty currentPrintJobID = new SimpleStringProperty();
     private final IntegerProperty linesInGCodeFile = new SimpleIntegerProperty(1);
     private final Stenographer steno = StenographerFactory.
-        getStenographer(this.getClass().getName());
+            getStenographer(this.getClass().getName());
     private boolean printUsingSDCard = true;
     private int startFromSequenceNumber = 0;
     private boolean canBeReprinted = true;
@@ -146,8 +146,8 @@ public class TransferGCodeToPrinterService extends Service<GCodePrintResult> imp
     protected Task<GCodePrintResult> createTask()
     {
         return new TransferGCodeToPrinterTask(getPrinterToUse(), getModelFileToPrint(), getCurrentPrintJobID(),
-                                    linesInGCodeFileProperty(), printUsingSDCard,
-                                    startFromSequenceNumber, canBeReprinted, dontInitiatePrint);
+                linesInGCodeFileProperty(), printUsingSDCard,
+                startFromSequenceNumber, canBeReprinted, dontInitiatePrint);
     }
 
     /**
@@ -164,7 +164,13 @@ public class TransferGCodeToPrinterService extends Service<GCodePrintResult> imp
     @Override
     public void reset()
     {
-        super.reset();
+        if (stateProperty().get() == State.SUCCEEDED
+                || stateProperty().get() == State.FAILED
+                || stateProperty().get() == State.CANCELLED
+                || stateProperty().get() == State.READY)
+        {
+            super.reset();
+        }
     }
 
     public void setStartFromSequenceNumber(int startFromSequenceNumber)

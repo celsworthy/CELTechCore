@@ -152,6 +152,6 @@ public class CameraTriggerManager
     private void triggerCamera()
     {
         steno.info("Asked to trigger camera");
-        scheduledPhoto.execute(photoRun);
+        scheduledPhoto.schedule(photoRun, Lookup.getUserPreferences().getGoProDelayBeforeCapture(), TimeUnit.SECONDS);
     }
 }

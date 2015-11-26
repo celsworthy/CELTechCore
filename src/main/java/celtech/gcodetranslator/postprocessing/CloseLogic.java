@@ -19,6 +19,7 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
@@ -181,6 +182,22 @@ public class CloseLogic
                 }
             }
         }
+
+        //Now trim off the first travel nodes until we reach an extrusion.
+        // This prevents odd inward close decisions if the slicer puts in strange moves after the end of the extrusion
+        List<GCodeEventNode> travelNodesToDelete = new ArrayList<>();
+        for (GCodeEventNode node : movementNodes)
+        {
+            if (node instanceof TravelNode)
+            {
+                travelNodesToDelete.add(node);
+            } else
+            {
+                break;
+            }
+        }
+
+        movementNodes.removeAll(travelNodesToDelete);
 
         return new InScopeEvents(movementNodes, availableExtrusion);
     }
@@ -378,9 +395,6 @@ public class CloseLogic
     ) throws CannotCloseFromPerimeterException, NotEnoughAvailableExtrusionException, NoPerimeterToCloseOverException, DidntFindEventException, NodeProcessingException
     {
         Optional<CloseResult> closeResult = Optional.empty();
-        Optional<GCodeEventNode> closestNode = Optional.empty();
-        double nozzleStartPosition = 0;
-        double nozzleCloseOverVolume = 0;
 
         if (inScopeEvents.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
         {
@@ -399,39 +413,6 @@ public class CloseLogic
             throw new NotEnoughAvailableExtrusionException("Not enough available extrusion to close");
         }
 
-        //We'll close in the direction that has most space
-//            try
-//            {
-//                //Try forwards first
-//                double forwardExtrusionTotal = nodeManagementUtilities.findAvailableExtrusion(availableSectionsToCloseOver, result.get().getClosestNode(), true);
-//
-//                if (forwardExtrusionTotal >= volumeToCloseOver)
-//                {
-//                    closestNode = Optional.of(result.get().getClosestNode());
-//                } else
-//                {
-//                    //Try backwards
-//                    double backwardExtrusionTotal = nodeManagementUtilities.findAvailableExtrusion(availableSectionsToCloseOver, result.get().getClosestNode(), false);
-//
-//                    if (backwardExtrusionTotal >= volumeToCloseOver)
-//                    {
-//                        closestNode = Optional.of(result.get().getClosestNode());
-//                        closeResult = copyClose(nodeToAppendClosesTo, closestNode.get(), nozzleInUse, false, backwardExtrusionTotal, false);
-//                    }
-//                }
-//            } catch (NodeProcessingException ex)
-//            {
-//                String outputMessage;
-//                if (nodeToAppendClosesTo instanceof Renderable)
-//                {
-//                    Renderable renderableNode = (Renderable) nodeToAppendClosesTo;
-//                    outputMessage = "Failure to find correct direction to traverse in for node " + renderableNode.renderForOutput();
-//                } else
-//                {
-//                    outputMessage = "Failure to find correct direction to traverse in for node " + nodeToAppendClosesTo.toString();
-//                }
-//                throw new RuntimeException(outputMessage);
-//            }
         return closeResult;
     }
 
@@ -594,6 +575,7 @@ public class CloseLogic
      * @param nozzleInUse
      * @return
      * @throws celtech.gcodetranslator.NotEnoughAvailableExtrusionException
+     * @throws celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException
      */
     protected Optional<CloseResult> copyClose(
             final InScopeEvents extractedMovements,
@@ -627,34 +609,17 @@ public class CloseLogic
                 }
             }
 
-            double availableExtrusionForwards = 0;
-            for (int inScopeEventCounter = nodeToStartCopyingFromIndex; inScopeEventCounter < extractedMovements.getInScopeEvents().size(); inScopeEventCounter++)
-            {
-                if (extractedMovements.getInScopeEvents().get(inScopeEventCounter) instanceof ExtrusionNode)
-                {
-                    availableExtrusionForwards += ((ExtrusionNode) extractedMovements.getInScopeEvents().get(inScopeEventCounter)).getExtrusion().getE();
-                }
-            }
+            double availableExtrusionBackwardsToStartOfExtrusion = 0;
+            availableExtrusionBackwardsToStartOfExtrusion = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, nodeToStartCopyingFromIndex, false);
 
-            if (availableExtrusionForwards >= volumeToCloseOver)
+            if (availableExtrusionBackwardsToStartOfExtrusion >= volumeToCloseOver)
             {
-                availableExtrusion = availableExtrusionForwards;
+                availableExtrusion = availableExtrusionBackwardsToStartOfExtrusion;
             } else
             {
-                double availableExtrusionBackwards = 0;
-                for (int inScopeEventCounter = nodeToStartCopyingFromIndex; inScopeEventCounter >= 0; inScopeEventCounter--)
-                {
-                    if (extractedMovements.getInScopeEvents().get(inScopeEventCounter) instanceof ExtrusionNode)
-                    {
-                        availableExtrusionBackwards += ((ExtrusionNode) extractedMovements.getInScopeEvents().get(inScopeEventCounter)).getExtrusion().getE();
-                    }
-                }
-
-                if (availableExtrusionBackwards >= volumeToCloseOver)
-                {
-                    availableExtrusion = availableExtrusionBackwards;
-                    inScopeEventDelta = -1;
-                }
+                availableExtrusion = extractedMovements.getAvailableExtrusion();
+                inScopeEventDelta = -1;
+                nodeToStartCopyingFromIndex = extractedMovements.getInScopeEvents().size() - 1;
             }
         } else
         {
@@ -663,7 +628,7 @@ public class CloseLogic
 
         ExtrusionNode finalCloseNode = null;
 
-        if (extractedMovements.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+        if (availableExtrusion >= nozzleInUse.getNozzleParameters().getEjectionVolume())
         {
             for (int inScopeEventCounter = nodeToStartCopyingFromIndex;
                     inScopeEventCounter >= 0 && inScopeEventCounter < extractedMovements.getInScopeEvents().size();
@@ -790,7 +755,7 @@ public class CloseLogic
             }
         } else
         {
-            throw new NotEnoughAvailableExtrusionException("Not enough extrusion when attempting to reverse close");
+            throw new NotEnoughAvailableExtrusionException("Not enough extrusion when attempting to copy close");
         }
 
         if (finalCloseNode != null)

@@ -113,9 +113,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         if (newValue == ApplicationMode.SETTINGS)
                         {
                             settingsInsetRoot.setVisible(true);
+                            settingsInsetRoot.setMouseTransparent(false);
                         } else
                         {
                             settingsInsetRoot.setVisible(false);
+                            settingsInsetRoot.setMouseTransparent(true);
                         }
                     });
 

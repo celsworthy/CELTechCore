@@ -41,7 +41,7 @@ public class NozzleAssignmentUtilities
     private final PostProcessingMode postProcessingMode;
 
     private final NozzleManagementUtilities nozzleControlUtilities;
-    private final List<Integer> objectToNozzleNumberMap;
+    private final Map<Integer, Integer> objectToNozzleNumberMap;
     private final Map<Integer, Integer> extruderToNozzleMap;
     private final Map<Integer, Integer> nozzleToExtruderMap;
 
@@ -75,13 +75,15 @@ public class NozzleAssignmentUtilities
             }
         }
 
-        objectToNozzleNumberMap = new ArrayList<>();
+        objectToNozzleNumberMap = new HashMap<>();
+        int objectIndex = 0;
         for (ModelContainer model : project.getTopLevelModels())
         {
             for (MeshView meshView : model.descendentMeshViews())
             {
                 int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
-                objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
+                objectToNozzleNumberMap.put(objectIndex, extruderToNozzleMap.get(extruderNumber));
+                objectIndex++;
             }
         }
     }

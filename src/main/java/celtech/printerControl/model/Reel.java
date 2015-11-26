@@ -349,7 +349,7 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            steno.info("Reel data bounds check - result is " + result.name());
+            steno.debug("Reel data bounds check - result is " + result.name());
         } else
         {
             steno.warning("Reel bounds check requested but reference data could not be obtained.");

@@ -3,10 +3,7 @@ package celtech.gcodetranslator.postprocessing;
 import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.DidntFindEventException;
-import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
-import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
-import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.utils.Math.MathUtils;
@@ -48,18 +45,25 @@ public class CloseUtilities
 
         //Use the first two ExtrusionNodes for the vector
         //In scope events run backwards from a retract so reverse the order to get the true vector
+        GCodeEventNode startNode = null;
         Movement startPosition = null;
+        GCodeEventNode endNode = null;
         Movement endPosition = null;
 
+        int nodeIndex = -1;
         for (GCodeEventNode eventBeingExamined : inScopeEvents)
         {
+            nodeIndex++;
+            
             if (eventBeingExamined instanceof MovementProvider)
             {
                 if (endPosition == null)
                 {
+                    endNode = eventBeingExamined;
                     endPosition = ((MovementProvider) eventBeingExamined).getMovement();
                 } else if (startPosition == null)
                 {
+                    startNode = eventBeingExamined;
                     startPosition = ((MovementProvider) eventBeingExamined).getMovement();
                     break;
                 }
@@ -127,7 +131,9 @@ public class CloseUtilities
                     Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
                             segmentToIntersectWith, segmentUnderConsideration);
 
-                    if (tempIntersectionPoint != null)
+                    if (tempIntersectionPoint != null
+                            && inScopeEvent != startNode
+                            && inScopeEvent != endNode)
                     {
                         double distanceFromMidPoint = tempIntersectionPoint.distance(
                                 segmentToIntersectWithMeasurementPoint);
@@ -156,7 +162,7 @@ public class CloseUtilities
         if (closestNode != null
                 && intersectionPoint != null)
         {
-            result = Optional.of(new IntersectionResult(closestNode, intersectionPoint));
+            result = Optional.of(new IntersectionResult(closestNode, intersectionPoint, nodeIndex));
         }
 
         return result;

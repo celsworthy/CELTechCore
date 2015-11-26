@@ -447,6 +447,10 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             head.getNozzles().get(1).yOffsetProperty().addListener(headChangeListener);
             head.getNozzles().get(1).zOffsetProperty().addListener(headChangeListener);
             head.getNozzles().get(1).bOffsetProperty().addListener(headChangeListener);
+        }
+
+        if (head.getNozzleHeaters().size() > 1)
+        {
             head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(
                     headChangeListener);
         }
