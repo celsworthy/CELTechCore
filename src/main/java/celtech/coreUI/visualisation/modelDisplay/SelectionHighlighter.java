@@ -37,7 +37,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     private Xform selectionBoxFrontLeftBottom = null;
     private Xform selectionBoxFrontRightBottom = null;
 
-    private final double cornerBracketLength = 4;
+    private final double cornerBracketLength = 3;
 
     private DoubleProperty boxScaleProperty = new SimpleDoubleProperty(1.0);
 
@@ -187,6 +187,15 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     public void cameraDistanceChange(double cameraDistance)
     {
-        boxScaleProperty.set(cameraDistance / 200);
+        double newScale = cameraDistance / 150;
+        if (newScale < 0.3)
+        {
+            newScale = 0.3;
+        }
+        else if (newScale > 1.5)
+        {
+            newScale = 1.5;
+        }
+        boxScaleProperty.set(newScale);
     }
 }
