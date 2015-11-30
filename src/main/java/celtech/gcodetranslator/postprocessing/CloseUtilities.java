@@ -3,6 +3,7 @@ package celtech.gcodetranslator.postprocessing;
 import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.DidntFindEventException;
+import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
@@ -35,134 +36,106 @@ public class CloseUtilities
     }
 
     protected Optional<IntersectionResult> findClosestMovementNode(
+            Segment finalSegment,
             List<GCodeEventNode> inScopeEvents,
             boolean intersectOrthogonally
-    ) throws DidntFindEventException
+    )
     {
         GCodeEventNode closestNode = null;
         Vector2D intersectionPoint = null;
         Optional<IntersectionResult> result = Optional.empty();
 
-        //Use the first two ExtrusionNodes for the vector
-        //In scope events run backwards from a retract so reverse the order to get the true vector
-        GCodeEventNode startNode = null;
-        Movement startPosition = null;
-        GCodeEventNode endNode = null;
-        Movement endPosition = null;
-
-        int nodeIndex = -1;
-        for (GCodeEventNode eventBeingExamined : inScopeEvents)
+        if (finalSegment != null)
         {
-            nodeIndex++;
-            
-            if (eventBeingExamined instanceof MovementProvider)
+            // We can work out how to split this extrusion
+            //Get an orthogonal to the extrusion we're considering
+            Vector2D startPoint = finalSegment.getStart();
+            Vector2D endPoint = finalSegment.getEnd();
+            // We want the orthogonal line to be closer to the specified end point rather than the prior point
+            Vector2D vectorFromPriorToThis = endPoint.subtract(startPoint);
+            Vector2D halfwayBetweenPriorAndThisPoint = startPoint.add(vectorFromPriorToThis.scalarMultiply(0.5));
+
+            Segment segmentToIntersectWith = null;
+            Vector2D segmentToIntersectWithMeasurementPoint = null;
+
+            if (intersectOrthogonally)
             {
-                if (endPosition == null)
-                {
-                    endNode = eventBeingExamined;
-                    endPosition = ((MovementProvider) eventBeingExamined).getMovement();
-                } else if (startPosition == null)
-                {
-                    startNode = eventBeingExamined;
-                    startPosition = ((MovementProvider) eventBeingExamined).getMovement();
-                    break;
-                }
+                segmentToIntersectWith = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, halfwayBetweenPriorAndThisPoint, endPoint);
+
+                segmentToIntersectWithMeasurementPoint = MathUtils.findMidPoint(segmentToIntersectWith.getStart(),
+                        segmentToIntersectWith.getEnd());
+            } else
+            {
+                Vector2D normalisedVectorToEndOfExtrusion = endPoint.subtract(startPoint).normalize();
+                Vector2D scaledVectorToEndOfExtrusion = normalisedVectorToEndOfExtrusion.scalarMultiply(maxDistanceFromEndPoint);
+
+                Vector2D segmentEndPoint = endPoint.add(scaledVectorToEndOfExtrusion);
+
+                Line intersectionLine = new Line(endPoint, segmentEndPoint, 1e-12);
+                segmentToIntersectWith = new Segment(endPoint, segmentEndPoint, intersectionLine);
+
+                segmentToIntersectWithMeasurementPoint = endPoint;
             }
-        }
 
-        if (startPosition == null
-                || endPosition == null)
-        {
-            throw new DidntFindEventException("Unable to establish vector to intersect with");
-        }
+            GCodeEventNode lastNodeConsidered = null;
 
-        // We can work out how to split this extrusion
-        //Get an orthogonal to the extrusion we're considering
-        Vector2D priorPoint = startPosition.toVector2D();
-        Vector2D thisPoint = endPosition.toVector2D();
-        // We want the orthogonal line to be closer to the specified end point rather than the prior point
-        Vector2D vectorFromPriorToThis = thisPoint.subtract(priorPoint);
-        Vector2D halfwayBetweenPriorAndThisPoint = priorPoint.add(vectorFromPriorToThis.scalarMultiply(0.5));
+            double closestDistanceSoFar = 999;
 
-        Segment segmentToIntersectWith = null;
-        Vector2D segmentToIntersectWithMeasurementPoint = null;
+            Iterator<GCodeEventNode> inScopeEventIterator = inScopeEvents.iterator();
 
-        if (intersectOrthogonally)
-        {
-            segmentToIntersectWith = MathUtils.getOrthogonalLineToLinePoints(maxDistanceFromEndPoint, halfwayBetweenPriorAndThisPoint, thisPoint);
-
-            segmentToIntersectWithMeasurementPoint = MathUtils.findMidPoint(segmentToIntersectWith.getStart(),
-                    segmentToIntersectWith.getEnd());
-        } else
-        {
-            Vector2D normalisedVectorToEndOfExtrusion = thisPoint.subtract(priorPoint).normalize();
-            Vector2D scaledVectorToEndOfExtrusion = normalisedVectorToEndOfExtrusion.scalarMultiply(maxDistanceFromEndPoint);
-
-            Vector2D segmentEndPoint = thisPoint.add(scaledVectorToEndOfExtrusion);
-
-            Line intersectionLine = new Line(thisPoint, segmentEndPoint, 1e-12);
-            segmentToIntersectWith = new Segment(thisPoint, segmentEndPoint, intersectionLine);
-
-            segmentToIntersectWithMeasurementPoint = thisPoint;
-        }
-
-        GCodeEventNode lastNodeConsidered = null;
-
-        double closestDistanceSoFar = 999;
-
-        Iterator<GCodeEventNode> inScopeEventIterator = inScopeEvents.iterator();
-
-        while (inScopeEventIterator.hasNext())
-        {
-            GCodeEventNode inScopeEvent = inScopeEventIterator.next();
-
-            if (inScopeEvent instanceof MovementProvider)
+            while (inScopeEventIterator.hasNext())
             {
-                MovementProvider movementProvider = (MovementProvider) inScopeEvent;
-                Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
+                GCodeEventNode inScopeEvent = inScopeEventIterator.next();
 
-                if (lastNodeConsidered != null)
+                if (inScopeEvent instanceof MovementProvider)
                 {
-                    Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
-                    Segment segmentUnderConsideration = new Segment(lastPoint,
-                            extrusionPoint,
-                            new Line(lastPoint, extrusionPoint, 1e-12));
+                    MovementProvider movementProvider = (MovementProvider) inScopeEvent;
+                    Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
 
-                    Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
-                            segmentToIntersectWith, segmentUnderConsideration);
-
-                    if (tempIntersectionPoint != null
-                            && inScopeEvent != startNode
-                            && inScopeEvent != endNode)
+                    if (lastNodeConsidered != null
+                            && inScopeEvent instanceof ExtrusionNode)
                     {
-                        double distanceFromMidPoint = tempIntersectionPoint.distance(
-                                segmentToIntersectWithMeasurementPoint);
+                        Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
+                        Segment segmentUnderConsideration = new Segment(lastPoint,
+                                extrusionPoint,
+                                new Line(lastPoint, extrusionPoint, 1e-12));
 
-                        if (distanceFromMidPoint < closestDistanceSoFar)
+                        Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
+                                segmentToIntersectWith, segmentUnderConsideration);
+
+                        if (tempIntersectionPoint != null)
+//                                && inScopeEvent != startNode
+//                                && inScopeEvent != endNode)
                         {
-                            //Which node was closest - the last one or this one?
-                            if (tempIntersectionPoint.distance(lastPoint)
-                                    < tempIntersectionPoint.distance(extrusionPoint))
+                            double distanceFromMidPoint = tempIntersectionPoint.distance(
+                                    segmentToIntersectWithMeasurementPoint);
+
+                            if (distanceFromMidPoint < closestDistanceSoFar)
                             {
-                                closestNode = lastNodeConsidered;
-                            } else
-                            {
-                                closestNode = inScopeEvent;
+                                //Which node was closest - the last one or this one?
+                                if (tempIntersectionPoint.distance(lastPoint)
+                                        < tempIntersectionPoint.distance(extrusionPoint))
+                                {
+                                    closestNode = lastNodeConsidered;
+                                } else
+                                {
+                                    closestNode = inScopeEvent;
+                                }
+                                closestDistanceSoFar = distanceFromMidPoint;
+                                intersectionPoint = tempIntersectionPoint;
                             }
-                            closestDistanceSoFar = distanceFromMidPoint;
-                            intersectionPoint = tempIntersectionPoint;
                         }
                     }
-                }
 
-                lastNodeConsidered = inScopeEvent;
+                    lastNodeConsidered = inScopeEvent;
+                }
             }
         }
 
         if (closestNode != null
                 && intersectionPoint != null)
         {
-            result = Optional.of(new IntersectionResult(closestNode, intersectionPoint, nodeIndex));
+            result = Optional.of(new IntersectionResult(closestNode, intersectionPoint, 0));
         }
 
         return result;

@@ -21,6 +21,7 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
@@ -126,17 +128,19 @@ public class CloseLogic
             while (sectionIterator.hasNext())
             {
                 GCodeEventNode node = sectionIterator.next();
-                if (node instanceof NozzleValvePositionNode)
-                {
-//                    movementNodes.add(node);
-                    keepLooking = false;
-                    break;
-                } else if (node instanceof NozzlePositionProvider
-                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
-                {
-                    keepLooking = false;
-                    break;
-                } else if (node instanceof MovementProvider)
+                //Changed to allow closes to be carried out on any part of previous section
+//                if (node instanceof NozzleValvePositionNode)
+//                {
+////                    movementNodes.add(node);
+//                    keepLooking = false;
+//                    break;
+//                } else if (node instanceof NozzlePositionProvider
+//                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
+//                {
+//                    keepLooking = false;
+//                    break;
+//                } else 
+                if (node instanceof MovementProvider)
                 {
                     movementNodes.add(node);
                     if (node instanceof ExtrusionNode)
@@ -197,12 +201,21 @@ public class CloseLogic
                     closeResult = overwriteClose(unprioritisedNoPerimeters, nozzleInUse, false);
                 } else if (unprioritisedNoOuterPerimeter.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
                 {
-                    closeResult = copyClose(unprioritisedNoOuterPerimeter, startingNode,
-                            Optional.empty(), nozzleInUse, true);
-                } else if (unprioritisedAll.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-                {
-                    closeResult = copyClose(unprioritisedAll, startingNode,
-                            Optional.empty(), nozzleInUse, true);
+                    Optional<Segment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
+                    Optional<IntersectionResult> result = Optional.empty();
+
+                    if (finalSegment.isPresent())
+                    {
+                        result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeter.getInScopeEvents(), false);
+                    }
+
+                    if (result.isPresent())
+                    {
+                        closeResult = copyClose(unprioritisedNoOuterPerimeter, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
+                    } else
+                    {
+                        closeResult = overwriteClose(unprioritisedAll, nozzleInUse, false);
+                    }
                 } else
                 {
                     closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
@@ -211,84 +224,57 @@ public class CloseLogic
             {
                 steno.error("Failed to close from retract in non-perimeter");
             }
+        } else if (sectionContainingNodeToAppendClosesTo instanceof InnerPerimeterSectionNode)
+        {
+            //Do this if we're closing from an inner perimeter
+            try
+            {
+                if (unprioritisedNoOuterPerimeter.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                {
+                    closeResult = overwriteClose(unprioritisedNoOuterPerimeter, nozzleInUse, false);
+                } else
+                {
+                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
+                }
+            } catch (NotEnoughAvailableExtrusionException ex)
+            {
+                steno.error("Failed to close from retract in inner perimeter");
+            }
         } else
         {
-            //Do this if we're closing from a perimeter
+            //Do this if we're closing from an outer perimeter
 
             if (unprioritisedNoOuterPerimeter.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
             {
                 //There is some inner perimeter and we should have enough to close
                 // Look for a valid intersection
-                try
+
+                Optional<Segment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
+                Optional<IntersectionResult> result = Optional.empty();
+
+                if (finalSegment.isPresent())
                 {
-                    Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(unprioritisedAll.getInScopeEvents(), true);
-                    if (result.isPresent())
-                    {
-                        if (unprioritisedNoOuterPerimeter.getInScopeEvents().contains(result.get().getClosestNode()))
-                        {
-                            closeResult = copyClose(unprioritisedNoOuterPerimeter, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
-                        } else
-                        {
-                            closeResult = copyClose(unprioritisedAll, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
-                        }
-                    } else
-                    {
-                        throw new DidntFindEventException("No result after searching for closest movement");
-                    }
-                } catch (DidntFindEventException ex)
+                    result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeter.getInScopeEvents(), true);
+                }
+
+                if (result.isPresent())
                 {
-                    closeResult = copyClose(unprioritisedAll, startingNode,
-                            Optional.empty(),
-                            nozzleInUse, false);
+                    closeResult = copyClose(unprioritisedNoOuterPerimeter, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
+                } else
+                {
+                    closeResult = overwriteClose(unprioritisedAll, nozzleInUse, false);
                 }
             } else if (unprioritisedAll.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
             {
                 // No inner perimeter but we have enough outer to close
                 closeResult = copyClose(unprioritisedAll, startingNode,
                         Optional.empty(),
-                        nozzleInUse, false);
+                        nozzleInUse, true);
             } else
             {
                 // We'll have to partial open
                 closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
             }
-
-//            try
-//            {
-//                if (unprioritisedAll.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-//                {
-//                    // Look for a valid intersection
-//                    Optional<IntersectionResult> result = closeUtilities.findClosestMovementNode(unprioritisedAll.getInScopeEvents(), true);
-//                    if (result.isPresent())
-//                    {
-//                        if (unprioritisedNoOuterPerimeter.getInScopeEvents().contains(result.get().getClosestNode())
-//                                && unprioritisedNoOuterPerimeter.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-//                        {
-//                            closeResult = copyClose(unprioritisedNoOuterPerimeter, unprioritisedNoOuterPerimeter.getInScopeEvents().get(0), Optional.of(result.get().getClosestNode()), nozzleInUse);
-//                        } else
-//                        {
-//                            closeResult = copyClose(unprioritisedAll, unprioritisedAll.getInScopeEvents().get(0), Optional.of(result.get().getClosestNode()), nozzleInUse);
-//                        }
-//                    } else
-//                    {
-//                        throw new DidntFindEventException("No result after searching for closest movement");
-//                    }
-//                } else
-//                {
-//                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
-//                }
-//            } catch (DidntFindEventException | NotEnoughAvailableExtrusionException ex)
-//            {
-//                try
-//                {
-//                    closeResult = copyClose(unprioritisedAll, startingNode,
-//                            Optional.empty(),
-//                            nozzleInUse);
-//                } catch (NotEnoughAvailableExtrusionException ex2)
-//                {
-//                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
-//                }
-//            }
         }
 
         return closeResult;
@@ -608,6 +594,10 @@ public class CloseLogic
         int inScopeEventDelta = 1;
         double availableExtrusion = 0;
 
+        TravelNode travelToStart = null;
+
+        GCodeEventNode nodeToAddToPlaceholder = nodeToAddClosesTo;
+
         if (nodeToStartCopyingFrom.isPresent())
         {
 
@@ -627,21 +617,34 @@ public class CloseLogic
             double availableExtrusionForwardsToEndOfExtrusion = 0;
             availableExtrusionForwardsToEndOfExtrusion = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, nodeToStartCopyingFromIndex, true);
 
-            if (availableExtrusionBackwardsToStartOfExtrusion >= volumeToCloseOver)
+            if (availableExtrusionForwardsToEndOfExtrusion >= volumeToCloseOver)
+            {
+                additionalComment = "forwards to end";
+                availableExtrusion = availableExtrusionForwardsToEndOfExtrusion;
+                inScopeEventDelta = -1;
+            } else if (availableExtrusionBackwardsToStartOfExtrusion >= volumeToCloseOver)
             {
                 additionalComment = "backwards to start";
                 availableExtrusion = availableExtrusionBackwardsToStartOfExtrusion;
-            } else if (availableExtrusionForwardsToEndOfExtrusion >= volumeToCloseOver)
-            {
-                additionalComment = "forwards to end";
-                availableExtrusion = extractedMovements.getAvailableExtrusion();
-                inScopeEventDelta = -1;
             } else
             {
                 additionalComment = "can't go forward or back - going from start";
                 availableExtrusion = extractedMovements.getAvailableExtrusion();
                 nodeToStartCopyingFromIndex = extractedMovements.getInScopeEvents().size() - 1;
                 inScopeEventDelta = -1;
+            }
+
+            if (nodeToStartCopyingFrom.get() instanceof MovementProvider)
+            {
+                Movement firstMovement = ((MovementProvider) nodeToStartCopyingFrom.get()).getMovement();
+                //Travel to the start of the intersected extrusion
+                travelToStart = new TravelNode();
+                travelToStart.getMovement().setX(firstMovement.getX());
+                travelToStart.getMovement().setY(firstMovement.getY());
+                travelToStart.appendCommentText("Travel to start of close");
+
+                nodeToAddToPlaceholder.addSiblingAfter(travelToStart);
+                nodeToAddToPlaceholder = travelToStart;
             }
         } else
         {
@@ -675,7 +678,8 @@ public class CloseLogic
                     int comparisonResult = MathUtils.compareDouble(runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE(), requiredVolumeToCloseOver, 0.00001);
 
                     ExtrusionNode copy = extrusionNodeBeingExamined.clone();
-                    nodeToAddClosesTo.addSiblingAfter(copy);
+                    nodeToAddToPlaceholder.addSiblingAfter(copy);
+                    nodeToAddToPlaceholder = copy;
 
                     if (comparisonResult == MathUtils.LESS_THAN)
                     {
@@ -917,21 +921,20 @@ public class CloseLogic
                         {
                             GCodeEventNode node = layerBackwardsIterator.next();
 
-                            if (node instanceof NozzlePositionProvider)
-                            {
-                                if (node instanceof NozzlePositionProvider
-                                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
-                                {
-//                                Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
-//                                if (parentSection.isPresent())
+//                            if (node instanceof NozzlePositionProvider)
+//                            {
+//                                if (node instanceof NozzlePositionProvider
+//                                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
 //                                {
-//                                    //Exclude the section we're in just in case...
-//                                    sectionsToConsider.remove(parentSection.get());
+////                                Optional<SectionNode> parentSection = nodeManagementUtilities.lookForParentSectionNode(node);
+////                                if (parentSection.isPresent())
+////                                {
+////                                    //Exclude the section we're in just in case...
+////                                    sectionsToConsider.remove(parentSection.get());
+////                                }
+//                                    break search;
 //                                }
-                                    break search;
-                                }
-                            }
-
+//                            }
                             if (node instanceof ExtrusionNode)
                             {
                                 foundExtrusionBeforeNozzleClose = true;

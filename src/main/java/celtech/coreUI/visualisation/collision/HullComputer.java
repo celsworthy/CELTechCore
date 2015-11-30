@@ -42,7 +42,9 @@ public class HullComputer extends Task<CollisionShape>
         {
             for (Vertex vert : poly.vertices)
             {
-                vectors.add(new Vector3f((float) vert.pos.x, (float) vert.pos.y, (float) vert.pos.z));
+                Vector3f newVector = new Vector3f((float) vert.pos.x, (float) vert.pos.y, (float) vert.pos.z);
+                steno.info("Adding vector " + newVector);
+                vectors.add(newVector);
             }
         }
 

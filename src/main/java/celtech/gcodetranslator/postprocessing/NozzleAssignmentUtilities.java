@@ -15,8 +15,6 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Head.HeadType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,6 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javafx.scene.shape.MeshView;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -33,6 +33,7 @@ import javafx.scene.shape.MeshView;
 public class NozzleAssignmentUtilities
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(NozzleAssignmentUtilities.class.getName());
     private final List<NozzleProxy> nozzleProxies;
     private final SlicerParametersFile slicerParametersFile;
     private final HeadFile headFile;
@@ -200,6 +201,7 @@ public class NozzleAssignmentUtilities
                                 {
                                     //Special case - set tool to 0
                                     requiredToolNumber = 0;
+                                    steno.info("Layer 0 - special case for nozzle assignment");
                                 } else
                                 {
                                     throw new RuntimeException(

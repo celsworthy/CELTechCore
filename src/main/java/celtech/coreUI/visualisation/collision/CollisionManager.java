@@ -13,21 +13,14 @@ import com.bulletphysics.collision.dispatch.GhostPairCallback;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
 import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.linearmath.MatrixUtil;
-import com.bulletphysics.linearmath.QuaternionUtil;
 import com.bulletphysics.linearmath.Transform;
-import com.bulletphysics.util.ObjectArrayList;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 import libertysystems.stenographer.Stenographer;
@@ -44,6 +37,7 @@ public class CollisionManager implements CollisionShapeListener
     private CollisionWorld collisionWorld = null;
     private final Map<ModelContainer, GhostObject> monitoredModels = new HashMap<>();
     private final Map<ModelContainer, Transform> monitoredModelsTransforms = new HashMap<>();
+    private final Map<ModelContainer, Transform> monitoredModelsCentringTransforms = new HashMap<>();
     private final Timer scheduledTickTimer = new Timer(true);
     private final TimerTask tickRun;
     private long lastTickMilliseconds = 0;
@@ -120,14 +114,27 @@ public class CollisionManager implements CollisionShapeListener
         monitoredModels.put(model, ghostOfModel);
         Matrix3f rotation = new Matrix3f();
         rotation.setIdentity();
-        monitoredModelsTransforms.put(model, new Transform(rotation));
+
+        float xOffset = (float) (model.getBoundsInLocal().getMinX() + model.getBoundsInLocal().getWidth() / 2.0);
+        float yOffset = (float) (model.getBoundsInLocal().getMinY() + model.getBoundsInLocal().getHeight() / 2.0);
+        float zOffset = (float) (model.getBoundsInLocal().getMinZ() + model.getBoundsInLocal().getDepth() / 2.0);
+
+        Transform centringTransform = new Transform(rotation);
+        centringTransform.origin.set(xOffset, 0, zOffset);
+        
+        monitoredModelsCentringTransforms.put(model, centringTransform);
+        
+        monitoredModelsTransforms.put(model, centringTransform);
     }
 
     private void destroyGhost(ModelContainer model)
     {
         removeAllModelListeners(model);
 
-        collisionWorld.removeCollisionObject(monitoredModels.get(model));
+        if (monitoredModels.get(model) != null)
+        {
+            collisionWorld.removeCollisionObject(monitoredModels.get(model));
+        }
 
         monitoredModels.remove(model);
         monitoredModelsTransforms.remove(model);
@@ -159,90 +166,39 @@ public class CollisionManager implements CollisionShapeListener
 //        steno.info("Tock");
         collisionWorld.performDiscreteCollisionDetection();
 
-//        int numManifolds = collisionWorld.getDispatcher().getNumManifolds();
-//        for (int i = 0; i < numManifolds; i++)
-//        {
-//            PersistentManifold contactManifold = collisionWorld.getDispatcher().getManifoldByIndexInternal(i);
-//            CollisionObject objA = (CollisionObject) contactManifold.getBody0();
-//            CollisionObject objB = (CollisionObject) contactManifold.getBody1();
-//
-//            int numContacts = contactManifold.getNumContacts();
-//            for (int j = 0; j < numContacts; j++)
-//            {
-//                ManifoldPoint pt = contactManifold.getContactPoint(j);
-//                if (pt.getDistance() < 0.f)
-//                {
-//                    steno.info("Collision!!" + objA + " : " + objB);
-//                }
-//            }
-//        }
+        int numManifolds = collisionWorld.getDispatcher().getNumManifolds();
 
-//        for (Entry<ModelContainer, GhostObject> monitoredModelEntry : monitoredModels.entrySet())
-//        {
-//            Transform a = new Transform();
-//            monitoredModelEntry.getValue().getWorldTransform(a);
-//            steno.info(a.origin.toString() + ":" + a.basis);
-//            ObjectArrayList<CollisionObject> collisionPairs = monitoredModelEntry.getValue().getOverlappingPairs();
-//
-//            int numPairs = collisionPairs.size();
-//            
-//            List<PersistentManifold> manifoldArray = new ArrayList<>();
+        Set<CollisionObject> collidedObjects = new HashSet<>();
 
-//            for (int i = 0; i < numPairs; ++i)
-//            {
-////                manifoldArray.clear();
-//                CollisionObject pair = collisionPairs.get(i);
-//                pair.
-//
-//                OverlappingPairCache pairCache = collisionWorld.getPairCache().findPair()
-//                btBroadphasePair * collisionPair
-//                        = dynamicsWorld -> getPairCache()
-//                ->findPair(
-//                        pair.m_pProxy0, pair.m_pProxy1);
-//
-//                if (!collisionPair)
-//                {
-//                    continue;
-//                }
-//
-//                if (collisionPair -> m_algorithm)
-//                {
-//                    collisionPair -> m_algorithm -> getAllContactManifolds(manifoldArray);
-//                }
-//
-//                for (int j = 0; j < manifoldArray.size(); j++)
-//                {
-//                    btPersistentManifold * manifold = manifoldArray[j];
-//
-//                    bool isFirstBody = manifold -> getBody0() == ghostObject;
-//
-//                    btScalar direction = isFirstBody ? btScalar(-1.0) : btScalar(1.0);
-//
-//                    for (int p = 0; p < manifold -> getNumContacts(); ++p)
-//                    {
-//                        const
-//                        btManifoldPoint & pt = manifold -> getContactPoint(p);
-//
-//                        if (pt.getDistance() < 0.f)
-//                        {
-//                            const
-//                            btVector3 & ptA = pt.getPositionWorldOnA();
-//                            const
-//                            btVector3 & ptB = pt.getPositionWorldOnB();
-//                            const
-//                            btVector3 & normalOnB = pt.m_normalWorldOnB;
-//
-//                            // handle collisions here
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if (collidedObjects.size() > 0)
-//            {
-//                steno.info("Collision!!" + monitoredModelEntry.getKey());
-//            }
-//        }
+        for (int i = 0; i < numManifolds; i++)
+        {
+            PersistentManifold contactManifold = collisionWorld.getDispatcher().getManifoldByIndexInternal(i);
+            CollisionObject objA = (CollisionObject) contactManifold.getBody0();
+            CollisionObject objB = (CollisionObject) contactManifold.getBody1();
+
+            int numContacts = contactManifold.getNumContacts();
+            for (int j = 0; j < numContacts; j++)
+            {
+                ManifoldPoint pt = contactManifold.getContactPoint(j);
+                if (pt.getDistance() < 0.f)
+                {
+                    for (Entry<ModelContainer, GhostObject> ghostEntry : monitoredModels.entrySet())
+                    {
+                        if (ghostEntry.getValue() == objA || ghostEntry.getValue() == objB)
+                        {
+                            collidedObjects.add(objA);
+                            collidedObjects.add(objB);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Entry<ModelContainer, GhostObject> monitoredModelEntry : monitoredModels.entrySet())
+        {
+            monitoredModelEntry.getKey().setCollision(collidedObjects.contains(monitoredModelEntry.getValue()));
+        }
+
         lastTickMilliseconds = timeNowMilliseconds;
     }
 
@@ -256,7 +212,11 @@ public class CollisionManager implements CollisionShapeListener
             if (ghost != null)
             {
 //                monitoredModelsTransforms.get(model).origin.set((float) model.getTransformedCentreX(), (float) model.getTransformedCentreY(), (float) model.getTransformedCentreZ());
-                monitoredModelsTransforms.get(model).origin.set((float) model.getTransformedCentreX(), 0, (float) model.getTransformedCentreZ());
+                Transform centringTransform = monitoredModelsCentringTransforms.get(model);
+                monitoredModelsTransforms.get(model).origin.set(
+                        (float) model.getTransformedCentreX() + centringTransform.origin.x,
+                        0,
+                        (float) model.getTransformedCentreZ() + centringTransform.origin.z);
 //                ghost.
                 ghost.setWorldTransform(monitoredModelsTransforms.get(model));
             }
