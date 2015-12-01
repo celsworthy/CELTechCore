@@ -36,7 +36,7 @@ public class CloseUtilities
     }
 
     protected Optional<IntersectionResult> findClosestMovementNode(
-            Segment finalSegment,
+            SearchSegment finalSegment,
             List<GCodeEventNode> inScopeEvents,
             boolean intersectOrthogonally
     )
@@ -49,8 +49,8 @@ public class CloseUtilities
         {
             // We can work out how to split this extrusion
             //Get an orthogonal to the extrusion we're considering
-            Vector2D startPoint = finalSegment.getStart();
-            Vector2D endPoint = finalSegment.getEnd();
+            Vector2D startPoint = finalSegment.getStartNode().getMovement().toVector2D();
+            Vector2D endPoint = finalSegment.getEndNode().getMovement().toVector2D();
             // We want the orthogonal line to be closer to the specified end point rather than the prior point
             Vector2D vectorFromPriorToThis = endPoint.subtract(startPoint);
             Vector2D halfwayBetweenPriorAndThisPoint = startPoint.add(vectorFromPriorToThis.scalarMultiply(0.5));
@@ -102,9 +102,9 @@ public class CloseUtilities
                         Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
                                 segmentToIntersectWith, segmentUnderConsideration);
 
-                        if (tempIntersectionPoint != null)
-//                                && inScopeEvent != startNode
-//                                && inScopeEvent != endNode)
+                        if (tempIntersectionPoint != null
+                                && inScopeEvent != finalSegment.getStartNode()
+                                && inScopeEvent != finalSegment.getEndNode())
                         {
                             double distanceFromMidPoint = tempIntersectionPoint.distance(
                                     segmentToIntersectWithMeasurementPoint);

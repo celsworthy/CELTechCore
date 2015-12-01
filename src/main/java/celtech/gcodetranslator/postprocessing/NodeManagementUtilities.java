@@ -342,39 +342,36 @@ public class NodeManagementUtilities
         return nextMovement;
     }
 
-    protected Optional<Segment> findPriorMovementPoints(GCodeEventNode seed)
+    protected Optional<SearchSegment> findPriorMovementPoints(GCodeEventNode seed)
     {
-        Optional<Segment> priorMovementPoints = Optional.empty();
+        Optional<SearchSegment> priorMovementPoints = Optional.empty();
 
-        IteratorWithOrigin<GCodeEventNode> siblingsBackwards = seed.siblingsBackwardsIterator();
+        IteratorWithOrigin<GCodeEventNode> siblingsBackwards = seed.meAndSiblingsBackwardsIterator();
 
-        Movement startPosition = null;
-        Movement endPosition = null;
+        MovementProvider startNode = null;
+        MovementProvider endNode = null;
 
         while (siblingsBackwards.hasNext())
         {
             GCodeEventNode node = siblingsBackwards.next();
             if (node instanceof MovementProvider)
             {
-                if (endPosition == null)
+                if (endNode == null)
                 {
-                    endPosition = ((MovementProvider) node).getMovement();
-                } else if (startPosition == null)
+                    endNode = ((MovementProvider) node);
+                } else if (startNode == null)
                 {
-                    startPosition = ((MovementProvider) node).getMovement();
+                    startNode = ((MovementProvider) node);
                     break;
                 }
             }
         }
 
-        if (startPosition != null
-                && endPosition != null)
+        if (startNode != null
+                && endNode != null)
         {
-            Vector2D startPoint = startPosition.toVector2D();
-            Vector2D endPoint = endPosition.toVector2D();
-
-            Segment segment = new Segment(startPoint, endPoint, null);
-            priorMovementPoints = Optional.of(segment);
+            SearchSegment searchSegment = new SearchSegment(startNode, endNode);
+            priorMovementPoints = Optional.of(searchSegment);
         }
 
         return priorMovementPoints;
