@@ -2599,6 +2599,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void goToZPosition(double position, int feedrate_mmPerMin)
+    {
+        try
+        {
+            transmitDirectGCode("G1 Z" + threeDPformatter.format(position) + " " + feedrate_mmPerMin, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending z position command");
+        }
+    }
+
+    @Override
     public void goToZPosition(double position)
     {
         try

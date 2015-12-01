@@ -149,9 +149,8 @@ public class PrintEngine implements ControllableService
      * The movie maker task
      */
 //    private MovieMakerTask movieMakerTask = null;
-
     private boolean raiseProgressNotifications = true;
-    
+
     private CameraTriggerManager cameraTriggerManager;
 
     public PrintEngine(Printer associatedPrinter)
@@ -449,11 +448,17 @@ public class PrintEngine implements ControllableService
             {
                 if (t1 == PrintQueueStatus.PRINTING)
                 {
-                    cameraTriggerManager.listenForCameraTrigger();
+                    if (macroBeingRun.get() == null)
+                    {
+                        cameraTriggerManager.listenForCameraTrigger();
+                    }
                     printJob.set(PrintJob.readJobFromDirectory(associatedPrinter.printJobIDProperty().get()));
                 } else
                 {
-                    cameraTriggerManager.stopListeningForCameraTrigger();
+                    if (macroBeingRun.get() == null)
+                    {
+                        cameraTriggerManager.stopListeningForCameraTrigger();
+                    }
                     printJob.set(null);
                 }
             }
@@ -612,7 +617,6 @@ public class PrintEngine implements ControllableService
 //                    steno.info("Movie maker was cancelled");
 //                }
 //            });
-
 //            Thread movieThread = new Thread(movieMakerTask);
 //            movieThread.setName("Movie Maker - " + project.getProjectName());
 //            movieThread.setDaemon(true);
@@ -692,8 +696,7 @@ public class PrintEngine implements ControllableService
 
         // Hack to change raft related settings for Draft ABS prints
         if (project.getPrintQuality() == PrintQualityEnumeration.DRAFT
-                &&
-                ((associatedPrinter.effectiveFilamentsProperty().get(0) != null
+                && ((associatedPrinter.effectiveFilamentsProperty().get(0) != null
                 && associatedPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.ABS)
                 || (associatedPrinter.effectiveFilamentsProperty().get(1) != null
                 && associatedPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.ABS)))
@@ -704,8 +707,7 @@ public class PrintEngine implements ControllableService
         }
 
         if (project.getPrintQuality() == PrintQualityEnumeration.NORMAL
-                &&
-                ((associatedPrinter.effectiveFilamentsProperty().get(0) != null
+                && ((associatedPrinter.effectiveFilamentsProperty().get(0) != null
                 && associatedPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.ABS)
                 || (associatedPrinter.effectiveFilamentsProperty().get(1) != null
                 && associatedPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.ABS)))

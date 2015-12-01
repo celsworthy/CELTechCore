@@ -92,8 +92,7 @@ public class CloseUtilities
                     MovementProvider movementProvider = (MovementProvider) inScopeEvent;
                     Vector2D extrusionPoint = movementProvider.getMovement().toVector2D();
 
-                    if (lastNodeConsidered != null
-                            && inScopeEvent instanceof ExtrusionNode)
+                    if (lastNodeConsidered != null)
                     {
                         Vector2D lastPoint = ((MovementProvider) lastNodeConsidered).getMovement().toVector2D();
                         Segment segmentUnderConsideration = new Segment(lastPoint,

@@ -21,6 +21,7 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
+import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
@@ -64,7 +65,8 @@ public class CloseLogic
     protected InScopeEvents extractAvailableMovements(GCodeEventNode startingNode,
             List<SectionNode> sectionsToConsider,
             boolean includeInternalPerimeters,
-            boolean includeExternalPerimeters)
+            boolean includeExternalPerimeters,
+            boolean stopAtNozzlePositionEvent)
     {
         List<SectionNode> availableSectionsToCloseOver = new ArrayList<>();
 
@@ -129,18 +131,18 @@ public class CloseLogic
             {
                 GCodeEventNode node = sectionIterator.next();
                 //Changed to allow closes to be carried out on any part of previous section
-//                if (node instanceof NozzleValvePositionNode)
-//                {
-////                    movementNodes.add(node);
-//                    keepLooking = false;
-//                    break;
-//                } else if (node instanceof NozzlePositionProvider
-//                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet())
-//                {
-//                    keepLooking = false;
-//                    break;
-//                } else 
-                if (node instanceof MovementProvider)
+                if (node instanceof NozzleValvePositionNode && stopAtNozzlePositionEvent)
+                {
+//                    movementNodes.add(node);
+                    keepLooking = false;
+                    break;
+                } else if (node instanceof NozzlePositionProvider
+                        && ((NozzlePositionProvider) node).getNozzlePosition().isBSet()
+                        && stopAtNozzlePositionEvent)
+                {
+                    keepLooking = false;
+                    break;
+                } else if (node instanceof MovementProvider)
                 {
                     movementNodes.add(node);
                     if (node instanceof ExtrusionNode)
@@ -185,40 +187,67 @@ public class CloseLogic
 
         //The last section is the one we want to close in...
         SectionNode sectionContainingNodeToAppendClosesTo = (SectionNode) startingNode.getParent().get();
-        InScopeEvents unprioritisedAll = extractAvailableMovements(startingNode, sectionsToConsider, true, true);
-        InScopeEvents unprioritisedNoOuterPerimeter = extractAvailableMovements(startingNode, sectionsToConsider, true, false);
 
+        //IF the node containing the close request is in a non-perimeter section THEN
+        //  IF the sum of extrusion in the inner and non-perimeter sections up to the next nozzle control point > target THEN
+        //      Overwrite close towards the end of the extrusion using inner and non-perimeter
+        //  ELSE IF 
+        //  END IF
+        //ELSE
+        //IF the node containing the close request is in an inner perimeter section THEN
+        //ELSE (must be a close from an outer perimeter
+        //END IF
         //For non-perimeters...
         if (!(sectionContainingNodeToAppendClosesTo instanceof OuterPerimeterSectionNode)
                 && !(sectionContainingNodeToAppendClosesTo instanceof InnerPerimeterSectionNode))
         {
             try
             {
-                InScopeEvents unprioritisedNoPerimeters = extractAvailableMovements(startingNode, sectionsToConsider, false, false);
+                boolean processedOK = false;
 
-                if (unprioritisedNoPerimeters.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-                {
-                    closeResult = overwriteClose(unprioritisedNoPerimeters, nozzleInUse, false);
-                } else if (unprioritisedNoOuterPerimeter.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-                {
-                    Optional<Segment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
-                    Optional<IntersectionResult> result = Optional.empty();
+                InScopeEvents unprioritisedNoPerimetersForOverwrite = extractAvailableMovements(startingNode, sectionsToConsider, false, false, true);
 
-                    if (finalSegment.isPresent())
+                if (unprioritisedNoPerimetersForOverwrite.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                {
+                    processedOK = true;
+                    closeResult = overwriteClose(unprioritisedNoPerimetersForOverwrite, nozzleInUse, false);
+                }
+
+                if (!processedOK)
+                {
+                    InScopeEvents unprioritisedNoOuterPerimeterForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
+                    if (unprioritisedNoOuterPerimeterForCopy.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
                     {
-                        result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeter.getInScopeEvents(), false);
+                        Optional<Segment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
+                        Optional<IntersectionResult> result = Optional.empty();
+
+                        if (finalSegment.isPresent())
+                        {
+                            result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeterForCopy.getInScopeEvents(), false);
+                        }
+
+                        if (result.isPresent())
+                        {
+                            processedOK = true;
+                            closeResult = copyClose(unprioritisedNoOuterPerimeterForCopy, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
+                        }
                     }
+                }
 
-                    if (result.isPresent())
-                    {
-                        closeResult = copyClose(unprioritisedNoOuterPerimeter, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
-                    } else
-                    {
-                        closeResult = overwriteClose(unprioritisedAll, nozzleInUse, false);
-                    }
-                } else
+                if (!processedOK)
                 {
-                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
+                    InScopeEvents unprioritisedAllForOverwrite = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
+                    if (unprioritisedAllForOverwrite.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                    {
+                        processedOK = true;
+                        closeResult = overwriteClose(unprioritisedAllForOverwrite, nozzleInUse, false);
+                    }
+                }
+
+                if (!processedOK)
+                {
+                    InScopeEvents unprioritisedAllFromLastClose = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
+                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
                 }
             } catch (NotEnoughAvailableExtrusionException ex)
             {
@@ -229,12 +258,15 @@ public class CloseLogic
             //Do this if we're closing from an inner perimeter
             try
             {
-                if (unprioritisedNoOuterPerimeter.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                InScopeEvents unprioritisedNoOuterPerimeterAllOfInner = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
+
+                if (unprioritisedNoOuterPerimeterAllOfInner.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
                 {
-                    closeResult = overwriteClose(unprioritisedNoOuterPerimeter, nozzleInUse, false);
+                    closeResult = overwriteClose(unprioritisedNoOuterPerimeterAllOfInner, nozzleInUse, false);
                 } else
                 {
-                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
+                    InScopeEvents unprioritisedAllFromLastClose = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
+                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
                 }
             } catch (NotEnoughAvailableExtrusionException ex)
             {
@@ -242,9 +274,11 @@ public class CloseLogic
             }
         } else
         {
-            //Do this if we're closing from an outer perimeter
+            boolean processedOK = false;
 
-            if (unprioritisedNoOuterPerimeter.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
+            //Do this if we're closing from an outer perimeter
+            InScopeEvents unprioritisedNoOuterPerimeterForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
+            if (unprioritisedNoOuterPerimeterForCopy.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
             {
                 //There is some inner perimeter and we should have enough to close
                 // Look for a valid intersection
@@ -254,26 +288,34 @@ public class CloseLogic
 
                 if (finalSegment.isPresent())
                 {
-                    result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeter.getInScopeEvents(), true);
+                    result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeterForCopy.getInScopeEvents(), true);
                 }
 
                 if (result.isPresent())
                 {
-                    closeResult = copyClose(unprioritisedNoOuterPerimeter, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
-                } else
-                {
-                    closeResult = overwriteClose(unprioritisedAll, nozzleInUse, false);
+                    processedOK = true;
+                    closeResult = copyClose(unprioritisedNoOuterPerimeterForCopy, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
                 }
-            } else if (unprioritisedAll.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
+            }
+
+            if (!processedOK)
             {
-                // No inner perimeter but we have enough outer to close
-                closeResult = copyClose(unprioritisedAll, startingNode,
-                        Optional.empty(),
-                        nozzleInUse, true);
-            } else
+                InScopeEvents unprioritisedAll = extractAvailableMovements(startingNode, sectionsToConsider, true, true, false);
+                if (unprioritisedAll.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                {
+                    processedOK = true;
+                    // No inner perimeter but we have enough outer to close
+                    closeResult = copyClose(unprioritisedAll, startingNode,
+                            Optional.empty(),
+                            nozzleInUse, true);
+                }
+            }
+
+            if (!processedOK)
             {
                 // We'll have to partial open
-                closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAll, nozzleInUse);
+                InScopeEvents unprioritisedAllFromLastClose = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
+                closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
             }
         }
 
@@ -636,6 +678,12 @@ public class CloseLogic
 
             if (nodeToStartCopyingFrom.get() instanceof MovementProvider)
             {
+                if (nodeToStartCopyingFrom.get() instanceof ExtrusionProvider)
+                {
+                    ((ExtrusionProvider) nodeToStartCopyingFrom.get()).getExtrusion().eNotInUse();
+                    ((ExtrusionProvider) nodeToStartCopyingFrom.get()).getExtrusion().dNotInUse();
+                }
+
                 Movement firstMovement = ((MovementProvider) nodeToStartCopyingFrom.get()).getMovement();
                 //Travel to the start of the intersected extrusion
                 travelToStart = new TravelNode();
@@ -643,8 +691,13 @@ public class CloseLogic
                 travelToStart.getMovement().setY(firstMovement.getY());
                 travelToStart.appendCommentText("Travel to start of close");
 
-                nodeToAddToPlaceholder.addSiblingAfter(travelToStart);
-                nodeToAddToPlaceholder = travelToStart;
+                if (inScopeEventDelta == 1 && nodeToStartCopyingFromIndex < extractedMovements.getInScopeEvents().size() - 1)
+                {
+                    nodeToStartCopyingFromIndex++;
+                } else if (inScopeEventDelta == -1 && nodeToStartCopyingFromIndex > 0)
+                {
+                    nodeToStartCopyingFromIndex--;
+                }
             }
         } else
         {
@@ -684,12 +737,13 @@ public class CloseLogic
                     if (comparisonResult == MathUtils.LESS_THAN)
                     {
                         //One step along the way
-                        double bValue = runningTotalOfExtrusion / volumeToCloseOver;
-                        copy.getNozzlePosition().setB(bValue);
                         runningTotalOfExtrusion += copy.getExtrusion().getE();
+                        double bValue = 1 - (runningTotalOfExtrusion / volumeToCloseOver);
+                        copy.getNozzlePosition().setB(bValue);
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
+                        copy.appendCommentText("copied node");
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
@@ -700,12 +754,13 @@ public class CloseLogic
                     } else if (comparisonResult == MathUtils.EQUAL)
                     {
                         //All done
+                        runningTotalOfExtrusion += copy.getExtrusion().getE();
                         double bValue = 0;
                         copy.getNozzlePosition().setB(bValue);
-                        runningTotalOfExtrusion += copy.getExtrusion().getE();
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
+                        copy.appendCommentText("copied node");
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
@@ -763,7 +818,7 @@ public class CloseLogic
                         Vector2D firstPoint = new Vector2D(priorMovement.getMovement().getX(), priorMovement.getMovement().getY());
                         Vector2D secondPoint = new Vector2D(extrusionNodeBeingExamined.getMovement().getX(), extrusionNodeBeingExamined.getMovement().getY());
 
-                        double extrusionInFirstSection = runningTotalOfExtrusion + extrusionNodeBeingExamined.getExtrusion().getE() - requiredVolumeToCloseOver;
+                        double extrusionInFirstSection = extrusionNodeBeingExamined.getExtrusion().getE() - (extrusionNodeBeingExamined.getExtrusion().getE() + runningTotalOfExtrusion - requiredVolumeToCloseOver);
 
                         double proportionOfDistanceInFirstSection = extrusionInFirstSection / extrusionNodeBeingExamined.getExtrusion().getE();
 
@@ -775,10 +830,10 @@ public class CloseLogic
                         copy.getMovement().setY(firstSegment.getY());
                         copy.getExtrusion().setE(0);
                         copy.getExtrusion().setD(0);
-                        copy.appendCommentText("Start of copy close segment - " + additionalComment);
-                        copy.getNozzlePosition().setB(runningTotalOfExtrusion / volumeToCloseOver);
-
+                        copy.getNozzlePosition().bNotInUse();
+                        copy.appendCommentText("End of copy close segment - " + additionalComment);
                         runningTotalOfExtrusion += copy.getExtrusion().getE();
+                        copy.getNozzlePosition().setB(0);
 
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
@@ -789,7 +844,17 @@ public class CloseLogic
                         }
                         break;
                     }
+                } else if (extractedMovements.getInScopeEvents().get(inScopeEventCounter) instanceof TravelNode)
+                {
+                    TravelNode copy = ((TravelNode)extractedMovements.getInScopeEvents().get(inScopeEventCounter)).clone();
+                    nodeToAddToPlaceholder.addSiblingAfter(copy);
+                    nodeToAddToPlaceholder = copy;
                 }
+            }
+
+            if (travelToStart != null)
+            {
+                nodeToAddClosesTo.addSiblingAfter(travelToStart);
             }
         } else
         {

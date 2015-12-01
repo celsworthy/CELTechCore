@@ -41,6 +41,12 @@ public class NozzlePosition implements Renderable
         isBSet = true;
         this.b = b;
     }
+    
+    public void bNotInUse()
+    {
+        isBSet = false;
+        this.b = 0;
+    }
 
     @Override
     public String renderForOutput()
