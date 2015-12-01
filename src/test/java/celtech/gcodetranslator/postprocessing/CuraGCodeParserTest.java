@@ -437,7 +437,7 @@ public class CuraGCodeParserTest
                 + "G1 F1800 E0.00000\n"
                 + "G1 X12.3 Y14.5 E1.00000\n"
                 + ";TYPE:WALL-OUTER\n"
-                + "G1 X125.3 Y314.5 E1.00000\n";
+                + "G1 X125.3 Y14.5 E1.00000\n";
 
         CuraGCodeParser gcodeParser = Parboiled.createParser(CuraGCodeParser.class
         );
