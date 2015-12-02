@@ -98,7 +98,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
-    public void resetPurgeTemperature(PrinterSettings printerSettings);
+    public void resetPurgeTemperature();
 
     public PurgeStateTransitionManager startPurge() throws PrinterException;
 

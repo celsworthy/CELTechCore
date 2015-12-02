@@ -595,7 +595,7 @@ public class PurgeInsetPanelController implements Initializable
      * This is called when the user wants to print and the system has detected
      * that a purge is required.
      */
-    public void purgeAndPrint(Project project, PrinterSettings printerSettings, Printer printerToUse)
+    public void purgeAndPrint(Project project, Printer printerToUse)
     {
         this.project = project;
         bindPrinter(printerToUse);

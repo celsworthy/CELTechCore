@@ -563,14 +563,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Reset the purge temperature for all nozzle heaters.
      */
     @Override
-    public void resetPurgeTemperature(PrinterSettings printerSettings)
+    public void resetPurgeTemperature()
     {
 
         Head headToWrite = head.get().clone();
 
         for (int i = 0; i < headToWrite.nozzleHeaters.size(); i++)
         {
-            resetPurgeTemperatureForNozzleHeater(printerSettings, headToWrite, i);
+            resetPurgeTemperatureForNozzleHeater(headToWrite, i);
         }
 
         try
@@ -587,8 +587,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Reset the purge temperature for the given head, printer settings and
      * nozzle heater number.
      */
-    private void resetPurgeTemperatureForNozzleHeater(PrinterSettings printerSettings,
-            Head headToWrite, int nozzleHeaterNumber)
+    private void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
     {
         Filament settingsFilament = null;
 

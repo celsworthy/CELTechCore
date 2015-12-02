@@ -738,12 +738,6 @@ public class TestPrinter implements Printer
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-//    @Override
-    public void resetPurgeTemperature()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     @Override
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer)
     {
@@ -834,7 +828,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void resetPurgeTemperature(PrinterSettings printerSettings)
+    public void resetPurgeTemperature()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
