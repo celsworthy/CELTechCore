@@ -346,14 +346,22 @@ public class NodeManagementUtilities
     {
         Optional<SearchSegment> priorMovementPoints = Optional.empty();
 
-        IteratorWithOrigin<GCodeEventNode> siblingsBackwards = seed.meAndSiblingsBackwardsIterator();
-
         MovementProvider startNode = null;
         MovementProvider endNode = null;
 
-        while (siblingsBackwards.hasNext())
+        if (seed instanceof MovementProvider)
         {
-            GCodeEventNode node = siblingsBackwards.next();
+            if (endNode == null)
+            {
+                endNode = ((MovementProvider) seed);
+            }
+        }
+
+        IteratorWithOrigin<GCodeEventNode> treeBackwards = seed.treeSpanningBackwardsIterator();
+
+        while (treeBackwards.hasNext())
+        {
+            GCodeEventNode node = treeBackwards.next();
             if (node instanceof MovementProvider)
             {
                 if (endNode == null)
@@ -450,11 +458,35 @@ public class NodeManagementUtilities
         return priorMovement;
     }
 
-    public double findAvailableExtrusion(final InScopeEvents inScopeEvents,
+    public class AvailableExtrusion
+    {
+
+        private final double availableExtrusion;
+        private final GCodeEventNode lastNodeExamined;
+
+        public AvailableExtrusion(double availableExtrusion, GCodeEventNode lastNodeExamined)
+        {
+            this.availableExtrusion = availableExtrusion;
+            this.lastNodeExamined = lastNodeExamined;
+        }
+        
+        public double getAvailableExtrusion()
+        {
+            return availableExtrusion;
+        }
+
+        public GCodeEventNode getLastNodeExamined()
+        {
+            return lastNodeExamined;
+        }
+    }
+
+    public AvailableExtrusion findAvailableExtrusion(final InScopeEvents inScopeEvents,
             int startNodeIndex,
             boolean forwards) throws NodeProcessingException
     {
         double availableExtrusion = 0;
+        GCodeEventNode lastNodeExamined = null;
 
         int delta = (forwards) ? -1 : 1;
 
@@ -462,24 +494,22 @@ public class NodeManagementUtilities
         {
             GCodeEventNode node = inScopeEvents.getInScopeEvents().get(inScopeCounter);
 
+            if (node instanceof NozzlePositionProvider)
+            {
+                NozzlePositionProvider provider = (NozzlePositionProvider) node;
+                if (provider.getNozzlePosition().isBSet())
+                {
+                    break;
+                }
+            }
+
             if (node instanceof ExtrusionProvider)
             {
-                availableExtrusion += ((ExtrusionProvider)node).getExtrusion().getE();
+                lastNodeExamined = node;
+                availableExtrusion += ((ExtrusionProvider) node).getExtrusion().getE();
+                availableExtrusion += ((ExtrusionProvider) node).getExtrusion().getD();
             }
-//            if (node instanceof NozzlePositionProvider)
-//            {
-//                NozzlePositionProvider provider = (NozzlePositionProvider) node;
-//                if (provider.getNozzlePosition().isBSet())
-//                {
-//                    break;
-//                } else if (node instanceof ExtrusionNode)
-//                {
-//                    ExtrusionNode extrusionNode = (ExtrusionNode) node;
-//                    availableExtrusion += extrusionNode.getExtrusion().getE();
-//                    availableExtrusion += extrusionNode.getExtrusion().getD();
-//                }
-//            }
         }
-        return availableExtrusion;
+        return new AvailableExtrusion(availableExtrusion, lastNodeExamined);
     }
 }

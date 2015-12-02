@@ -102,9 +102,7 @@ public class CloseUtilities
                         Vector2D tempIntersectionPoint = MathUtils.getSegmentIntersection(
                                 segmentToIntersectWith, segmentUnderConsideration);
 
-                        if (tempIntersectionPoint != null
-                                && inScopeEvent != finalSegment.getStartNode()
-                                && inScopeEvent != finalSegment.getEndNode())
+                        if (tempIntersectionPoint != null)
                         {
                             double distanceFromMidPoint = tempIntersectionPoint.distance(
                                     segmentToIntersectWithMeasurementPoint);
@@ -113,7 +111,9 @@ public class CloseUtilities
                             {
                                 //Which node was closest - the last one or this one?
                                 if (tempIntersectionPoint.distance(lastPoint)
-                                        < tempIntersectionPoint.distance(extrusionPoint))
+                                        < tempIntersectionPoint.distance(extrusionPoint)
+                                        && lastNodeConsidered != finalSegment.getStartNode()
+                                        && lastNodeConsidered != finalSegment.getEndNode())
                                 {
                                     closestNode = lastNodeConsidered;
                                 } else

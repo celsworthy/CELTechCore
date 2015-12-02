@@ -39,6 +39,10 @@ public class NozzlePosition implements Renderable
     public void setB(double b)
     {
         isBSet = true;
+        if (b < 0.01)
+        {
+            b = 0;
+        }
         this.b = b;
     }
     

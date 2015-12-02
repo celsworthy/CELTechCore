@@ -9,6 +9,7 @@ import celtech.gcodetranslator.NoPerimeterToCloseOverException;
 import celtech.gcodetranslator.NotEnoughAvailableExtrusionException;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PostProcessingError;
+import celtech.gcodetranslator.postprocessing.NodeManagementUtilities.AvailableExtrusion;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
@@ -85,7 +86,7 @@ public class CloseLogic
         availableSectionsToCloseOver = tempSectionHolder;
 
         int sectionDelta = -1;
-        int sectionCounter = 0;
+        int sectionCounter = -1;
         boolean haveConsumedStartNode = true;
 
         //Work out which section to start in
@@ -103,7 +104,10 @@ public class CloseLogic
             }
         }
 
-        sectionDelta = (sectionCounter == 0) ? 1 : -1;
+        if (sectionCounter < 0)
+        {
+            sectionCounter = availableSectionsToCloseOver.size() - 1;
+        }
 
         List<GCodeEventNode> movementNodes = new ArrayList<>();
 
@@ -201,57 +205,67 @@ public class CloseLogic
         if (!(sectionContainingNodeToAppendClosesTo instanceof OuterPerimeterSectionNode)
                 && !(sectionContainingNodeToAppendClosesTo instanceof InnerPerimeterSectionNode))
         {
-            try
+            boolean processedOK = false;
+
+            InScopeEvents unprioritisedNoPerimetersForOverwrite = extractAvailableMovements(startingNode, sectionsToConsider, false, false, true);
+
+            if (unprioritisedNoPerimetersForOverwrite.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
             {
-                boolean processedOK = false;
+                processedOK = true;
+                closeResult = overwriteClose(unprioritisedNoPerimetersForOverwrite, nozzleInUse, false);
+            }
 
-                InScopeEvents unprioritisedNoPerimetersForOverwrite = extractAvailableMovements(startingNode, sectionsToConsider, false, false, true);
+            if (!processedOK)
+            {
+                InScopeEvents unprioritisedNoOuterPerimeterForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
+                Optional<SearchSegment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
+                Optional<IntersectionResult> result = Optional.empty();
 
-                if (unprioritisedNoPerimetersForOverwrite.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                if (finalSegment.isPresent())
+                {
+                    result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeterForCopy.getInScopeEvents(), false);
+                }
+
+                if (result.isPresent())
+                {
+                    try
+                    {
+                        closeResult = copyClose(unprioritisedNoOuterPerimeterForCopy, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
+                        processedOK = true;
+                    } catch (NotEnoughAvailableExtrusionException ex)
+                    {
+                        steno.error("Failed to copy close from retract in non-perimeter - outer excluded");
+                    }
+                }
+            }
+
+            if (!processedOK)
+            {
+                try
+                {
+                    InScopeEvents unprioritisedForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, true, false);
+                    closeResult = copyClose(unprioritisedForCopy, startingNode, Optional.empty(), nozzleInUse, false);
+                    processedOK = true;
+                } catch (NotEnoughAvailableExtrusionException ex1)
+                {
+                    steno.error("Failed to copy close from retract in non-perimeter");
+                }
+            }
+
+            if (!processedOK)
+            {
+                InScopeEvents unprioritisedAllForOverwrite = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
+                if (unprioritisedAllForOverwrite.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
                 {
                     processedOK = true;
-                    closeResult = overwriteClose(unprioritisedNoPerimetersForOverwrite, nozzleInUse, false);
+                    closeResult = overwriteClose(unprioritisedAllForOverwrite, nozzleInUse, false);
                 }
+            }
 
-                if (!processedOK)
-                {
-                    InScopeEvents unprioritisedNoOuterPerimeterForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
-                    if (unprioritisedNoOuterPerimeterForCopy.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-                    {
-                        Optional<SearchSegment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
-                        Optional<IntersectionResult> result = Optional.empty();
-
-                        if (finalSegment.isPresent())
-                        {
-                            result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeterForCopy.getInScopeEvents(), false);
-                        }
-
-                        if (result.isPresent())
-                        {
-                            processedOK = true;
-                            closeResult = copyClose(unprioritisedNoOuterPerimeterForCopy, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
-                        }
-                    }
-                }
-
-                if (!processedOK)
-                {
-                    InScopeEvents unprioritisedAllForOverwrite = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
-                    if (unprioritisedAllForOverwrite.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
-                    {
-                        processedOK = true;
-                        closeResult = overwriteClose(unprioritisedAllForOverwrite, nozzleInUse, false);
-                    }
-                }
-
-                if (!processedOK)
-                {
-                    InScopeEvents unprioritisedAllFromLastClose = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
-                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
-                }
-            } catch (NotEnoughAvailableExtrusionException ex)
+            if (!processedOK)
             {
-                steno.error("Failed to close from retract in non-perimeter");
+                InScopeEvents unprioritisedAllFromLastClose = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true);
+                closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
             }
         } else if (sectionContainingNodeToAppendClosesTo instanceof InnerPerimeterSectionNode)
         {
@@ -278,23 +292,39 @@ public class CloseLogic
 
             //Do this if we're closing from an outer perimeter
             InScopeEvents unprioritisedNoOuterPerimeterForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, false, false);
-            if (unprioritisedNoOuterPerimeterForCopy.getAvailableExtrusion() > nozzleInUse.getNozzleParameters().getEjectionVolume())
+
+            //There is some inner perimeter and we should have enough to close
+            // Look for a valid intersection
+            Optional<SearchSegment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
+            Optional<IntersectionResult> result = Optional.empty();
+
+            if (finalSegment.isPresent())
             {
-                //There is some inner perimeter and we should have enough to close
-                // Look for a valid intersection
+                result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeterForCopy.getInScopeEvents(), true);
+            }
 
-                Optional<SearchSegment> finalSegment = nodeManagementUtilities.findPriorMovementPoints(startingNode);
-                Optional<IntersectionResult> result = Optional.empty();
-
-                if (finalSegment.isPresent())
+            if (result.isPresent())
+            {
+                try
                 {
-                    result = closeUtilities.findClosestMovementNode(finalSegment.get(), unprioritisedNoOuterPerimeterForCopy.getInScopeEvents(), true);
-                }
-
-                if (result.isPresent())
-                {
-                    processedOK = true;
                     closeResult = copyClose(unprioritisedNoOuterPerimeterForCopy, startingNode, Optional.of(result.get().getClosestNode()), nozzleInUse, false);
+                    processedOK = true;
+                } catch (NotEnoughAvailableExtrusionException ex)
+                {
+                    steno.error("Failed to copy close from retract in outer perimeter - outer excluded");
+                }
+            }
+
+            if (!processedOK)
+            {
+                try
+                {
+                    InScopeEvents unprioritisedForCopy = extractAvailableMovements(startingNode, sectionsToConsider, true, true, false);
+                    closeResult = copyClose(unprioritisedForCopy, startingNode, Optional.empty(), nozzleInUse, false);
+                    processedOK = true;
+                } catch (NotEnoughAvailableExtrusionException ex1)
+                {
+                    steno.error("Failed to copy close from retract in outer perimeter");
                 }
             }
 
@@ -650,66 +680,89 @@ public class CloseLogic
                 }
             }
 
-            double availableExtrusionBackwardsToStartOfExtrusion = 0;
-            availableExtrusionBackwardsToStartOfExtrusion = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, nodeToStartCopyingFromIndex, false);
+            AvailableExtrusion availableExtrusionBackward = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, nodeToStartCopyingFromIndex, false);
+            double availableExtrusionBackwardsToStartOfExtrusion = availableExtrusionBackward.getAvailableExtrusion();
 
-            double availableExtrusionForwardsToEndOfExtrusion = 0;
-            availableExtrusionForwardsToEndOfExtrusion = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, nodeToStartCopyingFromIndex, true);
+            AvailableExtrusion availableExtrusionForward = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, nodeToStartCopyingFromIndex, true);
+            double availableExtrusionForwardsToEndOfExtrusion = availableExtrusionForward.getAvailableExtrusion();
 
-            if (availableExtrusionForwardsToEndOfExtrusion >= volumeToCloseOver)
+            if (availableExtrusionBackwardsToStartOfExtrusion >= volumeToCloseOver)
+            {
+                additionalComment = "backwards to start";
+                availableExtrusion = availableExtrusionBackwardsToStartOfExtrusion;
+            } else if (availableExtrusionForwardsToEndOfExtrusion >= volumeToCloseOver)
             {
                 additionalComment = "forwards to end";
                 availableExtrusion = availableExtrusionForwardsToEndOfExtrusion;
                 inScopeEventDelta = -1;
-            } else if (availableExtrusionBackwardsToStartOfExtrusion >= volumeToCloseOver)
-            {
-                additionalComment = "backwards to start";
-                availableExtrusion = availableExtrusionBackwardsToStartOfExtrusion;
             } else
             {
-                additionalComment = "can't go forward or back - going from start";
-                availableExtrusion = extractedMovements.getAvailableExtrusion();
-                nodeToStartCopyingFromIndex = extractedMovements.getInScopeEvents().size() - 1;
-                inScopeEventDelta = -1;
-            }
-
-            if (nodeToStartCopyingFrom.get() instanceof MovementProvider)
-            {
-                if (nodeToStartCopyingFrom.get() instanceof ExtrusionProvider)
-                {
-                    ((ExtrusionProvider) nodeToStartCopyingFrom.get()).getExtrusion().eNotInUse();
-                    ((ExtrusionProvider) nodeToStartCopyingFrom.get()).getExtrusion().dNotInUse();
-                }
-
-                Movement firstMovement = ((MovementProvider) nodeToStartCopyingFrom.get()).getMovement();
-                //Travel to the start of the intersected extrusion
-                travelToStart = new TravelNode();
-                travelToStart.getMovement().setX(firstMovement.getX());
-                travelToStart.getMovement().setY(firstMovement.getY());
-                travelToStart.appendCommentText("Travel to start of close");
-
-                if (inScopeEventDelta == 1 && nodeToStartCopyingFromIndex < extractedMovements.getInScopeEvents().size() - 1)
-                {
-                    nodeToStartCopyingFromIndex++;
-                } else if (inScopeEventDelta == -1 && nodeToStartCopyingFromIndex > 0)
-                {
-                    nodeToStartCopyingFromIndex--;
-                }
+                throw new NotEnoughAvailableExtrusionException("Not enough extrusion forward or back");
             }
         } else
         {
-            additionalComment = "no start point";
-            availableExtrusion = extractedMovements.getAvailableExtrusion();
-            if (preferForwards)
+            //No start node specified
+            // The copy point should be as early as possible
+
+            // Find the index of the start node
+            GCodeEventNode startToLookBackFrom = nodeToAddClosesTo;
+            if (nodeToAddClosesTo instanceof RetractNode)
             {
-                additionalComment += " forwards preferred";
-                nodeToStartCopyingFromIndex = 0;
-                inScopeEventDelta = 1;
+                startToLookBackFrom = ((RetractNode) nodeToAddClosesTo).getPriorExtrusionNode();
+            }
+
+            int indexOfNodeToLookBackFrom = 0;
+
+            for (int inScopeEventCounter = 0; inScopeEventCounter < extractedMovements.getInScopeEvents().size(); inScopeEventCounter++)
+            {
+                if (extractedMovements.getInScopeEvents().get(inScopeEventCounter) == startToLookBackFrom)
+                {
+                    indexOfNodeToLookBackFrom = inScopeEventCounter;
+                    break;
+                }
+            }
+
+            AvailableExtrusion availableExtrusionTowardsStart = nodeManagementUtilities.findAvailableExtrusion(extractedMovements, indexOfNodeToLookBackFrom, false);
+
+            if (availableExtrusionTowardsStart.getAvailableExtrusion() >= volumeToCloseOver)
+            {
+                for (int inScopeEventCounter = indexOfNodeToLookBackFrom; inScopeEventCounter < extractedMovements.getInScopeEvents().size(); inScopeEventCounter++)
+                {
+                    if (extractedMovements.getInScopeEvents().get(inScopeEventCounter) == availableExtrusionTowardsStart.getLastNodeExamined())
+                    {
+                        nodeToStartCopyingFromIndex = inScopeEventCounter;
+                        break;
+                    }
+                }
+                inScopeEventDelta = -1;
+                availableExtrusion = availableExtrusionTowardsStart.getAvailableExtrusion();
             } else
             {
-                additionalComment += " backwards preferred";
-                nodeToStartCopyingFromIndex = extractedMovements.getInScopeEvents().size() - 1;
-                inScopeEventDelta = -1;
+                throw new NotEnoughAvailableExtrusionException("Not enough extrusion when considering extrusion from start");
+            }
+        }
+
+        if (extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex) instanceof MovementProvider)
+        {
+            if (extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex) instanceof ExtrusionProvider)
+            {
+                ((ExtrusionProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getExtrusion().eNotInUse();
+                ((ExtrusionProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getExtrusion().dNotInUse();
+            }
+
+            Movement firstMovement = ((MovementProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getMovement();
+            //Travel to the start of the intersected extrusion
+            travelToStart = new TravelNode();
+            travelToStart.getMovement().setX(firstMovement.getX());
+            travelToStart.getMovement().setY(firstMovement.getY());
+            travelToStart.appendCommentText("Travel to start of close");
+
+            if (inScopeEventDelta == 1 && nodeToStartCopyingFromIndex < extractedMovements.getInScopeEvents().size() - 1)
+            {
+                nodeToStartCopyingFromIndex++;
+            } else if (inScopeEventDelta == -1 && nodeToStartCopyingFromIndex > 0)
+            {
+                nodeToStartCopyingFromIndex--;
             }
         }
 
@@ -987,7 +1040,6 @@ public class CloseLogic
                                 }
                             }
                         }
-
 
                         search:
                         while (layerBackwardsIterator.hasNext())
