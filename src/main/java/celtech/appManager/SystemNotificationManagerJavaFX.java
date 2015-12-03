@@ -665,11 +665,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         }
     }
 
+    @Override
+    public PurgeResponse showPurgeDialog()
+    {
+        return showPurgeDialog(true);
+    }
+
     /**
      * @return True if the user has elected to purge
      */
     @Override
-    public PurgeResponse showPurgeDialog()
+    public PurgeResponse showPurgeDialog(boolean allowAutoPrint)
     {
         Callable<PurgeResponse> askUserWhetherToPurge = new Callable()
         {
@@ -680,9 +686,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.purgeRequiredTitle"));
                 choiceLinkDialogBox.setMessage(Lookup.i18n(
                         "dialogs.purgeRequiredInstruction"));
-                ChoiceLinkButton purge = choiceLinkDialogBox.addChoiceLink(
-                        Lookup.i18n("dialogs.goForPurgeTitle"),
-                        Lookup.i18n("dialogs.goForPurgeInstruction"));
+
+                ChoiceLinkButton purge = null;
+                if (allowAutoPrint)
+                {
+                    purge = choiceLinkDialogBox.addChoiceLink(
+                            Lookup.i18n("dialogs.goForPurgeTitle"),
+                            Lookup.i18n("dialogs.goForPurgeInstruction"));
+                }
                 ChoiceLinkButton dontPurge = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("dialogs.dontGoForPurgeTitle"),
                         Lookup.i18n("dialogs.dontGoForPurgeInstruction"));

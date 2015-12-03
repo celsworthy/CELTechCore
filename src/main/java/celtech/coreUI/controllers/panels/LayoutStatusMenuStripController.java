@@ -255,7 +255,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
-        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject);
+        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject.getUsedExtruders());
 
         try
         {
