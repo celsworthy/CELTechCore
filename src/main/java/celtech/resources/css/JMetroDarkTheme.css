@@ -1085,18 +1085,25 @@
 */
 
 .reelLabel {
-    -fx-font-size: 28;
+    -fx-font-family: 'Source Sans Pro Semibold';
+    -fx-font-size: 32;
+    -fx-text-alignment: CENTER;
 }
+
+.reelMaterialNameBold {
+    -fx-font-family: 'Source Sans Pro Semibold';
+    -fx-font-size: 18;
+    -fx-text-alignment: CENTER;
+}
+
 .reelMaterialName {
-    -fx-font-size: 21;
+    -fx-font-size: 18;
+    -fx-text-alignment: CENTER;
 }
+
 .reelMaterialRemaining {
     -fx-font-size: 18;
     -fx-font-smoothing-type: lcd;
-}
-
-#reelNumberMaterial {
-    -fx-font-family: 'Source Sans Pro Semibold';
 }
 
 /*
