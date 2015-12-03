@@ -854,9 +854,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Optional<PrinterErrorChoice> call() throws Exception
             {
-                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
-                choiceLinkDialogBox.setTitle(title);
-                choiceLinkDialogBox.setMessage(message);
+                ChoiceLinkDialogBox printerErrorDialogBox = new ChoiceLinkDialogBox(true);
+                printerErrorDialogBox.setTitle(title);
+                printerErrorDialogBox.setMessage(message);
 
                 ChoiceLinkButton continueChoice = new ChoiceLinkButton();
                 continueChoice.setTitle(Lookup.i18n("dialogs.error.continue"));
@@ -875,25 +875,25 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 if (showContinueOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(continueChoice);
+                    printerErrorDialogBox.addChoiceLink(continueChoice);
                 }
 
                 if (showAbortOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(abortChoice);
+                    printerErrorDialogBox.addChoiceLink(abortChoice);
                 }
 
                 if (showRetryOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(retryChoice);
+                    printerErrorDialogBox.addChoiceLink(retryChoice);
                 }
 
                 if (showOKOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(okChoice);
+                    printerErrorDialogBox.addChoiceLink(okChoice);
                 }
 
-                Optional<ChoiceLinkButton> response = choiceLinkDialogBox.getUserInput();
+                Optional<ChoiceLinkButton> response = printerErrorDialogBox.getUserInput();
 
                 Optional<PrinterErrorChoice> userResponse = Optional.empty();
 

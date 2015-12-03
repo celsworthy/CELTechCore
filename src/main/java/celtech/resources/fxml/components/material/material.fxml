@@ -62,7 +62,7 @@
                                 </Text>
                             </children>
                             <padding>
-                                <Insets left="10.0" />
+                                <Insets left="10.0" top="2.5" />
                             </padding>
                         </TextFlow>
                         <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#whenMaterialSelected" prefHeight="30.0" prefWidth="240.0" styleClass="cmbCleanCombo" />

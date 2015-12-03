@@ -34,7 +34,7 @@ public class ProgressDisplay extends VBox
     {
         setFillWidth(true);
         setPickOnBounds(false);
-        setMouseTransparent(true);
+//        setMouseTransparent(true);
         
         Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer oldSelection, Printer newSelection) ->
         {

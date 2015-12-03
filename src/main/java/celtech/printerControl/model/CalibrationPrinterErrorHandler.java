@@ -15,8 +15,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The PurgePrinterErrorHandlerOrig listens for printer errors and if they occur then cause the user
- * to get a Continue/Abort dialog.
+ * The PurgePrinterErrorHandlerOrig listens for printer errors and if they occur
+ * then cause the user to get a Continue/Abort dialog.
  *
  * @author tony
  */
@@ -24,7 +24,7 @@ public class CalibrationPrinterErrorHandler
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYActions.class.getName());
+            CalibrationXAndYActions.class.getName());
 
     private final Printer printer;
     private final Cancellable errorCancellable;
@@ -49,9 +49,12 @@ public class CalibrationPrinterErrorHandler
     }
 
     /**
-     * Check if a printer error has occurred and if so notify the user via a dialog box (only giving
-     * the Abort option). Return a boolean indicating if the process should abort.
+     * Check if a printer error has occurred and if so notify the user via a
+     * dialog box (only giving the Abort option). Return a boolean indicating if
+     * the process should abort.
      */
+    private boolean dialogOnDisplay = false;
+
     private void notifyUserErrorHasOccurredAndAbortIfNotSlip(FirmwareError error)
     {
         if (!errorCancellable.cancelled().get())
@@ -59,17 +62,19 @@ public class CalibrationPrinterErrorHandler
             if (error == FirmwareError.B_POSITION_LOST)
             {
                 // Do nothing for the moment...
-            } else if (error == FirmwareError.D_FILAMENT_SLIP
-                || error == FirmwareError.E_FILAMENT_SLIP)
+            } else if ((error == FirmwareError.D_FILAMENT_SLIP
+                    || error == FirmwareError.E_FILAMENT_SLIP)
+                    && !dialogOnDisplay)
             {
+                dialogOnDisplay = true;
                 Optional<PrinterErrorChoice> response = Lookup.getSystemNotificationHandler().
-                    showPrinterErrorDialog(
-                        error.getLocalisedErrorTitle(),
-                        error.getLocalisedErrorMessage(),
-                        true,
-                        true,
-                        false,
-                        false);
+                        showPrinterErrorDialog(
+                                error.getLocalisedErrorTitle(),
+                                error.getLocalisedErrorMessage(),
+                                true,
+                                true,
+                                false,
+                                false);
 
                 boolean abort = false;
 
@@ -90,19 +95,22 @@ public class CalibrationPrinterErrorHandler
                 {
                     cancelCalibration();
                 }
-            } else
+                dialogOnDisplay = false;
+            } else if (!dialogOnDisplay)
             {
+                dialogOnDisplay = true;
                 // Must be something else
                 // if not filament slip or B POSITION then cancel / abort printer activity immediately
                 cancelCalibration();
                 Lookup.getSystemNotificationHandler().
-                    showPrinterErrorDialog(
-                        error.getLocalisedErrorTitle(),
-                        Lookup.i18n("calibrationPanel.errorInPrinter"),
-                        false,
-                        false,
-                        false,
-                        true);
+                        showPrinterErrorDialog(
+                                error.getLocalisedErrorTitle(),
+                                Lookup.i18n("calibrationPanel.errorInPrinter"),
+                                false,
+                                false,
+                                false,
+                                true);
+                dialogOnDisplay = false;
             }
         }
     }
