@@ -197,17 +197,8 @@ public class NozzleAssignmentUtilities
 
                             if (lastSectionNode == null)
                             {
-                                if (layerNode.getLayerNumber() == 0)
-                                {
-                                    //Special case - set tool to 0
-                                    requiredToolNumber = 0;
-                                    steno.info("Layer 0 - special case for nozzle assignment");
-                                } else
-                                {
-                                    throw new RuntimeException(
-                                            "Couldn't determine prior section for orphan on layer "
-                                            + layerNode.getLayerNumber() + " as last section didn't exist");
-                                }
+                                requiredToolNumber = 0;
+                                steno.warning("The tool number could not be determined on layer " + layerNode.getLayerNumber());
                             } else
                             {
                                 if (lastSectionNode.getParent() != null

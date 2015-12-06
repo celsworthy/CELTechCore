@@ -79,12 +79,16 @@ public class Preferences
         Preference currencyGBPToLocalMultiplierPref = new FloatingPointPreference(userPreferences.currencyGBPToLocalMultiplierProperty(),
                 2, 7, false, "preferences.currencyGBPToLocalMultiplier");
 
+        Preference loosePartSplitPref = new TickBoxPreference(userPreferences.loosePartSplitOnLoadProperty(),
+                "preferences.loosePartSplit");
+
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
         preferences.add(advancedModePref);
         preferences.add(currencySymbolPref);
         preferences.add(currencyGBPToLocalMultiplierPref);
+        preferences.add(loosePartSplitPref);
 
         return preferences;
     }

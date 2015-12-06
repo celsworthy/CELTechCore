@@ -35,6 +35,7 @@ public class UserPreferenceFile
     private String goProYMove = "";
     private int goProDelay = 2;
     private int goProDelayBeforeCapture = 2;
+    private boolean loosePartSplitOnLoad = true;
 
     public String getLanguageTag()
     {
@@ -236,6 +237,16 @@ public class UserPreferenceFile
         return goProDelayBeforeCapture;
     }
 
+    public boolean isLoosePartSplitOnLoad()
+    {
+        return loosePartSplitOnLoad;
+    }
+
+    public void setLoosePartSplitOnLoad(boolean loosePartSplitOnLoad)
+    {
+        this.loosePartSplitOnLoad = loosePartSplitOnLoad;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
@@ -258,5 +269,6 @@ public class UserPreferenceFile
         setGoProYMove(userPreferences.getGoProYMove());
         setGoProDelay(userPreferences.getGoProDelay());
         setGoProDelayBeforeCapture(userPreferences.getGoProDelayBeforeCapture());
+        setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
     }
 }

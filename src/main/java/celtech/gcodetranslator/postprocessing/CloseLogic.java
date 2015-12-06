@@ -22,6 +22,7 @@ import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Extrusion;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
@@ -234,7 +235,7 @@ public class CloseLogic
                         processedOK = true;
                     } catch (NotEnoughAvailableExtrusionException ex)
                     {
-                        steno.error("Failed to copy close from retract in non-perimeter - outer excluded");
+//                        steno.error("Failed to copy close from retract in non-perimeter - outer excluded");
                     }
                 }
             }
@@ -248,7 +249,7 @@ public class CloseLogic
                     processedOK = true;
                 } catch (NotEnoughAvailableExtrusionException ex1)
                 {
-                    steno.error("Failed to copy close from retract in non-perimeter");
+//                    steno.error("Failed to copy close from retract in non-perimeter");
                 }
             }
 
@@ -284,7 +285,7 @@ public class CloseLogic
                 }
             } catch (NotEnoughAvailableExtrusionException ex)
             {
-                steno.error("Failed to close from retract in inner perimeter");
+//                steno.error("Failed to close from retract in inner perimeter");
             }
         } else
         {
@@ -311,7 +312,7 @@ public class CloseLogic
                     processedOK = true;
                 } catch (NotEnoughAvailableExtrusionException ex)
                 {
-                    steno.error("Failed to copy close from retract in outer perimeter - outer excluded");
+//                    steno.error("Failed to copy close from retract in outer perimeter - outer excluded");
                 }
             }
 
@@ -324,7 +325,7 @@ public class CloseLogic
                     processedOK = true;
                 } catch (NotEnoughAvailableExtrusionException ex1)
                 {
-                    steno.error("Failed to copy close from retract in outer perimeter");
+//                    steno.error("Failed to copy close from retract in outer perimeter");
                 }
             }
 
@@ -362,6 +363,7 @@ public class CloseLogic
                 NozzleValvePositionNode nozzlePosition = (NozzleValvePositionNode) eventNode;
                 nozzlePosition.setCommentText("Partial open");
                 nozzlePosition.getNozzlePosition().setB(partialOpenValue);
+                nozzlePosition.getNozzlePosition().setPartialOpen(true);
                 success = true;
                 break;
             }
@@ -376,8 +378,20 @@ public class CloseLogic
             NozzleValvePositionNode nozzlePosition = new NozzleValvePositionNode();
             nozzlePosition.setCommentText("Partial open");
             nozzlePosition.getNozzlePosition().setB(partialOpenValue);
+            nozzlePosition.getNozzlePosition().setPartialOpen(true);
 
-            inScopeEvents.getInScopeEvents().get(inScopeEvents.getInScopeEvents().size() - 1).addSiblingBefore(nozzlePosition);
+            int nodeToInsertBeforeIndex = inScopeEvents.getInScopeEvents().size() - 1;
+            
+            for (int eventCounter = inScopeEvents.getInScopeEvents().size() - 1; eventCounter >= 0; eventCounter --)
+            {
+                if (inScopeEvents.getInScopeEvents().get(eventCounter) instanceof ExtrusionNode)
+                {
+                    nodeToInsertBeforeIndex = eventCounter;
+                    break;
+                }
+            }
+
+            inScopeEvents.getInScopeEvents().get(nodeToInsertBeforeIndex).addSiblingBefore(nozzlePosition);
         }
 
         return success;
@@ -746,8 +760,11 @@ public class CloseLogic
         {
             if (extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex) instanceof ExtrusionProvider)
             {
-                ((ExtrusionProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getExtrusion().eNotInUse();
-                ((ExtrusionProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getExtrusion().dNotInUse();
+                Extrusion extrusionInFirstPart = ((ExtrusionProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getExtrusion();
+                availableExtrusion -= extrusionInFirstPart.getE();
+                availableExtrusion -= extrusionInFirstPart.getD();
+                extrusionInFirstPart.eNotInUse();
+                extrusionInFirstPart.dNotInUse();
             }
 
             Movement firstMovement = ((MovementProvider) extractedMovements.getInScopeEvents().get(nodeToStartCopyingFromIndex)).getMovement();
@@ -793,7 +810,7 @@ public class CloseLogic
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
-                        copy.appendCommentText("copied node");
+                        copy.appendCommentText("copied node <");
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
@@ -810,7 +827,7 @@ public class CloseLogic
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
-                        copy.appendCommentText("copied node");
+                        copy.appendCommentText("copied node =");
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();

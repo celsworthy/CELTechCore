@@ -89,11 +89,11 @@ public class CollisionManager implements CollisionShapeListener
             createGhost(model);
         } else
         {
-            CollisionShape potentialCollisionShape = model.addCollisionShapeListener(this);
-            if (potentialCollisionShape != null)
-            {
-                createGhost(model);
-            }
+//            CollisionShape potentialCollisionShape = model.addCollisionShapeListener(this);
+//            if (potentialCollisionShape != null)
+//            {
+//                createGhost(model);
+//            }
         }
     }
 
@@ -105,7 +105,7 @@ public class CollisionManager implements CollisionShapeListener
     private void createGhost(ModelContainer model)
     {
         GhostObject ghostOfModel = new GhostObject();
-        ghostOfModel.setCollisionShape(model.getCollisionShape());
+//        ghostOfModel.setCollisionShape(model.getCollisionShape());
         ghostOfModel.setCollisionFlags(CollisionFlags.NO_CONTACT_RESPONSE);
         collisionWorld.addCollisionObject(ghostOfModel);
 

@@ -248,8 +248,9 @@ public class UtilityMethods
             {
                 lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
             } else if (layerEvent instanceof NozzlePositionProvider
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0)
+                    && (((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen()
+                    || (((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0)))
             {
                 nozzleOpen = true;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
@@ -272,7 +273,8 @@ public class UtilityMethods
                 }
             } else if (layerEvent instanceof NozzlePositionProvider
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0)
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0
+                    && !((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen())
             {
                 nozzleOpen = false;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();

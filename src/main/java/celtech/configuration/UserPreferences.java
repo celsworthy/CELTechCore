@@ -46,6 +46,7 @@ public class UserPreferences
     private final StringProperty goProYMove = new SimpleStringProperty("");
     private final IntegerProperty goProDelay = new SimpleIntegerProperty(0);
     private final IntegerProperty goProDelayBeforeCapture = new SimpleIntegerProperty(0);
+    private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
 
     private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
@@ -90,6 +91,7 @@ public class UserPreferences
         this.goProYMove.set(userPreferenceFile.getGoProYMove());
         this.goProDelay.set(userPreferenceFile.getGoProDelay());
         this.goProDelayBeforeCapture.set(userPreferenceFile.getGoProDelayBeforeCapture());
+        this.loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -106,6 +108,7 @@ public class UserPreferences
         goProYMove.addListener(stringChangeListener);
         goProDelay.addListener(numberChangeListener);
         goProDelayBeforeCapture.addListener(numberChangeListener);
+        loosePartSplitOnLoad.addListener(booleanChangeListener);
     }
 
     public String getLanguageTag()
@@ -422,5 +425,20 @@ public class UserPreferences
     public IntegerProperty getGoProDelayBeforeCaptureProperty()
     {
         return goProDelayBeforeCapture;
+    }
+
+    public boolean isLoosePartSplitOnLoad()
+    {
+        return loosePartSplitOnLoad.get();
+    }
+
+    public void setLoosePartSplitOnLoad(boolean value)
+    {
+        loosePartSplitOnLoad.set(value);
+    }
+
+    public BooleanProperty loosePartSplitOnLoadProperty()
+    {
+        return loosePartSplitOnLoad;
     }
 }

@@ -13,6 +13,7 @@ public class NozzlePosition implements Renderable
 
     private boolean isBSet = false;
     private double b;
+    private boolean partialOpen = false;
 
     /**
      *
@@ -52,6 +53,16 @@ public class NozzlePosition implements Renderable
         this.b = 0;
     }
 
+    public void setPartialOpen(boolean partialOpen)
+    {
+        this.partialOpen = partialOpen;
+    }
+
+    public boolean isPartialOpen()
+    {
+        return partialOpen;
+    }
+    
     @Override
     public String renderForOutput()
     {

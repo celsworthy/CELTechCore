@@ -154,7 +154,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private List<Transform> rotationTransforms;
     
-    private CollisionShape collisionShape = null;
+    private MeshView collisionShape = null;
     private List<CollisionShapeListener> collisionShapeListeners = new ArrayList<>();
 
     public ModelContainer()
@@ -2205,12 +2205,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         this.isInvalidMesh = isInvalidMesh;
     }
 
-    public CollisionShape getCollisionShape()
+    public MeshView getCollisionShape()
     {
         return collisionShape;
     }
     
-    public CollisionShape addCollisionShapeListener(CollisionShapeListener collisionShapeListener)
+    public MeshView addCollisionShapeListener(CollisionShapeListener collisionShapeListener)
     {
         collisionShapeListeners.add(collisionShapeListener);
         return collisionShape;
