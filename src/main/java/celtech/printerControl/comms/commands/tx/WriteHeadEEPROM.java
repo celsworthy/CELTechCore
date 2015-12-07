@@ -117,6 +117,8 @@ public class WriteHeadEEPROM extends RoboxTxPacket
             maxTempA = heater0.maximumTemperatureProperty().get();
             lastFilamentTemperatureA = heater0.lastFilamentTemperatureProperty().get();
             filamentIDA = heater0.filamentIDProperty().get();
+            beta = heater0.betaProperty().get();
+            tcal = heater0.tCalProperty().get();
         }
 
         if (head.getNozzleHeaters().size() > 1)
