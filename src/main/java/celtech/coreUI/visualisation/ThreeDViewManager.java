@@ -13,6 +13,7 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.StandardColours;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.coreUI.visualisation.collision.CollisionManager;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.threed.importers.obj.ObjImporter;
@@ -23,10 +24,18 @@ import celtech.utils.Math.MathUtils;
 import celtech.utils.Math.PolarCoordinate;
 import celtech.utils.Time.TimeUtils;
 import celtech.utils.threed.MeshSeparator;
+import com.bulletphysics.collision.broadphase.AxisSweep3;
+import com.bulletphysics.collision.broadphase.BroadphaseInterface;
+import com.bulletphysics.collision.dispatch.CollisionDispatcher;
+import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.ConvexHullShape;
 import eu.mihosoft.vrl.v3d.Bounds;
 import eu.mihosoft.vrl.v3d.CSG;
 import eu.mihosoft.vrl.v3d.Cube;
 import eu.mihosoft.vrl.v3d.MeshContainer;
+import eu.mihosoft.vrl.v3d.PlaneBisect;
 import eu.mihosoft.vrl.v3d.Vector3d;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +46,7 @@ import javafx.animation.AnimationTimer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -68,6 +78,7 @@ import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Transform;
+import javax.vecmath.Vector3f;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.fxyz.utils.MeshUtils;
@@ -183,6 +194,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
     private PhongMaterial zcutDisplayPlaneMaterial = new PhongMaterial(Color.web("#00005530"));
 
+    private CollisionManager collisionManager = new CollisionManager();
+
     private Point2D processPoint(Point3D inputPoint)
     {
 //        Point2D screenPoint = bed.localToScreen(inputPoint);
@@ -219,7 +232,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
-            modelContainer.cameraViewOfYouHasChanged();
+            modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
         }
 
         //Output the bed co-ordinates in screen terms
@@ -319,12 +332,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     {
         for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
-            modelContainer.cameraViewOfYouHasChanged();
+            modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
         }
 
         for (CameraViewChangeListener listener : cameraViewChangeListeners)
         {
-            listener.cameraViewOfYouHasChanged();
+            listener.cameraViewOfYouHasChanged(cameraDistance.get());
         }
     }
 
@@ -681,6 +694,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 //            return;
 //        }
         boolean shortcut = event.isShortcutDown();
+
         if (shortcut && event.isSecondaryButtonDown())
         {
             bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * 0.3);  // -
@@ -705,6 +719,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 //                }
 //                lastCameraPickedPoint = pickedPoint;
 //            }
+        } else if (event.isAltDown())
+        {
+            double z = bedTranslateXform.getTz() + (mouseDeltaY * 0.2);
+            cameraDistance.set(z);
+            bedTranslateXform.setTz(z);
+            notifyModelsOfCameraViewChange();
         } else if (event.isSecondaryButtonDown())
         {
             rotateCameraAroundAxes(-mouseDeltaY * 2.0, mouseDeltaX * 2.0);
@@ -751,9 +771,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                         pickedScenePoint);
 
 //                translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
-
                 Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(pickedScenePoint);
-                
+
                 if (lastDragPosition != null)
                 {
                     Point3D resultant = pickedDragPlanePoint.subtract(lastDragPosition);
@@ -1224,41 +1243,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         updateGroupSelectionList();
     }
 
-    private void collideModels()
-    {
-        // stub this out at Chris' request until it is more precise
-    }
-
-    private void collideModelsOld()
-    {
-        boolean[] collidedModels = new boolean[loadedModels.size()];
-
-        for (int printableNum = 0; printableNum < loadedModels.size(); printableNum++)
-        {
-            ModelContainer modelToCollide = loadedModels.get(printableNum);
-
-            for (int secondaryPrintableNum = 0; secondaryPrintableNum < loadedModels.size(); secondaryPrintableNum++)
-            {
-                if (secondaryPrintableNum > printableNum)
-                {
-                    ModelContainer modelToCollideWith = loadedModels.get(secondaryPrintableNum);
-
-                    if (modelToCollide.getBoundsInParent().intersects(
-                            modelToCollideWith.getBoundsInParent()))
-                    {
-                        collidedModels[printableNum] = true;
-                        collidedModels[secondaryPrintableNum] = true;
-                    }
-                }
-            }
-        }
-
-        for (int index = 0; index < collidedModels.length; index++)
-        {
-            loadedModels.get(index).setCollision(collidedModels[index]);
-        }
-    }
-
     public SubScene getSubScene()
     {
         return subScene;
@@ -1548,28 +1532,31 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             model.heresYourCamera(camera);
         }
         updateModelColoursForPositionModeAndTargetPrinter();
-        collideModels();
+
+        collisionManager.addModel(modelContainer);
     }
 
     @Override
     public void whenModelsRemoved(Set<ModelContainer> modelContainers)
     {
         models.getChildren().removeAll(modelContainers);
-        collideModels();
+        modelContainers.stream().forEach(model ->
+        {
+            collisionManager.removeModel(model);
+        });
     }
 
     @Override
     public void whenAutoLaidOut()
     {
-        collideModels();
         updateModelColoursForPositionModeAndTargetPrinter();
     }
 
     @Override
     public void whenModelsTransformed(Set<ModelContainer> modelContainers)
     {
-        collideModels();
         updateModelColoursForPositionModeAndTargetPrinter();
+        collisionManager.modelsTransformed(modelContainers);
     }
 
     @Override
@@ -1638,40 +1625,39 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             csgTimer.timerStart(this, "toCSG");
             CSG modelAsCSG = MeshUtils.mesh2CSG(modelContainer.getMeshView());
 
-            Bounds modelBounds = modelAsCSG.getBounds();
-            steno.info("Bounds of model " + modelBounds);
-            CSG copyOfmodelAsCSG = modelAsCSG.clone();
+//            Bounds modelBounds = modelAsCSG.getBounds();
+//            steno.info("Bounds of model " + modelBounds);
+//            CSG copyOfmodelAsCSG = modelAsCSG.clone();
             csgTimer.timerStop(this, "toCSG");
             steno.info("Time to CSG " + csgTimer.timeTimeSoFar_ms(this, "toCSG"));
 
-            csgTimer.timerStart(this, "cut");
-            Vector3d boxWHD = new Vector3d(modelContainer.getTransformedWidth(), 5, modelContainer.getTransformedDepth());
-            Vector3d boxCentreTop = new Vector3d(0, -cutHeight.get(), 0);
-//            Vector3d boxCentreBottom = new Vector3d(modelContainer.getTransformedCentreX(), -modelContainer.getTransformedHeight() * 0.25, modelContainer.getTransformedCentreZ());
-            csgTimer.timerStop(this, "cut");
-            steno.info("Time to cut " + csgTimer.timeTimeSoFar_ms(this, "cut"));
-
-            csgTimer.timerStart(this, "createCube");
-            CSG topCutbox = new Cube(boxCentreTop, boxWHD).toCSG();
-//            CSG topCutbox = new Cube(60).toCSG();
-            Bounds boxBounds = topCutbox.getBounds();
-            steno.info("Bounds of cutbox " + boxBounds);
-//            CSG bottomCutbox = new Cube(boxCentreBottom, boxWHD).toCSG();
-            csgTimer.timerStop(this, "createCube");
-            steno.info("Time to createCube " + csgTimer.timeTimeSoFar_ms(this, "createCube"));
-
-            csgTimer.timerStart(this, "difference");
-            CSG topPart = modelAsCSG.difference(topCutbox);
-            modelAsCSG = null;
-//            copyOfmodelAsCSG.difference(bottomCutbox);
-            csgTimer.timerStop(this, "difference");
-            steno.info("Time to difference " + csgTimer.timeTimeSoFar_ms(this, "difference"));
+//            csgTimer.timerStart(this, "cut");
+//            Vector3d boxWHD = new Vector3d(modelContainer.getTransformedWidth(), 5, modelContainer.getTransformedDepth());
+//            Vector3d boxCentreTop = new Vector3d(0, -cutHeight.get(), 0);
+////            Vector3d boxCentreBottom = new Vector3d(modelContainer.getTransformedCentreX(), -modelContainer.getTransformedHeight() * 0.25, modelContainer.getTransformedCentreZ());
+//            csgTimer.timerStop(this, "cut");
+//            steno.info("Time to cut " + csgTimer.timeTimeSoFar_ms(this, "cut"));
+//
+//            csgTimer.timerStart(this, "createCube");
+//            CSG topCutbox = new Cube(boxCentreTop, boxWHD).toCSG();
+////            CSG topCutbox = new Cube(60).toCSG();
+//            Bounds boxBounds = topCutbox.getBounds();
+//            steno.info("Bounds of cutbox " + boxBounds);
+////            CSG bottomCutbox = new Cube(boxCentreBottom, boxWHD).toCSG();
+//            csgTimer.timerStop(this, "createCube");
+//            steno.info("Time to createCube " + csgTimer.timeTimeSoFar_ms(this, "createCube"));
+            csgTimer.timerStart(this, "split");
+            modelAsCSG.setOptType(CSG.OptType.NONE);
+            PlaneBisect bisector = new PlaneBisect();
+            PlaneBisect.TopBottomCutPair topAndBottom = bisector.clipAtHeight(modelAsCSG, height);
+            csgTimer.timerStop(this, "split");
+            steno.info("Time to split " + csgTimer.timeTimeSoFar_ms(this, "split"));
 
             csgTimer.timerStart(this, "toMesh");
-            MeshContainer topPartContainer = topPart.toJavaFXMeshSimple(null);
-            topPart = null;
+            MeshContainer topPartContainer = topAndBottom.getTopPart().toJavaFXMeshSimple(null);
             List<Mesh> topPartMeshes = topPartContainer.getMeshes();
-            topPartContainer = null;
+            MeshContainer bottomPartContainer = topAndBottom.getBottomPart().toJavaFXMeshSimple(null);
+            List<Mesh> bottomPartMeshes = bottomPartContainer.getMeshes();
             csgTimer.timerStop(this, "toMesh");
             steno.info("Time to extract mesh " + csgTimer.timeTimeSoFar_ms(this, "toMesh"));
 
@@ -1733,5 +1719,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     public Point2D convertWorldCoordinatesToScreen(double worldX, double worldY, double worldZ)
     {
         return bed.localToScreen(worldX, worldY, worldZ);
+    }
+
+    public ReadOnlyObjectProperty<DragMode> getDragModeProperty()
+    {
+        return dragMode;
     }
 }

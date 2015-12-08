@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
@@ -44,6 +45,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.control.CheckBox;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -120,7 +122,7 @@ public class PurgeInsetPanelController implements Initializable
     private GraphicButtonWithLabel okButton;
 
     @FXML
-    private GraphicButtonWithLabel backButton;
+    private GraphicButtonWithLabel backToStatus;
 
     @FXML
     private GraphicButtonWithLabel repeatButton;
@@ -163,6 +165,11 @@ public class PurgeInsetPanelController implements Initializable
 
     @FXML
     private CheckBox purgeThisNozzle1;
+
+    @FXML
+    private HBox topMenuStrip;
+
+    private boolean backToStatusInhibitWhenAtTop = false;
 
     @FXML
     void start(ActionEvent event)
@@ -291,6 +298,15 @@ public class PurgeInsetPanelController implements Initializable
         resizePurgeDisplay(diagramContainer.getWidth(), diagramContainer.getHeight());
     }
 
+    public void hideCommonBordersAndBackButton()
+    {
+        topMenuStrip.setMinHeight(0);
+        topMenuStrip.setPrefHeight(0);
+        topMenuStrip.setVisible(false);
+        backToStatus.setVisible(false);
+        backToStatusInhibitWhenAtTop = true;
+    }
+
     private void resizePurgeDisplay(double displayWidth, double displayHeight)
     {
         final double beginWidth = 804;
@@ -329,7 +345,7 @@ public class PurgeInsetPanelController implements Initializable
         namesToButtons.put(StateTransitionManager.GUIName.NEXT, proceedButton);
         namesToButtons.put(StateTransitionManager.GUIName.RETRY, repeatButton);
         namesToButtons.put(StateTransitionManager.GUIName.START, startPurgeButton);
-        namesToButtons.put(StateTransitionManager.GUIName.BACK, backButton);
+        namesToButtons.put(StateTransitionManager.GUIName.BACK, backToStatus);
         namesToButtons.put(StateTransitionManager.GUIName.COMPLETE, okButton);
     }
 
@@ -357,7 +373,7 @@ public class PurgeInsetPanelController implements Initializable
         proceedButton.setVisible(false);
         repeatButton.setVisible(false);
         startPurgeButton.setVisible(false);
-        backButton.setVisible(false);
+        backToStatus.setVisible(false);
         okButton.setVisible(false);
         purgeDetailsGrid0.setVisible(false);
         purgeDetailsGrid1.setVisible(false);
@@ -572,16 +588,16 @@ public class PurgeInsetPanelController implements Initializable
             {
                 cantPrintNoFilament0NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
                         .and(purgingNozzleHeater0.and(extruder0NotLoaded)));
-                
+
                 cantPrintNoFilament1NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
                         .and(purgingNozzleHeater1.and(extruder1NotLoaded)));
-                
+
                 cantPrintFilament0NotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
                         .and(purgingNozzleHeater0.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())));
-                
+
                 cantPrintFilament1NotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
                         .and(purgingNozzleHeater1.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())));
-                
+
                 BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen)
                         .or(purgingNozzleHeater0.and(extruder0NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())))
                         .or(purgingNozzleHeater1.and(extruder1NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())))
@@ -595,7 +611,7 @@ public class PurgeInsetPanelController implements Initializable
      * This is called when the user wants to print and the system has detected
      * that a purge is required.
      */
-    public void purgeAndPrint(Project project, PrinterSettings printerSettings, Printer printerToUse)
+    public void purgeAndPrint(Project project, Printer printerToUse)
     {
         this.project = project;
         bindPrinter(printerToUse);
@@ -622,11 +638,11 @@ public class PurgeInsetPanelController implements Initializable
             purgeThisNozzle1.setSelected(false);
 
             //Dual nozzle heads have extruder/nozzle reversed!
-            if (PrinterUtils.isPurgeNecessaryForExtruder(project, printer, 0))
+            if (PrinterUtils.isPurgeNecessaryForExtruder(printer, 0))
             {
                 purgeThisNozzle1.setSelected(true);
             }
-            if (PrinterUtils.isPurgeNecessaryForExtruder(project, printer, 1))
+            if (PrinterUtils.isPurgeNecessaryForExtruder(printer, 1))
             {
                 purgeThisNozzle0.setSelected(true);
             }
@@ -669,7 +685,10 @@ public class PurgeInsetPanelController implements Initializable
             purgeThisNozzle1.onActionProperty().set(
                     (EventHandler<ActionEvent>) (ActionEvent event) ->
                     {
-                        transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+                        if (purgeTwoNozzleHeaters.get())
+                        {
+                            transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+                        }
                     });
 
             if (purgeTwoNozzleHeaters.get())
@@ -697,7 +716,10 @@ public class PurgeInsetPanelController implements Initializable
             transitionManager.start();
 
             transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
-            transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+            if (purgeTwoNozzleHeaters.get())
+            {
+                transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+            }
 
             installTagAndDisabledStatusForButton(transitionManager, printer, startPurgeButton);
             installTagAndDisabledStatusForButton(transitionManager, printer, proceedButton);
@@ -757,5 +779,10 @@ public class PurgeInsetPanelController implements Initializable
             }
             purgeTemperature1.setText(transitionManager.getPurgeTemperature(1).asString().get());
         }
+    }
+
+    public ReadOnlyObjectProperty<PurgeState> purgeStateProperty()
+    {
+        return transitionManager.stateGUITProperty();
     }
 }

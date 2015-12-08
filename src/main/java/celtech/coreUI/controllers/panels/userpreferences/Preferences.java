@@ -36,11 +36,27 @@ public class Preferences
         Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
                 "preferences.goProWifiPassword");
 
+        Preference goProXMovePref = new StringPreference(userPreferences.getGoProXMoveProperty(),
+                "preferences.goProXMove");
+
+        Preference goProYMovePref = new StringPreference(userPreferences.getGoProYMoveProperty(),
+                "preferences.goProYMove");
+
+        Preference goProDelayPref = new IntegerPreference(userPreferences.getGoProDelayProperty(),
+                "preferences.goProDelay");
+
+        Preference goProDelayBeforeCapturePref = new IntegerPreference(userPreferences.getGoProDelayBeforeCaptureProperty(),
+                "preferences.goProDelayBeforeCapture");
+
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
         preferences.add(detectFilamentLoadedPref);
         preferences.add(goProTriggerEnabledPref);
         preferences.add(goProWifiPasswordPref);
+        preferences.add(goProXMovePref);
+        preferences.add(goProYMovePref);
+        preferences.add(goProDelayPref);
+        preferences.add(goProDelayBeforeCapturePref);
 
         return preferences;
     }
@@ -63,12 +79,16 @@ public class Preferences
         Preference currencyGBPToLocalMultiplierPref = new FloatingPointPreference(userPreferences.currencyGBPToLocalMultiplierProperty(),
                 2, 7, false, "preferences.currencyGBPToLocalMultiplier");
 
+        Preference loosePartSplitPref = new TickBoxPreference(userPreferences.loosePartSplitOnLoadProperty(),
+                "preferences.loosePartSplit");
+
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
         preferences.add(advancedModePref);
         preferences.add(currencySymbolPref);
         preferences.add(currencyGBPToLocalMultiplierPref);
+        preferences.add(loosePartSplitPref);
 
         return preferences;
     }

@@ -11,6 +11,7 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.coreUI.visualisation.BedAxes;
 import celtech.coreUI.visualisation.DimensionLineManager;
+import celtech.coreUI.visualisation.DragMode;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
@@ -107,8 +108,11 @@ public class ProjectTab extends Tab
         Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
         Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
         rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
+        
+        rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
         Node modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
+        modelActionsInsetPanel.mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");

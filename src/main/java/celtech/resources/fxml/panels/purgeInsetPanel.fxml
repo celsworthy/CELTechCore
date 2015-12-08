@@ -1008,7 +1008,7 @@
                                             <children>
                                                 <GraphicButtonWithLabel fx:id="okButton" fxmlFileName="backwardButton" labelText="%misc.OK" onAction="#okPressed" />
                                                 <GraphicButtonWithLabel fx:id="cancelPurgeButton" fxmlFileName="cancelButton" labelText="%calibrationPanel.cancelCalibration" onAction="#cancel" />
-                                                <GraphicButtonWithLabel fx:id="backButton" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#cancel" />
+                                                <GraphicButtonWithLabel fx:id="backToStatus" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#cancel" />
                                             </children>
                                         </StackPane>
                                         <GraphicButtonWithLabel fx:id="repeatButton" fxmlFileName="retryButton" labelText="%purgeMaterial.repeatPurge" onAction="#repeat" />
@@ -1020,7 +1020,7 @@
                 </VBox>
             </bottom>
          <top>
-            <HBox minHeight="60.0" BorderPane.alignment="CENTER" />
+            <HBox fx:id="topMenuStrip" minHeight="60.0" BorderPane.alignment="CENTER" />
          </top>
         </BorderPane>
     </children>

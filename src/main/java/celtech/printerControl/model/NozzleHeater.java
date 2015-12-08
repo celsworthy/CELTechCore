@@ -102,7 +102,7 @@ public class NozzleHeater implements Cloneable
         return tcal;
     }
 
-    public ReadOnlyFloatProperty lastFilamentTemperatureProperty()
+    public FloatProperty lastFilamentTemperatureProperty()
     {
         return lastFilamentTemperature;
     }

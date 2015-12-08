@@ -103,7 +103,13 @@ public class ModelLoader
         {
             if (loadResult != null)
             {
-                allModelContainers.add(makeGroup(loadResult.getModelContainers()));
+                if (Lookup.getUserPreferences().isLoosePartSplitOnLoad())
+                {
+                    allModelContainers.add(makeGroup(loadResult.getModelContainers()));
+                } else
+                {
+                    allModelContainers.addAll(loadResult.getModelContainers());
+                }
             } else
             {
                 steno.error("Error whilst attempting to load model");

@@ -74,7 +74,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static final Stenographer steno = StenographerFactory.getStenographer(
             DisplayManager.class.getName());
 
-    private static final int START_SCALING_WINDOW_HEIGHT = 1001;
+    private static final int START_SCALING_WINDOW_HEIGHT = 770;
     private static final double MINIMUM_SCALE_FACTOR = 0.7;
 
     private static ApplicationStatus applicationStatus;
@@ -774,24 +774,24 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             }
         }
 
-//        double scaleFactor = 1.0;
-//        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
-//        {
-//            scaleFactor = scene.getHeight() / START_SCALING_WINDOW_HEIGHT;
-//            if (scaleFactor < MINIMUM_SCALE_FACTOR)
-//            {
-//                scaleFactor = MINIMUM_SCALE_FACTOR;
-//            }
-//        }
-//
-//        rootAnchorPane.setScaleX(scaleFactor);
-//        rootAnchorPane.setScaleY(scaleFactor);
-//        rootAnchorPane.setScaleZ(scaleFactor);
-//
-//        rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
-//        rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
-//        rootAnchorPane.setPrefHeight(scene.getHeight() / scaleFactor);
-//        rootAnchorPane.setMinHeight(scene.getHeight() / scaleFactor);
+        double scaleFactor = 1.0;
+        if (scene.getHeight() < START_SCALING_WINDOW_HEIGHT)
+        {
+            scaleFactor = scene.getHeight() / START_SCALING_WINDOW_HEIGHT;
+            if (scaleFactor < MINIMUM_SCALE_FACTOR)
+            {
+                scaleFactor = MINIMUM_SCALE_FACTOR;
+            }
+        }
+
+        rootAnchorPane.setScaleX(scaleFactor);
+        rootAnchorPane.setScaleY(scaleFactor);
+        rootAnchorPane.setScaleZ(scaleFactor);
+
+        rootAnchorPane.setPrefWidth(scene.getWidth() / scaleFactor);
+        rootAnchorPane.setMinWidth(scene.getWidth() / scaleFactor);
+        rootAnchorPane.setPrefHeight(scene.getHeight() / scaleFactor);
+        rootAnchorPane.setMinHeight(scene.getHeight() / scaleFactor);
     }
 
     public ReadOnlyBooleanProperty nodesMayHaveMovedProperty()

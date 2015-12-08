@@ -31,6 +31,11 @@ public class UserPreferenceFile
     private boolean showMetricUnits = true;
     private boolean goProTriggerEnabled = false;
     private String goProWifiPassword = "";
+    private String goProXMove = "";
+    private String goProYMove = "";
+    private int goProDelay = 2;
+    private int goProDelayBeforeCapture = 2;
+    private boolean loosePartSplitOnLoad = true;
 
     public String getLanguageTag()
     {
@@ -192,6 +197,56 @@ public class UserPreferenceFile
         this.goProWifiPassword = goProWifiPassword;
     }
 
+    public void setGoProXMove(String goProXMove)
+    {
+        this.goProXMove = goProXMove;
+    }
+
+    public String getGoProXMove()
+    {
+        return goProXMove;
+    }
+
+    public void setGoProYMove(String goProYMove)
+    {
+        this.goProYMove = goProYMove;
+    }
+
+    public String getGoProYMove()
+    {
+        return goProYMove;
+    }
+
+    public void setGoProDelay(int goProDelay)
+    {
+        this.goProDelay = goProDelay;
+    }
+
+    public int getGoProDelay()
+    {
+        return goProDelay;
+    }
+
+    public void setGoProDelayBeforeCapture(int goProDelayBeforeCapture)
+    {
+        this.goProDelayBeforeCapture = goProDelayBeforeCapture;
+    }
+
+    public int getGoProDelayBeforeCapture()
+    {
+        return goProDelayBeforeCapture;
+    }
+
+    public boolean isLoosePartSplitOnLoad()
+    {
+        return loosePartSplitOnLoad;
+    }
+
+    public void setLoosePartSplitOnLoad(boolean loosePartSplitOnLoad)
+    {
+        this.loosePartSplitOnLoad = loosePartSplitOnLoad;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
@@ -210,5 +265,10 @@ public class UserPreferenceFile
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setGoProTriggerEnabled(userPreferences.isGoProTriggerEnabled());
         setGoProWifiPassword(userPreferences.getGoProWifiPassword());
+        setGoProXMove(userPreferences.getGoProXMove());
+        setGoProYMove(userPreferences.getGoProYMove());
+        setGoProDelay(userPreferences.getGoProDelay());
+        setGoProDelayBeforeCapture(userPreferences.getGoProDelayBeforeCapture());
+        setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
     }
 }

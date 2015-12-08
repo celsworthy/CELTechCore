@@ -665,11 +665,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         }
     }
 
+    @Override
+    public PurgeResponse showPurgeDialog()
+    {
+        return showPurgeDialog(true);
+    }
+
     /**
      * @return True if the user has elected to purge
      */
     @Override
-    public PurgeResponse showPurgeDialog()
+    public PurgeResponse showPurgeDialog(boolean allowAutoPrint)
     {
         Callable<PurgeResponse> askUserWhetherToPurge = new Callable()
         {
@@ -680,9 +686,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.purgeRequiredTitle"));
                 choiceLinkDialogBox.setMessage(Lookup.i18n(
                         "dialogs.purgeRequiredInstruction"));
-                ChoiceLinkButton purge = choiceLinkDialogBox.addChoiceLink(
-                        Lookup.i18n("dialogs.goForPurgeTitle"),
-                        Lookup.i18n("dialogs.goForPurgeInstruction"));
+
+                ChoiceLinkButton purge = null;
+                if (allowAutoPrint)
+                {
+                    purge = choiceLinkDialogBox.addChoiceLink(
+                            Lookup.i18n("dialogs.goForPurgeTitle"),
+                            Lookup.i18n("dialogs.goForPurgeInstruction"));
+                }
                 ChoiceLinkButton dontPurge = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("dialogs.dontGoForPurgeTitle"),
                         Lookup.i18n("dialogs.dontGoForPurgeInstruction"));
@@ -843,9 +854,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             @Override
             public Optional<PrinterErrorChoice> call() throws Exception
             {
-                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
-                choiceLinkDialogBox.setTitle(title);
-                choiceLinkDialogBox.setMessage(message);
+                ChoiceLinkDialogBox printerErrorDialogBox = new ChoiceLinkDialogBox(true);
+                printerErrorDialogBox.setTitle(title);
+                printerErrorDialogBox.setMessage(message);
 
                 ChoiceLinkButton continueChoice = new ChoiceLinkButton();
                 continueChoice.setTitle(Lookup.i18n("dialogs.error.continue"));
@@ -864,25 +875,25 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
                 if (showContinueOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(continueChoice);
+                    printerErrorDialogBox.addChoiceLink(continueChoice);
                 }
 
                 if (showAbortOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(abortChoice);
+                    printerErrorDialogBox.addChoiceLink(abortChoice);
                 }
 
                 if (showRetryOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(retryChoice);
+                    printerErrorDialogBox.addChoiceLink(retryChoice);
                 }
 
                 if (showOKOption)
                 {
-                    choiceLinkDialogBox.addChoiceLink(okChoice);
+                    printerErrorDialogBox.addChoiceLink(okChoice);
                 }
 
-                Optional<ChoiceLinkButton> response = choiceLinkDialogBox.getUserInput();
+                Optional<ChoiceLinkButton> response = printerErrorDialogBox.getUserInput();
 
                 Optional<PrinterErrorChoice> userResponse = Optional.empty();
 

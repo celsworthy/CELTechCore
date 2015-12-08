@@ -738,12 +738,6 @@ public class TestPrinter implements Printer
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-//    @Override
-    public void resetPurgeTemperature()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     @Override
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer)
     {
@@ -834,7 +828,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void resetPurgeTemperature(PrinterSettings printerSettings)
+    public void resetPurgeTemperature()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1118,6 +1112,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void goToZPosition(double position, int feedrate_mmPerMin)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

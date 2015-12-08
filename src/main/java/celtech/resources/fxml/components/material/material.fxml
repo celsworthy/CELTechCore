@@ -50,7 +50,7 @@
                     <children>
                         <TextFlow fx:id="materialColourContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="240.0" style="-fx-background-color: blue;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0" StackPane.alignment="CENTER">
                             <children>
-                                <Text fx:id="materialColour1" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialName, regularText" text="Royal Blue">
+                                <Text fx:id="materialColour1" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialNameBold" text="Royal Blue">
                                     <HBox.margin>
                                         <Insets />
                                     </HBox.margin>
@@ -62,7 +62,7 @@
                                 </Text>
                             </children>
                             <padding>
-                                <Insets left="10.0" />
+                                <Insets left="10.0" top="2.5" />
                             </padding>
                         </TextFlow>
                         <ComboBox fx:id="cmbMaterials" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#whenMaterialSelected" prefHeight="30.0" prefWidth="240.0" styleClass="cmbCleanCombo" />

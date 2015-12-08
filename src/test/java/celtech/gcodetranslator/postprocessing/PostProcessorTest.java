@@ -118,7 +118,7 @@ public class PostProcessorTest extends JavaFXConfiguredTest
                 testProject,
                 testProject.getPrinterSettings().getSettings("RBX01-DM"),
                 ppFeatures,
-                "RBX01-SM",
+                "RBX01-DM",
                 null);
 
         RoboxiserResult result = postProcessor.processInput();

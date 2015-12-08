@@ -65,12 +65,12 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         testModel.setUseExtruder0(true);
         project.addModel(testModel);
 
-        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
         assertFalse(purgeIsNecessary);
 
         testNozzleHeater.lastFilamentTemperatureProperty().set(NOZZLE_TEMP
                 - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
-        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
         assertTrue(purgeIsNecessary);
     }
 
@@ -111,12 +111,12 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
                 - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
 
-        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
         assertFalse(purgeIsNecessary);
 
         testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
                 - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
-        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project);
+        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
         assertTrue(purgeIsNecessary);
     }
 

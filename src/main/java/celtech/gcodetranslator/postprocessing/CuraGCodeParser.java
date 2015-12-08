@@ -1,5 +1,6 @@
 package celtech.gcodetranslator.postprocessing;
 
+import celtech.configuration.PrintBed;
 import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
@@ -74,6 +75,35 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
     public void resetLayer()
     {
         thisLayer = new LayerNode();
+    }
+
+    private void validateXPosition(double value)
+    {
+        if (value > PrintBed.getPrintVolumeMaximums().getX()
+                || value < PrintBed.getPrintVolumeMinimums().getX())
+        {
+            throw new ParserInputException("X value outside bed: " + value);
+        }
+    }
+
+    //Inbound Y translates to Z
+    private void validateYPosition(double value)
+    {
+        if (value > PrintBed.getPrintVolumeMaximums().getZ()
+                || value < PrintBed.getPrintVolumeMinimums().getZ())
+        {
+            throw new ParserInputException("Y value outside bed: " + value);
+        }
+    }
+
+    //Inbound Z translates to -Y
+    private void validateZPosition(double value)
+    {
+        if (-value > PrintBed.getPrintVolumeMaximums().getY()
+                || -value < PrintBed.getPrintVolumeMinimums().getY())
+        {
+            throw new ParserInputException("Z value outside bed: " + value);
+        }
     }
 
     public Rule Layer()
@@ -741,11 +771,13 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
 
                         if (xValue.isSet())
                         {
+                            validateXPosition(xValue.get());
                             node.getMovement().setX(xValue.get());
                         }
 
                         if (yValue.isSet())
                         {
+                            validateYPosition(yValue.get());
                             node.getMovement().setY(yValue.get());
                         }
 
@@ -809,16 +841,19 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
 
                         if (xValue.isSet())
                         {
+                            validateXPosition(xValue.get());
                             node.getMovement().setX(xValue.get());
                         }
 
                         if (yValue.isSet())
                         {
+                            validateYPosition(yValue.get());
                             node.getMovement().setY(yValue.get());
                         }
 
                         if (zValue.isSet())
                         {
+                            validateZPosition(zValue.get());
                             node.getMovement().setZ(zValue.get());
                         }
 
@@ -888,16 +923,19 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
 
                         if (xValue.isSet())
                         {
+                            validateXPosition(xValue.get());
                             node.getMovement().setX(xValue.get());
                         }
 
                         if (yValue.isSet())
                         {
+                            validateYPosition(yValue.get());
                             node.getMovement().setY(yValue.get());
                         }
 
                         if (zValue.isSet())
                         {
+                            validateZPosition(zValue.get());
                             node.getMovement().setZ(zValue.get());
                             currentLayerHeight = zValue.get();
                         }

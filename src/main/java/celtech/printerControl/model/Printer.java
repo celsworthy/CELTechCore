@@ -98,7 +98,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
-    public void resetPurgeTemperature(PrinterSettings printerSettings);
+    public void resetPurgeTemperature();
 
     public PurgeStateTransitionManager startPurge() throws PrinterException;
 
@@ -170,6 +170,7 @@ public interface Printer extends RoboxResponseConsumer
     public void goToTargetNozzleHeaterTemperature(int nozzleHeaterNumber);
 
     public void goToZPosition(double position);
+    public void goToZPosition(double position, int feedrate_mmPerMin);
 
     public void goToXYPosition(double xPosition, double yPosition);
 

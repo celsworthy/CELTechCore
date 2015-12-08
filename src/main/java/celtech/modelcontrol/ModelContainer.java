@@ -1,5 +1,6 @@
 package celtech.modelcontrol;
 
+import celtech.Lookup;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.CameraViewChangeListener;
@@ -7,7 +8,8 @@ import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
-import celtech.coreUI.visualisation.Xform;
+import celtech.coreUI.visualisation.collision.CollisionShapeListener;
+import celtech.coreUI.visualisation.collision.HullComputer;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
@@ -15,7 +17,7 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
-import com.sun.javafx.scene.CameraHelper;
+import com.bulletphysics.collision.shapes.CollisionShape;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -45,7 +47,6 @@ import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
@@ -141,6 +142,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Print the part using the extruder of the given number.
      */
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
+    
+    private double cameraDistance = 1;
 
     private File modelFile;
 
@@ -150,6 +153,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private ScreenExtents extents = null;
 
     private List<Transform> rotationTransforms;
+    
+    private MeshView collisionShape = null;
+    private List<CollisionShapeListener> collisionShapeListeners = new ArrayList<>();
 
     public ModelContainer()
     {
@@ -260,6 +266,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (meshView != null)
         {
             meshView.getTransforms().addAll(transformScalePreferred);
+            HullComputer hullComputer = new HullComputer(meshView);
+
+            hullComputer.setOnSucceeded(workerStateEvent ->
+            {
+                collisionShape = hullComputer.getValue();
+                for (CollisionShapeListener listener : collisionShapeListeners)
+                {
+                    listener.collisionShapeAvailable(this);
+                }
+            });
+            
+            Lookup.getTaskExecutor().runTaskAsDaemon(hullComputer);
         }
 
         updateOriginalModelBounds();
@@ -340,7 +358,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         preferredRotationTwist = new SimpleDoubleProperty(0);
         preferredRotationTurn = new SimpleDoubleProperty(0);
         rotationTransforms = new ArrayList<>();
-
+        collisionShapeListeners = new ArrayList<>();
     }
 
     void clearBedTransform()
@@ -420,7 +438,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         translateBy(xMove, 0, zMove);
     }
-    
+
     public void translateBy(double xMove, double yMove, double zMove)
     {
         Point3D localPoint = new Point3D(xMove, yMove, zMove);
@@ -465,6 +483,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateLastTransformedBoundsInParentForTranslateByX(localPoint.getX());
         updateLastTransformedBoundsInParentForTranslateByY(localPoint.getY());
         updateLastTransformedBoundsInParentForTranslateByZ(localPoint.getZ());
+
+        checkOffBed();
 
 //        keepOnBedXZ();
     }
@@ -891,6 +911,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             {
                 addSelectionHighlighter();
             }
+            selectionHighlighter.cameraDistanceChange(cameraDistance);
             showSelectionHighlighter();
         } else
         {
@@ -2036,8 +2057,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     @Override
-    public void cameraViewOfYouHasChanged()
+    public void cameraViewOfYouHasChanged(double cameraDistance)
     {
+        this.cameraDistance = cameraDistance;
+        if (selectionHighlighter != null)
+        {
+            selectionHighlighter.cameraDistanceChange(cameraDistance);
+        }
         notifyScreenExtentsChange();
     }
 
@@ -2179,4 +2205,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         this.isInvalidMesh = isInvalidMesh;
     }
 
+    public MeshView getCollisionShape()
+    {
+        return collisionShape;
+    }
+    
+    public MeshView addCollisionShapeListener(CollisionShapeListener collisionShapeListener)
+    {
+        collisionShapeListeners.add(collisionShapeListener);
+        return collisionShape;
+    }
+
+    public void removeCollisionShapeListener(CollisionShapeListener collisionShapeListener)
+    {
+        collisionShapeListeners.remove(collisionShapeListener);
+    }
 }

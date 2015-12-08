@@ -80,6 +80,7 @@ public interface SystemNotificationManager
     boolean showApplicationUpgradeDialog(String applicationName);
 
     public PurgeResponse showPurgeDialog();
+    public PurgeResponse showPurgeDialog(boolean allowAutoPrint);
 
     public boolean showJobsTransferringShutdownDialog();
 

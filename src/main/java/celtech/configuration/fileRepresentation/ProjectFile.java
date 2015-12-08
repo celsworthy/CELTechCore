@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class ProjectFile
 {
-    private int version = 1;
+    private int version = 2;
     private String projectName;
     private Date lastModifiedDate;
     private int brimOverride = 0;
@@ -87,6 +87,11 @@ public class ProjectFile
     {
         this.printSupportOverride = printSupportOverride;
     }
+//
+//    public void setPrintSupportOverride(boolean supportOn)
+//    {
+//        this.printSupportOverride = (supportOn)?SupportType.OBJECT_MATERIAL:SupportType.NO_SUPPORT;
+//    }
 
     public boolean getPrintRaft()
     {

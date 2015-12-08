@@ -147,11 +147,11 @@ public class GCodeMacros
         NozzleUseIndicator nozzleUse;
         String specifiedHeadType = null;
 
-        if (headTypeCode == null
-                || headTypeCode.equalsIgnoreCase(HeadContainer.defaultHeadID))
+        if (headTypeCode == null)
         {
             nozzleUse = NozzleUseIndicator.DONT_CARE;
-        } else
+            specifiedHeadType = HeadContainer.defaultHeadID;
+        }else
         {
             specifiedHeadType = headTypeCode;
             

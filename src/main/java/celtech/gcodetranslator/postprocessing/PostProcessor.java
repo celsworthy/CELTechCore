@@ -194,16 +194,6 @@ public class PostProcessor
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
                 nozzle1Required = project.getUsedExtruders().contains(0)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
-
-                if (project.getUsedExtruders().contains(0)
-                        && !project.getUsedExtruders().contains(1))
-                {
-                    defaultObjectNumber = 0;
-                } else if (!project.getUsedExtruders().contains(0)
-                        && project.getUsedExtruders().contains(1))
-                {
-                    defaultObjectNumber = 1;
-                }
             } else
             {
                 nozzle0Required = true;

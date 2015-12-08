@@ -17,5 +17,6 @@ public class NotificationArea extends VBox
         this.getChildren().add(Lookup.getNotificationDisplay());
         this.progressDisplay = new ProgressDisplay();
         this.getChildren().add(progressDisplay);
+        setPickOnBounds(false);
     }
 }

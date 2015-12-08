@@ -11,7 +11,6 @@ import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
-import celtech.configuration.Filament;
 import celtech.configuration.PrinterColourMap;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
@@ -35,7 +34,6 @@ import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import celtech.utils.PrinterUtils;
 import static celtech.utils.StringMetrics.getWidthOfString;
-import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponse;
 import java.io.File;
 import static java.lang.Double.max;
@@ -177,6 +175,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
 //    @FXML
 //    private GraphicButtonWithLabel cutButton;
+    
     private Project selectedProject;
     private UndoableProject undoableSelectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
@@ -256,17 +255,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
-        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject);
+        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject.getUsedExtruders());
 
         try
         {
             if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
             {
                 displayManager.getPurgeInsetPanelController().purgeAndPrint(
-                        currentProject, printerSettings, printer);
+                        currentProject, printer);
             } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
             {
-                currentPrinter.resetPurgeTemperature(printerSettings);
+                currentPrinter.resetPurgeTemperature();
                 printer.printProject(currentProject);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
@@ -1223,14 +1222,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         snapToGroundButton.disableProperty().bind(
                 noLoadedModels.or(projectGUIRules.canSnapToGroundSelection().not()));
 
-//        groupButton.disableProperty().bind(
-//                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
-        groupButton.visibleProperty().bind(noLoadedModels.not().and(projectGUIRules.canGroupSelection()));
+        groupButton.disableProperty().bind(
+                noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
+        groupButton.visibleProperty().bind(ungroupButton.visibleProperty().not());
 
-//        ungroupButton.disableProperty().bind(
-//                noLoadedModels.or(projectGUIRules.canUngroupSelection().not()));
         ungroupButton.visibleProperty().bind(
-                noLoadedModels.not().and(projectGUIRules.canUngroupSelection()));
+                noLoadedModels.not().and(projectGUIRules.canGroupSelection().not()).and(projectGUIRules.canUngroupSelection()));
 
 //        cutButton.disableProperty().bind(
 //                noLoadedModels.or(projectGUIRules.canCutModel().not()));

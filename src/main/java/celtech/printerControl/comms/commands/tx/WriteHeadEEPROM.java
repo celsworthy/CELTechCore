@@ -102,14 +102,37 @@ public class WriteHeadEEPROM extends RoboxTxPacket
 
     public void populateEEPROM(Head head)
     {
-        NozzleHeater heater0 = head.getNozzleHeaters().get(0);
-        float lastFilamentTemperature1 = 0;
-        String filament1ID = "";
+        float maxTempA = 0;
+        float maxTempB = 0;
+        float beta = 0;
+        float tcal = 0;
+        float lastFilamentTemperatureA = 0;
+        float lastFilamentTemperatureB = 0;
+        String filamentIDA = "";
+        String filamentIDB = "";
+
+        if (head.getNozzleHeaters().size() > 0)
+        {
+            NozzleHeater heater0 = head.getNozzleHeaters().get(0);
+            maxTempA = heater0.maximumTemperatureProperty().get();
+            lastFilamentTemperatureA = heater0.lastFilamentTemperatureProperty().get();
+            filamentIDA = heater0.filamentIDProperty().get();
+            beta = heater0.betaProperty().get();
+            tcal = heater0.tCalProperty().get();
+        }
+
         if (head.getNozzleHeaters().size() > 1)
         {
             NozzleHeater heater1 = head.getNozzleHeaters().get(1);
-            lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
-            filament1ID = heater1.filamentIDProperty().get();
+            maxTempB = heater1.maximumTemperatureProperty().get();
+            lastFilamentTemperatureB = heater1.lastFilamentTemperatureProperty().get();
+            filamentIDB = heater1.filamentIDProperty().get();
+        }
+        else
+        {
+            maxTempB = maxTempA;
+            lastFilamentTemperatureB = lastFilamentTemperatureA;
+            filamentIDB = filamentIDA;
         }
 
         List<Nozzle> nozzles = head.getNozzles();
@@ -117,34 +140,54 @@ public class WriteHeadEEPROM extends RoboxTxPacket
         {
             populateEEPROM(head.typeCodeProperty().get(),
                     head.uniqueIDProperty().get(),
-                    heater0.maximumTemperatureProperty().get(),
-                    heater0.betaProperty().get(),
-                    heater0.tCalProperty().get(),
+                    maxTempA,
+                    beta,
+                    tcal,
                     nozzles.get(0).xOffsetProperty().get(),
                     nozzles.get(0).yOffsetProperty().get(),
                     nozzles.get(0).zOffsetProperty().get(),
                     nozzles.get(0).bOffsetProperty().get(),
-                    heater0.filamentIDProperty().get(),
-                    filament1ID,
+                    filamentIDA,
+                    filamentIDB,
                     nozzles.get(1).xOffsetProperty().get(),
                     nozzles.get(1).yOffsetProperty().get(),
                     nozzles.get(1).zOffsetProperty().get(),
                     nozzles.get(1).bOffsetProperty().get(),
-                    heater0.lastFilamentTemperatureProperty().get(),
-                    lastFilamentTemperature1,
+                    lastFilamentTemperatureA,
+                    lastFilamentTemperatureB,
+                    head.headHoursProperty().get());
+        } else if (nozzles.size() > 0)
+        {
+            populateEEPROM(head.typeCodeProperty().get(),
+                    head.uniqueIDProperty().get(),
+                    maxTempA,
+                    beta,
+                    tcal,
+                    nozzles.get(0).xOffsetProperty().get(),
+                    nozzles.get(0).yOffsetProperty().get(),
+                    nozzles.get(0).zOffsetProperty().get(),
+                    nozzles.get(0).bOffsetProperty().get(),
+                    filamentIDA,
+                    null,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
                     head.headHoursProperty().get());
         } else
         {
             populateEEPROM(head.typeCodeProperty().get(),
                     head.uniqueIDProperty().get(),
-                    heater0.maximumTemperatureProperty().get(),
-                    heater0.betaProperty().get(),
-                    heater0.tCalProperty().get(),
-                    nozzles.get(0).xOffsetProperty().get(),
-                    nozzles.get(0).yOffsetProperty().get(),
-                    nozzles.get(0).zOffsetProperty().get(),
-                    nozzles.get(0).bOffsetProperty().get(),
-                    heater0.filamentIDProperty().get(),
+                    maxTempA,
+                    beta,
+                    tcal,
+                    0,
+                    0,
+                    0,
+                    0,
+                    filamentIDA,
                     null,
                     0,
                     0,

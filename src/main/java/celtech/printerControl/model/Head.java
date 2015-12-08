@@ -298,14 +298,22 @@ public class Head implements Cloneable, RepairableComponent
         if (response.getTypeCode().equals(typeCodeProperty().get()))
         {
             matches = response.getHeadHours() == headHoursProperty().get()
-                    && response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
-                    && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
-                    && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
-                    && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get()
-                    && response.getMaximumTemperature() == getNozzleHeaters().get(0).maximumTemperatureProperty().get()
-                    && response.getUniqueID().equals(uniqueIDProperty().get())
-                    && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
-                    && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get();
+                    && response.getUniqueID().equals(uniqueIDProperty().get());
+
+            if (getNozzleHeaters().size() > 0)
+            {
+                matches &= response.getMaximumTemperature() == getNozzleHeaters().get(0).maximumTemperatureProperty().get()
+                        && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
+                        && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get();
+            }
+
+            if (getNozzles().size() > 0)
+            {
+                matches &= response.getNozzle1BOffset() == getNozzles().get(0).bOffsetProperty().get()
+                        && response.getNozzle1XOffset() == getNozzles().get(0).xOffsetProperty().get()
+                        && response.getNozzle1YOffset() == getNozzles().get(0).yOffsetProperty().get()
+                        && response.getNozzle1ZOffset() == getNozzles().get(0).zOffsetProperty().get();
+            }
 
             if (getNozzles().size() > 1)
             {
@@ -392,7 +400,7 @@ public class Head implements Cloneable, RepairableComponent
                 }
             }
 
-            steno.info("Head data bounds check - result is " + result.name());
+            steno.debug("Head data bounds check - result is " + result.name());
         } else
         {
             steno.warning("Head bounds check requested but reference data could not be obtained.");

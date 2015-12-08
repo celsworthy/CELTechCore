@@ -1,4 +1,3 @@
-
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.appManager.Project;
@@ -16,8 +15,6 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Head.HeadType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javafx.scene.shape.MeshView;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -34,6 +33,7 @@ import javafx.scene.shape.MeshView;
 public class NozzleAssignmentUtilities
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(NozzleAssignmentUtilities.class.getName());
     private final List<NozzleProxy> nozzleProxies;
     private final SlicerParametersFile slicerParametersFile;
     private final HeadFile headFile;
@@ -42,7 +42,7 @@ public class NozzleAssignmentUtilities
     private final PostProcessingMode postProcessingMode;
 
     private final NozzleManagementUtilities nozzleControlUtilities;
-    private final List<Integer> objectToNozzleNumberMap;
+    private final Map<Integer, Integer> objectToNozzleNumberMap;
     private final Map<Integer, Integer> extruderToNozzleMap;
     private final Map<Integer, Integer> nozzleToExtruderMap;
 
@@ -76,14 +76,16 @@ public class NozzleAssignmentUtilities
             }
         }
 
-        objectToNozzleNumberMap = new ArrayList<>();
+        objectToNozzleNumberMap = new HashMap<>();
+        int objectIndex = 0;
         for (ModelContainer model : project.getTopLevelModels())
         {
             for (MeshView meshView : model.descendentMeshViews())
             {
                 int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
-                objectToNozzleNumberMap.add(extruderToNozzleMap.get(extruderNumber));
-    }
+                objectToNozzleNumberMap.put(objectIndex, extruderToNozzleMap.get(extruderNumber));
+                objectIndex++;
+            }
         }
     }
 
@@ -195,9 +197,8 @@ public class NozzleAssignmentUtilities
 
                             if (lastSectionNode == null)
                             {
-                                throw new RuntimeException(
-                                        "Couldn't determine prior section for orphan on layer "
-                                        + layerNode.getLayerNumber() + " as last section didn't exist");
+                                requiredToolNumber = 0;
+                                steno.warning("The tool number could not be determined on layer " + layerNode.getLayerNumber());
                             } else
                             {
                                 if (lastSectionNode.getParent() != null
@@ -250,7 +251,7 @@ public class NozzleAssignmentUtilities
                         //Tool number corresponds to nozzle number
                         if (postProcessingMode == PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
                         {
-                        //Assuming that we'll only be here with a single material nozzle
+                            //Assuming that we'll only be here with a single material nozzle
                             //In this case nozzle 0 corresponds to tool 0
                             try
                             {

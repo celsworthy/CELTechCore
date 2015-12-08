@@ -266,16 +266,17 @@ public class PrinterUtils
     /**
      * For each head chamber/heater check if a purge is necessary. Return true
      * if one or more nozzle heaters require a purge.
+     * @param printer
+     * @param usedExtruders
+     * @return 
      */
-    public static boolean isPurgeNecessary(Printer printer, Project project)
+    public static boolean isPurgeNecessary(Printer printer, Set<Integer> usedExtruders)
     {
         boolean purgeIsNecessary = false;
 
-        Set<Integer> usedExtruders = project.getUsedExtruders();
-
         for (Integer extruderNumber : usedExtruders)
         {
-            purgeIsNecessary |= isPurgeNecessaryForExtruder(project, printer, extruderNumber);
+            purgeIsNecessary |= isPurgeNecessaryForExtruder(printer, extruderNumber);
         };
 
         return purgeIsNecessary;
@@ -284,16 +285,14 @@ public class PrinterUtils
     /**
      * Return true if the given nozzle heater requires a purge.
      *
-     * @param project
      * @param printer
      * @param extruderNumber
      * @return
      */
-    public static boolean isPurgeNecessaryForExtruder(Project project, Printer printer,
+    public static boolean isPurgeNecessaryForExtruder(Printer printer,
             int extruderNumber)
     {
         float targetNozzleTemperature = 0;
-        PrinterSettings printerSettings = project.getPrinterSettings();
         Filament settingsFilament = null;
         if (extruderNumber == 0)
         {
@@ -347,10 +346,10 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public PurgeResponse offerPurgeIfNecessary(Printer printer, Project project)
+    public PurgeResponse offerPurgeIfNecessary(Printer printer, Set<Integer> usedExtruders)
     {
         PurgeResponse purgeConsent = PurgeResponse.NOT_NECESSARY;
-        if (isPurgeNecessary(printer, project) && purgeDialogVisible == false)
+        if (isPurgeNecessary(printer, usedExtruders) && purgeDialogVisible == false)
         {
             purgeDialogVisible = true;
 

@@ -563,14 +563,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Reset the purge temperature for all nozzle heaters.
      */
     @Override
-    public void resetPurgeTemperature(PrinterSettings printerSettings)
+    public void resetPurgeTemperature()
     {
 
         Head headToWrite = head.get().clone();
 
         for (int i = 0; i < headToWrite.nozzleHeaters.size(); i++)
         {
-            resetPurgeTemperatureForNozzleHeater(printerSettings, headToWrite, i);
+            resetPurgeTemperatureForNozzleHeater(headToWrite, i);
         }
 
         try
@@ -587,8 +587,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Reset the purge temperature for the given head, printer settings and
      * nozzle heater number.
      */
-    private void resetPurgeTemperatureForNozzleHeater(PrinterSettings printerSettings,
-            Head headToWrite, int nozzleHeaterNumber)
+    private void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
     {
         Filament settingsFilament = null;
 
@@ -1344,7 +1343,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         try
         {
             response = (AckResponse) commandInterface.writeToPrinter(formatHead);
-            steno.info("Head formatted");
+            steno.debug("Head formatted");
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending format head");
@@ -1363,7 +1362,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public AckResponse formatReelEEPROM(final int reelNumber) throws PrinterException
     {
         RoboxTxPacket formatPacket = null;
-        steno.info("Formatting reel " + reelNumber);
+        steno.debug("Formatting reel " + reelNumber);
         switch (reelNumber)
         {
             case 0:
@@ -1398,7 +1397,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public ReelEEPROMDataResponse readReelEEPROM(int reelNumber, boolean dontPublishResponseEvent) throws RoboxCommsException
     {
-        steno.info("Reading reel " + reelNumber + " EEPROM");
+        steno.debug("Reading reel " + reelNumber + " EEPROM");
 
         RoboxTxPacket packet = null;
 
@@ -1916,14 +1915,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 if (project.getUsedExtruders().contains(0))
                 {
-                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureE, true);
+                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureE, false);
                 } else
                 {
-                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureD, true);
+                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureD, false);
                 }
             } else
             {
-                transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, true);
+                transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, false);
             }
         } catch (RoboxCommsException ex)
         {
@@ -2599,6 +2598,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
+    public void goToZPosition(double position, int feedrate_mmPerMin)
+    {
+        try
+        {
+            transmitDirectGCode("G1 Z" + threeDPformatter.format(position) + " " + feedrate_mmPerMin, false);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Error when sending z position command");
+        }
+    }
+
+    @Override
     public void goToZPosition(double position)
     {
         try
@@ -2922,12 +2933,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void shutdown(boolean shutdownCommandInterface)
     {
         filamentContainer.removeFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
-        steno.info("Shutdown print engine...");
+        steno.debug("Shutdown print engine...");
         printEngine.shutdown();
 
         if (shutdownCommandInterface)
         {
-            steno.info("Shutdown command interface...");
+            steno.debug("Shutdown command interface...");
             commandInterface.shutdown();
         }
     }
@@ -3117,7 +3128,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private void doAttemptEject(char extruderLetter) throws PrinterException
     {
-        steno.info("Suspect that we're out of filament");
+        steno.debug("Suspect that we're out of filament");
         sendRawGCode("M909 S60", false);
         PrinterUtils.waitOnBusy(this, (Cancellable) null);
         sendRawGCode("M121 " + extruderLetter, false);
@@ -3504,6 +3515,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
                     printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
+                    printerAncillarySystems.dualReelAdaptorPresent.set(statusResponse.isDualReelAdaptorPresent());
 
                     if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(
                             FirmwareError.SD_CARD))
@@ -3689,7 +3701,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 {
                                     writeReelEEPROM(reelResponse.getReelNumber(), reels.get(
                                             reelResponse.getReelNumber()));
-                                    steno.info("Automatically updated reel data");
+                                    steno.debug("Automatically updated reel data");
                                     Lookup.getSystemNotificationHandler().
                                             showReelUpdatedNotification();
                                     readReelEEPROM(reelResponse.getReelNumber(), true);

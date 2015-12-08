@@ -10,12 +10,18 @@ import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
+import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.math3.geometry.euclidean.twod.Segment;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
@@ -129,8 +135,7 @@ public class NodeManagementUtilities
                 sectionNodes.clear();
                 lastSectionNode = null;
                 lastExtrusionNode = null;
-            }
-            else if (node instanceof ExtrusionNode)
+            } else if (node instanceof ExtrusionNode)
             {
                 Optional<SectionNode> parentSection = lookForParentSectionNode(node);
                 if (parentSection.isPresent())
@@ -151,8 +156,9 @@ public class NodeManagementUtilities
                 RetractNode retractNode = (RetractNode) node;
                 retractNode.setExtrusionSinceLastRetract(extrusionInRetract);
                 retractNode.setSectionsToConsider(sectionNodes);
-                sectionNodes = new ArrayList<>();
-                lastSectionNode = null;
+                List<SectionNode> newSectionNodes = new ArrayList<>();
+                newSectionNodes.addAll(sectionNodes);
+                sectionNodes = newSectionNodes;
                 extrusionInRetract = 0;
 
                 if (lastExtrusionNode != null)
@@ -336,6 +342,49 @@ public class NodeManagementUtilities
         return nextMovement;
     }
 
+    protected Optional<SearchSegment> findPriorMovementPoints(GCodeEventNode seed)
+    {
+        Optional<SearchSegment> priorMovementPoints = Optional.empty();
+
+        MovementProvider startNode = null;
+        MovementProvider endNode = null;
+
+        if (seed instanceof MovementProvider)
+        {
+            if (endNode == null)
+            {
+                endNode = ((MovementProvider) seed);
+            }
+        }
+
+        IteratorWithOrigin<GCodeEventNode> treeBackwards = seed.treeSpanningBackwardsIterator();
+
+        while (treeBackwards.hasNext())
+        {
+            GCodeEventNode node = treeBackwards.next();
+            if (node instanceof MovementProvider)
+            {
+                if (endNode == null)
+                {
+                    endNode = ((MovementProvider) node);
+                } else if (startNode == null)
+                {
+                    startNode = ((MovementProvider) node);
+                    break;
+                }
+            }
+        }
+
+        if (startNode != null
+                && endNode != null)
+        {
+            SearchSegment searchSegment = new SearchSegment(startNode, endNode);
+            priorMovementPoints = Optional.of(searchSegment);
+        }
+
+        return priorMovementPoints;
+    }
+
     protected Optional<MovementProvider> findPriorMovement(GCodeEventNode node) throws NodeProcessingException
     {
         Optional<MovementProvider> priorMovement = Optional.empty();
@@ -409,81 +458,58 @@ public class NodeManagementUtilities
         return priorMovement;
     }
 
-//    public double findAvailableExtrusion(List<SectionNode> sectionsToConsider,
-//            GCodeEventNode startNode,
-//            boolean forwards) throws NodeProcessingException
-//    {
-//        double availableExtrusion = 0;
-//
-//        int sectionDelta = (forwards) ? 1 : -1;
-//        int sectionCounter = (forwards) ? 0 : sectionsToConsider.size() - 1;
-//        boolean haveConsumedStartNode = false;
-//
-//        //Work out which section to start in
-//        if (startNode.getParent().isPresent()
-//                && startNode.getParent().get() instanceof SectionNode)
-//        {
-//            for (int sectionSearch = 0; sectionSearch < sectionsToConsider.size(); sectionSearch++)
-//            {
-//                if (sectionsToConsider.get(sectionSearch) == startNode.getParent().get())
-//                {
-//                    sectionCounter = sectionSearch;
-//                    break;
-//                }
-//            }
-//        }
-//        
-//        boolean keepCounting = true;
-//
-//        while (sectionCounter >= 0
-//                && sectionCounter <= sectionsToConsider.size() - 1
-//                && keepCounting)
-//        {
-//            SectionNode sectionNode = sectionsToConsider.get(sectionCounter);
-//            sectionCounter += sectionDelta;
-//
-//            Iterator<GCodeEventNode> sectionIterator = null;
-//            if (!haveConsumedStartNode)
-//            {
-//                if (forwards)
-//                {
-//                    sectionIterator = startNode.siblingsIterator();
-//                } else
-//                {
-//                    sectionIterator = startNode.siblingsBackwardsIterator();
-//                }
-//                haveConsumedStartNode = true;
-//            } else
-//            {
-//                if (forwards)
-//                {
-//                    sectionIterator = sectionNode.childIterator();
-//                } else
-//                {
-//                    sectionIterator = sectionNode.childBackwardsIterator();
-//                }
-//            }
-//
-//            while (sectionIterator.hasNext())
-//            {
-//                GCodeEventNode node = sectionIterator.next();
-//
-//                if (node instanceof NozzlePositionProvider)
-//                {
-//                    NozzlePositionProvider provider = (NozzlePositionProvider) node;
-//                    if (provider.getNozzlePosition().isBSet())
-//                    {
-//                        keepCounting = false;
-//                        break;
-//                    } else if (node instanceof ExtrusionNode)
-//                    {
-//                        ExtrusionNode extrusionNode = (ExtrusionNode) node;
-//                        availableExtrusion += extrusionNode.getExtrusion().getE();
-//                        availableExtrusion += extrusionNode.getExtrusion().getD();
-//                    }
-//                }
-//            }
-//        }
-//        return availableExtrusion;
-//    }
+    public class AvailableExtrusion
+    {
+
+        private final double availableExtrusion;
+        private final GCodeEventNode lastNodeExamined;
+
+        public AvailableExtrusion(double availableExtrusion, GCodeEventNode lastNodeExamined)
+        {
+            this.availableExtrusion = availableExtrusion;
+            this.lastNodeExamined = lastNodeExamined;
+        }
+        
+        public double getAvailableExtrusion()
+        {
+            return availableExtrusion;
+        }
+
+        public GCodeEventNode getLastNodeExamined()
+        {
+            return lastNodeExamined;
+        }
+    }
+
+    public AvailableExtrusion findAvailableExtrusion(final InScopeEvents inScopeEvents,
+            int startNodeIndex,
+            boolean forwards) throws NodeProcessingException
+    {
+        double availableExtrusion = 0;
+        GCodeEventNode lastNodeExamined = null;
+
+        int delta = (forwards) ? -1 : 1;
+
+        for (int inScopeCounter = startNodeIndex; inScopeCounter >= 0 && inScopeCounter < inScopeEvents.getInScopeEvents().size(); inScopeCounter += delta)
+        {
+            GCodeEventNode node = inScopeEvents.getInScopeEvents().get(inScopeCounter);
+
+            if (node instanceof NozzlePositionProvider)
+            {
+                NozzlePositionProvider provider = (NozzlePositionProvider) node;
+                if (provider.getNozzlePosition().isBSet())
+                {
+                    break;
+                }
+            }
+
+            if (node instanceof ExtrusionProvider)
+            {
+                lastNodeExamined = node;
+                availableExtrusion += ((ExtrusionProvider) node).getExtrusion().getE();
+                availableExtrusion += ((ExtrusionProvider) node).getExtrusion().getD();
+            }
+        }
+        return new AvailableExtrusion(availableExtrusion, lastNodeExamined);
+    }
 }

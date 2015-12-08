@@ -25,11 +25,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class CameraTriggerManager
 {
 
-    private Stenographer steno = StenographerFactory.getStenographer(CameraTriggerManager.class.getName());
+    private static Stenographer steno = StenographerFactory.getStenographer(CameraTriggerManager.class.getName());
     private Printer associatedPrinter = null;
-    private static final float xTriggerPosition = 30;
-    private static final float yTriggerPosition = -6;
-    private static final float yForwardPosition = 75;
     private static final int moveFeedrate_mm_per_min = 12000;
     private final ScheduledExecutorService scheduledPhoto;
     private final Runnable photoRun;
@@ -89,12 +86,41 @@ public class CameraTriggerManager
         CommentNode endComment = new CommentNode("End of camera trigger");
 
         TravelNode moveBedForward = new TravelNode();
-        moveBedForward.getMovement().setY(yForwardPosition);
+
+        boolean outputMoveCommand = false;
+        String xMoveString = Lookup.getUserPreferences().getGoProXMove();
+        if (xMoveString != null)
+        {
+            try
+            {
+                float xMove = Float.valueOf(xMoveString);
+                moveBedForward.getMovement().setX(xMove);
+                outputMoveCommand = true;
+            } catch (NumberFormatException ex)
+            {
+                steno.error("Failed to parse Go Pro X move preference");
+            }
+        }
+
+        String yMoveString = Lookup.getUserPreferences().getGoProYMove();
+        if (yMoveString != null)
+        {
+            try
+            {
+                float yMove = Float.valueOf(yMoveString);
+                moveBedForward.getMovement().setY(yMove);
+                outputMoveCommand = true;
+            } catch (NumberFormatException ex)
+            {
+                steno.error("Failed to parse Go Pro Y move preference");
+            }
+        }
+
         moveBedForward.getFeedrate().setFeedRate_mmPerMin(moveFeedrate_mm_per_min);
 
         GCodeDirectiveNode dwellWhilePictureTaken = new GCodeDirectiveNode();
         dwellWhilePictureTaken.setGValue(4);
-        dwellWhilePictureTaken.setSValue(2);
+        dwellWhilePictureTaken.setSValue(Lookup.getUserPreferences().getGoProDelay());
 
         TravelNode returnToPreviousPosition = new TravelNode();
         returnToPreviousPosition.getMovement().setX(layerChangeNode.getMovement().getX());
@@ -104,25 +130,28 @@ public class CameraTriggerManager
         layerChangeNode.addSiblingAfter(endComment);
         layerChangeNode.addSiblingAfter(returnToPreviousPosition);
         layerChangeNode.addSiblingAfter(dwellWhilePictureTaken);
-        layerChangeNode.addSiblingAfter(moveBedForward);
+        if (outputMoveCommand)
+        {
+            layerChangeNode.addSiblingAfter(moveBedForward);
+        }
         layerChangeNode.addSiblingAfter(beginComment);
     }
 
     public void listenForCameraTrigger()
     {
-        steno.info("Started listening");
+        steno.info("Started listening for camera trigger");
         associatedPrinter.getPrintEngine().progressCurrentLayerProperty().addListener(cameraTriggerListener);
     }
 
     public void stopListeningForCameraTrigger()
     {
-        steno.info("Stopped listening");
+        steno.info("Stopped listening for camera trigger");
         associatedPrinter.getPrintEngine().progressCurrentLayerProperty().removeListener(cameraTriggerListener);
     }
 
     private void triggerCamera()
     {
         steno.info("Asked to trigger camera");
-        scheduledPhoto.execute(photoRun);
+        scheduledPhoto.schedule(photoRun, Lookup.getUserPreferences().getGoProDelayBeforeCapture(), TimeUnit.SECONDS);
     }
 }

@@ -135,6 +135,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                                 if (newValue == ApplicationMode.SETTINGS)
                                 {
                                     timeCostInsetRoot.setVisible(true);
+                                    timeCostInsetRoot.setMouseTransparent(false);
                                     if (Lookup.getSelectedProjectProperty().get() == currentProject)
                                     {
                                         updateFields(currentProject);
@@ -142,6 +143,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                                 } else
                                 {
                                     timeCostInsetRoot.setVisible(false);
+                                    timeCostInsetRoot.setMouseTransparent(true);
                                     timeCostThreadManager.cancelRunningTimeCostTasks();
                                 }
 

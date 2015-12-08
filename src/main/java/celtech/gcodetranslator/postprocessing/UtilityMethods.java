@@ -126,7 +126,7 @@ public class UtilityMethods
                 {
                     closeAtEndOfToolSelectIfNecessary(lastToolSelectNode, nozzleProxies);
                 }
-                
+
                 //Now look to see if we can consolidate the tool change with a travel
                 if (lastToolSelectNode.getChildren().size() > 0)
                 {
@@ -248,8 +248,9 @@ public class UtilityMethods
             {
                 lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
             } else if (layerEvent instanceof NozzlePositionProvider
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0)
+                    && (((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen()
+                    || (((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0)))
             {
                 nozzleOpen = true;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
@@ -272,7 +273,8 @@ public class UtilityMethods
                 }
             } else if (layerEvent instanceof NozzlePositionProvider
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0)
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0
+                    && !((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen())
             {
                 nozzleOpen = false;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
