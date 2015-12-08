@@ -3515,6 +3515,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
                     printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
+                    printerAncillarySystems.dualReelAdaptorPresent.set(statusResponse.isDualReelAdaptorPresent());
 
                     if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(
                             FirmwareError.SD_CARD))
