@@ -61,13 +61,13 @@ public class AutoMakerController implements HttpHandler
             statusResponse = "<h3>OK</h3>";
             if (connectedPrinters.size() > 0)
             {
-                try
-                {
-                    connectedPrinters.get(0).executeGCodeFileWithoutPurgeCheck(ApplicationConfiguration.getApplicationModelDirectory() + "commissioningTestPrint.gcode", true);
-                } catch (PrinterException ex)
-                {
-                    steno.error("Error attempting to print sample 1");
-                }
+//                try
+//                {
+////                    connectedPrinters.get(0).executeGCodeFileWithoutPurgeCheck(ApplicationConfiguration.getApplicationModelDirectory() + "commissioningTestPrint.gcode", true);
+//                } catch (PrinterException ex)
+//                {
+//                    steno.error("Error attempting to print sample 1");
+//                }
             }
             t.getResponseHeaders().add("Location", "/");
             t.sendResponseHeaders(302, statusResponse.length());

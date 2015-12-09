@@ -108,7 +108,7 @@ public interface SystemNotificationManager
 
     public void hideKeepPushingFilamentNotification();
 
-    public void showEjectFailedDialog(Printer printer);
+    public void showEjectFailedDialog(Printer printer, int nozzleNumber);
 
     public void showFilamentMotionCheckBanner();
 

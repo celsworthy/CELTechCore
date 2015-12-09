@@ -943,12 +943,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -968,12 +962,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1033,7 +1021,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void ejectStuckMaterial(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1118,6 +1106,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void goToZPosition(double position, int feedrate_mmPerMin)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void runCommissioningTest(Macro macro, Cancellable cancellable, boolean requireNozzle0, boolean requireNozzle1) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

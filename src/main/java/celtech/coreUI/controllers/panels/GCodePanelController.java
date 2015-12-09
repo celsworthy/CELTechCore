@@ -92,7 +92,7 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
             {
                 try
                 {
-                    currentPrinter.executeGCodeFile(gcodeFileToUse, true);
+                    currentPrinter.executeGCodeFile(gcodeFileToUse, false);
                     currentPrinter.gcodeTranscriptProperty().add(text);
                 } catch (PrinterException ex)
                 {

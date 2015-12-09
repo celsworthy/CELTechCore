@@ -111,7 +111,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterialE(false, null);
+                connectedPrinter.ejectStuckMaterial(0, false, null);
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material E");
@@ -126,7 +126,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterialD(false, null);
+                connectedPrinter.ejectStuckMaterial(1, false, null);
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material D");
@@ -264,7 +264,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.executeGCodeFile(file.getAbsolutePath(), true);
+                connectedPrinter.executeGCodeFile(file.getAbsolutePath(), false);
             } catch (PrinterException ex)
             {
                 steno.error("Error sending SD job");

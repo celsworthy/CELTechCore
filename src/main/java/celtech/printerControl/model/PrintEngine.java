@@ -150,6 +150,7 @@ public class PrintEngine implements ControllableService
      */
 //    private MovieMakerTask movieMakerTask = null;
     private boolean raiseProgressNotifications = true;
+    private boolean canDisconnectDuringPrint = true;
 
     private CameraTriggerManager cameraTriggerManager;
 
@@ -357,7 +358,7 @@ public class PrintEngine implements ControllableService
 //                    }
 //                } else
                 {
-                    if (raiseProgressNotifications)
+                    if (raiseProgressNotifications && canDisconnectDuringPrint)
                     {
                         Lookup.getSystemNotificationHandler().
                                 showPrintTransferSuccessfulNotification(
@@ -528,6 +529,7 @@ public class PrintEngine implements ControllableService
     public synchronized boolean printProject(Project project)
     {
         boolean acceptedPrintRequest = false;
+        canDisconnectDuringPrint = true;
         etcAvailable.set(false);
 
         if (associatedPrinter.printerStatusProperty().get() == PrinterStatus.IDLE)
@@ -745,6 +747,8 @@ public class PrintEngine implements ControllableService
         String gCodeFileName = printJob.getRoboxisedFileLocation();
         String jobUUID = printJob.getJobUUID();
         boolean acceptedPrintRequest;
+        canDisconnectDuringPrint = true;
+
         try
         {
             linesInPrintingFile.set(printJob.getStatistics().getNumberOfLines());
@@ -837,16 +841,17 @@ public class PrintEngine implements ControllableService
         return linesInPrintingFile;
     }
 
-    protected boolean printGCodeFile(final String filename, final boolean useSDCard) throws MacroPrintException
+    protected boolean printGCodeFile(final String filename, final boolean useSDCard, final boolean canDisconnectDuringPrint) throws MacroPrintException
     {
-        return printGCodeFile(filename, useSDCard, false);
+        return printGCodeFile(filename, useSDCard, false, canDisconnectDuringPrint);
     }
 
     protected boolean printGCodeFile(final String filename, final boolean useSDCard,
-            final boolean dontInitiatePrint) throws MacroPrintException
+            final boolean dontInitiatePrint, final boolean canDisconnectDuringPrint) throws MacroPrintException
     {
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
+        this.canDisconnectDuringPrint = canDisconnectDuringPrint;
 
         //Create the print job directory
         String printUUID = createPrintJobDirectory();
@@ -953,6 +958,7 @@ public class PrintEngine implements ControllableService
 
         boolean acceptedPrintRequest = false;
         consideringPrintRequest = true;
+        canDisconnectDuringPrint = false;
 
         //Create the print job directory
         String printUUID = macro.getMacroJobNumber();

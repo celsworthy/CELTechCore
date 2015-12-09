@@ -492,5 +492,4 @@ public class Head implements Cloneable, RepairableComponent
                 get().length());
         uniqueID.set(idToCreate);
     }
-
 }
