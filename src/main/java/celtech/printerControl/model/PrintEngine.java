@@ -867,27 +867,26 @@ public class PrintEngine implements ControllableService
         try
         {
             FileUtils.copyFile(src, dest);
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
+                raiseProgressNotifications = true;
+                linesInPrintingFile.set(numberOfLines);
+                transferGCodeToPrinterService.reset();
+                transferGCodeToPrinterService.setPrintUsingSDCard(useSDCard);
+                transferGCodeToPrinterService.setCurrentPrintJobID(printUUID);
+                transferGCodeToPrinterService.setModelFileToPrint(printjobFilename);
+                transferGCodeToPrinterService.setPrinterToUse(associatedPrinter);
+                transferGCodeToPrinterService.dontInitiatePrint(dontInitiatePrint);
+                transferGCodeToPrinterService.start();
+                consideringPrintRequest = false;
+            });
+
+            acceptedPrintRequest = true;
         } catch (IOException ex)
         {
             steno.error("Error copying file");
         }
-
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
-            raiseProgressNotifications = true;
-            linesInPrintingFile.set(numberOfLines);
-            transferGCodeToPrinterService.reset();
-            transferGCodeToPrinterService.setPrintUsingSDCard(useSDCard);
-            transferGCodeToPrinterService.setCurrentPrintJobID(printUUID);
-            transferGCodeToPrinterService.setModelFileToPrint(printjobFilename);
-            transferGCodeToPrinterService.setPrinterToUse(associatedPrinter);
-            transferGCodeToPrinterService.dontInitiatePrint(dontInitiatePrint);
-            transferGCodeToPrinterService.start();
-            consideringPrintRequest = false;
-        });
-
-        acceptedPrintRequest = true;
 
         return acceptedPrintRequest;
     }
