@@ -943,15 +943,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished,
+    public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
         Macro macro = Macro.PURGE_MATERIAL;
-
-        boolean requireNozzle0 = (nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_0
-                || nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_BOTH);
-        boolean requireNozzle1 = (nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_1
-                || nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_BOTH);
 
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable, requireNozzle0, requireNozzle1);

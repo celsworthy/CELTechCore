@@ -69,7 +69,7 @@ public class GCodeMacrosTest extends JavaFXConfiguredTest
                 "RBX01-SM",
                 GCodeMacros.NozzleUseIndicator.DONT_CARE,
                 GCodeMacros.SafetyIndicator.DONT_CARE);
-        assertEquals(-1, score7);
+        assertEquals(0, score7);
 
         String filename8 = "before_print#RBX01-SM.gcode";
         int score8 = GCodeMacros.scoreMacroFilename(filename8,

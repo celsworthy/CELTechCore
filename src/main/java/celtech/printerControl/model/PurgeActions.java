@@ -199,15 +199,21 @@ public class PurgeActions extends StateTransitionActions
         {
             throw new RuntimeException("At least one nozzle must be purged");
         }
-        Printer.NozzleHeaters nozzleHeaters = Printer.NozzleHeaters.NOZZLE_HEATER_0;
-        if (purgeNozzleHeater0.get() && purgeNozzleHeater1.get())
+
+        boolean purgeNozzle0 = false;
+        boolean purgeNozzle1 = false;
+
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
         {
-            nozzleHeaters = Printer.NozzleHeaters.NOZZLE_HEATER_BOTH;
-        } else if (purgeNozzleHeater1.get())
+            purgeNozzle0 = true;
+            purgeNozzle1 = true;
+        } else
         {
-            nozzleHeaters = Printer.NozzleHeaters.NOZZLE_HEATER_1;
+            purgeNozzle0 = purgeNozzleHeater0.get();
+            purgeNozzle1 = purgeNozzleHeater1.get();
         }
-        printer.purgeMaterial(nozzleHeaters, true, userOrErrorCancellable);
+
+        printer.purgeMaterial(purgeNozzle0, purgeNozzle1, true, userOrErrorCancellable);
     }
 
     public void doFinishedAction() throws RoboxCommsException, PrinterException

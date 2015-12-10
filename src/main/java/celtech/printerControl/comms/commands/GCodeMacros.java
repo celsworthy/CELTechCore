@@ -417,9 +417,9 @@ public class GCodeMacros
                         score += 1;
                     }
                 }
-            } else if (specifiedHeadFile != null)
+            } else if (specifiedHeadFile != null && !specifiedHeadFile.getTypeCode().equals(HeadContainer.defaultHeadID))
             {
-                //Specified but not present
+                //Specified but not present but only if the specified file was not RBX01-SM - this is the default...
                 score -= 1;
             }
 

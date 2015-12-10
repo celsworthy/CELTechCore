@@ -925,7 +925,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
