@@ -56,7 +56,7 @@ public class CalibrationInsetPanelController implements Initializable,
         PrinterListChangesListener
 {
 
-    CalibrationMenuConfiguration calibrationMenuConfiguration = new CalibrationMenuConfiguration();
+    final CalibrationMenuConfiguration calibrationMenuConfiguration;
     CalibrationMode calibrationMode;
     CalibrationXAndYGUI calibrationXAndYGUI;
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
@@ -239,6 +239,18 @@ public class CalibrationInsetPanelController implements Initializable,
             diagramNode.setVisible(false);
         }
         stepNumber.setText("");
+    }
+
+    public CalibrationInsetPanelController()
+    {
+        this.calibrationMenuConfiguration = new CalibrationMenuConfiguration(true, true, true);
+    }
+
+    public CalibrationInsetPanelController(boolean displayOpening,
+            boolean displayHeight,
+            boolean displayAlignment)
+    {
+        this.calibrationMenuConfiguration = new CalibrationMenuConfiguration(displayOpening, displayHeight, displayAlignment);
     }
 
     @Override
