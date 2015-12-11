@@ -135,6 +135,8 @@ public interface Printer extends RoboxResponseConsumer
     public ObservableList<Extruder> extrudersProperty();
 
     public AckResponse formatHeadEEPROM() throws PrinterException;
+    
+    public AckResponse formatHeadEEPROM(boolean dontPublishResult) throws PrinterException;
 
     public AckResponse formatReelEEPROM(int reelNumber) throws PrinterException;
 

@@ -1306,13 +1306,23 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public AckResponse formatHeadEEPROM() throws PrinterException
     {
-        head.set(null);
+        return formatHeadEEPROM(false);
+    }
+
+    @Override
+    public AckResponse formatHeadEEPROM(boolean dontPublishResult) throws PrinterException
+    {
+        if (!dontPublishResult)
+        {
+            head.set(null);
+        }
+        
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         AckResponse response = null;
         try
         {
-            response = (AckResponse) commandInterface.writeToPrinter(formatHead);
+            response = (AckResponse) commandInterface.writeToPrinter(formatHead, dontPublishResult);
             steno.debug("Head formatted");
         } catch (RoboxCommsException ex)
         {
