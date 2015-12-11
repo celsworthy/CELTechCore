@@ -380,20 +380,18 @@ public class GCodeMacros
             {
                 if (namePartCounter > 0)
                 {
-                    if (fileHeadFile == null)
+                    if (HeadContainer.getHeadByID(namePart) != null)
                     {
                         fileHeadFile = HeadContainer.getHeadByID(namePart);
                     }
-
-                    if (fileNozzleUseIndicator == null)
+                    else if (NozzleUseIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileNozzleUseIndicator = NozzleUseIndicator.getEnumForFilenameCode(namePart);
                     }
-
-                    if (fileSafetyIndicator == null)
+                    else if (SafetyIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileSafetyIndicator = SafetyIndicator.getEnumForFilenameCode(namePart);
-                    }
+                    }                    
                 }
                 namePartCounter++;
             }
