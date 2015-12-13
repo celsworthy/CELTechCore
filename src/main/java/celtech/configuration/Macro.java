@@ -25,8 +25,7 @@ public enum Macro
     
     PURGE_MATERIAL("PurgeMaterial", "printerStatus.purging", "M13"),
     
-    EJECT_STUCK_MATERIAL_E("eject_stuck_material_e", "printerStatus.macro.ejectStuckMaterial", "M18"),
-    EJECT_STUCK_MATERIAL_D("eject_stuck_material_d", "printerStatus.macro.ejectStuckMaterial", "M19"),
+    EJECT_STUCK_MATERIAL("eject_stuck_material", "printerStatus.macro.ejectStuckMaterial", "M18"),
     
     REMOVE_HEAD("Remove_Head", "printerStatus.macro.removeHead", "M20"),
     
@@ -37,7 +36,8 @@ public enum Macro
     // Commissionator macros
     COMMISSIONING_XMOTOR("x_commissioning", "printerStatus.macro.testX", "C1"),
     COMMISSIONING_YMOTOR("y_commissioning", "printerStatus.macro.testY", "C2"),
-    COMMISSIONING_ZMOTOR_DIRECTION("commissioning_level_gantry_test", "printerStatus.macro.testZ", "C3");
+    COMMISSIONING_ZMOTOR_DIRECTION("commissioning_level_gantry_test", "printerStatus.macro.testZ", "C3"),
+    COMMISSIONING_HEAD_FLUSH("commissioning_head_flush", "printerStatus.macro.headFlush", "C4");
 
     private String macroFileName;
     private String i18nKey;

@@ -850,7 +850,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
             try
             {
-                printEngine.printGCodeFile(fileName, true, true);
+                printEngine.printGCodeFile(fileName, true, true, true);
                 PrinterUtils.waitOnMacroFinished(this, cancellable);
                 success = true;
             } catch (MacroPrintException ex)
@@ -864,7 +864,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException
+    public void executeGCodeFile(String fileName, boolean canDisconnectDuringPrint) throws PrinterException
     {
         if (!canRunMacro.get())
         {
@@ -882,40 +882,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         try
         {
-            jobAccepted = printEngine.printGCodeFile(fileName, true);
-        } catch (MacroPrintException ex)
-        {
-            steno.error("Failed to print GCode file " + fileName + " : " + ex.getMessage());
-        }
-
-        if (!jobAccepted)
-        {
-            throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
-                    + printerStatus.get().name());
-        }
-    }
-
-    @Override
-    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException
-    {
-        if (!canRunMacro.get())
-        {
-            steno.
-                    error("Printer state is " + printerStatus.getName()
-                            + " when execute GCode without purge check called");
-            throw new PrintActionUnavailableException("Execute GCode not available");
-        }
-
-        if (monitorForErrors)
-        {
-            registerErrorConsumerAllErrors(this);
-        }
-
-        boolean jobAccepted = false;
-
-        try
-        {
-            jobAccepted = printEngine.printGCodeFile(fileName, true);
+            jobAccepted = printEngine.printGCodeFile(fileName, true, canDisconnectDuringPrint);
         } catch (MacroPrintException ex)
         {
             steno.error("Failed to print GCode file " + fileName + " : " + ex.getMessage());
@@ -976,15 +943,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished,
+    public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
         Macro macro = Macro.PURGE_MATERIAL;
-
-        boolean requireNozzle0 = (nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_0
-                || nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_BOTH);
-        boolean requireNozzle1 = (nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_1
-                || nozzleHeaters == NozzleHeaters.NOZZLE_HEATER_BOTH);
 
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable, requireNozzle0, requireNozzle1);
@@ -1047,17 +1009,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    public void ejectStuckMaterial(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.EJECT_STUCK_MATERIAL_E,
-                blockUntilFinished, cancellable);
-    }
+        boolean nozzle0Required = false;
+        boolean nozzle1Required = false;
 
-    @Override
-    public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.EJECT_STUCK_MATERIAL_D,
-                blockUntilFinished, cancellable);
+        if (nozzleNumber == 0)
+        {
+            nozzle0Required = true;
+        } else
+        {
+            nozzle1Required = true;
+        }
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.EJECT_STUCK_MATERIAL,
+                blockUntilFinished, cancellable, nozzle0Required, nozzle1Required);
     }
 
     @Override
@@ -1084,8 +1049,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void runCommissioningTest(Macro macro, Cancellable cancellable) throws PrinterException
     {
+        runCommissioningTest(macro, cancellable, false, false);
+    }
+
+    public void runCommissioningTest(Macro macro, Cancellable cancellable, boolean requireNozzle0, boolean requireNozzle1) throws PrinterException
+    {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
-                true, cancellable);
+                true, cancellable, requireNozzle0, requireNozzle1);
     }
 
     private void executeMacroWithoutPurgeCheck(Macro macro) throws PrinterException
@@ -1336,13 +1306,23 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public AckResponse formatHeadEEPROM() throws PrinterException
     {
-        head.set(null);
+        return formatHeadEEPROM(false);
+    }
+
+    @Override
+    public AckResponse formatHeadEEPROM(boolean dontPublishResult) throws PrinterException
+    {
+        if (!dontPublishResult)
+        {
+            head.set(null);
+        }
+        
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         AckResponse response = null;
         try
         {
-            response = (AckResponse) commandInterface.writeToPrinter(formatHead);
+            response = (AckResponse) commandInterface.writeToPrinter(formatHead, dontPublishResult);
             steno.debug("Head formatted");
         } catch (RoboxCommsException ex)
         {
@@ -3072,52 +3052,52 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         if ((error == FirmwareError.E_FILAMENT_SLIP && filamentSlipEActionFired < 3)
                 || (error == FirmwareError.D_FILAMENT_SLIP && filamentSlipDActionFired < 3))
         {
-                steno.debug("Need to run filament slip action");
-                try
+            steno.debug("Need to run filament slip action");
+            try
+            {
+                Lookup.getSystemNotificationHandler().showFilamentMotionCheckBanner();
+                pause();
+                PrinterUtils.waitOnBusy(this, (Cancellable) null);
+                if (error == FirmwareError.E_FILAMENT_SLIP)
                 {
-                    Lookup.getSystemNotificationHandler().showFilamentMotionCheckBanner();
-                    pause();
-                    PrinterUtils.waitOnBusy(this, (Cancellable) null);
-                    if (error == FirmwareError.E_FILAMENT_SLIP)
-                    {
-                        forceExecuteMacroAsStream("filament_slip_action_E", true, null);
-                    } else if (error == FirmwareError.D_FILAMENT_SLIP)
-                    {
-                        forceExecuteMacroAsStream("filament_slip_action_D", true, null);
-                    } else
-                    {
-                        steno.warning("Filament slip action called with invalid error: "
-                                + error.
-                                name());
-                    }
-                    AckResponse response = transmitReportErrors();
-                    if (response.isError())
-                    {
-                        if (error == FirmwareError.E_FILAMENT_SLIP)
-                        {
-                            doAttemptEject('E');
-                        } else
-                        {
-                            doAttemptEject('D');
-                        }
-                    } else
-                    {
-                        forcedResume();
-                    }
-                    Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
-                } catch (PrinterException | RoboxCommsException ex)
+                    forceExecuteMacroAsStream("filament_slip_action_E", true, null);
+                } else if (error == FirmwareError.D_FILAMENT_SLIP)
                 {
-                    steno.error("Error attempting automated filament slip action");
-                } finally
+                    forceExecuteMacroAsStream("filament_slip_action_D", true, null);
+                } else
                 {
-                    if (error == FirmwareError.E_FILAMENT_SLIP)
-                    {
-                        filamentSlipEActionFired++;
-                    } else
-                    {
-                        filamentSlipDActionFired++;
-                    }
+                    steno.warning("Filament slip action called with invalid error: "
+                            + error.
+                            name());
                 }
+                AckResponse response = transmitReportErrors();
+                if (response.isError())
+                {
+                    if (error == FirmwareError.E_FILAMENT_SLIP)
+                    {
+                        doAttemptEject('E');
+                    } else
+                    {
+                        doAttemptEject('D');
+                    }
+                } else
+                {
+                    forcedResume();
+                }
+                Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
+            } catch (PrinterException | RoboxCommsException ex)
+            {
+                steno.error("Error attempting automated filament slip action");
+            } finally
+            {
+                if (error == FirmwareError.E_FILAMENT_SLIP)
+                {
+                    filamentSlipEActionFired++;
+                } else
+                {
+                    filamentSlipDActionFired++;
+                }
+            }
         } else
         {
             filamentSlipLimitReached = true;
@@ -3162,8 +3142,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             switch (error)
             {
                 case E_UNLOAD_ERROR:
+                    Lookup.getSystemNotificationHandler().showEjectFailedDialog(this, 1);
+                    break;
+
                 case D_UNLOAD_ERROR:
-                    Lookup.getSystemNotificationHandler().showEjectFailedDialog(this);
+                    Lookup.getSystemNotificationHandler().showEjectFailedDialog(this, 0);
                     break;
 
                 case E_FILAMENT_SLIP:

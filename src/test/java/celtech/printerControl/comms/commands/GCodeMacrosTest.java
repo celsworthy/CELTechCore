@@ -1,10 +1,6 @@
 package celtech.printerControl.comms.commands;
 
 import celtech.JavaFXConfiguredTest;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -69,7 +65,7 @@ public class GCodeMacrosTest extends JavaFXConfiguredTest
                 "RBX01-SM",
                 GCodeMacros.NozzleUseIndicator.DONT_CARE,
                 GCodeMacros.SafetyIndicator.DONT_CARE);
-        assertEquals(-1, score7);
+        assertEquals(0, score7);
 
         String filename8 = "before_print#RBX01-SM.gcode";
         int score8 = GCodeMacros.scoreMacroFilename(filename8,
@@ -77,5 +73,43 @@ public class GCodeMacrosTest extends JavaFXConfiguredTest
                 GCodeMacros.NozzleUseIndicator.DONT_CARE,
                 GCodeMacros.SafetyIndicator.DONT_CARE);
         assertEquals(1, score8);
+    }
+
+    @Test
+    public void testScoreMacroFilenameRank() throws Exception
+    {
+        System.out.println("scoreMacroFilenameRank");
+        
+        String headTypeToScoreAgainst = "RBX01-DM";
+        GCodeMacros.NozzleUseIndicator nozzleToScoreAgainst = GCodeMacros.NozzleUseIndicator.NOZZLE_1;
+        GCodeMacros.SafetyIndicator safetyToScoreAgainst = GCodeMacros.SafetyIndicator.SAFETIES_OFF;
+
+        String filename1 = "eject_stuck_material#N0.gcode";
+        int score1 = GCodeMacros.scoreMacroFilename(filename1,
+                headTypeToScoreAgainst,
+                nozzleToScoreAgainst,
+                safetyToScoreAgainst);
+        assertEquals(-3, score1);
+
+        String filename2 = "eject_stuck_material#N1.gcode";
+        int score2 = GCodeMacros.scoreMacroFilename(filename2,
+                headTypeToScoreAgainst,
+                nozzleToScoreAgainst,
+                safetyToScoreAgainst);
+        assertEquals(-1, score2);
+
+        String filename3 = "eject_stuck_material#RBX01-DM#N0.gcode";
+        int score3 = GCodeMacros.scoreMacroFilename(filename3,
+                headTypeToScoreAgainst,
+                nozzleToScoreAgainst,
+                safetyToScoreAgainst);
+        assertEquals(-1, score3);
+
+        String filename4 = "eject_stuck_material#RBX01-DM#N1.gcode";
+        int score4 = GCodeMacros.scoreMacroFilename(filename4,
+                headTypeToScoreAgainst,
+                nozzleToScoreAgainst,
+                safetyToScoreAgainst);
+        assertEquals(1, score4);
     }
 }

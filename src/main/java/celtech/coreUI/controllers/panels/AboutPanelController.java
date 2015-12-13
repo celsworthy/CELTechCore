@@ -104,7 +104,11 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        headSerialNumber.setText(printer.headProperty().get().uniqueIDProperty().get());
+        headSerialNumber.setText(printer.headProperty().get().typeCodeProperty().get() + "-"
+                + printer.headProperty().get().getWeekNumber() + printer.headProperty().get().getYearNumber() + "-"
+                + printer.headProperty().get().getPONumber() + "-"
+                + printer.headProperty().get().getSerialNumber() + "-"
+                + printer.headProperty().get().getChecksum());
     }
 
     @Override

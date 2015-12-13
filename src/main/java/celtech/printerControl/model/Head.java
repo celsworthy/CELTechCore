@@ -69,6 +69,12 @@ public class Head implements Cloneable, RepairableComponent
     protected final StringProperty name = new SimpleStringProperty("");
     protected final StringProperty uniqueID = new SimpleStringProperty("");
     protected final FloatProperty headHours = new SimpleFloatProperty(0);
+    
+    protected final StringProperty weekNumber = new SimpleStringProperty("");
+    protected final StringProperty yearNumber = new SimpleStringProperty("");
+    protected final StringProperty PONumber = new SimpleStringProperty("");
+    protected final StringProperty serialNumber = new SimpleStringProperty("");
+    protected final StringProperty checksum = new SimpleStringProperty("");
 
     protected final ObservableList<NozzleHeater> nozzleHeaters = FXCollections.observableArrayList();
     protected final List<Nozzle> nozzles = new ArrayList<>();
@@ -208,6 +214,31 @@ public class Head implements Cloneable, RepairableComponent
         return headZPosition;
     }
 
+    public String getWeekNumber()
+    {
+        return weekNumber.get();
+    }
+
+    public String getYearNumber()
+    {
+        return yearNumber.get();
+    }
+
+    public String getPONumber()
+    {
+        return PONumber.get();
+    }
+
+    public String getSerialNumber()
+    {
+        return serialNumber.get();
+    }
+
+    public String getChecksum()
+    {
+        return checksum.get();
+    }
+    
     @Override
     public String toString()
     {
@@ -262,6 +293,11 @@ public class Head implements Cloneable, RepairableComponent
     {
         setTypeCode(eepromData.getTypeCode());
         uniqueID.set(eepromData.getUniqueID());
+        weekNumber.set(eepromData.getWeekNumber());
+        yearNumber.set(eepromData.getYearNumber());
+        PONumber.set(eepromData.getPONumber());
+        serialNumber.set(eepromData.getSerialNumber());
+        checksum.set(eepromData.getChecksum());
         headHours.set(eepromData.getHeadHours());
 
         for (int i = 0; i < nozzleHeaters.size(); i++)
@@ -492,5 +528,4 @@ public class Head implements Cloneable, RepairableComponent
                 get().length());
         uniqueID.set(idToCreate);
     }
-
 }

@@ -42,6 +42,11 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
     private String headTypeCode;
     private String uniqueID;
+    private String weekNumber = "";
+    private String yearNumber = "";
+    private String PONumber = "";
+    private String serialNumber = "";
+    private String checksum = "";
     private float maximumTemperature = 0;
     private float thermistorBeta = 0;
     private float thermistorTCal = 0;
@@ -258,6 +263,15 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse hours used - " + hoursUsedString);
             }
 
+            if (uniqueID.length() == 24)
+            {
+                String inTheBeginning = uniqueID;
+                weekNumber = inTheBeginning.substring(8, 10);
+                yearNumber = inTheBeginning.substring(10, 12);
+                PONumber = inTheBeginning.substring(12, 19);
+                serialNumber = inTheBeginning.substring(19, 23);
+                checksum = inTheBeginning.substring(23, 24);
+            }
             success = true;
         } catch (UnsupportedEncodingException ex)
         {
@@ -511,6 +525,31 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     public void setHoursUsed(float hoursUsed)
     {
         this.hoursUsed = hoursUsed;
+    }
+
+    public String getWeekNumber()
+    {
+        return weekNumber;
+    }
+
+    public String getYearNumber()
+    {
+        return yearNumber;
+    }
+
+    public String getPONumber()
+    {
+        return PONumber;
+    }
+
+    public String getSerialNumber()
+    {
+        return serialNumber;
+    }
+
+    public String getChecksum()
+    {
+        return checksum;
     }
 
     /**

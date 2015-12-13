@@ -358,10 +358,10 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
         if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            printer.sendRawGCode("G1 D10 F75", false);
+            printer.sendRawGCode("G1 D10 F50", false);
         } else
         {
-            printer.sendRawGCode("G1 E10 F75", false);
+            printer.sendRawGCode("G1 E10 F50", false);
         }
 
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
@@ -372,7 +372,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
         printer.selectNozzle(1);
         extrudeUntilStall(1);
         printer.openNozzleFully();
-        printer.sendRawGCode("G1 E10 F75", false);
+        printer.sendRawGCode("G1 E10 F50", false);
         if (PrinterUtils.waitOnBusy(printer, userOrErrorCancellable))
         {
             return;

@@ -380,20 +380,18 @@ public class GCodeMacros
             {
                 if (namePartCounter > 0)
                 {
-                    if (fileHeadFile == null)
+                    if (HeadContainer.getHeadByID(namePart) != null)
                     {
                         fileHeadFile = HeadContainer.getHeadByID(namePart);
                     }
-
-                    if (fileNozzleUseIndicator == null)
+                    else if (NozzleUseIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileNozzleUseIndicator = NozzleUseIndicator.getEnumForFilenameCode(namePart);
                     }
-
-                    if (fileSafetyIndicator == null)
+                    else if (SafetyIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileSafetyIndicator = SafetyIndicator.getEnumForFilenameCode(namePart);
-                    }
+                    }                    
                 }
                 namePartCounter++;
             }
@@ -417,9 +415,9 @@ public class GCodeMacros
                         score += 1;
                     }
                 }
-            } else if (specifiedHeadFile != null)
+            } else if (specifiedHeadFile != null && !specifiedHeadFile.getTypeCode().equals(HeadContainer.defaultHeadID))
             {
-                //Specified but not present
+                //Specified but not present but only if the specified file was not RBX01-SM - this is the default...
                 score -= 1;
             }
 

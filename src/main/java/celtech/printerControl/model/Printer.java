@@ -135,6 +135,8 @@ public interface Printer extends RoboxResponseConsumer
     public ObservableList<Extruder> extrudersProperty();
 
     public AckResponse formatHeadEEPROM() throws PrinterException;
+    
+    public AckResponse formatHeadEEPROM(boolean dontPublishResult) throws PrinterException;
 
     public AckResponse formatReelEEPROM(int reelNumber) throws PrinterException;
 
@@ -250,12 +252,13 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
-     * @param nozzleHeaters
+     * @param requireNozzle0
+     * @param requireNozzle1
      * @param blockUntilFinished
      * @param cancellable
      * @throws PrinterException
      */
-    public void purgeMaterial(NozzleHeaters nozzleHeaters, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     public void miniPurge(boolean blockUntilFinished, Cancellable cancellable, int nozzleNumber) throws PrinterException;
 
@@ -293,19 +296,12 @@ public interface Printer extends RoboxResponseConsumer
 
     /**
      *
+     * @param nozzleNumber
      * @param blockUntilFinished
      * @param cancellable
      * @throws PrinterException
      */
-    public void ejectStuckMaterialE(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
-
-    /**
-     *
-     * @param blockUntilFinished
-     * @param cancellable
-     * @throws PrinterException
-     */
-    public void ejectStuckMaterialD(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
+    public void ejectStuckMaterial(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException;
 
     /**
      *
@@ -325,20 +321,27 @@ public interface Printer extends RoboxResponseConsumer
     public void runCommissioningTest(Macro macro, Cancellable cancellable) throws PrinterException;
 
     /**
+     *
+     * @param macro
+     * @param cancellable
+     * @param requireNozzle0
+     * @param requireNozzle1
+     * @throws PrinterException
+     */
+    public void runCommissioningTest(Macro macro, Cancellable cancellable, boolean requireNozzle0, boolean requireNozzle1) throws PrinterException;
+
+    /**
      * This method 'prints' a GCode file. A print job is created and the printer
      * will manage extrusion dynamically. The printer will register as an error
      * handler for the duration of the 'print'.
      *
+     * @param canDisconnectDuringPrint
      * @see executeMacro executeMacro - if you wish to run a macro rather than
      * execute a print job
      * @param fileName
-     * @param monitorForErrors Indicates whether the printer should
-     * automatically manage error handling (e.g. auto reduction of print speed)
      * @throws PrinterException
      */
-    public void executeGCodeFile(String fileName, boolean monitorForErrors) throws PrinterException;
-
-    public void executeGCodeFileWithoutPurgeCheck(String fileName, boolean monitorForErrors) throws PrinterException;
+    public void executeGCodeFile(String fileName, boolean canDisconnectDuringPrint) throws PrinterException;
 
     public void callbackWhenNotBusy(TaskResponder responder);
 

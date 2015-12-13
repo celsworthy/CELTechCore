@@ -33,7 +33,7 @@ public class PrinterIdentity
     {
         @Override
         public void changed(
-            ObservableValue<? extends String> observable, String oldValue, String newValue)
+                ObservableValue<? extends String> observable, String oldValue, String newValue)
         {
             updatePrinterUniqueID();
         }
@@ -48,7 +48,7 @@ public class PrinterIdentity
 
             @Override
             public void changed(
-                ObservableValue<? extends Color> observable, Color oldValue, Color newValue)
+                    ObservableValue<? extends Color> observable, Color oldValue, Color newValue)
             {
                 updatePrinterUniqueID();
             }
@@ -168,12 +168,12 @@ public class PrinterIdentity
     private void updatePrinterUniqueID()
     {
         printerUniqueID.set(printermodel.get()
-            + printeredition.get()
-            + printerweekOfManufacture.get()
-            + printeryearOfManufacture.get()
-            + printerpoNumber.get()
-            + printerserialNumber.get()
-            + printercheckByte.get());
+                + printeredition.get()
+                + printerweekOfManufacture.get()
+                + printeryearOfManufacture.get()
+                + printerpoNumber.get()
+                + printerserialNumber.get()
+                + printercheckByte.get());
     }
 
     @Override
@@ -193,5 +193,25 @@ public class PrinterIdentity
         clone.printeryearOfManufacture.set(printeryearOfManufacture.get());
 
         return clone;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder idString = new StringBuilder();
+        idString.append(printermodelProperty().get());
+        idString.append("-");
+        idString.append(printereditionProperty().get());
+        idString.append("-");
+        idString.append(printerweekOfManufactureProperty().get());
+        idString.append(printeryearOfManufactureProperty().get());
+        idString.append("-");
+        idString.append(printerpoNumberProperty().get());
+        idString.append("-");
+        idString.append(printerserialNumberProperty().get());
+        idString.append("-");
+        idString.append(printercheckByteProperty().get());
+        
+        return idString.toString();
     }
 }
