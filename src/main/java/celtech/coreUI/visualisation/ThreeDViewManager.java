@@ -139,7 +139,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final Group bed;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
-    private final static double initialCameraDistance = -350;
+    private final static double initialCameraDistance = 350;
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
@@ -984,7 +984,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         double bedZOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getDepth() / 2;
 
         bedTranslateXform.setTx(bedXOffsetFromCameraZero);
-        bedTranslateXform.setTz(bedZOffsetFromCameraZero - cameraDistance.get());
+        bedTranslateXform.setTz(bedZOffsetFromCameraZero + cameraDistance.get());
         bedTranslateXform.setPivot(-bedXOffsetFromCameraZero, 0, -bedZOffsetFromCameraZero);
         rotateCameraAroundAxes(-30, 0);
 
@@ -1534,6 +1534,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         updateModelColoursForPositionModeAndTargetPrinter();
 
         collisionManager.addModel(modelContainer);
+
+        modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
     }
 
     @Override

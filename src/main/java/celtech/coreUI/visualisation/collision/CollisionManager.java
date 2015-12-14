@@ -84,17 +84,17 @@ public class CollisionManager implements CollisionShapeListener
 
     public void addModel(ModelContainer model)
     {
-        if (model.getCollisionShape() != null)
-        {
-            createGhost(model);
-        } else
-        {
-//            CollisionShape potentialCollisionShape = model.addCollisionShapeListener(this);
-//            if (potentialCollisionShape != null)
-//            {
-//                createGhost(model);
-//            }
-        }
+//        if (model.getCollisionShape() != null)
+//        {
+//            createGhost(model);
+//        } else
+//        {
+////            CollisionShape potentialCollisionShape = model.addCollisionShapeListener(this);
+////            if (potentialCollisionShape != null)
+////            {
+////                createGhost(model);
+////            }
+//        }
     }
 
     public void removeModel(ModelContainer model)

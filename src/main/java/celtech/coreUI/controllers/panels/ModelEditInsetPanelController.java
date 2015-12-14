@@ -31,6 +31,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -40,6 +41,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import jfxtras.styles.jmetro8.ToggleSwitch;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -152,6 +155,12 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @FXML
     private ToggleGroup tabButtons;
 
+    @FXML
+    private SVGPath linkIcon;
+
+    @FXML
+    private Group unlinkIcon;
+
     private Project currentProject;
     private UndoableProject undoableProject;
 
@@ -185,9 +194,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private double lastDepth;
     private double lastX;
     private double lastY;
-
-    private ImageView linkedImage;
-    private ImageView unlinkedImage;
 
     private IntegerProperty numSelectedModels = new SimpleIntegerProperty(0);
     private ProjectSelection projectSelection;
@@ -253,20 +259,17 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        unlinkIcon.setVisible(false);
+        linkIcon.visibleProperty().bind(preserveAspectRatio.selectedProperty());
+        unlinkIcon.visibleProperty().bind(preserveAspectRatio.selectedProperty().not());
+
         initialiseTextFieldValues();
 
         setUpModelGeometryListeners();
         setUpNumberFieldListeners();
         setupProjectSelectedListener();
         setUpNumSelectedModelsListener();
-        setUpAspectRatioListener(resources);
-
-        Image image = new Image(getClass().getResourceAsStream(
-                ApplicationConfiguration.imageResourcePath + "link.png"));
-        linkedImage = new ImageView(image);
-        image = new Image(getClass().getResourceAsStream(
-                ApplicationConfiguration.imageResourcePath + "unlink.png"));
-        unlinkedImage = new ImageView(image);
+        preserveAspectRatio.setSelected(true);
 
         Lookup.getSelectedProjectProperty().addListener(
                 (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
@@ -543,26 +546,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         populateDepthField(selectedModelDetails.getDepth().get());
         populateXAxisField(selectedModelDetails.getCentreX().get());
         populateYAxisField(selectedModelDetails.getCentreZ().get());
-    }
-
-    /**
-     * Change the preserve aspect ratio icon to linked / unlinked according to
-     * whether it is selected or not.
-     */
-    private void setUpAspectRatioListener(ResourceBundle rb)
-    {
-        preserveAspectRatio.setSelected(true);
-        preserveAspectRatio.selectedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    if (newValue)
-                    {
-                        preserveAspectRatio.setGraphic(linkedImage);
-                    } else
-                    {
-                        preserveAspectRatio.setGraphic(unlinkedImage);
-                    }
-                });
     }
 
     private void setUpNumSelectedModelsListener()
