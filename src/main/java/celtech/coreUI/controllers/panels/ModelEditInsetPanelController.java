@@ -226,7 +226,17 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         for (ModelContainer modelContainer : modelContainers)
         {
-            undoableProject.setUseExtruder0Filament(modelContainer, !(modelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
+            if (modelContainer instanceof ModelGroup)
+            {
+                Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
+                for (ModelContainer descendentModelContainer : descendentModels)
+                {
+                    undoableProject.setUseExtruder0Filament(descendentModelContainer, !(descendentModelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
+                }
+            } else
+            {
+                undoableProject.setUseExtruder0Filament(modelContainer, !(modelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
+            }
         }
         updateDisplay();
     }
