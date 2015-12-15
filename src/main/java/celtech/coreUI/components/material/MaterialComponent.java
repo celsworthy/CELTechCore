@@ -284,6 +284,7 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
             //No reel and not loaded
             cmbMaterials.setVisible(false);
             materialRemaining.setVisible(false);
+            resetFilament();
         }
 
         if (filamentInUse == FilamentContainer.UNKNOWN_FILAMENT
@@ -458,17 +459,22 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
+    private void resetFilament()
+    {
+        if (!comboItems.contains(FilamentContainer.UNKNOWN_FILAMENT))
+        {
+            comboItems.add(0, FilamentContainer.UNKNOWN_FILAMENT);
+            cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
+        }
+        filamentInUse = FilamentContainer.UNKNOWN_FILAMENT;
+    }
+
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
         if (this.printer == printer)
         {
-            if (!comboItems.contains(FilamentContainer.UNKNOWN_FILAMENT))
-            {
-                comboItems.add(0, FilamentContainer.UNKNOWN_FILAMENT);
-                cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
-            }
-            filamentInUse = FilamentContainer.UNKNOWN_FILAMENT;
+            resetFilament();
             configureDisplay();
         }
     }
