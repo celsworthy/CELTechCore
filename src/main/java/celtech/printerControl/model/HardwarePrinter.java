@@ -274,6 +274,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
+        effectiveFilaments.put(0, FilamentContainer.UNKNOWN_FILAMENT);
+        effectiveFilaments.put(1, FilamentContainer.UNKNOWN_FILAMENT);
 
         setupBindings();
         setupFilamentDatabaseChangeListeners();
@@ -3514,7 +3516,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
                             2);
 
-                    //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
                     extruders.get(firstExtruderNumber).indexWheelState.set(statusResponse.
                             isEIndexStatus());
@@ -3613,6 +3614,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     checkHeadEEPROM(statusResponse);
 
                     checkReelEEPROMs(statusResponse);
+                    
+                    if (!filament1Loaded
+                            && !reels.containsKey(0)
+                            && effectiveFilaments.containsKey(0)
+                            && effectiveFilaments.get(0) != FilamentContainer.UNKNOWN_FILAMENT)
+                    {
+                        effectiveFilaments.put(0, FilamentContainer.UNKNOWN_FILAMENT);
+                    }
+
+                    if (!filament2Loaded
+                            && !reels.containsKey(1)
+                            && effectiveFilaments.containsKey(1)
+                            && effectiveFilaments.get(1) != FilamentContainer.UNKNOWN_FILAMENT)
+                    {
+                        effectiveFilaments.put(1, FilamentContainer.UNKNOWN_FILAMENT);
+                    }
 
                     break;
 
@@ -3894,11 +3911,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         case NOT_PRESENT:
                             reels.remove(reelNumber);
-                            effectiveFilaments.remove(reelNumber);
+                            effectiveFilaments.put(reelNumber, FilamentContainer.UNKNOWN_FILAMENT);
                             break;
                         case NOT_PROGRAMMED:
                             reels.remove(reelNumber);
-                            effectiveFilaments.remove(reelNumber);
+                            effectiveFilaments.put(reelNumber, FilamentContainer.UNKNOWN_FILAMENT);
                             steno.error("Unformatted reel detected - no action taken");
 //                            try
 //                            {
