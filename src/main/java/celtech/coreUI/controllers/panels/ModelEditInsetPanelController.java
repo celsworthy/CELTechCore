@@ -295,7 +295,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                         modelEditInsetRoot.setVisible(false);
                     } else
                     {
-                        modelEditInsetRoot.setVisible(true);
+                        updateDisplay();
                     }
 
                 });
