@@ -7,6 +7,7 @@ import celtech.configuration.PrintBed;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
@@ -453,6 +454,20 @@ public class Project implements Serializable
         for (ModelContainer loadedModel : topLevelModels)
         {
             getUsedExtruders(loadedModel, usedExtruders, printer);
+        }
+
+        if (printerSettings.getPrintSupportOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
+        {
+            if (!usedExtruders.contains(0))
+            {
+                usedExtruders.add(0);
+            }
+        } else if (printerSettings.getPrintSupportOverride() == SlicerParametersFile.SupportType.MATERIAL_2)
+        {
+            if (!usedExtruders.contains(1))
+            {
+                usedExtruders.add(1);
+            }
         }
         return usedExtruders;
     }

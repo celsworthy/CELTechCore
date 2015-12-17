@@ -356,7 +356,7 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                 }
         );
     }
-
+    
     //Cura skirt Section
     Rule SkirtSection()
     {

@@ -14,6 +14,7 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.Filament;
 import celtech.configuration.PrinterColourMap;
 import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
@@ -1169,7 +1170,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 //                        .and(printer.headPowerOnFlagProperty()));
 //            } else
 //            {
-            if (project.allModelsOnSameExtruder(printer))
+            Set<Integer> usedExtruders = project.getUsedExtruders(printer);
+
+            if (usedExtruders.size() == 1)
             {
                 // only one extruder required, which one is it?
                 int extruderNumber = project.getUsedExtruders(printer).iterator().next();

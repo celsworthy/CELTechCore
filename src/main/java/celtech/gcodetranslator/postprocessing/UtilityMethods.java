@@ -14,6 +14,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.MergeableWithToolchange;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
@@ -38,22 +39,24 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class UtilityMethods
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(UtilityMethods.class.getName());
     private final PostProcessorFeatureSet ppFeatureSet;
     private final NodeManagementUtilities nodeManagementUtilities;
     private final CloseLogic closeLogic;
-
+    private final SlicerParametersFile settings;
+    
     public UtilityMethods(final PostProcessorFeatureSet ppFeatureSet,
             final Project project,
             SlicerParametersFile settings,
             String headType)
     {
         this.ppFeatureSet = ppFeatureSet;
+        this.settings = settings;
         nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);
         this.closeLogic = new CloseLogic(project, settings, ppFeatureSet, headType);
     }
-
+    
     protected void insertCameraTriggersAndCloses(LayerNode layerNode,
             LayerPostProcessResult lastLayerPostProcessResult,
             List<NozzleProxy> nozzleProxies)
@@ -64,16 +67,16 @@ public class UtilityMethods
             while (layerForwards.hasNext())
             {
                 GCodeEventNode layerForwardsEvent = layerForwards.next();
-
+                
                 if (layerForwardsEvent instanceof LayerChangeDirectiveNode)
                 {
                     CameraTriggerManager.appendLayerEndTriggerCode((LayerChangeDirectiveNode) layerForwardsEvent);
                     break;
                 }
             }
-
+            
             Iterator<GCodeEventNode> layerBackwards = layerNode.childBackwardsIterator();
-
+            
             while (layerBackwards.hasNext())
             {
                 GCodeEventNode layerChild = layerBackwards.next();
@@ -85,13 +88,13 @@ public class UtilityMethods
             }
         }
     }
-
+    
     protected void suppressUnnecessaryToolChangesAndInsertToolchangeCloses(LayerNode layerNode,
             LayerPostProcessResult lastLayerPostProcessResult,
             List<NozzleProxy> nozzleProxies)
     {
         ToolSelectNode lastToolSelectNode = null;
-
+        
         if (lastLayerPostProcessResult.getLastToolSelectInForce() != null)
         {
             lastToolSelectNode = lastLayerPostProcessResult.getLastToolSelectInForce();
@@ -99,19 +102,19 @@ public class UtilityMethods
 
         // We know that tool selects come directly under a layer node...        
         Iterator<GCodeEventNode> layerIterator = layerNode.childIterator();
-
+        
         List<ToolSelectNode> toolSelectNodes = new ArrayList<>();
-
+        
         while (layerIterator.hasNext())
         {
             GCodeEventNode potentialToolSelectNode = layerIterator.next();
-
+            
             if (potentialToolSelectNode instanceof ToolSelectNode)
             {
                 toolSelectNodes.add((ToolSelectNode) potentialToolSelectNode);
             }
         }
-
+        
         for (ToolSelectNode toolSelectNode : toolSelectNodes)
         {
             if (lastToolSelectNode == null)
@@ -137,11 +140,11 @@ public class UtilityMethods
                     }
                 }
             }
-
+            
             lastToolSelectNode = toolSelectNode;
         }
     }
-
+    
     protected void closeAtEndOfToolSelectIfNecessary(ToolSelectNode toolSelectNode, List<NozzleProxy> nozzleProxies)
     {
         // The tool has changed
@@ -151,7 +154,7 @@ public class UtilityMethods
         boolean keepLooking = true;
         boolean needToClose = false;
         GCodeEventNode eventToCloseFrom = null;
-
+        
         List<SectionNode> sectionsToConsiderForClose = new ArrayList<>();
 
         //If we see a nozzle event BEFORE an extrusion then the nozzle has already been closed
@@ -161,7 +164,7 @@ public class UtilityMethods
                 && keepLooking)
         {
             GCodeEventNode node = nodeIterator.next();
-
+            
             if (node instanceof SectionNode)
             {
                 Iterator<GCodeEventNode> sectionIterator = node.childBackwardsIterator();
@@ -202,7 +205,7 @@ public class UtilityMethods
                 }
             }
         }
-
+        
         if (needToClose)
         {
             try
@@ -218,7 +221,7 @@ public class UtilityMethods
             }
         }
     }
-
+    
     protected OpenResult insertOpens(LayerNode layerNode,
             OpenResult lastOpenResult,
             List<NozzleProxy> nozzleProxies,
@@ -231,22 +234,28 @@ public class UtilityMethods
         int lastToolNumber = -1;
         double replenishExtrusionE = 0;
         double replenishExtrusionD = 0;
+        int opensInThisTool = 0;
+        
         Map<ExtrusionNode, NozzleValvePositionNode> nodesToAdd = new HashMap<>();
+        Map<ExtrusionNode, Integer> toolReselectsToAdd = new HashMap<>();
+        
         if (lastOpenResult != null)
         {
             nozzleOpen = lastOpenResult.isNozzleOpen();
             replenishExtrusionE = lastOpenResult.getOutstandingEReplenish();
             replenishExtrusionD = lastOpenResult.getOutstandingDReplenish();
             lastToolNumber = lastOpenResult.getLastToolNumber();
+            opensInThisTool = lastOpenResult.getOpensInLastTool();
         }
-
+        
         while (layerIterator.hasNext())
         {
             GCodeEventNode layerEvent = layerIterator.next();
-
+            
             if (layerEvent instanceof ToolSelectNode)
             {
                 lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
+                opensInThisTool = 0;
             } else if (layerEvent instanceof NozzlePositionProvider
                     && (((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen()
                     || (((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
@@ -263,7 +272,7 @@ public class UtilityMethods
                         replenishExtrusionD = 0;
                         break;
                 }
-
+                
                 if (layerEvent instanceof ExtrusionNode)
                 {
                     if (lastMovement == null)
@@ -289,7 +298,7 @@ public class UtilityMethods
                             replenishExtrusionD = ((ExtrusionNode) layerEvent).getElidedExtrusion();
                             break;
                     }
-
+                    
                     if (lastMovement == null)
                     {
                         lastMovement = ((ExtrusionNode) layerEvent).getMovement();
@@ -309,10 +318,10 @@ public class UtilityMethods
                 }
                 NozzleValvePositionNode newNozzleValvePositionNode = new NozzleValvePositionNode();
                 newNozzleValvePositionNode.getNozzlePosition().setB(1);
-
+                
                 double replenishEToUse = 0;
                 double replenishDToUse = 0;
-
+                
                 switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
                 {
                     case "E":
@@ -330,7 +339,14 @@ public class UtilityMethods
                 newNozzleValvePositionNode.setReplenishExtrusionD(replenishDToUse);
                 nodesToAdd.put((ExtrusionNode) layerEvent, newNozzleValvePositionNode);
                 nozzleOpen = true;
-
+                
+                opensInThisTool++;
+                if (opensInThisTool > settings.getMaxClosesBeforeNozzleReselect())
+                {
+                    toolReselectsToAdd.put((ExtrusionNode) layerEvent, lastToolNumber);
+                    opensInThisTool = 0;
+                }
+                
                 if (lastMovement == null)
                 {
                     lastMovement = ((ExtrusionNode) layerEvent).getMovement();
@@ -354,15 +370,27 @@ public class UtilityMethods
 //                }
 //            }
         }
-
+        
         nodesToAdd.entrySet().stream().forEach((entryToUpdate) ->
         {
+            if (toolReselectsToAdd.containsKey(entryToUpdate.getKey()))
+            {
+                int toolToReselect = toolReselectsToAdd.get(entryToUpdate.getKey());
+                ToolSelectNode reselect = new ToolSelectNode();
+                reselect.setToolNumber(toolToReselect);
+                reselect.appendCommentText("Reselect nozzle");
+                entryToUpdate.getKey().addSiblingBefore(reselect);
+            }
+
+            //Add an M109 to make sure temperature is maintained
+            MCodeNode tempSustain = new MCodeNode(109);
+            entryToUpdate.getKey().addSiblingBefore(tempSustain);
             entryToUpdate.getKey().addSiblingBefore(entryToUpdate.getValue());
         });
-
-        return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen, lastToolNumber);
+        
+        return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen, lastToolNumber, opensInThisTool);
     }
-
+    
     protected void updateLayerToLineNumber(LayerPostProcessResult lastLayerParseResult,
             List<Integer> layerNumberToLineNumber,
             GCodeOutputWriter writer)
@@ -377,13 +405,13 @@ public class UtilityMethods
             }
         }
     }
-
+    
     protected double updateLayerToPredictedDuration(LayerPostProcessResult lastLayerParseResult,
             List<Double> layerNumberToPredictedDuration,
             GCodeOutputWriter writer)
     {
         double predictedDuration = 0;
-
+        
         if (lastLayerParseResult.getLayerData() != null)
         {
             int layerNumber = lastLayerParseResult.getLayerData().getLayerNumber();
@@ -393,17 +421,17 @@ public class UtilityMethods
                 predictedDuration += lastLayerParseResult.getTimeForLayer();
             }
         }
-
+        
         return predictedDuration;
     }
-
+    
     public void recalculatePerSectionExtrusion(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> childrenOfTheLayer = layerNode.childIterator();
         while (childrenOfTheLayer.hasNext())
         {
             GCodeEventNode potentialSectionNode = childrenOfTheLayer.next();
-
+            
             if (potentialSectionNode instanceof SectionNode)
             {
                 ((SectionNode) potentialSectionNode).recalculateExtrusion();

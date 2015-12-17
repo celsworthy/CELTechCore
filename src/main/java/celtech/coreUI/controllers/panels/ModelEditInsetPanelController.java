@@ -8,7 +8,6 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -37,11 +36,8 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import jfxtras.styles.jmetro8.ToggleSwitch;
 import libertysystems.stenographer.Stenographer;
@@ -380,12 +376,28 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 while (selectedModelIterator.hasNext())
                 {
                     ModelContainer container = selectedModelIterator.next();
-                    if (container.getAssociateWithExtruderNumberProperty().get() == 0)
+                    if (container instanceof ModelGroup)
                     {
-                        foundMaterial0 = true;
+                        Set<ModelContainer> childModels = container.getDescendentModelContainers();
+                        for (ModelContainer childModel : childModels)
+                        {
+                            if (childModel.getAssociateWithExtruderNumberProperty().get() == 0)
+                            {
+                                foundMaterial0 = true;
+                            } else
+                            {
+                                foundMaterial1 = true;
+                            }
+                        }
                     } else
                     {
-                        foundMaterial1 = true;
+                        if (container.getAssociateWithExtruderNumberProperty().get() == 0)
+                        {
+                            foundMaterial0 = true;
+                        } else
+                        {
+                            foundMaterial1 = true;
+                        }
                     }
                 }
 
@@ -402,7 +414,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             }
         }
 
-         modelEditInsetRoot.setVisible(showDisplay);
+        modelEditInsetRoot.setVisible(showDisplay);
     }
 
     private void whenProjectChanged(Project project)

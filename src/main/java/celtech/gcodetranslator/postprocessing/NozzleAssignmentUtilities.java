@@ -8,6 +8,7 @@ import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
@@ -138,6 +139,17 @@ public class NozzleAssignmentUtilities
     {
         List<GCodeEventNode> nodesToRemove = new ArrayList<>();
 
+        int lastObjectReferenceNumber = -1;
+
+        if (lastLayerResult != null)
+        {
+            Optional<Integer> potentialLastObjNum = lastLayerResult.getLastObjectNumber();
+            if (potentialLastObjNum.isPresent())
+            {
+                lastObjectReferenceNumber = potentialLastObjNum.get();
+            }
+        }
+
         Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
         List<ObjectDelineationNode> objectNodes = new ArrayList<>();
 
@@ -160,6 +172,14 @@ public class NozzleAssignmentUtilities
         for (ObjectDelineationNode objectNode : objectNodes)
         {
             objectReferenceNumber = objectNode.getObjectNumber();
+            if (lastObjectReferenceNumber != -1
+                    && lastObjectReferenceNumber != objectReferenceNumber
+                    && lastSectionNode != null)
+            {
+                lastSectionNode.addChildAtEnd(new RetractNode());
+            }
+
+            lastObjectReferenceNumber = objectReferenceNumber;
 
             //Object numbers correspond to extruder numbers
             ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
