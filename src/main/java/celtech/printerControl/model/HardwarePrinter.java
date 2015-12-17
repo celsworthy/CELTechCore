@@ -589,7 +589,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Reset the purge temperature for the given head, printer settings and
      * nozzle heater number.
      */
-    private void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
+    @Override
+    public void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
     {
         Filament settingsFilament = null;
 
@@ -1318,7 +1319,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             head.set(null);
         }
-        
+
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         AckResponse response = null;
@@ -1643,9 +1644,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.SET_TEMPERATURES);
-        setTemperatures.setTemperatures(nozzle0FirstLayerTarget, nozzle0Target,
-                nozzle1FirstLayerTarget, nozzle1Target, bedFirstLayerTarget,
-                bedTarget, ambientTarget);
+        setTemperatures.setTemperatures(nozzle0Target, nozzle0FirstLayerTarget,
+                nozzle1Target, nozzle1FirstLayerTarget,
+                bedTarget, bedFirstLayerTarget,
+                ambientTarget);
         commandInterface.writeToPrinter(setTemperatures);
     }
 
@@ -1799,10 +1801,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         double ambientTarget = 0;
         double feedrateMultiplier = 1;
 
+        Set<Integer> usedExtruders = project.getUsedExtruders(this);
+
         boolean needToSendTempsForReel0 = false;
-        if (filament0 != null)
+        if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
         {
-            if (!reels.containsKey(0)
+            if (usedExtruders.contains(0)
+                    && !reels.containsKey(0)
                     || (reels.containsKey(0) && !reels.get(0).isSameAs(filament0)))
             {
                 needToSendTempsForReel0 = true;
@@ -1810,9 +1815,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
 
         boolean needToSendTempsForReel1 = false;
-        if (filament1 != null)
+        if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
         {
-            if (!reels.containsKey(1)
+            if (usedExtruders.contains(1)
+                    && !reels.containsKey(1)
                     || (reels.containsKey(1) && !reels.get(1).isSameAs(filament1)))
             {
                 needToSendTempsForReel1 = true;
@@ -1895,10 +1901,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                if (project.getUsedExtruders().contains(0))
+                if (usedExtruders.contains(0))
                 {
                     transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureE, false);
-                } else
+                }
+                
+                if (usedExtruders.contains(1))
                 {
                     transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureD, false);
                 }
@@ -3614,7 +3622,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     checkHeadEEPROM(statusResponse);
 
                     checkReelEEPROMs(statusResponse);
-                    
+
                     if (!filament1Loaded
                             && !reels.containsKey(0)
                             && effectiveFilaments.containsKey(0)

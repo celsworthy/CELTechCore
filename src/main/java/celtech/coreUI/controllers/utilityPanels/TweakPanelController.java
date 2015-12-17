@@ -3,6 +3,8 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusInsetController;
+import celtech.gcodetranslator.PrintJobStatistics;
+import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -108,6 +110,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             }
         }
     };
+
+    private PrintJob currentPrintJob = null;
+    private PrintJobStatistics currentPrintJobStatistics = null;
 
     private boolean inhibitFeedrate = false;
     private final ChangeListener<Number> feedRateChangeListener
@@ -311,8 +316,29 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         }
     }
 
+    private boolean dUsedForThisPrintJob()
+    {
+        boolean dUsed = false;
+
+        if (currentPrintJobStatistics != null)
+        {
+            dUsed = currentPrintJobStatistics.getdVolumeUsed() > 0;
+        }
+
+        return dUsed;
+    }
+
     private void bind()
     {
+        currentPrintJob = currentPrinter.getPrintEngine().printJobProperty().get();
+        try
+        {
+            currentPrintJobStatistics = currentPrintJob.getStatistics();
+        } catch (Exception ex)
+        {
+            steno.error("Failed to get print job statistics for tweaks page");
+        }
+
         container.setVisible(true);
         printSpeedDisplay.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().
                 feedRateMultiplierProperty().get() * 100.0)));
@@ -348,7 +374,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().addListener(extrusionMultiplier1ChangeListener);
         }
 
-        if (currentPrinter.extrudersProperty().get(1).isFittedProperty().get())
+        if (currentPrinter.extrudersProperty().get(1).isFittedProperty().get() && dUsedForThisPrintJob())
         {
             extrusionMultiplier2Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().doubleValue() * 100.0)));
             extrusionMultiplier2Slider.setValue(currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().doubleValue() * 100.0);
@@ -436,26 +462,34 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                     inhibitNozzleTemp1 = false;
                 }
 
-                if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
+                if (dUsedForThisPrintJob())
                 {
-                    nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
-                    inhibitNozzleTemp2 = true;
-                    nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().get());
-                    inhibitNozzleTemp2 = false;
-                } else if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.NORMAL)
+                    if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
+                    {
+                        nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
+                        inhibitNozzleTemp2 = true;
+                        nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().get());
+                        inhibitNozzleTemp2 = false;
+                    } else if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.NORMAL)
+                    {
+                        nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().doubleValue()));
+                        inhibitNozzleTemp2 = true;
+                        nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().get());
+                        inhibitNozzleTemp2 = false;
+                    }
+                    nozzleTemperature2Box.setVisible(true);
+                    nozzleTemperature2Box.setMaxHeight(1000);
+                    nozzleTemperature2Box.setMinHeight(0);
+                } else
                 {
-                    nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().doubleValue()));
-                    inhibitNozzleTemp2 = true;
-                    nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().get());
-                    inhibitNozzleTemp2 = false;
+                    nozzleTemperature2Box.setVisible(false);
+                    nozzleTemperature2Box.setMaxHeight(0);
+                    nozzleTemperature2Box.setMinHeight(0);
                 }
 
                 nozzleTemperature1Box.setVisible(true);
                 nozzleTemperature1Box.setMaxHeight(1000);
                 nozzleTemperature1Box.setMinHeight(0);
-                nozzleTemperature2Box.setVisible(true);
-                nozzleTemperature2Box.setMaxHeight(1000);
-                nozzleTemperature2Box.setMinHeight(0);
             }
         } else
         {

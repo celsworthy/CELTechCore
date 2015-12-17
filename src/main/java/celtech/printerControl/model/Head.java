@@ -10,11 +10,14 @@ import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -69,7 +72,7 @@ public class Head implements Cloneable, RepairableComponent
     protected final StringProperty name = new SimpleStringProperty("");
     protected final StringProperty uniqueID = new SimpleStringProperty("");
     protected final FloatProperty headHours = new SimpleFloatProperty(0);
-    
+
     protected final StringProperty weekNumber = new SimpleStringProperty("");
     protected final StringProperty yearNumber = new SimpleStringProperty("");
     protected final StringProperty PONumber = new SimpleStringProperty("");
@@ -78,6 +81,8 @@ public class Head implements Cloneable, RepairableComponent
 
     protected final ObservableList<NozzleHeater> nozzleHeaters = FXCollections.observableArrayList();
     protected final List<Nozzle> nozzles = new ArrayList<>();
+
+    protected final BooleanProperty dataChanged = new SimpleBooleanProperty();
 
     public Head()
     {
@@ -115,6 +120,11 @@ public class Head implements Cloneable, RepairableComponent
 
     private void updateFromHeadFileData(HeadFile headData)
     {
+        updateFromHeadFileData(headData, true);
+    }
+
+    private void updateFromHeadFileData(HeadFile headData, boolean flagDataChanged)
+    {
         setTypeCode(headData.getTypeCode());
         this.name.set(headData.getName());
 
@@ -137,6 +147,11 @@ public class Head implements Cloneable, RepairableComponent
                         {
                             nozzles.add(newNozzle);
                 });
+
+        if (flagDataChanged)
+        {
+            dataChanged.set(!dataChanged.get());
+        }
     }
 
     private Head(String typeCode,
@@ -214,6 +229,11 @@ public class Head implements Cloneable, RepairableComponent
         return headZPosition;
     }
 
+    public ReadOnlyBooleanProperty dataChangedProperty()
+    {
+        return dataChanged;
+    }
+
     public String getWeekNumber()
     {
         return weekNumber.get();
@@ -238,7 +258,7 @@ public class Head implements Cloneable, RepairableComponent
     {
         return checksum.get();
     }
-    
+
     @Override
     public String toString()
     {
@@ -291,7 +311,10 @@ public class Head implements Cloneable, RepairableComponent
 
     public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
     {
-        setTypeCode(eepromData.getTypeCode());
+        if (!eepromData.getTypeCode().equals(typeCode.get()))
+        {
+            updateFromHeadFileData(HeadContainer.getHeadByID(eepromData.getTypeCode()), false);
+        }
         uniqueID.set(eepromData.getUniqueID());
         weekNumber.set(eepromData.getWeekNumber());
         yearNumber.set(eepromData.getYearNumber());
@@ -325,6 +348,8 @@ public class Head implements Cloneable, RepairableComponent
             nozzles.get(1).zOffset.set(eepromData.getNozzle2ZOffset());
             nozzles.get(1).bOffset.set(eepromData.getNozzle2BOffset());
         }
+
+        dataChanged.set(!dataChanged.get());
     }
 
     public boolean matchesEEPROMData(HeadEEPROMDataResponse response)
@@ -442,6 +467,11 @@ public class Head implements Cloneable, RepairableComponent
             steno.warning("Head bounds check requested but reference data could not be obtained.");
         }
 
+        if (result != RepairResult.NO_REPAIR_NECESSARY)
+        {
+            dataChanged.set(!dataChanged.get());
+        }
+
         return result;
     }
 
@@ -487,6 +517,8 @@ public class Head implements Cloneable, RepairableComponent
                 nozzleIndex++;
             }
 
+            dataChanged.set(!dataChanged.get());
+
             steno.info("Reset head to defaults with data set - " + referenceHeadData.getTypeCode());
         } else
         {
@@ -527,5 +559,7 @@ public class Head implements Cloneable, RepairableComponent
         String idToCreate = typeCode.get() + SystemUtils.generate16DigitID().substring(typeCode.
                 get().length());
         uniqueID.set(idToCreate);
+
+        dataChanged.set(!dataChanged.get());
     }
 }

@@ -21,6 +21,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Head.HeadType;
+import celtech.printerControl.model.Printer;
 import celtech.utils.SystemUtils;
 import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
@@ -61,6 +62,7 @@ public class PostProcessor
     private final String writeOutputTimerName = "WriteOutput";
     private final String countLinesTimerName = "CountLines";
 
+    private final Printer printer;
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
     private final HeadFile headFile;
@@ -87,7 +89,8 @@ public class PostProcessor
 
     private final TimeUtils timeUtils = new TimeUtils();
 
-    public PostProcessor(String gcodeFileToProcess,
+    public PostProcessor(Printer printer,
+            String gcodeFileToProcess,
             String gcodeOutputFile,
             HeadFile headFile,
             Project project,
@@ -96,6 +99,7 @@ public class PostProcessor
             String headType,
             DoubleProperty taskProgress)
     {
+        this.printer = printer;
         this.gcodeFileToProcess = gcodeFileToProcess;
         this.gcodeOutputFile = gcodeOutputFile;
         this.headFile = headFile;
@@ -190,9 +194,9 @@ public class PostProcessor
 
             if (headFile.getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                nozzle0Required = project.getUsedExtruders().contains(1)
+                nozzle0Required = project.getUsedExtruders(printer).contains(1)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
-                nozzle1Required = project.getUsedExtruders().contains(0)
+                nozzle1Required = project.getUsedExtruders(printer).contains(0)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
             } else
             {

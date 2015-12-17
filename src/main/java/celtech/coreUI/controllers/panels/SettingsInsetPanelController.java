@@ -246,6 +246,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         supportComboBox.getItems().addAll(SupportType.values());
         supportComboBox.getItems().remove(SupportType.NO_SUPPORT);
+        supportComboBox.getSelectionModel().select(SupportType.OBJECT_MATERIAL);
 
         supportComboBox.valueProperty().addListener(
                 (ObservableValue<? extends SlicerParametersFile.SupportType> ov, SlicerParametersFile.SupportType lastSupportValue, SlicerParametersFile.SupportType newSupportValue) ->
@@ -409,10 +410,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void updateSupportCombo(Printer printer)
     {
         if (getNumExtruders(printer) < 2
-                || !cbSupport.isSelected()
-                || currentHeadType == HeadContainer.defaultHeadID)
+                || (printer.headProperty().get() != null
+                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD))
         {
             supportComboBox.setDisable(true);
+            supportComboBox.getSelectionModel().select(SupportType.OBJECT_MATERIAL);
         } else
         {
             supportComboBox.setDisable(false);

@@ -10,6 +10,7 @@ import celtech.gcodetranslator.LiveGCodeOutputWriter;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.printerControl.model.TestPrinter;
 import java.net.URL;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -81,7 +82,6 @@ public class PostProcessorTest extends JavaFXConfiguredTest
 //        RoboxiserResult result = postProcessor.processInput();
 //        assertTrue(result.isSuccess());
 //    }
-
     /**
      * Test of processInput method, of class PostProcessor.
      */
@@ -112,7 +112,10 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        PostProcessor postProcessor = new PostProcessor(inputFilename,
+        TestPrinter testPrinter = new TestPrinter();
+
+        PostProcessor postProcessor = new PostProcessor(testPrinter,
+                inputFilename,
                 outputFilename,
                 singleMaterialHead,
                 testProject,
@@ -155,7 +158,10 @@ public class PostProcessorTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        PostProcessor postProcessor = new PostProcessor(inputFilename,
+        TestPrinter testPrinter = new TestPrinter();
+
+        PostProcessor postProcessor = new PostProcessor(testPrinter,
+                inputFilename,
                 outputFilename,
                 singleMaterialHead,
                 testProject,

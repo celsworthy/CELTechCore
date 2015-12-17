@@ -220,8 +220,14 @@ public class NozzleAssignmentUtilities
 
                         try
                         {
-                            SectionNode replacementSection = lastSectionNode.getClass().newInstance();
-
+                            SectionNode replacementSection = null;
+                            if (lastSectionNode == null)
+                            {
+                                replacementSection = new SkirtSectionNode();
+                            } else
+                            {
+                                replacementSection = lastSectionNode.getClass().newInstance();
+                            }
                             List<GCodeEventNode> sectionChildren = new ArrayList<>();
                             Iterator<GCodeEventNode> sectionChildrenIterator = sectionUnderConsideration.childIterator();
 

@@ -7,8 +7,8 @@ import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.modelcontrol.ModelContainer;
-import celtech.utils.TestPrinter;
 import java.io.File;
 import javafx.beans.binding.BooleanBinding;
 import javafx.scene.shape.MeshView;
@@ -47,9 +47,29 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         return printer;
     }
 
+    private Printer makeOneExtruderSMHeadPrinter()
+    {
+        TestPrinter printer = new TestPrinter(1);
+        printer.addHeadForHeadFile(HeadContainer.getHeadByID("RBX01-SM"));
+        printer.overrideFilament(0, PURPLE);
+        printer.loadFilament(0);
+        return printer;
+    }
+
     private Printer makeTwoExtruderPrinter()
     {
         Printer printer = new TestPrinter(2);
+        return printer;
+    }
+
+    private Printer makeTwoExtruderDMHeadPrinter()
+    {
+        TestPrinter printer = new TestPrinter(2);
+        printer.addHeadForHeadFile(HeadContainer.getHeadByID("RBX01-DM"));
+        printer.overrideFilament(0, PURPLE);
+        printer.overrideFilament(1, GREEN);
+        printer.loadFilament(0);
+        printer.loadFilament(1);
         return printer;
     }
 
@@ -88,7 +108,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeOneExtruderPrinter();
+        Printer printer = makeOneExtruderSMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -106,7 +126,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeOneModelProject(GREEN, WHITE);
-        Printer printer = makeOneExtruderPrinter();
+        Printer printer = makeOneExtruderSMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -125,7 +145,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeOneExtruderPrinter();
+        Printer printer = makeOneExtruderSMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -144,7 +164,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
+        Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -164,7 +184,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeOneModelProject(PURPLE, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
+        Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -183,7 +203,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeTwoModelProject(PURPLE, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
+        Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -202,7 +222,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeTwoModelProject(GREEN, WHITE);
-        Printer printer = makeTwoExtruderPrinter();
+        Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 
@@ -221,7 +241,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     {
 
         Project project = makeTwoModelProject(PURPLE, GREEN);
-        Printer printer = makeTwoExtruderPrinter();
+        Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
 

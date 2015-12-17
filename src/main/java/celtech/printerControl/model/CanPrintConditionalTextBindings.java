@@ -49,7 +49,7 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                Set<Integer> usedExtruders = project.getUsedExtruders();
+                Set<Integer> usedExtruders = project.getUsedExtruders(printer);
                 return usedExtruders.contains(0);
             }
         };
@@ -74,7 +74,7 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                Set<Integer> usedExtruders = project.getUsedExtruders();
+                Set<Integer> usedExtruders = project.getUsedExtruders(printer);
                 return usedExtruders.contains(1);
             }
         };

@@ -1,7 +1,7 @@
 /*
  * Copyright 2014 CEL UK
  */
-package celtech.utils;
+package celtech.printerControl.model;
 
 import celtech.appManager.Project;
 import celtech.configuration.EEPROMState;
@@ -25,21 +25,13 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;
-import celtech.printerControl.model.Extruder;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.PrintEngine;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterAncillarySystems;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.PrinterIdentity;
-import celtech.printerControl.model.PurgeStateTransitionManager;
-import celtech.printerControl.model.Reel;
-import celtech.printerControl.model.TemperatureAndPWMData;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
 import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
+import celtech.utils.AxisSpecifier;
+import celtech.utils.TestHead;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.ArrayList;
@@ -65,7 +57,7 @@ public class TestPrinter implements Printer
     private final SimpleObjectProperty<Head> headProperty = new SimpleObjectProperty<>();
     private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
     private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
-    private int numExtruders = 1;
+    private final ObservableList<Extruder> extrudersProperty = FXCollections.observableArrayList();
 
     public TestPrinter()
     {
@@ -74,10 +66,23 @@ public class TestPrinter implements Printer
 
     public TestPrinter(int numExtruders)
     {
-        this.numExtruders = numExtruders;
+        Extruder extruder0 = new Extruder("E");
+        Extruder extruder1 = new Extruder("D");
+
+        if (numExtruders > 0)
+        {
+            extruder0.isFitted.set(true);
+        }
+
+        if (numExtruders > 1)
+        {
+            extruder1.isFitted.set(true);
+        }
+        extrudersProperty.add(extruder0);
+        extrudersProperty.add(extruder1);
     }
 
-    void addHead()
+    public void addHead()
     {
         HeadFile headFile = new HeadFile();
         headFile.setTypeCode("RBX01-SM");
@@ -85,34 +90,34 @@ public class TestPrinter implements Printer
         headProperty.setValue(head);
     }
 
-    void addHeadForHeadFile(HeadFile headFile)
+    public void addHeadForHeadFile(HeadFile headFile)
     {
         Head head = new TestHead(headFile);
         headProperty.setValue(head);
     }
 
-    TestHead getHead()
+    public TestHead getHead()
     {
         return (TestHead) headProperty().get();
     }
 
-    void removeHead()
+    public void removeHead()
     {
         headProperty.setValue(null);
     }
 
-    void addReel(int i)
+    public void addReel(int i)
     {
         Reel reel = new Reel();
         reelsProperty.put(i, reel);
     }
 
-    void removeReel(int i)
+    public void removeReel(int i)
     {
         reelsProperty.remove(i);
     }
 
-    void changeReel(int i)
+    public void changeReel(int i)
     {
         ReelEEPROMDataResponse eepromData = new ReelEEPROMDataResponse();
         eepromData.setReelFilamentID("ABC");
@@ -131,45 +136,15 @@ public class TestPrinter implements Printer
         reelsProperty().get(i).updateFromEEPROMData(eepromData);
     }
 
+    public void loadFilament(int extruderNumber)
+    {
+        extrudersProperty().get(extruderNumber).filamentLoaded.set(true);
+    }
+
     @Override
     public ObservableList<Extruder> extrudersProperty()
     {
-
-        class FittedExtruder extends Extruder
-        {
-
-            public FittedExtruder(String extruderAxisLetter)
-            {
-                super(extruderAxisLetter);
-                isFitted.set(true);
-            }
-        }
-
-        class UnFittedExtruder extends Extruder
-        {
-
-            public UnFittedExtruder(String extruderAxisLetter)
-            {
-                super(extruderAxisLetter);
-                isFitted.set(false);
-            }
-        }
-
-        ObservableList<Extruder> extruders = FXCollections.observableList(new ArrayList<Extruder>());
-        if (numExtruders == 0)
-        {
-            extruders.add(new UnFittedExtruder("D"));
-            extruders.add(new UnFittedExtruder("E"));
-        } else if (numExtruders == 1)
-        {
-            extruders.add(new FittedExtruder("D"));
-            extruders.add(new UnFittedExtruder("E"));
-        } else if (numExtruders == 2)
-        {
-            extruders.add(new FittedExtruder("D"));
-            extruders.add(new FittedExtruder("E"));
-        }
-        return extruders;
+        return extrudersProperty;
     }
 
     @Override
@@ -1118,6 +1093,12 @@ public class TestPrinter implements Printer
 
     @Override
     public AckResponse formatHeadEEPROM(boolean dontPublishResult) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

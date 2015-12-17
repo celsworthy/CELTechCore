@@ -3,6 +3,7 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.TestPrinter;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import static org.junit.Assert.assertTrue;

@@ -11,7 +11,9 @@ import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
+import celtech.configuration.Filament;
 import celtech.configuration.PrinterColourMap;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
@@ -52,6 +54,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -175,7 +178,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
 //    @FXML
 //    private GraphicButtonWithLabel cutButton;
-    
     private Project selectedProject;
     private UndoableProject undoableSelectedProject;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
@@ -193,6 +195,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar chooseACustomProfileNotificationBar;
     private ConditionalNotificationBar printHeadPowerOffNotificationBar;
     private ConditionalNotificationBar noHeadNotificationBar;
+
+    private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
+    {
+        whenProjectOrSettingsPrinterChange();
+    };
 
     @FXML
     void group(ActionEvent event)
@@ -255,7 +262,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
-        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject.getUsedExtruders());
+        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject.getUsedExtruders(printer));
 
         try
         {
@@ -265,7 +272,23 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         currentProject, printer);
             } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
             {
-                currentPrinter.resetPurgeTemperature();
+                Set<Integer> usedExtruders = currentProject.getUsedExtruders(printer);
+                for (int extruderNumber : usedExtruders)
+                {
+                    if (extruderNumber == 0)
+                    {
+                        if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                        {
+                            currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
+                        } else
+                        {
+                            currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
+                        }
+                    } else
+                    {
+                        currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
+                    }
+                }
                 printer.printProject(currentProject);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
@@ -761,6 +784,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     currentPrinter = newValue;
+                    if (oldValue != null)
+                    {
+                        oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+                    }
+
+                    if (newValue != null)
+                    {
+                        newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                    }
                 });
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
 
@@ -875,8 +907,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
         BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
-        BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull();
-        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull();
+        BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
+        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
 
         oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(filament0Reqd).and(
                 noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
@@ -1137,39 +1169,39 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 //                        .and(printer.headPowerOnFlagProperty()));
 //            } else
 //            {
-                if (project.allModelsOnSameExtruder())
-                {
-                    // only one extruder required, which one is it?
-                    int extruderNumber = project.getUsedExtruders().iterator().next();
-                    BooleanBinding filamentPresentBinding = Bindings.valueAt(printer.effectiveFilamentsProperty(), extruderNumber).isNotNull();
+            if (project.allModelsOnSameExtruder(printer))
+            {
+                // only one extruder required, which one is it?
+                int extruderNumber = project.getUsedExtruders(printer).iterator().next();
+                BooleanBinding filamentPresentBinding = Bindings.valueAt(printer.effectiveFilamentsProperty(), extruderNumber).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
 
-                    canPrintProject.bind(
-                            printer.canPrintProperty()
-                            .and(project.canPrintProperty())
-                            .and(filamentPresentBinding)
-                            .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                                    .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                            .and(printer.extrudersProperty().get(extruderNumber).
-                                    filamentLoadedProperty()
-                                    .and(printer.headPowerOnFlagProperty()))
-                    );
-                } else // both extruders are required
-                {
-                    BooleanBinding filament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotNull();
-                    BooleanBinding filament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNotNull();
+                canPrintProject.bind(
+                        printer.canPrintProperty()
+                        .and(project.canPrintProperty())
+                        .and(filamentPresentBinding)
+                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                        .and(printer.extrudersProperty().get(extruderNumber).
+                                filamentLoadedProperty()
+                                .and(printer.headPowerOnFlagProperty()))
+                );
+            } else // both extruders are required
+            {
+                BooleanBinding filament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
+                BooleanBinding filament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
 
-                    canPrintProject.bind(
-                            printer.canPrintProperty()
-                            .and(project.canPrintProperty())
-                            .and(filament0Selected)
-                            .and(filament1Selected)
-                            .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                                    .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                            .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                            .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
-                                    .and(printer.headPowerOnFlagProperty()))
-                    );
-                }
+                canPrintProject.bind(
+                        printer.canPrintProperty()
+                        .and(project.canPrintProperty())
+                        .and(filament0Selected)
+                        .and(filament1Selected)
+                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                        .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
+                        .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
+                                .and(printer.headPowerOnFlagProperty()))
+                );
+            }
 //            }
             printButton.disableProperty().bind(canPrintProject.not());
         }

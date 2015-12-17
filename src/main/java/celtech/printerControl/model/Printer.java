@@ -99,6 +99,8 @@ public interface Printer extends RoboxResponseConsumer
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
     public void resetPurgeTemperature();
+    
+    public void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber);
 
     public PurgeStateTransitionManager startPurge() throws PrinterException;
 
