@@ -120,6 +120,8 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         bedAxes = new BedAxes(viewManager);
+        bedAxes.visibleProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
+
         VBox dimensionContainer = new VBox();
         dimensionContainer.setMouseTransparent(true);
         AnchorPane.setBottomAnchor(dimensionContainer, 0.0);
