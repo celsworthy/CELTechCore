@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
+import celtech.configuration.Filament;
 import celtech.configuration.HeaterMode;
 import celtech.coreUI.controllers.StatusInsetController;
 import celtech.gcodetranslator.PrintJobStatistics;
@@ -15,9 +16,11 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -35,6 +38,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(TweakPanelController.class.getName());
+
+    private final MapChangeListener<Integer, Filament> effectiveFilamentChangeListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
+    {
+        updateTemperatureSliderBounds();
+    };
 
     @FXML
     private VBox container;
@@ -330,6 +338,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
     private void bind()
     {
+        updateTemperatureSliderBounds();
+        currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentChangeListener);
+
         currentPrintJob = currentPrinter.getPrintEngine().printJobProperty().get();
         try
         {
@@ -396,6 +407,8 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
     private void unbind()
     {
+        currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentChangeListener);
+
         container.setVisible(false);
         speedMultiplierSlider.valueProperty().removeListener(speedMultiplierSliderListener);
         bedTemperatureSlider.valueProperty().removeListener(bedTempSliderListener);
@@ -542,6 +555,26 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().removeListener(heaterModeListener);
+            }
+        }
+    }
+
+    private final int tempSliderTolerance = 15;
+
+    private void updateTemperatureSliderBounds()
+    {
+        for (Entry<Integer, Filament> filamentEntry : currentPrinter.effectiveFilamentsProperty().entrySet())
+        {
+            int filamentNumber = filamentEntry.getKey();
+            Filament filament = filamentEntry.getValue();
+            if (filamentNumber == 0)
+            {
+                nozzleTemperature1Slider.setMax(filament.getNozzleTemperature() + tempSliderTolerance);
+                nozzleTemperature1Slider.setMin(filament.getNozzleTemperature() - tempSliderTolerance);
+            } else if (filamentNumber == 1)
+            {
+                nozzleTemperature2Slider.setMax(filament.getNozzleTemperature() + tempSliderTolerance);
+                nozzleTemperature2Slider.setMin(filament.getNozzleTemperature() - tempSliderTolerance);
             }
         }
     }
