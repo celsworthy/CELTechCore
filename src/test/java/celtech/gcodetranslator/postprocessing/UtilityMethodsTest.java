@@ -682,7 +682,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
             testProject.getPrinterSettings().getSettings("RBX01-DM"), 
             "RBX01-DM");
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 10, null, null, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 10, null, null, null, 0, -1);
 
         OutputUtilities opUtils = new OutputUtilities();
         

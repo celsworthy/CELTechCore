@@ -20,9 +20,13 @@ import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithStartPoint;
+import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
+import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.CameraTriggerManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,13 +43,13 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class UtilityMethods
 {
-    
+
     private final Stenographer steno = StenographerFactory.getStenographer(UtilityMethods.class.getName());
     private final PostProcessorFeatureSet ppFeatureSet;
     private final NodeManagementUtilities nodeManagementUtilities;
     private final CloseLogic closeLogic;
     private final SlicerParametersFile settings;
-    
+
     public UtilityMethods(final PostProcessorFeatureSet ppFeatureSet,
             final Project project,
             SlicerParametersFile settings,
@@ -56,7 +60,7 @@ public class UtilityMethods
         nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);
         this.closeLogic = new CloseLogic(project, settings, ppFeatureSet, headType);
     }
-    
+
     protected void insertCameraTriggersAndCloses(LayerNode layerNode,
             LayerPostProcessResult lastLayerPostProcessResult,
             List<NozzleProxy> nozzleProxies)
@@ -67,16 +71,16 @@ public class UtilityMethods
             while (layerForwards.hasNext())
             {
                 GCodeEventNode layerForwardsEvent = layerForwards.next();
-                
+
                 if (layerForwardsEvent instanceof LayerChangeDirectiveNode)
                 {
                     CameraTriggerManager.appendLayerEndTriggerCode((LayerChangeDirectiveNode) layerForwardsEvent);
                     break;
                 }
             }
-            
+
             Iterator<GCodeEventNode> layerBackwards = layerNode.childBackwardsIterator();
-            
+
             while (layerBackwards.hasNext())
             {
                 GCodeEventNode layerChild = layerBackwards.next();
@@ -88,13 +92,13 @@ public class UtilityMethods
             }
         }
     }
-    
+
     protected void suppressUnnecessaryToolChangesAndInsertToolchangeCloses(LayerNode layerNode,
             LayerPostProcessResult lastLayerPostProcessResult,
             List<NozzleProxy> nozzleProxies)
     {
         ToolSelectNode lastToolSelectNode = null;
-        
+
         if (lastLayerPostProcessResult.getLastToolSelectInForce() != null)
         {
             lastToolSelectNode = lastLayerPostProcessResult.getLastToolSelectInForce();
@@ -102,19 +106,19 @@ public class UtilityMethods
 
         // We know that tool selects come directly under a layer node...        
         Iterator<GCodeEventNode> layerIterator = layerNode.childIterator();
-        
+
         List<ToolSelectNode> toolSelectNodes = new ArrayList<>();
-        
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode potentialToolSelectNode = layerIterator.next();
-            
+
             if (potentialToolSelectNode instanceof ToolSelectNode)
             {
                 toolSelectNodes.add((ToolSelectNode) potentialToolSelectNode);
             }
         }
-        
+
         for (ToolSelectNode toolSelectNode : toolSelectNodes)
         {
             if (lastToolSelectNode == null)
@@ -140,11 +144,11 @@ public class UtilityMethods
                     }
                 }
             }
-            
+
             lastToolSelectNode = toolSelectNode;
         }
     }
-    
+
     protected void closeAtEndOfToolSelectIfNecessary(ToolSelectNode toolSelectNode, List<NozzleProxy> nozzleProxies)
     {
         // The tool has changed
@@ -154,7 +158,7 @@ public class UtilityMethods
         boolean keepLooking = true;
         boolean needToClose = false;
         GCodeEventNode eventToCloseFrom = null;
-        
+
         List<SectionNode> sectionsToConsiderForClose = new ArrayList<>();
 
         //If we see a nozzle event BEFORE an extrusion then the nozzle has already been closed
@@ -164,7 +168,7 @@ public class UtilityMethods
                 && keepLooking)
         {
             GCodeEventNode node = nodeIterator.next();
-            
+
             if (node instanceof SectionNode)
             {
                 Iterator<GCodeEventNode> sectionIterator = node.childBackwardsIterator();
@@ -205,7 +209,7 @@ public class UtilityMethods
                 }
             }
         }
-        
+
         if (needToClose)
         {
             try
@@ -221,7 +225,7 @@ public class UtilityMethods
             }
         }
     }
-    
+
     protected OpenResult insertOpens(LayerNode layerNode,
             OpenResult lastOpenResult,
             List<NozzleProxy> nozzleProxies,
@@ -235,10 +239,10 @@ public class UtilityMethods
         double replenishExtrusionE = 0;
         double replenishExtrusionD = 0;
         int opensInThisTool = 0;
-        
+
         Map<ExtrusionNode, NozzleValvePositionNode> nodesToAdd = new HashMap<>();
         Map<ExtrusionNode, Integer> toolReselectsToAdd = new HashMap<>();
-        
+
         if (lastOpenResult != null)
         {
             nozzleOpen = lastOpenResult.isNozzleOpen();
@@ -247,11 +251,11 @@ public class UtilityMethods
             lastToolNumber = lastOpenResult.getLastToolNumber();
             opensInThisTool = lastOpenResult.getOpensInLastTool();
         }
-        
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode layerEvent = layerIterator.next();
-            
+
             if (layerEvent instanceof ToolSelectNode)
             {
                 lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
@@ -272,7 +276,7 @@ public class UtilityMethods
                         replenishExtrusionD = 0;
                         break;
                 }
-                
+
                 if (layerEvent instanceof ExtrusionNode)
                 {
                     if (lastMovement == null)
@@ -298,7 +302,7 @@ public class UtilityMethods
                             replenishExtrusionD = ((ExtrusionNode) layerEvent).getElidedExtrusion();
                             break;
                     }
-                    
+
                     if (lastMovement == null)
                     {
                         lastMovement = ((ExtrusionNode) layerEvent).getMovement();
@@ -318,10 +322,10 @@ public class UtilityMethods
                 }
                 NozzleValvePositionNode newNozzleValvePositionNode = new NozzleValvePositionNode();
                 newNozzleValvePositionNode.getNozzlePosition().setB(1);
-                
+
                 double replenishEToUse = 0;
                 double replenishDToUse = 0;
-                
+
                 switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
                 {
                     case "E":
@@ -339,14 +343,14 @@ public class UtilityMethods
                 newNozzleValvePositionNode.setReplenishExtrusionD(replenishDToUse);
                 nodesToAdd.put((ExtrusionNode) layerEvent, newNozzleValvePositionNode);
                 nozzleOpen = true;
-                
+
                 opensInThisTool++;
                 if (opensInThisTool > settings.getMaxClosesBeforeNozzleReselect())
                 {
                     toolReselectsToAdd.put((ExtrusionNode) layerEvent, lastToolNumber);
                     opensInThisTool = 0;
                 }
-                
+
                 if (lastMovement == null)
                 {
                     lastMovement = ((ExtrusionNode) layerEvent).getMovement();
@@ -370,7 +374,7 @@ public class UtilityMethods
 //                }
 //            }
         }
-        
+
         nodesToAdd.entrySet().stream().forEach((entryToUpdate) ->
         {
             if (toolReselectsToAdd.containsKey(entryToUpdate.getKey()))
@@ -387,10 +391,10 @@ public class UtilityMethods
             entryToUpdate.getKey().addSiblingBefore(tempSustain);
             entryToUpdate.getKey().addSiblingBefore(entryToUpdate.getValue());
         });
-        
+
         return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen, lastToolNumber, opensInThisTool);
     }
-    
+
     protected void updateLayerToLineNumber(LayerPostProcessResult lastLayerParseResult,
             List<Integer> layerNumberToLineNumber,
             GCodeOutputWriter writer)
@@ -405,13 +409,13 @@ public class UtilityMethods
             }
         }
     }
-    
+
     protected double updateLayerToPredictedDuration(LayerPostProcessResult lastLayerParseResult,
             List<Double> layerNumberToPredictedDuration,
             GCodeOutputWriter writer)
     {
         double predictedDuration = 0;
-        
+
         if (lastLayerParseResult.getLayerData() != null)
         {
             int layerNumber = lastLayerParseResult.getLayerData().getLayerNumber();
@@ -421,21 +425,184 @@ public class UtilityMethods
                 predictedDuration += lastLayerParseResult.getTimeForLayer();
             }
         }
-        
+
         return predictedDuration;
     }
-    
+
     public void recalculatePerSectionExtrusion(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> childrenOfTheLayer = layerNode.childIterator();
         while (childrenOfTheLayer.hasNext())
         {
             GCodeEventNode potentialSectionNode = childrenOfTheLayer.next();
-            
+
             if (potentialSectionNode instanceof SectionNode)
             {
                 ((SectionNode) potentialSectionNode).recalculateExtrusion();
             }
         }
+    }
+
+    public void heaterSave(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult)
+    {
+        ToolSelectNode firstToolSelectNode = null;
+        ToolSelectNode lastToolSelectNode = null;
+        double timeInCurrentTool = 0;
+
+        boolean sHeaterOn = true;
+        boolean tHeaterOn = true;
+
+        if (lastLayerParseResult.getLastToolSelectInForce() != null)
+        {
+            firstToolSelectNode = lastLayerParseResult.getLastToolSelectOfSameNumber();
+            lastToolSelectNode = lastLayerParseResult.getLastToolSelectInForce();
+            timeInCurrentTool = lastLayerParseResult.getTimeUsingLastTool();
+        }
+
+        // We know that tool selects come directly under a layer node...        
+        Iterator<GCodeEventNode> layerIterator = layerNode.childIterator();
+
+        List<ToolSelectNode> toolSelectNodes = new ArrayList<>();
+
+        while (layerIterator.hasNext())
+        {
+            GCodeEventNode potentialToolSelectNode = layerIterator.next();
+
+            if (potentialToolSelectNode instanceof ToolSelectNode)
+            {
+                toolSelectNodes.add((ToolSelectNode) potentialToolSelectNode);
+            }
+        }
+
+        for (ToolSelectNode toolSelectNode : toolSelectNodes)
+        {
+            if (lastToolSelectNode == null)
+            {
+                //Our first ever tool select node...
+                firstToolSelectNode = toolSelectNode;
+                timeInCurrentTool = 0;
+            } else if (lastToolSelectNode.getToolNumber() != toolSelectNode.getToolNumber())
+            {
+                if ((toolSelectNode.getToolNumber() == 0 && !sHeaterOn)
+                        || (toolSelectNode.getToolNumber() == 1 && !tHeaterOn))
+                {
+                    GCodeEventNode node = goBack1Minute(lastToolSelectNode);
+                    if (node != null)
+                    {
+                        MCodeNode tempControlNode = new MCodeNode();
+                        if (layerNode.getLayerNumber() <= 0)
+                        {
+                            tempControlNode.setMNumber(103);
+                        } else
+                        {
+                            tempControlNode.setMNumber(104);
+                        }
+                        if (toolSelectNode.getToolNumber() == 0)
+                        {
+                            tempControlNode.setSOnly(true);
+                        } else
+                        {
+                            tempControlNode.setTOnly(true);
+                        }
+
+                        tempControlNode.appendCommentText("Switching heater on");
+                        node.addSiblingAfter(tempControlNode);
+                    } else
+                    {
+                        throw new RuntimeException("Couldn't find place to reheat nozzle");
+                    }
+                }
+
+                firstToolSelectNode = toolSelectNode;
+                timeInCurrentTool = 0;
+            }
+
+            timeInCurrentTool += toolSelectNode.getEstimatedDuration();
+
+            if (timeInCurrentTool > 180)
+            {
+                MCodeNode tempControlNode = new MCodeNode();
+                if (layerNode.getLayerNumber() <= 0)
+                {
+                    tempControlNode.setMNumber(103);
+                } else
+                {
+                    tempControlNode.setMNumber(104);
+                }
+
+                if (firstToolSelectNode.getToolNumber() == 0)
+                {
+                    tempControlNode.setSNumber(0);
+                    sHeaterOn = false;
+                } else
+                {
+                    tempControlNode.setTNumber(0);
+                    tHeaterOn = false;
+                }
+
+                tempControlNode.appendCommentText("Switching heater off");
+
+                firstToolSelectNode.addChildAtStart(tempControlNode);
+
+                timeInCurrentTool = 0;
+            }
+
+            lastToolSelectNode = toolSelectNode;
+        }
+    }
+
+    private GCodeEventNode goBack1Minute(ToolSelectNode toolSelectNode)
+    {
+        GCodeEventNode oneMinuteNode = null;
+
+        Iterator<GCodeEventNode> toolSelectIterator = toolSelectNode.childBackwardsIterator();
+
+        SupportsPrintTimeCalculation lastMovementProvider = null;
+
+        double timeSoFar = 0;
+
+        while (toolSelectIterator.hasNext())
+        {
+            GCodeEventNode node = toolSelectIterator.next();
+
+            if (node instanceof SupportsPrintTimeCalculation)
+            {
+                SupportsPrintTimeCalculation timeCalculationNode = (SupportsPrintTimeCalculation) node;
+
+                if (lastMovementProvider != null)
+                {
+                    try
+                    {
+                        double time = lastMovementProvider.timeToReach((MovementProvider) node);
+                        timeSoFar += time;
+
+                        if (timeSoFar >= 60)
+                        {
+                            oneMinuteNode = node;
+                            break;
+                        }
+                    } catch (DurationCalculationException ex)
+                    {
+                        if (ex.getFromNode() instanceof Renderable
+                                && ex.getToNode() instanceof Renderable)
+                        {
+                            steno.error("Unable to calculate duration correctly for nodes source:"
+                                    + ((Renderable) ex.getFromNode()).renderForOutput()
+                                    + " destination:"
+                                    + ((Renderable) ex.getToNode()).renderForOutput());
+                        } else
+                        {
+                            steno.error("Unable to calculate duration correctly for nodes source:"
+                                    + ex.getFromNode().getMovement().renderForOutput()
+                                    + " destination:"
+                                    + ex.getToNode().getMovement().renderForOutput());
+                        }
+                    }
+                }
+                lastMovementProvider = timeCalculationNode;
+            }
+        }
+
+        return oneMinuteNode;
     }
 }

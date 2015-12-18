@@ -58,6 +58,7 @@ public class PostProcessor
     private final String openTimerName = "Open";
     private final String assignExtrusionTimerName = "AssignExtrusion";
     private final String layerResultTimerName = "LayerResult";
+    private final String heaterSaverTimerName = "HeaterSaver";
     private final String parseLayerTimerName = "ParseLayer";
     private final String writeOutputTimerName = "WriteOutput";
     private final String countLinesTimerName = "CountLines";
@@ -210,7 +211,7 @@ public class PostProcessor
 
             StringBuilder layerBuffer = new StringBuilder();
 
-            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(null, 0, 0, 0, defaultObjectNumber, null, null, -1);
+            LayerPostProcessResult parseResultCycle1 = new LayerPostProcessResult(null, 0, 0, 0, defaultObjectNumber, null, null, null, 0, -1);
             LayerPostProcessResult parseResultCycle2 = null;
             OpenResult lastOpenResult = null;
 
@@ -330,7 +331,7 @@ public class PostProcessor
                     && parseResultCycle1.getLayerData() != null)
             {
                 timeUtils.timerStart(this, assignExtrusionTimerName);
-                NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult =nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
+                NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult = nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
                 //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
@@ -358,7 +359,7 @@ public class PostProcessor
 
             //Now output the final result
             timeUtils.timerStart(this, assignExtrusionTimerName);
-            NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult =nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
+            NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult = nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
             timeUtils.timerStop(this, assignExtrusionTimerName);
 
             //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
@@ -543,6 +544,13 @@ public class PostProcessor
         postProcessResult.setLastObjectNumber(lastObjectNumber);
         timeUtils.timerStop(this, layerResultTimerName);
 
+//        if (printer.headProperty().get().headTypeProperty().get() == HeadType.DUAL_MATERIAL_HEAD)
+//        {
+//            timeUtils.timerStart(this, heaterSaverTimerName);
+//            postProcessorUtilityMethods.heaterSave(layerNode, lastLayerParseResult);
+//            timeUtils.timerStop(this, heaterSaverTimerName);
+//        }
+        
         return postProcessResult;
     }
 
@@ -553,11 +561,14 @@ public class PostProcessor
         float eValue = 0;
         float dValue = 0;
         double timeForLayer = 0;
+        double timeInThisTool = 0;
         int lastFeedrate = -1;
 
         SupportsPrintTimeCalculation lastMovementProvider = null;
         SectionNode lastSectionNode = null;
         ToolSelectNode lastToolSelectNode = null;
+        ToolSelectNode firstToolSelectNodeWithSameNumber = null;
+        double cumulativeTimeInLastTool = 0;
 
         while (layerIterator.hasNext())
         {
@@ -580,6 +591,7 @@ public class PostProcessor
                     {
                         double time = lastMovementProvider.timeToReach((MovementProvider) foundNode);
                         timeForLayer += time;
+                        timeInThisTool += time;
                     } catch (DurationCalculationException ex)
                     {
                         if (ex.getFromNode() instanceof Renderable
@@ -611,7 +623,26 @@ public class PostProcessor
 
             if (foundNode instanceof ToolSelectNode)
             {
-                lastToolSelectNode = (ToolSelectNode) foundNode;
+                ToolSelectNode newToolSelectNode = (ToolSelectNode) foundNode;
+
+                if (lastToolSelectNode != null)
+                {
+                    lastToolSelectNode.setEstimatedDuration(timeInThisTool);
+
+                    if (newToolSelectNode.getToolNumber() != lastToolSelectNode.getToolNumber())
+                    {
+                        cumulativeTimeInLastTool = 0;
+                        firstToolSelectNodeWithSameNumber = newToolSelectNode;
+                    }
+
+                    cumulativeTimeInLastTool += timeInThisTool;
+                } else
+                {
+                    firstToolSelectNodeWithSameNumber = newToolSelectNode;
+                }
+
+                lastToolSelectNode = newToolSelectNode;
+                timeInThisTool = 0;
             } else if (foundNode instanceof SectionNode)
             {
                 lastSectionNode = (SectionNode) foundNode;
@@ -646,10 +677,15 @@ public class PostProcessor
         if (lastToolSelectNode == null)
         {
             lastToolSelectNode = lastLayerPostProcessResult.getLastToolSelectInForce();
+            cumulativeTimeInLastTool = lastLayerPostProcessResult.getTimeUsingLastTool();
+        } else
+        {
+            lastToolSelectNode.setEstimatedDuration(timeInThisTool);
+            cumulativeTimeInLastTool += timeInThisTool;
         }
 
         return new LayerPostProcessResult(layerNode, eValue, dValue, timeForLayer, -1,
-                lastSectionNode, lastToolSelectNode, lastFeedrate);
+                lastSectionNode, lastToolSelectNode, firstToolSelectNodeWithSameNumber, cumulativeTimeInLastTool, lastFeedrate);
     }
 
     private void outputPostProcessingTimerReport()
@@ -670,6 +706,7 @@ public class PostProcessor
         steno.info(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
         steno.info(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
         steno.info(parseLayerTimerName + " " + timeUtils.timeTimeSoFar_ms(this, parseLayerTimerName));
+        steno.info(heaterSaverTimerName + " " + timeUtils.timeTimeSoFar_ms(this, heaterSaverTimerName));
         steno.info(writeOutputTimerName + " " + timeUtils.timeTimeSoFar_ms(this, writeOutputTimerName));
         steno.info("============");
     }

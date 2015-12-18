@@ -301,7 +301,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
@@ -455,7 +455,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
@@ -620,7 +620,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
 
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
