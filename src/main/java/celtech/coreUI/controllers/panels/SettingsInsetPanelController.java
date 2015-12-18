@@ -13,6 +13,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
+import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
@@ -22,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -49,7 +51,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsInsetPanelController implements Initializable, ProjectAwareController
+public class SettingsInsetPanelController implements Initializable, ProjectAwareController, Project.ProjectChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -242,10 +244,27 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
     }
 
-    private void setupOverrides()
+    private void setupSupportCombo()
     {
+        boolean populatingForProjectBefore = populatingForProject;
+        populatingForProject = true;
+        supportComboBox.getItems().clear();
         supportComboBox.getItems().addAll(SupportType.values());
         supportComboBox.getItems().remove(SupportType.NO_SUPPORT);
+
+        if (currentProject != null && currentPrinter != null)
+        {
+            if (currentProject.getUsedExtruders(currentPrinter).size() > 1)
+            {
+                supportComboBox.getItems().remove(SupportType.OBJECT_MATERIAL);
+            }
+        }
+        populatingForProject = populatingForProjectBefore;
+    }
+
+    private void setupOverrides()
+    {
+        setupSupportCombo();
 
         supportComboBox.valueProperty().addListener(
                 (ObservableValue<? extends SlicerParametersFile.SupportType> ov, SlicerParametersFile.SupportType lastSupportValue, SlicerParametersFile.SupportType newSupportValue) ->
@@ -255,7 +274,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         return;
                     }
 
-                    if (lastSupportValue != newSupportValue)
+                    if (printerSettings != null
+                    && lastSupportValue != newSupportValue)
                     {
                         printerSettings.setPrintSupportOverride(newSupportValue);
                     }
@@ -408,11 +428,32 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void updateSupportCombo(Printer printer)
     {
+        SupportType selectionBefore = supportComboBox.getSelectionModel().getSelectedItem();
+
+        setupSupportCombo();
+
+        if (supportComboBox.getItems().contains(selectionBefore))
+        {
+            supportComboBox.getSelectionModel().select(selectionBefore);
+        } else
+        {
+            supportComboBox.getSelectionModel().selectFirst();
+        }
+
         if (getNumExtruders(printer) < 2
-                || !cbSupport.isSelected()
-                || currentHeadType == HeadContainer.defaultHeadID)
+                || (printer.headProperty().get() != null
+                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD))
         {
             supportComboBox.setDisable(true);
+            supportComboBox.getSelectionModel().select(SupportType.OBJECT_MATERIAL);
+        } else if (currentProject != null
+                && currentProject.getUsedExtruders(printer).size() > 1)
+        {
+            if (supportComboBox.getSelectionModel().selectedItemProperty().get() == SupportType.OBJECT_MATERIAL)
+            {
+                supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+            }
+            supportComboBox.setDisable(false);
         } else
         {
             supportComboBox.setDisable(false);
@@ -422,6 +463,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @Override
     public void setProject(Project project)
     {
+        if (currentProject != null)
+        {
+            currentProject.removeProjectChangesListener(this);
+        }
+        project.addProjectChangesListener(this);
         whenProjectChanged(project);
     }
 
@@ -559,6 +605,39 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             return SlicerParametersContainer.getSettings(customSettingsName, currentHeadType);
         }
+    }
+
+    @Override
+    public void whenModelAdded(ModelContainer modelContainer)
+    {
+        updateSupportCombo(currentPrinter);
+    }
+
+    @Override
+    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
+    {
+        updateSupportCombo(currentPrinter);
+    }
+
+    @Override
+    public void whenAutoLaidOut()
+    {
+    }
+
+    @Override
+    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    {
+    }
+
+    @Override
+    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    {
+        updateSupportCombo(currentPrinter);
+    }
+
+    @Override
+    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+    {
     }
 
 }

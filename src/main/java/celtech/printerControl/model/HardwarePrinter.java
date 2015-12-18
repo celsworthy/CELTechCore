@@ -55,7 +55,7 @@ import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
 import celtech.printerControl.comms.commands.tx.SetDFilamentInfo;
 import celtech.printerControl.comms.commands.tx.SetEFilamentInfo;
-import celtech.printerControl.comms.commands.tx.SetFeedRateMultiplier;
+import celtech.printerControl.comms.commands.tx.SetEFeedRateMultiplier;
 import celtech.printerControl.comms.commands.tx.SetReelLEDColour;
 import celtech.printerControl.comms.commands.tx.SetTemperatures;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
@@ -274,6 +274,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
+        effectiveFilaments.put(0, FilamentContainer.UNKNOWN_FILAMENT);
+        effectiveFilaments.put(1, FilamentContainer.UNKNOWN_FILAMENT);
 
         setupBindings();
         setupFilamentDatabaseChangeListeners();
@@ -560,38 +562,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     protected final FloatProperty purgeTemperatureProperty = new SimpleFloatProperty(0);
 
     /**
-     * Reset the purge temperature for all nozzle heaters.
-     */
-    @Override
-    public void resetPurgeTemperature()
-    {
-
-        Head headToWrite = head.get().clone();
-
-        for (int i = 0; i < headToWrite.nozzleHeaters.size(); i++)
-        {
-            resetPurgeTemperatureForNozzleHeater(headToWrite, i);
-        }
-
-        try
-        {
-            writeHeadEEPROM(headToWrite);
-            readHeadEEPROM(false);
-        } catch (RoboxCommsException ex)
-        {
-            steno.warning("Failed to write purge temperature");
-        }
-    }
-
-    /**
      * Reset the purge temperature for the given head, printer settings and
      * nozzle heater number.
      */
-    private void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
+    @Override
+    public void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
     {
         Filament settingsFilament = null;
+        Head headToOutput = headToWrite.clone();
 
-        if (headToWrite.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        if (headToOutput.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
             if (nozzleHeaterNumber == 0)
             {
@@ -617,8 +597,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             float reelNozzleTemperature = settingsFilament.getNozzleTemperature();
 
-            headToWrite.nozzleHeaters.get(nozzleHeaterNumber).lastFilamentTemperature.set(
+            headToOutput.nozzleHeaters.get(nozzleHeaterNumber).lastFilamentTemperature.set(
                     reelNozzleTemperature);
+
+            try
+            {
+                writeHeadEEPROM(headToOutput);
+                readHeadEEPROM(false);
+            } catch (RoboxCommsException ex)
+            {
+                steno.warning("Failed to write purge temperature");
+            }
         }
     }
 
@@ -1316,7 +1305,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             head.set(null);
         }
-        
+
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         AckResponse response = null;
@@ -1641,9 +1630,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.SET_TEMPERATURES);
-        setTemperatures.setTemperatures(nozzle0FirstLayerTarget, nozzle0Target,
-                nozzle1FirstLayerTarget, nozzle1Target, bedFirstLayerTarget,
-                bedTarget, ambientTarget);
+        setTemperatures.setTemperatures(nozzle0Target, nozzle0FirstLayerTarget,
+                nozzle1Target, nozzle1FirstLayerTarget,
+                bedTarget, bedFirstLayerTarget,
+                ambientTarget);
         commandInterface.writeToPrinter(setTemperatures);
     }
 
@@ -1795,12 +1785,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         double bedFirstLayerTarget = 0;
         double bedTarget = 0;
         double ambientTarget = 0;
-        double feedrateMultiplier = 1;
+        double feedrateMultiplierE = 1;
+        double feedrateMultiplierD = 1;
+
+        Set<Integer> usedExtruders = project.getUsedExtruders(this);
 
         boolean needToSendTempsForReel0 = false;
-        if (filament0 != null)
+        if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
         {
-            if (!reels.containsKey(0)
+            if (usedExtruders.contains(0)
+                    && !reels.containsKey(0)
                     || (reels.containsKey(0) && !reels.get(0).isSameAs(filament0)))
             {
                 needToSendTempsForReel0 = true;
@@ -1808,9 +1802,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
 
         boolean needToSendTempsForReel1 = false;
-        if (filament1 != null)
+        if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
         {
-            if (!reels.containsKey(1)
+            if (usedExtruders.contains(1)
+                    && !reels.containsKey(1)
                     || (reels.containsKey(1) && !reels.get(1).isSameAs(filament1)))
             {
                 needToSendTempsForReel1 = true;
@@ -1819,7 +1814,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 bedFirstLayerTarget = filament1.getFirstLayerBedTemperature();
                 bedTarget = filament1.getBedTemperature();
                 ambientTarget = filament1.getAmbientTemperature();
-                feedrateMultiplier = filament1.getFeedRateMultiplier();
+                feedrateMultiplierD = filament1.getFeedRateMultiplier();
 
                 changeFilamentInfo("D", filament1.getDiameter(),
                         filament1.getFilamentMultiplier());
@@ -1844,7 +1839,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             bedFirstLayerTarget = filament0.getFirstLayerBedTemperature();
             bedTarget = filament0.getBedTemperature();
             ambientTarget = filament0.getAmbientTemperature();
-            feedrateMultiplier = filament0.getFeedRateMultiplier();
+            feedrateMultiplierE = filament0.getFeedRateMultiplier();
 
             changeFilamentInfo("E", filament0.getDiameter(),
                     filament0.getFilamentMultiplier());
@@ -1877,26 +1872,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         bedTarget,
                         ambientTarget);
 
-                changeFeedRateMultiplier(feedrateMultiplier);
+                changeEFeedRateMultiplier(feedrateMultiplierE);
+                changeDFeedRateMultiplier(feedrateMultiplierD);
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
             }
         }
 
-        for (Extruder extruder : extruders)
-        {
-            extruder.lastFeedrateMultiplierInUse.set((float) feedrateMultiplier);
-        }
+        extruders.get(0).lastFeedrateMultiplierInUse.set((float) feedrateMultiplierE);
+        extruders.get(1).lastFeedrateMultiplierInUse.set((float) feedrateMultiplierD);
 
         try
         {
             if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                if (project.getUsedExtruders().contains(0))
+                if (usedExtruders.contains(0))
                 {
                     transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureE, false);
-                } else
+                }
+
+                if (usedExtruders.contains(1))
                 {
                     transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureD, false);
                 }
@@ -3492,8 +3488,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerAncillarySystems.bAxisHome.set(statusResponse.isNozzleSwitchStatus());
                     printerAncillarySystems.doorOpen.set(statusResponse.isDoorOpen());
                     printerAncillarySystems.reelButton.set(statusResponse.isReelButtonPressed());
-                    printerAncillarySystems.feedRateMultiplier.set(statusResponse.
-                            getFeedRateMultiplier());
+                    printerAncillarySystems.feedRateEMultiplier.set(statusResponse.
+                            getFeedRateEMultiplier());
+                    printerAncillarySystems.feedRateDMultiplier.set(statusResponse.
+                            getFeedRateDMultiplier());
                     printerAncillarySystems.whyAreWeWaitingProperty.set(
                             statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
@@ -3514,7 +3512,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
                             2);
 
-                    //TODO configure properly for multiple extruders
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
                     extruders.get(firstExtruderNumber).indexWheelState.set(statusResponse.
                             isEIndexStatus());
@@ -3613,6 +3610,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     checkHeadEEPROM(statusResponse);
 
                     checkReelEEPROMs(statusResponse);
+
+                    if (!filament1Loaded
+                            && !reels.containsKey(0)
+                            && effectiveFilaments.containsKey(0)
+                            && effectiveFilaments.get(0) != FilamentContainer.UNKNOWN_FILAMENT)
+                    {
+                        effectiveFilaments.put(0, FilamentContainer.UNKNOWN_FILAMENT);
+                    }
+
+                    if (!filament2Loaded
+                            && !reels.containsKey(1)
+                            && effectiveFilaments.containsKey(1)
+                            && effectiveFilaments.get(1) != FilamentContainer.UNKNOWN_FILAMENT)
+                    {
+                        effectiveFilaments.put(1, FilamentContainer.UNKNOWN_FILAMENT);
+                    }
 
                     break;
 
@@ -3894,11 +3907,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         case NOT_PRESENT:
                             reels.remove(reelNumber);
-                            effectiveFilaments.remove(reelNumber);
+                            effectiveFilaments.put(reelNumber, FilamentContainer.UNKNOWN_FILAMENT);
                             break;
                         case NOT_PROGRAMMED:
                             reels.remove(reelNumber);
-                            effectiveFilaments.remove(reelNumber);
+                            effectiveFilaments.put(reelNumber, FilamentContainer.UNKNOWN_FILAMENT);
                             steno.error("Unformatted reel detected - no action taken");
 //                            try
 //                            {
@@ -3972,15 +3985,32 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     }
 
     @Override
-    public void changeFeedRateMultiplier(double feedRate) throws PrinterException
+    public void changeEFeedRateMultiplier(double feedRate) throws PrinterException
     {
-        steno.debug("Firing change feed rate multiplier: " + feedRate);
+        steno.debug("Firing change feed rate multiplier for E: " + feedRate);
 
         try
         {
-            SetFeedRateMultiplier setFeedRateMultiplier = (SetFeedRateMultiplier) RoboxTxPacketFactory.
-                    createPacket(
-                            TxPacketTypeEnum.SET_FEED_RATE_MULTIPLIER);
+            SetEFeedRateMultiplier setFeedRateMultiplier = (SetEFeedRateMultiplier) RoboxTxPacketFactory.
+                    createPacket(TxPacketTypeEnum.SET_E_FEED_RATE_MULTIPLIER);
+            setFeedRateMultiplier.setFeedRateMultiplier(feedRate);
+            commandInterface.writeToPrinter(setFeedRateMultiplier);
+        } catch (RoboxCommsException ex)
+        {
+            steno.error("Comms exception when settings feed rate");
+            throw new PrinterException("Comms exception when settings feed rate");
+        }
+    }
+
+    @Override
+    public void changeDFeedRateMultiplier(double feedRate) throws PrinterException
+    {
+        steno.debug("Firing change feed rate multiplier for D: " + feedRate);
+
+        try
+        {
+            SetEFeedRateMultiplier setFeedRateMultiplier = (SetEFeedRateMultiplier) RoboxTxPacketFactory.
+                    createPacket(TxPacketTypeEnum.SET_D_FEED_RATE_MULTIPLIER);
             setFeedRateMultiplier.setFeedRateMultiplier(feedRate);
             commandInterface.writeToPrinter(setFeedRateMultiplier);
         } catch (RoboxCommsException ex)

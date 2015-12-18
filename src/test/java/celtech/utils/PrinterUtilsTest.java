@@ -1,5 +1,6 @@
 package celtech.utils;
 
+import celtech.printerControl.model.TestPrinter;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.appManager.Project;
@@ -65,12 +66,12 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         testModel.setUseExtruder0(true);
         project.addModel(testModel);
 
-        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
+        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders(printer));
         assertFalse(purgeIsNecessary);
 
         testNozzleHeater.lastFilamentTemperatureProperty().set(NOZZLE_TEMP
                 - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
-        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
+        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders(printer));
         assertTrue(purgeIsNecessary);
     }
 
@@ -93,15 +94,17 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         HeadFile headFile = new HeadFile();
         headFile.setTypeCode("RBX01-DM");
         headFile.setType(Head.HeadType.DUAL_MATERIAL_HEAD);
-        
+
         NozzleHeaterData nozzleHeaterData0 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData0);
         NozzleHeaterData nozzleHeaterData1 = new NozzleHeaterData();
         headFile.getNozzleHeaters().add(nozzleHeaterData1);
         printer.addHeadForHeadFile(headFile);
         printer.overrideFilament(0, filament0);
+        printer.loadFilament(0);
         printer.overrideFilament(1, filament1);
-        
+        printer.loadFilament(1);
+
         TestNozzleHeater testNozzleHeater0 = (TestNozzleHeater) printer.getHead().getNozzleHeaters().get(
                 0);
         testNozzleHeater0.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_0
@@ -111,12 +114,12 @@ public class PrinterUtilsTest extends JavaFXConfiguredTest
         testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
                 - ApplicationConfiguration.maxPermittedTempDifferenceForPurge + 1);
 
-        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
+        boolean purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders(printer));
         assertFalse(purgeIsNecessary);
 
         testNozzleHeater1.lastFilamentTemperatureProperty().set(NOZZLE_TEMP_1
                 - ApplicationConfiguration.maxPermittedTempDifferenceForPurge - 1);
-        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders());
+        purgeIsNecessary = PrinterUtils.getInstance().isPurgeNecessary(printer, project.getUsedExtruders(printer));
         assertTrue(purgeIsNecessary);
     }
 

@@ -7,9 +7,11 @@ import celtech.configuration.PrintBed;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.Math.Packing.PackingThing;
@@ -393,35 +395,79 @@ public class Project implements Serializable
     /**
      * Return true if all objects are on the same extruder, else return false.
      */
-    public boolean allModelsOnSameExtruder()
+    public boolean allModelsOnSameExtruder(Printer printer)
     {
-        return getUsedExtruders().size() < 2;
+        return getUsedExtruders(printer).size() < 2;
     }
 
-    private void getUsedExtruders(ModelContainer modelContainer, Set<Integer> usedExtruders)
+    private void getUsedExtruders(ModelContainer modelContainer, Set<Integer> usedExtruders, Printer printer)
     {
         if (modelContainer instanceof ModelGroup)
         {
             for (ModelContainer subModel : ((ModelGroup) modelContainer).getChildModelContainers())
             {
-                getUsedExtruders(subModel, usedExtruders);
+                getUsedExtruders(subModel, usedExtruders, printer);
             }
         } else
         {
-            usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+            if (printer != null
+                    && printer.headProperty().get() != null)
+            {
+                //Single material heads can only use 1 material
+                if (printer.headProperty().get().headTypeProperty().get() == HeadType.SINGLE_MATERIAL_HEAD)
+                {
+                    usedExtruders.add(0);
+                } else if (printer.headProperty().get().headTypeProperty().get() == HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+//                    int desiredExtruderNumber = modelContainer.getAssociateWithExtruderNumberProperty().get();
+//                    if (printer.effectiveFilamentsProperty().get(desiredExtruderNumber) != FilamentContainer.UNKNOWN_FILAMENT
+//                            && printer.extrudersProperty().get(desiredExtruderNumber).filamentLoadedProperty().get())
+//                    {
+//                        usedExtruders.add(desiredExtruderNumber);
+//                    } else if (printer.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT
+//                            && printer.extrudersProperty().get(0).filamentLoadedProperty().get())
+//                    {
+//                        usedExtruders.add(0);
+//                    } else if (printer.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT
+//                            && printer.extrudersProperty().get(1).filamentLoadedProperty().get())
+//                    {
+//                        usedExtruders.add(1);
+//                    }
+                }
+            } else
+            {
+                usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+            }
         }
     }
 
     /**
      * Return which extruders are used by the project, as a set of the extruder
      * numbers.
+     *
+     * @return
      */
-    public Set<Integer> getUsedExtruders()
+    public Set<Integer> getUsedExtruders(Printer printer)
     {
         Set<Integer> usedExtruders = new HashSet<>();
         for (ModelContainer loadedModel : topLevelModels)
         {
-            getUsedExtruders(loadedModel, usedExtruders);
+            getUsedExtruders(loadedModel, usedExtruders, printer);
+        }
+
+        if (printerSettings.getPrintSupportOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
+        {
+            if (!usedExtruders.contains(0))
+            {
+                usedExtruders.add(0);
+            }
+        } else if (printerSettings.getPrintSupportOverride() == SlicerParametersFile.SupportType.MATERIAL_2)
+        {
+            if (!usedExtruders.contains(1))
+            {
+                usedExtruders.add(1);
+            }
         }
         return usedExtruders;
     }
@@ -948,6 +994,7 @@ public class Project implements Serializable
     {
         group.setState(groupStates.get(group.getModelId()));
         group.checkOffBed();
+
     }
 
     /**

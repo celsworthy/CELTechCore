@@ -47,8 +47,10 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
      *
      * @param modelContainer
      */
-    public SelectionHighlighter(final ModelContainer modelContainer)
+    public SelectionHighlighter(final ModelContainer modelContainer, double cameraDistance)
     {
+        cameraDistanceChange(cameraDistance);
+        
         this.setId(idString);
         if (modelContainer instanceof ModelGroup)
         {
@@ -148,21 +150,21 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
         Box part1 = new Box(cylRadius, cornerBracketLength, cylRadius);
         part1.setMaterial(material);
-        part1.setTranslateY(-cornerBracketLength / 2);
+        part1.setTranslateY(boxScaleProperty.get() * (-cornerBracketLength / 2));
         part1.translateYProperty().bind(boxScaleProperty.multiply(-cornerBracketLength / 2));
 
         Box part2 = new Box(cylRadius, cornerBracketLength, cylRadius);
         part2.setMaterial(material);
         part2.setRotationAxis(MathUtils.zAxis);
         part2.setRotate(-90);
-        part2.setTranslateX(cornerBracketLength / 2);
+        part2.setTranslateX(boxScaleProperty.get() * (cornerBracketLength / 2));
         part2.translateXProperty().bind(boxScaleProperty.multiply(cornerBracketLength / 2));
 
         Box part3 = new Box(cylRadius, cornerBracketLength, cylRadius);
         part3.setMaterial(material);
         part3.setRotationAxis(MathUtils.xAxis);
         part3.setRotate(-90);
-        part3.setTranslateZ(cornerBracketLength / 2);
+        part3.setTranslateZ(boxScaleProperty.get() * (cornerBracketLength / 2));
         part3.translateZProperty().bind(boxScaleProperty.multiply(cornerBracketLength / 2));
         selectionCorner.getChildren().addAll(part1, part2, part3);
 
@@ -185,9 +187,9 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         return selectionCornerTransform;
     }
 
-    public void cameraDistanceChange(double cameraDistance)
+    public final void cameraDistanceChange(double cameraDistance)
     {
-        double newScale = cameraDistance / 150;
+      double newScale = cameraDistance / 350;
         if (newScale < 0.3)
         {
             newScale = 0.3;

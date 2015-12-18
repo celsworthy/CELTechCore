@@ -9,6 +9,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PrintBed;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.StandardColours;
@@ -19,6 +20,7 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.Math.PolarCoordinate;
@@ -51,6 +53,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
@@ -139,7 +142,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final Group bed;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
-    private final static double initialCameraDistance = -350;
+    private final static double initialCameraDistance = 350;
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
@@ -477,7 +480,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             {
                 doSelectTranslateModel(intersectedNode, event.getPickResult().getIntersectedPoint(), event, false);
                 updateGroupSelectionList();
-                updateModelColoursForPositionModeAndTargetPrinter();
+                updateModelColours();
             }
         }
     }
@@ -578,7 +581,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     projectSelection.deselectAllModels();
                 }
                 updateGroupSelectionList();
-                updateModelColoursForPositionModeAndTargetPrinter();
+                updateModelColours();
             }
         }
     }
@@ -885,7 +888,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 //                            stopSettingsAnimation();
                             break;
                     }
-                    updateModelColoursForPositionModeAndTargetPrinter();
+                    updateModelColours();
                 }
             };
 
@@ -893,6 +896,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private Circle circle01 = null;
     private Circle circle02 = null;
     private Circle circle03 = null;
+
+    private MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
+    {
+        updateModelColours();
+    };
 
     public ThreeDViewManager(Project project,
             ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
@@ -984,7 +992,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         double bedZOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getDepth() / 2;
 
         bedTranslateXform.setTx(bedXOffsetFromCameraZero);
-        bedTranslateXform.setTz(bedZOffsetFromCameraZero - cameraDistance.get());
+        bedTranslateXform.setTz(bedZOffsetFromCameraZero + cameraDistance.get());
         bedTranslateXform.setPivot(-bedXOffsetFromCameraZero, 0, -bedZOffsetFromCameraZero);
         rotateCameraAroundAxes(-30, 0);
 
@@ -1017,18 +1025,22 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
          * correct model colours are displayed.
          */
         setupFilamentListeners(project);
-        setupPrintSettingsFilamentListeners(project);
-        updateModelColoursForPositionModeAndTargetPrinter();
+        updateModelColours();
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
-                    updateModelColoursForPositionModeAndTargetPrinter();
+                    if (oldValue != null)
+                    {
+                        oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+                    }
+                    newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                    updateModelColours();
                 });
 
         project.getPrinterSettings().getPrintSupportOverrideProperty().addListener(
                 (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
                 {
-                    updateModelColoursForPositionModeAndTargetPrinter();
+                    updateModelColours();
                 });
 
         /**
@@ -1359,6 +1371,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         return null;
     }
 
+    /**
+     * If either the chosen filaments, x/y/z position , application mode or
+     * printer changes then this must be called. In LAYOUT mode the filament
+     * colours should reflect the project filament colours except if the
+     * position is off the bed then that overrides the project colours. In
+     * SETTINGS mode the filament colours should reflect the project print
+     * settings filament colours, taking into account the support type.
+     */
     private void updateModelColours()
     {
         Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
@@ -1375,21 +1395,33 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
         {
-            if (filament0 != null)
+            if (selectedPrinter != null
+                    && selectedPrinter.headProperty().get() != null)
             {
-                materialToUseForExtruder0 = loaded1Material;
-                loaded1Material.setDiffuseColor(filament0.getDisplayColour());
-            } else
-            {
-                materialToUseForExtruder0 = extruder1Material;
-            }
-            if (filament1 != null)
-            {
-                materialToUseForExtruder1 = loaded2Material;
-                loaded2Material.setDiffuseColor(filament1.getDisplayColour());
-            } else
-            {
-                materialToUseForExtruder1 = extruder2Material;
+                if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
+                {
+                    materialToUseForExtruder0 = loaded1Material;
+                    loaded1Material.setDiffuseColor(filament0.getDisplayColour());
+                } else
+                {
+                    materialToUseForExtruder0 = greyExcludedMaterial;
+                }
+
+                //Single material heads can only use 1 material
+                if (selectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+                {
+                    materialToUseForExtruder1 = materialToUseForExtruder0;
+                } else if (selectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
+                    {
+                        materialToUseForExtruder1 = loaded2Material;
+                        loaded2Material.setDiffuseColor(filament1.getDisplayColour());
+                    } else
+                    {
+                        materialToUseForExtruder1 = greyExcludedMaterial;
+                    }
+                }
             }
         } else
         {
@@ -1449,73 +1481,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         project.getExtruder0FilamentProperty().addListener(
                 (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                 {
-                    updateModelColoursForPositionModeAndTargetPrinter();
+                    updateModelColours();
                 });
 
         project.getExtruder1FilamentProperty().addListener(
                 (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
                 {
-                    updateModelColoursForPositionModeAndTargetPrinter();
+                    updateModelColours();
                 });
-        updateModelColours();
-    }
-
-    /**
-     * Models must reflect the project's print settings filament colours.
-     */
-    private void setupPrintSettingsFilamentListeners(Project project)
-    {
-        //TODO remove once chop finished
-//        project.getPrinterSettings().getFilament0Property().addListener(
-//                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-//                {
-//                    updateModelColoursForPositionModeAndTargetPrinter();
-//                });
-//
-//        project.getPrinterSettings().getFilament1Property().addListener(
-//                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-//                {
-//                    updateModelColoursForPositionModeAndTargetPrinter();
-//                });
-        updateModelColours();
-    }
-
-    private boolean targetPrinterHasOneExtruder()
-    {
-        boolean extruder1IsFitted
-                = Lookup.getSelectedPrinterProperty().get().extrudersProperty().get(
-                        1).isFittedProperty().get();
-        return !extruder1IsFitted;
-    }
-
-    /**
-     * If either the chosen filaments, x/y/z position , application mode or
-     * printer changes then this must be called. In LAYOUT mode the filament
-     * colours should reflect the project filament colours except if the
-     * position is off the bed then that overrides the project colours. In
-     * SETTINGS mode the filament colours should reflect the project print
-     * settings filament colours, taking into account the support type.
-     */
-    private void updateModelColoursForPositionModeAndTargetPrinter()
-    {
-        PrinterSettings printerSettings = project.getPrinterSettings();
-        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
-
-        //TODO remove once chop finished
-//        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
-//        {
-//            extruder0Filament = project.getPrinterSettings().getFilament0();
-//            extruder1Filament = project.getPrinterSettings().getFilament1();
-//
-//            if (selectedPrinter != null && targetPrinterHasOneExtruder())
-//            {
-//                extruder1Filament = extruder0Filament;
-//            }
-//        } else
-//        {
-//            extruder0Filament = project.getExtruder0FilamentProperty().get();
-//            extruder1Filament = project.getExtruder1FilamentProperty().get();
-//        }
         updateModelColours();
     }
 
@@ -1531,9 +1504,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             model.checkOffBed();
             model.heresYourCamera(camera);
         }
-        updateModelColoursForPositionModeAndTargetPrinter();
+        updateModelColours();
 
         collisionManager.addModel(modelContainer);
+
+        modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
     }
 
     @Override
@@ -1549,20 +1524,20 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     @Override
     public void whenAutoLaidOut()
     {
-        updateModelColoursForPositionModeAndTargetPrinter();
+        updateModelColours();
     }
 
     @Override
     public void whenModelsTransformed(Set<ModelContainer> modelContainers)
     {
-        updateModelColoursForPositionModeAndTargetPrinter();
+        updateModelColours();
         collisionManager.modelsTransformed(modelContainers);
     }
 
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
-        updateModelColoursForPositionModeAndTargetPrinter();
+        updateModelColours();
     }
 
     @Override

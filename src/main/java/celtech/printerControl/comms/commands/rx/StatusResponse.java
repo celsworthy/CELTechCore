@@ -16,7 +16,7 @@ import java.text.ParseException;
 public class StatusResponse extends RoboxRxPacket
 {
     /*
-     V736 firmware
+     V739 firmware
      status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff q
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
@@ -140,7 +140,8 @@ public class StatusResponse extends RoboxRxPacket
     private float EFilamentMultiplier = 0;
     private float DFilamentDiameter = 0;
     private float DFilamentMultiplier = 0;
-    private float feedRateMultiplier = 0;
+    private float feedRateEMultiplier = 0;
+    private float feedRateDMultiplier = 0;
     private WhyAreWeWaitingState whyAreWeWaitingState = WhyAreWeWaitingState.NOT_WAITING;
     private boolean headPowerOn = false;
 
@@ -573,9 +574,18 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getFeedRateMultiplier()
+    public float getFeedRateEMultiplier()
     {
-        return feedRateMultiplier;
+        return feedRateEMultiplier;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getFeedRateDMultiplier()
+    {
+        return feedRateDMultiplier;
     }
 
     /**
@@ -857,14 +867,24 @@ public class StatusResponse extends RoboxRxPacket
         this.EFilamentDiameter = filamentDiameter;
     }
 
-    public void setFilamentMultiplier(float filamentMultiplier)
+    public void setFilamentEMultiplier(float filamentMultiplier)
     {
         this.EFilamentMultiplier = filamentMultiplier;
     }
 
-    public void setFeedRateMultiplier(float feedRateMultiplier)
+    public void setFilamentDMultiplier(float filamentMultiplier)
     {
-        this.feedRateMultiplier = feedRateMultiplier;
+        this.DFilamentMultiplier = filamentMultiplier;
+    }
+
+    public void setFeedRateEMultiplier(float feedRateMultiplier)
+    {
+        this.feedRateEMultiplier = feedRateMultiplier;
+    }
+
+    public void setFeedRateDMultiplier(float feedRateMultiplier)
+    {
+        this.feedRateDMultiplier = feedRateMultiplier;
     }
 
     public void setWhyAreWeWaitingState(WhyAreWeWaitingState whyAreWeWaitingState)
@@ -1262,17 +1282,30 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse filament multiplier - " + DfilamentMultiplierString);
             }
 
-            String feedRateMultiplierString = new String(byteData, byteOffset,
+            String feedRateEMultiplierString = new String(byteData, byteOffset,
                     decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.feedRateMultiplier = decimalFloatFormatter.parse(feedRateMultiplierString).
+                this.feedRateEMultiplier = decimalFloatFormatter.parse(feedRateEMultiplierString).
                         floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse feed rate multiplier - " + feedRateMultiplierString);
+                steno.error("Couldn't parse feed rate multiplier - " + feedRateEMultiplierString);
             }
+
+            //Awaiting report of D feedrate multiplier
+//            String feedRateDMultiplierString = new String(byteData, byteOffset,
+//                    decimalFloatFormatBytes, charsetToUse);
+//            byteOffset += decimalFloatFormatBytes;
+//            try
+//            {
+//                this.feedRateDMultiplier = decimalFloatFormatter.parse(feedRateDMultiplierString).
+//                        floatValue();
+//            } catch (ParseException ex)
+//            {
+//                steno.error("Couldn't parse feed rate multiplier - " + feedRateDMultiplierString);
+//            }
 
             if (requiredFirmwareVersion >= 724)
             {
@@ -1397,7 +1430,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("D Filament multiplier: " + DFilamentMultiplier);
         outputString.append("\n");
-        outputString.append("Feed rate multiplier: " + feedRateMultiplier);
+        outputString.append("E Feed rate multiplier: " + feedRateEMultiplier);
+        outputString.append("\n");
+        outputString.append("D Feed rate multiplier: " + feedRateDMultiplier);
         outputString.append("\n");
         outputString.append("Head power on: " + headPowerOn);
         outputString.append("\n");
@@ -1415,8 +1450,7 @@ public class StatusResponse extends RoboxRxPacket
         } else if (requiredFirmwareVersion >= 701)
         {
             return 212;
-        }
-        else
+        } else
         {
             return 211;
         }

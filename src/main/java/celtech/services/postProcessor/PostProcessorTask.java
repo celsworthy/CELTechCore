@@ -132,6 +132,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             }
 
             PostProcessor postProcessor = new PostProcessor(
+                    printer,
                     gcodeFileToProcess,
                     gcodeOutputFile,
                     headFileToUse,

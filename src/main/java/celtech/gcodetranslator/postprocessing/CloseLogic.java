@@ -773,6 +773,7 @@ public class CloseLogic
             travelToStart.getMovement().setX(firstMovement.getX());
             travelToStart.getMovement().setY(firstMovement.getY());
             travelToStart.appendCommentText("Travel to start of close");
+            travelToStart.getFeedrate().setFeedRate_mmPerMin(12000);
 
             if (inScopeEventDelta == 1 && nodeToStartCopyingFromIndex < extractedMovements.getInScopeEvents().size() - 1)
             {

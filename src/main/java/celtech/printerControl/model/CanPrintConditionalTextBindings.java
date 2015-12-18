@@ -5,6 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
 import libertysystems.stenographer.Stenographer;
@@ -49,7 +50,7 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                Set<Integer> usedExtruders = project.getUsedExtruders();
+                Set<Integer> usedExtruders = project.getUsedExtruders(printer);
                 return usedExtruders.contains(0);
             }
         };
@@ -74,7 +75,7 @@ public class CanPrintConditionalTextBindings
             @Override
             protected boolean computeValue()
             {
-                Set<Integer> usedExtruders = project.getUsedExtruders();
+                Set<Integer> usedExtruders = project.getUsedExtruders(printer);
                 return usedExtruders.contains(1);
             }
         };

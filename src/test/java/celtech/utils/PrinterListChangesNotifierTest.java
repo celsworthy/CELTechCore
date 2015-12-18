@@ -3,6 +3,7 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.TestPrinter;
 import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;

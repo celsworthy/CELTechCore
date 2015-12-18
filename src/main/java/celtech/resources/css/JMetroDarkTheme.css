@@ -2726,7 +2726,7 @@ color-picker-label .text-field {
 * Layout
 */
 
-#preserveAspectRatio {
+/*#preserveAspectRatio {
     -fx-background-color: light_grey;
     -fx-background-insets: 0 0 0 0;
 }
@@ -2739,7 +2739,7 @@ color-picker-label .text-field {
 #preserveAspectRatio:selected:focused {
     -fx-background-color: light_grey;
     -fx-background-insets: 0 0 0 0;
-}
+}*/
 
 #modelTable {
     -fx-pref-width: 260;

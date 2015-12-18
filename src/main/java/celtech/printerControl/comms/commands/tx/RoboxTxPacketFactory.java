@@ -111,14 +111,14 @@ public class RoboxTxPacketFactory
                 case SET_REEL_LED_COLOUR:
                     returnVal = new SetReelLEDColour();
                     break;
-                case CONTROL_REEL_LED:
-                    returnVal = new ControlReelLED();
-                    break;
                 case SET_TEMPERATURES:
                     returnVal = new SetTemperatures();
                     break;
-                case SET_FEED_RATE_MULTIPLIER:
-                    returnVal = new SetFeedRateMultiplier();
+                case SET_E_FEED_RATE_MULTIPLIER:
+                    returnVal = new SetEFeedRateMultiplier();
+                    break;
+                case SET_D_FEED_RATE_MULTIPLIER:
+                    returnVal = new SetDFeedRateMultiplier();
                     break;
                 case SET_E_FILAMENT_INFO:
                     returnVal = new SetEFilamentInfo();

@@ -17,25 +17,41 @@ import javafx.scene.layout.VBox;
  */
 public class ProgressDisplay extends VBox
 {
-    
+
     private Printer printerInUse = null;
     private PrintStatusBar stateDisplayBar;
     private BedHeaterStatusBar bedTemperatureDisplayBar;
     private NozzleHeaterStatusBar nozzle1TemperatureDisplayBar;
     private NozzleHeaterStatusBar nozzle2TemperatureDisplayBar;
     private PrintPreparationStatusBar printPreparationDisplayBar;
-    
-    private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> ov, Head t, Head t1) ->
+
+    private final ChangeListener<Boolean> headDataChangedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
-        createNozzleHeaterBars(t1);
+        createNozzleHeaterBars(printerInUse.headProperty().get());
     };
-    
+
+    private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> ov, Head oldHead, Head newHead) ->
+    {
+        if (oldHead != null)
+        {
+            oldHead.dataChangedProperty().removeListener(headDataChangedListener);
+        }
+
+        if (newHead != null)
+        {
+            newHead.dataChangedProperty().removeListener(headDataChangedListener);
+            newHead.dataChangedProperty().addListener(headDataChangedListener);
+        }
+
+        createNozzleHeaterBars(newHead);
+    };
+
     public ProgressDisplay()
     {
         setFillWidth(true);
         setPickOnBounds(false);
 //        setMouseTransparent(true);
-        
+
         Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer oldSelection, Printer newSelection) ->
         {
             unbindFromPrinter();
@@ -45,7 +61,7 @@ public class ProgressDisplay extends VBox
             }
         });
     }
-    
+
     private void bindToPrinter(Printer printer)
     {
         if (this.printerInUse != null)
@@ -56,18 +72,35 @@ public class ProgressDisplay extends VBox
         stateDisplayBar = new PrintStatusBar(printer);
         printPreparationDisplayBar = new PrintPreparationStatusBar(printer);
         bedTemperatureDisplayBar = new BedHeaterStatusBar(printer.getPrinterAncillarySystems());
-        
+
         printer.headProperty().addListener(headListener);
         if (printer.headProperty().get() != null)
         {
+            printerInUse.headProperty().get().dataChangedProperty().addListener(headDataChangedListener);
             createNozzleHeaterBars(printer.headProperty().get());
         }
-        
+
         getChildren().addAll(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
     }
-    
+
+    private void destroyNozzleHeaterBars()
+    {
+        if (nozzle1TemperatureDisplayBar != null)
+        {
+            nozzle1TemperatureDisplayBar.unbindAll();
+            nozzle1TemperatureDisplayBar = null;
+        }
+
+        if (nozzle2TemperatureDisplayBar != null)
+        {
+            nozzle2TemperatureDisplayBar.unbindAll();
+            nozzle2TemperatureDisplayBar = null;
+        }
+    }
+
     private void createNozzleHeaterBars(Head head)
     {
+        destroyNozzleHeaterBars();
         if (head != null
                 && head.getNozzleHeaters().size() > 0)
         {
@@ -82,23 +115,25 @@ public class ProgressDisplay extends VBox
             getChildren().add(0, nozzle2TemperatureDisplayBar);
         }
     }
-    
+
     private void unbindFromPrinter()
     {
         if (printerInUse != null)
         {
+            printerInUse.headProperty().get().dataChangedProperty().removeListener(headDataChangedListener);
             printerInUse.headProperty().removeListener(headListener);
-            
+
+            destroyNozzleHeaterBars();
             stateDisplayBar.unbindAll();
             printPreparationDisplayBar.unbindAll();
             bedTemperatureDisplayBar.unbindAll();
-            
+
             if (nozzle1TemperatureDisplayBar != null)
             {
                 nozzle1TemperatureDisplayBar.unbindAll();
                 nozzle1TemperatureDisplayBar = null;
             }
-            
+
             if (nozzle2TemperatureDisplayBar != null)
             {
                 nozzle2TemperatureDisplayBar.unbindAll();

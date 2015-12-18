@@ -8,6 +8,7 @@ import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
@@ -89,34 +90,60 @@ public class NozzleAssignmentUtilities
         }
     }
 
-    protected void assignExtrusionToCorrectExtruder(LayerNode layerNode)
+    public class ExtrusionAssignmentResult
     {
-        // Don't change anything if we're in task-based selection as this always uses extruder E
-        if (postProcessingMode != PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
+
+        private final double eVolume;
+        private final double dVolume;
+
+        public ExtrusionAssignmentResult(double eVolume, double dVolume)
         {
-            //Tool select nodes live directly under layers
+            this.eVolume = eVolume;
+            this.dVolume = dVolume;
+        }
 
-            Iterator<GCodeEventNode> layerIterator = layerNode.childIterator();
+        public double getEVolume()
+        {
+            return eVolume;
+        }
 
-            while (layerIterator.hasNext())
+        public double getDVolume()
+        {
+            return dVolume;
+        }
+    }
+
+    protected ExtrusionAssignmentResult assignExtrusionToCorrectExtruder(LayerNode layerNode)
+    {
+        ExtrusionAssignmentResult returnValue = null;
+        double eUsed = 0;
+        double dUsed = 0;
+
+        //Tool select nodes live directly under layers
+        Iterator<GCodeEventNode> layerIterator = layerNode.childIterator();
+
+        while (layerIterator.hasNext())
+        {
+            GCodeEventNode potentialToolSelectNode = layerIterator.next();
+
+            if (potentialToolSelectNode instanceof ToolSelectNode)
             {
-                GCodeEventNode potentialToolSelectNode = layerIterator.next();
+                ToolSelectNode toolSelectNode = (ToolSelectNode) potentialToolSelectNode;
 
-                if (potentialToolSelectNode instanceof ToolSelectNode)
+                Iterator<GCodeEventNode> toolSelectNodeIterator = toolSelectNode.treeSpanningIterator(
+                        null);
+
+                while (toolSelectNodeIterator.hasNext())
                 {
-                    ToolSelectNode toolSelectNode = (ToolSelectNode) potentialToolSelectNode;
+                    GCodeEventNode potentialExtrusionProvider = toolSelectNodeIterator.next();
 
-                    Iterator<GCodeEventNode> toolSelectNodeIterator = toolSelectNode.treeSpanningIterator(
-                            null);
-
-                    while (toolSelectNodeIterator.hasNext())
+                    if (potentialExtrusionProvider instanceof ExtrusionProvider)
                     {
-                        GCodeEventNode potentialExtrusionProvider = toolSelectNodeIterator.next();
+                        ExtrusionProvider extrusionNode = (ExtrusionProvider) potentialExtrusionProvider;
 
-                        if (potentialExtrusionProvider instanceof ExtrusionProvider)
+                        // Don't change anything if we're in task-based selection as this always uses extruder E
+                        if (postProcessingMode != PostProcessingMode.TASK_BASED_NOZZLE_SELECTION)
                         {
-                            ExtrusionProvider extrusionNode = (ExtrusionProvider) potentialExtrusionProvider;
-
                             switch (toolSelectNode.getToolNumber())
                             {
                                 case 1:
@@ -127,16 +154,32 @@ public class NozzleAssignmentUtilities
                                     break;
                             }
                         }
+
+                        eUsed += (extrusionNode.getExtrusion().isEInUse()) ? extrusionNode.getExtrusion().getE() : 0;
+                        dUsed += (extrusionNode.getExtrusion().isDInUse()) ? extrusionNode.getExtrusion().getD() : 0;
                     }
                 }
             }
         }
+
+        return new ExtrusionAssignmentResult(eUsed, dUsed);
     }
 
     protected int insertNozzleControlSectionsByObject(LayerNode layerNode,
             LayerPostProcessResult lastLayerResult)
     {
         List<GCodeEventNode> nodesToRemove = new ArrayList<>();
+
+        int lastObjectReferenceNumber = -1;
+
+        if (lastLayerResult != null)
+        {
+            Optional<Integer> potentialLastObjNum = lastLayerResult.getLastObjectNumber();
+            if (potentialLastObjNum.isPresent())
+            {
+                lastObjectReferenceNumber = potentialLastObjNum.get();
+            }
+        }
 
         Iterator<GCodeEventNode> layerChildIterator = layerNode.childIterator();
         List<ObjectDelineationNode> objectNodes = new ArrayList<>();
@@ -160,6 +203,14 @@ public class NozzleAssignmentUtilities
         for (ObjectDelineationNode objectNode : objectNodes)
         {
             objectReferenceNumber = objectNode.getObjectNumber();
+            if (lastObjectReferenceNumber != -1
+                    && lastObjectReferenceNumber != objectReferenceNumber
+                    && lastSectionNode != null)
+            {
+                lastSectionNode.addChildAtEnd(new RetractNode());
+            }
+
+            lastObjectReferenceNumber = objectReferenceNumber;
 
             //Object numbers correspond to extruder numbers
             ObjectDelineationNode objectNodeBeingExamined = (ObjectDelineationNode) objectNode;
@@ -220,8 +271,14 @@ public class NozzleAssignmentUtilities
 
                         try
                         {
-                            SectionNode replacementSection = lastSectionNode.getClass().newInstance();
-
+                            SectionNode replacementSection = null;
+                            if (lastSectionNode == null)
+                            {
+                                replacementSection = new SkirtSectionNode();
+                            } else
+                            {
+                                replacementSection = lastSectionNode.getClass().newInstance();
+                            }
                             List<GCodeEventNode> sectionChildren = new ArrayList<>();
                             Iterator<GCodeEventNode> sectionChildrenIterator = sectionUnderConsideration.childIterator();
 

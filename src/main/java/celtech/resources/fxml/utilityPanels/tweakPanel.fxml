@@ -16,11 +16,11 @@
                   <Insets left="26.0" />
                </VBox.margin>
                <children>
-                      <Label styleClass="regularText" text="%printAdjustments.printSpeed" textAlignment="RIGHT" />
-                  <Label fx:id="printSpeedDisplay" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
+                      <Label styleClass="regularText" text="%printAdjustments.printSpeed1" textAlignment="RIGHT" />
+                  <Label fx:id="printSpeed1Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-                <Slider fx:id="speedMultiplierSlider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" snapToTicks="true" value="100.0">
+                <Slider fx:id="speedMultiplier1Slider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" snapToTicks="true" value="100.0">
                     <padding>
                         <Insets left="20.0" right="20.0" />
                     </padding>
@@ -29,6 +29,24 @@
          <VBox.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </VBox.margin>
+      </VBox>
+      <VBox fx:id="printSpeed2Box" layoutX="15.0" layoutY="15.0" maxHeight="0.0" minHeight="0.0" opacity="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="5.0">
+               <VBox.margin>
+                  <Insets left="26.0" />
+               </VBox.margin>
+               <children>
+                  <Label styleClass="regularText" text="%printAdjustments.printSpeed2" textAlignment="RIGHT" />
+                  <Label fx:id="printSpeed2Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
+               </children>
+            </HBox>
+            <Slider fx:id="speedMultiplier2Slider" blockIncrement="5.0" majorTickUnit="45.0" max="220.0" min="10.0" minorTickCount="9" showTickLabels="true" snapToTicks="true" value="100.0">
+               <padding>
+                  <Insets left="20.0" right="20.0" />
+               </padding>
+            </Slider>
+         </children>
       </VBox>
       <VBox fx:id="extrusionMultiplier1Box">
          <children>
@@ -80,7 +98,7 @@
                   <Label fx:id="nozzle1Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="nozzleTemperature1Slider" blockIncrement="5.0" majorTickUnit="20.0" max="300.0" min="180.0" showTickLabels="true" snapToTicks="true" value="180.0">
+            <Slider fx:id="nozzleTemperature1Slider" blockIncrement="5.0" majorTickUnit="5.0" max="250.0" min="220.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" value="230.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -98,7 +116,7 @@
                   <Label fx:id="nozzle2Display" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="nozzleTemperature2Slider" blockIncrement="5.0" majorTickUnit="20.0" max="300.0" min="180.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" value="180.0">
+            <Slider fx:id="nozzleTemperature2Slider" blockIncrement="5.0" majorTickUnit="5.0" max="250.0" min="220.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" value="230.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -116,7 +134,7 @@
                   <Label fx:id="bedDisplay" layoutX="10.0" layoutY="10.0" textAlignment="RIGHT" />
                </children>
             </HBox>
-            <Slider fx:id="bedTemperatureSlider" blockIncrement="5.0" majorTickUnit="50.0" max="170.0" min="60.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" value="80.0">
+            <Slider fx:id="bedTemperatureSlider" blockIncrement="5.0" majorTickUnit="15.0" max="170.0" min="60.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" value="80.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>

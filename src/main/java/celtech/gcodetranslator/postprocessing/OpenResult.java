@@ -11,16 +11,19 @@ public class OpenResult
     private double outstandingDReplenish;
     private final boolean nozzleOpen;
     private final int lastToolNumber;
+    private final int opensInLastTool;
 
     public OpenResult(double outstandingEReplenish,
             double outstandingDReplenish,
             boolean nozzleOpen,
-            int lastToolNumber)
+            int lastToolNumber,
+            int opensInLastTool)
     {
         this.outstandingEReplenish = outstandingEReplenish;
         this.outstandingDReplenish = outstandingDReplenish;
         this.nozzleOpen = nozzleOpen;
         this.lastToolNumber = lastToolNumber;
+        this.opensInLastTool = opensInLastTool;
     }
 
     public double getOutstandingDReplenish()
@@ -53,4 +56,8 @@ public class OpenResult
         return lastToolNumber;
     }
 
+    public int getOpensInLastTool()
+    {
+        return opensInLastTool;
+    }
 }

@@ -98,7 +98,7 @@ public interface Printer extends RoboxResponseConsumer
      */
     public ReadOnlyBooleanProperty canPurgeHeadProperty();
 
-    public void resetPurgeTemperature();
+    public void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber);
 
     public PurgeStateTransitionManager startPurge() throws PrinterException;
 
@@ -457,7 +457,9 @@ public interface Printer extends RoboxResponseConsumer
 
     public void inhibitHeadIntegrityChecks(boolean inhibit);
 
-    public void changeFeedRateMultiplier(double feedRate) throws PrinterException;
+    public void changeEFeedRateMultiplier(double feedRate) throws PrinterException;
+    
+    public void changeDFeedRateMultiplier(double feedRate) throws PrinterException;
 
     public void changeFilamentInfo(String extruderLetter,
             double filamentDiameter,

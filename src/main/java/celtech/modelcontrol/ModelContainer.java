@@ -911,7 +911,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             {
                 addSelectionHighlighter();
             }
-            selectionHighlighter.cameraDistanceChange(cameraDistance);
             showSelectionHighlighter();
         } else
         {
@@ -1775,7 +1774,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void addSelectionHighlighter()
     {
-        selectionHighlighter = new SelectionHighlighter(this);
+        selectionHighlighter = new SelectionHighlighter(this, cameraDistance);
         getChildren().add(selectionHighlighter);
         notifyShapeChange();
         notifyScreenExtentsChange();

@@ -13,6 +13,34 @@ public enum TxPacketTypeEnum
      *
      *//**
      *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
+     *//**
+     *
      */
     STATUS_REQUEST((byte) 0xB0, 1, false, RxPacketTypeEnum.STATUS_RESPONSE),
 
@@ -144,17 +172,17 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    CONTROL_REEL_LED((byte) 0xc4, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
-
-    /**
-     *
-     */
     SET_TEMPERATURES((byte) 0xc3, 57, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *
      */
-    SET_FEED_RATE_MULTIPLIER((byte) 0xc4, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_E_FEED_RATE_MULTIPLIER((byte) 0xc4, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    SET_D_FEED_RATE_MULTIPLIER((byte) 0xc7, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

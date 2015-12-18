@@ -88,6 +88,14 @@ public class OutputUtilities
             writer.newLine();
 
             MCodeNode bedTemp = new MCodeNode(140);
+            if (useNozzle0)
+            {
+                bedTemp.setSOnly(true);
+            }
+            else
+            {
+                bedTemp.setTOnly(true);
+            }
             bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
             writer.writeOutput(bedTemp.renderForOutput());
             writer.newLine();
@@ -109,7 +117,7 @@ public class OutputUtilities
             {
                 throw new RuntimeException("Error outputting post processed data at node " + layerNode.renderForOutput(), ex);
             }
-            
+
             Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
             while (layerIterator.hasNext())

@@ -8,6 +8,7 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.SlicerType;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
@@ -153,8 +154,8 @@ public class GetTimeWeightCost
         double eVolumeUsed = printJobStatistics.geteVolumeUsed();
         double dVolumeUsed = printJobStatistics.getdVolumeUsed();
 
-        Filament filament0 = null;
-        Filament filament1 = null;
+        Filament filament0 = FilamentContainer.UNKNOWN_FILAMENT;
+        Filament filament1 = FilamentContainer.UNKNOWN_FILAMENT;
 
         if (printer != null)
         {
@@ -167,8 +168,8 @@ public class GetTimeWeightCost
         double weight = 0;
         double costGBP = 0;
 
-        if (filament0 == null
-                && filament1 == null)
+        if (filament0 == FilamentContainer.UNKNOWN_FILAMENT
+                && filament1 == FilamentContainer.UNKNOWN_FILAMENT)
         {
             // If there is no filament loaded...
             String noFilament = Lookup.i18n("timeCost.noFilament");
@@ -176,13 +177,13 @@ public class GetTimeWeightCost
             lblCost.setText(noFilament);
         } else
         {
-            if (filament0 != null)
+            if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
             {
                 weight += filament0.getWeightForVolume(eVolumeUsed * 1e-9);
                 costGBP += filament0.getCostForVolume(eVolumeUsed * 1e-9);
             }
 
-            if (filament1 != null)
+            if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
             {
                 weight += filament1.getWeightForVolume(dVolumeUsed * 1e-9);
                 costGBP += filament1.getCostForVolume(dVolumeUsed * 1e-9);
