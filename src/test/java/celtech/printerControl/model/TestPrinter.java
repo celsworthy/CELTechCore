@@ -11,7 +11,6 @@ import celtech.configuration.MaterialType;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
@@ -34,7 +33,6 @@ import celtech.utils.AxisSpecifier;
 import celtech.utils.TestHead;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
-import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -166,12 +164,6 @@ public class TestPrinter implements Printer
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
             String friendlyName,
             MaterialType materialType, Color displayColour) throws RoboxCommsException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void changeFeedRateMultiplier(double feedRate) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -803,12 +795,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void resetPurgeTemperature()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public boolean doFilamentSlipActionWhilePrinting(FirmwareError error)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1099,6 +1085,18 @@ public class TestPrinter implements Printer
 
     @Override
     public void resetPurgeTemperatureForNozzleHeater(Head headToWrite, int nozzleHeaterNumber)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void changeEFeedRateMultiplier(double feedRate) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void changeDFeedRateMultiplier(double feedRate) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

@@ -36,7 +36,8 @@ public class PrinterAncillarySystems
     protected final BooleanProperty bAxisHome = new SimpleBooleanProperty(false);
     protected final BooleanProperty doorOpen = new SimpleBooleanProperty(false);
     protected final BooleanProperty dualReelAdaptorPresent = new SimpleBooleanProperty(false);
-    protected final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty feedRateEMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty feedRateDMultiplier = new SimpleFloatProperty(0);
     protected final FloatProperty hoursCounter = new SimpleFloatProperty(0);
     protected final BooleanProperty sdCardInserted = new SimpleBooleanProperty(false);
 
@@ -125,9 +126,14 @@ public class PrinterAncillarySystems
         return dualReelAdaptorPresent;
     }
       
-    public ReadOnlyFloatProperty feedRateMultiplierProperty()
+    public ReadOnlyFloatProperty feedRateEMultiplierProperty()
     {
-        return feedRateMultiplier;
+        return feedRateEMultiplier;
+    }
+    
+    public ReadOnlyFloatProperty feedRateDMultiplierProperty()
+    {
+        return feedRateDMultiplier;
     }
     
     public ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty()

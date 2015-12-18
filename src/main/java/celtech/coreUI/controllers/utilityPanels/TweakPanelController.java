@@ -3,6 +3,7 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.configuration.HeaterMode;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.controllers.StatusInsetController;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
@@ -48,10 +49,16 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private VBox container;
 
     @FXML
-    private Label printSpeedDisplay;
+    private Label printSpeed1Display;
 
     @FXML
-    private Slider speedMultiplierSlider;
+    private Label printSpeed2Display;
+
+    @FXML
+    private Slider speedMultiplier1Slider;
+
+    @FXML
+    private Slider speedMultiplier2Slider;
 
     @FXML
     private VBox extrusionMultiplier1Box;
@@ -122,29 +129,55 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private PrintJob currentPrintJob = null;
     private PrintJobStatistics currentPrintJobStatistics = null;
 
-    private boolean inhibitFeedrate = false;
-    private final ChangeListener<Number> feedRateChangeListener
+    private boolean inhibitFeedrate1 = false;
+    private final ChangeListener<Number> feedRate1ChangeListener
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                inhibitFeedrate = true;
-                speedMultiplierSlider.setValue(newValue.doubleValue() * 100.0);
-                printSpeedDisplay.setText(String.format("%d%%", (int) (newValue.doubleValue() * 100.0)));
-                inhibitFeedrate = false;
+                inhibitFeedrate1 = true;
+                speedMultiplier1Slider.setValue(newValue.doubleValue() * 100.0);
+                printSpeed1Display.setText(String.format("%d%%", (int) (newValue.doubleValue() * 100.0)));
+                inhibitFeedrate1 = false;
             };
 
-    private final ChangeListener<Number> speedMultiplierSliderListener
+    private boolean inhibitFeedrate2 = false;
+    private final ChangeListener<Number> feedRate2ChangeListener
+            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                inhibitFeedrate2 = true;
+                speedMultiplier2Slider.setValue(newValue.doubleValue() * 100.0);
+                printSpeed2Display.setText(String.format("%d%%", (int) (newValue.doubleValue() * 100.0)));
+                inhibitFeedrate2 = false;
+            };
+
+    private final ChangeListener<Number> speedMultiplier1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!speedMultiplierSlider.isValueChanging() && !inhibitFeedrate)
+                if (!speedMultiplier1Slider.isValueChanging() && !inhibitFeedrate1)
                 {
                     try
                     {
                         steno.info("Writing feedrate");
-                        currentPrinter.changeFeedRateMultiplier(now.doubleValue() / 100.0);
+                        currentPrinter.changeEFeedRateMultiplier(now.doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
                         steno.error("Error setting feed rate multiplier - " + ex.getMessage());
                     }
+                }
+            };
+
+    private final ChangeListener<Number> speedMultiplier2SliderListener
+            = (ObservableValue<? extends Number> observable, Number was, Number now) ->
+            {
+                if (!speedMultiplier2Slider.isValueChanging() && !inhibitFeedrate2)
+                {
+//                    try
+//                    {
+//                        steno.info("Writing feedrate D");
+//                        currentPrinter.changeDFeedRateMultiplier(now.doubleValue() / 100.0);
+//                    } catch (PrinterException ex)
+//                    {
+//                        steno.error("Error setting feed rate multiplier - " + ex.getMessage());
+//                    }
                 }
             };
 
@@ -351,14 +384,19 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         }
 
         container.setVisible(true);
-        printSpeedDisplay.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().
-                feedRateMultiplierProperty().get() * 100.0)));
-        speedMultiplierSlider.setValue(currentPrinter.getPrinterAncillarySystems().
-                feedRateMultiplierProperty().get() * 100.0);
-        speedMultiplierSlider.valueProperty().addListener(speedMultiplierSliderListener);
+        printSpeed1Display.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().get() * 100.0)));
+        speedMultiplier1Slider.setValue(currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().get() * 100.0);
+        speedMultiplier1Slider.valueProperty().addListener(speedMultiplier1SliderListener);
 
-        currentPrinter.getPrinterAncillarySystems().feedRateMultiplierProperty().addListener(
-                feedRateChangeListener);
+        printSpeed2Display.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().get() * 100.0)));
+        speedMultiplier2Slider.setValue(currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().get() * 100.0);
+        speedMultiplier2Slider.valueProperty().addListener(speedMultiplier2SliderListener);
+
+        currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().addListener(
+                feedRate1ChangeListener);
+
+        currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().addListener(
+                feedRate2ChangeListener);
 
         if (currentPrinter.getPrinterAncillarySystems().bedHeaterModeProperty().get() == HeaterMode.FIRST_LAYER)
         {
@@ -410,13 +448,18 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentChangeListener);
 
         container.setVisible(false);
-        speedMultiplierSlider.valueProperty().removeListener(speedMultiplierSliderListener);
+        
+        speedMultiplier1Slider.valueProperty().removeListener(speedMultiplier1SliderListener);
+        speedMultiplier2Slider.valueProperty().removeListener(speedMultiplier2SliderListener);
         bedTemperatureSlider.valueProperty().removeListener(bedTempSliderListener);
         extrusionMultiplier1Slider.valueProperty().removeListener(extrusionMultiplier1SliderListener);
         extrusionMultiplier2Slider.valueProperty().removeListener(extrusionMultiplier2SliderListener);
 
-        currentPrinter.getPrinterAncillarySystems().feedRateMultiplierProperty().removeListener(
-                feedRateChangeListener);
+        currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().removeListener(
+                feedRate1ChangeListener);
+        currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().removeListener(
+                feedRate2ChangeListener);
+        
         currentPrinter.getPrinterAncillarySystems().bedTargetTemperatureProperty().removeListener(
                 bedTargetTemperatureChangeListener);
         if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get())
@@ -567,11 +610,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         {
             int filamentNumber = filamentEntry.getKey();
             Filament filament = filamentEntry.getValue();
-            if (filamentNumber == 0)
+            if (filamentNumber == 0 && filament != FilamentContainer.UNKNOWN_FILAMENT)
             {
                 nozzleTemperature1Slider.setMax(filament.getNozzleTemperature() + tempSliderTolerance);
                 nozzleTemperature1Slider.setMin(filament.getNozzleTemperature() - tempSliderTolerance);
-            } else if (filamentNumber == 1)
+            } else if (filamentNumber == 1 && filament != FilamentContainer.UNKNOWN_FILAMENT)
             {
                 nozzleTemperature2Slider.setMax(filament.getNozzleTemperature() + tempSliderTolerance);
                 nozzleTemperature2Slider.setMin(filament.getNozzleTemperature() - tempSliderTolerance);

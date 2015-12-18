@@ -236,7 +236,7 @@ public class PostProcessor
                                 && parseResultCycle2.getLayerData() != null)
                         {
                             timeUtils.timerStart(this, assignExtrusionTimerName);
-                            nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
+                            NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult = nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                             timeUtils.timerStop(this, assignExtrusionTimerName);
 
                             //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
@@ -262,8 +262,8 @@ public class PostProcessor
                                 outputUtilities.outputTemperatureCommands(writer, nozzle0Required, nozzle1Required);
                             }
 
-                            finalEVolume += parseResultCycle2.getEVolume();
-                            finalDVolume += parseResultCycle2.getDVolume();
+                            finalEVolume += assignmentResult.getEVolume();
+                            finalDVolume += assignmentResult.getDVolume();
                             timeForPrint_secs += parseResultCycle2.getTimeForLayer();
                         }
                         parseResultCycle2 = parseResultCycle1;
@@ -300,7 +300,7 @@ public class PostProcessor
                     && parseResultCycle2.getLayerData() != null)
             {
                 timeUtils.timerStart(this, assignExtrusionTimerName);
-                nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
+                NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult = nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle2.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
                 //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
@@ -321,8 +321,8 @@ public class PostProcessor
                 postProcessorUtilityMethods.updateLayerToLineNumber(parseResultCycle2, layerNumberToLineNumber, writer);
                 predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle2, layerNumberToPredictedDuration, writer);
 
-                finalEVolume += parseResultCycle2.getEVolume();
-                finalDVolume += parseResultCycle2.getDVolume();
+                finalEVolume += assignmentResult.getEVolume();
+                finalDVolume += assignmentResult.getDVolume();
                 timeForPrint_secs += parseResultCycle2.getTimeForLayer();
             }
 
@@ -330,7 +330,7 @@ public class PostProcessor
                     && parseResultCycle1.getLayerData() != null)
             {
                 timeUtils.timerStart(this, assignExtrusionTimerName);
-                nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
+                NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult =nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResultCycle1.getLayerData());
                 timeUtils.timerStop(this, assignExtrusionTimerName);
 
                 //Now output the layer before the LAST layer - it was held until now in case it needed to be modified before output
@@ -351,14 +351,14 @@ public class PostProcessor
                 postProcessorUtilityMethods.updateLayerToLineNumber(parseResultCycle1, layerNumberToLineNumber, writer);
                 predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle1, layerNumberToPredictedDuration, writer);
 
-                finalEVolume += parseResultCycle1.getEVolume();
-                finalDVolume += parseResultCycle1.getDVolume();
+                finalEVolume += assignmentResult.getEVolume();
+                finalDVolume += assignmentResult.getDVolume();
                 timeForPrint_secs += parseResultCycle1.getTimeForLayer();
             }
 
             //Now output the final result
             timeUtils.timerStart(this, assignExtrusionTimerName);
-            nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
+            NozzleAssignmentUtilities.ExtrusionAssignmentResult assignmentResult =nozzleControlUtilities.assignExtrusionToCorrectExtruder(parseResult.getLayerData());
             timeUtils.timerStop(this, assignExtrusionTimerName);
 
             //Add the opens first - we leave it until now as the layer we have just processed may have affected the one before
@@ -378,8 +378,8 @@ public class PostProcessor
             postProcessorUtilityMethods.updateLayerToLineNumber(parseResult, layerNumberToLineNumber, writer);
             predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(parseResultCycle1, layerNumberToPredictedDuration, writer);
 
-            finalEVolume += parseResult.getEVolume();
-            finalDVolume += parseResult.getDVolume();
+            finalEVolume += assignmentResult.getEVolume();
+            finalDVolume += assignmentResult.getDVolume();
             timeForPrint_secs += parseResult.getTimeForLayer();
 
             timeUtils.timerStart(this, writeOutputTimerName);

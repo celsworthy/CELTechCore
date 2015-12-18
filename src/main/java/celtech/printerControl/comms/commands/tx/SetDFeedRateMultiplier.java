@@ -6,15 +6,15 @@ import celtech.utils.FixedDecimalFloatFormat;
  *
  * @author ianhudson
  */
-public class SetFeedRateMultiplier extends RoboxTxPacket
+public class SetDFeedRateMultiplier extends RoboxTxPacket
 {
 
     /**
      *
      */
-    public SetFeedRateMultiplier()
+    public SetDFeedRateMultiplier()
     {
-        super(TxPacketTypeEnum.SET_FEED_RATE_MULTIPLIER, false, false);
+        super(TxPacketTypeEnum.SET_D_FEED_RATE_MULTIPLIER, false, false);
     }
 
     /**
