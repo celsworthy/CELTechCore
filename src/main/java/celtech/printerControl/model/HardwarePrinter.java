@@ -53,6 +53,7 @@ import celtech.printerControl.comms.commands.tx.ReportErrors;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
+import celtech.printerControl.comms.commands.tx.SetDFeedRateMultiplier;
 import celtech.printerControl.comms.commands.tx.SetDFilamentInfo;
 import celtech.printerControl.comms.commands.tx.SetEFilamentInfo;
 import celtech.printerControl.comms.commands.tx.SetEFeedRateMultiplier;
@@ -4009,7 +4010,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         try
         {
-            SetEFeedRateMultiplier setFeedRateMultiplier = (SetEFeedRateMultiplier) RoboxTxPacketFactory.
+            SetDFeedRateMultiplier setFeedRateMultiplier = (SetDFeedRateMultiplier) RoboxTxPacketFactory.
                     createPacket(TxPacketTypeEnum.SET_D_FEED_RATE_MULTIPLIER);
             setFeedRateMultiplier.setFeedRateMultiplier(feedRate);
             commandInterface.writeToPrinter(setFeedRateMultiplier);

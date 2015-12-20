@@ -45,6 +45,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javafx.animation.AnimationTimer;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -81,6 +85,7 @@ import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Transform;
+import javafx.util.Duration;
 import javax.vecmath.Vector3f;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -301,6 +306,17 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
 
     }
+    
+    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle) {
+        final Timeline timeline = new Timeline();
+        timeline.getKeyFrames().addAll(new KeyFrame[]{
+            new KeyFrame(Duration.millis(milliseconds), new KeyValue[]{// Frame End                
+                new KeyValue(demandedCameraRotationX, xAngle, Interpolator.EASE_BOTH),
+                new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH)
+            })
+        });
+        timeline.playFromStart(); 
+    }
 
     private void rotateCameraAroundAxes(double xangle, double yangle)
     {
@@ -324,8 +340,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             xAxisRotation = 0;
         }
         demandedCameraRotationX.set(xAxisRotation);
-        bedTranslateXform.setRotateY(yAxisRotation);
-        bedTranslateXform.setRotateX(xAxisRotation);
 
         notifyModelsOfCameraViewChange();
 //        refreshCameraPosition();
@@ -366,9 +380,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             xAxisRotation = 0;
         }
         demandedCameraRotationX.set(xAxisRotation);
-
-        bedTranslateXform.setRotateY(yAxisRotation);
-        bedTranslateXform.setRotateX(xAxisRotation);
 
         notifyModelsOfCameraViewChange();
 
@@ -876,8 +887,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
                             subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            goToPreset(CameraPositionPreset.TOP);
                             deselectAllModels();
+                            transitionCameraTo(1000, 30, 0);
+                            
 //                            startSettingsAnimation();
                             break;
                         default:
@@ -885,6 +897,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
                             subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                            notifyModelsOfCameraViewChange();
 //                            stopSettingsAnimation();
                             break;
                     }
@@ -994,6 +1007,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         bedTranslateXform.setTx(bedXOffsetFromCameraZero);
         bedTranslateXform.setTz(bedZOffsetFromCameraZero + cameraDistance.get());
         bedTranslateXform.setPivot(-bedXOffsetFromCameraZero, 0, -bedZOffsetFromCameraZero);
+        
+        bedTranslateXform.rx.angleProperty().bind(demandedCameraRotationX);
+        bedTranslateXform.ry.angleProperty().bind(demandedCameraRotationY);
         rotateCameraAroundAxes(-30, 0);
 
         subScene.widthProperty().bind(widthPropertyToFollow);

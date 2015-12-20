@@ -19,6 +19,8 @@ public class LayerPostProcessResult
     private Optional<Integer> lastObjectNumber = Optional.empty();
     private int lastFeedrateInForce = -1;
     private final ToolSelectNode lastToolSelectInForce;
+    private final ToolSelectNode lastToolSelectOfSameNumber;
+    private final double timeUsingLastTool;
     private SectionNode lastSectionNodeInForce = null;
 
     public LayerPostProcessResult(
@@ -29,6 +31,8 @@ public class LayerPostProcessResult
             int lastObjectNumber,
             SectionNode sectionNode,
             ToolSelectNode toolSelectNode,
+            ToolSelectNode lastToolSelectOfSameNumber,
+            double timeUsingLastTool,
             int lastFeedrateInForce)
     {
         this.layerData = layerData;
@@ -38,6 +42,8 @@ public class LayerPostProcessResult
         this.lastObjectNumber = Optional.of(lastObjectNumber);
         this.lastSectionNodeInForce = sectionNode;
         this.lastToolSelectInForce = toolSelectNode;
+        this.lastToolSelectOfSameNumber = lastToolSelectOfSameNumber;
+        this.timeUsingLastTool = timeUsingLastTool;
         this.lastFeedrateInForce = lastFeedrateInForce;
     }
 
@@ -94,6 +100,16 @@ public class LayerPostProcessResult
     public ToolSelectNode getLastToolSelectInForce()
     {
         return lastToolSelectInForce;
+    }
+
+    public ToolSelectNode getLastToolSelectOfSameNumber()
+    {
+        return lastToolSelectOfSameNumber;
+    }
+
+    public double getTimeUsingLastTool()
+    {
+        return timeUsingLastTool;
     }
 
     public SectionNode getLastSectionNodeInForce()
