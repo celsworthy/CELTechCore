@@ -448,7 +448,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentChangeListener);
 
         container.setVisible(false);
-        
+
         speedMultiplier1Slider.valueProperty().removeListener(speedMultiplier1SliderListener);
         speedMultiplier2Slider.valueProperty().removeListener(speedMultiplier2SliderListener);
         bedTemperatureSlider.valueProperty().removeListener(bedTempSliderListener);
@@ -459,7 +459,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 feedRate1ChangeListener);
         currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().removeListener(
                 feedRate2ChangeListener);
-        
+
         currentPrinter.getPrinterAncillarySystems().bedTargetTemperatureProperty().removeListener(
                 bedTargetTemperatureChangeListener);
         if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get())
@@ -612,12 +612,16 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             Filament filament = filamentEntry.getValue();
             if (filamentNumber == 0 && filament != FilamentContainer.UNKNOWN_FILAMENT)
             {
+                inhibitNozzleTemp1 = true;
                 nozzleTemperature1Slider.setMax(filament.getNozzleTemperature() + tempSliderTolerance);
                 nozzleTemperature1Slider.setMin(filament.getNozzleTemperature() - tempSliderTolerance);
+                inhibitNozzleTemp1 = false;
             } else if (filamentNumber == 1 && filament != FilamentContainer.UNKNOWN_FILAMENT)
             {
+                inhibitNozzleTemp2 = true;
                 nozzleTemperature2Slider.setMax(filament.getNozzleTemperature() + tempSliderTolerance);
                 nozzleTemperature2Slider.setMin(filament.getNozzleTemperature() - tempSliderTolerance);
+                inhibitNozzleTemp2 = false;
             }
         }
     }

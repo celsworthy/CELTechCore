@@ -17,6 +17,8 @@ public class MCodeNode extends GCodeEventNode implements Renderable
     private boolean tPresent = false;
     private boolean tNumberPresent = false;
     private int tNumber;
+    private boolean ePresent = false;
+    private boolean dPresent = false;
 
     public MCodeNode()
     {
@@ -123,6 +125,26 @@ public class MCodeNode extends GCodeEventNode implements Renderable
         return tPresent && tNumberPresent;
     }
 
+    public void setEOnly(boolean eOnly)
+    {
+        ePresent = eOnly;
+    }
+
+    public boolean isEPresent()
+    {
+        return ePresent;
+    }
+    
+    public void setDOnly(boolean dOnly)
+    {
+        dPresent = dOnly;
+    }
+
+    public boolean isDPresent()
+    {
+        return dPresent;
+    }
+    
     /**
      *
      * @return
@@ -151,6 +173,16 @@ public class MCodeNode extends GCodeEventNode implements Renderable
             {
                 stringToOutput.append(tNumber);
             }
+        }
+
+        if (ePresent)
+        {
+            stringToOutput.append(" E");
+        }
+
+        if (dPresent)
+        {
+            stringToOutput.append(" D");
         }
 
         stringToOutput.append(getCommentText());

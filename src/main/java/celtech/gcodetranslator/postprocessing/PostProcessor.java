@@ -188,26 +188,32 @@ public class PostProcessor
 
             writer = Lookup.getPostProcessorOutputWriterFactory().create(gcodeOutputFile);
 
-            boolean nozzle0Required = false;
-            boolean nozzle1Required = false;
+            boolean nozzle0HeatRequired = false;
+            boolean nozzle1HeatRequired = false;
+
+            boolean eRequired = false;
+            boolean dRequired = false;
 
             int defaultObjectNumber = 0;
 
             if (headFile.getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                nozzle0Required = project.getUsedExtruders(printer).contains(1)
+                nozzle0HeatRequired = project.getUsedExtruders(printer).contains(1)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
-                nozzle1Required = project.getUsedExtruders(printer).contains(0)
+                eRequired = project.getUsedExtruders(printer).contains(0);
+                nozzle1HeatRequired = project.getUsedExtruders(printer).contains(0)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
+                dRequired = project.getUsedExtruders(printer).contains(1);
             } else
             {
-                nozzle0Required = true;
-                nozzle1Required = false;
+                nozzle0HeatRequired = true;
+                nozzle1HeatRequired = false;
+                eRequired = true;
             }
 
             outputUtilities.prependPrePrintHeader(writer, headFile.getTypeCode(),
-                    nozzle0Required,
-                    nozzle1Required);
+                    nozzle0HeatRequired,
+                    nozzle1HeatRequired);
 
             StringBuilder layerBuffer = new StringBuilder();
 
@@ -260,7 +266,7 @@ public class PostProcessor
 
                             if (parseResultCycle2.getLayerData().getLayerNumber() == 0)
                             {
-                                outputUtilities.outputTemperatureCommands(writer, nozzle0Required, nozzle1Required);
+                                outputUtilities.outputTemperatureCommands(writer, nozzle0HeatRequired, nozzle1HeatRequired, eRequired, dRequired);
                             }
 
                             finalEVolume += assignmentResult.getEVolume();
@@ -386,8 +392,8 @@ public class PostProcessor
             timeUtils.timerStart(this, writeOutputTimerName);
             outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs,
                     headFile.getTypeCode(),
-                    nozzle0Required,
-                    nozzle1Required);
+                    nozzle0HeatRequired,
+                    nozzle1HeatRequired);
             timeUtils.timerStop(this, writeOutputTimerName);
 
             /**
