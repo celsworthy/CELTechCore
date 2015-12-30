@@ -16,8 +16,8 @@ import java.text.ParseException;
 public class StatusResponse extends RoboxRxPacket
 {
     /*
-     V739 firmware
-     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff q
+     V740 firmware
+     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff kkkkkkkk q
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
      p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
@@ -66,9 +66,10 @@ public class StatusResponse extends RoboxRxPacket
      gggggggg = E filament multiplier (decimal float format)
      hhhhhhhh = D filament diameter (decimal float format)
      jjjjjjjj = D filament multiplier (decimal float format)
-     ffffffff = Feed rate multiplier (decimal float format)
+     ffffffff = E feed rate multiplier (decimal float format)
+     kkkkkkkk = D feed rate multiplier (decimal float format)
      q = head power ('0'->off, '1'->on)
-     total length = 213
+     total length = 221
      */
 
     /**
@@ -1294,18 +1295,20 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse feed rate multiplier - " + feedRateEMultiplierString);
             }
 
-            //Awaiting report of D feedrate multiplier
-//            String feedRateDMultiplierString = new String(byteData, byteOffset,
-//                    decimalFloatFormatBytes, charsetToUse);
-//            byteOffset += decimalFloatFormatBytes;
-//            try
-//            {
-//                this.feedRateDMultiplier = decimalFloatFormatter.parse(feedRateDMultiplierString).
-//                        floatValue();
-//            } catch (ParseException ex)
-//            {
-//                steno.error("Couldn't parse feed rate multiplier - " + feedRateDMultiplierString);
-//            }
+            if (requiredFirmwareVersion >= 740)
+            {
+                String feedRateDMultiplierString = new String(byteData, byteOffset,
+                        decimalFloatFormatBytes, charsetToUse);
+                byteOffset += decimalFloatFormatBytes;
+                try
+                {
+                    this.feedRateDMultiplier = decimalFloatFormatter.parse(feedRateDMultiplierString).
+                            floatValue();
+                } catch (ParseException ex)
+                {
+                    steno.error("Couldn't parse D feed rate multiplier - " + feedRateDMultiplierString);
+                }
+            }
 
             if (requiredFirmwareVersion >= 724)
             {
@@ -1369,7 +1372,7 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Extruder D present: " + isExtruderDPresent());
         outputString.append("\n");
-        outputString.append("Extruder heater on: " + getNozzle0HeaterMode());
+        outputString.append("Nozzle 0 heater mode: " + getNozzle0HeaterMode());
         outputString.append("\n");
         outputString.append("Nozzle 0 first layer target temperature: "
                 + getNozzle0FirstLayerTargetTemperature());
@@ -1377,6 +1380,8 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("Nozzle 0 target temperature: " + getNozzle0TargetTemperature());
         outputString.append("\n");
         outputString.append("Nozzle 0 temperature: " + getNozzle0Temperature());
+        outputString.append("\n");
+        outputString.append("Nozzle 1 heater mode: " + getNozzle1HeaterMode());
         outputString.append("\n");
         outputString.append("Nozzle 1 first layer target temperature: "
                 + getNozzle1FirstLayerTargetTemperature());
@@ -1444,7 +1449,10 @@ public class StatusResponse extends RoboxRxPacket
     @Override
     public int packetLength(float requiredFirmwareVersion)
     {
-        if (requiredFirmwareVersion >= 724 || requiredFirmwareVersion == RoboxRxPacketFactory.USE_LATEST_FIRMWARE_VERSION)
+        if (requiredFirmwareVersion >= 740 || requiredFirmwareVersion == RoboxRxPacketFactory.USE_LATEST_FIRMWARE_VERSION)
+        {
+            return 221;
+        } else if (requiredFirmwareVersion >= 724)
         {
             return 213;
         } else if (requiredFirmwareVersion >= 701)

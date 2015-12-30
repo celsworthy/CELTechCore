@@ -91,14 +91,6 @@ public class OutputUtilities
             writer.newLine();
 
             MCodeNode bedTemp = new MCodeNode(140);
-            if (useEExtruder)
-            {
-                bedTemp.setEOnly(true);
-            }
-            else if (useDExtruder)
-            {
-                bedTemp.setDOnly(true);
-            }
             
             bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
             writer.writeOutput(bedTemp.renderForOutput());

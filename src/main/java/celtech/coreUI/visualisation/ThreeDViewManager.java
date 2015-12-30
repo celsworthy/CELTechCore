@@ -306,16 +306,19 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
 
     }
-    
-    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle) {
+
+    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle)
+    {
         final Timeline timeline = new Timeline();
-        timeline.getKeyFrames().addAll(new KeyFrame[]{
-            new KeyFrame(Duration.millis(milliseconds), new KeyValue[]{// Frame End                
+        timeline.getKeyFrames().addAll(new KeyFrame[]
+        {
+            new KeyFrame(Duration.millis(milliseconds), new KeyValue[]
+            {// Frame End                
                 new KeyValue(demandedCameraRotationX, xAngle, Interpolator.EASE_BOTH),
                 new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH)
             })
         });
-        timeline.playFromStart(); 
+        timeline.playFromStart();
     }
 
     private void rotateCameraAroundAxes(double xangle, double yangle)
@@ -889,7 +892,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             deselectAllModels();
                             transitionCameraTo(1000, 30, 0);
-                            
+
 //                            startSettingsAnimation();
                             break;
                         default:
@@ -1007,7 +1010,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         bedTranslateXform.setTx(bedXOffsetFromCameraZero);
         bedTranslateXform.setTz(bedZOffsetFromCameraZero + cameraDistance.get());
         bedTranslateXform.setPivot(-bedXOffsetFromCameraZero, 0, -bedZOffsetFromCameraZero);
-        
+
         bedTranslateXform.rx.angleProperty().bind(demandedCameraRotationX);
         bedTranslateXform.ry.angleProperty().bind(demandedCameraRotationY);
         rotateCameraAroundAxes(-30, 0);
@@ -1049,7 +1052,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     {
                         oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
                     }
-                    newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                    if (newValue != null)
+                    {
+                        newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                    }
                     updateModelColours();
                 });
 

@@ -6,6 +6,7 @@ import celtech.appManager.SystemNotificationManager;
 import celtech.configuration.BusyStatus;
 import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
+import celtech.configuration.HeaterMode;
 import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
@@ -1631,9 +1632,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         SetTemperatures setTemperatures = (SetTemperatures) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.SET_TEMPERATURES);
-        setTemperatures.setTemperatures(nozzle0Target, nozzle0FirstLayerTarget,
-                nozzle1Target, nozzle1FirstLayerTarget,
-                bedTarget, bedFirstLayerTarget,
+        setTemperatures.setTemperatures(nozzle0FirstLayerTarget, nozzle0Target,
+                nozzle1FirstLayerTarget, nozzle1Target,
+                bedFirstLayerTarget, bedTarget,
                 ambientTarget);
         commandInterface.writeToPrinter(setTemperatures);
     }
@@ -1786,82 +1787,80 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         double bedFirstLayerTarget = 0;
         double bedTarget = 0;
         double ambientTarget = 0;
-        double feedrateMultiplierE = 1;
-        double feedrateMultiplierD = 1;
 
         Set<Integer> usedExtruders = project.getUsedExtruders(this);
 
-        boolean needToSendTempsForReel0 = false;
+        boolean needToOverrideTempsForReel0 = false;
         if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
         {
             if (usedExtruders.contains(0)
                     && !reels.containsKey(0)
                     || (reels.containsKey(0) && !reels.get(0).isSameAs(filament0)))
             {
-                needToSendTempsForReel0 = true;
+                needToOverrideTempsForReel0 = true;
             }
         }
 
-        boolean needToSendTempsForReel1 = false;
+        boolean needToOverrideTempsForReel1 = false;
         if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
         {
-            if (usedExtruders.contains(1)
+            // Never attempt to override for filament 1 if we aren't using a dual material head
+            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD
+                    && usedExtruders.contains(1)
                     && !reels.containsKey(1)
                     || (reels.containsKey(1) && !reels.get(1).isSameAs(filament1)))
             {
-                needToSendTempsForReel1 = true;
-                nozzle0FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
-                nozzle0Target = filament1.getNozzleTemperature();
-                bedFirstLayerTarget = filament1.getFirstLayerBedTemperature();
-                bedTarget = filament1.getBedTemperature();
-                ambientTarget = filament1.getAmbientTemperature();
-                feedrateMultiplierD = filament1.getFeedRateMultiplier();
-
-                changeFilamentInfo("D", filament1.getDiameter(),
-                        filament1.getFilamentMultiplier());
-            } else
-            {
-                nozzle0FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
-                nozzle0Target = filament1.getNozzleTemperature();
+                needToOverrideTempsForReel1 = true;
             }
         }
 
-        if (needToSendTempsForReel0)
+        //Set up bed and ambient targets
+        if (usedExtruders.contains(0) && !usedExtruders.contains(1))
         {
-            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-            {
-                nozzle1FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
-                nozzle1Target = filament0.getNozzleTemperature();
-            } else
-            {
-                nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
-                nozzle0Target = filament0.getNozzleTemperature();
-            }
             bedFirstLayerTarget = filament0.getFirstLayerBedTemperature();
             bedTarget = filament0.getBedTemperature();
             ambientTarget = filament0.getAmbientTemperature();
-            feedrateMultiplierE = filament0.getFeedRateMultiplier();
+        } else if (!usedExtruders.contains(0) && usedExtruders.contains(1))
+        {
+            bedFirstLayerTarget = filament1.getFirstLayerBedTemperature();
+            bedTarget = filament1.getBedTemperature();
+            ambientTarget = filament1.getAmbientTemperature();
+        } else
+        {
+            bedFirstLayerTarget = Math.max(filament0.getFirstLayerBedTemperature(), filament1.getFirstLayerBedTemperature());
+            bedTarget = Math.max(filament0.getBedTemperature(), filament1.getBedTemperature());
+            ambientTarget = Math.min(filament0.getAmbientTemperature(), filament1.getAmbientTemperature());
+        }
+
+        // Set up nozzle targets and extrusion multipliers and diameters
+        if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        {
+            nozzle1FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+            nozzle1Target = filament0.getNozzleTemperature();
+            nozzle0FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
+            nozzle0Target = filament1.getNozzleTemperature();
 
             changeFilamentInfo("E", filament0.getDiameter(),
                     filament0.getFilamentMultiplier());
-        } else if (needToSendTempsForReel1 && reels.containsKey(0))
-        {
-            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-            {
-                nozzle1FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
-                nozzle1Target = filament0.getNozzleTemperature();
-            } else
-            {
-                nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
-                nozzle0Target = filament0.getNozzleTemperature();
-            }
+            changeEFeedRateMultiplier(filament0.getFeedRateMultiplier());
+            extruders.get(0).lastFeedrateMultiplierInUse.set((float) filament0.getFeedRateMultiplier());
 
-            bedFirstLayerTarget = filament0.getFirstLayerBedTemperature();
-            bedTarget = filament0.getBedTemperature();
-            ambientTarget = filament0.getAmbientTemperature();
+            changeFilamentInfo("D", filament1.getDiameter(),
+                    filament1.getFilamentMultiplier());
+            changeDFeedRateMultiplier(filament1.getFeedRateMultiplier());
+            extruders.get(1).lastFeedrateMultiplierInUse.set((float) filament1.getFeedRateMultiplier());
+        } else
+        {
+            nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
+            nozzle0Target = filament0.getNozzleTemperature();
+
+            changeFilamentInfo("E", filament0.getDiameter(),
+                    filament0.getFilamentMultiplier());
+            changeEFeedRateMultiplier(filament0.getFeedRateMultiplier());
+            extruders.get(0).lastFeedrateMultiplierInUse.set((float) filament0.getFeedRateMultiplier());
         }
 
-        if (needToSendTempsForReel0 || needToSendTempsForReel1)
+        if (needToOverrideTempsForReel0 || needToOverrideTempsForReel1)
         {
             try
             {
@@ -1872,35 +1871,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         bedFirstLayerTarget,
                         bedTarget,
                         ambientTarget);
-
-                changeEFeedRateMultiplier(feedrateMultiplierE);
-                changeDFeedRateMultiplier(feedrateMultiplierD);
             } catch (RoboxCommsException ex)
             {
                 steno.error("Failure to set temperatures prior to print");
             }
         }
 
-        extruders.get(0).lastFeedrateMultiplierInUse.set((float) feedrateMultiplierE);
-        extruders.get(1).lastFeedrateMultiplierInUse.set((float) feedrateMultiplierD);
-
         try
         {
-            if (headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-            {
-                if (usedExtruders.contains(0))
-                {
-                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureE, false);
-                }
-
-                if (usedExtruders.contains(1))
-                {
-                    transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperatureD, false);
-                }
-            } else
-            {
-                transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, false);
-            }
+            transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, false);
         } catch (RoboxCommsException ex)
         {
             steno.error("Error whilst sending preheat commands");
@@ -2275,14 +2254,27 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         steno.debug("Set nozzle  target temp " + nozzleHeaterNumber);
         try
         {
-            if (nozzleHeaterNumber == 0)
+            if (head.get() != null
+                    && head.get().nozzleHeaters.size() > nozzleHeaterNumber)
             {
-                transmitDirectGCode(GCodeConstants.setNozzleHeaterTemperatureTarget0
-                        + targetTemperature, false);
-            } else if (nozzleHeaterNumber == 1)
-            {
-                transmitDirectGCode(GCodeConstants.setNozzleHeaterTemperatureTarget1
-                        + targetTemperature, false);
+                StringBuilder tempCommand = new StringBuilder();
+                if (head.get().nozzleHeaters.get(nozzleHeaterNumber).heaterMode.get() == HeaterMode.FIRST_LAYER)
+                {
+                    tempCommand.append("M103");
+                } else
+                {
+                    tempCommand.append("M104");
+                }
+
+                if (nozzleHeaterNumber == 0)
+                {
+                    tempCommand.append(" S");
+                } else if (nozzleHeaterNumber == 1)
+                {
+                    tempCommand.append(" T");
+                }
+                tempCommand.append(targetTemperature);
+                transmitDirectGCode(tempCommand.toString(), false);
             }
         } catch (RoboxCommsException ex)
         {
