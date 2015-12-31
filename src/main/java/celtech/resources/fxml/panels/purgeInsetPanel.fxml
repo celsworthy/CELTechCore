@@ -19,9 +19,9 @@
             <center>
                 <BorderPane styleClass="lightGreyBackground">
                     <center>
-                        <AnchorPane>
+                        <AnchorPane minHeight="100.0">
                             <children>
-                                <VBox alignment="CENTER" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+                                <VBox alignment="TOP_CENTER" minHeight="100.0" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
                                     <children>
                                         <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="purgeTitle" text="%maintenancePanel.purgeMaterial">
                                             <font>
@@ -76,7 +76,7 @@
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                                                         <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.currentMaterial" textAlignment="CENTER" GridPane.rowIndex="1" />
                                                           <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-                                          <CheckBox fx:id="purgeThisNozzle0" mnemonicParsing="false" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
+                                          <CheckBox fx:id="purgeMaterial0" mnemonicParsing="false" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
                                                     </children>
                                                 </GridPane>
                                                 <GridPane fx:id="purgeDetailsGrid1" alignment="CENTER" hgap="5.0" styleClass="purgeInstructions" vgap="5.0">
@@ -102,7 +102,7 @@
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                                                         <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="inset-panel-text" text="%misc.degreesC" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                                                           <Text id="purgeTextCurrentFilament" fx:id="textCurrentMaterial1" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-                                          <CheckBox fx:id="purgeThisNozzle1" mnemonicParsing="false" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
+                                          <CheckBox fx:id="purgeMaterial1" mnemonicParsing="false" text="%purgeMaterial.purgeThisNozzle" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
                                                     </children>
                                                 </GridPane>
                                             </children>
@@ -110,7 +110,7 @@
                                                 <Insets top="30.0" />
                                             </VBox.margin>
                                         </HBox>
-                                        <VBox fx:id="diagramContainer" alignment="CENTER" VBox.vgrow="ALWAYS">
+                                        <VBox fx:id="diagramContainer" alignment="CENTER" minHeight="100.0">
                                             <children>
                                                 <Group fx:id="diagram">
                                                     <children>

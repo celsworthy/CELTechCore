@@ -309,6 +309,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     {
                         printerSettings.setPrintSupportOverride(SupportType.NO_SUPPORT);
                     }
+                    
+                    printerSettings.setAutoSupportOverride(selected);
                 });
 
         raftSlider.setLabelFormatter(new StringConverter<Double>()
@@ -481,6 +483,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
+        boolean autoSupport = printerSettings.getAutoSupportOverride();
         SupportType saveSupports = printerSettings.getPrintSupportOverride();
         boolean savePrintRaft = printerSettings.getRaftOverride();
 
@@ -508,7 +511,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             supportComboBox.setValue(saveSupports);
         }
-        cbSupport.setSelected((saveSupports != SupportType.NO_SUPPORT));
+        cbSupport.setSelected(autoSupport);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {

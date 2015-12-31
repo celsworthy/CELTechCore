@@ -54,31 +54,31 @@
                 </Line>
             </children>
         </VBox>
-        <StackPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="220.0">
+        <StackPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="235.0">
             <children>
                 <VBox fx:id="scalePanel" alignment="CENTER">
                     <children>
                         <GridPane alignment="CENTER" hgap="5.0" vgap="0.0">
                             <children>
-                                <StackPane GridPane.halignment="LEFT">
+                                <StackPane GridPane.halignment="LEFT" GridPane.valignment="CENTER">
                                     <children>
-                                        <Label fx:id="scaleXCaption" styleClass="regularText" text="%modelEdit.ScaleLabelX" />
-                                        <Label fx:id="widthCaption" layoutX="16.0" layoutY="15.0" styleClass="regularText" text="%modelEdit.WidthLabel" />
+                                        <Label fx:id="scaleXCaption" styleClass="regularText" text="%modelEdit.ScaleLabelX" StackPane.alignment="CENTER_LEFT" />
+                                        <Label fx:id="widthCaption" layoutX="16.0" layoutY="15.0" styleClass="regularText" text="%modelEdit.WidthLabel" StackPane.alignment="CENTER_LEFT" />
                                     </children>
                                 </StackPane>
                                 <StackPane GridPane.halignment="LEFT" GridPane.rowIndex="1">
                                     <children>
-                                        <Label fx:id="scaleYCaption" text="%modelEdit.ScaleLabelY" />
-                                        <Label fx:id="heightCaption" layoutX="16.0" layoutY="15.0" text="%modelEdit.HeightLabel" />
+                                        <Label fx:id="scaleYCaption" text="%modelEdit.ScaleLabelY" StackPane.alignment="CENTER_LEFT" />
+                                        <Label fx:id="heightCaption" layoutX="16.0" layoutY="15.0" text="%modelEdit.HeightLabel" StackPane.alignment="CENTER_LEFT" />
                                     </children>
                                 </StackPane>
                                 <StackPane GridPane.halignment="LEFT" GridPane.rowIndex="2">
                                     <children>
-                                        <Label fx:id="scaleZCaption" text="%modelEdit.ScaleLabelZ" />
-                                        <Label fx:id="depthCaption" layoutX="15.0" layoutY="15.0" text="%modelEdit.DepthLabel" />
+                                        <Label fx:id="scaleZCaption" text="%modelEdit.ScaleLabelZ" StackPane.alignment="CENTER_LEFT" />
+                                        <Label fx:id="depthCaption" layoutX="15.0" layoutY="15.0" text="%modelEdit.DepthLabel" StackPane.alignment="CENTER_LEFT" />
                                     </children>
                                 </StackPane>
-                                <ToggleButton id="preserveAspectRatio" fx:id="preserveAspectRatio" contentDisplay="GRAPHIC_ONLY" maxWidth="27.0" minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="45.0" GridPane.columnIndex="1" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS">
+                                <ToggleButton id="preserveAspectRatio" fx:id="preserveAspectRatio" contentDisplay="GRAPHIC_ONLY" maxWidth="27.0" minWidth="-Infinity" mnemonicParsing="false" prefHeight="80.0" prefWidth="40.0" GridPane.columnIndex="1" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS">
                                     <graphic>
                                         <Group>
                                             <children>
@@ -114,20 +114,20 @@
                                 <Group />
                                 <StackPane GridPane.columnIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="0" maxLength="6" prefColumnCount="4" text="" />
                                         <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <StackPane fx:id="textHeightField" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" />
-                                        <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <StackPane GridPane.columnIndex="2" GridPane.rowIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" />
-                                        <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <Label text="%modelEdit.UseProportionalScale" GridPane.columnSpan="2" GridPane.rowIndex="3" />
@@ -141,9 +141,9 @@
                                 </HBox>
                             </children>
                             <columnConstraints>
-                                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
-                                <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="-Infinity" />
-                                <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" />
+                                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" prefWidth="130.0" />
+                                <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="35.0" />
+                                <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="50.0" />
                             </columnConstraints>
                             <padding>
                                 <Insets />

@@ -7,6 +7,7 @@ import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.model.Head;
@@ -18,7 +19,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -31,7 +31,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
@@ -41,7 +41,7 @@ import javafx.scene.text.TextFlow;
  *
  * @author tony
  */
-public class MaterialComponent extends Pane implements PrinterListChangesListener
+public class MaterialComponent extends VBox implements PrinterListChangesListener
 {
 
     private Printer printer;
@@ -90,6 +90,9 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
     @FXML
     private Text materialRemaining;
 
+    @FXML
+    private HBox materialRemainingHBox;
+    
     @FXML
     private TextFlow materialColourContainer;
 
@@ -262,9 +265,31 @@ public class MaterialComponent extends Pane implements PrinterListChangesListene
         }
     }
 
-    private void configureDisplay()
-
+    private void updateForDisplayScaling(DisplayManager.DisplayScalingMode displayScalingMode)
     {
+        switch (displayScalingMode)
+        {
+            case NORMAL:
+                materialRemainingHBox.setPrefHeight(-1);
+                materialRemaining.setVisible(true);
+                break;
+            case SHORT:
+                materialRemainingHBox.setPrefHeight(5);
+                materialRemaining.setVisible(false);
+                break;
+            case VERY_SHORT:
+                break;
+        }
+    }
+
+    private void configureDisplay()
+    {
+
+        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener((ObservableValue<? extends DisplayManager.DisplayScalingMode> observable, DisplayManager.DisplayScalingMode oldValue, DisplayManager.DisplayScalingMode newValue) ->
+        {
+            updateForDisplayScaling(newValue);
+        });
+
         materialColourContainer.setVisible(true);
         if (printer.reelsProperty().containsKey(extruderNumber))
         {

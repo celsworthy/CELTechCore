@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Pane;
 
 /**
@@ -19,8 +23,20 @@ public class DimensionLineManager
 
     private final Map<ModelContainer, List<DimensionLine>> dimensionLines = new HashMap<>();
 
-    public DimensionLineManager(Pane paneToAddDimensionsTo, Project project)
+    private final ChangeListener<DragMode> dragModeListener = (ObservableValue<? extends DragMode> observable, DragMode oldValue, DragMode newValue) ->
     {
+        for (List<DimensionLine> dimensionLineList : dimensionLines.values())
+        {
+            for (DimensionLine dimensionLine : dimensionLineList)
+            {
+                dimensionLine.getDimensionLabel().setVisible(newValue == DragMode.IDLE);
+            }
+        }
+    };
+
+    public DimensionLineManager(Pane paneToAddDimensionsTo, Project project, ReadOnlyObjectProperty<DragMode> dragModeProperty)
+    {
+        dragModeProperty.addListener(dragModeListener);
 
         Lookup.getProjectGUIState(project).getProjectSelection().addListener(
                 new ProjectSelection.SelectedModelContainersListener()
@@ -49,12 +65,19 @@ public class DimensionLineManager
                         paneToAddDimensionsTo.getChildren().add(frontBackDimension);
                         frontBackDimension.initialise(project, modelContainer, LineDirection.FORWARD_BACK);
                         lineList.add(frontBackDimension);
-                        
+
                         paneToAddDimensionsTo.getChildren().add(verticalDimension.getDimensionLabel());
                         paneToAddDimensionsTo.getChildren().add(horizontalDimension.getDimensionLabel());
                         paneToAddDimensionsTo.getChildren().add(frontBackDimension.getDimensionLabel());
 
                         dimensionLines.put(modelContainer, lineList);
+
+                        Platform.runLater(() ->
+                                {
+                                    verticalDimension.screenExtentsChanged(modelContainer);
+                                    horizontalDimension.screenExtentsChanged(modelContainer);
+                                    frontBackDimension.screenExtentsChanged(modelContainer);
+                        });
                     }
 
                     @Override

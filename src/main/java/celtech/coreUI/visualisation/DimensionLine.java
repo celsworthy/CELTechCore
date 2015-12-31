@@ -168,7 +168,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         if (direction == LineDirection.VERTICAL)
         {
             dimensionLabel.setText(String.
-                    format("%.1f", transformedHeight));
+                    format("%.2f", transformedHeight));
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
@@ -236,7 +236,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.HORIZONTAL)
         {
             dimensionLabel.setText(String.
-                    format("%.1f", transformedWidth));
+                    format("%.2f", transformedWidth));
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
@@ -304,7 +304,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         } else if (direction == LineDirection.FORWARD_BACK)
         {
             dimensionLabel.setText(String.
-                    format("%.1f", transformedDepth));
+                    format("%.2f", transformedDepth));
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()

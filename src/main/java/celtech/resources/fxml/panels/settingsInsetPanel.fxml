@@ -42,7 +42,15 @@
                                 </VBox>
                                 <VBox fx:id="nonCustomProfileVBox" alignment="CENTER" fillWidth="true" spacing="5.0">
                                     <children>
-                                        <CheckBox fx:id="cbSupport" mnemonicParsing="false" text="Support" />
+                              <HBox alignment="CENTER" spacing="15.0">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                                 <children>
+                                    <Label text="%extrusion.support" />
+                                              <CheckBox fx:id="cbSupport" contentDisplay="TEXT_ONLY" graphicTextGap="0.0" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" prefWidth="110.0" />
+                                 </children>
+                              </HBox>
                                         <HBox alignment="CENTER" spacing="15.0"> 
                                             <children>
                                                 <Label text="%settingsInsetPanel.raftSupportBrim" />

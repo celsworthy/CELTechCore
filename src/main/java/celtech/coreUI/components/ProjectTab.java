@@ -132,7 +132,7 @@ public class ProjectTab extends Tab
         basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, rhInsetContainer, modelActionsInsetPanel);
 
         setupDragHandlers();
-        dimensionLineManager = new DimensionLineManager(basePane, project);
+        dimensionLineManager = new DimensionLineManager(basePane, project, viewManager.getDragModeProperty());
         viewManager.addCameraViewChangeListener(bedAxes);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
