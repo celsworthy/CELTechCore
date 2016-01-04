@@ -250,7 +250,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         populatingForProject = true;
         supportComboBox.getItems().clear();
         supportComboBox.getItems().addAll(SupportType.values());
-        supportComboBox.getItems().remove(SupportType.NO_SUPPORT);
 
         if (currentProject != null && currentPrinter != null)
         {
@@ -277,7 +276,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     if (printerSettings != null
                     && lastSupportValue != newSupportValue)
                     {
-                        printerSettings.setPrintSupportOverride(newSupportValue);
+                        printerSettings.setPrintSupportTypeOverride(newSupportValue);
                     }
                 });
 
@@ -297,20 +296,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             // this happens for new projects
                             supportComboBox.setValue(SupportType.OBJECT_MATERIAL);
                         }
-                        printerSettings.setPrintSupportOverride(supportComboBox.getValue());
+                        printerSettings.setPrintSupportTypeOverride(supportComboBox.getValue());
                     } else if (currentPrinter != null && selected
                     && getNumExtruders(currentPrinter) == 1)
                     {
-                        printerSettings.setPrintSupportOverride(SupportType.OBJECT_MATERIAL);
-                    } else if (selected) //selected but no printer connected
+                        printerSettings.setPrintSupportTypeOverride(SupportType.OBJECT_MATERIAL);
+                    } else //selected but no printer connected
                     {
-                        printerSettings.setPrintSupportOverride(SupportType.OBJECT_MATERIAL);
-                    } else
-                    {
-                        printerSettings.setPrintSupportOverride(SupportType.NO_SUPPORT);
+                        printerSettings.setPrintSupportTypeOverride(SupportType.OBJECT_MATERIAL);
                     }
-                    
-                    printerSettings.setAutoSupportOverride(selected);
+
+                    printerSettings.setPrintSupportOverride(selected);
                 });
 
         raftSlider.setLabelFormatter(new StringConverter<Double>()
@@ -483,8 +479,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         int saveBrim = printerSettings.getBrimOverride();
         float saveFillDensity = printerSettings.getFillDensityOverride();
-        boolean autoSupport = printerSettings.getAutoSupportOverride();
-        SupportType saveSupports = printerSettings.getPrintSupportOverride();
+        boolean autoSupport = printerSettings.getPrintSupportOverride();
+        SupportType saveSupports = printerSettings.getPrintSupportTypeOverride();
         boolean savePrintRaft = printerSettings.getRaftOverride();
 
         // printer settings name is cleared by combo population so must be saved
@@ -507,10 +503,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         fillDensitySlider.setValue(saveFillDensity * 100);
         raftSlider.setValue(savePrintRaft ? 1 : 0);
 
-        if (saveSupports != SupportType.NO_SUPPORT)
-        {
-            supportComboBox.setValue(saveSupports);
-        }
+        supportComboBox.setValue(saveSupports);
+
         cbSupport.setSelected(autoSupport);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)

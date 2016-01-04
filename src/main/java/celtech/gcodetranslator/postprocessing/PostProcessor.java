@@ -124,9 +124,8 @@ public class PostProcessor
 
         if (headFile.getType() == HeadType.DUAL_MATERIAL_HEAD)
         {
-            switch (project.getPrinterSettings().getPrintSupportOverride())
+            switch (project.getPrinterSettings().getPrintSupportTypeOverride())
             {
-                case NO_SUPPORT:
                 case OBJECT_MATERIAL:
                     postProcessingMode = PostProcessingMode.USE_OBJECT_MATERIAL;
                     break;

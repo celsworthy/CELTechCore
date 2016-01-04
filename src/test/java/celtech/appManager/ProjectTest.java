@@ -57,7 +57,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         project.setProjectName(PROJECT_NAME);
         project.getPrinterSettings().setBrimOverride(BRIM);
         project.getPrinterSettings().setFillDensityOverride(FILL_DENSITY);
-        project.getPrinterSettings().setPrintSupportOverride(PRINT_SUPPORT);
+        project.getPrinterSettings().setPrintSupportTypeOverride(PRINT_SUPPORT);
         project.setLastPrintJobID(PRINT_JOB_ID);
         project.setExtruder0Filament(FILAMENT_0);
         project.setExtruder1Filament(FILAMENT_1);
@@ -75,7 +75,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         Assert.assertEquals(BRIM, newProject.getPrinterSettings().getBrimOverride());
         Assert.assertEquals(FILL_DENSITY, newProject.getPrinterSettings().getFillDensityOverride(),
                 1e-10);
-        Assert.assertEquals(PRINT_SUPPORT, newProject.getPrinterSettings().getPrintSupportOverride());
+        Assert.assertEquals(PRINT_SUPPORT, newProject.getPrinterSettings().getPrintSupportTypeOverride());
         Assert.assertEquals(FILAMENT_0, newProject.getExtruder0FilamentProperty().get());
         Assert.assertEquals(FILAMENT_1, newProject.getExtruder1FilamentProperty().get());
 

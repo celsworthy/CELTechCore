@@ -17,8 +17,8 @@ public class ProjectFile
     private Date lastModifiedDate;
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private boolean autoSupport = false;
-    private SupportType printSupportOverride = SupportType.NO_SUPPORT;
+    private boolean printSupportOverride = false;
+    private SupportType printSupportTypeOverride = SupportType.OBJECT_MATERIAL;
     private boolean printRaft = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;
@@ -79,24 +79,24 @@ public class ProjectFile
         this.fillDensityOverride = fillDensityOverride;
     }
 
-    public boolean getAutoSupport()
-    {
-        return autoSupport;
-    }
-    
-    public void setAutoSupport(boolean autoSupport)
-    {
-        this.autoSupport = autoSupport;
-    }
-    
-    public SupportType getPrintSupportOverride()
+    public boolean getPrintSupportOverride()
     {
         return printSupportOverride;
     }
-
-    public void setPrintSupportOverride(SupportType printSupportOverride)
+    
+    public void setPrintSupportOverride(boolean printSupportOverride)
     {
         this.printSupportOverride = printSupportOverride;
+    }
+    
+    public SupportType getPrintSupportTypeOverride()
+    {
+        return printSupportTypeOverride;
+    }
+
+    public void setPrintSupportTypeOverride(SupportType printSupportTypeOverride)
+    {
+        this.printSupportTypeOverride = printSupportTypeOverride;
     }
 
     public boolean getPrintRaft()
@@ -189,8 +189,8 @@ public class ProjectFile
         printQuality = project.getPrinterSettings().getPrintQuality();
         brimOverride = project.getPrinterSettings().getBrimOverride();
         fillDensityOverride = project.getPrinterSettings().getFillDensityOverride();
-        autoSupport = project.getPrinterSettings().getAutoSupportOverride();
         printSupportOverride = project.getPrinterSettings().getPrintSupportOverride();
+        printSupportTypeOverride = project.getPrinterSettings().getPrintSupportTypeOverride();
         printRaft = project.getPrinterSettings().getRaftOverride();
         groupStructure = project.getGroupStructure();
         groupState = project.getGroupState();

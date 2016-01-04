@@ -142,7 +142,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Print the part using the extruder of the given number.
      */
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
-    
+
     private double cameraDistance = 1;
 
     private File modelFile;
@@ -153,7 +153,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private ScreenExtents extents = null;
 
     private List<Transform> rotationTransforms;
-    
+
     private MeshView collisionShape = null;
     private List<CollisionShapeListener> collisionShapeListeners = new ArrayList<>();
 
@@ -276,7 +276,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                     listener.collisionShapeAvailable(this);
                 }
             });
-            
+
             Lookup.getTaskExecutor().runTaskAsDaemon(hullComputer);
         }
 
@@ -418,6 +418,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * Make a copy of this ModelContainer and return it.
+     *
+     * @return
      */
     public ModelContainer makeCopy()
     {
@@ -963,14 +965,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         out.writeDouble(transformDropToBedYAdjust.getY());
     }
 
-    private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
+    private MeshView readContainer_1_03_00_Contents(ObjectInputStream in) throws IOException, ClassNotFoundException
     {
-        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+        ModelContentsEnumeration modelContentsType = (ModelContentsEnumeration) in.readObject();
 
-        String modelName = in.readUTF();
-
-        int numberOfMeshesNowUnused = in.readInt();
+        int numberOfMeshes = in.readInt();
 
         int[] smoothingGroups = (int[]) in.readObject();
         int[] faces = (int[]) in.readObject();
@@ -987,11 +986,49 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         triMesh.getFaces().addAll(faces);
         triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
-        meshView = new MeshView(triMesh);
-        meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-        meshView.setCullFace(CullFace.BACK);
-        meshView.setId(modelName + "_mesh");
+        MeshView newMesh = new MeshView(triMesh);
+        newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+        newMesh.setCullFace(CullFace.BACK);
+        newMesh.setId(modelName + "_mesh");
 
+        return newMesh;
+    }
+
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException
+    {
+        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+
+        String modelName = in.readUTF();
+
+        try
+        {
+            int numberOfMeshesNowUnused = in.readInt();
+
+            int[] smoothingGroups = (int[]) in.readObject();
+            int[] faces = (int[]) in.readObject();
+            float[] points = (float[]) in.readObject();
+
+            TriangleMesh triMesh = new TriangleMesh();
+
+            FloatArrayList texCoords = new FloatArrayList();
+            texCoords.add(0f);
+            texCoords.add(0f);
+
+            triMesh.getPoints().addAll(points);
+            triMesh.getTexCoords().addAll(texCoords.toFloatArray());
+            triMesh.getFaces().addAll(faces);
+            triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+
+            meshView = new MeshView(triMesh);
+            meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+            meshView.setCullFace(CullFace.BACK);
+            meshView.setId(modelName + "_mesh");
+        } catch (IOException ex)
+        {
+            meshView = readContainer_1_03_00_Contents(in);
+        }
+        
         getChildren().add(meshView);
 
         initialise(new File(modelName));
@@ -1927,7 +1964,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    protected boolean recalculateScreenExtents()
+    public boolean recalculateScreenExtents()
     {
         boolean extentsChanged = false;
 
@@ -2112,6 +2149,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         public double preferredRotationTurn;
         public double preferredRotationLean;
 
+        public State()
+        {
+        }
+
         @JsonCreator
         public State(
                 @JsonProperty("modelId") int modelId,
@@ -2208,7 +2249,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         return collisionShape;
     }
-    
+
     public MeshView addCollisionShapeListener(CollisionShapeListener collisionShapeListener)
     {
         collisionShapeListeners.add(collisionShapeListener);

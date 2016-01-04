@@ -1059,7 +1059,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     updateModelColours();
                 });
 
-        project.getPrinterSettings().getPrintSupportOverrideProperty().addListener(
+        project.getPrinterSettings().getPrintSupportTypeOverrideProperty().addListener(
                 (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
                 {
                     updateModelColours();
