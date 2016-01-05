@@ -11,6 +11,7 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.PurgeState;
@@ -161,10 +162,10 @@ public class PurgeInsetPanelController implements Initializable
     private GridPane purgeDetailsGrid1;
 
     @FXML
-    private CheckBox purgeThisNozzle0;
+    private CheckBox purgeMaterial0;
 
     @FXML
-    private CheckBox purgeThisNozzle1;
+    private CheckBox purgeMaterial1;
 
     @FXML
     private HBox topMenuStrip;
@@ -411,7 +412,7 @@ public class PurgeInsetPanelController implements Initializable
                     purgeTemperature1.intValueProperty().addListener(purgeTempEntryListener1);
                 } else
                 {
-                    purgeThisNozzle0.setVisible(false);
+                    purgeMaterial0.setVisible(false);
                 }
                 purgeDetailsGrid1.setVisible(purgeTwoNozzleHeaters.get());
                 break;
@@ -462,8 +463,8 @@ public class PurgeInsetPanelController implements Initializable
             textCurrentMaterial0.visibleProperty().unbind();
             textCurrentMaterial1.visibleProperty().unbind();
             proceedButton.disableProperty().unbind();
-            purgeThisNozzle0.onActionProperty().unbind();
-            purgeThisNozzle1.onActionProperty().unbind();
+            purgeMaterial0.onActionProperty().unbind();
+            purgeMaterial1.onActionProperty().unbind();
             printer.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
         }
 
@@ -630,21 +631,21 @@ public class PurgeInsetPanelController implements Initializable
     {
         if (!headHasTwoNozzleHeaters(printer))
         {
-            purgeThisNozzle0.setSelected(true);
-            purgeThisNozzle1.setSelected(false);
+            purgeMaterial0.setSelected(true);
+            purgeMaterial1.setSelected(false);
         } else
         {
-            purgeThisNozzle0.setSelected(false);
-            purgeThisNozzle1.setSelected(false);
+            purgeMaterial0.setSelected(false);
+            purgeMaterial1.setSelected(false);
 
             //Dual nozzle heads have extruder/nozzle reversed!
             if (PrinterUtils.isPurgeNecessaryForExtruder(printer, 0))
             {
-                purgeThisNozzle1.setSelected(true);
+                purgeMaterial1.setSelected(true);
             }
             if (PrinterUtils.isPurgeNecessaryForExtruder(printer, 1))
             {
-                purgeThisNozzle0.setSelected(true);
+                purgeMaterial0.setSelected(true);
             }
         }
     }
@@ -654,8 +655,8 @@ public class PurgeInsetPanelController implements Initializable
         bindPrinter(printer);
 
         // default to purging both nozzles.
-        purgeThisNozzle0.setSelected(true);
-        purgeThisNozzle1.setSelected(true);
+        purgeMaterial0.setSelected(true);
+        purgeMaterial1.setSelected(true);
 
         startPurge();
     }
@@ -676,18 +677,27 @@ public class PurgeInsetPanelController implements Initializable
             lastMaterialTemperature0.textProperty().bind(
                     transitionManager.getLastMaterialTemperature(0).asString());
 
-            purgeThisNozzle0.onActionProperty().set(
+            purgeMaterial0.onActionProperty().set(
                     (EventHandler<ActionEvent>) (ActionEvent event) ->
                     {
-                        transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
+                        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+                        {
+                            transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
+                        } else
+                        {
+                            transitionManager.setPurgeNozzleHeater1(purgeMaterial0.isSelected());
+                        }
                     });
 
-            purgeThisNozzle1.onActionProperty().set(
+            purgeMaterial1.onActionProperty().set(
                     (EventHandler<ActionEvent>) (ActionEvent event) ->
                     {
-                        if (purgeTwoNozzleHeaters.get())
+                        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
                         {
-                            transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+                            transitionManager.setPurgeNozzleHeater1(purgeMaterial1.isSelected());
+                        } else
+                        {
+                            transitionManager.setPurgeNozzleHeater0(purgeMaterial1.isSelected());
                         }
                     });
 
@@ -715,10 +725,10 @@ public class PurgeInsetPanelController implements Initializable
 
             transitionManager.start();
 
-            transitionManager.setPurgeNozzleHeater0(purgeThisNozzle0.isSelected());
+            transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
             if (purgeTwoNozzleHeaters.get())
             {
-                transitionManager.setPurgeNozzleHeater1(purgeThisNozzle1.isSelected());
+                transitionManager.setPurgeNozzleHeater1(purgeMaterial1.isSelected());
             }
 
             installTagAndDisabledStatusForButton(transitionManager, printer, startPurgeButton);

@@ -17,55 +17,58 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * PrinterSettings represents the choices made by the user for a project on the Settings panel. It
- * is serialised with the project.
+ * PrinterSettings represents the choices made by the user for a project on the
+ * Settings panel. It is serialised with the project.
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
 public class PrinterSettings
 {
+
     private final Stenographer steno = StenographerFactory.getStenographer(
-        PrinterSettings.class.getName());
+            PrinterSettings.class.getName());
 
     private final StringProperty customSettingsName = new SimpleStringProperty();
     private final ObjectProperty<PrintQualityEnumeration> printQuality
-        = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
+            = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
     private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
 
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private final ObjectProperty<SupportType> printSupportOverride = new SimpleObjectProperty<>(SupportType.NO_SUPPORT);
+    private final BooleanProperty printSupportOverride = new SimpleBooleanProperty(false);
+    private final ObjectProperty<SupportType> printSupportTypeOverride = new SimpleObjectProperty<>(SupportType.OBJECT_MATERIAL);
     private boolean raftOverride = false;
 
     public PrinterSettings()
     {
         customSettingsName.set("");
         SlicerParametersFile draftParametersFile = SlicerParametersContainer.getInstance().getSettings(
-            ApplicationConfiguration.draftSettingsProfileName, HeadContainer.defaultHeadID);
+                ApplicationConfiguration.draftSettingsProfileName, HeadContainer.defaultHeadID);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
-        printSupportOverride.set(SupportType.NO_SUPPORT);
-        
+        printSupportTypeOverride.set(SupportType.OBJECT_MATERIAL);
+
         SlicerParametersContainer.addChangesListener(
-            new SlicerParametersContainer.SlicerParametersChangesListener()
-        {
+                new SlicerParametersContainer.SlicerParametersChangesListener()
+                {
 
-            @Override
-            public void whenSlicerParametersSaved(String originalSettingsName,
-                SlicerParametersFile changedParameters)
-            {
-                if (originalSettingsName.equals(customSettingsName.get())) {
-                    customSettingsName.set(changedParameters.getProfileName());
-                }
-                toggleDataChanged();
-            }
+                    @Override
+                    public void whenSlicerParametersSaved(String originalSettingsName,
+                            SlicerParametersFile changedParameters)
+                    {
+                        if (originalSettingsName.equals(customSettingsName.get()))
+                        {
+                            customSettingsName.set(changedParameters.getProfileName());
+                        }
+                        toggleDataChanged();
+                    }
 
-            @Override
-            public void whenSlicerParametersDeleted(String settingsName)
-            {
-            }
-        });
-        
+                    @Override
+                    public void whenSlicerParametersDeleted(String settingsName)
+                    {
+                    }
+                });
+
     }
 
     private void toggleDataChanged()
@@ -123,23 +126,24 @@ public class PrinterSettings
         {
             case DRAFT:
                 settings = SlicerParametersContainer.getSettings(
-                    ApplicationConfiguration.draftSettingsProfileName, headType);
+                        ApplicationConfiguration.draftSettingsProfileName, headType);
                 break;
             case NORMAL:
                 settings = SlicerParametersContainer.getSettings(
-                    ApplicationConfiguration.normalSettingsProfileName, headType);
+                        ApplicationConfiguration.normalSettingsProfileName, headType);
                 break;
             case FINE:
                 settings = SlicerParametersContainer.getSettings(
-                    ApplicationConfiguration.fineSettingsProfileName, headType);
+                        ApplicationConfiguration.fineSettingsProfileName, headType);
                 break;
             case CUSTOM:
                 settings = SlicerParametersContainer.getSettings(
-                    customSettingsName.get(), headType);
+                        customSettingsName.get(), headType);
                 break;
 
         }
-        if (settings == null) {
+        if (settings == null)
+        {
             return null;
         }
         return applyOverrides(settings);
@@ -153,7 +157,7 @@ public class PrinterSettings
         SlicerParametersFile profileCopy = settingsByProfileName.clone();
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
-        profileCopy.setGenerateSupportMaterial(printSupportOverride.get() != SupportType.NO_SUPPORT);
+        profileCopy.setGenerateSupportMaterial(printSupportOverride.get());
         profileCopy.setPrintRaft(raftOverride);
         return profileCopy;
     }
@@ -186,29 +190,45 @@ public class PrinterSettings
         }
     }
 
-    public SupportType getPrintSupportOverride()
+    public boolean getPrintSupportOverride()
     {
         return printSupportOverride.get();
     }
-    
-    public ObjectProperty<SupportType> getPrintSupportOverrideProperty()
+
+    public BooleanProperty getPrintSupportOverrideProperty()
     {
         return printSupportOverride;
-    }    
+    }
 
-    public void setPrintSupportOverride(SupportType printSupportOverride)
+    public void setPrintSupportOverride(boolean printSupportOverride)
     {
-        if (this.printSupportOverride.get() != printSupportOverride)
+        this.printSupportOverride.set(printSupportOverride);
+        toggleDataChanged();
+    }
+
+    public SupportType getPrintSupportTypeOverride()
+    {
+        return printSupportTypeOverride.get();
+    }
+
+    public ObjectProperty<SupportType> getPrintSupportTypeOverrideProperty()
+    {
+        return printSupportTypeOverride;
+    }
+
+    public void setPrintSupportTypeOverride(SupportType printSupportTypeOverride)
+    {
+        if (this.printSupportTypeOverride.get() != printSupportTypeOverride)
         {
-            this.printSupportOverride.set(printSupportOverride);
+            this.printSupportTypeOverride.set(printSupportTypeOverride);
             toggleDataChanged();
         }
     }
-    
+
     public boolean getRaftOverride()
     {
         return raftOverride;
-    }    
+    }
 
     public void setRaftOverride(boolean raftOverride)
     {

@@ -2,6 +2,7 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.gcodetranslator.GCodeOutputWriter;
+import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
@@ -69,16 +70,18 @@ public class OutputUtilities
         }
     }
 
-    protected void outputTemperatureCommands(GCodeOutputWriter writer, boolean useNozzle0, boolean useNozzle1)
+    protected void outputTemperatureCommands(GCodeOutputWriter writer,
+            boolean useNozzle0Heater, boolean useNozzle1Heater,
+            boolean useEExtruder, boolean useDExtruder)
     {
         try
         {
             MCodeNode nozzleTemp = new MCodeNode(104);
-            if (useNozzle0)
+            if (useNozzle0Heater)
             {
                 nozzleTemp.setSOnly(true);
             }
-            if (useNozzle1)
+            if (useNozzle1Heater)
             {
                 nozzleTemp.setTOnly(true);
             }
@@ -88,14 +91,7 @@ public class OutputUtilities
             writer.newLine();
 
             MCodeNode bedTemp = new MCodeNode(140);
-            if (useNozzle0)
-            {
-                bedTemp.setSOnly(true);
-            }
-            else
-            {
-                bedTemp.setTOnly(true);
-            }
+            
             bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
             writer.writeOutput(bedTemp.renderForOutput());
             writer.newLine();

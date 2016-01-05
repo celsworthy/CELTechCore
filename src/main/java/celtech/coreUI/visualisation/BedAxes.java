@@ -147,46 +147,49 @@ public class BedAxes extends Pane implements CameraViewChangeListener
         Point2D zAxisVector = screenCoordinateConverter.convertWorldCoordinatesToScreen(0, -lineLength, 0);
         Point2D zTextPosition = screenCoordinateConverter.convertWorldCoordinatesToScreen(0, -lineLength - textOffsetFromOrigin, 0);
 
-        Point2D originLocal = screenToLocal(origin);
-        Point2D xAxisLocalEnd = screenToLocal(xAxisVector);
-        Point2D xTextPositionLocal = screenToLocal(xTextPosition);
-        Point2D yAxisLocalEnd = screenToLocal(yAxisVector);
-        Point2D yTextPositionLocal = screenToLocal(yTextPosition);
-        Point2D zAxisLocalEnd = screenToLocal(zAxisVector);
-        Point2D zTextPositionLocal = screenToLocal(zTextPosition);
+        if (origin != null)
+        {
+            Point2D originLocal = screenToLocal(origin);
+            Point2D xAxisLocalEnd = screenToLocal(xAxisVector);
+            Point2D xTextPositionLocal = screenToLocal(xTextPosition);
+            Point2D yAxisLocalEnd = screenToLocal(yAxisVector);
+            Point2D yTextPositionLocal = screenToLocal(yTextPosition);
+            Point2D zAxisLocalEnd = screenToLocal(zAxisVector);
+            Point2D zTextPositionLocal = screenToLocal(zTextPosition);
 
-        xTextTranslate.setX(xTextPositionLocal.getX() - xText.boundsInLocalProperty().get().getWidth() / 2.0);
-        xTextTranslate.setY(xTextPositionLocal.getY() + xText.boundsInLocalProperty().get().getHeight() / 2.0);
-        xAxis.setStartX(originLocal.getX());
-        xAxis.setStartY(originLocal.getY());
-        xAxis.setEndX(xAxisLocalEnd.getX());
-        xAxis.setEndY(xAxisLocalEnd.getY());
-        xArrowTranslate.setX(xAxisLocalEnd.getX());
-        xArrowTranslate.setY(xAxisLocalEnd.getY());
-        double xAngle = calculateAngle(originLocal, xAxisLocalEnd);
-        xArrowRotate.setAngle(xAngle);
+            xTextTranslate.setX(xTextPositionLocal.getX() - xText.boundsInLocalProperty().get().getWidth() / 2.0);
+            xTextTranslate.setY(xTextPositionLocal.getY() + xText.boundsInLocalProperty().get().getHeight() / 2.0);
+            xAxis.setStartX(originLocal.getX());
+            xAxis.setStartY(originLocal.getY());
+            xAxis.setEndX(xAxisLocalEnd.getX());
+            xAxis.setEndY(xAxisLocalEnd.getY());
+            xArrowTranslate.setX(xAxisLocalEnd.getX());
+            xArrowTranslate.setY(xAxisLocalEnd.getY());
+            double xAngle = calculateAngle(originLocal, xAxisLocalEnd);
+            xArrowRotate.setAngle(xAngle);
 
-        yTextTranslate.setX(yTextPositionLocal.getX() - yText.boundsInLocalProperty().get().getWidth() / 2.0);
-        yTextTranslate.setY(yTextPositionLocal.getY() + yText.boundsInLocalProperty().get().getHeight() / 2.0);
-        yAxis.setStartX(originLocal.getX());
-        yAxis.setStartY(originLocal.getY());
-        yAxis.setEndX(yAxisLocalEnd.getX());
-        yAxis.setEndY(yAxisLocalEnd.getY());
-        yArrowTranslate.setX(yAxisLocalEnd.getX());
-        yArrowTranslate.setY(yAxisLocalEnd.getY());
-        double yAngle = calculateAngle(originLocal, yAxisLocalEnd);
-        yArrowRotate.setAngle(yAngle);
+            yTextTranslate.setX(yTextPositionLocal.getX() - yText.boundsInLocalProperty().get().getWidth() / 2.0);
+            yTextTranslate.setY(yTextPositionLocal.getY() + yText.boundsInLocalProperty().get().getHeight() / 2.0);
+            yAxis.setStartX(originLocal.getX());
+            yAxis.setStartY(originLocal.getY());
+            yAxis.setEndX(yAxisLocalEnd.getX());
+            yAxis.setEndY(yAxisLocalEnd.getY());
+            yArrowTranslate.setX(yAxisLocalEnd.getX());
+            yArrowTranslate.setY(yAxisLocalEnd.getY());
+            double yAngle = calculateAngle(originLocal, yAxisLocalEnd);
+            yArrowRotate.setAngle(yAngle);
 
-        zTextTranslate.setX(zTextPositionLocal.getX() - zText.boundsInLocalProperty().get().getWidth() / 2.0);
-        zTextTranslate.setY(zTextPositionLocal.getY() + zText.boundsInLocalProperty().get().getHeight() / 2.0);
-        zAxis.setStartX(originLocal.getX());
-        zAxis.setStartY(originLocal.getY());
-        zAxis.setEndX(zAxisLocalEnd.getX());
-        zAxis.setEndY(zAxisLocalEnd.getY());
-        zArrowTranslate.setX(zAxisLocalEnd.getX());
-        zArrowTranslate.setY(zAxisLocalEnd.getY());
-        double zAngle = calculateAngle(originLocal, zAxisLocalEnd);
-        zArrowRotate.setAngle(zAngle);
+            zTextTranslate.setX(zTextPositionLocal.getX() - zText.boundsInLocalProperty().get().getWidth() / 2.0);
+            zTextTranslate.setY(zTextPositionLocal.getY() + zText.boundsInLocalProperty().get().getHeight() / 2.0);
+            zAxis.setStartX(originLocal.getX());
+            zAxis.setStartY(originLocal.getY());
+            zAxis.setEndX(zAxisLocalEnd.getX());
+            zAxis.setEndY(zAxisLocalEnd.getY());
+            zArrowTranslate.setX(zAxisLocalEnd.getX());
+            zArrowTranslate.setY(zAxisLocalEnd.getY());
+            double zAngle = calculateAngle(originLocal, zAxisLocalEnd);
+            zArrowRotate.setAngle(zAngle);
+        }
     }
 
     @Override

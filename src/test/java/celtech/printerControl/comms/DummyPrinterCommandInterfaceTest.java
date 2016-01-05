@@ -36,7 +36,7 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
 
         hardwarePrinter.setNozzleHeaterTargetTemperature(0, 200);
 
-        assertEquals(200, commandInterface.nozzleTargetTemperatureS);
+        assertEquals(210, commandInterface.nozzleTargetTemperatureS);
 
 //        NozzleHeater nozzleHeater = hardwarePrinter.headProperty().get().getNozzleHeaters().get(0);
 //        assertEquals(200, nozzleHeater.nozzleTargetTemperatureProperty().get());

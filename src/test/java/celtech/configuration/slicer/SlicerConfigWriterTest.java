@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import static org.apache.commons.io.FileUtils.readLines;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -55,7 +55,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
             SlicerType.Cura);
         PrinterSettings printerSettings = new PrinterSettings();
         printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
-        printerSettings.setPrintSupportOverride(SlicerParametersFile.SupportType.OBJECT_MATERIAL);
+        printerSettings.setPrintSupportTypeOverride(SlicerParametersFile.SupportType.OBJECT_MATERIAL);
         
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;
@@ -65,7 +65,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
         mappingData.getMappingData().put("supportAngle", "supportOverhangThreshold_degrees:?generateSupportMaterial=false->-1");
         configWriter.generateConfigForSlicerWithMappings(printerSettings.getSettings("RBX01-SM"), destinationFile, mappingData);
         List<String> outputData = readLines(new File(destinationFile));
-        assertTrue(outputData.contains("supportAngle=40"));
+        assertFalse(outputData.contains("supportAngle=40"));
     }    
     
     @Test 

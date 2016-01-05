@@ -139,6 +139,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private VBox vBoxLeft = new VBox();
     private VBox vBoxRight = new VBox();
+    private VBox gcodePanel = null;
+    private VBox diagnosticPanel = null;
+    private VBox projectPanel = null;
+    private VBox parentPanel = null;
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
@@ -355,11 +359,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             }
         }
 
-    setupReel1Colour();
-    setupReel2Colour();
-}
+        setupReel1Colour();
+        setupReel2Colour();
+    }
 
-private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
+    private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
     {
         effect.setHue(hueConverter(desiredColor.getHue()));
         effect.setBrightness(desiredColor.getBrightness() - 1);
@@ -490,10 +494,12 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
      */
     public void configure(VBox parent)
     {
+        parentPanel = parent;
+
         parent.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-        public void changed(ObservableValue<? extends Number> observable,
+            public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
@@ -502,7 +508,7 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
         parent.heightProperty().addListener(new ChangeListener<Number>()
         {
             @Override
-        public void changed(ObservableValue<? extends Number> observable,
+            public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
@@ -515,8 +521,10 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
         final double beginWidth = 1500;
         final double beginHeight = 1106;
         final double aspect = beginWidth / beginHeight;
-
-        double displayAspect = parent.getWidth() / parent.getHeight();
+        double gcodePanelWidthToSubtract = (gcodePanel.isVisible() == true) ? vBoxLeft.getWidth() : 0.0;
+        double parentWidth = parent.getWidth() - gcodePanelWidthToSubtract - vBoxRight.getWidth();
+        double parentHeight = parent.getHeight();
+        double displayAspect = parentWidth / parentHeight;
 
         double newWidth = 0;
         double newHeight = 0;
@@ -524,18 +532,18 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
         if (displayAspect >= aspect)
         {
             // Drive from height
-            newWidth = parent.getHeight() * aspect;
-            newHeight = parent.getHeight();
+            newWidth = parentHeight * aspect;
+            newHeight = parentHeight;
         } else
         {
             //Drive from width
-            newHeight = parent.getWidth() / aspect;
-            newWidth = parent.getWidth();
+            newHeight = parentWidth / aspect;
+            newWidth = parentWidth;
         }
 
-        double xScale = Double.min((newWidth / beginWidth), 0.7);
-        double yScale = Double.min((newHeight / beginHeight), 0.7);
-
+        double xScale = Double.max((newWidth / beginWidth), 0.4);
+        double yScale = Double.max((newHeight / beginHeight), 0.4);
+        
         statusPane.setScaleX(xScale);
         statusPane.setScaleY(yScale);
     }
@@ -583,7 +591,7 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
                 {
                     @Override
-        public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
+                    public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
                     {
                         panelVisibilityAction(visible, panelToChangeHeightOf);
                     }
@@ -635,16 +643,25 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
     private void loadInsetPanels()
     {
         vBoxLeft.setSpacing(30);
-        Node diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
+        diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
                 Lookup.getUserPreferences().showDiagnosticsProperty());
-        VBox gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
+        gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
                 Lookup.getUserPreferences().showGCodeProperty());
+        gcodePanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
         VBox.setVgrow(gcodePanel, Priority.ALWAYS);
         vBoxLeft.getChildren().add(diagnosticPanel);
         vBoxLeft.getChildren().add(gcodePanel);
 
         vBoxRight.setSpacing(30);
-        Node projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null);
+        projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
+
         Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
                 Lookup.getUserPreferences().showAdjustmentsProperty());
         vBoxRight.getChildren().add(projectPanel);
@@ -661,52 +678,52 @@ private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredCo
     }
 
     @Override
-        public void whenPrinterAdded(Printer printer)
+    public void whenPrinterAdded(Printer printer)
     {
     }
 
     @Override
-        public void whenPrinterRemoved(Printer printer)
+    public void whenPrinterRemoved(Printer printer)
     {
     }
 
     @Override
-        public void whenHeadAdded(Printer printer)
-    {
-        setupHead();
-    }
-
-    @Override
-        public void whenHeadRemoved(Printer printer, Head head)
+    public void whenHeadAdded(Printer printer)
     {
         setupHead();
     }
 
     @Override
-        public void whenReelAdded(Printer printer, int reelIndex)
+    public void whenHeadRemoved(Printer printer, Head head)
+    {
+        setupHead();
+    }
+
+    @Override
+    public void whenReelAdded(Printer printer, int reelIndex)
     {
         setupBaseDisplay();
     }
 
     @Override
-        public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
+    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
         setupBaseDisplay();
     }
 
     @Override
-        public void whenReelChanged(Printer printer, Reel reel)
+    public void whenReelChanged(Printer printer, Reel reel)
     {
         setupBaseDisplay();
     }
 
     @Override
-        public void whenExtruderAdded(Printer printer, int extruderIndex)
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
     }
 
     @Override
-        public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
 

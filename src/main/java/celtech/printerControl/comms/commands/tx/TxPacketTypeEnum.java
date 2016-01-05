@@ -8,40 +8,6 @@ import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
  */
 public enum TxPacketTypeEnum
 {
-
-    /**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     *//**
-     *
-     */
     STATUS_REQUEST((byte) 0xB0, 1, false, RxPacketTypeEnum.STATUS_RESPONSE),
 
     /**

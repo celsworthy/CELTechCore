@@ -30,7 +30,7 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </VBox.margin>
       </VBox>
-      <VBox fx:id="printSpeed2Box" layoutX="15.0" layoutY="15.0" maxHeight="0.0" minHeight="0.0" opacity="0.0">
+      <VBox fx:id="printSpeed2Box" layoutX="15.0" layoutY="15.0" maxHeight="0.0">
          <children>
             <HBox alignment="CENTER_LEFT" spacing="5.0">
                <VBox.margin>

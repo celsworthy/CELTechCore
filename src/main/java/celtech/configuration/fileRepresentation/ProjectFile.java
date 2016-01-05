@@ -17,7 +17,8 @@ public class ProjectFile
     private Date lastModifiedDate;
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
-    private SupportType printSupportOverride = SupportType.NO_SUPPORT;
+    private boolean printSupportOverride = false;
+    private SupportType printSupportTypeOverride = SupportType.OBJECT_MATERIAL;
     private boolean printRaft = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;
@@ -78,20 +79,25 @@ public class ProjectFile
         this.fillDensityOverride = fillDensityOverride;
     }
 
-    public SupportType getPrintSupportOverride()
+    public boolean getPrintSupportOverride()
     {
         return printSupportOverride;
     }
-
-    public void setPrintSupportOverride(SupportType printSupportOverride)
+    
+    public void setPrintSupportOverride(boolean printSupportOverride)
     {
         this.printSupportOverride = printSupportOverride;
     }
-//
-//    public void setPrintSupportOverride(boolean supportOn)
-//    {
-//        this.printSupportOverride = (supportOn)?SupportType.OBJECT_MATERIAL:SupportType.NO_SUPPORT;
-//    }
+    
+    public SupportType getPrintSupportTypeOverride()
+    {
+        return printSupportTypeOverride;
+    }
+
+    public void setPrintSupportTypeOverride(SupportType printSupportTypeOverride)
+    {
+        this.printSupportTypeOverride = printSupportTypeOverride;
+    }
 
     public boolean getPrintRaft()
     {
@@ -184,6 +190,7 @@ public class ProjectFile
         brimOverride = project.getPrinterSettings().getBrimOverride();
         fillDensityOverride = project.getPrinterSettings().getFillDensityOverride();
         printSupportOverride = project.getPrinterSettings().getPrintSupportOverride();
+        printSupportTypeOverride = project.getPrinterSettings().getPrintSupportTypeOverride();
         printRaft = project.getPrinterSettings().getRaftOverride();
         groupStructure = project.getGroupStructure();
         groupState = project.getGroupState();

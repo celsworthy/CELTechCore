@@ -752,7 +752,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
 
-        steno.info("Window size change: " + scene.getWidth() + " : " + scene.getHeight());
+//        steno.info("Window size change: " + scene.getWidth() + " : " + scene.getHeight());
 
         if (scene.getHeight() < VERY_SHORT_SCALE_BELOW_HEIGHT)
         {

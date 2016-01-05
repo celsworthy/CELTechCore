@@ -19,8 +19,6 @@ public class SlicerParametersFile
 {
     public enum SupportType
     {
-
-        NO_SUPPORT("supportType.noSupport"),
         /**
          * Use material 1 as support. Implies all objects printed with material 2.
          */

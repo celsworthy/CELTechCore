@@ -47,8 +47,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Point3D;
-import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -60,10 +58,8 @@ import org.codehaus.jackson.map.SerializationConfig;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class Project implements Serializable
+public class Project
 {
-
-    private static final long serialVersionUID = 1L;
 
     public static class ProjectLoadException extends Exception
     {
@@ -72,8 +68,9 @@ public class Project implements Serializable
         {
             super(message);
         }
-
     }
+
+    private int version = -1;
 
     private Filament DEFAULT_FILAMENT;
 
@@ -285,6 +282,8 @@ public class Project implements Serializable
         {
             ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
 
+            version = projectFile.getVersion();
+
             projectNameProperty.set(projectFile.getProjectName());
             lastModifiedDate.set(projectFile.getLastModifiedDate());
             lastPrintJobID = projectFile.getLastPrintJobID();
@@ -313,6 +312,7 @@ public class Project implements Serializable
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
             printerSettings.setFillDensityOverride(projectFile.getFillDensityOverride());
             printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
+            printerSettings.setPrintSupportTypeOverride(projectFile.getPrintSupportTypeOverride());
             printerSettings.setRaftOverride(projectFile.getPrintRaft());
 
             loadModels(basePath);
@@ -336,6 +336,7 @@ public class Project implements Serializable
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
         ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
+
         for (int i = 0; i < numModels; i++)
         {
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
@@ -420,20 +421,6 @@ public class Project implements Serializable
                 } else if (printer.headProperty().get().headTypeProperty().get() == HeadType.DUAL_MATERIAL_HEAD)
                 {
                     usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
-//                    int desiredExtruderNumber = modelContainer.getAssociateWithExtruderNumberProperty().get();
-//                    if (printer.effectiveFilamentsProperty().get(desiredExtruderNumber) != FilamentContainer.UNKNOWN_FILAMENT
-//                            && printer.extrudersProperty().get(desiredExtruderNumber).filamentLoadedProperty().get())
-//                    {
-//                        usedExtruders.add(desiredExtruderNumber);
-//                    } else if (printer.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT
-//                            && printer.extrudersProperty().get(0).filamentLoadedProperty().get())
-//                    {
-//                        usedExtruders.add(0);
-//                    } else if (printer.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT
-//                            && printer.extrudersProperty().get(1).filamentLoadedProperty().get())
-//                    {
-//                        usedExtruders.add(1);
-//                    }
                 }
             } else
             {
@@ -456,13 +443,13 @@ public class Project implements Serializable
             getUsedExtruders(loadedModel, usedExtruders, printer);
         }
 
-        if (printerSettings.getPrintSupportOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
+        if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
         {
             if (!usedExtruders.contains(0))
             {
                 usedExtruders.add(0);
             }
-        } else if (printerSettings.getPrintSupportOverride() == SlicerParametersFile.SupportType.MATERIAL_2)
+        } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2)
         {
             if (!usedExtruders.contains(1))
             {
@@ -470,25 +457,6 @@ public class Project implements Serializable
             }
         }
         return usedExtruders;
-    }
-
-    /**
-     * This is the Project file reader for version 1.01.04 and is used for
-     * reading old project files.
-     */
-    private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException
-    {
-        initialise();
-
-        ProjectHeader projectHeader = (ProjectHeader) in.readObject();
-
-        int numberOfModels = in.readInt();
-        for (int counter = 0; counter < numberOfModels; counter++)
-        {
-            ModelContainer model = (ModelContainer) in.readObject();
-            addModel(model);
-        }
     }
 
     /**
