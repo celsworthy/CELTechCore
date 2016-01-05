@@ -1,5 +1,7 @@
 package celtech.printerControl.comms;
 
+import celtech.comms.LowLevelInterface;
+import celtech.comms.LowLevelInterfaceException;
 import java.io.UnsupportedEncodingException;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -13,13 +15,13 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class SerialPortManager implements SerialPortEventListener
+public class SerialPortManager implements SerialPortEventListener, LowLevelInterface
 {
 
     private String serialPortToConnectTo = null;
     protected SerialPort serialPort = null;
     private final Stenographer steno = StenographerFactory.getStenographer(SerialPortManager.class.
-        getName());
+            getName());
     // timeout is required on the read particularly for when the firmware is out of date
     // and the returned status report is then too short see issue ROB-453
     private final static int READ_TIMEOUT = 5000;
@@ -29,6 +31,7 @@ public class SerialPortManager implements SerialPortEventListener
         this.serialPortToConnectTo = portToConnectTo;
     }
 
+    @Override
     public boolean connect(int baudrate)
     {
         boolean portSetupOK = false;
@@ -40,7 +43,7 @@ public class SerialPortManager implements SerialPortEventListener
         {
             serialPort.openPort();
             serialPort.setParams(baudrate, SerialPort.DATABITS_8,
-                                 SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
             portSetupOK = true;
             steno.info("Finished opening serial port " + serialPortToConnectTo);
@@ -52,7 +55,8 @@ public class SerialPortManager implements SerialPortEventListener
         return portSetupOK;
     }
 
-    public void disconnect() throws SerialPortException
+    @Override
+    public void disconnect() throws LowLevelInterfaceException
     {
         steno.info("Disconnecting port " + serialPortToConnectTo);
 
@@ -72,24 +76,37 @@ public class SerialPortManager implements SerialPortEventListener
         serialPort = null;
     }
 
-    public boolean writeBytes(byte[] data) throws SerialPortException
+    @Override
+    public boolean writeBytes(byte[] data) throws LowLevelInterfaceException
     {
         boolean wroteOK = false;
 
-        checkSerialPortOK();
+        try
+        {
+            checkSerialPortOK();
 
-        wroteOK = serialPort.writeBytes(data);
-
+            wroteOK = serialPort.writeBytes(data);
+        } catch (SerialPortException ex)
+        {
+            throw new LowLevelInterfaceException(ex.getMessage() + " method " + ex.getMethodName() + " port " + ex.getPortName());
+        }
         return wroteOK;
     }
 
-    public int getInputBufferBytesCount() throws SerialPortException
+    public int getInputBufferBytesCount() throws LowLevelInterfaceException
     {
         checkSerialPortOK();
-        return serialPort.getInputBufferBytesCount();
+        try
+        {
+            return serialPort.getInputBufferBytesCount();
+        } catch (SerialPortException ex)
+        {
+            throw new LowLevelInterfaceException(ex.getMessage());
+        }
     }
 
-    public void writeAndWaitForData(byte[] data) throws SerialPortException
+    @Override
+    public void writeAndWaitForData(byte[] data) throws LowLevelInterfaceException
     {
         checkSerialPortOK();
 
@@ -112,21 +129,20 @@ public class SerialPortManager implements SerialPortEventListener
                 if (waitCounter >= 5000)
                 {
                     steno.error("No response from device - disconnecting");
-                    throw new SerialPortException(serialPort.getPortName(),
-                                                  "Check availability",
-                                                  "Printer did not respond");
+                    throw new LowLevelInterfaceException(serialPort.getPortName()
+                            + " Check availability - Printer did not respond");
                 }
                 waitCounter++;
             }
         } else
         {
-            throw new SerialPortException(serialPort.getPortName(),
-                                          "Failure during write",
-                                          "");
+            throw new LowLevelInterfaceException(serialPort.getPortName()
+                    + " Failure during write");
         }
     }
 
-    public byte[] readSerialPort(int numBytes) throws SerialPortException
+    @Override
+    public byte[] readSerialPort(int numBytes) throws LowLevelInterfaceException
     {
         checkSerialPortOK();
 
@@ -134,22 +150,28 @@ public class SerialPortManager implements SerialPortEventListener
         try
         {
             returnData = serialPort.readBytes(numBytes, READ_TIMEOUT);
-        } catch (SerialPortTimeoutException ex)
+        } catch (SerialPortTimeoutException | SerialPortException ex)
         {
-            throw new SerialPortException(serialPort.getPortName(),
-                                          "Check availability",
-                                          "Printer did not respond in time");
+            throw new LowLevelInterfaceException(serialPort.getPortName()
+                    + " Check availability - Printer did not respond in time");
         }
         return returnData;
     }
 
-    public byte[] readAllDataOnBuffer() throws SerialPortException
+    @Override
+    public byte[] readAllDataOnBuffer() throws LowLevelInterfaceException
     {
         checkSerialPortOK();
-        return serialPort.readBytes();
+        try
+        {
+            return serialPort.readBytes();
+        } catch (SerialPortException ex)
+        {
+            throw new LowLevelInterfaceException(ex.getMessage());
+        }
     }
 
-    public boolean writeASCIIString(String string) throws SerialPortException
+    public boolean writeASCIIString(String string) throws LowLevelInterfaceException
     {
         checkSerialPortOK();
 
@@ -160,25 +182,33 @@ public class SerialPortManager implements SerialPortEventListener
         {
             steno.error("Strange error with encoding");
             ex.printStackTrace();
-            throw new SerialPortException(serialPortToConnectTo,
-                                          "Encoding error whilst writing ASCII string", "");
+            throw new LowLevelInterfaceException(serialPortToConnectTo
+                    + " Encoding error whilst writing ASCII string");
+        } catch (SerialPortException ex)
+        {
+            throw new LowLevelInterfaceException(ex.getMessage());
         }
     }
 
-    public String readString() throws SerialPortException
+    public String readString() throws LowLevelInterfaceException
     {
         checkSerialPortOK();
 
-        return serialPort.readString();
+        try
+        {
+            return serialPort.readString();
+        } catch (SerialPortException ex)
+        {
+            throw new LowLevelInterfaceException(ex.getMessage());
+        }
     }
 
-    private void checkSerialPortOK() throws SerialPortException
+    private void checkSerialPortOK() throws LowLevelInterfaceException
     {
         if (serialPort == null)
         {
-            throw new SerialPortException(serialPortToConnectTo,
-                                          "Serial port not open",
-                                          "");
+            throw new LowLevelInterfaceException(serialPortToConnectTo
+                    + " Serial port not open");
         }
     }
 
@@ -204,7 +234,7 @@ public class SerialPortManager implements SerialPortEventListener
         } else
         {
             steno.info("Got serial event of type " + serialPortEvent.getEventType()
-                + " that I didn't understand");
+                    + " that I didn't understand");
         }
     }
 }

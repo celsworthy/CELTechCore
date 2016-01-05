@@ -1,5 +1,6 @@
 package celtech.printerControl.comms;
 
+import celtech.comms.LowLevelInterfaceException;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
 import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrinterException;
@@ -49,7 +50,7 @@ public class HardwareCommandInterface extends CommandInterface
                 try
                 {
                     serialPortManager.disconnect();
-                } catch (SerialPortException ex)
+                } catch (LowLevelInterfaceException ex)
                 {
                     steno.error("Failed to shut down serial port " + ex.getMessage());
                 }
@@ -172,7 +173,7 @@ public class HardwareCommandInterface extends CommandInterface
 //                    InvalidResponseFromPrinterException exception = new InvalidResponseFromPrinterException("Invalid response - got: " + received);
 //                    throw exception;
                 }
-            } catch (SerialPortException ex)
+            } catch (LowLevelInterfaceException ex)
             {
                 steno.exception("Serial port exception", ex);
                 actionOnCommsFailure();

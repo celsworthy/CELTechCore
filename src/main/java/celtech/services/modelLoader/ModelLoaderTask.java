@@ -1,14 +1,13 @@
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
-import celtech.appManager.Project;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.utils.threed.importers.stl.STLImporter;
+import celtech.utils.threed.importers.svg.SVGImporter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -67,6 +66,11 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
+                modelLoadResult = reader.loadFile(this, modelFileToLoad,
+                                                  percentProgress);
+            } else if (modelFilePath.toUpperCase().endsWith("SVG"))
+            {
+                SVGImporter reader = new SVGImporter();
                 modelLoadResult = reader.loadFile(this, modelFileToLoad,
                                                   percentProgress);
             }

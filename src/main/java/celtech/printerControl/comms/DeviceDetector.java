@@ -1,5 +1,6 @@
 package celtech.printerControl.comms;
 
+import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -66,6 +67,22 @@ public interface DeviceDetector
             }
             
             return equal;
+        }
+    }
+    
+    public class RemoteDetectedPrinter extends DetectedPrinter
+    {
+        private final InetAddress address;
+
+        public RemoteDetectedPrinter(InetAddress address, PrinterConnectionType connectionType, String connectionHandle)
+        {
+            super(connectionType, connectionHandle);
+            this.address = address;
+        }
+
+        public InetAddress getAddress()
+        {
+            return address;
         }
     }
 }

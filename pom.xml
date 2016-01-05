@@ -170,6 +170,27 @@
             <artifactId>jbullet</artifactId>
             <version>20101010-1</version>
         </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-svg-dom</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-bridge</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>celtech</groupId>
+            <artifactId>RoboxRemoteLibrary</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     
     <reporting>                                                                              

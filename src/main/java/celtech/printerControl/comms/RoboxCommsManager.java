@@ -113,8 +113,9 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
             assessCandidatePrinters(serialPrinters);
 
-//            List<DeviceDetector.DetectedPrinter> remotePrinters = remoteHostDiscoveryClient.searchForDevices();
-//            assessCandidatePrinters(remotePrinters);
+            List<DeviceDetector.DetectedPrinter> remotePrinters = remoteHostDiscoveryClient.searchForDevices();
+            assessCandidatePrinters(remotePrinters);
+
             try
             {
                 this.sleep(500);
@@ -127,7 +128,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
 
     private void assessCandidatePrinters(List<DeviceDetector.DetectedPrinter> connnectionHandles)
     {
-         if (connnectionHandles != null)
+        if (connnectionHandles != null)
         {
             boolean noNeedToAddPrinter = false;
 
@@ -157,7 +158,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
                         }
                     }
                 }
-                
+
                 if (!noNeedToAddPrinter)
                 {
                     // We need to connect!
@@ -210,7 +211,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
                         doNotCheckForPresenceOfHead);
                 break;
             case ROBOX_REMOTE:
-                newPrinter = new HardwarePrinter(this, new HardwareCommandInterface(
+                newPrinter = new HardwarePrinter(this, new RoboxRemoteCommandInterface(
                         this, detectedPrinter, suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS), filamentLoadedGetter,
                         doNotCheckForPresenceOfHead);

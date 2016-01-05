@@ -15,7 +15,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class DiscoveryAgentRemoteEnd implements Runnable
 {
 
-//    private final Stenographer steno = StenographerFactory.getStenographer("DiscoveryAgentRemoteEnd");
+    private final Stenographer steno = StenographerFactory.getStenographer("DiscoveryAgentRemoteEnd");
     private boolean keepRunning = true;
 
     @Override

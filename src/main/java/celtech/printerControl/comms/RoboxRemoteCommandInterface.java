@@ -1,5 +1,6 @@
 package celtech.printerControl.comms;
 
+import celtech.comms.LowLevelInterfaceException;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
 import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrinterException;
@@ -11,7 +12,7 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
-import jssc.SerialPortException;
+import celtech.roboxremotelibrary.RemoteClient;
 
 /**
  *
@@ -19,39 +20,26 @@ import jssc.SerialPortException;
  */
 public class RoboxRemoteCommandInterface extends CommandInterface
 {
-
-    private boolean stillWaitingForStatus = false;
-    private final SerialPortManager serialPortManager;
+    private final RemoteClient remoteClient;
 
     public RoboxRemoteCommandInterface(PrinterStatusConsumer controlInterface,
             DeviceDetector.DetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
-        this.setName("HCI:" + printerHandle + " " + this.toString());
-        serialPortManager = new SerialPortManager(printerHandle.getConnectionHandle());
+        this.setName("RemoteCI:" + printerHandle + " " + this.toString());
+        remoteClient = new RemoteClient();
     }
 
     @Override
     protected boolean connectToPrinter()
     {
-        return serialPortManager.connect(115200);
+        return true;
     }
 
     @Override
     protected void disconnectPrinter()
     {
-        if (serialPortManager.serialPort.isOpened())
-        {
-            try
-            {
-                serialPortManager.disconnect();
-            } catch (SerialPortException ex)
-            {
-                steno.error("Failed to shut down serial port " + ex.getMessage());
-            }
-        }
-
         controlInterface.disconnected(printerHandle);
         keepRunning = false;
     }
@@ -71,9 +59,10 @@ public class RoboxRemoteCommandInterface extends CommandInterface
             {
                 byte[] outputBuffer = messageToWrite.toByteArray();
 
-                serialPortManager.writeAndWaitForData(outputBuffer);
+                
+                remoteClient.writeAndWaitForData(outputBuffer);
 
-                byte[] respCommand = serialPortManager.readSerialPort(1);
+                byte[] respCommand = remoteClient.readSerialPort(1);
 
                 RxPacketTypeEnum packetType = RxPacketTypeEnum.getEnumForCommand(respCommand[0]);
                 if (packetType != null)
@@ -93,7 +82,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                     byte[] inputBuffer = null;
                     if (packetType.containsLengthField())
                     {
-                        byte[] lengthData = serialPortManager.readSerialPort(packetType.
+                        byte[] lengthData = remoteClient.readSerialPort(packetType.
                                 getLengthFieldSize());
 
                         int payloadSize = Integer.valueOf(new String(lengthData), 16);
@@ -108,7 +97,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                             inputBuffer[1 + i] = lengthData[i];
                         }
 
-                        byte[] payloadData = serialPortManager.readSerialPort(payloadSize);
+                        byte[] payloadData = remoteClient.readSerialPort(payloadSize);
                         for (int i = 0; i < payloadSize; i++)
                         {
                             inputBuffer[1 + packetType.getLengthFieldSize() + i] = payloadData[i];
@@ -117,7 +106,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                     {
                         inputBuffer = new byte[packetLength];
                         int bytesToRead = packetLength - 1;
-                        byte[] payloadData = serialPortManager.readSerialPort(bytesToRead);
+                        byte[] payloadData = remoteClient.readSerialPort(bytesToRead);
                         for (int i = 0; i < bytesToRead; i++)
                         {
                             inputBuffer[1 + i] = payloadData[i];
@@ -153,7 +142,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
                 {
                     // Attempt to drain the crud from the input
                     // There shouldn't be anything here but just in case...
-                    byte[] storage = serialPortManager.readAllDataOnBuffer();
+                    byte[] storage = remoteClient.readAllDataOnBuffer();
 
                     try
                     {
@@ -169,9 +158,9 @@ public class RoboxRemoteCommandInterface extends CommandInterface
 //                    InvalidResponseFromPrinterException exception = new InvalidResponseFromPrinterException("Invalid response - got: " + received);
 //                    throw exception;
                 }
-            } catch (SerialPortException ex)
+            } catch (LowLevelInterfaceException ex)
             {
-                steno.exception("Serial port exception", ex);
+                steno.exception("Remote comms exception", ex);
                 actionOnCommsFailure();
             }
         } else
