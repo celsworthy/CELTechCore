@@ -17,7 +17,7 @@ import java.util.Set;
 public enum FirmwareError
 {
     /*
-     Error flags as at firmware v708
+     Error flags as at firmware v741
      SD_CARD 0
      CHUNK_SEQUENCE 1
      FILE_TOO_LARGE 2
@@ -49,6 +49,8 @@ public enum FirmwareError
      ERROR_E_UNLOAD_SLIP 28
      ERROR_D_UNLOAD_SLIP 29
      ERROR_POWEROFF_WHILST_HOT 30
+     ERROR_E_NO_FILAMENT 31
+     ERROR_D_NO_FILAMENT 32
      */
 
     SD_CARD("error.ERROR_SD_CARD", 0, OK_ABORT),
@@ -82,6 +84,8 @@ public enum FirmwareError
     E_UNLOAD_ERROR("error.ERROR_UNLOAD", 28, OK),
     D_UNLOAD_ERROR("error.ERROR_UNLOAD", 29, OK),
     ERROR_POWEROFF_WHILST_HOT("error.ERROR_POWEROFF_WHILST_HOT", 30, OK),
+    ERROR_E_NO_FILAMENT("error.ERROR_E_NO_FILAMENT", 31, OK),
+    ERROR_D_NO_FILAMENT("error.ERROR_D_NO_FILAMENT", 32, OK),
     UNKNOWN("error.ERROR_UNKNOWN", -1, OK_ABORT),
     PSEUDO_E_FILAMENT_SLIP_WHILST_PAUSED("error.ERROR_E_FILAMENT_SLIP_WHILST_PAUSED", -100, OK),
     PSEUDO_D_FILAMENT_SLIP_WHILST_PAUSED("error.ERROR_D_FILAMENT_SLIP_WHILST_PAUSED", -100, OK),

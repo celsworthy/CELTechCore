@@ -3029,98 +3029,100 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     /**
      *
+     * * As of v741 firmware this functionality is now handled within Robox
+     * *
      * @param error
      * @return True if the filament slip routine has been called the max number
      * of times for this print
      */
-    @Override
-    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error)
-    {
-        boolean filamentSlipLimitReached = false;
-
-        if ((error == FirmwareError.E_FILAMENT_SLIP && filamentSlipEActionFired < 3)
-                || (error == FirmwareError.D_FILAMENT_SLIP && filamentSlipDActionFired < 3))
-        {
-            steno.debug("Need to run filament slip action");
-            try
-            {
-                Lookup.getSystemNotificationHandler().showFilamentMotionCheckBanner();
-                pause();
-                PrinterUtils.waitOnBusy(this, (Cancellable) null);
-                if (error == FirmwareError.E_FILAMENT_SLIP)
-                {
-                    forceExecuteMacroAsStream("filament_slip_action_E", true, null);
-                } else if (error == FirmwareError.D_FILAMENT_SLIP)
-                {
-                    forceExecuteMacroAsStream("filament_slip_action_D", true, null);
-                } else
-                {
-                    steno.warning("Filament slip action called with invalid error: "
-                            + error.
-                            name());
-                }
-                AckResponse response = transmitReportErrors();
-                if (response.isError())
-                {
-                    if (error == FirmwareError.E_FILAMENT_SLIP)
-                    {
-                        doAttemptEject('E');
-                    } else
-                    {
-                        doAttemptEject('D');
-                    }
-                } else
-                {
-                    forcedResume();
-                }
-                Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
-            } catch (PrinterException | RoboxCommsException ex)
-            {
-                steno.error("Error attempting automated filament slip action");
-            } finally
-            {
-                if (error == FirmwareError.E_FILAMENT_SLIP)
-                {
-                    filamentSlipEActionFired++;
-                } else
-                {
-                    filamentSlipDActionFired++;
-                }
-            }
-        } else
-        {
-            filamentSlipLimitReached = true;
-        }
-
-        return filamentSlipLimitReached;
-    }
-
-    private void doAttemptEject(char extruderLetter) throws PrinterException
-    {
-        steno.debug("Suspect that we're out of filament");
-        sendRawGCode("M909 S60", false);
-        PrinterUtils.waitOnBusy(this, (Cancellable) null);
-        sendRawGCode("M121 " + extruderLetter, false);
-        PrinterUtils.waitOnBusy(this, (Cancellable) null);
-        try
-        {
-            AckResponse response = transmitReportErrors();
-            Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
-            if (response.isError())
-            {
-                cancel(null);
-                Lookup.getSystemNotificationHandler().showFilamentStuckMessage();
-            } else
-            {
-                Lookup.getSystemNotificationHandler().showLoadFilamentNowMessage();
-            }
-        } catch (RoboxCommsException ex)
-        {
-            steno.error("...");
-        }
-        sendRawGCode("M909 S10", false);
-        PrinterUtils.waitOnBusy(this, (Cancellable) null);
-    }
+//    @Override
+//    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error)
+//    {
+//        boolean filamentSlipLimitReached = false;
+//
+//        if ((error == FirmwareError.E_FILAMENT_SLIP && filamentSlipEActionFired < 3)
+//                || (error == FirmwareError.D_FILAMENT_SLIP && filamentSlipDActionFired < 3))
+//        {
+//            steno.debug("Need to run filament slip action");
+//            try
+//            {
+//                Lookup.getSystemNotificationHandler().showFilamentMotionCheckBanner();
+//                pause();
+//                PrinterUtils.waitOnBusy(this, (Cancellable) null);
+//                if (error == FirmwareError.E_FILAMENT_SLIP)
+//                {
+//                    forceExecuteMacroAsStream("filament_slip_action_E", true, null);
+//                } else if (error == FirmwareError.D_FILAMENT_SLIP)
+//                {
+//                    forceExecuteMacroAsStream("filament_slip_action_D", true, null);
+//                } else
+//                {
+//                    steno.warning("Filament slip action called with invalid error: "
+//                            + error.
+//                            name());
+//                }
+//                AckResponse response = transmitReportErrors();
+//                if (response.isError())
+//                {
+//                    if (error == FirmwareError.E_FILAMENT_SLIP)
+//                    {
+//                        doAttemptEject('E');
+//                    } else
+//                    {
+//                        doAttemptEject('D');
+//                    }
+//                } else
+//                {
+//                    forcedResume();
+//                }
+//                Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
+//            } catch (PrinterException | RoboxCommsException ex)
+//            {
+//                steno.error("Error attempting automated filament slip action");
+//            } finally
+//            {
+//                if (error == FirmwareError.E_FILAMENT_SLIP)
+//                {
+//                    filamentSlipEActionFired++;
+//                } else
+//                {
+//                    filamentSlipDActionFired++;
+//                }
+//            }
+//        } else
+//        {
+//            filamentSlipLimitReached = true;
+//        }
+//
+//        return filamentSlipLimitReached;
+//    }
+//
+//    private void doAttemptEject(char extruderLetter) throws PrinterException
+//    {
+//        steno.debug("Suspect that we're out of filament");
+//        sendRawGCode("M909 S60", false);
+//        PrinterUtils.waitOnBusy(this, (Cancellable) null);
+//        sendRawGCode("M121 " + extruderLetter, false);
+//        PrinterUtils.waitOnBusy(this, (Cancellable) null);
+//        try
+//        {
+//            AckResponse response = transmitReportErrors();
+//            Lookup.getSystemNotificationHandler().hideFilamentMotionCheckBanner();
+//            if (response.isError())
+//            {
+//                cancel(null);
+//                Lookup.getSystemNotificationHandler().showFilamentStuckMessage();
+//            } else
+//            {
+//                Lookup.getSystemNotificationHandler().showLoadFilamentNowMessage();
+//            }
+//        } catch (RoboxCommsException ex)
+//        {
+//            steno.error("...");
+//        }
+//        sendRawGCode("M909 S10", false);
+//        PrinterUtils.waitOnBusy(this, (Cancellable) null);
+//    }
 
     @Override
     public void consumeError(FirmwareError error)
@@ -3138,66 +3140,66 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     Lookup.getSystemNotificationHandler().showEjectFailedDialog(this, 0);
                     break;
 
-                case E_FILAMENT_SLIP:
-                case D_FILAMENT_SLIP:
-                    if (!filamentSlipActionInProgress)
-                    {
-                        filamentSlipActionInProgress = true;
-                        new Thread(() ->
-                        {
-                            boolean showStandardError = false;
-
-                            if (pauseStatus.get() == PauseStatus.PAUSED)
-                            {
-                                switch (error)
-                                {
-                                    case E_FILAMENT_SLIP:
-                                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                                FirmwareError.PSEUDO_E_FILAMENT_SLIP_WHILST_PAUSED,
-                                                this);
-                                        break;
-
-                                    case D_FILAMENT_SLIP:
-                                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                                FirmwareError.PSEUDO_D_FILAMENT_SLIP_WHILST_PAUSED,
-                                                this);
-                                        break;
-                                }
-                            } else
-                            {
-                                switch (printerStatus.get())
-                                {
-                                    case PRINTING_PROJECT:
-                                        boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
-                                        if (limitOnSlipActionsReached)
-                                        {
-                                            try
-                                            {
-                                                pause();
-                                            } catch (PrinterException ex)
-                                            {
-                                                steno.error("Unable to pause during filament slip handling");
-                                            }
-                                            showStandardError = true;
-                                        }
-                                        break;
-                                    case IDLE:
-                                        showStandardError = true;
-                                        break;
-                                }
-
-                                if (showStandardError)
-                                {
-                                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
-                                            error,
-                                            this);
-                                }
-                            }
-                            filamentSlipActionInProgress = false;
-                        }, "Executing filament slip action").
-                                start();
-                    }
-                    break;
+//                case E_FILAMENT_SLIP:
+//                case D_FILAMENT_SLIP:
+//                    if (!filamentSlipActionInProgress)
+//                    {
+//                        filamentSlipActionInProgress = true;
+//                        new Thread(() ->
+//                        {
+//                            boolean showStandardError = false;
+//
+//                            if (pauseStatus.get() == PauseStatus.PAUSED)
+//                            {
+//                                switch (error)
+//                                {
+//                                    case E_FILAMENT_SLIP:
+//                                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+//                                                FirmwareError.PSEUDO_E_FILAMENT_SLIP_WHILST_PAUSED,
+//                                                this);
+//                                        break;
+//
+//                                    case D_FILAMENT_SLIP:
+//                                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+//                                                FirmwareError.PSEUDO_D_FILAMENT_SLIP_WHILST_PAUSED,
+//                                                this);
+//                                        break;
+//                                }
+//                            } else
+//                            {
+//                                switch (printerStatus.get())
+//                                {
+//                                    case PRINTING_PROJECT:
+//                                        boolean limitOnSlipActionsReached = doFilamentSlipActionWhilePrinting(error);
+//                                        if (limitOnSlipActionsReached)
+//                                        {
+//                                            try
+//                                            {
+//                                                pause();
+//                                            } catch (PrinterException ex)
+//                                            {
+//                                                steno.error("Unable to pause during filament slip handling");
+//                                            }
+//                                            showStandardError = true;
+//                                        }
+//                                        break;
+//                                    case IDLE:
+//                                        showStandardError = true;
+//                                        break;
+//                                }
+//
+//                                if (showStandardError)
+//                                {
+//                                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+//                                            error,
+//                                            this);
+//                                }
+//                            }
+//                            filamentSlipActionInProgress = false;
+//                        }, "Executing filament slip action").
+//                                start();
+//                    }
+//                    break;
 
                 default:
                     // Back stop

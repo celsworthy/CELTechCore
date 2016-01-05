@@ -9,6 +9,7 @@ import java.util.List;
  */
 public class AckResponse extends RoboxRxPacket
 {
+
     private final String charsetToUse = "US-ASCII";
 
     private List<FirmwareError> firmwareErrors = new ArrayList<>();
@@ -54,7 +55,7 @@ public class AckResponse extends RoboxRxPacket
 
         return !isError();
     }
-    
+
     public List<FirmwareError> getFirmwareErrors()
     {
         return firmwareErrors;
@@ -102,6 +103,12 @@ public class AckResponse extends RoboxRxPacket
     @Override
     public int packetLength(float requiredFirmwareVersion)
     {
-        return 33;
+        if (requiredFirmwareVersion >= 741)
+        {
+            return 65;
+        } else
+        {
+            return 33;
+        }
     }
 }

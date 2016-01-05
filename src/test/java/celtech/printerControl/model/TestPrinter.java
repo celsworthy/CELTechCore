@@ -795,12 +795,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void resetDataFileSequenceNumber()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
